@@ -20,6 +20,9 @@
   ],
   "author": "Family Chore Chart Team",
   "license": "MIT",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
   "devDependencies": {
     "serve": "^14.2.1"
   },

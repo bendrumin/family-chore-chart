@@ -19,6 +19,18 @@ class FamilyChoreChart {
             // Show loading screen
             this.showLoading();
             
+            // Handle payment success/cancel
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                this.showToast('Payment successful! Welcome to Premium!', 'success');
+                // Clear URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (urlParams.get('canceled') === 'true') {
+                this.showToast('Payment was canceled.', 'warning');
+                // Clear URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
             // Check authentication status
             const user = await this.apiClient.getCurrentUser();
             
@@ -1108,9 +1120,13 @@ class FamilyChoreChart {
     }
 
     async handleUpgrade() {
-        // For now, just show a message. In a real app, you'd integrate with Stripe
-        this.hideModal('upgrade-modal');
-        this.showToast('Payment integration coming soon! Contact us for early access.', 'info');
+        try {
+            this.hideModal('upgrade-modal');
+            this.showToast('Redirecting to payment...', 'info');
+            await window.paymentManager.handleUpgrade();
+        } catch (error) {
+            this.showToast('Payment failed. Please try again.', 'error');
+        }
     }
 }
 
