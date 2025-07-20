@@ -1169,6 +1169,80 @@ body {
     }
 }
 
+/* Upgrade Modal Styles */
+.upgrade-content {
+    text-align: center;
+    padding: var(--space-4);
+}
+
+.upgrade-content h3 {
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+    font-size: var(--font-size-xl);
+}
+
+.upgrade-content p {
+    color: var(--gray-600);
+    margin-bottom: var(--space-6);
+}
+
+.plan-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+}
+
+.plan {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--gray-200);
+}
+
+.plan.free {
+    background: var(--gray-50);
+}
+
+.plan.premium {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.plan h4 {
+    margin-bottom: var(--space-3);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+}
+
+.plan ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.plan li {
+    padding: var(--space-1) 0;
+    font-size: var(--font-size-sm);
+}
+
+.upgrade-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-6);
+}
+
+@media (max-width: 768px) {
+    .plan-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .upgrade-actions {
+        flex-direction: column;
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .header-content {

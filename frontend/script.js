@@ -408,6 +408,13 @@ class FamilyChoreChart {
             return;
         }
 
+        // Check subscription limits
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        if (!limits.canAddChildren) {
+            this.showUpgradeModal();
+            return;
+        }
+
         const result = await this.apiClient.createChild(name, age, color);
         
         if (result.success) {
@@ -1044,6 +1051,66 @@ class FamilyChoreChart {
         setTimeout(() => {
             toast.remove();
         }, 5000);
+    }
+
+    showUpgradeModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'upgrade-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🌟 Upgrade to Premium</h2>
+                    <button class="modal-close" onclick="app.hideModal('upgrade-modal')">&times;</button>
+                </div>
+                <div class="modal-form">
+                    <div class="upgrade-content">
+                        <h3>Free Plan Limits</h3>
+                        <p>You've reached the limit of 2 children on the free plan.</p>
+                        
+                        <div class="plan-comparison">
+                            <div class="plan free">
+                                <h4>Free Plan</h4>
+                                <ul>
+                                    <li>✅ 2 children maximum</li>
+                                    <li>✅ Basic chore tracking</li>
+                                    <li>✅ 7-day progress</li>
+                                    <li>❌ No advanced features</li>
+                                </ul>
+                            </div>
+                            <div class="plan premium">
+                                <h4>Premium Plan - $4.99/month</h4>
+                                <ul>
+                                    <li>✅ Unlimited children</li>
+                                    <li>✅ Photo proof uploads</li>
+                                    <li>✅ Push notifications</li>
+                                    <li>✅ Progress analytics</li>
+                                    <li>✅ Family sharing</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="upgrade-actions">
+                            <button class="btn btn-primary" onclick="app.handleUpgrade()">
+                                💳 Upgrade to Premium
+                            </button>
+                            <button class="btn btn-outline" onclick="app.hideModal('upgrade-modal')">
+                                Maybe Later
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        this.showModal('upgrade-modal');
+    }
+
+    async handleUpgrade() {
+        // For now, just show a message. In a real app, you'd integrate with Stripe
+        this.hideModal('upgrade-modal');
+        this.showToast('Payment integration coming soon! Contact us for early access.', 'info');
     }
 }
 

@@ -534,6 +534,52 @@ class ApiClient {
             }, callback)
             .subscribe();
     }
+
+    // Subscription Methods
+    async getSubscription() {
+        try {
+            const { data: { user } } = await this.supabase.auth.getUser();
+            if (!user) return null;
+
+            const { data, error } = await this.supabase
+                .from('profiles')
+                .select('subscription_type')
+                .eq('id', user.id)
+                .single();
+            
+            if (error) throw error;
+            return data?.subscription_type || 'free';
+        } catch (error) {
+            console.error('Error fetching subscription:', error);
+            return 'free';
+        }
+    }
+
+    async checkSubscriptionLimits() {
+        const subscription = await this.getSubscription();
+        
+        // Admin account (your email) gets premium access
+        const { data: { user } } = await this.supabase.auth.getUser();
+        if (user?.email === 'bsiegel13@gmail.com') {
+            return { canAddChildren: true, canAddChores: true, isPremium: true };
+        }
+
+        if (subscription === 'premium') {
+            return { canAddChildren: true, canAddChores: true, isPremium: true };
+        }
+
+        // Free tier limits
+        const children = await this.getChildren();
+        const chores = await this.getChores();
+        
+        return {
+            canAddChildren: children.length < 2,
+            canAddChores: true, // No limit on chores for free tier
+            isPremium: false,
+            childrenCount: children.length,
+            maxChildren: 2
+        };
+    }
 }
 
 // Create global instance
