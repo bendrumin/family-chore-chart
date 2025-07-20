@@ -351,6 +351,12 @@ class FamilyChoreChart {
                 this.removeChoreEntry(e.target.closest('.chore-entry'));
             }
         });
+
+        // Edit chore form
+        document.getElementById('edit-chore-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleEditChore();
+        });
     }
 
     showModal(modalId) {
@@ -500,6 +506,9 @@ class FamilyChoreChart {
             document.getElementById('daily-reward').value = this.familySettings.daily_reward_cents;
             document.getElementById('weekly-bonus').value = this.familySettings.weekly_bonus_cents;
         }
+        
+        // Populate chores list
+        this.populateChoresList();
         
         this.showModal('settings-modal');
     }
@@ -810,6 +819,137 @@ class FamilyChoreChart {
         // Hide remove button if only one entry remains
         if (entries.length === 1) {
             entries[0].querySelector('.remove-chore').style.display = 'none';
+        }
+    }
+
+    populateChoresList() {
+        const container = document.getElementById('chores-list');
+        if (!container) return;
+
+        if (this.chores.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-500); text-align: center;">No chores found</p>';
+            return;
+        }
+
+        let html = '';
+        this.chores.forEach(chore => {
+            const child = this.children.find(c => c.id === chore.child_id);
+            const childName = child ? child.name : 'Unknown';
+            
+            html += `
+                <div class="chore-item" data-chore-id="${chore.id}">
+                    <div class="chore-info">
+                        <span class="chore-name">${chore.name}</span>
+                        <span class="chore-child">${childName}</span>
+                    </div>
+                    <div class="chore-actions">
+                        <button type="button" class="btn btn-outline btn-sm edit-chore" data-chore-id="${chore.id}">
+                            ✏️ Edit
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        // Add event listeners for edit and delete buttons
+        container.querySelectorAll('.edit-chore').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const choreId = e.target.dataset.choreId;
+                this.showEditChoreModal(choreId);
+            });
+        });
+
+        container.querySelectorAll('.delete-chore').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const choreId = e.target.dataset.choreId;
+                this.deleteChore(choreId);
+            });
+        });
+    }
+
+    showEditChoreModal(choreId) {
+        const chore = this.chores.find(c => c.id === choreId);
+        if (!chore) return;
+
+        // Populate the edit form
+        document.getElementById('edit-chore-name').value = chore.name;
+        
+        // Populate child select
+        const childSelect = document.getElementById('edit-chore-child');
+        childSelect.innerHTML = '<option value="">Select a child...</option>';
+        this.children.forEach(child => {
+            const option = document.createElement('option');
+            option.value = child.id;
+            option.textContent = child.name;
+            option.selected = child.id === chore.child_id;
+            childSelect.appendChild(option);
+        });
+
+        // Store chore ID for the form submission
+        document.getElementById('edit-chore-form').dataset.choreId = choreId;
+        
+        this.showModal('edit-chore-modal');
+    }
+
+    async handleEditChore() {
+        const choreId = document.getElementById('edit-chore-form').dataset.choreId;
+        const name = document.getElementById('edit-chore-name').value;
+        const childId = document.getElementById('edit-chore-child').value;
+
+        if (!name || !childId) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+
+        const result = await this.apiClient.updateChore(choreId, {
+            name,
+            child_id: childId
+        });
+
+        if (result.success) {
+            // Update the chore in our local array
+            const choreIndex = this.chores.findIndex(c => c.id === choreId);
+            if (choreIndex !== -1) {
+                this.chores[choreIndex] = result.chore;
+            }
+
+            this.renderChildren();
+            this.hideModal('edit-chore-modal');
+            this.showToast(`Updated "${name}" chore!`, 'success');
+            
+            // Refresh the chores list in settings
+            this.populateChoresList();
+        } else {
+            this.showToast(result.error, 'error');
+        }
+    }
+
+    async deleteChore(choreId) {
+        const chore = this.chores.find(c => c.id === choreId);
+        if (!chore) return;
+
+        if (!confirm(`Are you sure you want to delete "${chore.name}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        const result = await this.apiClient.deleteChore(choreId);
+        
+        if (result.success) {
+            // Remove the chore from our local array
+            this.chores = this.chores.filter(c => c.id !== choreId);
+            
+            this.renderChildren();
+            this.showToast(`Deleted "${chore.name}" chore!`, 'success');
+            
+            // Refresh the chores list in settings
+            this.populateChoresList();
+        } else {
+            this.showToast(result.error, 'error');
         }
     }
 
