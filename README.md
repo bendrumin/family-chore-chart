@@ -22,7 +22,7 @@ A modern, kid-friendly web application that helps parents manage their children'
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/bendrumin/family-chore-chart.git
    cd family-chore-chart
    ```
 
