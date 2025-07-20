@@ -561,6 +561,9 @@ class FamilyChoreChart {
         // Calculate progress
         const progress = this.calculateChildProgress(child.id, childChores, childCompletions);
 
+        // Calculate stars based on completion percentage
+        const stars = this.calculateStars(progress.completionPercentage);
+        
         card.innerHTML = `
             <div class="child-header">
                 <div class="child-avatar">${child.name.charAt(0).toUpperCase()}</div>
@@ -572,7 +575,7 @@ class FamilyChoreChart {
 
             <div class="progress-section">
                 <div class="progress-header">
-                    <div class="progress-title">This Week's Progress</div>
+                    <div class="progress-title">🌟 This Week's Progress</div>
                     <div class="progress-stats">
                         <span>${Math.floor(progress.totalEarnings / 7)}/7 days</span>
                         <span>${progress.completionPercentage}% complete</span>
@@ -580,6 +583,9 @@ class FamilyChoreChart {
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${progress.completionPercentage}%"></div>
+                </div>
+                <div class="stars-container">
+                    ${stars}
                 </div>
             </div>
 
@@ -589,7 +595,7 @@ class FamilyChoreChart {
 
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
-                <div class="earnings-label">Earnings (7¢ per completed day)</div>
+                <div class="earnings-label">💰 Earnings (7¢ per completed day)</div>
             </div>
         `;
 
@@ -774,6 +780,15 @@ class FamilyChoreChart {
         return `$${(cents / 100).toFixed(2)}`;
     }
 
+    calculateStars(percentage) {
+        let stars = '';
+        if (percentage >= 25) stars += '<span class="star earned">⭐</span>';
+        if (percentage >= 50) stars += '<span class="star earned">⭐</span>';
+        if (percentage >= 75) stars += '<span class="star earned">⭐</span>';
+        if (percentage >= 100) stars += '<span class="star earned">🏆</span>';
+        return stars;
+    }
+
     addChoreEntry() {
         const container = document.getElementById('chores-container');
         const choreCount = container.children.length + 1;
@@ -840,12 +855,23 @@ class FamilyChoreChart {
             return;
         }
 
+        // Group chores by child
+        const choresByChild = {};
+        this.chores.forEach(chore => {
+            const child = this.children.find(c => c.id === chore.child_id);
+            const childName = child ? child.name : 'Unknown';
+            if (!choresByChild[childName]) {
+                choresByChild[childName] = [];
+            }
+            choresByChild[childName].push(chore);
+        });
+
         // Add summary header
-        const childCount = new Set(this.chores.map(c => c.child_id)).size;
+        const childCount = Object.keys(choresByChild).length;
         const totalChores = this.chores.length;
         
         let html = `
-            <div style="background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+            <div style="background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-6);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div style="font-size: var(--font-size-sm); opacity: 0.9;">Total Chores</div>
@@ -859,23 +885,38 @@ class FamilyChoreChart {
             </div>
         `;
         
-        this.chores.forEach(chore => {
-            const child = this.children.find(c => c.id === chore.child_id);
-            const childName = child ? child.name : 'Unknown';
+        // Create sections for each child
+        Object.keys(choresByChild).forEach(childName => {
+            const childChores = choresByChild[childName];
             
             html += `
-                <div class="chore-item" data-chore-id="${chore.id}">
-                    <div class="chore-info">
-                        <span class="chore-name">${chore.name}</span>
-                        <span class="chore-child">${childName}</span>
+                <div class="child-chores-section">
+                    <div class="child-chores-header">
+                        <h4>${childName}'s Chores</h4>
+                        <span class="chore-count">${childChores.length} chore${childChores.length !== 1 ? 's' : ''}</span>
                     </div>
-                    <div class="chore-actions">
-                        <button type="button" class="btn btn-outline btn-sm edit-chore" data-chore-id="${chore.id}">
-                            ✏️ Edit
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">
-                            🗑️ Delete
-                        </button>
+                    <div class="child-chores-list">
+            `;
+            
+            childChores.forEach(chore => {
+                html += `
+                    <div class="chore-item" data-chore-id="${chore.id}">
+                        <div class="chore-info">
+                            <span class="chore-name">${chore.name}</span>
+                        </div>
+                        <div class="chore-actions">
+                            <button type="button" class="btn btn-outline btn-sm edit-chore" data-chore-id="${chore.id}">
+                                ✏️ Edit
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
                     </div>
                 </div>
             `;
