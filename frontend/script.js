@@ -827,11 +827,38 @@ class FamilyChoreChart {
         if (!container) return;
 
         if (this.chores.length === 0) {
-            container.innerHTML = '<p style="color: var(--gray-500); text-align: center;">No chores found</p>';
+            container.innerHTML = `
+                <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                    <div style="font-size: 3rem; margin-bottom: var(--space-3);">📝</div>
+                    <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No chores yet</h4>
+                    <p style="margin-bottom: var(--space-4);">Add some chores to get started with your family's routine!</p>
+                    <button class="btn btn-primary" onclick="app.showModal('add-chore-modal')">
+                        <span>➕</span> Add Your First Chore
+                    </button>
+                </div>
+            `;
             return;
         }
 
-        let html = '';
+        // Add summary header
+        const childCount = new Set(this.chores.map(c => c.child_id)).size;
+        const totalChores = this.chores.length;
+        
+        html = `
+            <div style="background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">Total Chores</div>
+                        <div style="font-size: var(--font-size-2xl); font-weight: 700;">${totalChores}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: var(--font-size-sm); opacity: 0.9;">Children</div>
+                        <div style="font-size: var(--font-size-2xl); font-weight: 700;">${childCount}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
         this.chores.forEach(chore => {
             const child = this.children.find(c => c.id === chore.child_id);
             const childName = child ? child.name : 'Unknown';
