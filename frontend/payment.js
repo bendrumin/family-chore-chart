@@ -1,7 +1,7 @@
 // Payment Integration with Stripe
 class PaymentManager {
     constructor() {
-        this.stripe = Stripe('pk_test_your_publishable_key'); // Replace with your Stripe key
+        this.stripe = Stripe('pk_live_CMPtLmI4NqSpnKcAXbPXte2w00F0PbtPp0');
     }
 
     async createCheckoutSession() {
@@ -10,7 +10,7 @@ class PaymentManager {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priceId: 'price_premium_monthly',
+                    priceId: 'price_1Rn5hXBVDszXFoIKPkjkAzaF',
                     successUrl: window.location.href + '?success=true',
                     cancelUrl: window.location.href + '?canceled=true',
                     userId: window.apiClient?.currentUser?.id || 'unknown'
