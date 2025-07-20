@@ -383,9 +383,7 @@ class FamilyChoreChart {
                         <input type="text" id="chore-name-1" required placeholder="e.g., Make bed">
                     </div>
                     <div class="form-group">
-                        <label for="chore-reward-1">Reward (in cents)</label>
-                        <input type="number" id="chore-reward-1" min="1" max="100" value="7" required>
-                        <small>Default is 7¢ per day when completed</small>
+                        <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
                     </div>
                 </div>
             `;
@@ -431,10 +429,9 @@ class FamilyChoreChart {
         for (let i = 0; i < choreEntries.length; i++) {
             const entry = choreEntries[i];
             const name = entry.querySelector(`#chore-name-${i + 1}`).value;
-            const reward = parseInt(entry.querySelector(`#chore-reward-${i + 1}`).value);
 
-            if (name && reward) {
-                choresToAdd.push({ name, reward, childId });
+            if (name) {
+                choresToAdd.push({ name, childId });
             }
         }
 
@@ -448,7 +445,7 @@ class FamilyChoreChart {
         let errorCount = 0;
 
         for (const chore of choresToAdd) {
-            const result = await this.apiClient.createChore(chore.name, chore.reward, chore.childId);
+            const result = await this.apiClient.createChore(chore.name, 7, chore.childId); // Fixed 7 cents reward
             
             if (result.success) {
                 this.chores.push(result.chore);
@@ -568,7 +565,7 @@ class FamilyChoreChart {
                 <div class="progress-header">
                     <div class="progress-title">This Week's Progress</div>
                     <div class="progress-stats">
-                        <span>${progress.completedChores}/${progress.totalChores} chores</span>
+                        <span>${Math.floor(progress.totalEarnings / 7)}/7 days</span>
                         <span>${progress.completionPercentage}% complete</span>
                     </div>
                 </div>
@@ -583,7 +580,7 @@ class FamilyChoreChart {
 
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
-                <div class="earnings-label">Total Earnings This Week</div>
+                <div class="earnings-label">Earnings (7¢ per completed day)</div>
             </div>
         `;
 
@@ -624,10 +621,7 @@ class FamilyChoreChart {
             html += `
                 <tr>
                     <td>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span>${chore.name}</span>
-                            <span class="chore-reward">${chore.reward_cents}¢</span>
-                        </div>
+                        <span>${chore.name}</span>
                     </td>
             `;
 
@@ -719,18 +713,25 @@ class FamilyChoreChart {
             };
         }
 
-        let completedChores = 0;
+        // Calculate earnings based on completed days (7 cents per completed day)
+        const dailyReward = 7; // cents per completed day
         let totalEarnings = 0;
+        let completedDays = new Set();
 
+        // Count unique completed days across all chores
+        completions.forEach(comp => {
+            completedDays.add(comp.day_of_week);
+        });
+
+        // Each completed day earns 7 cents
+        totalEarnings = completedDays.size * dailyReward;
+
+        // Calculate completion percentage based on fully completed chores
+        let completedChores = 0;
         chores.forEach(chore => {
             const choreCompletions = completions.filter(comp => comp.chore_id === chore.id);
-            const completedDays = choreCompletions.length;
-            
-            if (completedDays === 7) {
+            if (choreCompletions.length === 7) {
                 completedChores++;
-                totalEarnings += chore.reward_cents * 7;
-            } else {
-                totalEarnings += chore.reward_cents * completedDays;
             }
         });
 
@@ -780,9 +781,7 @@ class FamilyChoreChart {
                 <input type="text" id="chore-name-${choreCount}" required placeholder="e.g., Make bed">
             </div>
             <div class="form-group">
-                <label for="chore-reward-${choreCount}">Reward (in cents)</label>
-                <input type="number" id="chore-reward-${choreCount}" min="1" max="100" value="7" required>
-                <small>Default is 7¢ per day when completed</small>
+                <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
             </div>
         `;
         
@@ -805,10 +804,7 @@ class FamilyChoreChart {
             entry.querySelector('h3').textContent = `Chore #${number}`;
             
             const nameInput = entry.querySelector('input[type="text"]');
-            const rewardInput = entry.querySelector('input[type="number"]');
-            
             nameInput.id = `chore-name-${number}`;
-            rewardInput.id = `chore-reward-${number}`;
         });
         
         // Hide remove button if only one entry remains
