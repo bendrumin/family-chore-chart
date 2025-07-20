@@ -844,7 +844,7 @@ class FamilyChoreChart {
         const childCount = new Set(this.chores.map(c => c.child_id)).size;
         const totalChores = this.chores.length;
         
-        html = `
+        let html = `
             <div style="background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-4);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
