@@ -25,7 +25,11 @@ class ApiClient {
 
             // Create profile record
             if (data.user) {
-                await this.createProfile(data.user.id, email, familyName);
+                const profileResult = await this.createProfile(data.user.id, email, familyName);
+                if (!profileResult.success) {
+                    console.error('Profile creation failed:', profileResult.error);
+                    // Don't fail the signup, but log the error
+                }
             }
 
             return { success: true, user: data.user };
@@ -96,6 +100,18 @@ class ApiClient {
     // Profile Methods
     async createProfile(userId, email, familyName) {
         try {
+            // First check if profile already exists
+            const { data: existingProfile } = await this.supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', userId)
+                .single();
+
+            if (existingProfile) {
+                console.log('Profile already exists for user:', userId);
+                return { success: true };
+            }
+
             const { error } = await this.supabase
                 .from('profiles')
                 .insert({
@@ -120,7 +136,28 @@ class ApiClient {
                 .eq('id', this.currentUser.id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                // If profile doesn't exist, try to create it
+                if (error.code === 'PGRST116') {
+                    console.log('Profile not found, attempting to create...');
+                    const createResult = await this.createProfile(
+                        this.currentUser.id, 
+                        this.currentUser.email, 
+                        this.currentUser.user_metadata?.family_name || 'My Family'
+                    );
+                    if (createResult.success) {
+                        // Try to get the profile again
+                        const { data: newProfile, error: newError } = await this.supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', this.currentUser.id)
+                            .single();
+                        
+                        if (!newError) return newProfile;
+                    }
+                }
+                throw error;
+            }
             return data;
         } catch (error) {
             console.error('Get profile error:', error);
