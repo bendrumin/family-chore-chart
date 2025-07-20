@@ -338,6 +338,19 @@ class FamilyChoreChart {
                 preset.classList.add('active');
             });
         });
+
+        // Add more chore button
+        document.getElementById('add-more-chore').addEventListener('click', () => {
+            this.addChoreEntry();
+        });
+
+        // Remove chore buttons (delegated event handling)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-chore')) {
+                e.preventDefault();
+                this.removeChoreEntry(e.target.closest('.chore-entry'));
+            }
+        });
     }
 
     showModal(modalId) {
@@ -357,6 +370,25 @@ class FamilyChoreChart {
             document.getElementById('add-child-form').reset();
         } else if (modalId === 'add-chore-modal') {
             document.getElementById('add-chore-form').reset();
+            // Reset chore entries to just one
+            const container = document.getElementById('chores-container');
+            container.innerHTML = `
+                <div class="chore-entry">
+                    <div class="chore-entry-header">
+                        <h3>Chore #1</h3>
+                        <button type="button" class="btn btn-outline btn-sm remove-chore" style="display: none;">Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="chore-name-1">Chore Name</label>
+                        <input type="text" id="chore-name-1" required placeholder="e.g., Make bed">
+                    </div>
+                    <div class="form-group">
+                        <label for="chore-reward-1">Reward (in cents)</label>
+                        <input type="number" id="chore-reward-1" min="1" max="100" value="7" required>
+                        <small>Default is 7¢ per day when completed</small>
+                    </div>
+                </div>
+            `;
         } else if (modalId === 'settings-modal') {
             document.getElementById('settings-form').reset();
         }
@@ -385,24 +417,59 @@ class FamilyChoreChart {
     }
 
     async handleAddChore() {
-        const name = document.getElementById('chore-name').value;
-        const reward = parseInt(document.getElementById('chore-reward').value);
         const childId = document.getElementById('chore-child').value;
-
-        if (!name || !reward || !childId) {
-            this.showToast('Please fill in all fields', 'error');
+        
+        if (!childId) {
+            this.showToast('Please select a child', 'error');
             return;
         }
 
-        const result = await this.apiClient.createChore(name, reward, childId);
-        
-        if (result.success) {
-            this.chores.push(result.chore);
+        // Get all chore entries
+        const choreEntries = document.querySelectorAll('.chore-entry');
+        const choresToAdd = [];
+
+        for (let i = 0; i < choreEntries.length; i++) {
+            const entry = choreEntries[i];
+            const name = entry.querySelector(`#chore-name-${i + 1}`).value;
+            const reward = parseInt(entry.querySelector(`#chore-reward-${i + 1}`).value);
+
+            if (name && reward) {
+                choresToAdd.push({ name, reward, childId });
+            }
+        }
+
+        if (choresToAdd.length === 0) {
+            this.showToast('Please fill in at least one chore', 'error');
+            return;
+        }
+
+        // Create all chores
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const chore of choresToAdd) {
+            const result = await this.apiClient.createChore(chore.name, chore.reward, chore.childId);
+            
+            if (result.success) {
+                this.chores.push(result.chore);
+                successCount++;
+            } else {
+                errorCount++;
+                console.error('Failed to create chore:', chore.name, result.error);
+            }
+        }
+
+        if (successCount > 0) {
             this.renderChildren();
             this.hideModal('add-chore-modal');
-            this.showToast(`Added "${name}" chore!`, 'success');
+            
+            if (successCount === choresToAdd.length) {
+                this.showToast(`Added ${successCount} chore${successCount > 1 ? 's' : ''}!`, 'success');
+            } else {
+                this.showToast(`Added ${successCount} chore${successCount > 1 ? 's' : ''}, ${errorCount} failed`, 'warning');
+            }
         } else {
-            this.showToast(result.error, 'error');
+            this.showToast('Failed to add any chores', 'error');
         }
     }
 
@@ -588,6 +655,15 @@ class FamilyChoreChart {
             </table>
         `;
 
+        // Add "Add Chore" button below the table
+        html += `
+            <div style="text-align: center; margin-top: var(--space-4);">
+                <button class="btn btn-secondary" onclick="app.showModal('add-chore-modal')">
+                    <span>📝</span> Add More Chores
+                </button>
+            </div>
+        `;
+
         return html;
     }
 
@@ -686,6 +762,59 @@ class FamilyChoreChart {
 
     formatCents(cents) {
         return `$${(cents / 100).toFixed(2)}`;
+    }
+
+    addChoreEntry() {
+        const container = document.getElementById('chores-container');
+        const choreCount = container.children.length + 1;
+        
+        const choreEntry = document.createElement('div');
+        choreEntry.className = 'chore-entry';
+        choreEntry.innerHTML = `
+            <div class="chore-entry-header">
+                <h3>Chore #${choreCount}</h3>
+                <button type="button" class="btn btn-outline btn-sm remove-chore">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="chore-name-${choreCount}">Chore Name</label>
+                <input type="text" id="chore-name-${choreCount}" required placeholder="e.g., Make bed">
+            </div>
+            <div class="form-group">
+                <label for="chore-reward-${choreCount}">Reward (in cents)</label>
+                <input type="number" id="chore-reward-${choreCount}" min="1" max="100" value="7" required>
+                <small>Default is 7¢ per day when completed</small>
+            </div>
+        `;
+        
+        container.appendChild(choreEntry);
+        
+        // Show remove button for the first entry if we have more than one
+        if (choreCount > 1) {
+            container.querySelector('.chore-entry:first-child .remove-chore').style.display = 'inline-block';
+        }
+    }
+
+    removeChoreEntry(entry) {
+        const container = document.getElementById('chores-container');
+        entry.remove();
+        
+        // Renumber remaining entries
+        const entries = container.querySelectorAll('.chore-entry');
+        entries.forEach((entry, index) => {
+            const number = index + 1;
+            entry.querySelector('h3').textContent = `Chore #${number}`;
+            
+            const nameInput = entry.querySelector('input[type="text"]');
+            const rewardInput = entry.querySelector('input[type="number"]');
+            
+            nameInput.id = `chore-name-${number}`;
+            rewardInput.id = `chore-reward-${number}`;
+        });
+        
+        // Hide remove button if only one entry remains
+        if (entries.length === 1) {
+            entries[0].querySelector('.remove-chore').style.display = 'none';
+        }
     }
 
     // Toast Notifications

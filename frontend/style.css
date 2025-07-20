@@ -374,6 +374,38 @@ body {
     color: var(--gray-400);
 }
 
+/* Chore Entry Styles */
+.chore-entry {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.chore-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.chore-entry-header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+}
+
+#chores-container {
+    margin-bottom: var(--space-4);
+}
+
 .auth-switch {
     text-align: center;
     color: var(--gray-600);
