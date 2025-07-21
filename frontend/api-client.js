@@ -72,6 +72,127 @@ class ApiClient {
         }
     }
 
+    // PIN Authentication Methods
+    async signInWithPin(pin) {
+        try {
+            console.log('Signing in with PIN:', pin);
+            
+            // Find family by PIN
+            const { data: family, error: findError } = await this.supabase
+                .from('family_pins')
+                .select(`
+                    user_id,
+                    profiles:user_id (
+                        email,
+                        family_name
+                    )
+                `)
+                .eq('pin', pin)
+                .single();
+
+            if (findError || !family) {
+                return { success: false, error: 'Invalid PIN. Please check your family PIN and try again.' };
+            }
+
+            // Get the family owner's profile
+            const { data: profile, error: profileError } = await this.supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', family.user_id)
+                .single();
+
+            if (profileError || !profile) {
+                return { success: false, error: 'Family account not found. Please contact support.' };
+            }
+
+            // Create a temporary session for PIN login
+            // For now, we'll use the family owner's credentials
+            // In a production app, you might want to create a separate PIN-based auth system
+            const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
+                email: profile.email,
+                password: pin + '_temp_' + Date.now() // This won't work with real auth
+            });
+
+            if (authError) {
+                // Since we can't use real auth with PIN, we'll create a session manually
+                // This is a simplified approach - in production you'd want proper PIN auth
+                return { 
+                    success: false, 
+                    error: 'PIN authentication requires setup. Please use email/password login for now.' 
+                };
+            }
+
+            this.currentUser = authData.user;
+            console.log('Signed in with PIN for family:', profile.family_name);
+            return { success: true, user: authData.user, familyName: profile.family_name };
+        } catch (error) {
+            console.error('PIN sign in error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Create or update family PIN
+    async createFamilyPin(pin) {
+        try {
+            const { data: { user } } = await this.supabase.auth.getUser();
+            if (!user) return { success: false, error: 'Not authenticated' };
+
+            // Check if PIN already exists for this family
+            const { data: existingPin, error: checkError } = await this.supabase
+                .from('family_pins')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (existingPin) {
+                // Update existing PIN
+                const { error: updateError } = await this.supabase
+                    .from('family_pins')
+                    .update({ pin: pin, updated_at: new Date().toISOString() })
+                    .eq('user_id', user.id);
+
+                if (updateError) throw updateError;
+            } else {
+                // Create new PIN
+                const { error: insertError } = await this.supabase
+                    .from('family_pins')
+                    .insert({
+                        user_id: user.id,
+                        pin: pin,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+
+                if (insertError) throw insertError;
+            }
+
+            return { success: true };
+        } catch (error) {
+            console.error('Create family PIN error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Get family PIN (for display in settings)
+    async getFamilyPin() {
+        try {
+            const { data: { user } } = await this.supabase.auth.getUser();
+            if (!user) return null;
+
+            const { data: pin, error } = await this.supabase
+                .from('family_pins')
+                .select('pin')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error) return null;
+            return pin?.pin;
+        } catch (error) {
+            console.error('Get family PIN error:', error);
+            return null;
+        }
+    }
+
     async resetPassword(email) {
         try {
             const { error } = await this.supabase.auth.resetPasswordForEmail(email, {

@@ -57,6 +57,34 @@ CREATE TABLE family_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Family codes table (for sharing)
+CREATE TABLE family_codes (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    code TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Family PINs table (for kid-friendly login)
+CREATE TABLE family_pins (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    pin TEXT NOT NULL CHECK (pin ~ '^[0-9]{4}$'), -- Must be exactly 4 digits
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Family members table (for family sharing)
+CREATE TABLE family_members (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    family_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, family_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_children_user_id ON children(user_id);
 CREATE INDEX idx_chores_child_id ON chores(child_id);
@@ -202,6 +230,26 @@ CREATE POLICY "Users can update own settings" ON family_settings
 
 CREATE POLICY "Users can delete own settings" ON family_settings
     FOR DELETE USING (auth.uid() = user_id);
+
+-- Enable RLS on family_pins
+ALTER TABLE family_pins ENABLE ROW LEVEL SECURITY;
+
+-- Family PINs policies
+CREATE POLICY "Users can view their own family PIN" ON family_pins
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own family PIN" ON family_pins
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own family PIN" ON family_pins
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own family PIN" ON family_pins
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Allow PIN lookup for authentication (no user context needed)
+CREATE POLICY "Allow PIN lookup for authentication" ON family_pins
+    FOR SELECT USING (true);
 
 -- Helper functions for common operations
 

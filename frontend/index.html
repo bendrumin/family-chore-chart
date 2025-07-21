@@ -81,6 +81,30 @@
                 <p class="auth-switch">
                     <a href="#" id="forgot-password">Forgot password?</a>
                 </p>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <button type="button" id="show-pin-login" class="btn btn-secondary">
+                    🔢 Sign in with PIN
+                </button>
+            </form>
+            
+            <!-- PIN Login Form -->
+            <form id="pin-login-form" class="auth-form hidden">
+                <h2>🔢 Sign in with PIN</h2>
+                <p class="pin-description">Perfect for kids! Enter your family's 4-digit PIN to sign in.</p>
+                <div class="form-group">
+                    <label for="pin-code">Family PIN</label>
+                    <input type="text" id="pin-code" maxlength="4" placeholder="1234" required>
+                    <small>Enter the 4-digit PIN your family uses</small>
+                </div>
+                <button type="submit" class="btn btn-primary">🔓 Sign In</button>
+                <p class="auth-switch">
+                    <a href="#" id="back-to-email-login">Back to email login</a>
+                </p>
+                <p class="auth-switch">
+                    <a href="#" id="show-signup-from-pin">Create new account</a>
+                </p>
             </form>
             
             <!-- Signup Form -->
@@ -302,6 +326,21 @@
                     <button type="submit" class="btn btn-primary">Save Settings</button>
                 </div>
             </form>
+            
+            <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
+            
+            <div class="pin-management">
+                <h3>🔢 Family PIN</h3>
+                <p class="settings-description">Set a 4-digit PIN for easy kid-friendly login. Perfect for young children who can't handle email/password!</p>
+                <div class="form-group">
+                    <label for="family-pin">4-Digit PIN</label>
+                    <input type="text" id="family-pin" maxlength="4" placeholder="1234">
+                    <small>Enter a 4-digit PIN that your family will use to sign in</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="save-pin-btn" class="btn btn-primary">Save PIN</button>
+                </div>
+            </div>
             
             <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
             

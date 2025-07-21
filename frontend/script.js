@@ -357,6 +357,34 @@ class FamilyChoreChart {
             e.preventDefault();
             this.switchAuthForm('login');
         });
+
+        // PIN login handlers
+        document.getElementById('show-pin-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchAuthForm('pin-login');
+        });
+
+        document.getElementById('back-to-email-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchAuthForm('login');
+        });
+
+        document.getElementById('show-signup-from-pin').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchAuthForm('signup');
+        });
+
+        // PIN login form
+        document.getElementById('pin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handlePinLogin();
+        });
+
+        // PIN input formatting
+        document.getElementById('pin-code').addEventListener('input', (e) => {
+            // Only allow numbers
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
     }
 
     async handleLogin() {
@@ -437,8 +465,31 @@ class FamilyChoreChart {
         }
     }
 
+    async handlePinLogin() {
+        const pin = document.getElementById('pin-code').value;
+
+        if (!pin || pin.length !== 4) {
+            this.showToast('Please enter a 4-digit PIN', 'error');
+            return;
+        }
+
+        this.showLoading();
+        const result = await this.apiClient.signInWithPin(pin);
+        this.hideLoading();
+
+        if (result.success) {
+            this.currentUser = result.user;
+            window.analytics.trackLogin('pin_login');
+            this.showToast(`Welcome back, ${result.familyName}!`, 'success');
+            await this.loadApp();
+        } else {
+            window.analytics.trackError('pin_login', result.error);
+            this.showToast(result.error, 'error');
+        }
+    }
+
     switchAuthForm(form) {
-        const forms = ['login-form', 'signup-form', 'forgot-form'];
+        const forms = ['login-form', 'signup-form', 'forgot-form', 'pin-login-form'];
         forms.forEach(formId => {
             document.getElementById(formId).classList.add('hidden');
         });
@@ -447,6 +498,8 @@ class FamilyChoreChart {
             document.getElementById('signup-form').classList.remove('hidden');
         } else if (form === 'forgot') {
             document.getElementById('forgot-form').classList.remove('hidden');
+        } else if (form === 'pin-login') {
+            document.getElementById('pin-login-form').classList.remove('hidden');
         } else {
             document.getElementById('login-form').classList.remove('hidden');
         }
@@ -820,20 +873,54 @@ class FamilyChoreChart {
         }
     }
 
-    showSettingsModal() {
-        // Populate current settings
-        if (this.familySettings) {
-            document.getElementById('daily-reward').value = this.familySettings.daily_reward_cents;
-            document.getElementById('weekly-bonus').value = this.familySettings.weekly_bonus_cents;
-        }
-        
-        // Populate children list
-        this.populateChildrenList();
-        
-        // Populate chores list
-        this.populateChoresList();
-        
+    async showSettingsModal() {
         this.showModal('settings-modal');
+        await this.loadFamilySettings();
+        await this.loadChildrenList();
+        await this.loadChoresList();
+        await this.loadFamilyPin();
+    }
+
+    async loadFamilyPin() {
+        try {
+            const pin = await this.apiClient.getFamilyPin();
+            if (pin) {
+                document.getElementById('family-pin').value = pin;
+            }
+        } catch (error) {
+            console.error('Error loading family PIN:', error);
+        }
+    }
+
+    async loadFamilySettings() {
+        try {
+            const settings = await this.apiClient.getFamilySettings();
+            if (settings) {
+                this.familySettings = settings;
+                document.getElementById('daily-reward').value = settings.daily_reward_cents;
+                document.getElementById('weekly-bonus').value = settings.weekly_bonus_cents;
+            }
+        } catch (error) {
+            console.error('Error loading family settings:', error);
+        }
+    }
+
+    async loadChildrenList() {
+        try {
+            const children = await this.apiClient.getChildren();
+            this.populateChildrenList(children);
+        } catch (error) {
+            console.error('Error loading children list:', error);
+        }
+    }
+
+    async loadChoresList() {
+        try {
+            const chores = await this.apiClient.getChores();
+            this.populateChoresList(chores);
+        } catch (error) {
+            console.error('Error loading chores list:', error);
+        }
     }
 
     populateChildSelect() {
@@ -848,11 +935,11 @@ class FamilyChoreChart {
         });
     }
 
-    populateChildrenList() {
+    populateChildrenList(children) {
         const container = document.getElementById('children-list');
         if (!container) return;
 
-        if (this.children.length === 0) {
+        if (children.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
                     <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
@@ -868,7 +955,7 @@ class FamilyChoreChart {
 
         let html = '';
         
-        this.children.forEach(child => {
+        children.forEach(child => {
             const gradient = this.getChildGradient(child.avatar_color);
             html += `
                 <div class="child-item" data-child-id="${child.id}">
@@ -1222,11 +1309,11 @@ class FamilyChoreChart {
         }
     }
 
-    populateChoresList() {
+    populateChoresList(chores) {
         const container = document.getElementById('chores-list');
         if (!container) return;
 
-        if (this.chores.length === 0) {
+        if (chores.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
                     <div style="font-size: 3rem; margin-bottom: var(--space-3);">📝</div>
@@ -1242,7 +1329,7 @@ class FamilyChoreChart {
 
         // Group chores by child
         const choresByChild = {};
-        this.chores.forEach(chore => {
+        chores.forEach(chore => {
             const child = this.children.find(c => c.id === chore.child_id);
             const childName = child ? child.name : 'Unknown';
             if (!choresByChild[childName]) {
@@ -1253,7 +1340,7 @@ class FamilyChoreChart {
 
         // Add summary header
         const childCount = Object.keys(choresByChild).length;
-        const totalChores = this.chores.length;
+        const totalChores = chores.length;
         
         let html = `
             <div style="background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-6);">
@@ -1721,6 +1808,65 @@ class FamilyChoreChart {
         } catch (error) {
             console.error('Error joining family:', error);
             this.showToast('Failed to join family', 'error');
+        }
+    }
+
+    // Settings Functions
+    setupSettings() {
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleSaveSettings();
+        });
+
+        // PIN management
+        document.getElementById('save-pin-btn').addEventListener('click', () => {
+            this.handleSavePin();
+        });
+
+        // PIN input formatting
+        document.getElementById('family-pin').addEventListener('input', (e) => {
+            // Only allow numbers
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+    }
+
+    async handleSaveSettings() {
+        const dailyReward = parseInt(document.getElementById('daily-reward').value);
+        const weeklyBonus = parseInt(document.getElementById('weekly-bonus').value);
+
+        if (!dailyReward || !weeklyBonus) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+
+        const result = await this.apiClient.updateFamilySettings({
+            daily_reward_cents: dailyReward,
+            weekly_bonus_cents: weeklyBonus
+        });
+        
+        if (result.success) {
+            this.familySettings = result.settings;
+            this.renderChildren();
+            this.hideModal('settings-modal');
+            this.showToast('Settings updated!', 'success');
+        } else {
+            this.showToast(result.error, 'error');
+        }
+    }
+
+    async handleSavePin() {
+        const pin = document.getElementById('family-pin').value;
+        if (!pin || pin.length !== 4) {
+            this.showToast('Please enter a 4-digit PIN', 'error');
+            return;
+        }
+
+        const result = await this.apiClient.createFamilyPin(pin);
+
+        if (result.success) {
+            this.showToast('Family PIN saved! Your family can now sign in with this PIN.', 'success');
+        } else {
+            this.showToast(result.error, 'error');
         }
     }
 }
