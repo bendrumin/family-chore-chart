@@ -432,8 +432,8 @@ class FamilyChoreChart {
             return;
         }
 
-        if (pin.length !== 4) {
-            this.showToast('PIN must be 4 digits', 'error');
+        if (pin.length !== 6) {
+            this.showToast('PIN must be 6 digits', 'error');
             return;
         }
 
@@ -474,8 +474,8 @@ class FamilyChoreChart {
     async handlePinLogin() {
         const pin = document.getElementById('pin-code').value;
 
-        if (!pin || pin.length !== 4) {
-            this.showToast('Please enter a 4-digit PIN', 'error');
+        if (!pin || pin.length !== 6) {
+            this.showToast('Please enter a 6-digit PIN', 'error');
             return;
         }
 
@@ -703,6 +703,15 @@ class FamilyChoreChart {
     }
 
     showModal(modalId) {
+        // Close all other modals first
+        const allModals = document.querySelectorAll('.modal');
+        allModals.forEach(modal => {
+            if (modal.id !== modalId) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // Now show the requested modal
         document.getElementById(modalId).classList.remove('hidden');
         
         // Populate child select for chore form
@@ -951,7 +960,7 @@ class FamilyChoreChart {
                     <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
                     <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No children yet</h4>
                     <p style="margin-bottom: var(--space-4);">Add your first child to get started with ChoreStar!</p>
-                    <button class="btn btn-primary" onclick="app.showModal('add-child-modal')">
+                    <button class="btn btn-primary" id="add-first-child-btn">
                         <span>➕</span> Add Your First Child
                     </button>
                 </div>
@@ -992,6 +1001,14 @@ class FamilyChoreChart {
                 this.deleteChild(childId);
             });
         });
+
+        // Add event listener for "Add First Child" button
+        const addFirstChildBtn = container.querySelector('#add-first-child-btn');
+        if (addFirstChildBtn) {
+            addFirstChildBtn.addEventListener('click', () => {
+                this.showModal('add-child-modal');
+            });
+        }
     }
 
     // Rendering
@@ -1088,7 +1105,7 @@ class FamilyChoreChart {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
                     <p>No chores yet! Add some chores to get started.</p>
-                    <button class="btn btn-primary" onclick="app.showModal('add-chore-modal')">
+                    <button class="btn btn-primary" id="add-chore-empty-btn">
                         <span>📝</span> Add Chore
                     </button>
                 </div>
@@ -1145,7 +1162,7 @@ class FamilyChoreChart {
         // Add "Add Chore" button below the table
         html += `
             <div style="text-align: center; margin-top: var(--space-4);">
-                <button class="btn btn-secondary" onclick="app.showModal('add-chore-modal')">
+                <button class="btn btn-secondary" id="add-chore-grid-btn">
                     <span>📝</span> Add More Chores
                 </button>
             </div>
@@ -1155,6 +1172,21 @@ class FamilyChoreChart {
     }
 
     addChoreCellHandlers(card, chores) {
+        // Add event listeners for "Add Chore" buttons
+        const addChoreEmptyBtn = card.querySelector('#add-chore-empty-btn');
+        if (addChoreEmptyBtn) {
+            addChoreEmptyBtn.addEventListener('click', () => {
+                this.showModal('add-chore-modal');
+            });
+        }
+
+        const addChoreGridBtn = card.querySelector('#add-chore-grid-btn');
+        if (addChoreGridBtn) {
+            addChoreGridBtn.addEventListener('click', () => {
+                this.showModal('add-chore-modal');
+            });
+        }
+
         card.querySelectorAll('.chore-cell').forEach(cell => {
             cell.addEventListener('click', async () => {
                 const choreId = cell.dataset.choreId;
@@ -1185,12 +1217,12 @@ class FamilyChoreChart {
                         });
                     } else {
                         this.completions = this.completions.filter(comp => 
-                            !(comp.chore_id === choreId && comp.day_of_week === day && comp.week_start === this.currentWeekStart)
+                            !(comp.chore_id === choreId && comp.day_of_week === day)
                         );
                     }
                     
-                    // Re-render to update progress
-                    this.renderChildren();
+                    // Update progress
+                    this.updateProgress();
                 }
             });
         });
@@ -1325,7 +1357,7 @@ class FamilyChoreChart {
                     <div style="font-size: 3rem; margin-bottom: var(--space-3);">📝</div>
                     <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No chores yet</h4>
                     <p style="margin-bottom: var(--space-4);">Add some chores to get started with your family's routine!</p>
-                    <button class="btn btn-primary" onclick="app.showModal('add-chore-modal')">
+                    <button class="btn btn-primary" id="add-first-chore-btn">
                         <span>➕</span> Add Your First Chore
                     </button>
                 </div>
@@ -1416,6 +1448,14 @@ class FamilyChoreChart {
                 this.deleteChore(choreId);
             });
         });
+
+        // Add event listener for "Add First Chore" button
+        const addFirstChoreBtn = container.querySelector('#add-first-chore-btn');
+        if (addFirstChoreBtn) {
+            addFirstChoreBtn.addEventListener('click', () => {
+                this.showModal('add-chore-modal');
+            });
+        }
     }
 
     showEditChoreModal(choreId) {
@@ -1862,8 +1902,8 @@ class FamilyChoreChart {
 
     async handleSavePin() {
         const pin = document.getElementById('family-pin').value;
-        if (!pin || pin.length !== 4) {
-            this.showToast('Please enter a 4-digit PIN', 'error');
+        if (!pin || pin.length !== 6) {
+            this.showToast('Please enter a 6-digit PIN', 'error');
             return;
         }
 

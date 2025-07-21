@@ -92,11 +92,11 @@
             <!-- PIN Login Form -->
             <form id="pin-login-form" class="auth-form hidden">
                 <h2>🔢 Sign in with PIN</h2>
-                <p class="pin-description">Perfect for kids! Enter your family's 4-digit PIN to sign in.</p>
+                <p class="pin-description">Perfect for kids! Enter your family's 6-digit PIN to sign in.</p>
                 <div class="form-group">
                     <label for="pin-code">Family PIN</label>
-                    <input type="text" id="pin-code" maxlength="4" placeholder="1234" required>
-                    <small>Enter the 4-digit PIN your family uses</small>
+                    <input type="text" id="pin-code" maxlength="6" placeholder="123456" required>
+                    <small>Enter the 6-digit PIN your family uses</small>
                 </div>
                 <button type="submit" class="btn btn-primary">🔓 Sign In</button>
                 <p class="auth-switch">
@@ -128,8 +128,8 @@
                 </div>
                 <div class="form-group">
                     <label for="signup-pin">Family PIN (Optional)</label>
-                    <input type="text" id="signup-pin" maxlength="4" placeholder="1234">
-                    <small>Create a 4-digit PIN for kid-friendly login. You can set this up later in settings too.</small>
+                    <input type="text" id="signup-pin" maxlength="6" placeholder="123456">
+                    <small>Create a 6-digit PIN for kid-friendly login. You can set this up later in settings too.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
                 <p class="auth-switch">
@@ -336,11 +336,11 @@
             
             <div class="pin-management">
                 <h3>🔢 Family PIN</h3>
-                <p class="settings-description">Set a 4-digit PIN for easy kid-friendly login. Perfect for young children who can't handle email/password!</p>
+                <p class="settings-description">Set a 6-digit PIN for easy kid-friendly login. Perfect for young children who can't handle email/password!</p>
                 <div class="form-group">
-                    <label for="family-pin">4-Digit PIN</label>
-                    <input type="text" id="family-pin" maxlength="4" placeholder="1234">
-                    <small>Enter a 4-digit PIN that your family will use to sign in</small>
+                    <label for="family-pin">6-Digit PIN</label>
+                    <input type="text" id="family-pin" maxlength="6" placeholder="123456">
+                    <small>Enter a 6-digit PIN that your family will use to sign in</small>
                 </div>
                 <div class="form-actions">
                     <button type="button" id="save-pin-btn" class="btn btn-primary">Save PIN</button>

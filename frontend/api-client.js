@@ -32,7 +32,7 @@ class ApiClient {
                 }
 
                 // Create family PIN if provided
-                if (pin && pin.length === 4) {
+                if (pin && pin.length === 6) {
                     const pinResult = await this.createFamilyPin(pin);
                     if (!pinResult.success) {
                         console.error('PIN creation failed:', pinResult.error);
