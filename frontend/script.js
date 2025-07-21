@@ -1971,3 +1971,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initApp();
 }); 
+
+// Settings Page Initialization
+if (window.location.pathname.endsWith('settings.html')) {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Hide app container if present
+        const appContainer = document.getElementById('app-container');
+        if (appContainer) appContainer.classList.add('hidden');
+
+        // Load family name
+        const familyNameElem = document.getElementById('family-name');
+        if (window.apiClient && familyNameElem) {
+            const profile = await window.apiClient.getProfile();
+            if (profile && profile.family_name) {
+                familyNameElem.textContent = profile.family_name;
+            }
+        }
+
+        // Settings logic
+        if (typeof app !== 'undefined') {
+            // If app instance exists, use its methods
+            app.showSettingsModal();
+            app.setupSettings();
+        } else if (window.FamilyChoreChart) {
+            // If not, create a temporary instance for settings page
+            window.app = new FamilyChoreChart();
+            app.showSettingsModal();
+            app.setupSettings();
+        }
+    });
+} 

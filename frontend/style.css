@@ -1176,13 +1176,21 @@ body {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transition: all var(--transition);
-    padding: var(--space-4);
+    padding: 100px 1rem 2rem 1rem; /* Top padding for header, responsive sides */
+}
+
+@media (max-width: 600px) {
+  .modal {
+    padding-top: 60px;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
 }
 
 .modal:not(.hidden) {
@@ -1195,6 +1203,8 @@ body {
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     max-width: 90vw;
+    width: 100%;
+    min-width: 0;
     max-height: 60vh;
     overflow-y: auto;
     box-shadow: var(--shadow-2xl);
