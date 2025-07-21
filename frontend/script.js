@@ -1990,14 +1990,16 @@ if (window.location.pathname.endsWith('settings.html')) {
 
         // Settings logic
         if (typeof app !== 'undefined') {
-            // If app instance exists, use its methods
             app.showSettingsModal();
             app.setupSettings();
+            await app.loadChildrenList();
+            await app.loadChoresList();
         } else if (window.FamilyChoreChart) {
-            // If not, create a temporary instance for settings page
             window.app = new FamilyChoreChart();
             app.showSettingsModal();
             app.setupSettings();
+            await app.loadChildrenList();
+            await app.loadChoresList();
         }
     });
 } 
