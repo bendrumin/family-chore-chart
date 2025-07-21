@@ -1120,7 +1120,8 @@ body {
 }
 
 .toast-info .toast-description {
-    color: #e0e7ff;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
 }
 
 .toast-info .toast-action {
