@@ -643,11 +643,28 @@ class FamilyChoreChart {
 
     // Modal Management
     setupModalHandlers() {
-        // Close modal buttons
-        document.querySelectorAll('.modal-close, [data-modal]').forEach(button => {
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                const modalId = e.target.id;
+                this.hideModal(modalId);
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal:not(.hidden)');
+                if (openModal) {
+                    this.hideModal(openModal.id);
+                }
+            }
+        });
+
+        // Close modal with X button
+        document.querySelectorAll('.modal-close').forEach(button => {
             button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const modalId = button.dataset.modal || button.closest('.modal').id;
+                const modalId = e.target.dataset.modal;
                 this.hideModal(modalId);
             });
         });
