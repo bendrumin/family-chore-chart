@@ -87,12 +87,21 @@ class ApiClient {
     async getCurrentUser() {
         try {
             const { data: { user }, error } = await this.supabase.auth.getUser();
-            if (error) throw error;
+            if (error) {
+                // Don't log AuthSessionMissingError as it's expected for new users
+                if (error.message !== 'Auth session missing!') {
+                    console.error('Get current user error:', error);
+                }
+                return null;
+            }
             
             this.currentUser = user;
             return user;
         } catch (error) {
-            console.error('Get current user error:', error);
+            // Don't log AuthSessionMissingError as it's expected for new users
+            if (error.message !== 'Auth session missing!') {
+                console.error('Get current user error:', error);
+            }
             return null;
         }
     }

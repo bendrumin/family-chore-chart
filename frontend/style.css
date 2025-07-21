@@ -338,6 +338,7 @@ body {
     font-size: var(--font-size-base);
     transition: all var(--transition);
     background: white;
+    color: var(--gray-900);
 }
 
 .form-group input:focus {
@@ -1008,6 +1009,7 @@ body {
     overflow-y: auto;
     animation: modalSlideIn var(--transition);
     padding: var(--space-8);
+    color: var(--gray-900);
 }
 
 @keyframes modalSlideIn {
