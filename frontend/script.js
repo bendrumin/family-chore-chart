@@ -83,12 +83,21 @@ class FamilyChoreChart {
         this.toastDebounce = new Map(); // Prevent duplicate toasts
         this.formSubmissions = new Map(); // Prevent duplicate form submissions
         this.isLoadingChildren = false; // Prevent multiple simultaneous loads
+        this.isInitialized = false; // Prevent double initialization
         
         this.init();
     }
 
     async init() {
+        if (this.isInitialized) {
+            console.log('App already initialized, skipping...');
+            return;
+        }
+        
         try {
+            this.isInitialized = true;
+            console.log('Starting app initialization...');
+            
             // Show loading screen
             this.showLoading();
             
@@ -1620,10 +1629,19 @@ class FamilyChoreChart {
 
 // Initialize the application
 let app;
+let isInitializing = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     // Ensure API client is loaded before initializing app
     const initApp = () => {
+        if (isInitializing) {
+            console.log('App already initializing, skipping...');
+            return;
+        }
+        
         if (window.apiClient && typeof window.apiClient.getSubscriptionType === 'function') {
+            isInitializing = true;
+            console.log('Initializing app...');
             app = new FamilyChoreChart();
             app.init();
             window.app = app;
@@ -1635,8 +1653,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add a timeout to prevent infinite waiting
     setTimeout(() => {
-        if (!app) {
+        if (!app && !isInitializing) {
             console.error('API client failed to load, initializing with fallback');
+            isInitializing = true;
             app = new FamilyChoreChart();
             app.init();
             window.app = app;
