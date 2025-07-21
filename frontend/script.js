@@ -80,6 +80,7 @@ class FamilyChoreChart {
         this.familySettings = null;
         this.currentWeekStart = null;
         this.subscription = null;
+        this.toastDebounce = new Map(); // Prevent duplicate toasts
         
         this.init();
     }
@@ -1249,8 +1250,28 @@ class FamilyChoreChart {
 
     // Toast Notifications
     showToast(message, type = 'info') {
+        // Create a unique key for this toast
+        const toastKey = `${message}-${type}`;
+        
+        // Check if this exact toast is already showing
+        const existingToast = document.querySelector(`.toast.toast-${type}[data-message="${message}"]`);
+        if (existingToast) {
+            return; // Don't show duplicate
+        }
+        
+        // Check debounce map to prevent rapid-fire toasts
+        const now = Date.now();
+        const lastShown = this.toastDebounce.get(toastKey);
+        if (lastShown && (now - lastShown) < 2000) { // 2 second debounce
+            return;
+        }
+        
+        // Update debounce map
+        this.toastDebounce.set(toastKey, now);
+
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
+        toast.setAttribute('data-message', message);
         
         const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
         
@@ -1268,7 +1289,9 @@ class FamilyChoreChart {
 
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            toast.remove();
+            if (toast.parentNode) {
+                toast.remove();
+            }
         }, 5000);
     }
 
