@@ -339,7 +339,7 @@ class ApiClient {
         }
     }
 
-    async createChild(name, age, avatarColor) {
+    async createChild(name, age, avatarColor, avatarUrl = '', avatarFile = '') {
         try {
             const { data, error } = await this.supabase
                 .from('children')
@@ -347,7 +347,9 @@ class ApiClient {
                     name,
                     age,
                     avatar_color: avatarColor,
-                    user_id: this.currentUser.id
+                    user_id: this.currentUser.id,
+                    avatar_url: avatarUrl,
+                    avatar_file: avatarFile
                 })
                 .select()
                 .single();
@@ -737,13 +739,16 @@ class ApiClient {
         // Free tier limits
         const children = await this.getChildren();
         const chores = await this.getChores();
-        
+        const maxChildren = 2;
+        const maxChores = 5;
         return {
-            canAddChildren: children.length < 2,
-            canAddChores: true, // No limit on chores for free tier
+            canAddChildren: children.length < maxChildren,
+            canAddChores: chores.length < maxChores,
             isPremium: false,
             childrenCount: children.length,
-            maxChildren: 2
+            maxChildren,
+            choresCount: chores.length,
+            maxChores
         };
     }
 }

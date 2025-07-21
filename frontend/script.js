@@ -776,6 +776,16 @@ class FamilyChoreChart {
         const name = document.getElementById('child-name').value;
         const age = parseInt(document.getElementById('child-age').value);
         const color = document.getElementById('child-color').value;
+        let avatarUrl = '';
+        let avatarFile = '';
+        const avatarPreview = document.getElementById('child-avatar-preview');
+        if (avatarPreview) {
+            if (avatarPreview.dataset.avatarUrl) {
+                avatarUrl = avatarPreview.dataset.avatarUrl;
+            } else if (avatarPreview.dataset.avatarFile) {
+                avatarFile = avatarPreview.dataset.avatarFile;
+            }
+        }
 
         if (!name || !age) {
             this.showToast('Please fill in all fields', 'error');
@@ -799,19 +809,14 @@ class FamilyChoreChart {
             return;
         }
 
-        console.log('Creating child:', { name, age, color });
-        const result = await this.apiClient.createChild(name, age, color);
+        // Pass avatar info to createChild
+        const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
         
         if (result.success) {
-            console.log('Child created successfully:', result.child);
             window.analytics.trackAddChild(name, age);
             this.hideModal('add-child-modal');
             this.showToast(`Added ${name} to your family!`, 'success');
-            
-            // Immediately reload children to ensure consistency
-            console.log('Reloading children after creation...');
             await this.loadChildren();
-            console.log('Current children after reload:', this.children);
             this.renderChildren();
         } else {
             window.analytics.trackError('add_child', result.error);
@@ -824,6 +829,14 @@ class FamilyChoreChart {
         
         if (!childId) {
             this.showToast('Please select a child', 'error');
+            return;
+        }
+
+        // Check subscription limits for chores
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        if (!limits.canAddChores) {
+            this.showUpgradeModal();
+            this.showToast(`Free plan limit: ${limits.maxChores} chores. Upgrade for unlimited chores!`, 'warning');
             return;
         }
 
@@ -1006,6 +1019,9 @@ class FamilyChoreChart {
                         </div>
                     </div>
                     <div class="child-actions">
+                        <button type="button" class="btn btn-outline btn-sm edit-child" data-child-id="${child.id}">
+                            ✏️ Edit
+                        </button>
                         <button type="button" class="btn btn-danger btn-sm delete-child" data-child-id="${child.id}">
                             🗑️ Delete
                         </button>
@@ -1016,7 +1032,16 @@ class FamilyChoreChart {
 
         container.innerHTML = html;
 
-        // Add event listeners for delete buttons
+        // Add event listeners for edit and delete buttons
+        container.querySelectorAll('.edit-child').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const childId = e.target.dataset.childId;
+                const child = this.children.find(c => c.id === childId);
+                if (child && window.openEditChildModal) {
+                    window.openEditChildModal(child);
+                }
+            });
+        });
         container.querySelectorAll('.delete-child').forEach(button => {
             button.addEventListener('click', (e) => {
                 const childId = e.target.dataset.childId;
@@ -1070,6 +1095,16 @@ class FamilyChoreChart {
         const gradient = this.getChildGradient(child.avatar_color);
         card.style.setProperty('--child-gradient', gradient);
 
+        // Avatar logic
+        let avatarHtml = '';
+        if (child.avatar_url) {
+            avatarHtml = `<img src="${child.avatar_url}" class="child-avatar-img" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
+        } else if (child.avatar_file) {
+            avatarHtml = `<img src="${child.avatar_file}" class="child-avatar-img" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
+        } else {
+            avatarHtml = `<div class="child-avatar">${child.name.charAt(0).toUpperCase()}</div>`;
+        }
+
         const childChores = this.chores.filter(chore => chore.child_id === child.id);
         const childCompletions = this.completions.filter(comp => 
             childChores.some(chore => chore.id === comp.chore_id)
@@ -1083,13 +1118,12 @@ class FamilyChoreChart {
         
         card.innerHTML = `
             <div class="child-header">
-                <div class="child-avatar">${child.name.charAt(0).toUpperCase()}</div>
+                ${avatarHtml}
                 <div class="child-info">
                     <h3>${child.name}</h3>
                     <p>Age ${child.age}</p>
                 </div>
             </div>
-
             <div class="progress-section">
                 <div class="progress-header">
                     <div class="progress-title">🌟 This Week's Progress</div>
@@ -1105,11 +1139,9 @@ class FamilyChoreChart {
                     ${stars}
                 </div>
             </div>
-
             <div class="chore-grid">
                 ${this.renderChoreGrid(childChores, childCompletions)}
             </div>
-
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
                 <div class="earnings-label">💰 Earnings (7¢ per completed day)</div>
@@ -2009,7 +2041,7 @@ let isInitializing = false;
 
 // Only run main app initialization if not on settings.html
 if (!window.location.pathname.endsWith('settings.html')) {
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         // Ensure API client is loaded before initializing app
         const initApp = () => {
             if (isInitializing) {
@@ -2041,7 +2073,141 @@ if (!window.location.pathname.endsWith('settings.html')) {
         }, 5000); // 5 second timeout
         
         initApp();
+
+    // --- Custom Avatar Logic for Add/Edit Child Modals ---
+    async function isPremiumUser() {
+        if (!window.apiClient) return false;
+        const type = await window.apiClient.getSubscriptionType();
+        return type === 'premium';
+    }
+
+    // DiceBear avatar seeds (for free users)
+    const diceBearSeeds = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan'];
+    function getDiceBearUrl(seed) {
+        return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+    }
+
+    // Add Child Modal logic
+    const addAvatarBtn = document.getElementById('child-avatar-upload-btn');
+    const addAvatarInput = document.getElementById('child-avatar-upload');
+    const addAvatarPreview = document.getElementById('child-avatar-preview');
+    const addAvatarUploadDiv = document.getElementById('add-child-avatar-upload');
+    let addAvatarUploadUrl = '';
+
+    addAvatarBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (await isPremiumUser()) {
+            addAvatarInput.click();
+        } else {
+            if (window.app && typeof window.app.showUpgradeModal === 'function') {
+                window.app.showUpgradeModal();
+            }
+        }
     });
+    addAvatarInput.addEventListener('change', async () => {
+        const file = addAvatarInput.files[0];
+        if (file) {
+            addAvatarPreview.innerHTML = '<span>Uploading...</span>';
+            // Upload to Supabase Storage
+            const fileExt = file.name.split('.').pop();
+            const fileName = `child-${Date.now()}.${fileExt}`;
+            const { data, error } = await window.supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
+            if (error) {
+                addAvatarPreview.innerHTML = '<span style="color:red">Upload failed</span>';
+                return;
+            }
+            // Get public URL
+            const { data: publicUrlData } = window.supabase.storage.from('avatars').getPublicUrl(fileName);
+            addAvatarUploadUrl = publicUrlData.publicUrl;
+            addAvatarPreview.innerHTML = `<img src="${addAvatarUploadUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
+            addAvatarPreview.dataset.avatarUrl = addAvatarUploadUrl;
+            delete addAvatarPreview.dataset.avatarFile;
+        }
+    });
+
+    // Edit Child Modal logic (if present)
+    const editChildModal = document.getElementById('edit-child-modal');
+    if (editChildModal) {
+        // Helper to open the edit modal with current child data
+        window.openEditChildModal = function(child) {
+            document.getElementById('edit-child-name').value = child.name;
+            document.getElementById('edit-child-age').value = child.age;
+            document.getElementById('edit-child-color').value = child.avatar_color || '#6366f1';
+            // Show current avatar
+            const preview = document.getElementById('edit-child-avatar-preview');
+            preview.innerHTML = '';
+            delete preview.dataset.avatarUrl;
+            delete preview.dataset.avatarFile;
+            if (child.avatar_url) {
+                const img = document.createElement('img');
+                img.src = child.avatar_url;
+                img.style.width = '40px';
+                img.style.height = '40px';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                preview.appendChild(img);
+                preview.dataset.avatarUrl = child.avatar_url;
+            } else if (child.avatar_file) {
+                const img = document.createElement('img');
+                img.src = child.avatar_file;
+                img.style.width = '40px';
+                img.style.height = '40px';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                preview.appendChild(img);
+                preview.dataset.avatarFile = child.avatar_file;
+            }
+            // Add clear button
+            let clearBtn = document.getElementById('edit-avatar-clear-btn');
+            if (!clearBtn) {
+                clearBtn = document.createElement('button');
+                clearBtn.id = 'edit-avatar-clear-btn';
+                clearBtn.type = 'button';
+                clearBtn.className = 'btn btn-outline btn-sm';
+                clearBtn.textContent = 'Remove Avatar';
+                clearBtn.style.marginLeft = '8px';
+                preview.parentNode.appendChild(clearBtn);
+            }
+            clearBtn.onclick = () => {
+                preview.innerHTML = '';
+                delete preview.dataset.avatarUrl;
+                delete preview.dataset.avatarFile;
+            };
+            // Show modal
+            editChildModal.classList.remove('hidden');
+            editChildModal.dataset.childId = child.id;
+        };
+        // Save handler for edit child
+        document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const childId = editChildModal.dataset.childId;
+            const name = document.getElementById('edit-child-name').value;
+            const age = parseInt(document.getElementById('edit-child-age').value);
+            const color = document.getElementById('edit-child-color').value;
+            let avatarUrl = '';
+            let avatarFile = '';
+            const preview = document.getElementById('edit-child-avatar-preview');
+            if (preview) {
+                if (preview.dataset.avatarUrl) {
+                    avatarUrl = preview.dataset.avatarUrl;
+                } else if (preview.dataset.avatarFile) {
+                    avatarFile = preview.dataset.avatarFile;
+                }
+            }
+            // Update child in Supabase
+            const updates = { name, age, avatar_color: color, avatar_url: avatarUrl, avatar_file: avatarFile };
+            const result = await app.apiClient.updateChild(childId, updates);
+            if (result.success) {
+                editChildModal.classList.add('hidden');
+                await app.loadChildren();
+                app.renderChildren();
+                app.showToast('Child updated!', 'success');
+            } else {
+                app.showToast(result.error || 'Failed to update child', 'error');
+            }
+        });
+    }
+});
 } 
 
 // Add a helper to open the settings modal from the header button
