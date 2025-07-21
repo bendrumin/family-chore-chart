@@ -26,6 +26,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function showInstallPrompt() {
+    window.analytics.trackInstallPrompt();
     const toast = document.createElement('div');
     toast.className = 'toast toast-info';
     toast.innerHTML = `
@@ -134,6 +135,16 @@ class FamilyChoreChart {
             await this.loadChores();
             await this.loadCompletions();
             
+            // Initialize analytics
+            const subscriptionType = await this.apiClient.getSubscriptionType();
+            window.analytics.init(
+                this.currentUser.id,
+                profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
+                subscriptionType || 'free',
+                this.children.length
+            );
+            window.analytics.trackPageView('Dashboard');
+            
             // Set up real-time subscriptions
             this.setupRealtime();
             
@@ -145,6 +156,7 @@ class FamilyChoreChart {
             
         } catch (error) {
             console.error('Load app error:', error);
+            window.analytics.trackError('load_app', error.message);
             this.showToast('Error loading family data', 'error');
         }
     }
@@ -261,8 +273,10 @@ class FamilyChoreChart {
 
         if (result.success) {
             this.currentUser = result.user;
+            window.analytics.trackLogin(email);
             await this.loadApp();
         } else {
+            window.analytics.trackError('login', result.error);
             this.showToast(result.error, 'error');
         }
     }
@@ -293,9 +307,11 @@ class FamilyChoreChart {
         this.hideLoading();
 
         if (result.success) {
+            window.analytics.trackRegistration(email, familyName);
             this.showToast('Account created! Please check your email to verify your account.', 'success');
             this.switchAuthForm('login');
         } else {
+            window.analytics.trackError('signup', result.error);
             this.showToast(result.error, 'error');
         }
     }
@@ -500,10 +516,12 @@ class FamilyChoreChart {
         
         if (result.success) {
             this.children.push(result.child);
+            window.analytics.trackAddChild(name, age);
             this.renderChildren();
             this.hideModal('add-child-modal');
             this.showToast(`Added ${name} to your family!`, 'success');
         } else {
+            window.analytics.trackError('add_child', result.error);
             this.showToast(result.error, 'error');
         }
     }
@@ -1135,6 +1153,7 @@ class FamilyChoreChart {
     }
 
     showUpgradeModal() {
+        window.analytics.trackUpgradeModalShown();
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.id = 'upgrade-modal';
@@ -1191,9 +1210,11 @@ class FamilyChoreChart {
     async handleUpgrade() {
         try {
             this.hideModal('upgrade-modal');
+            window.analytics.trackPaymentStart();
             this.showToast('Redirecting to payment...', 'info');
             await window.paymentManager.handleUpgrade();
         } catch (error) {
+            window.analytics.trackError('payment', error.message);
             this.showToast('Payment failed. Please try again.', 'error');
         }
     }
