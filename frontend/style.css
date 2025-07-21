@@ -1115,13 +1115,13 @@ body {
 }
 
 .toast-info .toast-title {
-    color: #ffffff;
+    color: #000080;
     font-weight: 600;
 }
 
 .toast-info .toast-description {
-    color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
+    color:#000080
 }
 
 .toast-info .toast-action {
