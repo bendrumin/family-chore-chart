@@ -16,7 +16,7 @@ class Analytics {
 
         // Set user properties
         if (window.gtag) {
-            gtag('config', 'G-XXXXXXXXXX', {
+            gtag('config', 'G-746ST4RH2E', {
                 user_id: userId,
                 user_type: userType,
                 subscription_status: subscriptionStatus,
