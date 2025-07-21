@@ -1863,3 +1863,32 @@ body {
     color: var(--gray-400);
     letter-spacing: 2px;
 } 
+
+#settings-modal.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: rgba(255,255,255,0.98);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+#settings-modal .modal-content {
+  width: 100%;
+  max-width: 700px;
+  margin: 2rem auto;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: #fff;
+  padding: 2.5rem 2rem;
+}
+@media (max-width: 800px) {
+  #settings-modal .modal-content {
+    max-width: 98vw;
+    padding: 1rem 0.5rem;
+  }
+} 

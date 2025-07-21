@@ -298,22 +298,28 @@ class FamilyChoreChart {
 
     // UI State Management
     showLoading() {
-        document.getElementById('loading-screen').classList.remove('hidden');
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) loadingScreen.classList.remove('hidden');
     }
 
     hideLoading() {
-        document.getElementById('loading-screen').classList.add('hidden');
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) loadingScreen.classList.add('hidden');
     }
 
     showAuth() {
-        document.getElementById('auth-container').classList.remove('hidden');
-        document.getElementById('app-container').classList.add('hidden');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        if (authContainer) authContainer.classList.remove('hidden');
+        if (appContainer) appContainer.classList.add('hidden');
         this.setupAuthHandlers();
     }
 
     showApp() {
-        document.getElementById('auth-container').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        if (authContainer) authContainer.classList.add('hidden');
+        if (appContainer) appContainer.classList.remove('hidden');
         this.setupAppHandlers();
     }
 
@@ -720,17 +726,16 @@ class FamilyChoreChart {
     }
 
     showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
         // Close all other modals first
         const allModals = document.querySelectorAll('.modal');
-        allModals.forEach(modal => {
-            if (modal.id !== modalId) {
-                modal.classList.add('hidden');
+        allModals.forEach(m => {
+            if (m.id !== modalId) {
+                m.classList.add('hidden');
             }
         });
-        
-        // Now show the requested modal
-        document.getElementById(modalId).classList.remove('hidden');
-        
+        modal.classList.remove('hidden');
         // Populate child select for chore form
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
@@ -1429,12 +1434,9 @@ class FamilyChoreChart {
                 html += `
                     <div class="chore-item" data-chore-id="${chore.id}">
                         <div class="chore-info">
-                            <span class="chore-name">${chore.name}</span>
+                            <span class="chore-name" data-chore-id="${chore.id}">${chore.name}</span>
                         </div>
                         <div class="chore-actions">
-                            <button type="button" class="btn btn-outline btn-sm edit-chore" data-chore-id="${chore.id}">
-                                ✏️ Edit
-                            </button>
                             <button type="button" class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">
                                 🗑️ Delete
                             </button>
@@ -1451,14 +1453,72 @@ class FamilyChoreChart {
 
         container.innerHTML = html;
 
-        // Add event listeners for edit and delete buttons
-        container.querySelectorAll('.edit-chore').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const choreId = e.target.dataset.choreId;
-                this.showEditChoreModal(choreId);
+        // Inline editing logic for settings page only
+        if (window.location.pathname.endsWith('settings.html')) {
+            container.querySelectorAll('.chore-name').forEach(span => {
+                span.addEventListener('click', async (e) => {
+                    const choreId = span.dataset.choreId;
+                    const originalName = span.textContent;
+                    // Prevent multiple editors
+                    if (span.parentNode.querySelector('input')) return;
+                    // Create input
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = originalName;
+                    input.className = 'inline-edit-input';
+                    input.style.marginRight = '8px';
+                    // Create Save button
+                    const saveBtn = document.createElement('button');
+                    saveBtn.textContent = 'Save';
+                    saveBtn.className = 'btn btn-primary btn-sm';
+                    // Create Cancel button
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'btn btn-outline btn-sm';
+                    cancelBtn.style.marginLeft = '4px';
+                    // Replace span with input and buttons
+                    span.style.display = 'none';
+                    span.parentNode.appendChild(input);
+                    span.parentNode.appendChild(saveBtn);
+                    span.parentNode.appendChild(cancelBtn);
+                    input.focus();
+                    // Save handler
+                    saveBtn.addEventListener('click', async () => {
+                        const newName = input.value.trim();
+                        if (!newName || newName === originalName) {
+                            cleanup();
+                            return;
+                        }
+                        // Update in Supabase
+                        const result = await app.apiClient.updateChore(choreId, newName, undefined);
+                        if (result.success) {
+                            span.textContent = newName;
+                            // Also update in app.chores
+                            const idx = app.chores.findIndex(c => c.id === choreId);
+                            if (idx !== -1) app.chores[idx].name = newName;
+                            app.showToast('Chore name updated!', 'success');
+                        } else {
+                            app.showToast(result.error || 'Failed to update chore', 'error');
+                        }
+                        cleanup();
+                    });
+                    // Cancel handler
+                    cancelBtn.addEventListener('click', cleanup);
+                    // Blur handler (optional: treat as cancel)
+                    input.addEventListener('blur', () => {
+                        setTimeout(cleanup, 100); // allow click on buttons
+                    });
+                    function cleanup() {
+                        input.remove();
+                        saveBtn.remove();
+                        cancelBtn.remove();
+                        span.style.display = '';
+                    }
+                });
             });
-        });
+        }
 
+        // Delete handler (shared)
         container.querySelectorAll('.delete-chore').forEach(button => {
             button.addEventListener('click', (e) => {
                 const choreId = e.target.dataset.choreId;
@@ -1476,6 +1536,10 @@ class FamilyChoreChart {
     }
 
     showEditChoreModal(choreId) {
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && window.location.pathname !== '') {
+            // Only run on main app page
+            return;
+        }
         const chore = this.chores.find(c => c.id === choreId);
         if (!chore) return;
 
@@ -1602,6 +1666,11 @@ class FamilyChoreChart {
 
     // Toast Notifications
     showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            console.warn('No toast container found, skipping toast:', message);
+            return;
+        }
         // Create a unique key for this toast
         const toastKey = `${message}-${type}`;
         
@@ -1643,7 +1712,7 @@ class FamilyChoreChart {
             </div>
         `;
 
-        document.getElementById('toast-container').appendChild(toast);
+        toastContainer.appendChild(toast);
 
         // Add close functionality
         const closeBtn = toast.querySelector('.toast-close');
@@ -1938,68 +2007,53 @@ class FamilyChoreChart {
 let app;
 let isInitializing = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Ensure API client is loaded before initializing app
-    const initApp = () => {
-        if (isInitializing) {
-            console.log('App already initializing, skipping...');
-            return;
-        }
+// Only run main app initialization if not on settings.html
+if (!window.location.pathname.endsWith('settings.html')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Ensure API client is loaded before initializing app
+        const initApp = () => {
+            if (isInitializing) {
+                console.log('App already initializing, skipping...');
+                return;
+            }
+            
+            if (window.apiClient && typeof window.apiClient.getSubscriptionType === 'function') {
+                isInitializing = true;
+                console.log('Initializing app...');
+                app = new FamilyChoreChart();
+                app.init();
+                window.app = app;
+            } else {
+                // Wait a bit and try again, but with a timeout
+                setTimeout(initApp, 100);
+            }
+        };
         
-        if (window.apiClient && typeof window.apiClient.getSubscriptionType === 'function') {
-            isInitializing = true;
-            console.log('Initializing app...');
-            app = new FamilyChoreChart();
-            app.init();
-            window.app = app;
+        // Add a timeout to prevent infinite waiting
+        setTimeout(() => {
+            if (!app && !isInitializing) {
+                console.error('API client failed to load, initializing with fallback');
+                isInitializing = true;
+                app = new FamilyChoreChart();
+                app.init();
+                window.app = app;
+            }
+        }, 5000); // 5 second timeout
+        
+        initApp();
+    });
+} 
+
+// Add a helper to open the settings modal from the header button
+if (typeof window !== 'undefined') {
+    window.app = window.app || {};
+    window.app.openModal = function(modalId) {
+        if (window.app && typeof window.app.showModal === 'function') {
+            window.app.showModal(modalId);
         } else {
-            // Wait a bit and try again, but with a timeout
-            setTimeout(initApp, 100);
+            // fallback: show the modal directly
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('hidden');
         }
     };
-    
-    // Add a timeout to prevent infinite waiting
-    setTimeout(() => {
-        if (!app && !isInitializing) {
-            console.error('API client failed to load, initializing with fallback');
-            isInitializing = true;
-            app = new FamilyChoreChart();
-            app.init();
-            window.app = app;
-        }
-    }, 5000); // 5 second timeout
-    
-    initApp();
-}); 
-
-// Settings Page Initialization
-if (window.location.pathname.endsWith('settings.html')) {
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Hide app container if present
-        const appContainer = document.getElementById('app-container');
-        if (appContainer) appContainer.classList.add('hidden');
-
-        // Load family name
-        const familyNameElem = document.getElementById('family-name');
-        if (window.apiClient && familyNameElem) {
-            const profile = await window.apiClient.getProfile();
-            if (profile && profile.family_name) {
-                familyNameElem.textContent = profile.family_name;
-            }
-        }
-
-        // Settings logic
-        if (typeof app !== 'undefined') {
-            app.showSettingsModal();
-            app.setupSettings();
-            await app.loadChildrenList();
-            await app.loadChoresList();
-        } else if (window.FamilyChoreChart) {
-            window.app = new FamilyChoreChart();
-            app.showSettingsModal();
-            app.setupSettings();
-            await app.loadChildrenList();
-            await app.loadChoresList();
-        }
-    });
 } 
