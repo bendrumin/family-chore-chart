@@ -313,6 +313,55 @@
             </div>
         </div>
     </div>
+
+    <!-- Family Sharing Modal -->
+    <div id="family-sharing-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👨‍👩‍👧‍👦 Family Sharing</h2>
+                <button class="modal-close" data-modal="family-sharing-modal">&times;</button>
+            </div>
+            <div class="modal-form">
+                <div class="family-sharing-content">
+                    <div class="share-family-section">
+                        <h3>📤 Share Your Family</h3>
+                        <p>Share this code with family members to let them join your ChoreStar family!</p>
+                        <div class="family-code-display">
+                            <div class="code-box">
+                                <span id="family-code">Loading...</span>
+                                <button class="btn btn-secondary btn-sm" onclick="app.copyFamilyCode()">
+                                    📋 Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="family-members">
+                            <h4>👥 Family Members</h4>
+                            <div id="family-members-list">
+                                <!-- Family members will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
+                    
+                    <div class="join-family-section">
+                        <h3>📥 Join a Family</h3>
+                        <p>Enter a 6-digit family code to join another family's ChoreStar!</p>
+                        <form id="join-family-form" class="join-family-form">
+                            <div class="form-group">
+                                <label for="join-family-code">Family Code</label>
+                                <input type="text" id="join-family-code" maxlength="6" placeholder="123456" required>
+                                <small>Enter the 6-digit code shared with you</small>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Join Family</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
         </div>
     </div>
 
@@ -324,6 +373,7 @@
     <script src="api-client.js"></script>
     <script src="analytics.js"></script>
     <script src="notifications.js"></script>
+    <script src="family-sharing.js"></script>
     <script src="script.js"></script>
 </body>
 </html> 

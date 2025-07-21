@@ -1170,6 +1170,113 @@ body {
     margin-top: var(--space-4);
 }
 
+/* Family Sharing Styles */
+.family-sharing-content {
+    padding: var(--space-4);
+}
+
+.share-family-section,
+.join-family-section {
+    margin-bottom: var(--space-6);
+}
+
+.share-family-section h3,
+.join-family-section h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.share-family-section p,
+.join-family-section p {
+    color: var(--gray-600);
+    margin-bottom: var(--space-4);
+}
+
+.family-code-display {
+    margin: var(--space-4) 0;
+}
+
+.code-box {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 2px;
+}
+
+.code-box span {
+    flex: 1;
+    text-align: center;
+}
+
+.family-members {
+    margin-top: var(--space-6);
+}
+
+.family-members h4 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+}
+
+.family-member-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-2);
+}
+
+.family-member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.family-member-info {
+    flex: 1;
+}
+
+.family-member-name {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.family-member-email {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+.join-family-form {
+    margin-top: var(--space-4);
+}
+
+.join-family-form input {
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-lg);
+    text-align: center;
+    letter-spacing: 4px;
+}
+
 /* PWA Standalone Mode */
 @media (display-mode: standalone) {
     .app-header {

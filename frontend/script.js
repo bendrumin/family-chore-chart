@@ -411,6 +411,9 @@ class FamilyChoreChart {
             this.showSettingsModal();
         });
 
+        // Family sharing
+        this.setupFamilySharing();
+
         // Notification permission
         this.setupNotificationPermission();
 
@@ -1340,6 +1343,113 @@ class FamilyChoreChart {
         } else {
             this.showToast('Please enable notifications in your browser settings.', 'warning');
             window.analytics.trackEngagement('notification_declined');
+        }
+    }
+
+    // Family Sharing Functions
+    setupFamilySharing() {
+        // Add family sharing button to header
+        const headerRight = document.querySelector('.header-right');
+        if (headerRight) {
+            const familyShareBtn = document.createElement('button');
+            familyShareBtn.className = 'btn btn-secondary btn-sm';
+            familyShareBtn.innerHTML = '👨‍👩‍👧‍👦 Share';
+            familyShareBtn.onclick = () => this.showFamilySharingModal();
+            headerRight.appendChild(familyShareBtn);
+        }
+
+        // Setup join family form
+        document.getElementById('join-family-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleJoinFamily();
+        });
+    }
+
+    async showFamilySharingModal() {
+        this.showModal('family-sharing-modal');
+        await this.loadFamilyCode();
+        await this.loadFamilyMembers();
+    }
+
+    async loadFamilyCode() {
+        try {
+            const code = await window.familySharing.getOrCreateFamilyCode();
+            if (code) {
+                document.getElementById('family-code').textContent = code;
+            } else {
+                document.getElementById('family-code').textContent = 'Error loading code';
+            }
+        } catch (error) {
+            console.error('Error loading family code:', error);
+            document.getElementById('family-code').textContent = 'Error loading code';
+        }
+    }
+
+    async loadFamilyMembers() {
+        try {
+            const members = await window.familySharing.getFamilyMembers();
+            const membersList = document.getElementById('family-members-list');
+            
+            if (members.length === 0) {
+                membersList.innerHTML = '<p style="color: var(--gray-500); font-style: italic;">No family members yet</p>';
+                return;
+            }
+
+            membersList.innerHTML = members.map(member => `
+                <div class="family-member-item">
+                    <div class="family-member-avatar">
+                        ${member.profiles?.email?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div class="family-member-info">
+                        <div class="family-member-name">${member.profiles?.family_name || 'Unknown'}</div>
+                        <div class="family-member-email">${member.profiles?.email || 'Unknown'}</div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading family members:', error);
+            document.getElementById('family-members-list').innerHTML = '<p style="color: var(--red-500);">Error loading members</p>';
+        }
+    }
+
+    async copyFamilyCode() {
+        try {
+            const result = await window.familySharing.shareFamilyCode();
+            if (result.success) {
+                this.showToast('Family code copied to clipboard!', 'success');
+                window.analytics.trackEngagement('family_code_copied');
+            } else {
+                this.showToast('Failed to copy code', 'error');
+            }
+        } catch (error) {
+            console.error('Error copying family code:', error);
+            this.showToast('Failed to copy code', 'error');
+        }
+    }
+
+    async handleJoinFamily() {
+        const codeInput = document.getElementById('join-family-code');
+        const code = codeInput.value.trim();
+
+        if (!window.familySharing.isValidCode(code)) {
+            this.showToast('Please enter a valid 6-digit code', 'warning');
+            return;
+        }
+
+        try {
+            const result = await window.familySharing.joinFamily(code);
+            if (result.success) {
+                this.showToast('Successfully joined family!', 'success');
+                window.analytics.trackEngagement('family_joined');
+                this.hideModal('family-sharing-modal');
+                // Reload app data
+                await this.loadApp();
+            } else {
+                this.showToast(result.error || 'Failed to join family', 'error');
+            }
+        } catch (error) {
+            console.error('Error joining family:', error);
+            this.showToast('Failed to join family', 'error');
         }
     }
 }
