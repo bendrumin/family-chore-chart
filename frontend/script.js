@@ -206,7 +206,9 @@ class FamilyChoreChart {
     }
 
     async loadChildren() {
+        console.log('Loading children from API...');
         this.children = await this.apiClient.getChildren();
+        console.log('Children loaded:', this.children);
     }
 
     async loadChores() {
@@ -223,6 +225,16 @@ class FamilyChoreChart {
             this.subscription = this.apiClient.subscribeToChanges((payload) => {
                 console.log('Real-time update:', payload);
                 
+                // Add debouncing for real-time updates
+                const updateKey = `${payload.table}-${payload.eventType}-${Date.now()}`;
+                const now = Date.now();
+                const lastUpdate = this.formSubmissions.get(updateKey);
+                if (lastUpdate && (now - lastUpdate) < 1000) { // 1 second debounce for real-time
+                    console.log('Skipping duplicate real-time update:', payload);
+                    return;
+                }
+                this.formSubmissions.set(updateKey, now);
+                
                 // Refresh data based on what changed
                 if (payload.table === 'chore_completions') {
                     this.loadCompletions().then(() => {
@@ -233,7 +245,9 @@ class FamilyChoreChart {
                         this.renderChildren();
                     });
                 } else if (payload.table === 'children') {
+                    console.log('Children table changed, reloading...');
                     this.loadChildren().then(() => {
+                        console.log('Children reloaded from real-time:', this.children);
                         this.renderChildren();
                     });
                 }
@@ -658,7 +672,7 @@ class FamilyChoreChart {
         const submissionKey = `add-child-${name}-${age}`;
         const now = Date.now();
         const lastSubmission = this.formSubmissions.get(submissionKey);
-        if (lastSubmission && (now - lastSubmission) < 2000) { // 2 second debounce
+        if (lastSubmission && (now - lastSubmission) < 3000) { // 3 second debounce
             console.log('Preventing duplicate child submission');
             return;
         }
@@ -671,17 +685,22 @@ class FamilyChoreChart {
             return;
         }
 
+        console.log('Creating child:', { name, age, color });
         const result = await this.apiClient.createChild(name, age, color);
         
         if (result.success) {
-            // Don't manually add to array - let real-time subscription handle it
+            console.log('Child created successfully:', result.child);
             window.analytics.trackAddChild(name, age);
             this.hideModal('add-child-modal');
             this.showToast(`Added ${name} to your family!`, 'success');
             
-            // Reload children to ensure consistency
-            await this.loadChildren();
-            this.renderChildren();
+            // Wait a moment for real-time to process, then reload
+            setTimeout(async () => {
+                console.log('Reloading children after creation...');
+                await this.loadChildren();
+                console.log('Current children after reload:', this.children);
+                this.renderChildren();
+            }, 500);
         } else {
             window.analytics.trackError('add_child', result.error);
             this.showToast(result.error, 'error');
@@ -809,7 +828,14 @@ class FamilyChoreChart {
         const container = document.getElementById('children-grid');
         const emptyState = document.getElementById('empty-state');
 
-        if (this.children.length === 0) {
+        // Deduplicate children by ID to prevent duplicates
+        const uniqueChildren = this.children.filter((child, index, self) => 
+            index === self.findIndex(c => c.id === child.id)
+        );
+        
+        console.log('Rendering children:', uniqueChildren);
+
+        if (uniqueChildren.length === 0) {
             container.innerHTML = '';
             emptyState.classList.remove('hidden');
             return;
@@ -818,7 +844,7 @@ class FamilyChoreChart {
         emptyState.classList.add('hidden');
         container.innerHTML = '';
 
-        this.children.forEach(child => {
+        uniqueChildren.forEach(child => {
             const childCard = this.createChildCard(child);
             container.appendChild(childCard);
         });
