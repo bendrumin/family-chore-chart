@@ -406,6 +406,136 @@ body {
     margin-bottom: var(--space-4);
 }
 
+/* Children Management Styles */
+.children-management {
+    margin-top: var(--space-6);
+    padding-bottom: var(--space-8);
+}
+
+.children-management h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.children-management h3::before {
+    content: '👶';
+    font-size: var(--font-size-lg);
+}
+
+.children-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: var(--space-2);
+    padding-bottom: var(--space-6);
+}
+
+.children-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.children-list::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+.children-list::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+}
+
+.children-list::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+.child-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    min-height: 80px;
+    background: white;
+    border: 2px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.child-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.child-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    transform: translateY(-1px);
+}
+
+.child-item:hover::before {
+    opacity: 1;
+}
+
+.child-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex: 1;
+    padding: var(--space-2) 0;
+}
+
+.child-avatar-small {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    font-size: var(--font-size-lg);
+}
+
+.child-details h4 {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: var(--font-size-base);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.child-details p {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.child-actions {
+    display: flex;
+    gap: var(--space-2);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.child-item:hover .child-actions {
+    opacity: 1;
+}
+
 /* Chore Management Styles */
 .chore-management {
     margin-top: var(--space-6);

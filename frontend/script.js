@@ -827,6 +827,9 @@ class FamilyChoreChart {
             document.getElementById('weekly-bonus').value = this.familySettings.weekly_bonus_cents;
         }
         
+        // Populate children list
+        this.populateChildrenList();
+        
         // Populate chores list
         this.populateChoresList();
         
@@ -842,6 +845,59 @@ class FamilyChoreChart {
             option.value = child.id;
             option.textContent = child.name;
             select.appendChild(option);
+        });
+    }
+
+    populateChildrenList() {
+        const container = document.getElementById('children-list');
+        if (!container) return;
+
+        if (this.children.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                    <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
+                    <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No children yet</h4>
+                    <p style="margin-bottom: var(--space-4);">Add your first child to get started with ChoreStar!</p>
+                    <button class="btn btn-primary" onclick="app.showModal('add-child-modal')">
+                        <span>➕</span> Add Your First Child
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        
+        this.children.forEach(child => {
+            const gradient = this.getChildGradient(child.avatar_color);
+            html += `
+                <div class="child-item" data-child-id="${child.id}">
+                    <div class="child-info">
+                        <div class="child-avatar-small" style="background: ${gradient}">
+                            ${child.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="child-details">
+                            <h4>${child.name}</h4>
+                            <p>Age ${child.age}</p>
+                        </div>
+                    </div>
+                    <div class="child-actions">
+                        <button type="button" class="btn btn-danger btn-sm delete-child" data-child-id="${child.id}">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        // Add event listeners for delete buttons
+        container.querySelectorAll('.delete-child').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const childId = e.target.dataset.childId;
+                this.deleteChild(childId);
+            });
         });
     }
 
@@ -1347,6 +1403,50 @@ class FamilyChoreChart {
             this.populateChoresList();
         } else {
             this.showToast(result.error, 'error');
+        }
+    }
+
+    async deleteChild(childId) {
+        const child = this.children.find(c => c.id === childId);
+        if (!child) {
+            this.showToast('Child not found', 'error');
+            return;
+        }
+
+        // Check if child has chores
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        if (childChores.length > 0) {
+            const choreText = childChores.length === 1 ? 'chore' : 'chores';
+            if (!confirm(`Are you sure you want to delete ${child.name}? This will also delete ${childChores.length} ${choreText} associated with this child. This action cannot be undone.`)) {
+                return;
+            }
+        } else {
+            if (!confirm(`Are you sure you want to delete ${child.name}? This action cannot be undone.`)) {
+                return;
+            }
+        }
+
+        const result = await this.apiClient.deleteChild(childId);
+        
+        if (result.success) {
+            // Remove from local arrays
+            this.children = this.children.filter(child => child.id !== childId);
+            this.chores = this.chores.filter(chore => chore.child_id !== childId);
+            
+            // Reload data to ensure consistency
+            await this.loadChildren();
+            await this.loadChores();
+            this.renderChildren();
+            
+            // Update settings modal if open
+            if (!document.getElementById('settings-modal').classList.contains('hidden')) {
+                this.populateChildrenList();
+                this.populateChoresList();
+            }
+            
+            this.showToast(`${child.name} deleted successfully`, 'success');
+        } else {
+            this.showToast(result.error || 'Failed to delete child', 'error');
         }
     }
 
