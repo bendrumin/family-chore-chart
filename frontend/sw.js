@@ -34,19 +34,51 @@ self.addEventListener('fetch', event => {
 
 // Push notification event
 self.addEventListener('push', event => {
-  const options = {
-    body: event.data ? event.data.text() : 'Time to do your chores! ⭐',
+  let notificationData = {
+    title: 'ChoreStar',
+    body: 'Time to do your chores! ⭐',
     icon: '/manifest.json',
     badge: '/manifest.json',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
+      primaryKey: 1,
+      url: '/'
+    }
+  };
+
+  // Parse custom notification data if available
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      notificationData = {
+        ...notificationData,
+        title: data.title || notificationData.title,
+        body: data.body || notificationData.body,
+        icon: data.icon || notificationData.icon,
+        data: {
+          ...notificationData.data,
+          ...data.data,
+          url: data.url || '/'
+        }
+      };
+    } catch (e) {
+      // If not JSON, treat as text
+      notificationData.body = event.data.text();
+    }
+  }
+
+  const options = {
+    ...notificationData,
     actions: [
       {
-        action: 'explore',
+        action: 'open',
         title: 'Open App',
+        icon: '/manifest.json'
+      },
+      {
+        action: 'complete',
+        title: 'Mark Complete',
         icon: '/manifest.json'
       },
       {
@@ -58,7 +90,7 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('ChoreStar', options)
+    self.registration.showNotification(notificationData.title, options)
   );
 });
 
@@ -66,9 +98,9 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  if (event.action === 'explore') {
+  if (event.action === 'open' || event.action === 'complete') {
     event.waitUntil(
-      clients.openWindow('/')
+      clients.openWindow(event.notification.data.url || '/')
     );
   }
 }); 

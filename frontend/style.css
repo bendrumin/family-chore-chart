@@ -1132,6 +1132,41 @@ body {
     transform: translateY(-1px);
 }
 
+/* Notification Settings */
+.notification-settings {
+    margin-top: var(--space-6);
+}
+
+.notification-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-indicator.enabled {
+    background: var(--green-500);
+    box-shadow: 0 0 0 2px var(--green-100);
+}
+
+.status-indicator.disabled {
+    background: var(--gray-400);
+    box-shadow: 0 0 0 2px var(--gray-100);
+}
+
+.notification-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+
 /* PWA Standalone Mode */
 @media (display-mode: standalone) {
     .app-header {

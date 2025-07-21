@@ -145,6 +145,16 @@ class FamilyChoreChart {
             );
             window.analytics.trackPageView('Dashboard');
             
+            // Initialize notifications
+            await window.notificationManager.init();
+            
+            // Send welcome notification for new users
+            if (profile && this.children.length === 0) {
+                setTimeout(() => {
+                    window.notificationManager.sendWelcomeNotification(profile.family_name);
+                }, 2000);
+            }
+            
             // Set up real-time subscriptions
             this.setupRealtime();
             
@@ -372,8 +382,64 @@ class FamilyChoreChart {
             this.showSettingsModal();
         });
 
+        // Notification permission
+        this.setupNotificationPermission();
+
         // Modal handlers
         this.setupModalHandlers();
+    }
+
+    setupNotificationPermission() {
+        // Check if notifications are enabled
+        if (!window.notificationManager.isEnabled()) {
+            // Show notification permission prompt after 5 seconds
+            setTimeout(() => {
+                this.showNotificationPrompt();
+            }, 5000);
+        }
+    }
+
+    showNotificationPrompt() {
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-info';
+        toast.innerHTML = `
+            <div class="toast-content">
+                <div class="toast-icon">🔔</div>
+                <div class="toast-message">
+                    <div class="toast-title">Enable Notifications</div>
+                    <div class="toast-description">Get daily chore reminders and weekly progress reports!</div>
+                </div>
+            </div>
+            <div class="toast-actions">
+                <button class="toast-action btn btn-primary btn-sm">Enable</button>
+                <button class="toast-close">&times;</button>
+            </div>
+        `;
+        
+        document.getElementById('toast-container').appendChild(toast);
+        
+        toast.querySelector('.toast-action').addEventListener('click', async () => {
+            const success = await window.notificationManager.requestPermission();
+            if (success) {
+                window.analytics.trackEngagement('notification_enabled');
+                this.showToast('Notifications enabled! You\'ll get daily reminders.', 'success');
+            } else {
+                window.analytics.trackEngagement('notification_declined');
+                this.showToast('Please enable notifications in your browser settings.', 'warning');
+            }
+            toast.remove();
+        });
+        
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            toast.remove();
+        });
+        
+        // Auto-remove after 15 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 15000);
     }
 
     async handleLogout() {
@@ -1216,6 +1282,35 @@ class FamilyChoreChart {
         } catch (error) {
             window.analytics.trackError('payment', error.message);
             this.showToast('Payment failed. Please try again.', 'error');
+        }
+    }
+
+    // Notification functions
+    async testNotification() {
+        const success = await window.notificationManager.sendLocalNotification(
+            '🧪 Test Notification',
+            'This is a test notification from ChoreStar!',
+            { type: 'test' }
+        );
+        
+        if (success) {
+            this.showToast('Test notification sent!', 'success');
+            window.analytics.trackEngagement('test_notification');
+        } else {
+            this.showToast('Please enable notifications first.', 'warning');
+        }
+    }
+
+    async enableNotifications() {
+        const success = await window.notificationManager.requestPermission();
+        if (success) {
+            this.showToast('Notifications enabled!', 'success');
+            window.analytics.trackEngagement('notification_enabled');
+            // Refresh settings modal
+            this.showSettingsModal();
+        } else {
+            this.showToast('Please enable notifications in your browser settings.', 'warning');
+            window.analytics.trackEngagement('notification_declined');
         }
     }
 }
