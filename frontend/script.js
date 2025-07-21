@@ -415,6 +415,7 @@ class FamilyChoreChart {
         const familyName = document.getElementById('signup-family-name').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
+        const pin = document.getElementById('signup-pin').value;
 
         if (!email || !familyName || !password || !confirmPassword) {
             this.showToast('Please fill in all fields', 'error');
@@ -431,8 +432,13 @@ class FamilyChoreChart {
             return;
         }
 
+        if (pin.length !== 4) {
+            this.showToast('PIN must be 4 digits', 'error');
+            return;
+        }
+
         this.showLoading();
-        const result = await this.apiClient.signUp(email, password, familyName);
+        const result = await this.apiClient.signUp(email, password, familyName, pin);
         this.hideLoading();
 
         if (result.success) {

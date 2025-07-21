@@ -1823,4 +1823,18 @@ body {
 #family-pin::placeholder {
     color: var(--gray-400);
     letter-spacing: 4px;
+}
+
+#signup-pin {
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-lg);
+    text-align: center;
+    letter-spacing: 4px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+#signup-pin::placeholder {
+    color: var(--gray-400);
+    letter-spacing: 2px;
 } 

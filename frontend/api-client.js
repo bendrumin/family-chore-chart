@@ -9,7 +9,7 @@ class ApiClient {
     }
 
     // Authentication Methods
-    async signUp(email, password, familyName) {
+    async signUp(email, password, familyName, pin = null) {
         try {
             const { data, error } = await this.supabase.auth.signUp({
                 email,
@@ -29,6 +29,15 @@ class ApiClient {
                 if (!profileResult.success) {
                     console.error('Profile creation failed:', profileResult.error);
                     // Don't fail the signup, but log the error
+                }
+
+                // Create family PIN if provided
+                if (pin && pin.length === 4) {
+                    const pinResult = await this.createFamilyPin(pin);
+                    if (!pinResult.success) {
+                        console.error('PIN creation failed:', pinResult.error);
+                        // Don't fail the signup, but log the error
+                    }
                 }
             }
 
