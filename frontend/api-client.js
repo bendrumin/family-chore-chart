@@ -41,6 +41,7 @@ class ApiClient {
 
     async signIn(email, password) {
         try {
+            console.log('Signing in user:', email);
             const { data, error } = await this.supabase.auth.signInWithPassword({
                 email,
                 password
@@ -49,6 +50,7 @@ class ApiClient {
             if (error) throw error;
 
             this.currentUser = data.user;
+            console.log('Signed in user:', data.user?.id);
             return { success: true, user: data.user };
         } catch (error) {
             console.error('Sign in error:', error);
@@ -139,6 +141,7 @@ class ApiClient {
 
     async getProfile() {
         try {
+            console.log('Getting profile for user:', this.currentUser?.id);
             const { data, error } = await this.supabase
                 .from('profiles')
                 .select('*')
@@ -167,6 +170,7 @@ class ApiClient {
                 }
                 throw error;
             }
+            console.log('Found profile:', data);
             return data;
         } catch (error) {
             console.error('Get profile error:', error);
@@ -177,6 +181,7 @@ class ApiClient {
     // Children Methods
     async getChildren() {
         try {
+            console.log('Getting children for user:', this.currentUser?.id);
             const { data, error } = await this.supabase
                 .from('children')
                 .select('*')
@@ -184,6 +189,7 @@ class ApiClient {
                 .order('name');
 
             if (error) throw error;
+            console.log('Found children:', data);
             return data || [];
         } catch (error) {
             console.error('Get children error:', error);

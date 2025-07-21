@@ -141,8 +141,6 @@ class FamilyChoreChart {
             
             // Update family name in header
             const profile = await this.apiClient.getProfile();
-            console.log('Loaded profile:', profile);
-            console.log('Current user:', this.currentUser);
             
             if (profile) {
                 document.getElementById('family-name').textContent = profile.family_name;
@@ -150,13 +148,8 @@ class FamilyChoreChart {
             
             // Load children and chores
             await this.loadChildren();
-            console.log('Loaded children:', this.children);
-            
             await this.loadChores();
-            console.log('Loaded chores:', this.chores);
-            
             await this.loadCompletions();
-            console.log('Loaded completions:', this.completions);
             
             // Initialize analytics
             let subscriptionType = 'free';
