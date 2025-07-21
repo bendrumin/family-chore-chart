@@ -136,7 +136,7 @@ class FamilyChoreChart {
             await this.loadCompletions();
             
             // Initialize analytics
-            const subscriptionType = await this.apiClient.getSubscriptionType();
+            const subscriptionType = await this.apiClient.getSubscriptionType().catch(() => 'free');
             window.analytics.init(
                 this.currentUser.id,
                 profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
@@ -146,13 +146,17 @@ class FamilyChoreChart {
             window.analytics.trackPageView('Dashboard');
             
             // Initialize notifications
-            await window.notificationManager.init();
-            
-            // Send welcome notification for new users
-            if (profile && this.children.length === 0) {
-                setTimeout(() => {
-                    window.notificationManager.sendWelcomeNotification(profile.family_name);
-                }, 2000);
+            try {
+                await window.notificationManager.init();
+                
+                // Send welcome notification for new users
+                if (profile && this.children.length === 0) {
+                    setTimeout(() => {
+                        window.notificationManager.sendWelcomeNotification(profile.family_name);
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Notification initialization failed:', error);
             }
             
             // Set up real-time subscriptions

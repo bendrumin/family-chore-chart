@@ -555,6 +555,15 @@ class ApiClient {
         }
     }
 
+    async getSubscriptionType() {
+        try {
+            return await this.getSubscription();
+        } catch (error) {
+            console.error('Error getting subscription type:', error);
+            return 'free';
+        }
+    }
+
     async checkSubscriptionLimits() {
         const subscription = await this.getSubscription();
         
