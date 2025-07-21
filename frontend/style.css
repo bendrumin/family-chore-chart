@@ -1102,6 +1102,47 @@ body {
     transform: scale(1.1);
 }
 
+/* PWA Install Toast */
+.toast-info {
+    background: linear-gradient(135deg, #667eea 0%, #764baa 100%);
+    border-left: 4px solid #4f46e5;
+}
+
+.toast-info .toast-icon {
+    color: #ffffff;
+}
+
+.toast-info .toast-title {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.toast-info .toast-description {
+    color: #e0e7ff;
+}
+
+.toast-info .toast-action {
+    background: #ffffff;
+    color: #667eea;
+    border: none;
+}
+
+.toast-info .toast-action:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+/* PWA Standalone Mode */
+@media (display-mode: standalone) {
+    .app-header {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .app-main {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
 /* Toast Notifications */
 .toast-container {
     position: fixed;

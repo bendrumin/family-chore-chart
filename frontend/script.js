@@ -1,3 +1,72 @@
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
+}
+
+// PWA Install Prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install button if not already installed
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+        setTimeout(() => {
+            showInstallPrompt();
+        }, 3000); // Show after 3 seconds
+    }
+});
+
+function showInstallPrompt() {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-info';
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-icon">📱</div>
+            <div class="toast-message">
+                <div class="toast-title">Install ChoreStar App</div>
+                <div class="toast-description">Add to your home screen for the best experience!</div>
+            </div>
+        </div>
+        <div class="toast-actions">
+            <button class="toast-action btn btn-primary btn-sm">Install</button>
+            <button class="toast-close">&times;</button>
+        </div>
+    `;
+    
+    document.getElementById('toast-container').appendChild(toast);
+    
+    toast.querySelector('.toast-action').addEventListener('click', () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+            deferredPrompt = null;
+        });
+        toast.remove();
+    });
+    
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.remove();
+    });
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 10000);
+}
+
 // Family Chore Chart - Main Application Script
 
 class FamilyChoreChart {

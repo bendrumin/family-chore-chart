@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Family Chore Chart - A modern, kid-friendly app to track chores and rewards">
-    <meta name="theme-color" content="#6366f1">
-    <title>Family Chore Chart</title>
+    <meta name="description" content="ChoreStar - Make chores fun with stars, progress tracking, and family rewards">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ChoreStar">
+    <title>ChoreStar - Family Chore Chart</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
@@ -17,6 +20,10 @@
     
     <!-- Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzEpIi8+CjxwYXRoIGQ9Ik05NiA0OEM3Ny4xNjQ5IDQ4IDYyIDYzLjE2NDkgNjIgODJWNzJDNjIgNTMuMTY0OSA3Ny4xNjQ5IDM4IDk2IDM4QzExNC44MzUgMzggMTMwIDUzLjE2NDkgMTMwIDcyVjgyQzEzMCA2My4xNjQ5IDExNC44MzUgNDggOTYgNDhaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTEwIDEwNkMxMTAgOTcuNzE2NSA5OS4yODM1IDg3IDEwMCA4N0MxMDAuNzE2NSA4NyAxMTAgOTcuNzE2NSAxMTAgMTA2WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTgyIDEwNkM4MiA5Ny43MTY1IDkyLjcxNjUgODcgOTIgODdDOTIuNzE2NSA4NyA4MiA5Ny43MTY1IDgyIDEwNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik05NiAxNTZDNzcuMTY0OSAxNTYgNjIgMTQwLjgzNSA2MiAxMjJWNzJDNjIgNTMuMTY0OSA3Ny4xNjQ5IDM4IDk2IDM4QzExNC44MzUgMzggMTMwIDUzLjE2NDkgMTMwIDcyVjEyMkMxMzAgMTQwLjgzNSAxMTQuODM1IDE1NiA5NiAxNTZaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTEwIDEwNkMxMTAgOTcuNzE2NSA5OS4yODM1IDg3IDEwMCA4N0MxMDAuNzE2NSA4NyAxMTAgOTcuNzE2NSAxMTAgMTA2WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTgyIDEwNkM4MiA5Ny43MTY1IDkyLjcxNjUgODcgOTIgODdDOTIuNzE2NSA4NyA4MiA5Ny43MTY1IDgyIDEwNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik05NiAxNTZDNzcuMTY0OSAxNTYgNjIgMTQwLjgzNSA2MiAxMjJWNzJDNjIgNTMuMTY0OSA3Ny4xNjQ5IDM4IDk2IDM4QzExNC44MzUgMzggMTMwIDUzLjE2NDkgMTMwIDcyVjEyMkMxMzAgMTQwLjgzNSAxMTQuODM1IDE1NiA5NiAxNTZaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyXzFfMSIgeDE9IjAiIHkxPSIwIiB4Mj0iMTkyIiB5Mj0iMTkyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM2NjdlZWEiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNzY0YmEiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K">
     
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
