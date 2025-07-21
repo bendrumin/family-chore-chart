@@ -13,7 +13,8 @@ class NotificationManager {
             return false;
         }
 
-        this.permission = await Notification.requestPermission();
+        // Don't request permission automatically - wait for user gesture
+        this.permission = Notification.permission;
         
         if (this.permission === 'granted') {
             await this.subscribeToPush();

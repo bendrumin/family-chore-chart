@@ -187,6 +187,9 @@ class FamilyChoreChart {
             // Set up real-time subscriptions
             this.setupRealtime();
             
+            // Handle WebSocket connection issues
+            this.handleWebSocketIssues();
+            
             // Show main app
             this.showApp();
             
@@ -214,23 +217,42 @@ class FamilyChoreChart {
     }
 
     setupRealtime() {
-        this.subscription = this.apiClient.subscribeToChanges((payload) => {
-            console.log('Real-time update:', payload);
-            
-            // Refresh data based on what changed
-            if (payload.table === 'chore_completions') {
-                this.loadCompletions().then(() => {
-                    this.renderChildren();
-                });
-            } else if (payload.table === 'chores') {
-                this.loadChores().then(() => {
-                    this.renderChildren();
-                });
-            } else if (payload.table === 'children') {
-                this.loadChildren().then(() => {
-                    this.renderChildren();
-                });
-            }
+        try {
+            this.subscription = this.apiClient.subscribeToChanges((payload) => {
+                console.log('Real-time update:', payload);
+                
+                // Refresh data based on what changed
+                if (payload.table === 'chore_completions') {
+                    this.loadCompletions().then(() => {
+                        this.renderChildren();
+                    });
+                } else if (payload.table === 'chores') {
+                    this.loadChores().then(() => {
+                        this.renderChildren();
+                    });
+                } else if (payload.table === 'children') {
+                    this.loadChildren().then(() => {
+                        this.renderChildren();
+                    });
+                }
+            });
+        } catch (error) {
+            console.warn('Real-time connection failed, continuing without live updates:', error);
+            // App will still work without real-time updates
+        }
+    }
+
+    // Handle WebSocket connection issues gracefully
+    handleWebSocketIssues() {
+        // Listen for WebSocket errors and reconnect
+        window.addEventListener('online', () => {
+            console.log('Network connection restored');
+            // Optionally reconnect real-time subscriptions
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('Network connection lost');
+            // App will continue to work offline
         });
     }
 

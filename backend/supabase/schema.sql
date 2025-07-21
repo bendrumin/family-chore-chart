@@ -283,4 +283,18 @@ BEGIN
     WHERE c.user_id = p_user_id
     ORDER BY c.name;
 END;
-$$ LANGUAGE plpgsql; 
+$$ LANGUAGE plpgsql;
+
+-- Function to create user profile (bypasses RLS)
+CREATE OR REPLACE FUNCTION create_user_profile(
+    user_id UUID,
+    user_email TEXT,
+    family_name TEXT
+)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO profiles (id, email, family_name)
+    VALUES (user_id, user_email, family_name)
+    ON CONFLICT (id) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER; 

@@ -123,15 +123,27 @@ class ApiClient {
                 return { success: true };
             }
 
+            // Use RPC function to bypass RLS for profile creation
             const { error } = await this.supabase
-                .from('profiles')
-                .insert({
-                    id: userId,
-                    email,
+                .rpc('create_user_profile', {
+                    user_id: userId,
+                    user_email: email,
                     family_name: familyName
                 });
 
-            if (error) throw error;
+            if (error) {
+                // Fallback to direct insert if RPC doesn't exist
+                const { error: insertError } = await this.supabase
+                    .from('profiles')
+                    .insert({
+                        id: userId,
+                        email,
+                        family_name: familyName
+                    });
+                
+                if (insertError) throw insertError;
+            }
+            
             return { success: true };
         } catch (error) {
             console.error('Create profile error:', error);
