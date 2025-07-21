@@ -894,6 +894,7 @@ class FamilyChoreChart {
         await this.loadChildrenList();
         await this.loadChoresList();
         await this.loadFamilyPin();
+        this.populateSettingsChildSelect();
     }
 
     async loadFamilyPin() {
@@ -940,6 +941,18 @@ class FamilyChoreChart {
 
     populateChildSelect() {
         const select = document.getElementById('chore-child');
+        select.innerHTML = '<option value="">Select a child...</option>';
+        
+        this.children.forEach(child => {
+            const option = document.createElement('option');
+            option.value = child.id;
+            option.textContent = child.name;
+            select.appendChild(option);
+        });
+    }
+
+    populateSettingsChildSelect() {
+        const select = document.getElementById('settings-chore-child');
         select.innerHTML = '<option value="">Select a child...</option>';
         
         this.children.forEach(child => {
@@ -1874,6 +1887,12 @@ class FamilyChoreChart {
             // Only allow numbers
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
+
+        // Add chore form in settings
+        document.getElementById('add-chore-settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleAddChoreFromSettings();
+        });
     }
 
     async handleSaveSettings() {
@@ -1911,6 +1930,27 @@ class FamilyChoreChart {
 
         if (result.success) {
             this.showToast('Family PIN saved! Your family can now sign in with this PIN.', 'success');
+        } else {
+            this.showToast(result.error, 'error');
+        }
+    }
+
+    async handleAddChoreFromSettings() {
+        const name = document.getElementById('settings-chore-name').value;
+        const childId = document.getElementById('settings-chore-child').value;
+
+        if (!name || !childId) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+
+        const result = await this.apiClient.createChore(name, 7, childId);
+
+        if (result.success) {
+            this.showToast(`Added "${name}" chore!`, 'success');
+            document.getElementById('add-chore-settings-form').reset();
+            await this.loadChoresList(); // Refresh the chores list in settings
+            this.renderChildren(); // Update the main app view
         } else {
             this.showToast(result.error, 'error');
         }

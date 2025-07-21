@@ -1839,3 +1839,24 @@ body {
     color: var(--gray-400);
     letter-spacing: 2px;
 } 
+
+.add-chore-section {
+    margin-top: var(--space-6);
+}
+
+.add-chore-section h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+}
+
+.add-chore-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.add-chore-form .form-group {
+    margin-bottom: 0;
+} 
