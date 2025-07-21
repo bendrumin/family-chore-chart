@@ -81,30 +81,6 @@
                 <p class="auth-switch">
                     <a href="#" id="forgot-password">Forgot password?</a>
                 </p>
-                <div class="auth-divider">
-                    <span>or</span>
-                </div>
-                <button type="button" id="show-pin-login" class="btn btn-secondary">
-                    🔢 Sign in with PIN
-                </button>
-            </form>
-            
-            <!-- PIN Login Form -->
-            <form id="pin-login-form" class="auth-form hidden">
-                <h2>🔢 Sign in with PIN</h2>
-                <p class="pin-description">Perfect for kids! Enter your family's 6-digit PIN to sign in.</p>
-                <div class="form-group">
-                    <label for="pin-code">Family PIN</label>
-                    <input type="text" id="pin-code" maxlength="6" placeholder="123456" required>
-                    <small>Enter the 6-digit PIN your family uses</small>
-                </div>
-                <button type="submit" class="btn btn-primary">🔓 Sign In</button>
-                <p class="auth-switch">
-                    <a href="#" id="back-to-email-login">Back to email login</a>
-                </p>
-                <p class="auth-switch">
-                    <a href="#" id="show-signup-from-pin">Create new account</a>
-                </p>
             </form>
             
             <!-- Signup Form -->
@@ -125,11 +101,6 @@
                 <div class="form-group">
                     <label for="signup-confirm-password">Confirm Password</label>
                     <input type="password" id="signup-confirm-password" required minlength="6">
-                </div>
-                <div class="form-group">
-                    <label for="signup-pin">Family PIN (Optional)</label>
-                    <input type="text" id="signup-pin" maxlength="6" placeholder="123456">
-                    <small>Create a 6-digit PIN for kid-friendly login. You can set this up later in settings too.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
                 <p class="auth-switch">
@@ -167,7 +138,7 @@
                     <button id="add-child-btn" class="btn btn-secondary">
                         <span>👶</span> Add Child
                     </button>
-                    <button id="settings-btn" class="btn btn-secondary" onclick="app.openModal('settings-modal')">
+                    <button id="settings-btn" class="btn btn-secondary">
                         <span>⚙️</span> Settings
                     </button>
                     <button id="logout-btn" class="btn btn-secondary">
@@ -201,102 +172,110 @@
     
     <!-- Add Child Modal -->
     <div id="add-child-modal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content modal-flex">
             <div class="modal-header">
                 <h2>👶 Add New Child</h2>
                 <button class="modal-close" data-modal="add-child-modal">&times;</button>
             </div>
-            <form id="add-child-form" class="modal-form">
-                <div class="form-group">
-                    <label for="child-name">Child's Name</label>
-                    <input type="text" id="child-name" required placeholder="e.g., Emma">
+            <div class="modal-body-flex">
+                <div class="avatar-col">
+                    <div id="add-child-avatar-preview-circle" class="avatar-circle">A</div>
                 </div>
-                <div class="form-group">
-                    <label for="child-age">Age</label>
-                    <input type="number" id="child-age" min="1" max="18" required>
-                </div>
-                <div class="form-group">
-                    <label for="child-color">Avatar Color</label>
-                    <div class="color-picker">
-                        <input type="color" id="child-color" value="#6366f1">
-                        <div class="color-presets">
-                            <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;"></button>
-                            <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;"></button>
-                            <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;"></button>
-                            <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;"></button>
-                            <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
-                            <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;"></button>
+                <form id="add-child-form" class="modal-form form-col">
+                    <div class="fields-row">
+                        <div>
+                            <label for="child-name">Child's Name</label>
+                            <input type="text" id="child-name" required placeholder="e.g., Emma">
+                        </div>
+                        <div>
+                            <label for="child-age">Age</label>
+                            <input type="number" id="child-age" min="1" max="18" required>
+                        </div>
+                        <div>
+                            <label for="child-color">Avatar Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" id="child-color" value="#6366f1">
+                                <div class="color-presets">
+                                    <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;"></button>
+                                    <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;"></button>
+                                    <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;"></button>
+                                    <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;"></button>
+                                    <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
+                                    <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;"></button>
+                                </div>
+                            </div>
+                            <small class="help-text" style="margin-top: 4px; color: var(--gray-600); font-size: 0.875rem;">Click the color picker for custom colors or choose from the preset swatches</small>
                         </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Custom Avatar <span class="premium-badge">Premium</span></label>
-                    <div class="custom-avatar-upload" id="add-child-avatar-upload">
-                        <input type="file" id="child-avatar-upload" accept="image/*" style="display:none;">
-                        <button type="button" id="child-avatar-upload-btn" class="btn btn-outline">
-                            <span class="avatar-upload-icon">🔒</span> Upload Photo
-                        </button>
+                    <div class="actions-row">
                         <span class="avatar-upload-preview" id="child-avatar-preview"></span>
                     </div>
-                    <div id="add-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
-                    <small>Upload a photo for your child's avatar (Premium only) or pick a fun avatar below!</small>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" data-modal="add-child-modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Child</button>
-                </div>
-            </form>
+                    <div class="dicebear-row">
+                        <div id="add-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
+                        <button type="button" id="add-avatar-remove-btn" class="btn btn-outline">Remove Avatar</button>
+
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" data-modal="add-child-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Child</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Edit Child Modal (mirrors Add Child modal) -->
     <div id="edit-child-modal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content modal-flex">
             <div class="modal-header">
                 <h2>👶 Edit Child</h2>
                 <button class="modal-close" data-modal="edit-child-modal">&times;</button>
             </div>
-            <form id="edit-child-form" class="modal-form">
-                <div class="form-group">
-                    <label for="edit-child-name">Child's Name</label>
-                    <input type="text" id="edit-child-name" required placeholder="e.g., Emma">
+            <div class="modal-body-flex">
+                <div class="avatar-col">
+                    <div id="edit-child-avatar-preview-circle" class="avatar-circle">A</div>
                 </div>
-                <div class="form-group">
-                    <label for="edit-child-age">Age</label>
-                    <input type="number" id="edit-child-age" min="1" max="18" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-child-color">Avatar Color</label>
-                    <div class="color-picker">
-                        <input type="color" id="edit-child-color" value="#6366f1">
-                        <div class="color-presets">
-                            <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;"></button>
-                            <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;"></button>
-                            <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;"></button>
-                            <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;"></button>
-                            <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
-                            <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;"></button>
+                <form id="edit-child-form" class="modal-form form-col">
+                    <div class="fields-row">
+                        <div class="form-group">
+                            <label for="edit-child-name">Child's Name</label>
+                            <input type="text" id="edit-child-name" required placeholder="e.g., Emma">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-child-age">Age</label>
+                            <input type="number" id="edit-child-age" min="1" max="18" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-child-color">Avatar Color</label>
+                            <div class="color-picker-row" style="display: flex; align-items: center; gap: 8px;">
+                                <span id="edit-selected-color" class="color-preset selected-color-circle" style="background: #6366f1;"></span>
+                                <input type="color" id="edit-child-color" value="#6366f1">
+                                <div class="color-presets">
+                                    <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;"></button>
+                                    <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;"></button>
+                                    <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;"></button>
+                                    <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;"></button>
+                                    <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
+                                    <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;"></button>
+                                </div>
+                            </div>
+                            <small class="help-text" style="margin-top: 4px; color: var(--gray-600); font-size: 0.875rem;">Click the color picker for custom colors or choose from the preset swatches</small>
                         </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Custom Avatar <span class="premium-badge">Premium</span></label>
-                    <div class="custom-avatar-upload" id="edit-child-avatar-upload">
-                        <input type="file" id="edit-child-avatar-upload-input" accept="image/*" style="display:none;">
-                        <button type="button" id="edit-child-avatar-upload-btn" class="btn btn-outline">
-                            <span class="avatar-upload-icon">🔒</span> Upload Photo
-                        </button>
+                    <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
                         <span class="avatar-upload-preview" id="edit-child-avatar-preview"></span>
-                        <span id="edit-avatar-upload-status" style="margin-left:8px;"></span>
                     </div>
-                    <div id="edit-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
-                    <small>Upload a photo for your child's avatar (Premium only) or pick a fun avatar below!</small>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" data-modal="edit-child-modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+                    <div class="dicebear-row">
+                        <div id="edit-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
+                        <button type="button" id="edit-avatar-remove-btn" class="btn btn-outline">Remove Avatar</button>
+
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" data-modal="edit-child-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -395,31 +374,7 @@
                 </div>
             </form>
             
-            <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
-            
-            <div class="pin-management">
-                <h3>🔢 Family PIN</h3>
-                <p class="settings-description">Set a 6-digit PIN for easy kid-friendly login. Perfect for young children who can't handle email/password!</p>
-                <div class="form-group">
-                    <label for="family-pin">6-Digit PIN</label>
-                    <input type="text" id="family-pin" maxlength="6" placeholder="123456">
-                    <small>Enter a 6-digit PIN that your family will use to sign in</small>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="save-pin-btn" class="btn btn-primary">Save PIN</button>
-                </div>
-            </div>
-            
-            <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
-            
-            <div class="children-management">
-                <h3>Manage Children</h3>
-                <div id="children-list" class="children-list">
-                    <!-- Children will be populated here -->
-                </div>
-            </div>
-            
-            <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
+
             
             <div class="chore-management">
                 <h3>Manage Chores</h3>
@@ -483,7 +438,7 @@
     <!-- Edit Child Inline Template -->
     <template id="edit-child-inline-template">
         <div class="edit-inline-form" style="margin-top:8px;padding:12px 16px;background:var(--gray-50);border-radius:8px;display:flex;align-items:center;gap:12px;">
-          <form class="modal-form" autocomplete="off" style="display:flex;align-items:center;gap:12px;flex:1;">
+          <form class="modal-form" autocomplete="off" style="display:flex;align-items:center;gap:12px;">
             <input type="text" name="name" class="input" placeholder="Child's Name" required style="min-width:120px;">
             <input type="number" name="age" class="input" min="1" max="18" placeholder="Age" required style="width:60px;">
             <input type="color" name="color" class="input" value="#6366f1" style="width:40px;height:40px;">

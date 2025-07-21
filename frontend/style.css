@@ -923,7 +923,20 @@ body {
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-4);
+}
+
+.child-header .child-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    opacity: 1 !important;
+}
+
+.edit-child-btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
 }
 
 .child-avatar {
@@ -1825,6 +1838,17 @@ body {
     line-height: 1.5;
 }
 
+.family-sharing-section {
+    margin-bottom: var(--space-6);
+}
+
+.family-sharing-section h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
 .pin-management {
     margin-bottom: var(--space-6);
 }
@@ -1891,4 +1915,80 @@ body {
     max-width: 98vw;
     padding: 1rem 0.5rem;
   }
+} 
+
+.edit-inline-form-anchor {
+  width: 100%;
+  display: block;
+}
+
+.edit-inline-form {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 12px 16px;
+} 
+
+.input {
+  width: auto;
+  min-width: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-300, #ccc);
+  border-radius: 6px;
+  background: white;
+  color: var(--gray-900, #222);
+  font-size: 1rem;
+  box-sizing: border-box;
+  margin-right: 4px;
+  /* Debug border */
+  border: 2px dashed #4b9cd3;
+}
+
+.edit-inline-form {
+  border: 2px dashed #e67e22;
+} 
+
+/* Make color picker input a circle and match color swatches */
+.color-picker-row input[type="color"] {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+}
+
+/* Avatar preview circle always a circle and centered */
+.avatar-upload-preview,
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    margin-bottom: 8px;
+} 
+
+.selected-color-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid var(--primary, #6366f1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    display: inline-block;
+    margin-right: 4px;
 } 

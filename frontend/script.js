@@ -68,6 +68,12 @@ function showInstallPrompt() {
     }, 10000);
 }
 
+// DiceBear avatar seeds (for free users)
+const diceBearSeeds = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan'];
+function getDiceBearUrl(seed) {
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+}
+
 // Family Chore Chart - Main Application Script
 
 class FamilyChoreChart {
@@ -365,33 +371,7 @@ class FamilyChoreChart {
             this.switchAuthForm('login');
         });
 
-        // PIN login handlers
-        document.getElementById('show-pin-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('pin-login');
-        });
 
-        document.getElementById('back-to-email-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('login');
-        });
-
-        document.getElementById('show-signup-from-pin').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('signup');
-        });
-
-        // PIN login form
-        document.getElementById('pin-login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handlePinLogin();
-        });
-
-        // PIN input formatting
-        document.getElementById('pin-code').addEventListener('input', (e) => {
-            // Only allow numbers
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
     }
 
     async handleLogin() {
@@ -422,7 +402,6 @@ class FamilyChoreChart {
         const familyName = document.getElementById('signup-family-name').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
-        const pin = document.getElementById('signup-pin').value;
 
         if (!email || !familyName || !password || !confirmPassword) {
             this.showToast('Please fill in all fields', 'error');
@@ -439,13 +418,8 @@ class FamilyChoreChart {
             return;
         }
 
-        if (pin.length !== 6) {
-            this.showToast('PIN must be 6 digits', 'error');
-            return;
-        }
-
         this.showLoading();
-        const result = await this.apiClient.signUp(email, password, familyName, pin);
+        const result = await this.apiClient.signUp(email, password, familyName);
         this.hideLoading();
 
         if (result.success) {
@@ -478,31 +452,10 @@ class FamilyChoreChart {
         }
     }
 
-    async handlePinLogin() {
-        const pin = document.getElementById('pin-code').value;
 
-        if (!pin || pin.length !== 6) {
-            this.showToast('Please enter a 6-digit PIN', 'error');
-            return;
-        }
-
-        this.showLoading();
-        const result = await this.apiClient.signInWithPin(pin);
-        this.hideLoading();
-
-        if (result.success) {
-            this.currentUser = result.user;
-            window.analytics.trackLogin('pin_login');
-            this.showToast(`Welcome back, ${result.familyName}!`, 'success');
-            await this.loadApp();
-        } else {
-            window.analytics.trackError('pin_login', result.error);
-            this.showToast(result.error, 'error');
-        }
-    }
 
     switchAuthForm(form) {
-        const forms = ['login-form', 'signup-form', 'forgot-form', 'pin-login-form'];
+        const forms = ['login-form', 'signup-form', 'forgot-form'];
         forms.forEach(formId => {
             document.getElementById(formId).classList.add('hidden');
         });
@@ -511,8 +464,6 @@ class FamilyChoreChart {
             document.getElementById('signup-form').classList.remove('hidden');
         } else if (form === 'forgot') {
             document.getElementById('forgot-form').classList.remove('hidden');
-        } else if (form === 'pin-login') {
-            document.getElementById('pin-login-form').classList.remove('hidden');
         } else {
             document.getElementById('login-form').classList.remove('hidden');
         }
@@ -556,6 +507,8 @@ class FamilyChoreChart {
                 this.showModal('edit-children-modal');
             });
         }
+
+
     }
 
     setupNotificationPermission() {
@@ -933,24 +886,16 @@ class FamilyChoreChart {
         }
     }
 
+
+
     async showSettingsModal() {
         this.showModal('settings-modal');
         await this.loadFamilySettings();
         await this.loadChildrenList();
         await this.loadChoresList();
-        await this.loadFamilyPin();
     }
 
-    async loadFamilyPin() {
-        try {
-            const pin = await this.apiClient.getFamilyPin();
-            if (pin) {
-                document.getElementById('family-pin').value = pin;
-            }
-        } catch (error) {
-            console.error('Error loading family PIN:', error);
-        }
-    }
+
 
     async loadFamilySettings() {
         try {
@@ -1172,8 +1117,116 @@ class FamilyChoreChart {
     }
 
     setupFamilySharing() {
-        // This method is not used in the provided edit, but is kept as it was in the original file.
-        // It would typically involve setting up a modal for sharing options.
+        // Add family sharing button to settings modal
+        const settingsModal = document.getElementById('settings-modal');
+        if (settingsModal) {
+            // Add family sharing section to settings modal
+            const familySharingSection = document.createElement('div');
+            familySharingSection.className = 'family-sharing-section';
+            familySharingSection.innerHTML = `
+                <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
+                <div class="family-sharing-section">
+                    <h3>👨‍👩‍👧‍👦 Family Sharing</h3>
+                    <p class="settings-description">Share your family with other members or join another family!</p>
+                    <button type="button" id="open-family-sharing-btn" class="btn btn-primary">
+                        <span>👥</span> Open Family Sharing
+                    </button>
+                </div>
+            `;
+            
+            // Insert before chore management
+            const choreManagement = settingsModal.querySelector('.chore-management');
+            if (choreManagement) {
+                choreManagement.parentNode.insertBefore(familySharingSection, choreManagement);
+            }
+            
+            // Add click handler for family sharing button
+            document.getElementById('open-family-sharing-btn').addEventListener('click', () => {
+                this.showModal('family-sharing-modal');
+                this.loadFamilySharingData();
+            });
+        }
+
+        // Setup join family form
+        document.getElementById('join-family-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleJoinFamily();
+        });
+    }
+
+    async loadFamilySharingData() {
+        try {
+            // Load family code
+            const familyCode = await window.familySharing.getOrCreateFamilyCode();
+            if (familyCode) {
+                document.getElementById('family-code').textContent = familyCode;
+            }
+
+            // Load family members
+            const members = await window.familySharing.getFamilyMembers();
+            this.renderFamilyMembers(members);
+        } catch (error) {
+            console.error('Error loading family sharing data:', error);
+        }
+    }
+
+    renderFamilyMembers(members) {
+        const container = document.getElementById('family-members-list');
+        if (!container) return;
+
+        if (members.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-500); text-align: center;">No family members yet.</p>';
+            return;
+        }
+
+        let html = '';
+        members.forEach(member => {
+            const email = member.profiles?.email || 'Unknown';
+            const initial = email.charAt(0).toUpperCase();
+            html += `
+                <div class="family-member-item">
+                    <div class="family-member-avatar">${initial}</div>
+                    <div class="family-member-info">
+                        <div class="family-member-email">${email}</div>
+                        <div class="family-member-joined">Joined ${new Date(member.joined_at).toLocaleDateString()}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    async handleJoinFamily() {
+        const code = document.getElementById('join-family-code').value;
+        
+        if (!code || code.length !== 6) {
+            this.showToast('Please enter a valid 6-digit family code', 'error');
+            return;
+        }
+
+        this.showLoading();
+        const result = await window.familySharing.joinFamily(code);
+        this.hideLoading();
+
+        if (result.success) {
+            this.showToast('Successfully joined family!', 'success');
+            this.hideModal('family-sharing-modal');
+            // Reload app data to show shared family data
+            await this.loadApp();
+        } else {
+            this.showToast(result.error || 'Failed to join family', 'error');
+        }
+    }
+
+    copyFamilyCode() {
+        const code = document.getElementById('family-code').textContent;
+        if (code && code !== 'Loading...') {
+            navigator.clipboard.writeText(code).then(() => {
+                this.showToast('Family code copied to clipboard!', 'success');
+            }).catch(() => {
+                this.showToast('Failed to copy code', 'error');
+            });
+        }
     }
 
     setupNotificationPermission() {
@@ -1219,6 +1272,12 @@ class FamilyChoreChart {
         container.innerHTML = '';
         uniqueChildren.forEach(child => {
             const childCard = this.createChildCard(child);
+            // Add Edit button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn btn-outline btn-sm edit-child-btn';
+            editBtn.textContent = 'Edit';
+            editBtn.onclick = () => window.openEditChildModal(child);
+            childCard.querySelector('.child-actions').appendChild(editBtn);
             container.appendChild(childCard);
         });
     }
@@ -1236,7 +1295,7 @@ class FamilyChoreChart {
         } else if (child.avatar_file) {
             avatarHtml = `<img src="${child.avatar_file}" class="child-avatar-img" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
         } else {
-            avatarHtml = `<div class="child-avatar">${child.name.charAt(0).toUpperCase()}</div>`;
+            avatarHtml = `<div class="child-avatar" style="background:${child.avatar_color || '#6366f1'};">${child.name.charAt(0).toUpperCase()}</div>`;
         }
         const childChores = this.chores.filter(chore => chore.child_id === child.id);
         const childCompletions = this.completions.filter(comp => 
@@ -1252,6 +1311,8 @@ class FamilyChoreChart {
                 <div class="child-info">
                     <h3>${child.name}</h3>
                     <p>Age ${child.age}</p>
+                </div>
+                <div class="child-actions">
                 </div>
             </div>
             <div class="progress-section">
@@ -1536,12 +1597,6 @@ if (!window.location.pathname.endsWith('settings.html')) {
         return type === 'premium';
     }
 
-    // DiceBear avatar seeds (for free users)
-    const diceBearSeeds = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan'];
-    function getDiceBearUrl(seed) {
-        return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
-    }
-
     // --- Add Child Modal DiceBear Picker ---
     const addDicebearPicker = document.getElementById('add-dicebear-picker');
     let selectedAddDicebearUrl = '';
@@ -1577,8 +1632,10 @@ if (!window.location.pathname.endsWith('settings.html')) {
     let selectedEditDicebearUrl = '';
     function renderEditDicebearPicker(name) {
         editDicebearPicker.innerHTML = '';
+        // Show 20 avatars instead of 10
         const seeds = diceBearSeeds.concat(name || 'Avatar');
-        seeds.forEach(seed => {
+        for (let i = 0; i < 20; i++) {
+            const seed = seeds[i % seeds.length] + (i > 9 ? i : '');
             const url = getDiceBearUrl(seed);
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -1590,60 +1647,84 @@ if (!window.location.pathname.endsWith('settings.html')) {
                 editAvatarPreview.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
                 editAvatarPreview.dataset.avatarUrl = url;
                 delete editAvatarPreview.dataset.avatarFile;
+                editAvatarPreview.style.display = '';
                 // Mark selected
                 editDicebearPicker.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             };
             editDicebearPicker.appendChild(btn);
-        });
+        }
     }
     document.getElementById('edit-child-name').addEventListener('input', e => {
         renderEditDicebearPicker(e.target.value);
     });
 
     // --- Color Picker Active State for Edit Modal ---
+    const editSelectedColor = document.getElementById('edit-selected-color');
     const editColorInput = document.getElementById('edit-child-color');
     document.querySelectorAll('#edit-child-modal .color-preset').forEach(preset => {
         preset.addEventListener('click', () => {
             const color = preset.dataset.color;
+            editSelectedColor.style.background = color;
             editColorInput.value = color;
             document.querySelectorAll('#edit-child-modal .color-preset').forEach(p => p.classList.remove('active'));
             preset.classList.add('active');
         });
     });
 
+    // Update selected color circle when color picker changes
+    editColorInput.addEventListener('input', () => {
+        editSelectedColor.style.background = editColorInput.value;
+    });
+
     // --- Edit Child Modal Avatar Logic ---
     const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
-    let editAvatarClearBtn = document.getElementById('edit-avatar-clear-btn');
-    if (!editAvatarClearBtn) {
-        editAvatarClearBtn = document.createElement('button');
-        editAvatarClearBtn.id = 'edit-avatar-clear-btn';
-        editAvatarClearBtn.type = 'button';
-        editAvatarClearBtn.className = 'btn btn-outline btn-sm';
-        editAvatarClearBtn.textContent = 'Remove Avatar';
-        editAvatarPreview.parentNode.appendChild(editAvatarClearBtn);
-    }
-    editAvatarClearBtn.onclick = () => {
-        // Revert to selected DiceBear avatar
-        if (selectedEditDicebearUrl) {
-            editAvatarPreview.innerHTML = `<img src="${selectedEditDicebearUrl}" style="width:40px;height:40px;border-radius:50%;">`;
-            editAvatarPreview.dataset.avatarUrl = selectedEditDicebearUrl;
-            delete editAvatarPreview.dataset.avatarFile;
-        } else {
-            editAvatarPreview.innerHTML = '';
-            delete editAvatarPreview.dataset.avatarUrl;
-            delete editAvatarPreview.dataset.avatarFile;
+    document.getElementById('edit-avatar-remove-btn').onclick = () => {
+        // Always clear the preview and dataset before inserting fallback initial
+        while (editAvatarPreview.firstChild) {
+            editAvatarPreview.removeChild(editAvatarPreview.firstChild);
         }
+        editAvatarPreview.removeAttribute('data-avatar-url');
+        editAvatarPreview.removeAttribute('data-avatar-file');
+        editAvatarPreview.style.display = 'none';
+        selectedEditDicebearUrl = '';
     };
 
     // --- On openEditChildModal, render picker and set selected ---
     window.openEditChildModal = function(child) {
+        const editChildModal = document.getElementById('edit-child-modal');
+        const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
+        const editSelectedColor = document.getElementById('edit-selected-color');
+        const editColorInput = document.getElementById('edit-child-color');
+        const editPreviewCircle = document.getElementById('edit-child-avatar-preview-circle');
+        
         document.getElementById('edit-child-name').value = child.name;
         document.getElementById('edit-child-age').value = child.age;
-        document.getElementById('edit-child-color').value = child.avatar_color || '#6366f1';
+        
+        // Set selected color circle and input
+        const color = child.avatar_color || '#6366f1';
+        editSelectedColor.style.background = color;
+        editColorInput.value = color;
+        
+        // Set preview circle with child's actual initial
+        const name = child.name.trim();
+        const initial = name ? name[0].toUpperCase() : 'A';
+        editPreviewCircle.textContent = initial;
+        editPreviewCircle.style.background = color;
+        
+        // Set active color swatch
+        document.querySelectorAll('#edit-child-modal .color-preset').forEach(preset => {
+            if (preset.dataset.color === color) {
+                preset.classList.add('active');
+            } else {
+                preset.classList.remove('active');
+            }
+        });
         renderEditDicebearPicker(child.name);
         selectedEditDicebearUrl = '';
+        // Only show preview if avatar is selected
         editAvatarPreview.innerHTML = '';
+        editAvatarPreview.style.display = 'none';
         delete editAvatarPreview.dataset.avatarUrl;
         delete editAvatarPreview.dataset.avatarFile;
         if (child.avatar_url) {
@@ -1655,6 +1736,7 @@ if (!window.location.pathname.endsWith('settings.html')) {
             img.style.objectFit = 'cover';
             editAvatarPreview.appendChild(img);
             editAvatarPreview.dataset.avatarUrl = child.avatar_url;
+            editAvatarPreview.style.display = '';
         } else if (child.avatar_file) {
             const img = document.createElement('img');
             img.src = child.avatar_file;
@@ -1664,12 +1746,7 @@ if (!window.location.pathname.endsWith('settings.html')) {
             img.style.objectFit = 'cover';
             editAvatarPreview.appendChild(img);
             editAvatarPreview.dataset.avatarFile = child.avatar_file;
-        } else {
-            // Default to DiceBear avatar for their name
-            const url = getDiceBearUrl(child.name);
-            selectedEditDicebearUrl = url;
-            editAvatarPreview.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
-            editAvatarPreview.dataset.avatarUrl = url;
+            editAvatarPreview.style.display = '';
         }
         editChildModal.classList.remove('hidden');
         editChildModal.dataset.childId = child.id;
@@ -1678,12 +1755,15 @@ if (!window.location.pathname.endsWith('settings.html')) {
     // --- Save handler for edit-child-form ---
     document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const editChildModal = document.getElementById('edit-child-modal');
         const childId = editChildModal.dataset.childId;
         const name = document.getElementById('edit-child-name').value;
         const age = parseInt(document.getElementById('edit-child-age').value);
-        const color = document.getElementById('edit-child-color').value;
+        const editColorInput = document.getElementById('edit-child-color');
+        const color = editColorInput.value;
         let avatarUrl = '';
         let avatarFile = '';
+        const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
         if (editAvatarPreview) {
             if (editAvatarPreview.dataset.avatarUrl) {
                 avatarUrl = editAvatarPreview.dataset.avatarUrl;
@@ -1709,13 +1789,88 @@ if (!window.location.pathname.endsWith('settings.html')) {
 
     // --- Save handler for add-child-form ---
     document.getElementById('add-child-form').addEventListener('submit', async (e) => {
-        // ... existing code ...
+        e.preventDefault();
+        const name = document.getElementById('child-name').value;
+        const age = parseInt(document.getElementById('child-age').value);
+        const color = document.getElementById('child-color').value;
+        let avatarUrl = '';
+        let avatarFile = '';
+        const avatarPreview = document.getElementById('child-avatar-preview');
+        if (avatarPreview) {
+            if (avatarPreview.dataset.avatarUrl) {
+                avatarUrl = avatarPreview.dataset.avatarUrl;
+            } else if (avatarPreview.dataset.avatarFile) {
+                avatarFile = avatarPreview.dataset.avatarFile;
+            }
+        }
         // Save selected DiceBear avatar if no custom avatar
         if (!avatarUrl && selectedAddDicebearUrl) {
             avatarUrl = selectedAddDicebearUrl;
         }
-        // ... existing code ...
+        const result = await app.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
+        if (result.success) {
+            window.analytics.trackAddChild(name, age);
+            app.hideModal('add-child-modal');
+            app.showToast(`Added ${name} to your family!`, 'success');
+            await app.loadChildren();
+            app.renderChildren();
+        } else {
+            window.analytics.trackError('add_child', result.error);
+            app.showToast(result.error, 'error');
+        }
     });
+
+    // Live avatar preview for Add Child modal
+    const addNameInput = document.getElementById('child-name');
+    const addColorInput = document.getElementById('child-color');
+    const addPreviewCircle = document.getElementById('add-child-avatar-preview-circle');
+    const addAvatarPreview = document.getElementById('child-avatar-preview');
+    function updateAddChildAvatarPreview() {
+        // If an image is uploaded, hide the circle
+        if (addAvatarPreview && addAvatarPreview.querySelector('img')) {
+            addPreviewCircle.style.display = 'none';
+            return;
+        } else {
+            addPreviewCircle.style.display = 'flex';
+        }
+        const name = addNameInput.value.trim();
+        const color = addColorInput.value || '#6366f1';
+        addPreviewCircle.style.background = color;
+        addPreviewCircle.textContent = name ? name[0].toUpperCase() : 'A';
+    }
+    addNameInput.addEventListener('input', updateAddChildAvatarPreview);
+    addColorInput.addEventListener('input', updateAddChildAvatarPreview);
+    if (addAvatarPreview) {
+        const observer = new MutationObserver(updateAddChildAvatarPreview);
+        observer.observe(addAvatarPreview, { childList: true });
+    }
+    updateAddChildAvatarPreview();
+
+    // Live avatar preview for Edit Child modal
+    const editNameInput2 = document.getElementById('edit-child-name');
+    const editColorInput2 = document.getElementById('edit-child-color');
+    const editPreviewCircle2 = document.getElementById('edit-child-avatar-preview-circle');
+    const editAvatarPreview2 = document.getElementById('edit-child-avatar-preview');
+    function updateEditChildAvatarPreview2() {
+        // If an image is uploaded, hide the circle
+        if (editAvatarPreview2 && editAvatarPreview2.querySelector('img')) {
+            editPreviewCircle2.style.display = 'none';
+            return;
+        } else {
+            editPreviewCircle2.style.display = 'flex';
+        }
+        const name = editNameInput2.value.trim();
+        const color = editColorInput2.value || '#6366f1';
+        editPreviewCircle2.style.background = color;
+        editPreviewCircle2.textContent = name ? name[0].toUpperCase() : 'A';
+    }
+    editNameInput2.addEventListener('input', updateEditChildAvatarPreview2);
+    editColorInput2.addEventListener('input', updateEditChildAvatarPreview2);
+    if (editAvatarPreview2) {
+        const observer2 = new MutationObserver(updateEditChildAvatarPreview2);
+        observer2.observe(editAvatarPreview2, { childList: true });
+    }
+    updateEditChildAvatarPreview2();
 });
 } 
 
@@ -1729,6 +1884,13 @@ if (typeof window !== 'undefined') {
             // fallback: show the modal directly
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.remove('hidden');
+        }
+    };
+    
+    // Make copyFamilyCode available globally
+    window.app.copyFamilyCode = function() {
+        if (app && typeof app.copyFamilyCode === 'function') {
+            app.copyFamilyCode();
         }
     };
 } 

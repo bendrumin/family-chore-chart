@@ -9,7 +9,7 @@ class ApiClient {
     }
 
     // Authentication Methods
-    async signUp(email, password, familyName, pin = null) {
+    async signUp(email, password, familyName) {
         try {
             const { data, error } = await this.supabase.auth.signUp({
                 email,
@@ -29,15 +29,6 @@ class ApiClient {
                 if (!profileResult.success) {
                     console.error('Profile creation failed:', profileResult.error);
                     // Don't fail the signup, but log the error
-                }
-
-                // Create family PIN if provided
-                if (pin && pin.length === 6) {
-                    const pinResult = await this.createFamilyPin(pin);
-                    if (!pinResult.success) {
-                        console.error('PIN creation failed:', pinResult.error);
-                        // Don't fail the signup, but log the error
-                    }
                 }
             }
 
@@ -72,6 +63,9 @@ class ApiClient {
             const { error } = await this.supabase.auth.signOut();
             if (error) throw error;
             
+            // Clear PIN session as well
+            localStorage.removeItem('chorestar_pin_session');
+            
             this.currentUser = null;
             this.familySettings = null;
             return { success: true };
@@ -81,126 +75,7 @@ class ApiClient {
         }
     }
 
-    // PIN Authentication Methods
-    async signInWithPin(pin) {
-        try {
-            console.log('Signing in with PIN:', pin);
-            
-            // Find family by PIN
-            const { data: family, error: findError } = await this.supabase
-                .from('family_pins')
-                .select(`
-                    user_id,
-                    profiles:user_id (
-                        email,
-                        family_name
-                    )
-                `)
-                .eq('pin', pin)
-                .single();
 
-            if (findError || !family) {
-                return { success: false, error: 'Invalid PIN. Please check your family PIN and try again.' };
-            }
-
-            // Get the family owner's profile
-            const { data: profile, error: profileError } = await this.supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', family.user_id)
-                .single();
-
-            if (profileError || !profile) {
-                return { success: false, error: 'Family account not found. Please contact support.' };
-            }
-
-            // Create a temporary session for PIN login
-            // For now, we'll use the family owner's credentials
-            // In a production app, you might want to create a separate PIN-based auth system
-            const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
-                email: profile.email,
-                password: pin + '_temp_' + Date.now() // This won't work with real auth
-            });
-
-            if (authError) {
-                // Since we can't use real auth with PIN, we'll create a session manually
-                // This is a simplified approach - in production you'd want proper PIN auth
-                return { 
-                    success: false, 
-                    error: 'PIN authentication requires setup. Please use email/password login for now.' 
-                };
-            }
-
-            this.currentUser = authData.user;
-            console.log('Signed in with PIN for family:', profile.family_name);
-            return { success: true, user: authData.user, familyName: profile.family_name };
-        } catch (error) {
-            console.error('PIN sign in error:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    // Create or update family PIN
-    async createFamilyPin(pin) {
-        try {
-            const { data: { user } } = await this.supabase.auth.getUser();
-            if (!user) return { success: false, error: 'Not authenticated' };
-
-            // Check if PIN already exists for this family
-            const { data: existingPin, error: checkError } = await this.supabase
-                .from('family_pins')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
-
-            if (existingPin) {
-                // Update existing PIN
-                const { error: updateError } = await this.supabase
-                    .from('family_pins')
-                    .update({ pin: pin, updated_at: new Date().toISOString() })
-                    .eq('user_id', user.id);
-
-                if (updateError) throw updateError;
-            } else {
-                // Create new PIN
-                const { error: insertError } = await this.supabase
-                    .from('family_pins')
-                    .insert({
-                        user_id: user.id,
-                        pin: pin,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-
-                if (insertError) throw insertError;
-            }
-
-            return { success: true };
-        } catch (error) {
-            console.error('Create family PIN error:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    // Get family PIN (for display in settings)
-    async getFamilyPin() {
-        try {
-            const { data: { user } } = await this.supabase.auth.getUser();
-            if (!user) return null;
-
-            const { data: pin, error } = await this.supabase
-                .from('family_pins')
-                .select('pin')
-                .eq('user_id', user.id)
-                .single();
-
-            if (error) return null;
-            return pin?.pin;
-        } catch (error) {
-            console.error('Get family PIN error:', error);
-            return null;
-        }
-    }
 
     async resetPassword(email) {
         try {
@@ -218,6 +93,7 @@ class ApiClient {
 
     async getCurrentUser() {
         try {
+            // Check for regular Supabase session
             const { data: { user }, error } = await this.supabase.auth.getUser();
             if (error) {
                 // Don't log AuthSessionMissingError as it's expected for new users
@@ -284,6 +160,7 @@ class ApiClient {
     async getProfile() {
         try {
             console.log('Getting profile for user:', this.currentUser?.id);
+            
             const { data, error } = await this.supabase
                 .from('profiles')
                 .select('*')
@@ -324,6 +201,30 @@ class ApiClient {
     async getChildren() {
         try {
             console.log('Getting children for user:', this.currentUser?.id);
+            
+            // Check if we're in a PIN session
+            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            if (pinSessionStr) {
+                const pinSession = JSON.parse(pinSessionStr);
+                if (pinSession.userId) {
+                    console.log('Using PIN session user ID:', pinSession.userId);
+                    // Use the stored user ID from PIN session
+                    const { data, error } = await this.supabase
+                        .from('children')
+                        .select('*')
+                        .eq('user_id', pinSession.userId)
+                        .order('name');
+
+                    if (error) {
+                        console.error('Get children error with PIN session:', error);
+                        return [];
+                    }
+                    console.log('Found children with PIN session:', data);
+                    return data || [];
+                }
+            }
+            
+            // Fallback to regular method
             const { data, error } = await this.supabase
                 .from('children')
                 .select('*')
@@ -399,13 +300,25 @@ class ApiClient {
     // Chores Methods
     async getChores(childId = null) {
         try {
+            // Check if we're in a PIN session
+            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            let userId = this.currentUser.id;
+            
+            if (pinSessionStr) {
+                const pinSession = JSON.parse(pinSessionStr);
+                if (pinSession.userId) {
+                    console.log('Using PIN session user ID for chores:', pinSession.userId);
+                    userId = pinSession.userId;
+                }
+            }
+            
             let query = this.supabase
                 .from('chores')
                 .select(`
                     *,
                     children!inner(user_id)
                 `)
-                .eq('children.user_id', this.currentUser.id)
+                .eq('children.user_id', userId)
                 .eq('is_active', true);
 
             if (childId) {
@@ -480,6 +393,18 @@ class ApiClient {
                 weekStart = this.getWeekStart();
             }
 
+            // Check if we're in a PIN session
+            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            let userId = this.currentUser.id;
+            
+            if (pinSessionStr) {
+                const pinSession = JSON.parse(pinSessionStr);
+                if (pinSession.userId) {
+                    console.log('Using PIN session user ID for completions:', pinSession.userId);
+                    userId = pinSession.userId;
+                }
+            }
+
             const { data, error } = await this.supabase
                 .from('chore_completions')
                 .select(`
@@ -489,7 +414,7 @@ class ApiClient {
                         children!inner(user_id)
                     )
                 `)
-                .eq('chores.children.user_id', this.currentUser.id)
+                .eq('chores.children.user_id', userId)
                 .eq('week_start', weekStart);
 
             if (error) throw error;
@@ -546,10 +471,22 @@ class ApiClient {
     // Family Settings Methods
     async getFamilySettings() {
         try {
+            // Check if we're in a PIN session
+            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            let userId = this.currentUser.id;
+            
+            if (pinSessionStr) {
+                const pinSession = JSON.parse(pinSessionStr);
+                if (pinSession.userId) {
+                    console.log('Using PIN session user ID for family settings:', pinSession.userId);
+                    userId = pinSession.userId;
+                }
+            }
+            
             const { data, error } = await this.supabase
                 .from('family_settings')
                 .select('*')
-                .eq('user_id', this.currentUser.id)
+                .eq('user_id', userId)
                 .single();
 
             if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
