@@ -1195,7 +1195,7 @@ body {
     border-radius: var(--radius-xl);
     padding: var(--space-6);
     max-width: 90vw;
-    max-height: 70vh;
+    max-height: 60vh;
     overflow-y: auto;
     box-shadow: var(--shadow-2xl);
     transform: scale(0.9);
