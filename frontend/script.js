@@ -82,6 +82,7 @@ class FamilyChoreChart {
         this.subscription = null;
         this.toastDebounce = new Map(); // Prevent duplicate toasts
         this.formSubmissions = new Map(); // Prevent duplicate form submissions
+        this.isLoadingChildren = false; // Prevent multiple simultaneous loads
         
         this.init();
     }
@@ -206,9 +207,20 @@ class FamilyChoreChart {
     }
 
     async loadChildren() {
+        if (this.isLoadingChildren) {
+            console.log('Already loading children, skipping...');
+            return;
+        }
+        
+        this.isLoadingChildren = true;
         console.log('Loading children from API...');
-        this.children = await this.apiClient.getChildren();
-        console.log('Children loaded:', this.children);
+        
+        try {
+            this.children = await this.apiClient.getChildren();
+            console.log('Children loaded:', this.children);
+        } finally {
+            this.isLoadingChildren = false;
+        }
     }
 
     async loadChores() {
@@ -226,10 +238,10 @@ class FamilyChoreChart {
                 console.log('Real-time update:', payload);
                 
                 // Add debouncing for real-time updates
-                const updateKey = `${payload.table}-${payload.eventType}-${Date.now()}`;
+                const updateKey = `${payload.table}-${payload.eventType}`;
                 const now = Date.now();
                 const lastUpdate = this.formSubmissions.get(updateKey);
-                if (lastUpdate && (now - lastUpdate) < 1000) { // 1 second debounce for real-time
+                if (lastUpdate && (now - lastUpdate) < 2000) { // 2 second debounce for real-time
                     console.log('Skipping duplicate real-time update:', payload);
                     return;
                 }
@@ -246,10 +258,13 @@ class FamilyChoreChart {
                     });
                 } else if (payload.table === 'children') {
                     console.log('Children table changed, reloading...');
-                    this.loadChildren().then(() => {
-                        console.log('Children reloaded from real-time:', this.children);
-                        this.renderChildren();
-                    });
+                    // Add a small delay to prevent rapid reloads
+                    setTimeout(() => {
+                        this.loadChildren().then(() => {
+                            console.log('Children reloaded from real-time:', this.children);
+                            this.renderChildren();
+                        });
+                    }, 100);
                 }
             });
         } catch (error) {
@@ -694,13 +709,11 @@ class FamilyChoreChart {
             this.hideModal('add-child-modal');
             this.showToast(`Added ${name} to your family!`, 'success');
             
-            // Wait a moment for real-time to process, then reload
-            setTimeout(async () => {
-                console.log('Reloading children after creation...');
-                await this.loadChildren();
-                console.log('Current children after reload:', this.children);
-                this.renderChildren();
-            }, 500);
+            // Immediately reload children to ensure consistency
+            console.log('Reloading children after creation...');
+            await this.loadChildren();
+            console.log('Current children after reload:', this.children);
+            this.renderChildren();
         } else {
             window.analytics.trackError('add_child', result.error);
             this.showToast(result.error, 'error');
@@ -828,10 +841,12 @@ class FamilyChoreChart {
         const container = document.getElementById('children-grid');
         const emptyState = document.getElementById('empty-state');
 
-        // Deduplicate children by ID to prevent duplicates
-        const uniqueChildren = this.children.filter((child, index, self) => 
-            index === self.findIndex(c => c.id === child.id)
-        );
+        // Deduplicate children by ID and name to prevent duplicates
+        const uniqueChildren = this.children.filter((child, index, self) => {
+            const firstIndex = self.findIndex(c => c.id === child.id);
+            const nameIndex = self.findIndex(c => c.name === child.name && c.age === child.age);
+            return index === firstIndex && index === nameIndex;
+        });
         
         console.log('Rendering children:', uniqueChildren);
 
