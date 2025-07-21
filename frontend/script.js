@@ -81,6 +81,7 @@ class FamilyChoreChart {
         this.currentWeekStart = null;
         this.subscription = null;
         this.toastDebounce = new Map(); // Prevent duplicate toasts
+        this.formSubmissions = new Map(); // Prevent duplicate form submissions
         
         this.init();
     }
@@ -653,6 +654,16 @@ class FamilyChoreChart {
             return;
         }
 
+        // Prevent duplicate submissions
+        const submissionKey = `add-child-${name}-${age}`;
+        const now = Date.now();
+        const lastSubmission = this.formSubmissions.get(submissionKey);
+        if (lastSubmission && (now - lastSubmission) < 2000) { // 2 second debounce
+            console.log('Preventing duplicate child submission');
+            return;
+        }
+        this.formSubmissions.set(submissionKey, now);
+
         // Check subscription limits
         const limits = await this.apiClient.checkSubscriptionLimits();
         if (!limits.canAddChildren) {
@@ -663,11 +674,14 @@ class FamilyChoreChart {
         const result = await this.apiClient.createChild(name, age, color);
         
         if (result.success) {
-            this.children.push(result.child);
+            // Don't manually add to array - let real-time subscription handle it
             window.analytics.trackAddChild(name, age);
-            this.renderChildren();
             this.hideModal('add-child-modal');
             this.showToast(`Added ${name} to your family!`, 'success');
+            
+            // Reload children to ensure consistency
+            await this.loadChildren();
+            this.renderChildren();
         } else {
             window.analytics.trackError('add_child', result.error);
             this.showToast(result.error, 'error');
@@ -700,6 +714,16 @@ class FamilyChoreChart {
             return;
         }
 
+        // Prevent duplicate submissions
+        const submissionKey = `add-chore-${childId}-${choresToAdd.length}`;
+        const now = Date.now();
+        const lastSubmission = this.formSubmissions.get(submissionKey);
+        if (lastSubmission && (now - lastSubmission) < 2000) { // 2 second debounce
+            console.log('Preventing duplicate chore submission');
+            return;
+        }
+        this.formSubmissions.set(submissionKey, now);
+
         // Create all chores
         let successCount = 0;
         let errorCount = 0;
@@ -708,7 +732,6 @@ class FamilyChoreChart {
             const result = await this.apiClient.createChore(chore.name, 7, chore.childId); // Fixed 7 cents reward
             
             if (result.success) {
-                this.chores.push(result.chore);
                 successCount++;
             } else {
                 errorCount++;
@@ -717,6 +740,8 @@ class FamilyChoreChart {
         }
 
         if (successCount > 0) {
+            // Reload chores to ensure consistency
+            await this.loadChores();
             this.renderChildren();
             this.hideModal('add-chore-modal');
             

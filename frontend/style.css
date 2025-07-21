@@ -244,6 +244,7 @@ body {
 .btn-outline {
     background: transparent;
     border: 2px solid rgba(255, 255, 255, 0.3);
+    color: black;
 }
 
 .btn-outline:hover {
