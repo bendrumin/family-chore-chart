@@ -1346,8 +1346,27 @@ class FamilyChoreChart {
 // Initialize the application
 let app;
 document.addEventListener('DOMContentLoaded', () => {
-    app = new FamilyChoreChart();
-});
-
-// Make app globally available for modal buttons
-window.app = app; 
+    // Ensure API client is loaded before initializing app
+    const initApp = () => {
+        if (window.apiClient && typeof window.apiClient.getSubscriptionType === 'function') {
+            app = new FamilyChoreChart();
+            app.init();
+            window.app = app;
+        } else {
+            // Wait a bit and try again, but with a timeout
+            setTimeout(initApp, 100);
+        }
+    };
+    
+    // Add a timeout to prevent infinite waiting
+    setTimeout(() => {
+        if (!app) {
+            console.error('API client failed to load, initializing with fallback');
+            app = new FamilyChoreChart();
+            app.init();
+            window.app = app;
+        }
+    }, 5000); // 5 second timeout
+    
+    initApp();
+}); 
