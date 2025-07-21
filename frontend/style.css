@@ -243,7 +243,6 @@ body {
 
 .btn-outline {
     background: transparent;
-    color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -1111,7 +1110,7 @@ body {
 }
 
 .toast-info .toast-icon {
-    color: #ffffff;
+    color: #000080;
 }
 
 .toast-info .toast-title {
@@ -1121,7 +1120,7 @@ body {
 
 .toast-info .toast-description {
     font-weight: 500;
-    color:#000080
+    color: #000080;
 }
 
 .toast-info .toast-action {
@@ -1342,6 +1341,61 @@ body {
     color: var(--gray-600);
     font-size: var(--font-size-sm);
     margin: 0;
+}
+
+/* Toast Actions */
+.toast-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    position: relative;
+}
+
+.toast-close:hover {
+    color: var(--gray-700);
+    background: var(--gray-100);
+    transform: scale(1.1);
+}
+
+.toast-close:active {
+    transform: scale(0.95);
+}
+
+.toast-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* Special styling for notification prompt */
+.notification-prompt .toast-close {
+    color: var(--gray-400);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+}
+
+.notification-prompt .toast-close:hover {
+    color: var(--gray-600);
+    background: var(--gray-100);
+    border-color: var(--gray-300);
 }
 
 @keyframes toastSlideIn {

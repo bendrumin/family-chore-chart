@@ -456,7 +456,7 @@ class FamilyChoreChart {
 
     showNotificationPrompt() {
         const toast = document.createElement('div');
-        toast.className = 'toast toast-info';
+        toast.className = 'toast toast-info notification-prompt';
         toast.innerHTML = `
             <div class="toast-content">
                 <div class="toast-icon">🔔</div>
@@ -467,11 +467,25 @@ class FamilyChoreChart {
             </div>
             <div class="toast-actions">
                 <button class="toast-action btn btn-primary btn-sm">Enable</button>
-                <button class="toast-close">&times;</button>
+                <button class="toast-close" title="Dismiss">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         `;
         
         document.getElementById('toast-container').appendChild(toast);
+        
+        // Add hover effects and better styling
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.transform = 'scale(1.1)';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.transform = 'scale(1)';
+        });
         
         toast.querySelector('.toast-action').addEventListener('click', async () => {
             const success = await window.notificationManager.requestPermission();
@@ -485,14 +499,27 @@ class FamilyChoreChart {
             toast.remove();
         });
         
-        toast.querySelector('.toast-close').addEventListener('click', () => {
-            toast.remove();
+        closeBtn.addEventListener('click', () => {
+            // Add a subtle animation before removing
+            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 200);
         });
         
-        // Auto-remove after 15 seconds
+        // Auto-remove after 15 seconds with fade out
         setTimeout(() => {
             if (toast.parentNode) {
-                toast.remove();
+                toast.style.transform = 'translateX(100%)';
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 200);
             }
         }, 15000);
     }
@@ -1283,14 +1310,40 @@ class FamilyChoreChart {
                     <p>${message}</p>
                 </div>
             </div>
+            <div class="toast-actions">
+                <button class="toast-close" title="Dismiss">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
         `;
 
         document.getElementById('toast-container').appendChild(toast);
 
+        // Add close functionality
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => {
+            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 200);
+        });
+
         // Auto-remove after 5 seconds
         setTimeout(() => {
             if (toast.parentNode) {
-                toast.remove();
+                toast.style.transform = 'translateX(100%)';
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 200);
             }
         }, 5000);
     }
