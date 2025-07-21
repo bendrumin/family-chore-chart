@@ -1728,6 +1728,27 @@ body {
         padding: var(--space-4);
     }
     
+    .child-header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-3);
+    }
+    
+    .child-avatar {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .child-actions {
+        justify-content: center;
+        margin-top: var(--space-2);
+    }
+    
+    .edit-child-btn {
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-size-sm);
+    }
+    
     .progress-stats {
         flex-direction: column;
         gap: var(--space-2);
@@ -1754,6 +1775,21 @@ body {
     .toast {
         min-width: auto;
     }
+    
+    /* Improve inline edit form on tablets */
+    .edit-inline-form {
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+    
+    .edit-inline-form .input {
+        min-width: 100px;
+    }
+    
+    .dicebear-avatar-btn img {
+        width: 32px !important;
+        height: 32px !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1769,6 +1805,28 @@ body {
         flex-direction: column;
         text-align: center;
         gap: var(--space-3);
+    }
+    
+    .child-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: var(--font-size-lg);
+    }
+    
+    .child-avatar-small {
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-size-base);
+    }
+    
+    .child-actions {
+        justify-content: center;
+        margin-top: var(--space-2);
+    }
+    
+    .edit-child-btn {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--font-size-xs);
     }
     
     .chore-grid-table {
@@ -1789,6 +1847,47 @@ body {
     
     .child-chores-list {
         padding-left: 0;
+    }
+    
+    /* Improve inline edit form on mobile */
+    .edit-inline-form {
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+    }
+    
+    .edit-inline-form .input {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .edit-inline-form .inline-dicebear-picker {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .dicebear-avatar-btn img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    /* Improve family member avatars on mobile */
+    .family-member-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: var(--font-size-xs);
+    }
+    
+    /* Improve modal content on mobile */
+    .modal-content {
+        padding: var(--space-4);
+        margin: var(--space-2);
+    }
+    
+    /* Improve settings modal on mobile */
+    #settings-modal .modal-content {
+        padding: var(--space-4);
+        margin: var(--space-2);
     }
 }
 
@@ -1965,6 +2064,32 @@ body {
     display: inline-block;
     vertical-align: middle;
     margin: 0;
+}
+
+/* DiceBear avatar button styles */
+.dicebear-avatar-btn {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    padding: 2px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-block;
+}
+
+.dicebear-avatar-btn:hover {
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.dicebear-avatar-btn.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.dicebear-avatar-btn img {
+    border-radius: 50%;
+    display: block;
 }
 
 /* Avatar preview circle always a circle and centered */
