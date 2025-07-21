@@ -101,6 +101,14 @@ class FamilyChoreChart {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
             
+            // Ensure API client is initialized
+            if (!this.apiClient) {
+                console.error('API client not initialized');
+                this.showToast('Error initializing app', 'error');
+                this.showAuth();
+                return;
+            }
+            
             // Check authentication status
             const user = await this.apiClient.getCurrentUser();
             
@@ -121,6 +129,13 @@ class FamilyChoreChart {
 
     async loadApp() {
         try {
+            // Ensure API client is initialized
+            if (!this.apiClient) {
+                console.error('API client not initialized');
+                this.showToast('Error initializing app', 'error');
+                return;
+            }
+            
             // Load family settings
             this.familySettings = await this.apiClient.getFamilySettings();
             
@@ -136,7 +151,16 @@ class FamilyChoreChart {
             await this.loadCompletions();
             
             // Initialize analytics
-            const subscriptionType = await this.apiClient.getSubscriptionType().catch(() => 'free');
+            let subscriptionType = 'free';
+            try {
+                if (this.apiClient && typeof this.apiClient.getSubscriptionType === 'function') {
+                    subscriptionType = await this.apiClient.getSubscriptionType();
+                }
+            } catch (error) {
+                console.error('Error getting subscription type:', error);
+                subscriptionType = 'free';
+            }
+            
             window.analytics.init(
                 this.currentUser.id,
                 profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
