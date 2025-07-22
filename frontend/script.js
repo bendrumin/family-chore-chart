@@ -490,6 +490,13 @@ class FamilyChoreChart {
             this.showSettingsModal();
         });
 
+        // Settings tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.switchSettingsTab(btn.dataset.tab);
+            });
+        });
+
         // Family sharing
         this.setupFamilySharing();
 
@@ -732,6 +739,10 @@ class FamilyChoreChart {
             `;
         } else if (modalId === 'settings-modal') {
             document.getElementById('settings-form').reset();
+        } else if (modalId === 'edit-chore-modal') {
+            document.getElementById('edit-chore-form').reset();
+            delete document.getElementById('edit-chore-form').dataset.choreId;
+            delete document.getElementById('edit-chore-form').dataset.returnTab;
         }
     }
 
@@ -891,8 +902,23 @@ class FamilyChoreChart {
     async showSettingsModal() {
         this.showModal('settings-modal');
         await this.loadFamilySettings();
-        await this.loadChildrenList();
         await this.loadChoresList();
+        this.generateChildTabs();
+        this.populateManageChildrenList();
+    }
+
+    switchSettingsTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
     }
 
 
@@ -924,9 +950,180 @@ class FamilyChoreChart {
         try {
             const chores = await this.apiClient.getChores();
             this.chores = chores; // update the class property
-            this.populateChoresList(this.chores);
         } catch (error) {
             console.error('Error loading chores list:', error);
+        }
+    }
+
+    generateChildTabs() {
+        const tabsContainer = document.getElementById('settings-tabs');
+        const modalContent = document.querySelector('#settings-modal .modal-content');
+        
+        if (!tabsContainer || !modalContent) return;
+        
+        // Remove existing child tabs (keep Rewards and Manage Children tabs)
+        const existingChildTabs = tabsContainer.querySelectorAll('.tab-btn:not([data-tab="rewards"]):not([data-tab="manage-children"])');
+        existingChildTabs.forEach(tab => tab.remove());
+        
+        // Remove existing child tab content (keep rewards and manage-children tabs)
+        const existingChildContent = modalContent.querySelectorAll('.tab-content:not(#rewards-tab):not(#manage-children-tab)');
+        existingChildContent.forEach(content => content.remove());
+        
+        // Generate tabs and content for each child
+        this.children.forEach((child, index) => {
+            const childId = child.id;
+            const childChores = this.chores.filter(chore => chore.child_id === childId);
+            const tabIcon = child.avatar_color ? `🎨` : `👶`;
+            
+            // Create tab button
+            const tabButton = document.createElement('button');
+            tabButton.className = 'tab-btn';
+            tabButton.dataset.tab = `child-${childId}`;
+            tabButton.innerHTML = `<span>${tabIcon}</span> ${child.name} (${childChores.length})`;
+            tabsContainer.appendChild(tabButton);
+            
+            // Create tab content
+            const tabContent = document.createElement('div');
+            tabContent.id = `child-${childId}-tab`;
+            tabContent.className = 'tab-content';
+            tabContent.innerHTML = `
+                <div class="chore-management">
+                    <h3>${child.name}'s Chores</h3>
+                    <div class="child-chores-list" id="child-${childId}-chores">
+                        ${this.generateChildChoresList(child, childChores)}
+                    </div>
+                </div>
+            `;
+            modalContent.appendChild(tabContent);
+            
+            // Add click handler for the new tab
+            tabButton.addEventListener('click', () => {
+                this.switchSettingsTab(`child-${childId}`);
+            });
+        });
+        
+        // Add delete button handlers for the new content
+        this.addDeleteChoreHandlers();
+    }
+
+    generateChildChoresList(child, childChores) {
+        if (childChores.length === 0) {
+            return `
+                <div style="text-align:center;color:var(--gray-500);padding:2rem;">
+                    <p>No chores yet for ${child.name}.</p>
+                    <button class="btn btn-primary" onclick="app.showModal('add-chore-modal'); document.getElementById('chore-child').value='${child.id}';">
+                        <span>📝</span> Add First Chore
+                    </button>
+                </div>
+            `;
+        }
+        
+        let html = '';
+        childChores.forEach(chore => {
+            html += `
+                <div class="chore-item" data-chore-id="${chore.id}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #f0f0f0;">
+                    <span>${chore.name}</span>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-outline btn-sm edit-chore-settings" data-chore-id="${chore.id}" data-chore-name="${chore.name}" data-chore-reward="${chore.reward_cents}" data-chore-frequency="${chore.frequency_days}" data-chore-notes="${chore.notes || ''}">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">🗑️ Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+        return html;
+    }
+
+    addDeleteChoreHandlers() {
+        document.querySelectorAll('.delete-chore').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const choreId = e.target.dataset.choreId;
+                this.deleteChore(choreId);
+                setTimeout(() => {
+                    this.loadChoresList();
+                    this.generateChildTabs();
+                }, 500);
+            });
+        });
+
+        // Add edit chore handlers
+        document.querySelectorAll('.edit-chore-settings').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const choreId = e.target.dataset.choreId;
+                const choreName = e.target.dataset.choreName;
+                const choreReward = e.target.dataset.choreReward;
+                const choreFrequency = e.target.dataset.choreFrequency;
+                const choreNotes = e.target.dataset.choreNotes;
+                
+                this.openEditChoreModal(choreId, choreName, choreReward, choreFrequency, choreNotes);
+            });
+        });
+    }
+
+    openEditChoreModal(choreId, choreName, choreReward, choreFrequency, choreNotes) {
+        console.log('Opening edit modal for chore:', choreId);
+        
+        // Find the chore to get the child ID
+        const chore = this.chores.find(c => c.id === choreId);
+        if (!chore) {
+            this.showToast('Chore not found', 'error');
+            return;
+        }
+        
+        console.log('Found chore:', chore);
+        console.log('Child ID:', chore.child_id);
+        
+        // Populate the edit form
+        document.getElementById('edit-chore-name').value = choreName;
+        document.getElementById('edit-chore-reward').value = choreReward;
+        document.getElementById('edit-chore-frequency').value = choreFrequency;
+        document.getElementById('edit-chore-notes').value = choreNotes;
+        
+        // Populate child select and set the correct child
+        this.populateEditChoreChildSelect(chore.child_id);
+        
+        // Store the chore ID for the save handler
+        document.getElementById('edit-chore-form').dataset.choreId = choreId;
+        
+        // Store the current active tab to return to after save
+        const activeTab = document.querySelector('.tab-btn.active');
+        if (activeTab) {
+            document.getElementById('edit-chore-form').dataset.returnTab = activeTab.dataset.tab;
+        }
+        
+        // Show the modal
+        this.showModal('edit-chore-modal');
+        
+        // Force the child field to be a text input and ensure it's populated
+        const childField = document.getElementById('edit-chore-child');
+        if (childField) {
+            // Ensure it's a text input
+            childField.type = 'text';
+            childField.readOnly = true;
+            childField.style.backgroundColor = 'var(--gray-100)';
+            childField.style.color = 'var(--gray-600)';
+            childField.style.border = '1px solid var(--gray-300)';
+            childField.style.borderRadius = '4px';
+            childField.style.padding = '8px 12px';
+            childField.style.width = '100%';
+            childField.style.boxSizing = 'border-box';
+            
+            // Ensure the value is set
+            const child = this.children.find(c => c.id === chore.child_id);
+            if (child) {
+                childField.value = child.name;
+                console.log('Set child field value to:', child.name);
+            }
+        }
+    }
+
+    populateEditChoreChildSelect(selectedChildId) {
+        const input = document.getElementById('edit-chore-child');
+        const child = this.children.find(c => c.id === selectedChildId);
+        if (child) {
+            input.value = child.name;
+            console.log('Populated child field with:', child.name);
+        } else {
+            console.log('Child not found for ID:', selectedChildId);
         }
     }
 
@@ -1045,10 +1242,13 @@ class FamilyChoreChart {
                 this.showToast('Child deleted!', 'success');
                 await this.loadChildren();
                 this.renderChildren();
+                return { success: true };
             } else {
                 this.showToast(result.error || 'Failed to delete child', 'error');
+                return { success: false, error: result.error };
             }
         }
+        return { success: false, error: 'Cancelled' };
     }
 
     getChildGradient(color) {
@@ -1117,35 +1317,11 @@ class FamilyChoreChart {
     }
 
     setupFamilySharing() {
-        // Add family sharing button to settings modal
-        const settingsModal = document.getElementById('settings-modal');
-        if (settingsModal) {
-            // Add family sharing section to settings modal
-            const familySharingSection = document.createElement('div');
-            familySharingSection.className = 'family-sharing-section';
-            familySharingSection.innerHTML = `
-                <hr style="margin: var(--space-6) 0; border: none; border-top: 1px solid var(--gray-200);">
-                <div class="family-sharing-section">
-                    <h3>👨‍👩‍👧‍👦 Family Sharing</h3>
-                    <p class="settings-description">Share your family with other members or join another family!</p>
-                    <button type="button" id="open-family-sharing-btn" class="btn btn-primary">
-                        <span>👥</span> Open Family Sharing
-                    </button>
-                </div>
-            `;
-            
-            // Insert before chore management
-            const choreManagement = settingsModal.querySelector('.chore-management');
-            if (choreManagement) {
-                choreManagement.parentNode.insertBefore(familySharingSection, choreManagement);
-            }
-            
-            // Add click handler for family sharing button
-            document.getElementById('open-family-sharing-btn').addEventListener('click', () => {
-                this.showModal('family-sharing-modal');
-                this.loadFamilySharingData();
-            });
-        }
+        // Add click handler for family sharing button in header
+        document.getElementById('family-sharing-btn').addEventListener('click', () => {
+            this.showModal('family-sharing-modal');
+            this.loadFamilySharingData();
+        });
 
         // Setup join family form
         document.getElementById('join-family-form').addEventListener('submit', async (e) => {
@@ -1250,36 +1426,153 @@ class FamilyChoreChart {
     }
 
     async handleEditChore() {
-        // This method is not used in the provided edit, but is kept as it was in the original file.
-        // It would typically involve editing an existing chore.
+        const choreId = document.getElementById('edit-chore-form').dataset.choreId;
+        const name = document.getElementById('edit-chore-name').value;
+        const rewardCents = parseInt(document.getElementById('edit-chore-reward').value);
+        const frequencyDays = parseInt(document.getElementById('edit-chore-frequency').value);
+        const notes = document.getElementById('edit-chore-notes').value;
+
+        if (!name || !rewardCents || !frequencyDays) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        if (rewardCents < 1 || rewardCents > 100) {
+            this.showToast('Reward must be between 1 and 100 cents', 'error');
+            return;
+        }
+
+        if (frequencyDays < 1 || frequencyDays > 7) {
+            this.showToast('Frequency must be between 1 and 7 days', 'error');
+            return;
+        }
+
+        this.showLoading();
+        const result = await this.apiClient.updateChore(choreId, {
+            name,
+            reward_cents: rewardCents,
+            frequency_days: frequencyDays,
+            notes
+        });
+        this.hideLoading();
+
+        if (result.success) {
+            this.showToast('Chore updated successfully!', 'success');
+            this.hideModal('edit-chore-modal');
+            
+            // Reload chores and regenerate tabs
+            await this.loadChoresList();
+            this.generateChildTabs();
+            
+            // Return to the tab the user was on when they clicked edit
+            const returnTab = document.getElementById('edit-chore-form').dataset.returnTab;
+            if (returnTab) {
+                this.switchSettingsTab(returnTab);
+            }
+        } else {
+            this.showToast(result.error || 'Failed to update chore', 'error');
+        }
     }
 
     renderChildren() {
-        const container = document.getElementById('children-grid');
+        const tabsContainer = document.getElementById('children-tabs');
+        const contentContainer = document.getElementById('children-content');
         const emptyState = document.getElementById('empty-state');
+        
         // Deduplicate children by ID and name to prevent duplicates
         const uniqueChildren = this.children.filter((child, index, self) => {
             const firstIndex = self.findIndex(c => c.id === child.id);
             const nameIndex = self.findIndex(c => c.name === child.name && c.age === child.age);
             return index === firstIndex && index === nameIndex;
         });
+        
         if (uniqueChildren.length === 0) {
-            container.innerHTML = '';
+            tabsContainer.innerHTML = '';
+            contentContainer.innerHTML = '';
             emptyState.classList.remove('hidden');
             return;
         }
+        
         emptyState.classList.add('hidden');
-        container.innerHTML = '';
-        uniqueChildren.forEach(child => {
+        
+        // Generate tabs
+        this.generateChildrenTabs(uniqueChildren);
+        
+        // Generate content
+        this.generateChildrenContent(uniqueChildren);
+        
+        // Set the first child as active if no child is currently active
+        if (!document.querySelector('.child-tab.active')) {
+            this.switchChildTab(uniqueChildren[0].id);
+        }
+    }
+
+    generateChildrenTabs(children) {
+        const tabsContainer = document.getElementById('children-tabs');
+        tabsContainer.innerHTML = '';
+        
+        children.forEach((child, index) => {
+            const tab = document.createElement('button');
+            tab.className = `child-tab ${index === 0 ? 'active' : ''}`;
+            tab.dataset.childId = child.id;
+            
+            // Create avatar
+            let avatarHtml = '';
+            if (child.avatar_url) {
+                avatarHtml = `<img src="${child.avatar_url}" class="child-tab-avatar" alt="${child.name}">`;
+            } else if (child.avatar_file) {
+                avatarHtml = `<img src="${child.avatar_file}" class="child-tab-avatar" alt="${child.name}">`;
+            } else {
+                const gradient = this.getChildGradient(child.avatar_color);
+                avatarHtml = `<div class="child-tab-avatar" style="background: ${gradient};">${child.name.charAt(0).toUpperCase()}</div>`;
+            }
+            
+            tab.innerHTML = `
+                ${avatarHtml}
+                <span class="child-tab-name">${child.name}</span>
+                <span class="child-tab-age">Age ${child.age}</span>
+            `;
+            
+            tab.addEventListener('click', () => {
+                this.switchChildTab(child.id);
+            });
+            
+            tabsContainer.appendChild(tab);
+        });
+    }
+
+    generateChildrenContent(children) {
+        const contentContainer = document.getElementById('children-content');
+        contentContainer.innerHTML = '';
+        
+        children.forEach((child, index) => {
             const childCard = this.createChildCard(child);
+            childCard.className = `child-content ${index === 0 ? 'active' : ''}`;
+            childCard.dataset.childId = child.id;
+            
             // Add Edit button
             const editBtn = document.createElement('button');
             editBtn.className = 'btn btn-outline btn-sm edit-child-btn';
             editBtn.textContent = 'Edit';
             editBtn.onclick = () => window.openEditChildModal(child);
             childCard.querySelector('.child-actions').appendChild(editBtn);
-            container.appendChild(childCard);
+            
+            contentContainer.appendChild(childCard);
         });
+    }
+
+    switchChildTab(childId) {
+        // Update tab buttons
+        document.querySelectorAll('.child-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-child-id="${childId}"]`).classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.child-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.querySelector(`.child-content[data-child-id="${childId}"]`).classList.add('active');
     }
 
     createChildCard(child) {
@@ -1335,11 +1628,11 @@ class FamilyChoreChart {
             </div>
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
-                <div class="earnings-label">💰 Earnings (7¢ per completed day)</div>
+                <div class="earnings-label">💰 Earnings (${this.familySettings?.daily_reward_cents || 7}¢ per completed day${this.familySettings?.weekly_bonus_cents ? ` + ${this.familySettings.weekly_bonus_cents}¢ weekly bonus` : ''})</div>
             </div>
         `;
         // Add click handlers for chore cells
-        this.addChoreCellHandlers(card, childChores);
+        this.addChoreCellHandlers(card, childChores, child.id);
         return card;
     }
 
@@ -1348,7 +1641,7 @@ class FamilyChoreChart {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
                     <p>No chores yet! Add some chores to get started.</p>
-                    <button class="btn btn-primary" id="add-chore-empty-btn">
+                    <button class="btn btn-primary add-chore-empty-btn">
                         <span>📝</span> Add Chore
                     </button>
                 </div>
@@ -1396,7 +1689,7 @@ class FamilyChoreChart {
         // Add "Add Chore" button below the table
         html += `
             <div style="text-align: center; margin-top: var(--space-4);">
-                <button class="btn btn-secondary" id="add-chore-grid-btn">
+                <button class="btn btn-secondary add-chore-grid-btn">
                     <span>📝</span> Add More Chores
                 </button>
             </div>
@@ -1404,46 +1697,102 @@ class FamilyChoreChart {
         return html;
     }
 
-    addChoreCellHandlers(card, childChores) {
-        card.querySelectorAll('.chore-grid-table td').forEach(cell => {
+    addChoreCellHandlers(card, childChores, childId) {
+        card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
             const day = cell.dataset.day;
             const choreId = cell.dataset.choreId;
 
-            cell.addEventListener('click', () => {
+            cell.addEventListener('click', async () => {
+                console.log('Chore cell clicked:', { choreId, day });
                 const chore = childChores.find(ch => ch.id === choreId);
                 if (chore) {
-                this.showModal('add-chore-modal');
-                    document.getElementById('chore-child').value = child.id; // Set child for chore form
-                    document.getElementById('chore-name').value = chore.name;
-                    document.getElementById('chore-reward').value = chore.reward_cents;
-                    document.getElementById('chore-frequency').value = chore.frequency_days;
-                    document.getElementById('chore-notes').value = chore.notes || '';
-                    document.getElementById('chore-notes').dataset.choreId = chore.id;
+                    console.log('Found chore:', chore.name);
+                    
+                    // Optimistic update - update UI immediately
+                    const isCurrentlyCompleted = cell.classList.contains('completed');
+                    if (isCurrentlyCompleted) {
+                        // Mark as uncompleted immediately
+                        cell.classList.remove('completed');
+                        cell.textContent = '';
+                    } else {
+                        // Mark as completed immediately
+                        cell.classList.add('completed');
+                        cell.textContent = '✓';
+                    }
+                    
+                    // Optimistically update progress for current child
+                    this.updateChildProgressOptimistically(chore.child_id, isCurrentlyCompleted ? -1 : 1);
+                    
+                    // API call in background
+                    const result = await this.apiClient.toggleChoreCompletion(choreId, parseInt(day));
+                    if (result.success) {
+                        if (result.completed !== !isCurrentlyCompleted) {
+                            // API result doesn't match our optimistic update, revert
+                            if (isCurrentlyCompleted) {
+                                cell.classList.add('completed');
+                                cell.textContent = '✓';
+                            } else {
+                                cell.classList.remove('completed');
+                                cell.textContent = '';
+                            }
+                            this.updateChildProgressOptimistically(chore.child_id, isCurrentlyCompleted ? 1 : -1);
+                        } else {
+                            // API result matches, reload completions and check achievements
+                            await this.loadCompletions();
+                            this.checkAchievements(chore.child_id, choreId);
+                            
+                            // Update progress with real data
+                            this.updateChildProgressWithRealData(chore.child_id);
+                        }
+                    } else {
+                        // API failed, revert optimistic update
+                        console.error('Failed to update chore:', result.error);
+                        if (isCurrentlyCompleted) {
+                            cell.classList.add('completed');
+                            cell.textContent = '✓';
+                        } else {
+                            cell.classList.remove('completed');
+                            cell.textContent = '';
+                        }
+                        this.updateChildProgressOptimistically(chore.child_id, isCurrentlyCompleted ? 1 : -1);
+                    }
                 }
             });
         });
 
         card.querySelectorAll('.add-chore-empty-btn').forEach(btn => {
+            console.log('Adding click handler to empty chore button');
             btn.addEventListener('click', () => {
+                console.log('Empty chore button clicked for child:', childId);
                 this.showModal('add-chore-modal');
-                document.getElementById('chore-child').value = child.id; // Set child for chore form
-                document.getElementById('chore-name').value = '';
-                document.getElementById('chore-reward').value = 7;
-                document.getElementById('chore-frequency').value = 1;
-                document.getElementById('chore-notes').value = '';
-                document.getElementById('chore-notes').dataset.choreId = null;
+                // Set the child in the dropdown
+                const childSelect = document.getElementById('chore-child');
+                if (childSelect) {
+                    childSelect.value = childId;
+                }
+                // Clear the first chore entry
+                const firstChoreInput = document.getElementById('chore-name-1');
+                if (firstChoreInput) {
+                    firstChoreInput.value = '';
+                }
             });
         });
 
         card.querySelectorAll('.add-chore-grid-btn').forEach(btn => {
+            console.log('Adding click handler to grid chore button');
             btn.addEventListener('click', () => {
+                console.log('Grid chore button clicked for child:', childId);
                 this.showModal('add-chore-modal');
-                document.getElementById('chore-child').value = child.id; // Set child for chore form
-                document.getElementById('chore-name').value = '';
-                document.getElementById('chore-reward').value = 7;
-                document.getElementById('chore-frequency').value = 1;
-                document.getElementById('chore-notes').value = '';
-                document.getElementById('chore-notes').dataset.choreId = null;
+                // Set the child in the dropdown
+                const childSelect = document.getElementById('chore-child');
+                if (childSelect) {
+                    childSelect.value = childId;
+                }
+                // Clear the first chore entry
+                const firstChoreInput = document.getElementById('chore-name-1');
+                if (firstChoreInput) {
+                    firstChoreInput.value = '';
+                }
             });
         });
     }
@@ -1451,18 +1800,44 @@ class FamilyChoreChart {
     calculateChildProgress(childId, childChores, childCompletions) {
         let totalEarnings = 0;
         let totalDaysCompleted = 0;
-        let totalChoreDays = 0;
+        let totalChoreDays = childChores.length * 7; // Each chore should be completed 7 days per week
+        
+        // Get family settings for reward calculation
+        const dailyReward = this.familySettings?.daily_reward_cents || 7;
+        const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
+        
         childChores.forEach(chore => {
             const choreCompletions = childCompletions.filter(comp => comp.chore_id === chore.id);
-            totalChoreDays += chore.frequency_days;
             choreCompletions.forEach(comp => {
-                if (comp.day_of_week >= this.currentWeekStart.getDay() && comp.day_of_week < this.currentWeekStart.getDay() + 7) {
+                // currentWeekStart is a string, so we need to create a Date object for comparison
+                const weekStartDate = new Date(this.currentWeekStart);
+                if (comp.day_of_week >= weekStartDate.getDay() && comp.day_of_week < weekStartDate.getDay() + 7) {
                     totalDaysCompleted++;
                 }
             });
         });
+        
         const completionPercentage = totalChoreDays > 0 ? (totalDaysCompleted / totalChoreDays) * 100 : 0;
-        totalEarnings = totalDaysCompleted * 7; // 7 cents per completed day
+        
+        // Calculate earnings using family settings
+        totalEarnings = totalDaysCompleted * dailyReward;
+        
+        // Add weekly bonus if all chores are completed for the week
+        if (totalDaysCompleted === totalChoreDays && totalChoreDays > 0) {
+            totalEarnings += weeklyBonus;
+        }
+        
+        console.log('Progress calculation:', {
+            childId,
+            childChores: childChores.length,
+            totalChoreDays,
+            totalDaysCompleted,
+            completionPercentage,
+            totalEarnings,
+            dailyReward,
+            weeklyBonus
+        });
+        
         return {
             completionPercentage: completionPercentage,
             totalEarnings: totalEarnings
@@ -1487,68 +1862,311 @@ class FamilyChoreChart {
         return `$${dollars.toFixed(2)}`;
     }
 
-    populateChoresList(chores) {
-        const container = document.getElementById('chores-list');
+    // Optimistic update helpers
+    updateChildProgressOptimistically(childId, changeInCompletions) {
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (!childCard) return;
+
+        // Get current progress elements
+        const progressFill = childCard.querySelector('.progress-fill');
+        const progressStats = childCard.querySelector('.progress-stats');
+        const starsContainer = childCard.querySelector('.stars-container');
+        const earningsAmount = childCard.querySelector('.earnings-amount');
+
+        if (!progressFill || !progressStats || !starsContainer || !earningsAmount) return;
+
+        // Calculate new values
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const totalChoreDays = childChores.length * 7;
+        
+        // Get current completion count from progress stats
+        const currentStats = progressStats.textContent;
+        const currentCompleted = parseInt(currentStats.match(/(\d+)\/7/)?.[1] || 0);
+        const newCompleted = Math.max(0, Math.min(7, currentCompleted + changeInCompletions));
+        
+        // Calculate new percentage and earnings
+        const completionPercentage = totalChoreDays > 0 ? (newCompleted / totalChoreDays) * 100 : 0;
+        const dailyReward = this.familySettings?.daily_reward_cents || 7;
+        const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
+        let totalEarnings = newCompleted * dailyReward;
+        
+        // Add weekly bonus if all chores completed
+        if (newCompleted === totalChoreDays && totalChoreDays > 0) {
+            totalEarnings += weeklyBonus;
+        }
+
+        // Update UI elements
+        progressFill.style.width = `${completionPercentage}%`;
+        progressStats.innerHTML = `<span>${newCompleted}/7 days</span><span>${Math.round(completionPercentage)}% complete</span>`;
+        starsContainer.innerHTML = this.calculateStars(completionPercentage);
+        earningsAmount.textContent = this.formatCents(totalEarnings);
+    }
+
+    updateChildProgressWithRealData(childId) {
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (!childCard) return;
+
+        // Get real progress data
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
+
+        // Update UI elements with real data
+        const progressFill = childCard.querySelector('.progress-fill');
+        const progressStats = childCard.querySelector('.progress-stats');
+        const starsContainer = childCard.querySelector('.stars-container');
+        const earningsAmount = childCard.querySelector('.earnings-amount');
+
+        if (progressFill && progressStats && starsContainer && earningsAmount) {
+            progressFill.style.width = `${progress.completionPercentage}%`;
+            progressStats.innerHTML = `<span>${Math.floor(progress.totalEarnings / (this.familySettings?.daily_reward_cents || 7))}/7 days</span><span>${Math.round(progress.completionPercentage)}% complete</span>`;
+            starsContainer.innerHTML = this.calculateStars(progress.completionPercentage);
+            earningsAmount.textContent = this.formatCents(progress.totalEarnings);
+        }
+    }
+
+    // Celebration Functions
+    celebrateFullDay(childName) {
+        // Show a toast notification
+        this.showToast(`🎉 ${childName} completed all chores for today! Amazing job!`, 'success');
+        
+        // Add a fun animation to the child's card
+        const childCard = document.querySelector(`[data-child-id="${this.children.find(c => c.name === childName)?.id}"]`);
+        if (childCard) {
+            childCard.style.animation = 'bounce 0.6s ease-in-out';
+            setTimeout(() => {
+                childCard.style.animation = '';
+            }, 600);
+        }
+        
+        // Play a success sound (if available)
+        this.playSuccessSound();
+    }
+
+    celebrateFullWeek(childName) {
+        // Show confetti
+        try {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                console.log('Confetti triggered for:', childName);
+            } else {
+                console.warn('Confetti library not loaded');
+            }
+        } catch (error) {
+            console.error('Confetti error:', error);
+        }
+        
+        // Show a special toast
+        this.showToast(`🌟 ${childName} completed the ENTIRE WEEK! You're a superstar! 🌟`, 'success');
+        
+        // Add a special animation to the child's card
+        const childCard = document.querySelector(`[data-child-id="${this.children.find(c => c.name === childName)?.id}"]`);
+        if (childCard) {
+            childCard.style.animation = 'starPop 1s ease-in-out';
+            setTimeout(() => {
+                childCard.style.animation = '';
+            }, 1000);
+        }
+        
+        // Play a celebration sound (if available)
+        this.playCelebrationSound();
+    }
+
+    playSuccessSound() {
+        // Create a simple success sound using Web Audio API
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (error) {
+            console.log('Audio not supported');
+        }
+    }
+
+    playCelebrationSound() {
+        // Create a celebration sound using Web Audio API
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Play a sequence of notes
+            const notes = [523, 659, 784, 1047]; // C, E, G, C (higher)
+            let time = audioContext.currentTime;
+            
+            notes.forEach((frequency, index) => {
+                oscillator.frequency.setValueAtTime(frequency, time + index * 0.1);
+                gainNode.gain.setValueAtTime(0.1, time + index * 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + (index + 1) * 0.1);
+            });
+            
+            oscillator.start(time);
+            oscillator.stop(time + notes.length * 0.1);
+        } catch (error) {
+            console.log('Audio not supported');
+        }
+    }
+
+    // Check for achievements when chore is completed
+    checkAchievements(childId, choreId) {
+        const child = this.children.find(c => c.id === childId);
+        if (!child) return;
+        
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+        
+        // Check for full day completion
+        const today = new Date();
+        const todayCompletions = childCompletions.filter(comp => {
+            const compDate = new Date(comp.completed_at);
+            return compDate.toDateString() === today.toDateString();
+        });
+        
+        if (todayCompletions.length === childChores.length && childChores.length > 0) {
+            this.celebrateFullDay(child.name);
+        }
+        
+        // Check for full week completion
+        const weekStart = this.apiClient.getWeekStart();
+        const weekStartDate = new Date(weekStart);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        const weekCompletions = childCompletions.filter(comp => {
+            const compDate = new Date(comp.completed_at);
+            return compDate >= weekStartDate && compDate <= weekEnd;
+        });
+        
+        const totalWeekChores = childChores.length * 7; // Each chore should be completed 7 days per week
+        
+        console.log('Checking achievements:', {
+            childName: child.name,
+            weekCompletions: weekCompletions.length,
+            totalWeekChores,
+            weekStart: weekStart,
+            weekEnd: weekEnd.toISOString()
+        });
+        
+        if (weekCompletions.length >= totalWeekChores && totalWeekChores > 0) {
+            console.log('🎉 Full week achievement triggered for:', child.name);
+            this.celebrateFullWeek(child.name);
+        }
+    }
+
+    populateManageChildrenList() {
+        const container = document.getElementById('manage-children-list');
         if (!container) return;
-        if (!chores || chores.length === 0) {
-            container.innerHTML = `<div style="text-align:center;color:var(--gray-500);padding:2rem;">No chores yet.</div>`;
+        
+        if (this.children.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                    <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
+                    <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No children yet</h4>
+                    <p style="margin-bottom: var(--space-4);">Add your first child to get started!</p>
+                </div>
+            `;
             return;
         }
-        // Add summary header
-        const childCount = this.children.length;
-        const totalChores = chores.length;
-        let html = `
-            <div style="background: linear-gradient(135deg, var(--primary, #ff758c), #8b5cf6); color: white; padding: 20px 32px; border-radius: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-size: 0.95em; opacity: 0.9;">Total Chores</div>
-                    <div style="font-size: 2em; font-weight: 700;">${totalChores}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 0.95em; opacity: 0.9;">Children</div>
-                    <div style="font-size: 2em; font-weight: 700;">${childCount}</div>
-                </div>
-            </div>
-        `;
-        // Group chores by child
-        const choresByChild = {};
+        
+        let html = '';
         this.children.forEach(child => {
-            choresByChild[child.id] = { child, chores: [] };
-        });
-        chores.forEach(chore => {
-            if (choresByChild[chore.child_id]) {
-                choresByChild[chore.child_id].chores.push(chore);
+            const gradient = this.getChildGradient(child.avatar_color);
+            let avatarHtml = '';
+            if (child.avatar_url) {
+                avatarHtml = `<img src="${child.avatar_url}" class="child-avatar-small" style="object-fit:cover;">`;
+            } else if (child.avatar_file) {
+                avatarHtml = `<img src="${child.avatar_file}" class="child-avatar-small" style="object-fit:cover;">`;
+            } else {
+                avatarHtml = `<div class="child-avatar-small" style="background:${gradient};">${child.name.charAt(0).toUpperCase()}</div>`;
             }
-        });
-        Object.values(choresByChild).forEach(({ child, chores }) => {
-            if (chores.length === 0) return;
+            
+            const childChores = this.chores.filter(chore => chore.child_id === child.id);
+            
             html += `
-                <div class="child-chores-section" style="margin-bottom:24px;">
-                    <div class="child-chores-header" style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-50);padding:12px 16px;border-radius:12px 12px 0 0;">
-                        <span style="font-weight:600;font-size:1.1em;">👶 ${child.name}'s Chores</span>
-                        <span class="chore-count" style="background:var(--gray-200);border-radius:16px;padding:2px 12px;font-size:0.95em;">${chores.length} chore${chores.length !== 1 ? 's' : ''}</span>
+                <div class="manage-child-item" data-child-id="${child.id}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:var(--space-3);background:white;">
+                    <div style="display:flex;align-items:center;gap:var(--space-3);">
+                        ${avatarHtml}
+                        <div>
+                            <h4 style="margin:0;color:var(--gray-800);">${child.name}</h4>
+                            <p style="margin:0;color:var(--gray-600);font-size:var(--font-size-sm);">Age ${child.age} • ${childChores.length} chore${childChores.length !== 1 ? 's' : ''}</p>
+                        </div>
                     </div>
-                    <div class="child-chores-list" style="background:white;border-radius:0 0 12px 12px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+                    <div style="display:flex;gap:var(--space-2);">
+                        <button class="btn btn-outline btn-sm edit-child-manage" data-child-id="${child.id}">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm remove-child-manage" data-child-id="${child.id}">🗑️ Remove</button>
+                    </div>
+                </div>
             `;
-            chores.forEach(chore => {
-                html += `
-                    <div class="chore-item" data-chore-id="${chore.id}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #f0f0f0;">
-                        <span>${chore.name}</span>
-                        <button class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">🗑️ Delete</button>
-                    </div>
-                `;
-            });
-            html += `</div></div>`;
         });
+        
         container.innerHTML = html;
-        // Delete button handler
-        container.querySelectorAll('.delete-chore').forEach(btn => {
-            btn.addEventListener('click', e => {
-                const choreId = e.target.dataset.choreId;
-                this.deleteChore(choreId);
-                setTimeout(() => this.loadChoresList(), 500);
+        
+        // Add event listeners
+        this.addManageChildrenHandlers();
+    }
+
+    addManageChildrenHandlers() {
+        // Edit child buttons
+        document.querySelectorAll('.edit-child-manage').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const childId = e.target.dataset.childId;
+                const child = this.children.find(c => c.id === childId);
+                if (child) {
+                    window.openEditChildModal(child);
+                }
+            });
+        });
+        
+        // Remove child buttons
+        document.querySelectorAll('.remove-child-manage').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const childId = e.target.dataset.childId;
+                const child = this.children.find(c => c.id === childId);
+                if (child) {
+                    const confirmed = confirm(`Are you sure you want to remove ${child.name}? This will also delete all their chores and completion data.`);
+                    if (confirmed) {
+                        const result = await this.deleteChild(childId);
+                        if (result.success) {
+                            this.showToast(`${child.name} has been removed`, 'success');
+                            // Refresh the manage children list
+                            this.populateManageChildrenList();
+                            // Also refresh the child tabs
+                            this.generateChildTabs();
+                            // Refresh the main view
+                            this.renderChildren();
+                        } else {
+                            this.showToast('Failed to remove child', 'error');
+                        }
+                    }
+                }
             });
         });
     }
+
+
 }
 
 // Initialize the application
@@ -1602,8 +2220,10 @@ if (!window.location.pathname.endsWith('settings.html')) {
     let selectedAddDicebearUrl = '';
     function renderAddDicebearPicker(name) {
         addDicebearPicker.innerHTML = '';
+        // Show 20 avatars instead of 10 (matching Edit Child modal)
         const seeds = diceBearSeeds.concat(name || 'Avatar');
-        seeds.forEach(seed => {
+        for (let i = 0; i < 20; i++) {
+            const seed = seeds[i % seeds.length] + (i > 9 ? i : '');
             const url = getDiceBearUrl(seed);
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -1615,17 +2235,30 @@ if (!window.location.pathname.endsWith('settings.html')) {
                 addAvatarPreview.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
                 addAvatarPreview.dataset.avatarUrl = url;
                 delete addAvatarPreview.dataset.avatarFile;
+                addAvatarPreview.style.display = '';
                 // Mark selected
                 addDicebearPicker.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             };
             addDicebearPicker.appendChild(btn);
-        });
+        }
     }
     document.getElementById('child-name').addEventListener('input', e => {
         renderAddDicebearPicker(e.target.value);
     });
     renderAddDicebearPicker('');
+
+    // --- Add Child Modal Avatar Logic ---
+    document.getElementById('add-avatar-remove-btn').onclick = () => {
+        // Always clear the preview and dataset before inserting fallback initial
+        while (addAvatarPreview.firstChild) {
+            addAvatarPreview.removeChild(addAvatarPreview.firstChild);
+        }
+        addAvatarPreview.removeAttribute('data-avatar-url');
+        addAvatarPreview.removeAttribute('data-avatar-file');
+        addAvatarPreview.style.display = 'none';
+        selectedAddDicebearUrl = '';
+    };
 
     // --- Edit Child Modal DiceBear Picker ---
     const editDicebearPicker = document.getElementById('edit-dicebear-picker');
@@ -1676,6 +2309,8 @@ if (!window.location.pathname.endsWith('settings.html')) {
     editColorInput.addEventListener('input', () => {
         editSelectedColor.style.background = editColorInput.value;
     });
+
+
 
     // --- Edit Child Modal Avatar Logic ---
     const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
@@ -1825,6 +2460,23 @@ if (!window.location.pathname.endsWith('settings.html')) {
     const addColorInput = document.getElementById('child-color');
     const addPreviewCircle = document.getElementById('add-child-avatar-preview-circle');
     const addAvatarPreview = document.getElementById('child-avatar-preview');
+    
+    // --- Color Picker Active State for Add Modal ---
+    const addSelectedColor = document.getElementById('add-selected-color');
+    document.querySelectorAll('#add-child-modal .color-preset').forEach(preset => {
+        preset.addEventListener('click', () => {
+            const color = preset.dataset.color;
+            addSelectedColor.style.background = color;
+            addColorInput.value = color;
+            document.querySelectorAll('#add-child-modal .color-preset').forEach(p => p.classList.remove('active'));
+            preset.classList.add('active');
+        });
+    });
+
+    // Update selected color circle when color picker changes
+    addColorInput.addEventListener('input', () => {
+        addSelectedColor.style.background = addColorInput.value;
+    });
     function updateAddChildAvatarPreview() {
         // If an image is uploaded, hide the circle
         if (addAvatarPreview && addAvatarPreview.querySelector('img')) {

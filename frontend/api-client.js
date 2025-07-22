@@ -431,14 +431,29 @@ class ApiClient {
                 weekStart = this.getWeekStart();
             }
 
+            console.log('toggleChoreCompletion params:', { choreId, dayOfWeek, weekStart });
+
+            // Check if user is authenticated
+            const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+            if (authError || !user) {
+                console.error('Authentication error:', authError);
+                throw new Error('User not authenticated');
+            }
+            console.log('User authenticated:', user.id);
+
             // Check if completion exists
-            const { data: existing } = await this.supabase
+            const { data: existing, error: queryError } = await this.supabase
                 .from('chore_completions')
                 .select('id')
                 .eq('chore_id', choreId)
                 .eq('day_of_week', dayOfWeek)
                 .eq('week_start', weekStart)
-                .single();
+                .maybeSingle();
+
+            if (queryError) {
+                console.error('Query error:', queryError);
+                throw queryError;
+            }
 
             if (existing) {
                 // Delete completion
@@ -605,8 +620,11 @@ class ApiClient {
     getWeekStart(date = new Date()) {
         const d = new Date(date);
         const day = d.getDay();
-        const diff = d.getDate() - day; // Adjust to Sunday
-        return new Date(d.setDate(diff)).toISOString().split('T')[0];
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - day);
+        const result = weekStart.toISOString().split('T')[0];
+        console.log('getWeekStart input:', date, 'output:', result, 'current date:', new Date().toISOString().split('T')[0]);
+        return result;
     }
 
     // Real-time subscriptions
