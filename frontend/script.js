@@ -2592,11 +2592,12 @@ class FamilyChoreChart {
             this.showToast('All chores are already completed for today!', 'info');
             return;
         }
-        // Optimistically update local completions
+        // INSTANT optimistic update
         uncompletedChores.forEach(chore => {
             this.completions.push({ chore_id: chore.id, day_of_week: dayOfWeek, week_start: this.currentWeekStart });
         });
-        this.rerenderChildCard(childId);
+        // Update progress bar instantly
+        this.updateChildProgressOptimistically(childId, uncompletedChores.length);
         // Backend update
         let completedCount = 0;
         for (const chore of uncompletedChores) {
@@ -2607,7 +2608,19 @@ class FamilyChoreChart {
         }
         // Sync with real data
         await this.loadCompletions();
-        this.rerenderChildCard(childId);
+        // Only update if there's a significant difference
+        const currentProgress = this.calculateChildProgress(childId, this.chores.filter(c => c.child_id === childId), this.completions);
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (childCard) {
+            const progressStats = childCard.querySelector('.progress-stats');
+            if (progressStats) {
+                const currentText = progressStats.textContent;
+                const expectedText = `${currentProgress.completedDays}/${currentProgress.totalDays} days`;
+                if (!currentText.includes(expectedText)) {
+                    this.updateChildProgressWithRealData(childId);
+                }
+            }
+        }
         if (completedCount > 0) {
             this.showToast(`✅ Marked ${completedCount} chores as completed!`, 'success');
             this.playSound('success');
@@ -2626,16 +2639,19 @@ class FamilyChoreChart {
         }
         const confirmed = confirm(`This will mark ${remaining} chore completions for the entire week. Continue?`);
         if (!confirmed) return;
-        // Optimistically update local completions
+        // INSTANT optimistic update
+        let addedCompletions = 0;
         for (const chore of childChores) {
             for (let day = 0; day < 7; day++) {
                 const isAlreadyCompleted = childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === day);
                 if (!isAlreadyCompleted) {
                     this.completions.push({ chore_id: chore.id, day_of_week: day, week_start: this.currentWeekStart });
+                    addedCompletions++;
                 }
             }
         }
-        this.rerenderChildCard(childId);
+        // Update progress bar instantly
+        this.updateChildProgressOptimistically(childId, addedCompletions);
         // Backend update
         let completedCount = 0;
         for (const chore of childChores) {
@@ -2651,7 +2667,19 @@ class FamilyChoreChart {
         }
         // Sync with real data
         await this.loadCompletions();
-        this.rerenderChildCard(childId);
+        // Only update if there's a significant difference
+        const currentProgress = this.calculateChildProgress(childId, this.chores.filter(c => c.child_id === childId), this.completions);
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (childCard) {
+            const progressStats = childCard.querySelector('.progress-stats');
+            if (progressStats) {
+                const currentText = progressStats.textContent;
+                const expectedText = `${currentProgress.completedDays}/${currentProgress.totalDays} days`;
+                if (!currentText.includes(expectedText)) {
+                    this.updateChildProgressWithRealData(childId);
+                }
+            }
+        }
         if (completedCount > 0) {
             this.showToast(`✅ Marked ${completedCount} chores for the week!`, 'success');
             this.playSound('success');
@@ -2671,11 +2699,13 @@ class FamilyChoreChart {
         }
         const confirmed = confirm(`This will unmark ${completedChores.length} chores for today. Continue?`);
         if (!confirmed) return;
-        // Optimistically update local completions
+        // INSTANT optimistic update
+        const removedCompletions = completedChores.length;
         this.completions = this.completions.filter(comp => {
             return !completedChores.some(chore => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
         });
-        this.rerenderChildCard(childId);
+        // Update progress bar instantly
+        this.updateChildProgressOptimistically(childId, -removedCompletions);
         // Backend update
         let clearedCount = 0;
         for (const chore of completedChores) {
@@ -2686,7 +2716,19 @@ class FamilyChoreChart {
         }
         // Sync with real data
         await this.loadCompletions();
-        this.rerenderChildCard(childId);
+        // Only update if there's a significant difference
+        const currentProgress = this.calculateChildProgress(childId, this.chores.filter(c => c.child_id === childId), this.completions);
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (childCard) {
+            const progressStats = childCard.querySelector('.progress-stats');
+            if (progressStats) {
+                const currentText = progressStats.textContent;
+                const expectedText = `${currentProgress.completedDays}/${currentProgress.totalDays} days`;
+                if (!currentText.includes(expectedText)) {
+                    this.updateChildProgressWithRealData(childId);
+                }
+            }
+        }
         if (clearedCount > 0) {
             this.showToast(`❌ Cleared ${clearedCount} chores for today!`, 'success');
             this.playSound('notification');
@@ -2719,7 +2761,7 @@ class FamilyChoreChart {
                         cell.textContent = '✓';
                     }
                     
-                    // Optimistically update progress for current child
+                    // INSTANT optimistic update - update UI immediately
                     this.updateChildProgressOptimistically(chore.child_id, isCurrentlyCompleted ? -1 : 1);
                     
                     // API call in background
@@ -2747,15 +2789,27 @@ class FamilyChoreChart {
                                 }
                             }
                             
-                            // API result matches, reload completions and check achievements
+                            // API result matches, reload completions and check achievements (but don't override progress)
                             await this.loadCompletions();
                             this.checkAchievements(chore.child_id, choreId);
                             
                             // Check for achievement badges
                             await this.checkAchievementBadges(chore.child_id);
                             
-                            // Update progress with real data
-                            this.updateChildProgressWithRealData(chore.child_id);
+                            // Only update progress if there's a significant difference (avoid flickering)
+                            const currentProgress = this.calculateChildProgress(chore.child_id, this.chores.filter(c => c.child_id === chore.child_id), this.completions);
+                            const childCard = document.querySelector(`[data-child-id="${chore.child_id}"]`);
+                            if (childCard) {
+                                const progressStats = childCard.querySelector('.progress-stats');
+                                if (progressStats) {
+                                    const currentText = progressStats.textContent;
+                                    const expectedText = `${currentProgress.completedDays}/${currentProgress.totalDays} days`;
+                                    if (!currentText.includes(expectedText)) {
+                                        // Only update if there's a real difference
+                                        this.updateChildProgressWithRealData(chore.child_id);
+                                    }
+                                }
+                            }
                         }
                     } else {
                         // API failed, revert optimistic update
@@ -2876,19 +2930,29 @@ class FamilyChoreChart {
         return `${dollars.toFixed(2)}`;
     }
 
-    // Optimistic update helpers
+    // INSTANT progress bar updates
     updateChildProgressOptimistically(childId, changeInCompletions) {
         const childCard = document.querySelector(`[data-child-id="${childId}"]`);
-        if (!childCard) return;
+        if (!childCard) {
+            console.warn('Child card not found for progress update:', childId);
+            return;
+        }
+        
         // Get current progress elements
         const progressFill = childCard.querySelector('.progress-fill');
         const progressStats = childCard.querySelector('.progress-stats');
         const starsContainer = childCard.querySelector('.stars-container');
         const earningsAmount = childCard.querySelector('.earnings-amount');
-        if (!progressFill || !progressStats || !starsContainer || !earningsAmount) return;
+        
+        if (!progressFill || !progressStats || !starsContainer || !earningsAmount) {
+            console.warn('Progress elements not found for child:', childId);
+            return;
+        }
+        
         // Calculate new values
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         const totalChoreDays = childChores.length * 7;
+        
         // Get current completion count from progress stats (parse the X/Y days string)
         const currentStats = progressStats.textContent;
         const match = currentStats.match(/(\d+)\/(\d+)/);
@@ -2896,22 +2960,30 @@ class FamilyChoreChart {
         if (match) {
             currentCompleted = parseInt(match[1], 10);
         }
+        
         // Calculate new completed count
         const newCompleted = Math.max(0, Math.min(totalChoreDays, currentCompleted + changeInCompletions));
+        
         // Calculate new percentage and earnings
         const completionPercentage = totalChoreDays > 0 ? Math.round((newCompleted / totalChoreDays) * 100) : 0;
         const dailyReward = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
         let totalEarnings = newCompleted * dailyReward;
+        
         // Add weekly bonus if all chores completed
         if (newCompleted === totalChoreDays && totalChoreDays > 0) {
             totalEarnings += weeklyBonus;
         }
-        // Update UI elements
-        progressFill.style.width = `${completionPercentage}%`;
-        progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${completionPercentage}% complete</span>`;
-        starsContainer.innerHTML = this.calculateStars(completionPercentage);
-        earningsAmount.textContent = this.formatCents(totalEarnings);
+        
+        // INSTANT UI updates with requestAnimationFrame for smooth rendering
+        requestAnimationFrame(() => {
+            progressFill.style.width = `${completionPercentage}%`;
+            progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${completionPercentage}% complete</span>`;
+            starsContainer.innerHTML = this.calculateStars(completionPercentage);
+            earningsAmount.textContent = this.formatCents(totalEarnings);
+            
+            console.log(`Progress updated instantly for child ${childId}: ${newCompleted}/${totalChoreDays} (${completionPercentage}%)`);
+        });
     }
 
     updateChildProgressWithRealData(childId) {
