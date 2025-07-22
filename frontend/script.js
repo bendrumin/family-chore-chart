@@ -691,16 +691,6 @@ class FamilyChoreChart {
         // Populate child select for chore form and check premium features
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
-            
-            // FORCE show color picker for testing (remove this later when premium check works)
-            setTimeout(() => {
-                document.querySelectorAll('[id^="premium-chore-features"]').forEach(el => {
-                    el.style.display = 'block';
-                });
-                document.querySelectorAll('[id^="premium-upgrade-prompt"]').forEach(el => {
-                    el.style.display = 'none';
-                });
-            }, 100);
         }
         if (modalId === 'edit-chore-modal') {
             await this.checkPremiumFeatures();
@@ -1166,7 +1156,8 @@ class FamilyChoreChart {
         // Populate the edit form
         document.getElementById('edit-chore-name').value = choreName;
         document.getElementById('edit-chore-reward').value = choreReward;
-        document.getElementById('edit-chore-notes').value = choreNotes || '';
+        const notesInput = document.getElementById('edit-chore-notes');
+        if (notesInput) notesInput.value = choreNotes || '';
         
         // Set icon and category
         document.getElementById('edit-chore-icon').value = chore.icon || '📝';
@@ -1223,18 +1214,6 @@ class FamilyChoreChart {
         } else if (colorInput) {
             colorInput.value = '#ff6b6b';
         }
-        // FORCE show edit chore premium features for testing
-setTimeout(() => {
-    const editPremiumFeatures = document.getElementById('premium-edit-chore-features');
-    if (editPremiumFeatures) {
-        editPremiumFeatures.style.display = 'block';
-    }
-    const editUpgradePrompt = document.getElementById('premium-edit-upgrade-prompt');
-    if (editUpgradePrompt) {
-        editUpgradePrompt.style.display = 'none';
-    }
-}, 100);
-
     }
 
     populateEditChoreChildSelect(selectedChildId) {

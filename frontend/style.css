@@ -4606,3 +4606,24 @@ body {
     box-shadow: 0 0 8px 2px var(--primary), 0 2px 8px rgba(0,0,0,0.18);
     font-weight: 700;
 }
+
+.quick-actions-section {
+  display: block;
+  text-align: initial;
+  align-items: initial;
+  justify-content: initial;
+}
+.quick-actions-grid {
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+/* Center content inside quick action buttons only */
+.quick-actions-grid button {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
