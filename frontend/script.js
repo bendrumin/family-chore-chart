@@ -83,54 +83,32 @@ class FamilyChoreChart {
         this.children = [];
         this.chores = [];
         this.completions = [];
-        this.familySettings = null;
         this.currentWeekStart = null;
-        this.subscription = null;
-        this.toastDebounce = new Map(); // Prevent duplicate toasts
-        this.formSubmissions = new Map(); // Prevent duplicate form submissions
-        this.isLoadingChildren = false; // Prevent multiple simultaneous loads
-        this.isInitialized = false; // Prevent double initialization
-        this.editingChildId = null;
-        
+        this.currentChildTab = null;
+        this.settings = {
+            dailyReward: 50,
+            weeklyBonus: 200,
+            soundEnabled: true,
+            soundVolume: 50,
+            theme: 'light',
+            colorScheme: 'default'
+        };
+        this.streaks = {};
+        this.formSubmissions = new Map();
+        this.handlersInitialized = false; // ADD THIS FLAG
         this.init();
     }
 
     async init() {
-        if (this.isInitialized) {
-            console.log('App already initialized, skipping...');
-            return;
-        }
-        
         try {
-            this.isInitialized = true;
-            console.log('Starting app initialization...');
-            
-            // Show loading screen
             this.showLoading();
             
-            // Handle payment success/cancel
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('success') === 'true') {
-                this.showToast('Payment successful! Welcome to Premium!', 'success');
-                // Clear URL params
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } else if (urlParams.get('canceled') === 'true') {
-                this.showToast('Payment was canceled.', 'warning');
-                // Clear URL params
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
+            // Load settings and streaks
+            this.loadSettings();
+            this.loadStreaks();
             
-            // Ensure API client is initialized
-            if (!this.apiClient) {
-                console.error('API client not initialized');
-                this.showToast('Error initializing app', 'error');
-                this.showAuth();
-                return;
-            }
-            
-            // Check authentication status
+            // Check authentication
             const user = await this.apiClient.getCurrentUser();
-            
             if (user) {
                 this.currentUser = user;
                 await this.loadApp();
@@ -139,8 +117,7 @@ class FamilyChoreChart {
             }
         } catch (error) {
             console.error('Initialization error:', error);
-            this.showToast('Error loading application', 'error');
-            this.showAuth();
+            this.showToast('Failed to initialize app. Please refresh the page.', 'error');
         } finally {
             this.hideLoading();
         }
@@ -327,7 +304,16 @@ class FamilyChoreChart {
         const appContainer = document.getElementById('app-container');
         if (authContainer) authContainer.classList.add('hidden');
         if (appContainer) appContainer.classList.remove('hidden');
-        this.setupAppHandlers();
+        
+        // Add flag to prevent duplicate initialization
+        if (!this.handlersInitialized) {
+            // Ensure DOM is ready before setting up handlers
+            setTimeout(() => {
+                this.setupAppHandlers();
+                this.setupModalHandlers();
+                this.handlersInitialized = true;
+            }, 100);
+        }
     }
 
     // Authentication Handlers
@@ -471,131 +457,94 @@ class FamilyChoreChart {
 
     // App Handlers
     setupAppHandlers() {
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            await this.handleLogout();
-        });
+        console.log('Setting up app handlers...');
+        
+        // Check if already initialized to prevent duplicates
+        if (this.appHandlersSetup) {
+            console.log('App handlers already set up, skipping...');
+            return;
+        }
+        this.appHandlersSetup = true;
 
-        // Add child
-        document.getElementById('add-child-btn').addEventListener('click', () => {
-            this.showModal('add-child-modal');
-        });
-
-        document.getElementById('empty-add-child-btn').addEventListener('click', () => {
-            this.showModal('add-child-modal');
-        });
-
-        // Settings
-        document.getElementById('settings-btn').addEventListener('click', () => {
-            this.showSettingsModal();
-        });
-
-        // Settings tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.switchSettingsTab(btn.dataset.tab);
+        // Add child button
+        const addChildBtn = document.getElementById('add-child-btn');
+        if (addChildBtn && !addChildBtn.hasListener) {
+            addChildBtn.addEventListener('click', () => {
+                this.showModal('add-child-modal');
             });
-        });
-
-        // Family sharing
-        this.setupFamilySharing();
-
-        // Notification permission
-        this.setupNotificationPermission();
-
-        // Modal handlers
-        this.setupModalHandlers();
-
-        // Edit Children
-        const editChildrenBtn = document.getElementById('edit-children-btn');
-        if (editChildrenBtn) {
-            editChildrenBtn.addEventListener('click', () => {
-                this.renderEditChildrenList();
-                this.showModal('edit-children-modal');
-            });
+            addChildBtn.hasListener = true;
         }
 
-
-    }
-
-    setupNotificationPermission() {
-        // Check if notifications are enabled
-        if (!window.notificationManager.isEnabled()) {
-            // Show notification permission prompt after 5 seconds
-            setTimeout(() => {
-                this.showNotificationPrompt();
-            }, 5000);
+        // Settings button
+        const settingsBtn = document.getElementById('settings-btn');
+        if (settingsBtn && !settingsBtn.hasListener) {
+            settingsBtn.addEventListener('click', () => {
+                this.showSettingsModal();
+            });
+            settingsBtn.hasListener = true;
         }
-    }
 
-    showNotificationPrompt() {
-        const toast = document.createElement('div');
-        toast.className = 'toast toast-info notification-prompt';
-        toast.innerHTML = `
-            <div class="toast-content">
-                <div class="toast-icon">🔔</div>
-                <div class="toast-message">
-                    <div class="toast-title">Enable Notifications</div>
-                    <div class="toast-description">Get daily chore reminders and weekly progress reports!</div>
-                </div>
-            </div>
-            <div class="toast-actions">
-                <button class="toast-action btn btn-primary btn-sm">Enable</button>
-                <button class="toast-close" title="Dismiss">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-        `;
-        
-        document.getElementById('toast-container').appendChild(toast);
-        
-        // Add hover effects and better styling
-        const closeBtn = toast.querySelector('.toast-close');
-        closeBtn.addEventListener('mouseenter', () => {
-            closeBtn.style.transform = 'scale(1.1)';
-        });
-        closeBtn.addEventListener('mouseleave', () => {
-            closeBtn.style.transform = 'scale(1)';
-        });
-        
-        toast.querySelector('.toast-action').addEventListener('click', async () => {
-            const success = await window.notificationManager.requestPermission();
-            if (success) {
-                window.analytics.trackEngagement('notification_enabled');
-                this.showToast('Notifications enabled! You\'ll get daily reminders.', 'success');
-            } else {
-                window.analytics.trackEngagement('notification_declined');
-                this.showToast('Please enable notifications in your browser settings.', 'warning');
-            }
-            toast.remove();
-        });
-        
-        closeBtn.addEventListener('click', () => {
-            // Add a subtle animation before removing
-            toast.style.transform = 'translateX(100%)';
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
+        // Logout button
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn && !logoutBtn.hasListener) {
+            logoutBtn.addEventListener('click', () => {
+                this.handleLogout();
+            });
+            logoutBtn.hasListener = true;
+        }
+
+        // Theme selector
+        const themeSelector = document.getElementById('theme-selector');
+        if (themeSelector && !themeSelector.hasListener) {
+            themeSelector.addEventListener('change', (e) => {
+                this.setTheme(e.target.value);
+            });
+            themeSelector.hasListener = true;
+        }
+
+        // Color scheme selector
+        const colorSchemeSelector = document.getElementById('color-scheme');
+        if (colorSchemeSelector && !colorSchemeSelector.hasListener) {
+            colorSchemeSelector.addEventListener('change', (e) => {
+                this.setColorScheme(e.target.value);
+            });
+            colorSchemeSelector.hasListener = true;
+        }
+
+        // Sound enabled checkbox
+        const soundEnabled = document.getElementById('sound-enabled');
+        if (soundEnabled && !soundEnabled.hasListener) {
+            soundEnabled.addEventListener('change', (e) => {
+                this.settings.soundEnabled = e.target.checked;
+                this.updateSoundToggle();
+                this.saveSettings();
+            });
+            soundEnabled.hasListener = true;
+        }
+
+        // Sound volume slider
+        const soundVolume = document.getElementById('sound-volume');
+        if (soundVolume && !soundVolume.hasListener) {
+            soundVolume.addEventListener('input', (e) => {
+                this.settings.soundVolume = parseInt(e.target.value);
+                this.saveSettings();
+            });
+            soundVolume.hasListener = true;
+        }
+
+        // Settings tabs - use event delegation to avoid duplicates
+        if (!this.tabHandlerSetup) {
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-btn') && e.target.dataset.tab) {
+                    this.switchSettingsTab(e.target.dataset.tab);
                 }
-            }, 200);
-        });
+            });
+            this.tabHandlerSetup = true;
+        }
         
-        // Auto-remove after 15 seconds with fade out
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.style.transform = 'translateX(100%)';
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.remove();
-                    }
-                }, 200);
-            }
-        }, 15000);
+        // Load settings and initialize toggles
+        this.loadSettings();
+        this.initializeToggles();
     }
 
     async handleLogout() {
@@ -619,11 +568,27 @@ class FamilyChoreChart {
 
     // Modal Management
     setupModalHandlers() {
-        // Close modal when clicking outside
+        // Single modal close handler - using event delegation
         document.addEventListener('click', (e) => {
+            // Close modal with X button
+            if (e.target.classList.contains('modal-close')) {
+                const modal = e.target.closest('.modal');
+                if (modal) {
+                    this.hideModal(modal.id);
+                }
+            }
+            
+            // Close modal with Cancel button (look for data-modal attribute OR closest modal)
+            if (e.target.classList.contains('btn-outline') || e.target.textContent.trim().toLowerCase() === 'cancel') {
+                const modal = e.target.closest('.modal');
+                if (modal) {
+                    this.hideModal(modal.id);
+                }
+            }
+            
+            // Close modal when clicking outside (on backdrop)
             if (e.target.classList.contains('modal')) {
-                const modalId = e.target.id;
-                this.hideModal(modalId);
+                this.hideModal(e.target.id);
             }
         });
 
@@ -635,14 +600,6 @@ class FamilyChoreChart {
                     this.hideModal(openModal.id);
                 }
             }
-        });
-
-        // Close modal with X button
-        document.querySelectorAll('.modal-close').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const modalId = e.target.dataset.modal;
-                this.hideModal(modalId);
-            });
         });
 
         // Add child form
@@ -733,7 +690,10 @@ class FamilyChoreChart {
     }
 
     hideModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+        }
         
         // Reset forms
         if (modalId === 'add-child-modal') {
@@ -911,7 +871,7 @@ class FamilyChoreChart {
         
         if (result.success) {
             this.familySettings = result.settings;
-            this.renderChildren();
+            // Don't reload the entire view, just close the modal
             this.hideModal('settings-modal');
             this.showToast('Settings updated!', 'success');
         } else {
@@ -924,6 +884,7 @@ class FamilyChoreChart {
     async showSettingsModal() {
         this.showModal('settings-modal');
         await this.loadFamilySettings();
+        await this.loadChildrenList();
         await this.loadChoresList();
         this.generateChildTabs();
         this.populateManageChildrenList();
@@ -942,6 +903,8 @@ class FamilyChoreChart {
             content.classList.remove('active');
         });
         document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+
     }
 
 
@@ -1323,6 +1286,11 @@ class FamilyChoreChart {
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
         return `linear-gradient(to right, #${r}${r}${g}${g}${b}${b}, #${r}${r}${g}${g}${b}${b})`;
+    }
+
+    getChildName(childId) {
+        const child = this.children.find(c => c.id === childId);
+        return child ? child.name : 'Unknown Child';
     }
 
     // The following methods are not used in the provided edit, but are kept as they were in the original file.
@@ -1995,12 +1963,18 @@ class FamilyChoreChart {
         const progress = this.calculateChildProgress(child.id, childChores, childCompletions);
         // Calculate stars based on completion percentage
         const stars = this.calculateStars(progress.completionPercentage);
+        
+        // Calculate total streak for this child
+        const totalStreak = childChores.reduce((sum, chore) => {
+            return sum + this.getStreak(child.id, chore.id);
+        }, 0);
         card.innerHTML = `
             <div class="child-header">
                 ${avatarHtml}
                 <div class="child-info">
                     <h3>${child.name}</h3>
                     <p>Age ${child.age}</p>
+                    ${totalStreak > 0 ? `<div class="streak-badge">🔥 ${totalStreak} day streak</div>` : ''}
                 </div>
                 <div class="child-actions">
                 </div>
@@ -2142,6 +2116,17 @@ class FamilyChoreChart {
                             }
                             this.updateChildProgressOptimistically(chore.child_id, isCurrentlyCompleted ? 1 : -1);
                         } else {
+                            // Play sound effect
+                            this.playSound(result.completed ? 'success' : 'notification');
+                            
+                            // Update streak if completed
+                            if (result.completed) {
+                                const streak = this.updateStreak(chore.child_id, choreId);
+                                if (streak > 1) {
+                                    this.showToast(`${this.getChildName(chore.child_id)} is on a ${streak}-day streak for this chore! 🔥`, 'success');
+                                }
+                            }
+                            
                             // API result matches, reload completions and check achievements
                             await this.loadCompletions();
                             this.checkAchievements(chore.child_id, choreId);
@@ -2155,6 +2140,7 @@ class FamilyChoreChart {
                     } else {
                         // API failed, revert optimistic update
                         console.error('Failed to update chore:', result.error);
+                        this.playSound('error');
                         if (isCurrentlyCompleted) {
                             cell.classList.add('completed');
                             cell.textContent = '✓';
@@ -2286,18 +2272,25 @@ class FamilyChoreChart {
         // Calculate new values
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         const totalChoreDays = childChores.length * 7;
-        
-        // Get current completion count from progress stats
+
+        // Get current completion count from progress stats (parse the X/Y days string)
         const currentStats = progressStats.textContent;
-        const currentCompleted = parseInt(currentStats.match(/(\d+)\/7/)?.[1] || 0);
-        const newCompleted = Math.max(0, Math.min(7, currentCompleted + changeInCompletions));
-        
+        const match = currentStats.match(/(\d+)[^\d]+(\d+)/);
+        let currentCompleted = 0;
+        let maxDays = 0;
+        if (match) {
+            currentCompleted = parseInt(match[1], 10);
+            maxDays = parseInt(match[2], 10);
+        }
+        // Use totalChoreDays as the true max
+        const newCompleted = Math.max(0, Math.min(totalChoreDays, currentCompleted + changeInCompletions));
+
         // Calculate new percentage and earnings
         const completionPercentage = totalChoreDays > 0 ? (newCompleted / totalChoreDays) * 100 : 0;
         const dailyReward = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
         let totalEarnings = newCompleted * dailyReward;
-        
+
         // Add weekly bonus if all chores completed
         if (newCompleted === totalChoreDays && totalChoreDays > 0) {
             totalEarnings += weeklyBonus;
@@ -2305,7 +2298,7 @@ class FamilyChoreChart {
 
         // Update UI elements
         progressFill.style.width = `${completionPercentage}%`;
-        progressStats.innerHTML = `<span>${newCompleted}/7 days</span><span>${Math.round(completionPercentage)}% complete</span>`;
+        progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${Math.round(completionPercentage)}% complete</span>`;
         starsContainer.innerHTML = this.calculateStars(completionPercentage);
         earningsAmount.textContent = this.formatCents(totalEarnings);
     }
@@ -2350,7 +2343,7 @@ class FamilyChoreChart {
         }
         
         // Play a success sound (if available)
-        this.playSuccessSound();
+        this.playSound('success');
     }
 
     celebrateFullWeek(childName) {
@@ -2383,7 +2376,7 @@ class FamilyChoreChart {
         }
         
         // Play a celebration sound (if available)
-        this.playCelebrationSound();
+        this.playSound('celebration');
     }
 
     playSuccessSound() {
@@ -2523,7 +2516,6 @@ class FamilyChoreChart {
                         </div>
                     </div>
                     <div style="display:flex;gap:var(--space-2);">
-                        <button class="btn btn-outline btn-sm edit-child-manage" data-child-id="${child.id}">✏️ Edit</button>
                         <button class="btn btn-danger btn-sm remove-child-manage" data-child-id="${child.id}">🗑️ Remove</button>
                     </div>
                 </div>
@@ -2537,17 +2529,6 @@ class FamilyChoreChart {
     }
 
     addManageChildrenHandlers() {
-        // Edit child buttons
-        document.querySelectorAll('.edit-child-manage').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const childId = e.target.dataset.childId;
-                const child = this.children.find(c => c.id === childId);
-                if (child) {
-                    window.openEditChildModal(child);
-                }
-            });
-        });
-        
         // Remove child buttons
         document.querySelectorAll('.remove-child-manage').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -2780,8 +2761,8 @@ class FamilyChoreChart {
                     <select class="chore-category-input" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
                         <option value="General" ${chore.category === 'General' ? 'selected' : ''}>General</option>
                         <option value="Kitchen" ${chore.category === 'Kitchen' ? 'selected' : ''}>Kitchen</option>
-                        <option value="Bathroom" ${chore.category === 'Bathroom' ? 'selected' : ''}>Bathroom</option>
                         <option value="Bedroom" ${chore.category === 'Bedroom' ? 'selected' : ''}>Bedroom</option>
+                        <option value="Bathroom" ${chore.category === 'Bathroom' ? 'selected' : ''}>Bathroom</option>
                         <option value="Outdoor" ${chore.category === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
                         <option value="School" ${chore.category === 'School' ? 'selected' : ''}>School</option>
                         <option value="Personal" ${chore.category === 'Personal' ? 'selected' : ''}>Personal</option>
@@ -2963,6 +2944,456 @@ class FamilyChoreChart {
         }
     }
 
+    // Theme and Sound Management
+    initializeToggles() {
+        console.log('Initializing toggles...');
+        
+        // Prevent duplicate initialization
+        if (this.togglesInitialized) {
+            console.log('Toggles already initialized, skipping...');
+            return;
+        }
+        this.togglesInitialized = true;
+        
+        // Initialize theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        console.log('Theme toggle element:', themeToggle);
+        if (themeToggle) {
+            console.log('Found theme toggle, setting up event listener');
+            
+            // Remove any existing listeners by cloning the element
+            const newThemeToggle = themeToggle.cloneNode(true);
+            themeToggle.parentNode.replaceChild(newThemeToggle, themeToggle);
+            
+            newThemeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Theme toggle clicked');
+                this.toggleTheme();
+            });
+            
+            // Set initial state
+            const iconSpan = newThemeToggle.querySelector('.toggle-icon');
+            if (iconSpan) {
+                iconSpan.textContent = this.settings.theme === 'dark' ? '☀️' : '🌙';
+                console.log('Set theme icon to:', iconSpan.textContent);
+            }
+        } else {
+            console.warn('Theme toggle button not found');
+        }
+        
+        // Initialize sound toggle
+        const soundToggle = document.getElementById('sound-toggle');
+        console.log('Sound toggle element:', soundToggle);
+        if (soundToggle) {
+            console.log('Found sound toggle, setting up event listener');
+            
+            // Remove any existing listeners by cloning the element
+            const newSoundToggle = soundToggle.cloneNode(true);
+            soundToggle.parentNode.replaceChild(newSoundToggle, soundToggle);
+            
+            newSoundToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Sound toggle clicked');
+                this.toggleSound();
+            });
+            
+            // Set initial state
+            this.updateSoundToggle();
+        } else {
+            console.warn('Sound toggle button not found');
+        }
+    }
+
+    toggleTheme() {
+        console.log('toggleTheme called');
+        const currentTheme = this.settings.theme;
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        console.log('Switching from', currentTheme, 'to', newTheme);
+        this.setTheme(newTheme);
+        
+        // Only show toast if theme actually changed
+        if (this.settings.theme === newTheme) {
+            this.showToast(`Switched to ${newTheme} mode`, 'success');
+        }
+    }
+
+    setTheme(theme) {
+        console.log('setTheme called with:', theme);
+        this.settings.theme = theme;
+        
+        // Apply theme to document root
+        const root = document.documentElement;
+        
+        // Remove existing theme classes
+        root.classList.remove('light-theme', 'dark-theme');
+        
+        // Add new theme class
+        root.classList.add(`${theme}-theme`);
+        
+        // Set data attribute for CSS selectors
+        root.setAttribute('data-theme', theme);
+        
+        // Apply CSS custom properties for immediate effect
+        if (theme === 'dark') {
+            root.style.setProperty('--bg-primary', '#1a1a1a');
+            root.style.setProperty('--bg-secondary', '#2d2d2d');
+            root.style.setProperty('--text-primary', '#ffffff');
+            root.style.setProperty('--text-secondary', '#cccccc');
+            root.style.setProperty('--border-color', '#444444');
+            root.style.setProperty('--card-bg', '#2d2d2d');
+            root.style.setProperty('--modal-bg', '#2d2d2d');
+        } else {
+            root.style.setProperty('--bg-primary', '#ffffff');
+            root.style.setProperty('--bg-secondary', '#f8fafc');
+            root.style.setProperty('--text-primary', '#1f2937');
+            root.style.setProperty('--text-secondary', '#6b7280');
+            root.style.setProperty('--border-color', '#e5e7eb');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--modal-bg', '#ffffff');
+        }
+        
+        console.log('Theme applied:', {
+            'data-theme': root.getAttribute('data-theme'),
+            'classes': root.classList.toString(),
+            'bg-primary': root.style.getPropertyValue('--bg-primary')
+        });
+        
+        this.saveSettings();
+        
+        // Update theme toggle button icon
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            const iconSpan = themeToggle.querySelector('.toggle-icon');
+            if (iconSpan) {
+                iconSpan.textContent = theme === 'dark' ? '☀️' : '🌙';
+                console.log('Updated theme icon to:', iconSpan.textContent);
+            }
+        }
+        
+        // Update theme selector
+        const themeSelector = document.getElementById('theme-selector');
+        if (themeSelector) {
+            themeSelector.value = theme;
+        }
+    }
+
+    setColorScheme(scheme) {
+        this.settings.colorScheme = scheme;
+        document.documentElement.setAttribute('data-color-scheme', scheme);
+        this.saveSettings();
+        
+        // Update color scheme selector
+        const colorSelector = document.getElementById('color-scheme');
+        if (colorSelector) {
+            colorSelector.value = scheme;
+        }
+    }
+
+    toggleSound() {
+        console.log('toggleSound called');
+        this.settings.soundEnabled = !this.settings.soundEnabled;
+        console.log('Sound enabled:', this.settings.soundEnabled);
+        this.updateSoundToggle();
+        this.saveSettings();
+        
+        // Play test sound when enabling (only once)
+        if (this.settings.soundEnabled && !this.justToggled) {
+            this.justToggled = true;
+            setTimeout(() => {
+                this.playSound('notification');
+                this.justToggled = false;
+            }, 100);
+        }
+    }
+
+    updateSoundToggle() {
+        console.log('updateSoundToggle called, soundEnabled:', this.settings.soundEnabled);
+        
+        // Try to find the sound toggle button
+        let soundToggle = document.getElementById('sound-toggle');
+        
+        // If not found by ID, try to find it another way
+        if (!soundToggle) {
+            soundToggle = document.querySelector('[data-toggle="sound"]') || 
+                         document.querySelector('.sound-toggle') ||
+                         document.querySelector('button[onclick*="toggleSound"]');
+        }
+        
+        if (soundToggle) {
+            const iconSpan = soundToggle.querySelector('.toggle-icon') || 
+                            soundToggle.querySelector('span') || 
+                            soundToggle;
+            
+            if (iconSpan) {
+                if (this.settings.soundEnabled) {
+                    iconSpan.textContent = '🔊';
+                    soundToggle.classList.remove('muted');
+                    console.log('Sound enabled - showing 🔊');
+                } else {
+                    iconSpan.textContent = '🔇';
+                    soundToggle.classList.add('muted');
+                    console.log('Sound disabled - showing 🔇');
+                }
+            }
+        } else {
+            console.warn('Sound toggle button not found in DOM');
+        }
+        
+        // Update sound enabled checkbox
+        const soundEnabled = document.getElementById('sound-enabled');
+        if (soundEnabled) {
+            soundEnabled.checked = this.settings.soundEnabled;
+        }
+    }
+
+    playSound(soundType = 'success') {
+        if (!this.settings.soundEnabled) return;
+        
+        const volume = this.settings.soundVolume / 100;
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const sounds = {
+            success: { frequency: 800, duration: 0.2 },
+            error: { frequency: 400, duration: 0.3 },
+            celebration: { frequency: 600, duration: 0.1, pattern: [600, 700, 800, 900] },
+            notification: { frequency: 500, duration: 0.15 }
+        };
+        
+        const sound = sounds[soundType];
+        if (!sound) return;
+        
+        if (sound.pattern) {
+            // Play pattern of sounds
+            sound.pattern.forEach((freq, index) => {
+                setTimeout(() => {
+                    this.playTone(audioContext, freq, sound.duration, volume);
+                }, index * 100);
+            });
+        } else {
+            this.playTone(audioContext, sound.frequency, sound.duration, volume);
+        }
+    }
+
+    playTone(audioContext, frequency, duration, volume) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    // Streak Management
+    updateStreak(childId, choreId) {
+        const today = new Date().toISOString().split('T')[0];
+        const streakKey = `${childId}-${choreId}`;
+        
+        if (!this.streaks[streakKey]) {
+            this.streaks[streakKey] = { count: 0, lastDate: null };
+        }
+        
+        const streak = this.streaks[streakKey];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        if (streak.lastDate === yesterdayStr) {
+            // Consecutive day
+            streak.count++;
+        } else if (streak.lastDate === today) {
+            // Already completed today
+            return streak.count;
+        } else {
+            // New streak or broken streak
+            streak.count = 1;
+        }
+        
+        streak.lastDate = today;
+        this.saveStreaks();
+        this.updateStreakDisplay();
+        
+        return streak.count;
+    }
+
+    getStreak(childId, choreId) {
+        const streakKey = `${childId}-${choreId}`;
+        return this.streaks[streakKey]?.count || 0;
+    }
+
+    updateStreakDisplay() {
+        const streakDisplay = document.getElementById('streak-display');
+        if (!streakDisplay) return;
+        
+        let html = '';
+        this.children.forEach(child => {
+            const childChores = this.chores.filter(chore => chore.child_id === child.id);
+            const totalStreak = childChores.reduce((sum, chore) => {
+                return sum + this.getStreak(child.id, chore.id);
+            }, 0);
+            
+            if (totalStreak > 0) {
+                html += `
+                    <div class="streak-card">
+                        <div class="streak-count">${totalStreak}</div>
+                        <div class="streak-label">${child.name}'s Total Streak</div>
+                    </div>
+                `;
+            }
+        });
+        
+        if (html === '') {
+            html = '<p style="color: var(--gray-600); text-align: center;">No active streaks yet. Complete chores to start building streaks!</p>';
+        }
+        
+        streakDisplay.innerHTML = html;
+    }
+
+    resetAllStreaks() {
+        if (confirm('Are you sure you want to reset all streaks? This cannot be undone.')) {
+            this.streaks = {};
+            this.saveStreaks();
+            this.updateStreakDisplay();
+            this.showToast('All streaks have been reset.', 'success');
+        }
+    }
+
+    exportStreakData() {
+        const data = JSON.stringify(this.streaks, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'streak-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        this.showToast('Streak data exported successfully!', 'success');
+    }
+
+    showStreakHistory() {
+        let html = '<h4>Streak History</h4>';
+        let hasStreaks = false;
+        
+        this.children.forEach(child => {
+            const childChores = this.chores.filter(chore => chore.child_id === child.id);
+            childChores.forEach(chore => {
+                const streak = this.getStreak(child.id, chore.id);
+                if (streak > 0) {
+                    hasStreaks = true;
+                    html += `
+                        <div style="margin-bottom: var(--space-2); padding: var(--space-2); background: var(--gray-50); border-radius: var(--radius);">
+                            <strong>${child.name}</strong> - ${chore.name}: <span style="color: var(--primary); font-weight: bold;">${streak} day${streak !== 1 ? 's' : ''}</span>
+                        </div>
+                    `;
+                }
+            });
+        });
+        
+        if (!hasStreaks) {
+            html += '<p style="color: var(--gray-600);">No active streaks found.</p>';
+        }
+        
+        this.showToast(html, 'info', 5000);
+    }
+
+    // Settings Management
+    loadSettings() {
+        console.log('Loading settings...');
+        const saved = localStorage.getItem('familyChoreChartSettings');
+        if (saved) {
+            try {
+                const parsedSettings = JSON.parse(saved);
+                this.settings = { ...this.settings, ...parsedSettings };
+                console.log('Loaded settings:', this.settings);
+            } catch (error) {
+                console.error('Error parsing saved settings:', error);
+            }
+        }
+        
+        // Apply settings immediately
+        this.setTheme(this.settings.theme);
+        this.setColorScheme(this.settings.colorScheme);
+        
+        // Delay sound toggle update to ensure DOM is ready
+        setTimeout(() => {
+            this.updateSoundToggle();
+        }, 200);
+        
+        // Update UI elements
+        const soundVolume = document.getElementById('sound-volume');
+        if (soundVolume) {
+            soundVolume.value = this.settings.soundVolume;
+        }
+        
+        console.log('Settings loaded and applied');
+    }
+
+    saveSettings() {
+        console.log('Saving settings:', this.settings);
+        try {
+            localStorage.setItem('familyChoreChartSettings', JSON.stringify(this.settings));
+            console.log('Settings saved successfully');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
+    }
+
+    // Add method to force refresh theme
+    forceApplyTheme() {
+        console.log('Force applying theme:', this.settings.theme);
+        const root = document.documentElement;
+        
+        // Force remove and re-add classes
+        root.classList.remove('light-theme', 'dark-theme');
+        root.setAttribute('data-theme', this.settings.theme);
+        root.classList.add(`${this.settings.theme}-theme`);
+        
+        // Force apply CSS variables
+        if (this.settings.theme === 'dark') {
+            root.style.setProperty('--bg-primary', '#1a1a1a');
+            root.style.setProperty('--bg-secondary', '#2d2d2d');
+            root.style.setProperty('--text-primary', '#ffffff');
+            root.style.setProperty('--text-secondary', '#cccccc');
+            root.style.setProperty('--border-color', '#444444');
+            root.style.setProperty('--card-bg', '#2d2d2d');
+            root.style.setProperty('--modal-bg', '#2d2d2d');
+            document.body.style.backgroundColor = '#1a1a1a';
+            document.body.style.color = '#ffffff';
+        } else {
+            root.style.setProperty('--bg-primary', '#ffffff');
+            root.style.setProperty('--bg-secondary', '#f8fafc');
+            root.style.setProperty('--text-primary', '#1f2937');
+            root.style.setProperty('--text-secondary', '#6b7280');
+            root.style.setProperty('--border-color', '#e5e7eb');
+            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--modal-bg', '#ffffff');
+            document.body.style.backgroundColor = '#ffffff';
+            document.body.style.color = '#1f2937';
+        }
+        
+        console.log('Theme force applied');
+    }
+
+    saveStreaks() {
+        localStorage.setItem('familyChoreChartStreaks', JSON.stringify(this.streaks));
+    }
+
+    loadStreaks() {
+        const saved = localStorage.getItem('familyChoreChartStreaks');
+        if (saved) {
+            this.streaks = JSON.parse(saved);
+        }
+    }
 
 }
 

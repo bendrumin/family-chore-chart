@@ -134,20 +134,18 @@
                     <h1>🏠 Family Chore Chart</h1>
                     <p id="family-name">Loading...</p>
                 </div>
-                <div class="header-right">
-                    <button id="family-sharing-btn" class="btn btn-secondary">
-                        <span>👥</span> Family Sharing
-                    </button>
-                    <button id="add-child-btn" class="btn btn-secondary">
-                        <span>👶</span> Add Child
-                    </button>
-                    <button id="settings-btn" class="btn btn-secondary">
-                        <span>⚙️</span> Settings
-                    </button>
-                    <button id="logout-btn" class="btn btn-secondary">
-                        <span>🚪</span> Logout
-                    </button>
-                </div>
+                            <div class="header-right">
+                <button class="btn btn-outline" id="theme-toggle" title="Toggle Dark Mode">
+                    <span class="toggle-icon">🌙</span>
+                    <span class="toggle-label">Dark Mode</span>
+                </button>
+                <button class="btn btn-outline" id="sound-toggle" title="Toggle Sounds">
+                    <span class="toggle-icon">🔊</span>
+                    <span class="toggle-label">Sounds</span>
+                </button>
+                <button class="btn btn-outline" id="settings-btn">⚙️ Settings</button>
+                <button class="btn btn-outline" id="logout-btn">🚪 Logout</button>
+            </div>
             </div>
         </header>
 
@@ -492,6 +490,7 @@
                 <button class="tab-btn" data-tab="chores">
                     <span>📝</span> Chores
                 </button>
+
                 <button class="tab-btn" data-tab="premium-features">
                     <span>🌟</span> Premium Features
                 </button>
@@ -552,6 +551,8 @@
                     </div>
                 </div>
             </div>
+            
+
             
             <!-- Premium Features Tab -->
             <div id="premium-features-tab" class="tab-content">
