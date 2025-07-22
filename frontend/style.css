@@ -2495,3 +2495,489 @@ body {
         justify-content: center;
     }
 } 
+
+/* Premium Features */
+.premium-features {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.icon-picker {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-2);
+    max-height: 200px;
+    overflow-y: auto;
+    padding: var(--space-2);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: var(--gray-50);
+}
+
+.icon-picker::-webkit-scrollbar {
+    width: 6px;
+}
+
+.icon-picker::-webkit-scrollbar-track {
+    background: var(--gray-200);
+    border-radius: 3px;
+}
+
+.icon-picker::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 3px;
+}
+
+.icon-picker::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+.icon-option {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.icon-option:hover {
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.icon-option.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+}
+
+.upgrade-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+    font-size: var(--font-size-sm);
+    color: #92400e;
+}
+
+.upgrade-banner span:first-child {
+    font-size: 1.2rem;
+}
+
+.upgrade-banner button {
+    margin-left: auto;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-xs);
+}
+
+.badge-container {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-3);
+}
+
+.achievement-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: var(--radius);
+    padding: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: #92400e;
+    max-width: 200px;
+}
+
+.badge-icon {
+    font-size: 1.5rem;
+}
+
+.badge-info {
+    flex: 1;
+}
+
+.badge-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.badge-description {
+    font-size: var(--font-size-xs);
+    opacity: 0.8;
+}
+
+.premium-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--gray-500);
+    font-size: var(--font-size-xs);
+}
+
+.premium-lock::before {
+    content: "🔒";
+    font-size: 0.8rem;
+}
+
+.points-system {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #0ea5e9;
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+}
+
+.points-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: #0ea5e9;
+}
+
+.points-icon {
+    font-size: 1.5rem;
+}
+
+.export-section {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #22c55e;
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+}
+
+.export-button {
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.export-button:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+}
+
+.premium-features-content h3 {
+    margin-bottom: var(--space-4);
+    color: var(--gray-800);
+    font-size: var(--font-size-xl);
+}
+
+.premium-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.premium-feature-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    text-align: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.premium-feature-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+}
+
+.premium-feature-card h4 {
+    margin-bottom: var(--space-2);
+    color: var(--gray-800);
+    font-size: var(--font-size-lg);
+}
+
+.premium-feature-card p {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-3);
+}
+
+.premium-feature-card .premium-lock {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    background: var(--gray-100);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    font-size: var(--font-size-xs);
+}
+
+@media (max-width: 768px) {
+    .premium-features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chores Management Styles */
+.chores-management-content h3 {
+    margin-bottom: var(--space-4);
+    color: var(--gray-800);
+    font-size: var(--font-size-xl);
+}
+
+#chores-management-tabs {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-300) transparent;
+    margin-bottom: var(--space-4);
+}
+
+.child-chore-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.child-chore-tab:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.child-chore-tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.child-chores-content {
+    display: none;
+    padding: var(--space-4);
+}
+
+.child-chores-content.active {
+    display: block;
+}
+
+#chores-management-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+#chores-management-tabs::-webkit-scrollbar-track {
+    background: var(--gray-200);
+    border-radius: 2px;
+}
+
+#chores-management-tabs::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 2px;
+}
+
+#chores-management-tabs::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+@media (max-width: 768px) {
+    #chores-management-tabs {
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .child-chore-tab {
+        padding: var(--space-1) var(--space-2);
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Bulk Edit Modal Styles */
+.bulk-edit-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.bulk-edit-selection {
+    border-right: 1px solid var(--gray-200);
+    padding-right: var(--space-4);
+    overflow-y: auto;
+}
+
+.bulk-edit-fields {
+    overflow-y: auto;
+}
+
+.bulk-edit-chore-item {
+    transition: all 0.2s ease;
+}
+
+.bulk-edit-chore-item:hover {
+    background: var(--gray-50) !important;
+    border-color: var(--primary) !important;
+}
+
+.bulk-edit-chore-item input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.2);
+}
+
+.bulk-edit-chore-item label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+}
+
+.bulk-edit-fields .form-group {
+    text-align: left;
+}
+
+.bulk-edit-fields label {
+    text-align: left;
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.bulk-edit-fields input,
+.bulk-edit-fields select {
+    width: 100%;
+    text-align: left;
+}
+
+/* Edit Chore Modal - Left align category field */
+#edit-chore-modal .form-group {
+    text-align: left;
+}
+
+#edit-chore-modal label {
+    text-align: left;
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+#edit-chore-modal input,
+#edit-chore-modal select,
+#edit-chore-modal textarea {
+    width: 100%;
+    text-align: left;
+}
+
+/* Chore View - Left align category and other fields */
+.chore-item,
+.chore-cell,
+.chore-grid-table td,
+.chore-management .form-group {
+    text-align: left;
+}
+
+.chore-item label,
+.chore-cell label,
+.chore-management label {
+    text-align: left;
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.chore-item input,
+.chore-item select,
+.chore-cell input,
+.chore-cell select,
+.chore-management input,
+.chore-management select {
+    width: 100%;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .bulk-edit-content {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+        max-height: 60vh;
+    }
+    
+    .bulk-edit-selection {
+        border-right: none;
+        border-bottom: 1px solid var(--gray-200);
+        padding-right: 0;
+        padding-bottom: var(--space-4);
+    }
+}
+
+/* Single Chore Editor Styles */
+.single-chore-editor {
+    background: var(--gray-50);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    padding: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.icon-picker-small {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: var(--space-2);
+    background: white;
+}
+
+.icon-option-small {
+    padding: var(--space-1);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: var(--font-size-sm);
+}
+
+.icon-option-small:hover {
+    background: var(--gray-100);
+    border-color: var(--primary);
+}
+
+.icon-option-small.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}

@@ -680,6 +680,25 @@ class FamilyChoreChart {
             this.addChoreEntry();
         });
 
+        // Icon picker functionality
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('icon-option')) {
+                const iconPicker = e.target.closest('.icon-picker');
+                const hiddenInput = iconPicker.nextElementSibling;
+                
+                // Update active state
+                iconPicker.querySelectorAll('.icon-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                
+                // Update hidden input
+                if (hiddenInput && hiddenInput.type === 'hidden') {
+                    hiddenInput.value = e.target.dataset.icon;
+                }
+            }
+        });
+
         // Remove chore buttons (delegated event handling)
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('remove-chore')) {
@@ -709,6 +728,7 @@ class FamilyChoreChart {
         // Populate child select for chore form
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
+            this.checkPremiumFeatures();
         }
     }
 
@@ -742,7 +762,7 @@ class FamilyChoreChart {
         } else if (modalId === 'edit-chore-modal') {
             document.getElementById('edit-chore-form').reset();
             delete document.getElementById('edit-chore-form').dataset.choreId;
-            delete document.getElementById('edit-chore-form').dataset.returnTab;
+            delete document.getElementById('edit-chore-form').dataset.returnChildId;
         }
     }
 
@@ -821,9 +841,11 @@ class FamilyChoreChart {
         for (let i = 0; i < choreEntries.length; i++) {
             const entry = choreEntries[i];
             const name = entry.querySelector(`#chore-name-${i + 1}`).value;
+            const icon = entry.querySelector(`#chore-icon-${i + 1}`)?.value || '📝';
+            const category = entry.querySelector(`#chore-category-${i + 1}`)?.value || 'General';
 
             if (name) {
-                choresToAdd.push({ name, childId });
+                choresToAdd.push({ name, childId, icon, category });
             }
         }
 
@@ -847,7 +869,7 @@ class FamilyChoreChart {
         let errorCount = 0;
 
         for (const chore of choresToAdd) {
-            const result = await this.apiClient.createChore(chore.name, 7, chore.childId); // Fixed 7 cents reward
+            const result = await this.apiClient.createChore(chore.name, 7, chore.childId, chore.icon, chore.category);
             
             if (result.success) {
                 successCount++;
@@ -905,6 +927,7 @@ class FamilyChoreChart {
         await this.loadChoresList();
         this.generateChildTabs();
         this.populateManageChildrenList();
+        this.checkPremiumFeatures();
     }
 
     switchSettingsTab(tabName) {
@@ -956,18 +979,14 @@ class FamilyChoreChart {
     }
 
     generateChildTabs() {
-        const tabsContainer = document.getElementById('settings-tabs');
-        const modalContent = document.querySelector('#settings-modal .modal-content');
+        const choresTabsContainer = document.getElementById('chores-management-tabs');
+        const choresContentContainer = document.getElementById('chores-management-content');
         
-        if (!tabsContainer || !modalContent) return;
+        if (!choresTabsContainer || !choresContentContainer) return;
         
-        // Remove existing child tabs (keep Rewards and Manage Children tabs)
-        const existingChildTabs = tabsContainer.querySelectorAll('.tab-btn:not([data-tab="rewards"]):not([data-tab="manage-children"])');
-        existingChildTabs.forEach(tab => tab.remove());
-        
-        // Remove existing child tab content (keep rewards and manage-children tabs)
-        const existingChildContent = modalContent.querySelectorAll('.tab-content:not(#rewards-tab):not(#manage-children-tab)');
-        existingChildContent.forEach(content => content.remove());
+        // Clear existing content
+        choresTabsContainer.innerHTML = '';
+        choresContentContainer.innerHTML = '';
         
         // Generate tabs and content for each child
         this.children.forEach((child, index) => {
@@ -977,33 +996,69 @@ class FamilyChoreChart {
             
             // Create tab button
             const tabButton = document.createElement('button');
-            tabButton.className = 'tab-btn';
-            tabButton.dataset.tab = `child-${childId}`;
+            tabButton.className = 'child-chore-tab';
+            tabButton.dataset.childId = childId;
             tabButton.innerHTML = `<span>${tabIcon}</span> ${child.name} (${childChores.length})`;
-            tabsContainer.appendChild(tabButton);
+            choresTabsContainer.appendChild(tabButton);
             
             // Create tab content
             const tabContent = document.createElement('div');
-            tabContent.id = `child-${childId}-tab`;
-            tabContent.className = 'tab-content';
+            tabContent.id = `child-${childId}-chores-content`;
+            tabContent.className = 'child-chores-content';
             tabContent.innerHTML = `
                 <div class="chore-management">
-                    <h3>${child.name}'s Chores</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                        <h3>${child.name}'s Chores</h3>
+                        <button class="btn btn-outline btn-sm bulk-edit-chores" data-child-id="${childId}">
+                            <span>✏️</span> Bulk Edit
+                        </button>
+                    </div>
                     <div class="child-chores-list" id="child-${childId}-chores">
                         ${this.generateChildChoresList(child, childChores)}
                     </div>
                 </div>
             `;
-            modalContent.appendChild(tabContent);
+            choresContentContainer.appendChild(tabContent);
             
             // Add click handler for the new tab
             tabButton.addEventListener('click', () => {
-                this.switchSettingsTab(`child-${childId}`);
+                this.switchChildChoreTab(childId);
             });
         });
         
+        // Set first child as active
+        if (this.children.length > 0) {
+            this.switchChildChoreTab(this.children[0].id);
+        }
+        
         // Add delete button handlers for the new content
         this.addDeleteChoreHandlers();
+        
+        // Add bulk edit button handlers
+        this.addBulkEditHandlers();
+        
+        // Add bulk edit form handler
+        const bulkEditForm = document.getElementById('bulk-edit-form');
+        if (bulkEditForm) {
+            bulkEditForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleBulkEditChores();
+            });
+        }
+    }
+
+    switchChildChoreTab(childId) {
+        // Update tab buttons
+        document.querySelectorAll('.child-chore-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-child-id="${childId}"]`).classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.child-chores-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`child-${childId}-chores-content`).classList.add('active');
     }
 
     generateChildChoresList(child, childChores) {
@@ -1051,15 +1106,14 @@ class FamilyChoreChart {
                 const choreId = e.target.dataset.choreId;
                 const choreName = e.target.dataset.choreName;
                 const choreReward = e.target.dataset.choreReward;
-                const choreFrequency = e.target.dataset.choreFrequency;
                 const choreNotes = e.target.dataset.choreNotes;
                 
-                this.openEditChoreModal(choreId, choreName, choreReward, choreFrequency, choreNotes);
+                this.openEditChoreModal(choreId, choreName, choreReward, choreNotes);
             });
         });
     }
 
-    openEditChoreModal(choreId, choreName, choreReward, choreFrequency, choreNotes) {
+    openEditChoreModal(choreId, choreName, choreReward, choreNotes) {
         console.log('Opening edit modal for chore:', choreId);
         
         // Find the chore to get the child ID
@@ -1075,8 +1129,22 @@ class FamilyChoreChart {
         // Populate the edit form
         document.getElementById('edit-chore-name').value = choreName;
         document.getElementById('edit-chore-reward').value = choreReward;
-        document.getElementById('edit-chore-frequency').value = choreFrequency;
         document.getElementById('edit-chore-notes').value = choreNotes;
+        
+        // Set icon and category
+        document.getElementById('edit-chore-icon').value = chore.icon || '📝';
+        document.getElementById('edit-chore-category').value = chore.category || 'General';
+        
+        // Update icon picker active state
+        const iconPicker = document.getElementById('edit-chore-icon-picker');
+        if (iconPicker) {
+            iconPicker.querySelectorAll('.icon-option').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.icon === chore.icon) {
+                    btn.classList.add('active');
+                }
+            });
+        }
         
         // Populate child select and set the correct child
         this.populateEditChoreChildSelect(chore.child_id);
@@ -1084,11 +1152,8 @@ class FamilyChoreChart {
         // Store the chore ID for the save handler
         document.getElementById('edit-chore-form').dataset.choreId = choreId;
         
-        // Store the current active tab to return to after save
-        const activeTab = document.querySelector('.tab-btn.active');
-        if (activeTab) {
-            document.getElementById('edit-chore-form').dataset.returnTab = activeTab.dataset.tab;
-        }
+        // Store the child ID to return to after save
+        document.getElementById('edit-chore-form').dataset.returnChildId = chore.child_id;
         
         // Show the modal
         this.showModal('edit-chore-modal');
@@ -1411,13 +1476,345 @@ class FamilyChoreChart {
     }
 
     showUpgradeModal() {
-        // This method is not used in the provided edit, but is kept as it was in the original file.
-        // It would typically involve showing a modal for upgrading the subscription.
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🌟 Upgrade to Premium</h2>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="upgrade-content">
+                    <h3>Unlock Premium Features</h3>
+                    <p>Get access to advanced features that make chore management even more fun and effective!</p>
+                    
+                    <div class="plan-comparison">
+                        <div class="plan free">
+                            <h4>Free Plan</h4>
+                            <ul>
+                                <li>✅ Up to 2 children</li>
+                                <li>✅ Up to 5 chores</li>
+                                <li>✅ Basic chore tracking</li>
+                                <li>❌ Custom icons</li>
+                                <li>❌ Chore categories</li>
+                                <li>❌ Achievement badges</li>
+                                <li>❌ Points system</li>
+                                <li>❌ Export reports</li>
+                            </ul>
+                        </div>
+                        <div class="plan premium">
+                            <h4>Premium Plan</h4>
+                            <ul>
+                                <li>✅ Unlimited children</li>
+                                <li>✅ Unlimited chores</li>
+                                <li>✅ Advanced chore tracking</li>
+                                <li>✅ Custom chore icons</li>
+                                <li>✅ Chore categories</li>
+                                <li>✅ Achievement badges</li>
+                                <li>✅ Points system</li>
+                                <li>✅ Export reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="upgrade-actions">
+                        <button class="btn btn-primary" onclick="app.handleUpgrade()">Upgrade Now - $4.99/month</button>
+                        <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Maybe Later</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+    }
+
+    async handleUpgrade() {
+        // Redirect to payment page
+        window.location.href = '/api/create-checkout-session';
+    }
+
+    // Premium feature methods
+    async checkPremiumFeatures() {
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        
+        // Show/hide premium features in add chore modal for all entries
+        const premiumFeatures = document.querySelectorAll('[id^="premium-chore-features"]');
+        const upgradePrompts = document.querySelectorAll('[id^="premium-upgrade-prompt"]');
+        
+        premiumFeatures.forEach(feature => {
+            if (limits.canUseCustomIcons && limits.canUseCategories) {
+                feature.style.display = 'block';
+            } else {
+                feature.style.display = 'none';
+            }
+        });
+        
+        upgradePrompts.forEach(prompt => {
+            if (limits.canUseCustomIcons && limits.canUseCategories) {
+                prompt.style.display = 'none';
+            } else {
+                prompt.style.display = 'block';
+            }
+        });
+        
+        return limits;
+    }
+
+    async awardAchievementBadge(childId, badgeType, badgeName, badgeDescription, badgeIcon) {
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        if (!limits.canEarnBadges) {
+            return false;
+        }
+
+        const result = await this.apiClient.awardBadge(childId, badgeType, badgeName, badgeDescription, badgeIcon);
+        if (result.success) {
+            this.showToast(`🎉 New badge earned: ${badgeName}!`, 'success');
+            return true;
+        }
+        return false;
+    }
+
+    async exportFamilyReport() {
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        if (!limits.canExportReports) {
+            this.showUpgradeModal();
+            return;
+        }
+
+        const result = await this.apiClient.exportFamilyReport();
+        if (result.success) {
+            // Create and download PDF report
+            const report = result.report;
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chorestar-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            this.showToast('Report exported successfully!', 'success');
+        } else {
+            this.showToast('Failed to export report', 'error');
+        }
+    }
+
+    async checkAchievementBadges(childId) {
+        const child = this.children.find(c => c.id === childId);
+        if (!child) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Check for first chore completion badge
+        if (childCompletions.length === 1) {
+            await this.awardAchievementBadge(
+                childId,
+                'first_chore',
+                'First Step',
+                'Completed your first chore!',
+                '🎯'
+            );
+        }
+
+        // Check for 7-day streak badge
+        const weekStart = this.apiClient.getWeekStart();
+        const weekStartDate = new Date(weekStart);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        const weekCompletions = childCompletions.filter(comp => {
+            const compDate = new Date(comp.completed_at);
+            return compDate >= weekStartDate && compDate <= weekEnd;
+        });
+
+        if (weekCompletions.length >= childChores.length * 7) {
+            await this.awardAchievementBadge(
+                childId,
+                'perfect_week',
+                'Perfect Week',
+                'Completed all chores for the entire week!',
+                '🌟'
+            );
+        }
+
+        // Check for 10 total completions badge
+        if (childCompletions.length >= 10) {
+            await this.awardAchievementBadge(
+                childId,
+                'dedicated',
+                'Dedicated Helper',
+                'Completed 10 chores total!',
+                '💪'
+            );
+        }
     }
 
     addChoreEntry() {
-        // This method is not used in the provided edit, but is kept as it was in the original file.
-        // It would typically involve adding a new chore entry to the chore list.
+        const container = document.getElementById('chores-container');
+        const entryCount = container.children.length + 1;
+        
+        const newEntry = document.createElement('div');
+        newEntry.className = 'chore-entry';
+        newEntry.innerHTML = `
+            <div class="chore-entry-header">
+                <h3>Chore #${entryCount}</h3>
+                <button type="button" class="btn btn-outline btn-sm remove-chore">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="chore-name-${entryCount}">Chore Name</label>
+                <input type="text" id="chore-name-${entryCount}" required placeholder="e.g., Make bed">
+            </div>
+            
+            <!-- Premium Features -->
+            <div class="premium-features" id="premium-chore-features-${entryCount}" style="display: none;">
+                <div class="form-group">
+                    <label for="chore-icon-${entryCount}">Chore Icon</label>
+                    <div class="icon-picker" id="icon-picker-${entryCount}">
+                        <!-- Household Chores -->
+                        <button type="button" class="icon-option active" data-icon="📝">📝</button>
+                        <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
+                        <button type="button" class="icon-option" data-icon="🧹">🧹</button>
+                        <button type="button" class="icon-option" data-icon="🧺">🧺</button>
+                        <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
+                        <button type="button" class="icon-option" data-icon="🚿">🚿</button>
+                        <button type="button" class="icon-option" data-icon="🧽">🧽</button>
+                        <button type="button" class="icon-option" data-icon="🗑️">🗑️</button>
+                        <button type="button" class="icon-option" data-icon="🚪">🚪</button>
+                        <button type="button" class="icon-option" data-icon="🪟">🪟</button>
+                        <button type="button" class="icon-option" data-icon="🪑">🪑</button>
+                        <button type="button" class="icon-option" data-icon="🛋️">🛋️</button>
+                        <button type="button" class="icon-option" data-icon="🪞">🪞</button>
+                        <button type="button" class="icon-option" data-icon="🖼️">🖼️</button>
+                        <button type="button" class="icon-option" data-icon="💡">💡</button>
+                        <button type="button" class="icon-option" data-icon="🔌">🔌</button>
+                        <button type="button" class="icon-option" data-icon="🔋">🔋</button>
+                        
+                        <!-- Clothing & Personal Care -->
+                        <button type="button" class="icon-option" data-icon="👕">👕</button>
+                        <button type="button" class="icon-option" data-icon="👖">👖</button>
+                        <button type="button" class="icon-option" data-icon="👟">👟</button>
+                        <button type="button" class="icon-option" data-icon="🎒">🎒</button>
+                        <button type="button" class="icon-option" data-icon="🧸">🧸</button>
+                        
+                        <!-- School & Learning -->
+                        <button type="button" class="icon-option" data-icon="📚">📚</button>
+                        <button type="button" class="icon-option" data-icon="📖">📖</button>
+                        <button type="button" class="icon-option" data-icon="✏️">✏️</button>
+                        <button type="button" class="icon-option" data-icon="🎨">🎨</button>
+                        <button type="button" class="icon-option" data-icon="🧠">🧠</button>
+                        
+                        <!-- Technology -->
+                        <button type="button" class="icon-option" data-icon="📱">📱</button>
+                        <button type="button" class="icon-option" data-icon="💻">💻</button>
+                        <button type="button" class="icon-option" data-icon="🎮">🎮</button>
+                        
+                        <!-- Pets & Animals -->
+                        <button type="button" class="icon-option" data-icon="🐕">🐕</button>
+                        <button type="button" class="icon-option" data-icon="🐱">🐱</button>
+                        <button type="button" class="icon-option" data-icon="🐦">🐦</button>
+                        <button type="button" class="icon-option" data-icon="🐠">🐠</button>
+                        <button type="button" class="icon-option" data-icon="🐹">🐹</button>
+                        
+                        <!-- Plants & Nature -->
+                        <button type="button" class="icon-option" data-icon="🌱">🌱</button>
+                        <button type="button" class="icon-option" data-icon="🌺">🌺</button>
+                        <button type="button" class="icon-option" data-icon="🌳">🌳</button>
+                        <button type="button" class="icon-option" data-icon="🌿">🌿</button>
+                        <button type="button" class="icon-option" data-icon="🍃">🍃</button>
+                        <button type="button" class="icon-option" data-icon="🌧️">🌧️</button>
+                        <button type="button" class="icon-option" data-icon="☀️">☀️</button>
+                        <button type="button" class="icon-option" data-icon="❄️">❄️</button>
+                        
+                        <!-- Transportation -->
+                        <button type="button" class="icon-option" data-icon="🚗">🚗</button>
+                        <button type="button" class="icon-option" data-icon="🚲">🚲</button>
+                        <button type="button" class="icon-option" data-icon="🛴">🛴</button>
+                        <button type="button" class="icon-option" data-icon="🏠">🏠</button>
+                        <button type="button" class="icon-option" data-icon="🏡">🏡</button>
+                        
+                        <!-- Sports & Activities -->
+                        <button type="button" class="icon-option" data-icon="⚽">⚽</button>
+                        <button type="button" class="icon-option" data-icon="🏀">🏀</button>
+                        <button type="button" class="icon-option" data-icon="🎾">🎾</button>
+                        <button type="button" class="icon-option" data-icon="🏊">🏊</button>
+                        <button type="button" class="icon-option" data-icon="🚴">🚴</button>
+                        <button type="button" class="icon-option" data-icon="🏃">🏃</button>
+                        <button type="button" class="icon-option" data-icon="🧘">🧘</button>
+                        <button type="button" class="icon-option" data-icon="💪">💪</button>
+                        <button type="button" class="icon-option" data-icon="🎯">🎯</button>
+                        
+                        <!-- Music & Arts -->
+                        <button type="button" class="icon-option" data-icon="🎵">🎵</button>
+                        <button type="button" class="icon-option" data-icon="🎤">🎤</button>
+                        <button type="button" class="icon-option" data-icon="🎧">🎧</button>
+                        <button type="button" class="icon-option" data-icon="🎹">🎹</button>
+                        <button type="button" class="icon-option" data-icon="🎸">🎸</button>
+                        <button type="button" class="icon-option" data-icon="🥁">🥁</button>
+                        <button type="button" class="icon-option" data-icon="🎺">🎺</button>
+                        <button type="button" class="icon-option" data-icon="🎻">🎻</button>
+                        <button type="button" class="icon-option" data-icon="🎼">🎼</button>
+                        <button type="button" class="icon-option" data-icon="🎭">🎭</button>
+                        <button type="button" class="icon-option" data-icon="🎬">🎬</button>
+                        
+                        <!-- Celebrations & Fun -->
+                        <button type="button" class="icon-option" data-icon="🎉">🎉</button>
+                        <button type="button" class="icon-option" data-icon="🎊">🎊</button>
+                        <button type="button" class="icon-option" data-icon="🎈">🎈</button>
+                        <button type="button" class="icon-option" data-icon="🎁">🎁</button>
+                        <button type="button" class="icon-option" data-icon="🎄">🎄</button>
+                        <button type="button" class="icon-option" data-icon="🎃">🎃</button>
+                        <button type="button" class="icon-option" data-icon="🎪">🎪</button>
+                        
+                        <!-- Emotions & Symbols -->
+                        <button type="button" class="icon-option" data-icon="❤️">❤️</button>
+                        <button type="button" class="icon-option" data-icon="🌟">🌟</button>
+                        <button type="button" class="icon-option" data-icon="⭐">⭐</button>
+                        <button type="button" class="icon-option" data-icon="✨">✨</button>
+                        <button type="button" class="icon-option" data-icon="💎">💎</button>
+                        <button type="button" class="icon-option" data-icon="🏆">🏆</button>
+                        <button type="button" class="icon-option" data-icon="🎖️">🎖️</button>
+                        <button type="button" class="icon-option" data-icon="👑">👑</button>
+                        <button type="button" class="icon-option" data-icon="💫">💫</button>
+                        <button type="button" class="icon-option" data-icon="🌈">🌈</button>
+                    </div>
+                    <input type="hidden" id="chore-icon-${entryCount}" value="📝">
+                </div>
+                
+                <div class="form-group">
+                    <label for="chore-category-${entryCount}">Category</label>
+                    <select id="chore-category-${entryCount}">
+                        <option value="General">General</option>
+                        <option value="Kitchen">Kitchen</option>
+                        <option value="Bedroom">Bedroom</option>
+                        <option value="Bathroom">Bathroom</option>
+                        <option value="Outdoor">Outdoor</option>
+                        <option value="School">School</option>
+                        <option value="Pets">Pets</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
+            </div>
+            
+            <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-${entryCount}" style="display: none;">
+                <div class="upgrade-banner">
+                    <span>🌟</span>
+                    <span>Upgrade to Premium for custom icons, categories, and more!</span>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(newEntry);
+        
+        // Check premium features for the new entry
+        this.checkPremiumFeatures();
     }
 
     removeChoreEntry(choreEntry) {
@@ -1429,10 +1826,11 @@ class FamilyChoreChart {
         const choreId = document.getElementById('edit-chore-form').dataset.choreId;
         const name = document.getElementById('edit-chore-name').value;
         const rewardCents = parseInt(document.getElementById('edit-chore-reward').value);
-        const frequencyDays = parseInt(document.getElementById('edit-chore-frequency').value);
         const notes = document.getElementById('edit-chore-notes').value;
+        const icon = document.getElementById('edit-chore-icon').value;
+        const category = document.getElementById('edit-chore-category').value;
 
-        if (!name || !rewardCents || !frequencyDays) {
+        if (!name || !rewardCents) {
             this.showToast('Please fill in all required fields', 'error');
             return;
         }
@@ -1442,17 +1840,13 @@ class FamilyChoreChart {
             return;
         }
 
-        if (frequencyDays < 1 || frequencyDays > 7) {
-            this.showToast('Frequency must be between 1 and 7 days', 'error');
-            return;
-        }
-
         this.showLoading();
         const result = await this.apiClient.updateChore(choreId, {
             name,
             reward_cents: rewardCents,
-            frequency_days: frequencyDays,
-            notes
+            notes,
+            icon,
+            category
         });
         this.hideLoading();
 
@@ -1464,10 +1858,13 @@ class FamilyChoreChart {
             await this.loadChoresList();
             this.generateChildTabs();
             
-            // Return to the tab the user was on when they clicked edit
-            const returnTab = document.getElementById('edit-chore-form').dataset.returnTab;
-            if (returnTab) {
-                this.switchSettingsTab(returnTab);
+            // Return to the chores tab and the specific child tab
+            const returnChildId = document.getElementById('edit-chore-form').dataset.returnChildId;
+            if (returnChildId) {
+                this.switchSettingsTab('chores');
+                setTimeout(() => {
+                    this.switchChildChoreTab(returnChildId);
+                }, 100);
             }
         } else {
             this.showToast(result.error || 'Failed to update chore', 'error');
@@ -1660,10 +2057,18 @@ class FamilyChoreChart {
         `;
         chores.forEach(chore => {
             const choreCompletions = completions.filter(comp => comp.chore_id === chore.id);
+            const icon = chore.icon || '📝';
+            const category = chore.category || 'General';
             html += `
                 <tr>
                     <td>
-                        <span>${chore.name}</span>
+                        <div style="display: flex; align-items: center; gap: var(--space-2);">
+                            <span style="font-size: 1.2rem;">${icon}</span>
+                            <div>
+                                <span style="font-weight: 600;">${chore.name}</span>
+                                <div style="font-size: var(--font-size-xs); color: var(--gray-500);">${category}</div>
+                            </div>
+                        </div>
                     </td>
             `;
             for (let day = 0; day < 7; day++) {
@@ -1740,6 +2145,9 @@ class FamilyChoreChart {
                             // API result matches, reload completions and check achievements
                             await this.loadCompletions();
                             this.checkAchievements(chore.child_id, choreId);
+                            
+                            // Check for achievement badges
+                            await this.checkAchievementBadges(chore.child_id);
                             
                             // Update progress with real data
                             this.updateChildProgressWithRealData(chore.child_id);
@@ -2166,6 +2574,395 @@ class FamilyChoreChart {
         });
     }
 
+    addBulkEditHandlers() {
+        // Bulk edit buttons
+        document.querySelectorAll('.bulk-edit-chores').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const childId = btn.dataset.childId;
+                this.openBulkEditModal(childId);
+            });
+        });
+    }
+
+    openBulkEditModal(childId) {
+        const child = this.children.find(c => c.id === childId);
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        
+        if (childChores.length === 0) {
+            this.showToast('No chores to edit for this child', 'info');
+            return;
+        }
+        
+        // Populate the bulk edit chores list
+        const choresList = document.getElementById('bulk-edit-chores-list');
+        let html = '';
+        
+        childChores.forEach(chore => {
+            html += `
+                <div class="bulk-edit-chore-item" data-chore-id="${chore.id}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: var(--space-2); background: white; cursor: pointer;">
+                    <input type="checkbox" id="bulk-chore-${chore.id}" value="${chore.id}" checked onclick="event.stopPropagation();">
+                    <div class="chore-item-content" style="flex: 1; display: flex; align-items: center; gap: var(--space-2);">
+                        <span style="font-size: 1.2em;">${chore.icon || '📝'}</span>
+                        <strong>${chore.name}</strong>
+                        <span style="color: var(--gray-600); font-size: var(--font-size-sm); margin-left: var(--space-2);">
+                            ${chore.reward_cents}¢ • ${chore.category || 'General'}
+                        </span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline edit-single-chore" data-chore-id="${chore.id}" style="margin-left: auto;">
+                        <span>✏️</span> Edit
+                    </button>
+                </div>
+            `;
+        });
+        
+        choresList.innerHTML = html;
+        
+        // Reset form fields
+        document.getElementById('bulk-edit-form').reset();
+        document.getElementById('bulk-edit-icon').value = '';
+        
+        // Reset icon picker
+        const iconPicker = document.getElementById('bulk-edit-icon-picker');
+        if (iconPicker) {
+            iconPicker.querySelectorAll('.icon-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // Store child ID for the form submission
+        document.getElementById('bulk-edit-form').dataset.childId = childId;
+        
+        // Add click handlers for individual chore editing
+        this.addBulkEditChoreHandlers();
+        
+        // Show the modal
+        this.showModal('bulk-edit-chores-modal');
+    }
+
+    addBulkEditChoreHandlers() {
+        // Individual chore edit buttons
+        document.querySelectorAll('.edit-single-chore').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const choreId = btn.dataset.choreId;
+                this.openSingleChoreEditor(choreId);
+            });
+        });
+        
+        // Click on chore item to edit (but not on checkbox)
+        document.querySelectorAll('.bulk-edit-chore-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!e.target.closest('input[type="checkbox"]') && !e.target.closest('.edit-single-chore')) {
+                    const choreId = item.dataset.choreId;
+                    this.openSingleChoreEditor(choreId);
+                }
+            });
+        });
+    }
+
+    openSingleChoreEditor(choreId) {
+        const chore = this.chores.find(c => c.id === choreId);
+        if (!chore) {
+            this.showToast('Chore not found', 'error');
+            return;
+        }
+        
+        // Create a simple inline editor
+        const choreItem = document.querySelector(`[data-chore-id="${choreId}"]`);
+        if (!choreItem) return;
+        
+        const choreContent = choreItem.querySelector('.chore-item-content');
+        const originalContent = choreContent.innerHTML;
+        
+        // Create editor HTML
+        const editorHTML = `
+            <div class="single-chore-editor" style="width: 100%;">
+                <div class="form-group" style="margin-bottom: var(--space-3);">
+                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Chore Name</label>
+                    <input type="text" class="chore-name-input" value="${chore.name}" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: var(--space-3);">
+                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Icon</label>
+                    <div class="icon-picker-small" style="display: flex; gap: var(--space-1); flex-wrap: wrap; max-height: 120px; overflow-y: auto;">
+                        <button type="button" class="icon-option-small ${chore.icon === '📝' ? 'active' : ''}" data-icon="📝">📝</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🛏️' ? 'active' : ''}" data-icon="🛏️">🛏️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧹' ? 'active' : ''}" data-icon="🧹">🧹</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧺' ? 'active' : ''}" data-icon="🧺">🧺</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🍽️' ? 'active' : ''}" data-icon="🍽️">🍽️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🚿' ? 'active' : ''}" data-icon="🚿">🚿</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧽' ? 'active' : ''}" data-icon="🧽">🧽</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🗑️' ? 'active' : ''}" data-icon="🗑️">🗑️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🚪' ? 'active' : ''}" data-icon="🚪">🚪</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🪟' ? 'active' : ''}" data-icon="🪟">🪟</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🪑' ? 'active' : ''}" data-icon="🪑">🪑</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🛋️' ? 'active' : ''}" data-icon="🛋️">🛋️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🪞' ? 'active' : ''}" data-icon="🪞">🪞</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🖼️' ? 'active' : ''}" data-icon="🖼️">🖼️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '💡' ? 'active' : ''}" data-icon="💡">💡</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🔌' ? 'active' : ''}" data-icon="🔌">🔌</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🔋' ? 'active' : ''}" data-icon="🔋">🔋</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '👕' ? 'active' : ''}" data-icon="👕">👕</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '👖' ? 'active' : ''}" data-icon="👖">👖</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '👟' ? 'active' : ''}" data-icon="👟">👟</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎒' ? 'active' : ''}" data-icon="🎒">🎒</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧸' ? 'active' : ''}" data-icon="🧸">🧸</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '📚' ? 'active' : ''}" data-icon="📚">📚</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '📖' ? 'active' : ''}" data-icon="📖">📖</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '✏️' ? 'active' : ''}" data-icon="✏️">✏️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎨' ? 'active' : ''}" data-icon="🎨">🎨</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧠' ? 'active' : ''}" data-icon="🧠">🧠</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '📱' ? 'active' : ''}" data-icon="📱">📱</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '💻' ? 'active' : ''}" data-icon="💻">💻</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎮' ? 'active' : ''}" data-icon="🎮">🎮</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🐕' ? 'active' : ''}" data-icon="🐕">🐕</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🐱' ? 'active' : ''}" data-icon="🐱">🐱</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🐦' ? 'active' : ''}" data-icon="🐦">🐦</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🐠' ? 'active' : ''}" data-icon="🐠">🐠</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🐹' ? 'active' : ''}" data-icon="🐹">🐹</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌱' ? 'active' : ''}" data-icon="🌱">🌱</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌺' ? 'active' : ''}" data-icon="🌺">🌺</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌳' ? 'active' : ''}" data-icon="🌳">🌳</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌿' ? 'active' : ''}" data-icon="🌿">🌿</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🍃' ? 'active' : ''}" data-icon="🍃">🍃</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌧️' ? 'active' : ''}" data-icon="🌧️">🌧️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '☀️' ? 'active' : ''}" data-icon="☀️">☀️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '❄️' ? 'active' : ''}" data-icon="❄️">❄️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🚗' ? 'active' : ''}" data-icon="🚗">🚗</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🚲' ? 'active' : ''}" data-icon="🚲">🚲</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🛴' ? 'active' : ''}" data-icon="🛴">🛴</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏠' ? 'active' : ''}" data-icon="🏠">🏠</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏡' ? 'active' : ''}" data-icon="🏡">🏡</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '⚽' ? 'active' : ''}" data-icon="⚽">⚽</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏀' ? 'active' : ''}" data-icon="🏀">🏀</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎾' ? 'active' : ''}" data-icon="🎾">🎾</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏊' ? 'active' : ''}" data-icon="🏊">🏊</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🚴' ? 'active' : ''}" data-icon="🚴">🚴</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏃' ? 'active' : ''}" data-icon="🏃">🏃</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🧘' ? 'active' : ''}" data-icon="🧘">🧘</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '💪' ? 'active' : ''}" data-icon="💪">💪</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎯' ? 'active' : ''}" data-icon="🎯">🎯</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎵' ? 'active' : ''}" data-icon="🎵">🎵</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎤' ? 'active' : ''}" data-icon="🎤">🎤</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎧' ? 'active' : ''}" data-icon="🎧">🎧</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎹' ? 'active' : ''}" data-icon="🎹">🎹</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎸' ? 'active' : ''}" data-icon="🎸">🎸</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🥁' ? 'active' : ''}" data-icon="🥁">🥁</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎺' ? 'active' : ''}" data-icon="🎺">🎺</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎻' ? 'active' : ''}" data-icon="🎻">🎻</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎼' ? 'active' : ''}" data-icon="🎼">🎼</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎭' ? 'active' : ''}" data-icon="🎭">🎭</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎬' ? 'active' : ''}" data-icon="🎬">🎬</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎉' ? 'active' : ''}" data-icon="🎉">🎉</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎊' ? 'active' : ''}" data-icon="🎊">🎊</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎈' ? 'active' : ''}" data-icon="🎈">🎈</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎁' ? 'active' : ''}" data-icon="🎁">🎁</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎄' ? 'active' : ''}" data-icon="🎄">🎄</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎃' ? 'active' : ''}" data-icon="🎃">🎃</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎪' ? 'active' : ''}" data-icon="🎪">🎪</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '❤️' ? 'active' : ''}" data-icon="❤️">❤️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌟' ? 'active' : ''}" data-icon="🌟">🌟</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '⭐' ? 'active' : ''}" data-icon="⭐">⭐</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '✨' ? 'active' : ''}" data-icon="✨">✨</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '💎' ? 'active' : ''}" data-icon="💎">💎</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🏆' ? 'active' : ''}" data-icon="🏆">🏆</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🎖️' ? 'active' : ''}" data-icon="🎖️">🎖️</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '👑' ? 'active' : ''}" data-icon="👑">👑</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '💫' ? 'active' : ''}" data-icon="💫">💫</button>
+                        <button type="button" class="icon-option-small ${chore.icon === '🌈' ? 'active' : ''}" data-icon="🌈">🌈</button>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: var(--space-3);">
+                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Category</label>
+                    <select class="chore-category-input" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
+                        <option value="General" ${chore.category === 'General' ? 'selected' : ''}>General</option>
+                        <option value="Kitchen" ${chore.category === 'Kitchen' ? 'selected' : ''}>Kitchen</option>
+                        <option value="Bathroom" ${chore.category === 'Bathroom' ? 'selected' : ''}>Bathroom</option>
+                        <option value="Bedroom" ${chore.category === 'Bedroom' ? 'selected' : ''}>Bedroom</option>
+                        <option value="Outdoor" ${chore.category === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
+                        <option value="School" ${chore.category === 'School' ? 'selected' : ''}>School</option>
+                        <option value="Personal" ${chore.category === 'Personal' ? 'selected' : ''}>Personal</option>
+                        <option value="Technology" ${chore.category === 'Technology' ? 'selected' : ''}>Technology</option>
+                        <option value="Pets" ${chore.category === 'Pets' ? 'selected' : ''}>Pets</option>
+                        <option value="Plants" ${chore.category === 'Plants' ? 'selected' : ''}>Plants</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: var(--space-3);">
+                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Reward (cents)</label>
+                    <input type="number" class="chore-reward-input" value="${chore.reward_cents}" min="1" max="100" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
+                </div>
+                
+                <div class="form-actions" style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
+                    <button type="button" class="btn btn-sm btn-outline cancel-single-edit" data-chore-id="${choreId}">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-primary save-single-edit" data-chore-id="${choreId}">Save</button>
+                </div>
+            </div>
+        `;
+        
+        // Replace content with editor
+        choreContent.innerHTML = editorHTML;
+        
+        // Add event handlers for the editor
+        this.addSingleChoreEditorHandlers(choreId, choreItem, originalContent);
+    }
+
+    addSingleChoreEditorHandlers(choreId, choreItem, originalContent) {
+        // Icon picker handlers
+        const iconPicker = choreItem.querySelector('.icon-picker-small');
+        if (iconPicker) {
+            iconPicker.addEventListener('click', (e) => {
+                if (e.target.classList.contains('icon-option-small')) {
+                    iconPicker.querySelectorAll('.icon-option-small').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                }
+            });
+        }
+        
+        // Save button handler
+        const saveBtn = choreItem.querySelector('.save-single-edit');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await this.saveSingleChoreEdit(choreId, choreItem, originalContent);
+            });
+        }
+        
+        // Cancel button handler
+        const cancelBtn = choreItem.querySelector('.cancel-single-edit');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.cancelSingleChoreEdit(choreItem, originalContent);
+            });
+        }
+    }
+
+    async saveSingleChoreEdit(choreId, choreItem, originalContent) {
+        const nameInput = choreItem.querySelector('.chore-name-input');
+        const categoryInput = choreItem.querySelector('.chore-category-input');
+        const rewardInput = choreItem.querySelector('.chore-reward-input');
+        const activeIcon = choreItem.querySelector('.icon-option-small.active');
+        
+        const name = nameInput.value.trim();
+        const category = categoryInput.value;
+        const reward = parseInt(rewardInput.value);
+        const icon = activeIcon ? activeIcon.dataset.icon : '📝';
+        
+        if (!name) {
+            this.showToast('Chore name is required', 'error');
+            return;
+        }
+        
+        if (reward < 1 || reward > 100) {
+            this.showToast('Reward must be between 1 and 100 cents', 'error');
+            return;
+        }
+        
+        this.showLoading();
+        
+        try {
+            const result = await this.apiClient.updateChore(choreId, {
+                name,
+                category,
+                reward_cents: reward,
+                icon
+            });
+            
+            this.hideLoading();
+            
+            if (result.success) {
+                this.showToast('Chore updated successfully!', 'success');
+                
+                // Update the chore in our local data
+                const choreIndex = this.chores.findIndex(c => c.id === choreId);
+                if (choreIndex !== -1) {
+                    this.chores[choreIndex] = { ...this.chores[choreIndex], name, category, reward_cents: reward, icon };
+                }
+                
+                // Refresh the bulk edit modal
+                const childId = document.getElementById('bulk-edit-form').dataset.childId;
+                this.openBulkEditModal(childId);
+            } else {
+                this.showToast(result.error || 'Failed to update chore', 'error');
+            }
+        } catch (error) {
+            this.hideLoading();
+            this.showToast('Error updating chore: ' + error.message, 'error');
+        }
+    }
+
+    cancelSingleChoreEdit(choreItem, originalContent) {
+        const choreContent = choreItem.querySelector('.chore-item-content');
+        choreContent.innerHTML = originalContent;
+    }
+
+    async handleBulkEditChores() {
+        const childId = document.getElementById('bulk-edit-form').dataset.childId;
+        const selectedChores = Array.from(document.querySelectorAll('#bulk-edit-chores-list input[type="checkbox"]:checked'))
+            .map(checkbox => checkbox.value);
+        
+        if (selectedChores.length === 0) {
+            this.showToast('Please select at least one chore to edit', 'error');
+            return;
+        }
+        
+        const rewardCents = document.getElementById('bulk-edit-reward').value;
+        const icon = document.getElementById('bulk-edit-icon').value;
+        const category = document.getElementById('bulk-edit-category').value;
+        
+        // Validate inputs
+        if (rewardCents && (rewardCents < 1 || rewardCents > 100)) {
+            this.showToast('Reward must be between 1 and 100 cents', 'error');
+            return;
+        }
+        
+        this.showLoading();
+        
+        try {
+            // Update each selected chore
+            const updatePromises = selectedChores.map(async (choreId) => {
+                const updateData = {};
+                
+                if (rewardCents) updateData.reward_cents = parseInt(rewardCents);
+                if (icon) updateData.icon = icon;
+                if (category) updateData.category = category;
+                
+                return await this.apiClient.updateChore(choreId, updateData);
+            });
+            
+            const results = await Promise.all(updatePromises);
+            const successCount = results.filter(result => result.success).length;
+            
+            this.hideLoading();
+            
+            if (successCount === selectedChores.length) {
+                this.showToast(`Successfully updated ${successCount} chore${successCount !== 1 ? 's' : ''}!`, 'success');
+                this.hideModal('bulk-edit-chores-modal');
+                
+                // Reload chores and regenerate tabs
+                await this.loadChoresList();
+                this.generateChildTabs();
+                
+                // Return to the chores tab and the specific child tab
+                this.switchSettingsTab('chores');
+                setTimeout(() => {
+                    this.switchChildChoreTab(childId);
+                }, 100);
+            } else {
+                this.showToast(`Updated ${successCount} of ${selectedChores.length} chores. Some updates failed.`, 'warning');
+            }
+        } catch (error) {
+            this.hideLoading();
+            this.showToast('Error updating chores: ' + error.message, 'error');
+        }
+    }
+
 
 }
 
@@ -2419,6 +3216,27 @@ if (!window.location.pathname.endsWith('settings.html')) {
             app.showToast('Child updated!', 'success');
         } else {
             app.showToast(result.error || 'Failed to update child', 'error');
+        }
+    });
+
+    // --- Cancel handler for edit-child-modal ---
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('[data-modal="edit-child-modal"]') || 
+            e.target.closest('[data-modal="edit-child-modal"]')) {
+            const editChildModal = document.getElementById('edit-child-modal');
+            editChildModal.classList.add('hidden');
+            // Reset form
+            document.getElementById('edit-child-form').reset();
+            // Clear avatar preview
+            const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
+            if (editAvatarPreview) {
+                editAvatarPreview.innerHTML = '';
+                editAvatarPreview.style.display = 'none';
+                delete editAvatarPreview.dataset.avatarUrl;
+                delete editAvatarPreview.dataset.avatarFile;
+            }
+            // Reset DiceBear selection
+            selectedEditDicebearUrl = '';
         }
     });
 

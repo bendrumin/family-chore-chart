@@ -334,14 +334,16 @@ class ApiClient {
         }
     }
 
-    async createChore(name, rewardCents, childId) {
+    async createChore(name, rewardCents, childId, icon = '📝', category = 'General') {
         try {
             const { data, error } = await this.supabase
                 .from('chores')
                 .insert({
                     name,
                     reward_cents: rewardCents,
-                    child_id: childId
+                    child_id: childId,
+                    icon: icon,
+                    category: category
                 })
                 .select()
                 .single();
@@ -684,11 +686,29 @@ class ApiClient {
         // Admin account (your email) gets premium access
         const { data: { user } } = await this.supabase.auth.getUser();
         if (user?.email === 'bsiegel13@gmail.com') {
-            return { canAddChildren: true, canAddChores: true, isPremium: true };
+            return { 
+                canAddChildren: true, 
+                canAddChores: true, 
+                isPremium: true,
+                canUseCustomIcons: true,
+                canUseCategories: true,
+                canUsePointsSystem: true,
+                canEarnBadges: true,
+                canExportReports: true
+            };
         }
 
         if (subscription === 'premium') {
-            return { canAddChildren: true, canAddChores: true, isPremium: true };
+            return { 
+                canAddChildren: true, 
+                canAddChores: true, 
+                isPremium: true,
+                canUseCustomIcons: true,
+                canUseCategories: true,
+                canUsePointsSystem: true,
+                canEarnBadges: true,
+                canExportReports: true
+            };
         }
 
         // Free tier limits
@@ -703,8 +723,81 @@ class ApiClient {
             childrenCount: children.length,
             maxChildren,
             choresCount: chores.length,
-            maxChores
+            maxChores,
+            canUseCustomIcons: false,
+            canUseCategories: false,
+            canUsePointsSystem: false,
+            canEarnBadges: false,
+            canExportReports: false
         };
+    }
+
+    // Premium feature methods
+    async getAchievementBadges(childId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('achievement_badges')
+                .select('*')
+                .eq('child_id', childId)
+                .order('earned_at', { ascending: false });
+
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('Get achievement badges error:', error);
+            return [];
+        }
+    }
+
+    async awardBadge(childId, badgeType, badgeName, badgeDescription, badgeIcon) {
+        try {
+            const { data, error } = await this.supabase
+                .from('achievement_badges')
+                .insert({
+                    child_id: childId,
+                    badge_type: badgeType,
+                    badge_name: badgeName,
+                    badge_description: badgeDescription,
+                    badge_icon: badgeIcon
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { success: true, badge: data };
+        } catch (error) {
+            console.error('Award badge error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async exportFamilyReport() {
+        try {
+            const children = await this.getChildren();
+            const chores = await this.getChores();
+            const completions = await this.getChoreCompletions();
+            
+            const report = {
+                generatedAt: new Date().toISOString(),
+                children: children.map(child => ({
+                    name: child.name,
+                    age: child.age,
+                    chores: chores.filter(chore => chore.child_id === child.id).map(chore => ({
+                        name: chore.name,
+                        icon: chore.icon,
+                        category: chore.category,
+                        reward: chore.reward_cents
+                    }))
+                })),
+                totalChores: chores.length,
+                totalCompletions: completions.length
+            };
+
+            return { success: true, report };
+        } catch (error) {
+            console.error('Export report error:', error);
+            return { success: false, error: error.message };
+        }
     }
 }
 
