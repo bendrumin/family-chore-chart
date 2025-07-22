@@ -313,7 +313,22 @@
                         </div>
                         
                         <!-- Premium Features -->
-                        <div class="premium-features" id="premium-chore-features" style="display: none;">
+                        <div class="premium-features" id="premium-chore-features-1" style="display: none;">
+                            <div class="form-group">
+                                <label for="chore-color-1">Chore Color</label>
+                                <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                                    <input type="color" id="chore-color-1" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
+                                    <div class="color-presets" style="display: flex; gap: var(--space-1);">
+                                        <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                        <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                        <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                        <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                        <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                        <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
                                 <label for="chore-icon-1">Chore Icon</label>
                                 <div class="icon-picker" id="icon-picker-1">
@@ -439,16 +454,21 @@
                                     <option value="Pets">Pets</option>
                                 </select>
                             </div>
+                            
+                            <div class="form-group">
+                                <label for="chore-notes-1">Notes (Optional)</label>
+                                <textarea id="chore-notes-1" placeholder="e.g., Remember to use soap!" rows="2"></textarea>
+                            </div>
                         </div>
                         
                         <div class="form-group">
                             <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
                         </div>
                         
-                        <div class="premium-upgrade-prompt" id="premium-upgrade-prompt" style="display: none;">
+                        <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-1" style="display: none;">
                             <div class="upgrade-banner">
                                 <span>🌟</span>
-                                <span>Upgrade to Premium for custom icons, categories, and more!</span>
+                                <span>Upgrade to Premium for custom colors, icons, categories, and more!</span>
                                 <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
                             </div>
                         </div>
@@ -958,6 +978,24 @@
                         <option value="Pets">Pets</option>
                         <option value="Plants">Plants</option>
                     </select>
+                </div>
+                
+                <!-- Updated Premium-only color picker for edit chore modal -->
+                <div class="edit-premium-features" id="edit-premium-features" style="display:none;">
+                    <div class="form-group">
+                        <label for="edit-chore-color">Chore Color</label>
+                        <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                            <input type="color" id="edit-chore-color" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
+                            <div class="color-presets" style="display: flex; gap: var(--space-1);">
+                                <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">

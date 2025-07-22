@@ -637,21 +637,24 @@ class FamilyChoreChart {
             this.addChoreEntry();
         });
 
-        // Icon picker functionality
+        // FIXED: Icon picker functionality with better selector targeting
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('icon-option')) {
                 const iconPicker = e.target.closest('.icon-picker');
-                const hiddenInput = iconPicker.nextElementSibling;
-                
                 // Update active state
                 iconPicker.querySelectorAll('.icon-option').forEach(option => {
                     option.classList.remove('active');
                 });
                 e.target.classList.add('active');
-                
-                // Update hidden input
-                if (hiddenInput && hiddenInput.type === 'hidden') {
+                // Find the correct hidden input for the icon (not color!)
+                const iconInputId = iconPicker.id.replace('-picker', '').replace('icon-picker', 'icon');
+                const hiddenInput = document.getElementById(iconInputId) || 
+                                   iconPicker.querySelector('input[type="hidden"]') ||
+                                   document.querySelector(`#${iconInputId}`);
+                // Update hidden input only if it's actually for icons
+                if (hiddenInput && (hiddenInput.id.includes('icon') || hiddenInput.type === 'hidden')) {
                     hiddenInput.value = e.target.dataset.icon;
+                    console.log('Set icon value:', e.target.dataset.icon, 'to input:', hiddenInput.id);
                 }
             }
         });
@@ -669,9 +672,12 @@ class FamilyChoreChart {
             e.preventDefault();
             await this.handleEditChore();
         });
+
+        // Setup color picker functionality
+        this.setupChoreColorSwatches();
     }
 
-    showModal(modalId) {
+    async showModal(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
         // Close all other modals first
@@ -682,10 +688,22 @@ class FamilyChoreChart {
             }
         });
         modal.classList.remove('hidden');
-        // Populate child select for chore form
+        // Populate child select for chore form and check premium features
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
-            this.checkPremiumFeatures();
+            
+            // FORCE show color picker for testing (remove this later when premium check works)
+            setTimeout(() => {
+                document.querySelectorAll('[id^="premium-chore-features"]').forEach(el => {
+                    el.style.display = 'block';
+                });
+                document.querySelectorAll('[id^="premium-upgrade-prompt"]').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }, 100);
+        }
+        if (modalId === 'edit-chore-modal') {
+            await this.checkPremiumFeatures();
         }
     }
 
@@ -700,7 +718,7 @@ class FamilyChoreChart {
             document.getElementById('add-child-form').reset();
         } else if (modalId === 'add-chore-modal') {
             document.getElementById('add-chore-form').reset();
-            // Reset chore entries to just one
+            // Reset chore entries to just one WITH color picker
             const container = document.getElementById('chores-container');
             container.innerHTML = `
                 <div class="chore-entry">
@@ -712,8 +730,59 @@ class FamilyChoreChart {
                         <label for="chore-name-1">Chore Name</label>
                         <input type="text" id="chore-name-1" required placeholder="e.g., Make bed">
                     </div>
+                    <!-- Premium Features -->
+                    <div class="premium-features" id="premium-chore-features-1" style="display: none;">
+                        <div class="form-group">
+                            <label for="chore-color-1">Chore Color</label>
+                            <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                                <input type="color" id="chore-color-1" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
+                                <div class="color-presets" style="display: flex; gap: var(--space-1);">
+                                    <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                    <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="chore-icon-1">Chore Icon</label>
+                            <div class="icon-picker" id="icon-picker-1">
+                                <button type="button" class="icon-option active" data-icon="📝">📝</button>
+                                <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
+                                <button type="button" class="icon-option" data-icon="🧹">🧹</button>
+                                <button type="button" class="icon-option" data-icon="🧺">🧺</button>
+                                <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
+                            </div>
+                            <input type="hidden" id="chore-icon-1" value="📝">
+                        </div>
+                        <div class="form-group">
+                            <label for="chore-category-1">Category</label>
+                            <select id="chore-category-1">
+                                <option value="General">General</option>
+                                <option value="Kitchen">Kitchen</option>
+                                <option value="Bedroom">Bedroom</option>
+                                <option value="Bathroom">Bathroom</option>
+                                <option value="Outdoor">Outdoor</option>
+                                <option value="School">School</option>
+                                <option value="Pets">Pets</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="chore-notes-1">Notes (Optional)</label>
+                            <textarea id="chore-notes-1" placeholder="e.g., Remember to use soap!" rows="2"></textarea>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
+                    </div>
+                    <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-1" style="display: none;">
+                        <div class="upgrade-banner">
+                            <span>🌟</span>
+                            <span>Upgrade to Premium for custom colors, icons, categories, and more!</span>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -803,9 +872,14 @@ class FamilyChoreChart {
             const name = entry.querySelector(`#chore-name-${i + 1}`).value;
             const icon = entry.querySelector(`#chore-icon-${i + 1}`)?.value || '📝';
             const category = entry.querySelector(`#chore-category-${i + 1}`)?.value || 'General';
+            const notes = entry.querySelector(`#chore-notes-${i + 1}`)?.value || '';
+            let color = null;
+            if (limits.isPremium) {
+                color = entry.querySelector(`#chore-color-${i + 1}`)?.value || null;
+            }
 
             if (name) {
-                choresToAdd.push({ name, childId, icon, category });
+                choresToAdd.push({ name, childId, icon, category, notes, color });
             }
         }
 
@@ -829,7 +903,7 @@ class FamilyChoreChart {
         let errorCount = 0;
 
         for (const chore of choresToAdd) {
-            const result = await this.apiClient.createChore(chore.name, 7, chore.childId, chore.icon, chore.category);
+            const result = await this.apiClient.createChore(chore.name, 7, chore.childId, chore.icon, chore.category, chore.notes, chore.color);
             
             if (result.success) {
                 successCount++;
@@ -1092,7 +1166,7 @@ class FamilyChoreChart {
         // Populate the edit form
         document.getElementById('edit-chore-name').value = choreName;
         document.getElementById('edit-chore-reward').value = choreReward;
-        document.getElementById('edit-chore-notes').value = choreNotes;
+        document.getElementById('edit-chore-notes').value = choreNotes || '';
         
         // Set icon and category
         document.getElementById('edit-chore-icon').value = chore.icon || '📝';
@@ -1142,6 +1216,25 @@ class FamilyChoreChart {
                 console.log('Set child field value to:', child.name);
             }
         }
+        // Set color value if premium color picker exists
+        const colorInput = document.getElementById('edit-chore-color');
+        if (colorInput && chore.color) {
+            colorInput.value = chore.color;
+        } else if (colorInput) {
+            colorInput.value = '#ff6b6b';
+        }
+        // FORCE show edit chore premium features for testing
+setTimeout(() => {
+    const editPremiumFeatures = document.getElementById('premium-edit-chore-features');
+    if (editPremiumFeatures) {
+        editPremiumFeatures.style.display = 'block';
+    }
+    const editUpgradePrompt = document.getElementById('premium-edit-upgrade-prompt');
+    if (editUpgradePrompt) {
+        editUpgradePrompt.style.display = 'none';
+    }
+}, 100);
+
     }
 
     populateEditChoreChildSelect(selectedChildId) {
@@ -1509,23 +1602,29 @@ class FamilyChoreChart {
         // Show/hide premium features in add chore modal for all entries
         const premiumFeatures = document.querySelectorAll('[id^="premium-chore-features"]');
         const upgradePrompts = document.querySelectorAll('[id^="premium-upgrade-prompt"]');
-        
+        // Also select edit modal premium features
+        const editPremiumFeatures = document.querySelectorAll('.edit-premium-features');
         premiumFeatures.forEach(feature => {
-            if (limits.canUseCustomIcons && limits.canUseCategories) {
+            if (limits.isPremium) {
                 feature.style.display = 'block';
             } else {
                 feature.style.display = 'none';
             }
         });
-        
+        editPremiumFeatures.forEach(feature => {
+            if (limits.isPremium) {
+                feature.style.display = 'block';
+            } else {
+                feature.style.display = 'none';
+            }
+        });
         upgradePrompts.forEach(prompt => {
-            if (limits.canUseCustomIcons && limits.canUseCategories) {
+            if (limits.isPremium) {
                 prompt.style.display = 'none';
             } else {
                 prompt.style.display = 'block';
             }
         });
-        
         return limits;
     }
 
@@ -1624,7 +1723,6 @@ class FamilyChoreChart {
     addChoreEntry() {
         const container = document.getElementById('chores-container');
         const entryCount = container.children.length + 1;
-        
         const newEntry = document.createElement('div');
         newEntry.className = 'chore-entry';
         newEntry.innerHTML = `
@@ -1636,9 +1734,22 @@ class FamilyChoreChart {
                 <label for="chore-name-${entryCount}">Chore Name</label>
                 <input type="text" id="chore-name-${entryCount}" required placeholder="e.g., Make bed">
             </div>
-            
             <!-- Premium Features -->
             <div class="premium-features" id="premium-chore-features-${entryCount}" style="display: none;">
+                <div class="form-group">
+                    <label for="chore-color-${entryCount}">Chore Color</label>
+                    <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                        <input type="color" id="chore-color-${entryCount}" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
+                        <div class="color-presets" style="display: flex; gap: var(--space-1);">
+                            <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="chore-icon-${entryCount}">Chore Icon</label>
                     <div class="icon-picker" id="icon-picker-${entryCount}">
@@ -1751,7 +1862,6 @@ class FamilyChoreChart {
                     </div>
                     <input type="hidden" id="chore-icon-${entryCount}" value="📝">
                 </div>
-                
                 <div class="form-group">
                     <label for="chore-category-${entryCount}">Category</label>
                     <select id="chore-category-${entryCount}">
@@ -1764,22 +1874,26 @@ class FamilyChoreChart {
                         <option value="Pets">Pets</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="chore-notes-${entryCount}">Notes (Optional)</label>
+                    <textarea id="chore-notes-${entryCount}" placeholder="e.g., Remember to use soap! Or special instructions..." rows="2" style="resize: vertical;"></textarea>
+                </div>
             </div>
-            
             <div class="form-group">
                 <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
             </div>
-            
             <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-${entryCount}" style="display: none;">
                 <div class="upgrade-banner">
                     <span>🌟</span>
-                    <span>Upgrade to Premium for custom icons, categories, and more!</span>
+                    <span>Upgrade to Premium for custom colors, icons, categories, and more!</span>
                     <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
                 </div>
             </div>
         `;
-        
         container.appendChild(newEntry);
+        
+        // Call color picker setup after adding the entry
+        this.setupChoreColorSwatches();
         
         // Check premium features for the new entry
         this.checkPremiumFeatures();
@@ -1797,36 +1911,35 @@ class FamilyChoreChart {
         const notes = document.getElementById('edit-chore-notes').value;
         const icon = document.getElementById('edit-chore-icon').value;
         const category = document.getElementById('edit-chore-category').value;
-
+        let color = null;
+        const limits = await this.apiClient.checkSubscriptionLimits();
+        if (limits.isPremium) {
+            const colorInput = document.getElementById('edit-chore-color');
+            if (colorInput) color = colorInput.value;
+        }
         if (!name || !rewardCents) {
             this.showToast('Please fill in all required fields', 'error');
             return;
         }
-
         if (rewardCents < 1 || rewardCents > 100) {
             this.showToast('Reward must be between 1 and 100 cents', 'error');
             return;
         }
-
         this.showLoading();
         const result = await this.apiClient.updateChore(choreId, {
             name,
             reward_cents: rewardCents,
             notes,
             icon,
-            category
+            category,
+            color
         });
         this.hideLoading();
-
         if (result.success) {
             this.showToast('Chore updated successfully!', 'success');
             this.hideModal('edit-chore-modal');
-            
-            // Reload chores and regenerate tabs
             await this.loadChoresList();
             this.generateChildTabs();
-            
-            // Return to the chores tab and the specific child tab
             const returnChildId = document.getElementById('edit-chore-form').dataset.returnChildId;
             if (returnChildId) {
                 this.switchSettingsTab('chores');
@@ -1995,7 +2108,7 @@ class FamilyChoreChart {
                 </div>
             </div>
             <div class="chore-grid">
-                ${this.renderChoreGrid(childChores, childCompletions)}
+                ${this.renderChoreGrid(child.id, childChores, childCompletions)}
             </div>
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
@@ -2007,7 +2120,7 @@ class FamilyChoreChart {
         return card;
     }
 
-    renderChoreGrid(chores, completions) {
+    renderChoreGrid(childId, chores, completions) {
         if (chores.length === 0) {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
@@ -2033,6 +2146,7 @@ class FamilyChoreChart {
             const choreCompletions = completions.filter(comp => comp.chore_id === chore.id);
             const icon = chore.icon || '📝';
             const category = chore.category || 'General';
+            const notes = chore.notes || '';
             html += `
                 <tr>
                     <td>
@@ -2041,6 +2155,7 @@ class FamilyChoreChart {
                             <div>
                                 <span style="font-weight: 600;">${chore.name}</span>
                                 <div style="font-size: var(--font-size-xs); color: var(--gray-500);">${category}</div>
+                                ${notes ? `<div style="font-size: var(--font-size-xs); color: var(--gray-600); font-style: italic; margin-top: 2px;">📝 ${notes}</div>` : ''}
                             </div>
                         </div>
                     </td>
@@ -2073,10 +2188,490 @@ class FamilyChoreChart {
                 </button>
             </div>
         `;
+        
+        // Add Quick Actions section
+        html += `
+            <div class="quick-actions-section" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">⚡ Quick Actions</h4>
+                <div class="quick-actions-grid">
+                    <button class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
+                        <span>✅</span> Mark All Today
+                    </button>
+                    <button class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
+                        <span>📅</span> Mark All Week
+                    </button>
+                    <button class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
+                        <span>❌</span> Clear All Today
+                    </button>
+                    <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${childId}">
+                        <span>📊</span> View History
+                    </button>
+                    <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${childId}">
+                        <span>🎯</span> Challenges
+                    </button>
+                </div>
+            </div>
+        `;
         return html;
     }
 
+    addQuickActionHandlers(card, childChores, childId) {
+        // Mark All Today button
+        const markAllTodayBtn = card.querySelector('.mark-all-today-btn');
+        if (markAllTodayBtn) {
+            markAllTodayBtn.addEventListener('click', async () => {
+                await this.markAllChoresForDay(childId, this.getCurrentDayOfWeek());
+            });
+        }
+
+        // Mark All Week button
+        const markAllWeekBtn = card.querySelector('.mark-all-week-btn');
+        if (markAllWeekBtn) {
+            markAllWeekBtn.addEventListener('click', async () => {
+                await this.markAllChoresForWeek(childId);
+            });
+        }
+
+        // Clear All Today button
+        const clearAllTodayBtn = card.querySelector('.clear-all-today-btn');
+        if (clearAllTodayBtn) {
+            clearAllTodayBtn.addEventListener('click', async () => {
+                await this.clearAllChoresForDay(childId, this.getCurrentDayOfWeek());
+            });
+        }
+
+        // View History button
+        const viewHistoryBtn = card.querySelector('.view-history-btn');
+        if (viewHistoryBtn) {
+            viewHistoryBtn.addEventListener('click', async () => {
+                await this.showChoreHistory(childId);
+            });
+        }
+
+        // Challenges button
+        const challengesBtn = card.querySelector('.challenges-btn');
+        if (challengesBtn) {
+            challengesBtn.addEventListener('click', async () => {
+                await this.showChoreChallenges(childId);
+            });
+        }
+    }
+
+    async showChoreHistory(childId) {
+        const child = this.children.find(c => c.id === childId);
+        if (!child) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Get the last 4 weeks of data
+        const weeks = [];
+        const today = new Date();
+        for (let i = 0; i < 4; i++) {
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - (today.getDay() + (i * 7)));
+            weeks.push(weekStart);
+        }
+
+        let historyHtml = `
+            <div class="chore-history-modal">
+                <div class="modal-header">
+                    <h3>📊 ${child.name}'s Chore History</h3>
+                    <button type="button" class="close-btn" onclick="app.hideModal('chore-history-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="history-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">${childCompletions.length}</div>
+                            <div class="stat-label">Total Completions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${childChores.length}</div>
+                            <div class="stat-label">Active Chores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${Math.round((childCompletions.length / (childChores.length * 7)) * 100)}%</div>
+                            <div class="stat-label">This Week</div>
+                        </div>
+                    </div>
+                    <div class="history-timeline">
+                        <h4>Recent Activity</h4>
+        `;
+
+        // Group completions by week
+        const completionsByWeek = {};
+        childCompletions.forEach(comp => {
+            const weekKey = comp.week_start;
+            if (!completionsByWeek[weekKey]) {
+                completionsByWeek[weekKey] = [];
+            }
+            completionsByWeek[weekKey].push(comp);
+        });
+
+        // Show recent weeks
+        Object.keys(completionsByWeek).sort().reverse().slice(0, 4).forEach(weekStart => {
+            const weekCompletions = completionsByWeek[weekStart];
+            const weekDate = new Date(weekStart);
+            const weekLabel = weekDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            historyHtml += `
+                <div class="week-history">
+                    <div class="week-header">
+                        <span class="week-label">${weekLabel}</span>
+                        <span class="week-count">${weekCompletions.length} completions</span>
+                    </div>
+                    <div class="week-completions">
+            `;
+
+            // Group by chore
+            const completionsByChore = {};
+            weekCompletions.forEach(comp => {
+                const chore = childChores.find(c => c.id === comp.chore_id);
+                if (chore) {
+                    if (!completionsByChore[chore.name]) {
+                        completionsByChore[chore.name] = [];
+                    }
+                    completionsByChore[chore.name].push(comp);
+                }
+            });
+
+            Object.keys(completionsByChore).forEach(choreName => {
+                const choreCompletions = completionsByChore[choreName];
+                const days = choreCompletions.map(comp => {
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    return dayNames[comp.day_of_week];
+                }).join(', ');
+
+                historyHtml += `
+                    <div class="chore-history-item">
+                        <span class="chore-name">${choreName}</span>
+                        <span class="completion-days">${days}</span>
+                    </div>
+                `;
+            });
+
+            historyHtml += `
+                    </div>
+                </div>
+            `;
+        });
+
+        historyHtml += `
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Create modal content
+        const modalContent = document.createElement('div');
+        modalContent.id = 'chore-history-modal';
+        modalContent.className = 'modal';
+        modalContent.innerHTML = historyHtml;
+
+        // Add to page and show
+        document.body.appendChild(modalContent);
+        this.showModal('chore-history-modal');
+    }
+
+    async showChoreChallenges(childId) {
+        const child = this.children.find(c => c.id === childId);
+        if (!child) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Calculate current streak
+        const currentStreak = this.calculateCurrentStreak(childId);
+        
+        // Define challenges
+        const challenges = [
+            {
+                id: 'perfect_day',
+                title: 'Perfect Day',
+                description: 'Complete all chores for today',
+                icon: '🌟',
+                progress: this.calculatePerfectDayProgress(childId),
+                maxProgress: childChores.length,
+                reward: '5¢ bonus'
+            },
+            {
+                id: 'streak_3',
+                title: '3-Day Streak',
+                description: 'Complete at least one chore for 3 days in a row',
+                icon: '🔥',
+                progress: Math.min(currentStreak, 3),
+                maxProgress: 3,
+                reward: '10¢ bonus'
+            },
+            {
+                id: 'streak_7',
+                title: 'Week Warrior',
+                description: 'Complete at least one chore for 7 days in a row',
+                icon: '⚡',
+                progress: Math.min(currentStreak, 7),
+                maxProgress: 7,
+                reward: '25¢ bonus'
+            },
+            {
+                id: 'complete_5',
+                title: '5 Chore Master',
+                description: 'Complete 5 different chores in one day',
+                icon: '🎯',
+                progress: this.calculateMaxChoresInDay(childId),
+                maxProgress: 5,
+                reward: '15¢ bonus'
+            },
+            {
+                id: 'perfect_week',
+                title: 'Perfect Week',
+                description: 'Complete all chores for the entire week',
+                icon: '🏆',
+                progress: this.calculatePerfectWeekProgress(childId),
+                maxProgress: childChores.length * 7,
+                reward: '50¢ bonus'
+            }
+        ];
+
+        let challengesHtml = `
+            <div class="chore-challenges-modal">
+                <div class="modal-header">
+                    <h3>🎯 ${child.name}'s Challenges</h3>
+                    <button type="button" class="close-btn" onclick="app.hideModal('chore-challenges-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="challenges-intro">
+                        <p>Complete challenges to earn bonus rewards! 🎁</p>
+                    </div>
+                    <div class="challenges-grid">
+        `;
+
+        challenges.forEach(challenge => {
+            const progressPercentage = (challenge.progress / challenge.maxProgress) * 100;
+            const isCompleted = challenge.progress >= challenge.maxProgress;
+            
+            challengesHtml += `
+                <div class="challenge-card ${isCompleted ? 'completed' : ''}">
+                    <div class="challenge-header">
+                        <div class="challenge-icon">${challenge.icon}</div>
+                        <div class="challenge-info">
+                            <h4 class="challenge-title">${challenge.title}</h4>
+                            <p class="challenge-description">${challenge.description}</p>
+                        </div>
+                        ${isCompleted ? '<div class="challenge-badge">✅</div>' : ''}
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <div class="progress-text">
+                            ${challenge.progress}/${challenge.maxProgress}
+                        </div>
+                    </div>
+                    <div class="challenge-reward">
+                        <span class="reward-icon">💰</span>
+                        <span class="reward-text">${challenge.reward}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        challengesHtml += `
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Create modal content
+        const modalContent = document.createElement('div');
+        modalContent.id = 'chore-challenges-modal';
+        modalContent.className = 'modal';
+        modalContent.innerHTML = challengesHtml;
+
+        // Add to page and show
+        document.body.appendChild(modalContent);
+        this.showModal('chore-challenges-modal');
+    }
+
+    calculateCurrentStreak(childId) {
+        // This is a simplified calculation - in a real app, you'd track streaks more carefully
+        const childCompletions = this.completions.filter(comp => {
+            const chore = this.chores.find(c => c.id === comp.chore_id);
+            return chore && chore.child_id === childId;
+        });
+        
+        // For now, return a random streak for demo purposes
+        return Math.floor(Math.random() * 5) + 1;
+    }
+
+    calculatePerfectDayProgress(childId) {
+        const today = this.getCurrentDayOfWeek();
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const todayCompletions = this.completions.filter(comp => {
+            const chore = this.chores.find(c => c.id === comp.chore_id);
+            return chore && chore.child_id === childId && comp.day_of_week === today;
+        });
+        
+        return todayCompletions.length;
+    }
+
+    calculateMaxChoresInDay(childId) {
+        const childCompletions = this.completions.filter(comp => {
+            const chore = this.chores.find(c => c.id === comp.chore_id);
+            return chore && chore.child_id === childId;
+        });
+        
+        // Group by day and find the day with most completions
+        const completionsByDay = {};
+        childCompletions.forEach(comp => {
+            const dayKey = comp.day_of_week;
+            if (!completionsByDay[dayKey]) {
+                completionsByDay[dayKey] = new Set();
+            }
+            completionsByDay[dayKey].add(comp.chore_id);
+        });
+        
+        const maxCompletions = Math.max(...Object.values(completionsByDay).map(set => set.size), 0);
+        return Math.min(maxCompletions, 5);
+    }
+
+    calculatePerfectWeekProgress(childId) {
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+        
+        return childCompletions.length;
+    }
+
+    getCurrentDayOfWeek() {
+        const today = new Date();
+        return today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    }
+
+    async markAllChoresForDay(childId, dayOfWeek) {
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => childChores.some(chore => chore.id === comp.chore_id));
+        // Find chores that aren't completed for today
+        const uncompletedChores = childChores.filter(chore => {
+            return !childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
+        });
+        if (uncompletedChores.length === 0) {
+            this.showToast('All chores are already completed for today!', 'info');
+            return;
+        }
+        // Optimistically update local completions
+        uncompletedChores.forEach(chore => {
+            this.completions.push({ chore_id: chore.id, day_of_week: dayOfWeek, week_start: this.currentWeekStart });
+        });
+        this.rerenderChildCard(childId);
+        // Backend update
+        let completedCount = 0;
+        for (const chore of uncompletedChores) {
+            const result = await this.apiClient.toggleChoreCompletion(chore.id, dayOfWeek);
+            if (result.success && result.completed) {
+                completedCount++;
+            }
+        }
+        // Sync with real data
+        await this.loadCompletions();
+        this.rerenderChildCard(childId);
+        if (completedCount > 0) {
+            this.showToast(`✅ Marked ${completedCount} chores as completed!`, 'success');
+            this.playSound('success');
+        }
+    }
+
+    async markAllChoresForWeek(childId) {
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => childChores.some(chore => chore.id === comp.chore_id));
+        const totalPossible = childChores.length * 7;
+        const currentCompleted = childCompletions.length;
+        const remaining = totalPossible - currentCompleted;
+        if (remaining === 0) {
+            this.showToast('All chores are already completed for the week!', 'info');
+            return;
+        }
+        const confirmed = confirm(`This will mark ${remaining} chore completions for the entire week. Continue?`);
+        if (!confirmed) return;
+        // Optimistically update local completions
+        for (const chore of childChores) {
+            for (let day = 0; day < 7; day++) {
+                const isAlreadyCompleted = childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === day);
+                if (!isAlreadyCompleted) {
+                    this.completions.push({ chore_id: chore.id, day_of_week: day, week_start: this.currentWeekStart });
+                }
+            }
+        }
+        this.rerenderChildCard(childId);
+        // Backend update
+        let completedCount = 0;
+        for (const chore of childChores) {
+            for (let day = 0; day < 7; day++) {
+                const isAlreadyCompleted = childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === day);
+                if (!isAlreadyCompleted) {
+                    const result = await this.apiClient.toggleChoreCompletion(chore.id, day);
+                    if (result.success && result.completed) {
+                        completedCount++;
+                    }
+                }
+            }
+        }
+        // Sync with real data
+        await this.loadCompletions();
+        this.rerenderChildCard(childId);
+        if (completedCount > 0) {
+            this.showToast(`✅ Marked ${completedCount} chores for the week!`, 'success');
+            this.playSound('success');
+        }
+    }
+
+    async clearAllChoresForDay(childId, dayOfWeek) {
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => childChores.some(chore => chore.id === comp.chore_id));
+        // Find chores that are completed for today
+        const completedChores = childChores.filter(chore => {
+            return childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
+        });
+        if (completedChores.length === 0) {
+            this.showToast('No chores are completed for today!', 'info');
+            return;
+        }
+        const confirmed = confirm(`This will unmark ${completedChores.length} chores for today. Continue?`);
+        if (!confirmed) return;
+        // Optimistically update local completions
+        this.completions = this.completions.filter(comp => {
+            return !completedChores.some(chore => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
+        });
+        this.rerenderChildCard(childId);
+        // Backend update
+        let clearedCount = 0;
+        for (const chore of completedChores) {
+            const result = await this.apiClient.toggleChoreCompletion(chore.id, dayOfWeek);
+            if (result.success && !result.completed) {
+                clearedCount++;
+            }
+        }
+        // Sync with real data
+        await this.loadCompletions();
+        this.rerenderChildCard(childId);
+        if (clearedCount > 0) {
+            this.showToast(`❌ Cleared ${clearedCount} chores for today!`, 'success');
+            this.playSound('notification');
+        }
+    }
+
     addChoreCellHandlers(card, childChores, childId) {
+        // Add quick action handlers
+        this.addQuickActionHandlers(card, childChores, childId);
+        
         card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
             const day = cell.dataset.day;
             const choreId = cell.dataset.choreId;
@@ -2195,32 +2790,23 @@ class FamilyChoreChart {
         let totalEarnings = 0;
         let totalDaysCompleted = 0;
         let totalChoreDays = childChores.length * 7; // Each chore should be completed 7 days per week
-        
         // Get family settings for reward calculation
         const dailyReward = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
-        
-        childChores.forEach(chore => {
-            const choreCompletions = childCompletions.filter(comp => comp.chore_id === chore.id);
-            choreCompletions.forEach(comp => {
-                // currentWeekStart is a string, so we need to create a Date object for comparison
-                const weekStartDate = new Date(this.currentWeekStart);
-                if (comp.day_of_week >= weekStartDate.getDay() && comp.day_of_week < weekStartDate.getDay() + 7) {
-                    totalDaysCompleted++;
-                }
-            });
+        // Filter completions for current week only
+        const currentWeekCompletions = childCompletions.filter(comp => {
+            // Make sure we're only counting completions from the current week
+            return comp.week_start === this.currentWeekStart;
         });
-        
-        const completionPercentage = totalChoreDays > 0 ? (totalDaysCompleted / totalChoreDays) * 100 : 0;
-        
+        // Count total completed days for this week
+        totalDaysCompleted = currentWeekCompletions.length;
+        const completionPercentage = totalChoreDays > 0 ? Math.round((totalDaysCompleted / totalChoreDays) * 100) : 0;
         // Calculate earnings using family settings
         totalEarnings = totalDaysCompleted * dailyReward;
-        
         // Add weekly bonus if all chores are completed for the week
         if (totalDaysCompleted === totalChoreDays && totalChoreDays > 0) {
             totalEarnings += weeklyBonus;
         }
-        
         console.log('Progress calculation:', {
             childId,
             childChores: childChores.length,
@@ -2229,76 +2815,76 @@ class FamilyChoreChart {
             completionPercentage,
             totalEarnings,
             dailyReward,
-            weeklyBonus
+            weeklyBonus,
+            currentWeekStart: this.currentWeekStart,
+            currentWeekCompletions: currentWeekCompletions.length
         });
-        
         return {
             completionPercentage: completionPercentage,
-            totalEarnings: totalEarnings
+            totalEarnings: totalEarnings,
+            completedDays: totalDaysCompleted
         };
     }
 
     calculateStars(completionPercentage) {
         let starsHtml = '';
-        const fullStars = Math.floor(completionPercentage / 20); // 20% per star
-        const halfStar = completionPercentage % 20 >= 10 ? '⭐️' : ''; // 10% for half star
+        const fullStars = Math.floor(completionPercentage / 20); // 20% per star (5 stars max)
+        const remainder = completionPercentage % 20;
+        // Add full stars
         for (let i = 0; i < fullStars; i++) {
             starsHtml += '⭐️';
         }
-        if (halfStar) {
-            starsHtml += halfStar;
+        // Add partial star if there's significant progress (10% threshold)
+        if (remainder >= 10 && fullStars < 5) {
+            starsHtml += '✨'; // Use a different star for partial progress
+        }
+        // Add empty star placeholders if needed (optional - for visual consistency)
+        const totalStars = fullStars + (remainder >= 10 ? 1 : 0);
+        for (let i = totalStars; i < 5; i++) {
+            starsHtml += '☆'; // Empty star
         }
         return starsHtml;
     }
 
     formatCents(cents) {
         const dollars = cents / 100;
-        return `$${dollars.toFixed(2)}`;
+        return `${dollars.toFixed(2)}`;
     }
 
     // Optimistic update helpers
     updateChildProgressOptimistically(childId, changeInCompletions) {
         const childCard = document.querySelector(`[data-child-id="${childId}"]`);
         if (!childCard) return;
-
         // Get current progress elements
         const progressFill = childCard.querySelector('.progress-fill');
         const progressStats = childCard.querySelector('.progress-stats');
         const starsContainer = childCard.querySelector('.stars-container');
         const earningsAmount = childCard.querySelector('.earnings-amount');
-
         if (!progressFill || !progressStats || !starsContainer || !earningsAmount) return;
-
         // Calculate new values
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         const totalChoreDays = childChores.length * 7;
-
         // Get current completion count from progress stats (parse the X/Y days string)
         const currentStats = progressStats.textContent;
-        const match = currentStats.match(/(\d+)[^\d]+(\d+)/);
+        const match = currentStats.match(/(\d+)\/(\d+)/);
         let currentCompleted = 0;
-        let maxDays = 0;
         if (match) {
             currentCompleted = parseInt(match[1], 10);
-            maxDays = parseInt(match[2], 10);
         }
-        // Use totalChoreDays as the true max
+        // Calculate new completed count
         const newCompleted = Math.max(0, Math.min(totalChoreDays, currentCompleted + changeInCompletions));
-
         // Calculate new percentage and earnings
-        const completionPercentage = totalChoreDays > 0 ? (newCompleted / totalChoreDays) * 100 : 0;
+        const completionPercentage = totalChoreDays > 0 ? Math.round((newCompleted / totalChoreDays) * 100) : 0;
         const dailyReward = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
         let totalEarnings = newCompleted * dailyReward;
-
         // Add weekly bonus if all chores completed
         if (newCompleted === totalChoreDays && totalChoreDays > 0) {
             totalEarnings += weeklyBonus;
         }
-
         // Update UI elements
         progressFill.style.width = `${completionPercentage}%`;
-        progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${Math.round(completionPercentage)}% complete</span>`;
+        progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${completionPercentage}% complete</span>`;
         starsContainer.innerHTML = this.calculateStars(completionPercentage);
         earningsAmount.textContent = this.formatCents(totalEarnings);
     }
@@ -2306,23 +2892,20 @@ class FamilyChoreChart {
     updateChildProgressWithRealData(childId) {
         const childCard = document.querySelector(`[data-child-id="${childId}"]`);
         if (!childCard) return;
-
         // Get real progress data
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         const childCompletions = this.completions.filter(comp => 
             childChores.some(chore => chore.id === comp.chore_id)
         );
         const progress = this.calculateChildProgress(childId, childChores, childCompletions);
-
         // Update UI elements with real data
         const progressFill = childCard.querySelector('.progress-fill');
         const progressStats = childCard.querySelector('.progress-stats');
         const starsContainer = childCard.querySelector('.stars-container');
         const earningsAmount = childCard.querySelector('.earnings-amount');
-
         if (progressFill && progressStats && starsContainer && earningsAmount) {
             progressFill.style.width = `${progress.completionPercentage}%`;
-            progressStats.innerHTML = `<span>${Math.floor(progress.totalEarnings / (this.familySettings?.daily_reward_cents || 7))}/7 days</span><span>${Math.round(progress.completionPercentage)}% complete</span>`;
+            progressStats.innerHTML = `<span>${progress.completedDays}/${childChores.length * 7} days</span><span>${progress.completionPercentage}% complete</span>`;
             starsContainer.innerHTML = this.calculateStars(progress.completionPercentage);
             earningsAmount.textContent = this.formatCents(progress.totalEarnings);
         }
@@ -2944,6 +3527,48 @@ class FamilyChoreChart {
         }
     }
 
+    // Fixed setupChoreColorSwatches function
+    setupChoreColorSwatches() {
+        // Color preset click handler
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('color-preset') && e.target.closest('.premium-features')) {
+                const colorPickerRow = e.target.closest('.color-picker-row');
+                const colorInput = colorPickerRow.querySelector('input[type="color"]');
+                
+                if (colorInput) {
+                    colorInput.value = e.target.dataset.color;
+                    colorInput.dispatchEvent(new Event('input'));
+                }
+                
+                // Update active state
+                colorPickerRow.querySelectorAll('.color-preset').forEach(btn => {
+                    btn.classList.remove('selected');
+                    btn.style.borderColor = '#fff';
+                });
+                e.target.classList.add('selected');
+                e.target.style.borderColor = '#333';
+            }
+        });
+        
+        // When color input changes, update which preset is selected
+        document.addEventListener('input', (e) => {
+            if (e.target.type === 'color' && e.target.closest('.premium-features')) {
+                const colorPickerRow = e.target.closest('.color-picker-row');
+                if (colorPickerRow) {
+                    colorPickerRow.querySelectorAll('.color-preset').forEach(btn => {
+                        if (btn.dataset.color.toLowerCase() === e.target.value.toLowerCase()) {
+                            btn.classList.add('selected');
+                            btn.style.borderColor = '#333';
+                        } else {
+                            btn.classList.remove('selected');
+                            btn.style.borderColor = '#fff';
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     // Theme and Sound Management
     initializeToggles() {
         console.log('Initializing toggles...');
@@ -3395,6 +4020,97 @@ class FamilyChoreChart {
         }
     }
 
+    // Add this method to FamilyChoreChart
+    rerenderChildCard(childId) {
+        // Find the child and its data
+        const child = this.children.find(c => c.id === childId);
+        if (!child) return;
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => childChores.some(chore => chore.id === comp.chore_id));
+        // Create a new card
+        const newCard = this.createChildCard(child);
+        newCard.className = 'child-content active';
+        newCard.dataset.childId = childId;
+        // Replace the old card in the DOM
+        const oldCard = document.querySelector(`.child-content[data-child-id="${childId}"]`);
+        if (oldCard && oldCard.parentNode) {
+            oldCard.parentNode.replaceChild(newCard, oldCard);
+        }
+    }
+
+    // Add method to create initial chore entry with color picker
+    addInitialChoreEntry() {
+        const container = document.getElementById('chores-container');
+        if (!container) return;
+        if (container.children.length > 0) return; // Only add if empty
+        const newEntry = document.createElement('div');
+        newEntry.className = 'chore-entry';
+        newEntry.innerHTML = `
+            <div class="chore-entry-header">
+                <h3>Chore #1</h3>
+                <button type="button" class="btn btn-outline btn-sm remove-chore" style="display: none;">Remove</button>
+            </div>
+            <div class="form-group">
+                <label for="chore-name-1">Chore Name</label>
+                <input type="text" id="chore-name-1" required placeholder="e.g., Make bed">
+            </div>
+            <!-- Premium Features -->
+            <div class="premium-features" id="premium-chore-features-1" style="display: none;">
+                <div class="form-group">
+                    <label for="chore-color-1">Chore Color</label>
+                    <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                        <input type="color" id="chore-color-1" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
+                        <div class="color-presets" style="display: flex; gap: var(--space-1);">
+                            <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                            <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="chore-icon-1">Chore Icon</label>
+                    <div class="icon-picker" id="icon-picker-1">
+                        <button type="button" class="icon-option active" data-icon="📝">📝</button>
+                        <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
+                        <button type="button" class="icon-option" data-icon="🧹">🧹</button>
+                        <button type="button" class="icon-option" data-icon="🧺">🧺</button>
+                        <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
+                    </div>
+                    <input type="hidden" id="chore-icon-1" value="📝">
+                </div>
+                <div class="form-group">
+                    <label for="chore-category-1">Category</label>
+                    <select id="chore-category-1">
+                        <option value="General">General</option>
+                        <option value="Kitchen">Kitchen</option>
+                        <option value="Bedroom">Bedroom</option>
+                        <option value="Bathroom">Bathroom</option>
+                        <option value="Outdoor">Outdoor</option>
+                        <option value="School">School</option>
+                        <option value="Pets">Pets</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="chore-notes-1">Notes (Optional)</label>
+                    <textarea id="chore-notes-1" placeholder="e.g., Remember to use soap! Or special instructions..." rows="2" style="resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
+            </div>
+            <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-1" style="display: none;">
+                <div class="upgrade-banner">
+                    <span>🌟</span>
+                    <span>Upgrade to Premium for custom colors, icons, categories, and more!</span>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(newEntry);
+    }
 }
 
 // Initialize the application
@@ -3794,4 +4510,4 @@ if (typeof window !== 'undefined') {
             app.copyFamilyCode();
         }
     };
-} 
+}
