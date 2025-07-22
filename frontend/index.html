@@ -143,6 +143,8 @@
                     <span class="toggle-icon">🔊</span>
                     <span class="toggle-label">Sounds</span>
                 </button>
+                <button class="btn btn-outline" id="faq-btn" title="Frequently Asked Questions">❓ FAQ</button>
+                <button class="btn btn-outline" id="contact-btn" title="Contact Support">📧 Contact</button>
                 <button class="btn btn-outline" id="settings-btn">⚙️ Settings</button>
                 <button class="btn btn-outline" id="logout-btn">🚪 Logout</button>
             </div>
@@ -1031,16 +1033,211 @@
           </form>
         </div>
       </template>
+    <!-- FAQ Modal -->
+    <div id="faq-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❓ Frequently Asked Questions</h2>
+                <button class="modal-close" data-modal="faq-modal">&times;</button>
+            </div>
+            
+            <div class="faq-content">
+                <div class="faq-section">
+                    <h3>🏠 Getting Started</h3>
+                    
+                    <div class="faq-item">
+                        <h4>How do I add my first child?</h4>
+                        <p>Click the "Add Your Child" button on the main screen. You'll need to provide their name, age, and choose a color for their profile.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How do I create chores?</h4>
+                        <p>After adding a child, click the "Add Chore" button. You can create multiple chores at once and assign them to specific children.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How does the reward system work?</h4>
+                        <p>Each completed chore earns 7¢ by default. Complete all chores for a day to earn the daily reward. Complete all chores for the week to earn a bonus!</p>
+                    </div>
+                </div>
+                
+                <div class="faq-section">
+                    <h3>💰 Premium Features</h3>
+                    
+                    <div class="faq-item">
+                        <h4>What's included in Premium?</h4>
+                        <p>Premium includes custom chore colors, expanded icon sets, chore categories, unlimited chores, and priority support.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How much does Premium cost?</h4>
+                        <p>Premium is $4.99/month or $49.99/year, giving you access to all advanced features for your entire family.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>Can I cancel Premium anytime?</h4>
+                        <p>Yes! You can cancel your Premium subscription at any time through your account settings. You'll keep access until the end of your billing period.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-section">
+                    <h3>📱 Using the App</h3>
+                    
+                    <div class="faq-item">
+                        <h4>How do I mark chores as complete?</h4>
+                        <p>Simply click on any day in the chore grid to mark it as complete (✓) or incomplete. The progress bar updates instantly!</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>What are the Quick Actions?</h4>
+                        <p>Quick Actions let you mark all chores for today, mark all chores for the week, or clear all chores for today with one click.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How do I view chore history?</h4>
+                        <p>Click the "📊 History" button on any child's card to see their completion history and statistics.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>What are Chore Challenges?</h4>
+                        <p>Challenges track special achievements like streaks, perfect days, and weekly goals. Click "🏆 Challenges" to see progress!</p>
+                    </div>
+                </div>
+                
+                <div class="faq-section">
+                    <h3>🔧 Technical Support</h3>
+                    
+                    <div class="faq-item">
+                        <h4>My progress bar isn't updating</h4>
+                        <p>Try refreshing the page. If the issue persists, check your internet connection and try again. Progress updates should be instant!</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>I can't log in to my account</h4>
+                        <p>Make sure you're using the correct email and password. If you forgot your password, use the "Forgot password?" link on the login screen.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>The app looks different on my phone</h4>
+                        <p>The app is designed to work on all devices! Try rotating your phone or refreshing the page for the best experience.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-section">
+                    <h3>👨‍👩‍👧‍👦 Family Features</h3>
+                    
+                    <div class="faq-item">
+                        <h4>How do I invite family members?</h4>
+                        <p>Go to Settings → Family Sharing to get your family code. Share this code with family members to let them join your family account.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>Can multiple parents use the app?</h4>
+                        <p>Yes! Multiple family members can access the same account using the family code. Everyone sees the same chore data and progress.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h4>How do I change family settings?</h4>
+                        <p>Click the gear icon (⚙️) in the top right to access family settings, including reward amounts and child management.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <p>Still have questions? <a href="#" onclick="app.showModal('contact-modal'); app.hideModal('faq-modal')">Contact us</a> for help!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📧 Contact Us</h2>
+                <button class="modal-close" data-modal="contact-modal">&times;</button>
+            </div>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Get in Touch</h3>
+                    <p>We're here to help! Send us a message and we'll get back to you within 24 hours.</p>
+                    
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <span class="contact-icon">📧</span>
+                            <div>
+                                <strong>Email Support</strong>
+                                <p>support@chorestar.app</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <span class="contact-icon">⏰</span>
+                            <div>
+                                <strong>Response Time</strong>
+                                <p>Within 24 hours</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <span class="contact-icon">🌍</span>
+                            <div>
+                                <strong>Available</strong>
+                                <p>Monday - Friday, 9AM - 6PM CST</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="contact-form" class="contact-form">
+                    <div class="form-group">
+                        <label for="contact-name">Your Name</label>
+                        <input type="text" id="contact-name" required placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-email">Email Address</label>
+                        <input type="email" id="contact-email" required placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-subject">Subject</label>
+                        <select id="contact-subject" required>
+                            <option value="">Select a topic</option>
+                            <option value="general">General Question</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="billing">Billing & Premium</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feedback">Feedback</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" rows="5" required placeholder="Tell us how we can help you..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="app.hideModal('contact-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="supabase-config.js?v=1"></script>
-    <script src="api-client.js?v=1"></script>
+    <script src="supabase-config.js?v=2"></script>
+    <script src="api-local.js?v=1"></script>
+    <script src="api-client.js?v=2"></script>
     <script src="analytics.js?v=1"></script>
     <script src="notifications.js?v=1"></script>
     <script src="family-sharing.js?v=1"></script>
-    <script src="script.js?v=1"></script>
+    <script src="script.js?v=2"></script>
 </body>
 </html> 

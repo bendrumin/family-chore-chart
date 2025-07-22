@@ -32,6 +32,8 @@ CREATE TABLE chores (
     reward_cents INTEGER DEFAULT 7 CHECK (reward_cents >= 0),
     child_id UUID REFERENCES children(id) ON DELETE CASCADE NOT NULL,
     is_active BOOLEAN DEFAULT true,
+    icon TEXT DEFAULT '📝',
+    category TEXT DEFAULT 'General',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -66,14 +68,18 @@ CREATE TABLE family_codes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Family PINs table (for kid-friendly login)
-CREATE TABLE family_pins (
+
+
+-- Achievement badges table
+CREATE TABLE achievement_badges (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-    pin TEXT NOT NULL CHECK (pin ~ '^[0-9]{4}$'), -- Must be exactly 4 digits
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id)
+    child_id UUID REFERENCES children(id) ON DELETE CASCADE NOT NULL,
+    badge_type TEXT NOT NULL,
+    badge_name TEXT NOT NULL,
+    badge_description TEXT NOT NULL,
+    badge_icon TEXT NOT NULL,
+    earned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(child_id, badge_type)
 );
 
 -- Family members table (for family sharing)
@@ -89,6 +95,7 @@ CREATE TABLE family_members (
 CREATE INDEX idx_children_user_id ON children(user_id);
 CREATE INDEX idx_chores_child_id ON chores(child_id);
 CREATE INDEX idx_chores_active ON chores(is_active);
+CREATE INDEX idx_chores_category ON chores(category);
 CREATE INDEX idx_chore_completions_chore_id ON chore_completions(chore_id);
 CREATE INDEX idx_chore_completions_week ON chore_completions(week_start, day_of_week);
 CREATE INDEX idx_family_settings_user_id ON family_settings(user_id);
@@ -231,25 +238,50 @@ CREATE POLICY "Users can update own settings" ON family_settings
 CREATE POLICY "Users can delete own settings" ON family_settings
     FOR DELETE USING (auth.uid() = user_id);
 
--- Enable RLS on family_pins
-ALTER TABLE family_pins ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on family_codes and family_members
+ALTER TABLE family_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
 
--- Family PINs policies
-CREATE POLICY "Users can view their own family PIN" ON family_pins
+-- Family codes policies
+CREATE POLICY "Users can view own family codes" ON family_codes
     FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert their own family PIN" ON family_pins
+CREATE POLICY "Users can insert own family codes" ON family_codes
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own family PIN" ON family_pins
+CREATE POLICY "Users can update own family codes" ON family_codes
     FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own family PIN" ON family_pins
+CREATE POLICY "Users can delete own family codes" ON family_codes
     FOR DELETE USING (auth.uid() = user_id);
 
--- Allow PIN lookup for authentication (no user context needed)
-CREATE POLICY "Allow PIN lookup for authentication" ON family_pins
+-- Allow family code lookup for joining families (no user context needed)
+CREATE POLICY "Allow family code lookup for joining" ON family_codes
     FOR SELECT USING (true);
+
+-- Family members policies
+CREATE POLICY "Users can view family members" ON family_members
+    FOR SELECT USING (
+        auth.uid() = user_id OR 
+        auth.uid() = family_id
+    );
+
+CREATE POLICY "Users can insert family members" ON family_members
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update family members" ON family_members
+    FOR UPDATE USING (
+        auth.uid() = user_id OR 
+        auth.uid() = family_id
+    );
+
+CREATE POLICY "Users can delete family members" ON family_members
+    FOR DELETE USING (
+        auth.uid() = user_id OR 
+        auth.uid() = family_id
+    );
+
+
 
 -- Helper functions for common operations
 

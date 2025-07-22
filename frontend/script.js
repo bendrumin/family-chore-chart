@@ -478,6 +478,20 @@ class FamilyChoreChart {
             emptyAddChildBtn.hasListener = true;
         }
 
+        // FAQ button
+        const faqBtn = document.getElementById('faq-btn');
+        if (faqBtn && !faqBtn.hasListener) {
+            faqBtn.addEventListener('click', () => this.showModal('faq-modal'));
+            faqBtn.hasListener = true;
+        }
+        
+        // Contact button
+        const contactBtn = document.getElementById('contact-btn');
+        if (contactBtn && !contactBtn.hasListener) {
+            contactBtn.addEventListener('click', () => this.showModal('contact-modal'));
+            contactBtn.hasListener = true;
+        }
+        
         // Settings button
         const settingsBtn = document.getElementById('settings-btn');
         if (settingsBtn && !settingsBtn.hasListener) {
@@ -2739,6 +2753,9 @@ class FamilyChoreChart {
         // Add quick action handlers
         this.addQuickActionHandlers(card, childChores, childId);
         
+        // Add FAQ and Contact modal handlers
+        this.setupHelpModals();
+        
         card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
             const day = cell.dataset.day;
             const choreId = cell.dataset.choreId;
@@ -4141,6 +4158,81 @@ class FamilyChoreChart {
         }
     }
 
+    // Setup FAQ and Contact modals
+    setupHelpModals() {
+        // FAQ modal handlers
+        const faqModal = document.getElementById('faq-modal');
+        if (faqModal) {
+            // FAQ modal is already handled by the general modal system
+            console.log('FAQ modal setup complete');
+        }
+        
+        // Contact form handler
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleContactForm();
+            });
+            console.log('Contact form handler setup complete');
+        }
+    }
+    
+    // Handle contact form submission
+    async handleContactForm() {
+        const name = document.getElementById('contact-name').value;
+        const email = document.getElementById('contact-email').value;
+        const subject = document.getElementById('contact-subject').value;
+        const message = document.getElementById('contact-message').value;
+        
+        if (!name || !email || !subject || !message) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+        
+        // Debug: Check if API client is available
+        console.log('API Client available:', !!this.apiClient);
+        console.log('API Client methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.apiClient)));
+        console.log('submitContactForm method:', typeof this.apiClient.submitContactForm);
+        
+        // Show loading state
+        const submitBtn = document.querySelector('#contact-form button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+        
+        try {
+            // Check if method exists
+            if (typeof this.apiClient.submitContactForm !== 'function') {
+                throw new Error('Contact form method not available. Please refresh the page.');
+            }
+            
+            // Submit to API
+            const result = await this.apiClient.submitContactForm(name, email, subject, message);
+            
+            if (result.success) {
+                // Show success message
+                this.showToast('Message sent successfully! We\'ll get back to you within 24 hours.', 'success');
+                
+                // Reset form
+                document.getElementById('contact-form').reset();
+                
+                // Close modal
+                this.hideModal('contact-modal');
+            } else {
+                throw new Error(result.error || 'Failed to send message');
+            }
+            
+        } catch (error) {
+            console.error('Contact form error:', error);
+            this.showToast('Failed to send message. Please try again.', 'error');
+        } finally {
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    
     // Add method to create initial chore entry with color picker
     addInitialChoreEntry() {
         const container = document.getElementById('chores-container');

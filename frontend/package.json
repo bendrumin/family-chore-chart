@@ -1,40 +1,25 @@
 {
-  "name": "family-chore-chart",
+  "name": "chorestar-frontend",
   "version": "1.0.0",
-  "description": "A modern, kid-friendly web application that helps parents manage their children's chores and track rewards",
+  "description": "ChoreStar Family Chore Chart Frontend",
   "main": "index.html",
   "scripts": {
-    "dev": "npx serve . -p 8000",
-    "start": "npx serve . -p 8000",
-    "build": "echo 'No build step required for static files'",
-    "test": "echo 'No tests configured yet'",
-    "lint": "echo 'No linting configured yet'"
+    "dev": "npx serve . -p 3000",
+    "start": "npx serve . -p 3000",
+    "build": "echo 'No build step needed for static site'",
+    "vercel-dev": "vercel dev"
   },
-  "keywords": [
-    "chores",
-    "family",
-    "kids",
-    "rewards",
-    "tracking",
-    "parenting"
-  ],
-  "author": "Family Chore Chart Team",
-  "license": "MIT",
   "dependencies": {
-    "stripe": "^14.0.0"
-  },
-  "devDependencies": {
+    "nodemailer": "^6.9.7",
     "serve": "^14.2.1"
   },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/family-chore-chart.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-username/family-chore-chart/issues"
-  },
-  "homepage": "https://github.com/your-username/family-chore-chart#readme"
+  "devDependencies": {},
+  "keywords": [
+    "chore",
+    "family",
+    "productivity",
+    "rewards"
+  ],
+  "author": "ChoreStar Team",
+  "license": "MIT"
 } 
