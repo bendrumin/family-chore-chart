@@ -640,24 +640,37 @@ class FamilyChoreChart {
             this.addChoreEntry();
         });
 
-        // FIXED: Icon picker functionality with better selector targeting
+        // IMPROVED: Icon picker functionality with specific ID matching
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('icon-option')) {
                 const iconPicker = e.target.closest('.icon-picker');
+                
                 // Update active state
                 iconPicker.querySelectorAll('.icon-option').forEach(option => {
                     option.classList.remove('active');
                 });
                 e.target.classList.add('active');
-                // Find the correct hidden input for the icon (not color!)
-                const iconInputId = iconPicker.id.replace('-picker', '').replace('icon-picker', 'icon');
-                const hiddenInput = document.getElementById(iconInputId) || 
-                                   iconPicker.querySelector('input[type="hidden"]') ||
-                                   document.querySelector(`#${iconInputId}`);
-                // Update hidden input only if it's actually for icons
-                if (hiddenInput && (hiddenInput.id.includes('icon') || hiddenInput.type === 'hidden')) {
+                
+                // Find the correct hidden input based on specific picker ID
+                let hiddenInput = null;
+                
+                if (iconPicker.id === 'edit-chore-icon-picker') {
+                    hiddenInput = document.getElementById('edit-chore-icon');
+                } else if (iconPicker.id.includes('chore-icon-picker')) {
+                    // For add chore modal - extract the number from the ID
+                    const match = iconPicker.id.match(/chore-icon-picker-(\d+)/);
+                    if (match) {
+                        const choreNumber = match[1];
+                        hiddenInput = document.getElementById(`chore-icon-${choreNumber}`);
+                    }
+                }
+                
+                // Update hidden input if found
+                if (hiddenInput) {
                     hiddenInput.value = e.target.dataset.icon;
                     console.log('Set icon value:', e.target.dataset.icon, 'to input:', hiddenInput.id);
+                } else {
+                    console.warn('Could not find hidden input for icon picker:', iconPicker.id);
                 }
             }
         });
@@ -1166,16 +1179,21 @@ class FamilyChoreChart {
         document.getElementById('edit-chore-icon').value = chore.icon || '📝';
         document.getElementById('edit-chore-category').value = chore.category || 'General';
         
-        // Update icon picker active state
+            // Update icon picker active state with timeout for DOM readiness
+    setTimeout(() => {
         const iconPicker = document.getElementById('edit-chore-icon-picker');
         if (iconPicker) {
             iconPicker.querySelectorAll('.icon-option').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.icon === chore.icon) {
                     btn.classList.add('active');
+                    console.log('Set active icon:', chore.icon, 'for picker:', iconPicker.id);
                 }
             });
+        } else {
+            console.warn('Icon picker not found for edit modal');
         }
+    }, 100);
         
         // Populate child select and set the correct child
         this.populateEditChoreChildSelect(chore.child_id);
@@ -4123,6 +4141,21 @@ class FamilyChoreChart {
             </div>
         `;
         container.appendChild(newEntry);
+        
+        // Initialize icon picker for the new entry
+        setTimeout(() => {
+            const newIconPicker = newEntry.querySelector('.icon-picker');
+            if (newIconPicker) {
+                const defaultIcon = newIconPicker.querySelector('.icon-option[data-icon="📝"]');
+                if (defaultIcon) {
+                    newIconPicker.querySelectorAll('.icon-option').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    defaultIcon.classList.add('active');
+                    console.log('Initialized icon picker for new chore entry');
+                }
+            }
+        }, 50);
     }
 }
 
