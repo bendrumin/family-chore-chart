@@ -1256,8 +1256,20 @@ class FamilyChoreChart {
             </div>`;
             return;
         }
-        let html = '';
+        // Deduplicate children by name and age
+        const seen = new Set();
+        const uniqueChildren = [];
         this.children.forEach(child => {
+            const key = `${child.name}-${child.age}`;
+            if (!seen.has(key)) {
+                uniqueChildren.push(child);
+                seen.add(key);
+            } else {
+                console.warn('Duplicate child detected in settings:', child);
+            }
+        });
+        let html = '';
+        uniqueChildren.forEach(child => {
             const gradient = this.getChildGradient(child.avatar_color);
             let avatarHtml = '';
             if (child.avatar_url) {
@@ -1278,7 +1290,7 @@ class FamilyChoreChart {
         });
         container.innerHTML = html;
         // For each child, insert the inline edit form
-        this.children.forEach(child => {
+        uniqueChildren.forEach(child => {
             const anchor = container.querySelector(`.child-item[data-child-id="${child.id}"] .edit-inline-form-anchor`);
             if (anchor) {
                 const tmpl = document.getElementById('edit-child-inline-template');
@@ -1313,7 +1325,7 @@ class FamilyChoreChart {
                 form.onsubmit = async (e) => {
                     e.preventDefault();
                     const name = form.elements['name'].value;
-                    const age = parseInt(form.elements['age'].value);
+                    const age = form.elements['age'].value;
                     const color = form.elements['color'].value;
                     const dicebearUrl = form.dataset.selectedDicebearUrl || '';
                     const updates = { name, age, avatar_color: color, avatar_url: dicebearUrl };
@@ -3058,7 +3070,6 @@ class FamilyChoreChart {
     populateManageChildrenList() {
         const container = document.getElementById('manage-children-list');
         if (!container) return;
-        
         if (this.children.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
@@ -3069,9 +3080,20 @@ class FamilyChoreChart {
             `;
             return;
         }
-        
-        let html = '';
+        // Deduplicate children by name and age
+        const seen = new Set();
+        const uniqueChildren = [];
         this.children.forEach(child => {
+            const key = `${child.name}-${child.age}`;
+            if (!seen.has(key)) {
+                uniqueChildren.push(child);
+                seen.add(key);
+            } else {
+                console.warn('Duplicate child detected in manage children:', child);
+            }
+        });
+        let html = '';
+        uniqueChildren.forEach(child => {
             const gradient = this.getChildGradient(child.avatar_color);
             let avatarHtml = '';
             if (child.avatar_url) {
@@ -3081,9 +3103,7 @@ class FamilyChoreChart {
             } else {
                 avatarHtml = `<div class="child-avatar-small" style="background:${gradient};">${child.name.charAt(0).toUpperCase()}</div>`;
             }
-            
             const childChores = this.chores.filter(chore => chore.child_id === child.id);
-            
             html += `
                 <div class="manage-child-item" data-child-id="${child.id}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:var(--space-3);background:white;">
                     <div style="display:flex;align-items:center;gap:var(--space-3);">
@@ -3099,9 +3119,7 @@ class FamilyChoreChart {
                 </div>
             `;
         });
-        
         container.innerHTML = html;
-        
         // Add event listeners
         this.addManageChildrenHandlers();
     }
