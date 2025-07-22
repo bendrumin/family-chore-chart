@@ -457,22 +457,25 @@ class FamilyChoreChart {
 
     // App Handlers
     setupAppHandlers() {
+        if (this.appHandlersSetup) return;
+        this.appHandlersSetup = true;
         console.log('Setting up app handlers...');
         
-        // Check if already initialized to prevent duplicates
-        if (this.appHandlersSetup) {
-            console.log('App handlers already set up, skipping...');
-            return;
-        }
-        this.appHandlersSetup = true;
-
-        // Add child button
+        // Add child button (main header)
         const addChildBtn = document.getElementById('add-child-btn');
         if (addChildBtn && !addChildBtn.hasListener) {
             addChildBtn.addEventListener('click', () => {
                 this.showModal('add-child-modal');
             });
             addChildBtn.hasListener = true;
+        }
+        // Add child button (empty state)
+        const emptyAddChildBtn = document.getElementById('empty-add-child-btn');
+        if (emptyAddChildBtn && !emptyAddChildBtn.hasListener) {
+            emptyAddChildBtn.addEventListener('click', () => {
+                this.showModal('add-child-modal');
+            });
+            emptyAddChildBtn.hasListener = true;
         }
 
         // Settings button
@@ -1367,6 +1370,12 @@ class FamilyChoreChart {
 
     // The following methods are not used in the provided edit, but are kept as they were in the original file.
     showToast(message, type) {
+        if (!this.recentToasts) this.recentToasts = new Map();
+        const key = `${type}:${message}`;
+        const now = Date.now();
+        const lastShown = this.recentToasts.get(key);
+        if (lastShown && (now - lastShown) < 2000) return;
+        this.recentToasts.set(key, now);
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
@@ -1936,20 +1945,27 @@ class FamilyChoreChart {
         const contentContainer = document.getElementById('children-content');
         const emptyState = document.getElementById('empty-state');
         
-        // Deduplicate children by ID and name to prevent duplicates
-        const uniqueChildren = this.children.filter((child, index, self) => {
-            const firstIndex = self.findIndex(c => c.id === child.id);
-            const nameIndex = self.findIndex(c => c.name === child.name && c.age === child.age);
-            return index === firstIndex && index === nameIndex;
+        // Deduplicate children by ID and name/age
+        const seen = new Set();
+        const uniqueChildren = [];
+        this.children.forEach(child => {
+            const key = `${child.id}-${child.name}-${child.age}`;
+            if (!seen.has(key)) {
+                uniqueChildren.push(child);
+                seen.add(key);
+            } else {
+                console.warn('Duplicate child detected:', child);
+            }
         });
         
         if (uniqueChildren.length === 0) {
             tabsContainer.innerHTML = '';
             contentContainer.innerHTML = '';
+            contentContainer.style.display = 'none';
             emptyState.classList.remove('hidden');
             return;
         }
-        
+        contentContainer.style.display = '';
         emptyState.classList.add('hidden');
         
         // Generate tabs
