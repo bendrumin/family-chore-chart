@@ -461,6 +461,9 @@ class FamilyChoreChart {
         this.appHandlersSetup = true;
         console.log('Setting up app handlers...');
         
+        // FAQ and Contact handlers
+        this.setupHelpModals();
+        
         // Add child button (main header)
         const addChildBtn = document.getElementById('add-child-btn');
         if (addChildBtn && !addChildBtn.hasListener) {
@@ -816,54 +819,55 @@ class FamilyChoreChart {
     }
 
     async handleAddChild() {
-        const name = document.getElementById('child-name').value;
-        const age = parseInt(document.getElementById('child-age').value);
-        const color = document.getElementById('child-color').value;
-        let avatarUrl = '';
-        let avatarFile = '';
-        const avatarPreview = document.getElementById('child-avatar-preview');
-        if (avatarPreview) {
-            if (avatarPreview.dataset.avatarUrl) {
-                avatarUrl = avatarPreview.dataset.avatarUrl;
-            } else if (avatarPreview.dataset.avatarFile) {
-                avatarFile = avatarPreview.dataset.avatarFile;
+        // Prevent duplicate submissions immediately
+        if (this.isAddingChild) {
+            console.log('Preventing duplicate child submission - already in progress');
+            return;
+        }
+        this.isAddingChild = true;
+
+        try {
+            const name = document.getElementById('child-name').value;
+            const age = parseInt(document.getElementById('child-age').value);
+            const color = document.getElementById('child-color').value;
+            let avatarUrl = '';
+            let avatarFile = '';
+            const avatarPreview = document.getElementById('child-avatar-preview');
+            if (avatarPreview) {
+                if (avatarPreview.dataset.avatarUrl) {
+                    avatarUrl = avatarPreview.dataset.avatarUrl;
+                } else if (avatarPreview.dataset.avatarFile) {
+                    avatarFile = avatarPreview.dataset.avatarFile;
+                }
             }
-        }
 
-        if (!name || !age) {
-            this.showToast('Please fill in all fields', 'error');
-            return;
-        }
+            if (!name || !age) {
+                this.showToast('Please fill in all fields', 'error');
+                return;
+            }
 
-        // Prevent duplicate submissions
-        const submissionKey = `add-child-${name}-${age}`;
-        const now = Date.now();
-        const lastSubmission = this.formSubmissions.get(submissionKey);
-        if (lastSubmission && (now - lastSubmission) < 3000) { // 3 second debounce
-            console.log('Preventing duplicate child submission');
-            return;
-        }
-        this.formSubmissions.set(submissionKey, now);
+            // Check subscription limits
+            const limits = await this.apiClient.checkSubscriptionLimits();
+            if (!limits.canAddChildren) {
+                this.showUpgradeModal();
+                return;
+            }
 
-        // Check subscription limits
-        const limits = await this.apiClient.checkSubscriptionLimits();
-        if (!limits.canAddChildren) {
-            this.showUpgradeModal();
-            return;
-        }
-
-        // Pass avatar info to createChild
-        const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
-        
-        if (result.success) {
-            window.analytics.trackAddChild(name, age);
-            this.hideModal('add-child-modal');
-            this.showToast(`Added ${name} to your family!`, 'success');
-            await this.loadChildren();
-            this.renderChildren();
-        } else {
-            window.analytics.trackError('add_child', result.error);
-            this.showToast(result.error, 'error');
+            // Pass avatar info to createChild
+            const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
+            
+            if (result.success) {
+                window.analytics.trackAddChild(name, age);
+                this.hideModal('add-child-modal');
+                this.showToast(`Added ${name} to your family!`, 'success');
+                await this.loadChildren();
+                this.renderChildren();
+            } else {
+                window.analytics.trackError('add_child', result.error);
+                this.showToast(result.error, 'error');
+            }
+        } finally {
+            this.isAddingChild = false;
         }
     }
 
@@ -1418,8 +1422,12 @@ class FamilyChoreChart {
         const key = `${type}:${message}`;
         const now = Date.now();
         const lastShown = this.recentToasts.get(key);
-        if (lastShown && (now - lastShown) < 2000) return;
+        if (lastShown && (now - lastShown) < 3000) {
+            console.log('Preventing duplicate toast:', message);
+            return;
+        }
         this.recentToasts.set(key, now);
+        
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
@@ -1436,22 +1444,25 @@ class FamilyChoreChart {
             </div>
         `;
         
-        document.getElementById('toast-container').appendChild(toast);
-        
-        toast.querySelector('.toast-action').addEventListener('click', () => {
-            toast.remove();
-        });
-        
-        toast.querySelector('.toast-close').addEventListener('click', () => {
-            toast.remove();
-        });
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
+        const toastContainer = document.getElementById('toast-container');
+        if (toastContainer) {
+            toastContainer.appendChild(toast);
+            
+            toast.querySelector('.toast-action').addEventListener('click', () => {
                 toast.remove();
-            }
-        }, 5000);
+            });
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
     }
 
     getToastIcon(type) {
@@ -2949,58 +2960,63 @@ class FamilyChoreChart {
 
     // INSTANT progress bar updates
     updateChildProgressOptimistically(childId, changeInCompletions) {
-        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
-        if (!childCard) {
-            console.warn('Child card not found for progress update:', childId);
-            return;
-        }
-        
-        // Get current progress elements
-        const progressFill = childCard.querySelector('.progress-fill');
-        const progressStats = childCard.querySelector('.progress-stats');
-        const starsContainer = childCard.querySelector('.stars-container');
-        const earningsAmount = childCard.querySelector('.earnings-amount');
-        
-        if (!progressFill || !progressStats || !starsContainer || !earningsAmount) {
-            console.warn('Progress elements not found for child:', childId);
-            return;
-        }
-        
-        // Calculate new values
-        const childChores = this.chores.filter(chore => chore.child_id === childId);
-        const totalChoreDays = childChores.length * 7;
-        
-        // Get current completion count from progress stats (parse the X/Y days string)
-        const currentStats = progressStats.textContent;
-        const match = currentStats.match(/(\d+)\/(\d+)/);
-        let currentCompleted = 0;
-        if (match) {
-            currentCompleted = parseInt(match[1], 10);
-        }
-        
-        // Calculate new completed count
-        const newCompleted = Math.max(0, Math.min(totalChoreDays, currentCompleted + changeInCompletions));
-        
-        // Calculate new percentage and earnings
-        const completionPercentage = totalChoreDays > 0 ? Math.round((newCompleted / totalChoreDays) * 100) : 0;
-        const dailyReward = this.familySettings?.daily_reward_cents || 7;
-        const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
-        let totalEarnings = newCompleted * dailyReward;
-        
-        // Add weekly bonus if all chores completed
-        if (newCompleted === totalChoreDays && totalChoreDays > 0) {
-            totalEarnings += weeklyBonus;
-        }
-        
-        // INSTANT UI updates with requestAnimationFrame for smooth rendering
-        requestAnimationFrame(() => {
-            progressFill.style.width = `${completionPercentage}%`;
-            progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${completionPercentage}% complete</span>`;
-            starsContainer.innerHTML = this.calculateStars(completionPercentage);
-            earningsAmount.textContent = this.formatCents(totalEarnings);
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+            const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+            if (!childCard) {
+                console.warn('Child card not found for progress update:', childId);
+                return;
+            }
             
-            console.log(`Progress updated instantly for child ${childId}: ${newCompleted}/${totalChoreDays} (${completionPercentage}%)`);
-        });
+            // Get current progress elements
+            const progressFill = childCard.querySelector('.progress-fill');
+            const progressStats = childCard.querySelector('.progress-stats');
+            const starsContainer = childCard.querySelector('.stars-container');
+            const earningsAmount = childCard.querySelector('.earnings-amount');
+            
+            if (!progressFill || !progressStats || !starsContainer || !earningsAmount) {
+                console.warn('Progress elements not found for child:', childId);
+                return;
+            }
+            
+            // Calculate new values
+            const childChores = this.chores.filter(chore => chore.child_id === childId);
+            const totalChoreDays = childChores.length * 7;
+            
+            // Get current completion count from progress stats (parse the X/Y days string)
+            const currentStats = progressStats.textContent;
+            const match = currentStats.match(/(\d+)\/(\d+)/);
+            let currentCompleted = 0;
+            if (match) {
+                currentCompleted = parseInt(match[1], 10);
+            }
+            
+            // Calculate new completed count
+            const newCompleted = Math.max(0, Math.min(totalChoreDays, currentCompleted + changeInCompletions));
+            
+            // Calculate new percentage and earnings
+            const completionPercentage = totalChoreDays > 0 ? Math.round((newCompleted / totalChoreDays) * 100) : 0;
+            const dailyReward = this.familySettings?.daily_reward_cents || 7;
+            const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
+            let totalEarnings = newCompleted * dailyReward;
+            
+            // Add weekly bonus if all chores completed
+            if (newCompleted === totalChoreDays && totalChoreDays > 0) {
+                totalEarnings += weeklyBonus;
+            }
+            
+            // INSTANT UI updates with requestAnimationFrame for smooth rendering
+            requestAnimationFrame(() => {
+                if (progressFill && progressStats && starsContainer && earningsAmount) {
+                    progressFill.style.width = `${completionPercentage}%`;
+                    progressStats.innerHTML = `<span>${newCompleted}/${totalChoreDays} days</span><span>${completionPercentage}% complete</span>`;
+                    starsContainer.innerHTML = this.calculateStars(completionPercentage);
+                    earningsAmount.textContent = this.formatCents(totalEarnings);
+                    
+                    console.log(`Progress updated instantly for child ${childId}: ${newCompleted}/${totalChoreDays} (${completionPercentage}%)`);
+                }
+            });
+        }, 10); // Small delay to ensure DOM is ready
     }
 
     updateChildProgressWithRealData(childId) {
@@ -4158,67 +4174,124 @@ class FamilyChoreChart {
         }
     }
 
-    // Setup FAQ and Contact modals
     setupHelpModals() {
-        // FAQ modal handlers
-        const faqModal = document.getElementById('faq-modal');
-        if (faqModal) {
-            // FAQ modal is already handled by the general modal system
-            console.log('FAQ modal setup complete');
-        }
-        
-        // Contact form handler
-        const contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-            contactForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handleContactForm();
+        // FAQ button
+        const faqBtn = document.getElementById('faq-btn');
+        if (faqBtn && !faqBtn.hasListener) {
+            faqBtn.addEventListener('click', () => {
+                this.showModal('faq-modal');
             });
-            console.log('Contact form handler setup complete');
+            faqBtn.hasListener = true;
+        }
+
+        // Contact button
+        const contactBtn = document.getElementById('contact-btn');
+        if (contactBtn && !contactBtn.hasListener) {
+            contactBtn.addEventListener('click', () => {
+                this.showModal('contact-modal');
+            });
+            contactBtn.hasListener = true;
+        }
+
+        // Contact form submission
+        const contactForm = document.getElementById('contact-form');
+        if (contactForm && !contactForm.hasListener) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleContactForm();
+            });
+            contactForm.hasListener = true;
+        }
+
+        // Character counter for message
+        const messageTextarea = document.getElementById('contact-message');
+        if (messageTextarea && !messageTextarea.hasListener) {
+            messageTextarea.addEventListener('input', (e) => {
+                const charCount = e.target.value.length;
+                const charCountElement = e.target.parentNode.querySelector('.char-count');
+                if (charCountElement) {
+                    charCountElement.textContent = `${charCount}/1000 characters`;
+                    charCountElement.style.color = charCount > 900 ? '#ef4444' : '#6b7280';
+                }
+            });
+            messageTextarea.hasListener = true;
         }
     }
-    
-    // Handle contact form submission
+
     async handleContactForm() {
-        const name = document.getElementById('contact-name').value;
-        const email = document.getElementById('contact-email').value;
-        const subject = document.getElementById('contact-subject').value;
-        const message = document.getElementById('contact-message').value;
-        
-        if (!name || !email || !subject || !message) {
-            this.showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
-        // Debug: Check if API client is available
-        console.log('API Client available:', !!this.apiClient);
-        console.log('API Client methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.apiClient)));
-        console.log('submitContactForm method:', typeof this.apiClient.submitContactForm);
-        
-        // Show loading state
-        const submitBtn = document.querySelector('#contact-form button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Sending...';
-        submitBtn.disabled = true;
-        
         try {
-            // Check if method exists
-            if (typeof this.apiClient.submitContactForm !== 'function') {
-                throw new Error('Contact form method not available. Please refresh the page.');
+            // Get form data
+            const name = document.getElementById('contact-name').value.trim();
+            const email = document.getElementById('contact-email').value.trim();
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value.trim();
+            const verification = document.getElementById('contact-verification').value;
+            
+            // Anti-spam checks
+            const honeypotWebsite = document.getElementById('contact-website').value;
+            const honeypotEmail = document.getElementById('contact-email-confirm').value;
+            
+            // Check honeypot fields (bots often fill these)
+            if (honeypotWebsite || honeypotEmail) {
+                console.log('Spam detected: honeypot fields filled');
+                this.showToast('Invalid submission detected.', 'error');
+                return;
             }
             
-            // Submit to API
+            // Check verification answer
+            if (verification !== '8') {
+                this.showToast('Please answer the verification question correctly.', 'error');
+                return;
+            }
+            
+            // Validate required fields
+            if (!name || !email || !subject || !message) {
+                this.showToast('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            // Check for spam keywords in message
+            const spamKeywords = ['viagra', 'casino', 'loan', 'debt', 'make money', 'earn money', 'work from home', 'click here', 'buy now', 'free money'];
+            const messageLower = message.toLowerCase();
+            const hasSpamKeywords = spamKeywords.some(keyword => messageLower.includes(keyword));
+            
+            if (hasSpamKeywords) {
+                console.log('Spam detected: suspicious keywords');
+                this.showToast('Your message contains suspicious content. Please revise and try again.', 'error');
+                return;
+            }
+            
+            // Rate limiting check
+            const lastSubmission = localStorage.getItem('lastContactSubmission');
+            const now = Date.now();
+            if (lastSubmission && (now - parseInt(lastSubmission)) < 60000) { // 1 minute cooldown
+                this.showToast('Please wait a moment before sending another message.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('contact-submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            submitBtn.disabled = true;
+            
+            // Store in Supabase only (no email sending)
             const result = await this.apiClient.submitContactForm(name, email, subject, message);
             
             if (result.success) {
-                // Show success message
-                this.showToast('Message sent successfully! We\'ll get back to you within 24 hours.', 'success');
+                // Store submission time for rate limiting
+                localStorage.setItem('lastContactSubmission', now.toString());
                 
                 // Reset form
                 document.getElementById('contact-form').reset();
+                document.querySelector('.char-count').textContent = '0/1000 characters';
                 
-                // Close modal
+                // Hide modal and show success
                 this.hideModal('contact-modal');
+                this.showToast('Message sent successfully! We\'ll get back to you within 24 hours.', 'success');
             } else {
                 throw new Error(result.error || 'Failed to send message');
             }
@@ -4227,99 +4300,15 @@ class FamilyChoreChart {
             console.error('Contact form error:', error);
             this.showToast('Failed to send message. Please try again.', 'error');
         } finally {
-            // Reset button
-            submitBtn.textContent = originalText;
+            // Reset button state
+            const submitBtn = document.getElementById('contact-submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
             submitBtn.disabled = false;
         }
-    }
-    
-    // Add method to create initial chore entry with color picker
-    addInitialChoreEntry() {
-        const container = document.getElementById('chores-container');
-        if (!container) return;
-        if (container.children.length > 0) return; // Only add if empty
-        const newEntry = document.createElement('div');
-        newEntry.className = 'chore-entry';
-        newEntry.innerHTML = `
-            <div class="chore-entry-header">
-                <h3>Chore #1</h3>
-                <button type="button" class="btn btn-outline btn-sm remove-chore" style="display: none;">Remove</button>
-            </div>
-            <div class="form-group">
-                <label for="chore-name-1">Chore Name</label>
-                <input type="text" id="chore-name-1" required placeholder="e.g., Make bed">
-            </div>
-            <!-- Premium Features -->
-            <div class="premium-features" id="premium-chore-features-1" style="display: none;">
-                <div class="form-group">
-                    <label for="chore-color-1">Chore Color</label>
-                    <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
-                        <input type="color" id="chore-color-1" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;">
-                        <div class="color-presets" style="display: flex; gap: var(--space-1);">
-                            <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                            <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                            <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                            <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                            <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                            <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="chore-icon-1">Chore Icon</label>
-                    <div class="icon-picker" id="icon-picker-1">
-                        <button type="button" class="icon-option active" data-icon="📝">📝</button>
-                        <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
-                        <button type="button" class="icon-option" data-icon="🧹">🧹</button>
-                        <button type="button" class="icon-option" data-icon="🧺">🧺</button>
-                        <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
-                    </div>
-                    <input type="hidden" id="chore-icon-1" value="📝">
-                </div>
-                <div class="form-group">
-                    <label for="chore-category-1">Category</label>
-                    <select id="chore-category-1">
-                        <option value="General">General</option>
-                        <option value="Kitchen">Kitchen</option>
-                        <option value="Bedroom">Bedroom</option>
-                        <option value="Bathroom">Bathroom</option>
-                        <option value="Outdoor">Outdoor</option>
-                        <option value="School">School</option>
-                        <option value="Pets">Pets</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="chore-notes-1">Notes (Optional)</label>
-                    <textarea id="chore-notes-1" placeholder="e.g., Remember to use soap! Or special instructions..." rows="2" style="resize: vertical;"></textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
-            </div>
-            <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-1" style="display: none;">
-                <div class="upgrade-banner">
-                    <span>🌟</span>
-                    <span>Upgrade to Premium for custom colors, icons, categories, and more!</span>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="app.showUpgradeModal()">Upgrade</button>
-                </div>
-            </div>
-        `;
-        container.appendChild(newEntry);
-        
-        // Initialize icon picker for the new entry
-        setTimeout(() => {
-            const newIconPicker = newEntry.querySelector('.icon-picker');
-            if (newIconPicker) {
-                const defaultIcon = newIconPicker.querySelector('.icon-option[data-icon="📝"]');
-                if (defaultIcon) {
-                    newIconPicker.querySelectorAll('.icon-option').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    defaultIcon.classList.add('active');
-                    console.log('Initialized icon picker for new chore entry');
-                }
-            }
-        }, 50);
     }
 }
 
@@ -4598,37 +4587,7 @@ if (!window.location.pathname.endsWith('settings.html')) {
     });
 
     // --- Save handler for add-child-form ---
-    document.getElementById('add-child-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('child-name').value;
-        const age = parseInt(document.getElementById('child-age').value);
-        const color = document.getElementById('child-color').value;
-        let avatarUrl = '';
-        let avatarFile = '';
-        const avatarPreview = document.getElementById('child-avatar-preview');
-        if (avatarPreview) {
-            if (avatarPreview.dataset.avatarUrl) {
-                avatarUrl = avatarPreview.dataset.avatarUrl;
-            } else if (avatarPreview.dataset.avatarFile) {
-                avatarFile = avatarPreview.dataset.avatarFile;
-            }
-        }
-        // Save selected DiceBear avatar if no custom avatar
-        if (!avatarUrl && selectedAddDicebearUrl) {
-            avatarUrl = selectedAddDicebearUrl;
-        }
-        const result = await app.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
-        if (result.success) {
-            window.analytics.trackAddChild(name, age);
-            app.hideModal('add-child-modal');
-            app.showToast(`Added ${name} to your family!`, 'success');
-            await app.loadChildren();
-            app.renderChildren();
-        } else {
-            window.analytics.trackError('add_child', result.error);
-            app.showToast(result.error, 'error');
-        }
-    });
+    // REMOVED: Duplicate event listener - this is now handled in the class method
 
     // Live avatar preview for Add Child modal
     const addNameInput = document.getElementById('child-name');

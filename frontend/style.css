@@ -4914,3 +4914,48 @@ body {
         padding: var(--space-2);
     }
 }
+
+/* Anti-spam and verification styles */
+.honeypot-field {
+    display: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+.verification-group {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+}
+
+.verification-group small {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+}
+
+.char-count {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+/* Loading state for submit button */
+.btn-loading {
+    display: none;
+}
+
+/* Dark mode styles for anti-spam elements */
+[data-theme="dark"] .verification-group {
+    background: var(--gray-800);
+    border-color: var(--gray-600);
+}
+
+[data-theme="dark"] .verification-group small {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .char-count {
+    color: var(--gray-400);
+}

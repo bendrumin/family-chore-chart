@@ -830,60 +830,33 @@ class ApiClient {
 
             if (error) throw error;
 
-            // Send email notification (you can implement this with your preferred email service)
-            await this.sendEmailNotification(contactData);
+            // Send email notification to admin
+            try {
+                const emailResponse = await fetch('/api/send-contact-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        subject,
+                        message,
+                        submissionId: data.id
+                    })
+                });
+
+                if (!emailResponse.ok) {
+                    console.warn('Email notification failed, but contact form submission was successful');
+                }
+            } catch (emailError) {
+                console.warn('Email notification error:', emailError);
+                // Don't fail the entire submission if email fails
+            }
 
             return { success: true, submissionId: data.id };
         } catch (error) {
             console.error('Contact form submission error:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    // Send email notification via API endpoint
-    async sendEmailNotification(contactData) {
-        try {
-            // Check if we're running locally
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            
-            if (isLocal && window.localAPI) {
-                // Use local API for testing
-                console.log('Using local API for email testing');
-                const result = await window.localAPI.sendContactEmail({
-                    name: contactData.name,
-                    email: contactData.email,
-                    subject: contactData.subject,
-                    message: contactData.message,
-                    family_name: contactData.family_name,
-                    user_id: contactData.user_id
-                });
-                return result;
-            } else {
-                // Use production API
-                const emailResponse = await fetch('/api/send-contact-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: contactData.name,
-                        email: contactData.email,
-                        subject: contactData.subject,
-                        message: contactData.message,
-                        family_name: contactData.family_name,
-                        user_id: contactData.user_id
-                    })
-                });
-                
-                if (!emailResponse.ok) {
-                    const errorData = await emailResponse.json();
-                    throw new Error(errorData.error || 'Failed to send email notification');
-                }
-
-                const result = await emailResponse.json();
-                return { success: true, message: result.message };
-            }
-        } catch (error) {
-            console.error('Email notification error:', error);
-            // Don't fail the contact submission if email fails
             return { success: false, error: error.message };
         }
     }
