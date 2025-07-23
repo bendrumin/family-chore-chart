@@ -3,7 +3,7 @@
 /* Skip to content link for accessibility */
 .skip-to-content {
     position: absolute;
-    top: -40px;
+    top: -100px;
     left: 6px;
     background: var(--primary-600);
     color: white;
@@ -15,10 +15,14 @@
     font-weight: 500;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: 2px solid transparent;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .skip-to-content:focus {
     top: 6px;
+    opacity: 1;
+    pointer-events: auto;
     outline: 2px solid var(--primary-300);
     outline-offset: 2px;
 }

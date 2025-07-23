@@ -196,7 +196,7 @@ class FamilyChoreChart {
             this.renderChildren();
             
             // Update family dashboard overview
-            this.updateFamilyDashboard();
+            await this.updateFamilyDashboard();
             
             // Apply seasonal theme (premium feature)
             this.applySeasonalTheme();
@@ -2407,7 +2407,7 @@ class FamilyChoreChart {
         `;
     }
 
-    updateFamilyDashboard() {
+    async updateFamilyDashboard() {
         if (this.children.length === 0) return;
 
         // Calculate family-wide metrics
@@ -2436,7 +2436,7 @@ class FamilyChoreChart {
         }
         
         // Update achievements
-        this.updateFamilyAchievements();
+        await this.updateFamilyAchievements();
     }
 
     calculateFamilyMetrics() {
@@ -2505,29 +2505,34 @@ class FamilyChoreChart {
         return completedDays.size;
     }
 
-    updateFamilyAchievements() {
+    async updateFamilyAchievements() {
         const achievementsList = document.getElementById('achievements-list');
         if (!achievementsList) return;
         
-        // Get recent achievements (last 7 days)
-        const recentAchievements = this.getRecentAchievements();
-        
-        if (recentAchievements.length === 0) {
-            achievementsList.innerHTML = '<p class="no-achievements">No achievements yet this week. Complete chores to earn badges!</p>';
-            return;
-        }
-        
-        const achievementsHtml = recentAchievements.map(achievement => `
-            <div class="achievement-item">
-                <div class="achievement-icon">${achievement.badge_icon}</div>
-                <div class="achievement-info">
-                    <div class="achievement-name">${achievement.badge_name}</div>
-                    <div class="achievement-description">${achievement.badge_description}</div>
+        try {
+            // Get recent achievements (last 7 days)
+            const recentAchievements = await this.getRecentAchievements();
+            
+            if (!recentAchievements || recentAchievements.length === 0) {
+                achievementsList.innerHTML = '<p class="no-achievements">No achievements yet this week. Complete chores to earn badges!</p>';
+                return;
+            }
+            
+            const achievementsHtml = recentAchievements.map(achievement => `
+                <div class="achievement-item">
+                    <div class="achievement-icon">${achievement.badge_icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.badge_name}</div>
+                        <div class="achievement-description">${achievement.badge_description}</div>
+                    </div>
                 </div>
-            </div>
-        `).join('');
-        
-        achievementsList.innerHTML = achievementsHtml;
+            `).join('');
+            
+            achievementsList.innerHTML = achievementsHtml;
+        } catch (error) {
+            console.error('Error updating family achievements:', error);
+            achievementsList.innerHTML = '<p class="no-achievements">No achievements yet this week. Complete chores to earn badges!</p>';
+        }
     }
 
     async getRecentAchievements() {
@@ -2678,8 +2683,8 @@ class FamilyChoreChart {
     addDashboardHandlers() {
         const refreshBtn = document.getElementById('refresh-dashboard');
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                this.updateFamilyDashboard();
+            refreshBtn.addEventListener('click', async () => {
+                await this.updateFamilyDashboard();
                 this.showToast('Dashboard refreshed!', 'success');
             });
         }
@@ -3466,7 +3471,7 @@ class FamilyChoreChart {
                             this.rerenderChildCard(chore.child_id);
                             
                             // Update family dashboard
-                            this.updateFamilyDashboard();
+                            await this.updateFamilyDashboard();
                             
                         } else {
                             // API failed - revert
