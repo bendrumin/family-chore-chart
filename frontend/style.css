@@ -1,5 +1,33 @@
 /* Family Chore Chart - Modern Kid-Friendly CSS */
 
+/* Skip to content link for accessibility */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--primary-600);
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: var(--radius);
+    z-index: 1000;
+    transition: top 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid transparent;
+}
+
+.skip-to-content:focus {
+    top: 6px;
+    outline: 2px solid var(--primary-300);
+    outline-offset: 2px;
+}
+
+.skip-to-content:hover {
+    background: var(--primary-700);
+    transform: translateY(1px);
+}
+
 /* CSS Custom Properties */
 :root {
     /* Theme Colors - Light Mode Defaults */
@@ -7149,8 +7177,17 @@ body.modal-open {
 }
 
 .dashboard-header {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.dashboard-title-section {
+    flex: 1;
+    text-align: left;
 }
 
 .dashboard-header h2 {
@@ -7163,6 +7200,17 @@ body.modal-open {
 .dashboard-subtitle {
     color: var(--gray-600);
     font-size: var(--font-size-base);
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius);
 }
 
 .dashboard-stats-grid {
@@ -7329,6 +7377,16 @@ body.modal-open {
     .family-dashboard-overview {
         padding: var(--space-4);
         margin-bottom: var(--space-4);
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-3);
+    }
+    
+    .dashboard-title-section {
+        text-align: center;
     }
     
     .dashboard-stats-grid {

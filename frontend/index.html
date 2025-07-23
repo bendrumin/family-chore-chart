@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to content</a>
+    
     <!-- Primary Meta Tags -->
     <title>ChoreStar - Family Chore Chart & Reward Tracker | Make Chores Fun</title>
     <meta name="title" content="ChoreStar - Family Chore Chart & Reward Tracker | Make Chores Fun">
@@ -316,7 +319,7 @@
         <header class="app-header" role="banner">
             <div class="header-content">
                 <div class="header-left">
-                    <h1>🏠 ChoreStar Family Chore Chart</h1>
+                    <h1>🏠 ChoreStar</h1>
                     <p id="family-name">Loading...</p>
                 </div>
                 <nav class="header-right" role="navigation" aria-label="Main navigation">
@@ -329,20 +332,17 @@
                         </span>
                     </button>
                     
-                    <!-- Desktop navigation buttons -->
+                    <!-- Desktop navigation - simplified -->
                     <div class="desktop-nav">
                         <button class="btn btn-outline" id="theme-toggle" title="Toggle Dark Mode" aria-label="Toggle dark mode">
                             <span class="toggle-icon" aria-hidden="true">🌙</span>
-                            <span class="toggle-label">Dark Mode</span>
                         </button>
-                        <button class="btn btn-outline" id="sound-toggle" title="Toggle Sounds" aria-label="Toggle sound effects">
-                            <span class="toggle-icon" aria-hidden="true">🔊</span>
-                            <span class="toggle-label">Sounds</span>
+                        <button class="btn btn-outline" id="settings-btn" aria-label="Open settings">
+                            <span class="toggle-icon" aria-hidden="true">⚙️</span>
                         </button>
-                        <button class="btn btn-outline" id="faq-btn" title="Frequently Asked Questions" aria-label="View frequently asked questions">❓ FAQ</button>
-                        <button class="btn btn-outline" id="contact-btn" title="Contact Support" aria-label="Contact customer support">📧 Contact</button>
-                        <button class="btn btn-outline" id="settings-btn" aria-label="Open settings">⚙️ Settings</button>
-                        <button class="btn btn-outline" id="logout-btn" aria-label="Sign out of account">🚪 Logout</button>
+                        <button class="btn btn-outline" id="logout-btn" aria-label="Sign out of account">
+                            <span class="toggle-icon" aria-hidden="true">🚪</span>
+                        </button>
                     </div>
                 </nav>
             </div>
@@ -368,7 +368,7 @@
                     </section>
                     
                     <section class="mobile-menu-section">
-                        <h4>Support & Settings</h4>
+                        <h4>Help & Support</h4>
                         <button class="mobile-menu-btn" id="mobile-faq-btn" aria-label="View frequently asked questions">
                             <span class="mobile-menu-icon" aria-hidden="true">❓</span>
                             <span class="mobile-menu-text">FAQ</span>
@@ -376,10 +376,6 @@
                         <button class="mobile-menu-btn" id="mobile-contact-btn" aria-label="Contact customer support">
                             <span class="mobile-menu-icon" aria-hidden="true">📧</span>
                             <span class="mobile-menu-text">Contact</span>
-                        </button>
-                        <button class="mobile-menu-btn" id="mobile-settings-btn" aria-label="Open settings">
-                            <span class="mobile-menu-icon" aria-hidden="true">⚙️</span>
-                            <span class="mobile-menu-text">Settings</span>
                         </button>
                     </section>
                     
@@ -399,8 +395,15 @@
             <!-- Family Dashboard Overview -->
             <section class="family-dashboard-overview" id="family-dashboard-overview" role="region" aria-labelledby="family-dashboard-heading">
                 <div class="dashboard-header">
-                    <h2 id="family-dashboard-heading">🏠 Family Overview</h2>
-                    <p class="dashboard-subtitle">This week's family progress and achievements</p>
+                    <div class="dashboard-title-section">
+                        <h2 id="family-dashboard-heading">🏠 Family Overview</h2>
+                        <p class="dashboard-subtitle">This week's family progress and achievements</p>
+                    </div>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary btn-sm" id="refresh-dashboard" aria-label="Refresh dashboard data">
+                            <span aria-hidden="true">🔄</span> Refresh
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="dashboard-stats-grid">

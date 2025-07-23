@@ -201,6 +201,9 @@ class FamilyChoreChart {
             // Apply seasonal theme (premium feature)
             this.applySeasonalTheme();
             
+            // Add dashboard refresh handler
+            this.addDashboardHandlers();
+            
         } catch (error) {
             console.error('Load app error:', error);
             window.analytics.trackError('load_app', error.message);
@@ -2670,6 +2673,16 @@ class FamilyChoreChart {
         // This would check the user's subscription status
         // For now, return false to keep features basic for free users
         return false;
+    }
+
+    addDashboardHandlers() {
+        const refreshBtn = document.getElementById('refresh-dashboard');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.updateFamilyDashboard();
+                this.showToast('Dashboard refreshed!', 'success');
+            });
+        }
     }
 
     addQuickActionHandlers(card, childChores, childId) {
