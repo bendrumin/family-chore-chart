@@ -1153,7 +1153,7 @@ body {
     height: 100%;
     background: var(--gradient-success);
     border-radius: var(--radius-full);
-    transition: width var(--transition);
+    transition: none !important; /* Force no transitions for instant updates */
     position: relative;
 }
 
@@ -1165,7 +1165,8 @@ body {
     right: 0;
     bottom: 0;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
+    /* Removed infinite animation for better performance */
+    animation: none;
 }
 
 @keyframes shimmer {
@@ -1183,11 +1184,12 @@ body {
 .stars-container .star {
     display: inline-block;
     margin: 0 2px;
-    transition: all 0.3s ease;
+    transition: none; /* Removed transition for instant updates */
 }
 
 .stars-container .star.earned {
-    animation: starPop 0.5s ease-out;
+    /* Removed animation for instant updates */
+    animation: none;
 }
 
 @keyframes starPop {
