@@ -5,11 +5,11 @@
     position: absolute;
     top: -100px;
     left: 6px;
-    background: var(--primary-600);
-    color: white;
+    background: #ff6b6b;
+    color: white !important;
     padding: 8px 16px;
-    text-decoration: none;
-    border-radius: var(--radius);
+    text-decoration: none !important;
+    border-radius: 8px;
     z-index: 1000;
     transition: top 0.3s ease;
     font-weight: 500;
@@ -17,19 +17,36 @@
     border: 2px solid transparent;
     opacity: 0;
     pointer-events: none;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: inline-block;
+    line-height: 1.2;
 }
 
 .skip-to-content:focus {
     top: 6px;
     opacity: 1;
     pointer-events: auto;
-    outline: 2px solid var(--primary-300);
+    outline: 2px solid #ff8a8a;
     outline-offset: 2px;
+    color: white !important;
+    text-decoration: none !important;
 }
 
 .skip-to-content:hover {
-    background: var(--primary-700);
+    background: #ff5252;
     transform: translateY(1px);
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.skip-to-content:visited {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.skip-to-content:active {
+    color: white !important;
+    text-decoration: none !important;
 }
 
 /* CSS Custom Properties */
