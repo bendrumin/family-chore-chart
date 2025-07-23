@@ -165,6 +165,55 @@ class NotificationManager {
         );
     }
 
+    // Premium: Smart notification methods
+    async sendStreakAlert(childName, streakCount) {
+        if (!this.isPremiumUser()) return false;
+        
+        return await this.sendLocalNotification(
+            '🔥 Streak Alert!',
+            `${childName} is on a ${streakCount}-day streak! Keep up the great work!`,
+            { type: 'streak_alert', url: '/' }
+        );
+    }
+
+    async sendProgressReminder(childName, completedChores, totalChores) {
+        if (!this.isPremiumUser()) return false;
+        
+        const percentage = Math.round((completedChores / totalChores) * 100);
+        return await this.sendLocalNotification(
+            '📊 Progress Update',
+            `${childName} has completed ${completedChores}/${totalChores} chores today (${percentage}%)`,
+            { type: 'progress_update', url: '/' }
+        );
+    }
+
+    async sendAchievementNotification(childName, badgeName, badgeDescription) {
+        if (!this.isPremiumUser()) return false;
+        
+        return await this.sendLocalNotification(
+            '🏆 Achievement Unlocked!',
+            `${childName} earned the "${badgeName}" badge! ${badgeDescription}`,
+            { type: 'achievement', url: '/' }
+        );
+    }
+
+    async sendFamilyGoalAlert(goalType, progress) {
+        if (!this.isPremiumUser()) return false;
+        
+        return await this.sendLocalNotification(
+            '🎯 Family Goal Update',
+            `Your family is ${progress}% toward the ${goalType} goal!`,
+            { type: 'family_goal', url: '/' }
+        );
+    }
+
+    // Check if user has premium features
+    isPremiumUser() {
+        // This would check the user's subscription status
+        // For now, return false to keep notifications basic for free users
+        return false;
+    }
+
     // Convert VAPID key to Uint8Array
     urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);

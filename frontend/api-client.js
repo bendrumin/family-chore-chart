@@ -832,6 +832,7 @@ class ApiClient {
 
             // Send email notification to admin
             try {
+                console.log('Sending email notification...');
                 const emailResponse = await fetch('/api/send-contact-email', {
                     method: 'POST',
                     headers: {
@@ -846,8 +847,13 @@ class ApiClient {
                     })
                 });
 
+                const emailResult = await emailResponse.json();
+                console.log('Email response:', emailResult);
+
                 if (!emailResponse.ok) {
                     console.warn('Email notification failed, but contact form submission was successful');
+                } else {
+                    console.log('Email notification sent successfully');
                 }
             } catch (emailError) {
                 console.warn('Email notification error:', emailError);

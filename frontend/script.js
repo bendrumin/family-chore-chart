@@ -98,6 +98,7 @@ class FamilyChoreChart {
         this.formSubmissions = new Map();
         this.recentToasts = new Map(); // Initialize toast deduplication
         this.handlersInitialized = false;
+        this.seasonalThemes = this.initializeSeasonalThemes();
         this.init();
     }
 
@@ -193,6 +194,12 @@ class FamilyChoreChart {
             
             // Render everything
             this.renderChildren();
+            
+            // Update family dashboard overview
+            this.updateFamilyDashboard();
+            
+            // Apply seasonal theme (premium feature)
+            this.applySeasonalTheme();
             
         } catch (error) {
             console.error('Load app error:', error);
@@ -1032,6 +1039,7 @@ class FamilyChoreChart {
         await this.loadFamilySettings();
         await this.loadChildrenList();
         await this.loadChoresList();
+        await this.loadCompletions(); // Add this line to load completions data
         this.generateChildTabs();
         this.populateManageChildrenList();
         this.checkPremiumFeatures();
@@ -1050,7 +1058,10 @@ class FamilyChoreChart {
         });
         document.getElementById(`${tabName}-tab`).classList.add('active');
         
-
+        // Initialize analytics if analytics tab is selected
+        if (tabName === 'analytics') {
+            this.initializeAnalytics();
+        }
     }
 
 
@@ -2225,7 +2236,6 @@ class FamilyChoreChart {
                 <div class="progress-header">
                     <div class="progress-title">🌟 This Week's Progress</div>
                     <div class="progress-stats">
-                        <span>${Math.floor(progress.totalEarnings / 7)}/7 days</span>
                         <span>${progress.completionPercentage}% complete</span>
                     </div>
                 </div>
@@ -2234,6 +2244,14 @@ class FamilyChoreChart {
                 </div>
                 <div class="stars-container">
                     ${stars}
+                </div>
+            </div>
+            
+            <!-- Today's Focus Section -->
+            <div class="todays-focus-section" style="margin: var(--space-4) 0; padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">🎯 Today's Focus</h4>
+                <div class="todays-chores">
+                    ${this.renderTodaysChores(childChores, childCompletions)}
                 </div>
             </div>
             <div class="chore-grid">
@@ -2339,10 +2357,319 @@ class FamilyChoreChart {
                     <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${childId}">
                         <span>🎯</span> Challenges
                     </button>
+                    <button class="btn btn-outline btn-sm bulk-edit-btn" data-child-id="${childId}">
+                        <span>✏️</span> Bulk Edit
+                    </button>
                 </div>
             </div>
         `;
         return html;
+    }
+
+    renderTodaysChores(childChores, childCompletions) {
+        const today = this.getCurrentDayOfWeek();
+        const todaysChores = childChores.map(chore => {
+            const isCompleted = childCompletions.some(comp => 
+                comp.chore_id === chore.id && comp.day_of_week === today
+            );
+            return {
+                ...chore,
+                isCompleted
+            };
+        });
+
+        if (todaysChores.length === 0) {
+            return '<p style="color: var(--gray-500); font-style: italic;">No chores assigned for today</p>';
+        }
+
+        const completedCount = todaysChores.filter(chore => chore.isCompleted).length;
+        const totalCount = todaysChores.length;
+
+        return `
+            <div class="todays-progress">
+                <div class="todays-stats">
+                    <span class="todays-count">${completedCount}/${totalCount} completed</span>
+                    <span class="todays-percentage">${Math.round((completedCount / totalCount) * 100)}% done</span>
+                </div>
+                <div class="todays-chores-list">
+                    ${todaysChores.map(chore => `
+                        <div class="todays-chore-item ${chore.isCompleted ? 'completed' : ''}">
+                            <span class="chore-icon">${chore.icon || '📝'}</span>
+                            <span class="chore-name">${chore.name}</span>
+                            <span class="chore-status">${chore.isCompleted ? '✅' : '⏳'}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    updateFamilyDashboard() {
+        if (this.children.length === 0) return;
+
+        // Calculate family-wide metrics
+        const familyMetrics = this.calculateFamilyMetrics();
+        
+        // Update dashboard stats
+        const totalProgressEl = document.getElementById('family-total-progress');
+        const familyLeaderEl = document.getElementById('family-leader');
+        const familyStreakEl = document.getElementById('family-streak');
+        const familyEarningsEl = document.getElementById('family-earnings');
+        
+        if (totalProgressEl) {
+            totalProgressEl.textContent = `${familyMetrics.averageProgress}%`;
+        }
+        
+        if (familyLeaderEl) {
+            familyLeaderEl.textContent = familyMetrics.topPerformer || '-';
+        }
+        
+        if (familyStreakEl) {
+            familyStreakEl.textContent = familyMetrics.familyStreak;
+        }
+        
+        if (familyEarningsEl) {
+            familyEarningsEl.textContent = this.formatCents(familyMetrics.totalEarnings);
+        }
+        
+        // Update achievements
+        this.updateFamilyAchievements();
+    }
+
+    calculateFamilyMetrics() {
+        const childMetrics = this.children.map(child => {
+            const childChores = this.chores.filter(chore => chore.child_id === child.id);
+            const childCompletions = this.completions.filter(comp => 
+                childChores.some(chore => chore.id === comp.chore_id)
+            );
+            
+            const progress = this.calculateChildProgress(child.id, childChores, childCompletions);
+            const streak = this.calculateStreak(child.id);
+            
+            return {
+                childId: child.id,
+                childName: child.name,
+                progress: progress.completionPercentage,
+                earnings: progress.totalEarnings,
+                streak: streak
+            };
+        });
+        
+        const averageProgress = Math.round(
+            childMetrics.reduce((sum, child) => sum + child.progress, 0) / childMetrics.length
+        );
+        
+        const topPerformer = childMetrics.reduce((best, current) => 
+            current.progress > best.progress ? current : best
+        );
+        
+        const totalEarnings = childMetrics.reduce((sum, child) => sum + child.earnings, 0);
+        
+        // Calculate family streak (consecutive days everyone completed at least one chore)
+        const familyStreak = this.calculateFamilyStreak();
+        
+        return {
+            averageProgress,
+            topPerformer: topPerformer.childName,
+            totalEarnings,
+            familyStreak
+        };
+    }
+
+    calculateFamilyStreak() {
+        // Simplified family streak calculation
+        // In a real app, you'd track this more carefully
+        const today = new Date();
+        const weekStart = this.apiClient.getWeekStart();
+        const weekStartDate = new Date(weekStart);
+        
+        // Count how many days this week the family completed chores
+        const familyCompletions = this.completions.filter(comp => {
+            const compDate = new Date(comp.week_start);
+            const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+            const actualDate = new Date(compDate);
+            actualDate.setDate(compDate.getDate() + dayOffset);
+            
+            return actualDate >= weekStartDate && actualDate <= today;
+        });
+        
+        // Count unique days with completions
+        const completedDays = new Set();
+        familyCompletions.forEach(comp => {
+            completedDays.add(comp.day_of_week);
+        });
+        
+        return completedDays.size;
+    }
+
+    updateFamilyAchievements() {
+        const achievementsList = document.getElementById('achievements-list');
+        if (!achievementsList) return;
+        
+        // Get recent achievements (last 7 days)
+        const recentAchievements = this.getRecentAchievements();
+        
+        if (recentAchievements.length === 0) {
+            achievementsList.innerHTML = '<p class="no-achievements">No achievements yet this week. Complete chores to earn badges!</p>';
+            return;
+        }
+        
+        const achievementsHtml = recentAchievements.map(achievement => `
+            <div class="achievement-item">
+                <div class="achievement-icon">${achievement.badge_icon}</div>
+                <div class="achievement-info">
+                    <div class="achievement-name">${achievement.badge_name}</div>
+                    <div class="achievement-description">${achievement.badge_description}</div>
+                </div>
+            </div>
+        `).join('');
+        
+        achievementsList.innerHTML = achievementsHtml;
+    }
+
+    async getRecentAchievements() {
+        try {
+            // Get achievements from the last 7 days
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            
+            const { data: achievements, error } = await this.apiClient.supabase
+                .from('achievement_badges')
+                .select('*')
+                .gte('earned_at', weekAgo.toISOString())
+                .order('earned_at', { ascending: false })
+                .limit(5);
+            
+            if (error) throw error;
+            return achievements || [];
+        } catch (error) {
+            console.error('Error fetching recent achievements:', error);
+            return [];
+        }
+    }
+
+    // Premium: Seasonal Themes
+    initializeSeasonalThemes() {
+        return {
+            christmas: {
+                name: 'Christmas',
+                icon: '🎄',
+                startDate: '12-01',
+                endDate: '12-31',
+                decorations: {
+                    header: '🎄 ChoreStar 🎄',
+                    background: 'linear-gradient(135deg, #dc2626, #7f1d1d)',
+                    accentColor: '#dc2626'
+                },
+                seasonalChores: [
+                    { name: 'Decorate Christmas Tree', icon: '🎄', category: 'Holiday' },
+                    { name: 'Wrap Presents', icon: '🎁', category: 'Holiday' },
+                    { name: 'Bake Cookies', icon: '🍪', category: 'Kitchen' },
+                    { name: 'Write Thank You Cards', icon: '✉️', category: 'Holiday' }
+                ]
+            },
+            halloween: {
+                name: 'Halloween',
+                icon: '🎃',
+                startDate: '10-01',
+                endDate: '10-31',
+                decorations: {
+                    header: '🎃 ChoreStar 🎃',
+                    background: 'linear-gradient(135deg, #f59e0b, #92400e)',
+                    accentColor: '#f59e0b'
+                },
+                seasonalChores: [
+                    { name: 'Carve Pumpkin', icon: '🎃', category: 'Holiday' },
+                    { name: 'Decorate House', icon: '👻', category: 'Holiday' },
+                    { name: 'Make Costume', icon: '🧙‍♀️', category: 'Holiday' },
+                    { name: 'Trick or Treat Prep', icon: '🍬', category: 'Holiday' }
+                ]
+            },
+            easter: {
+                name: 'Easter',
+                icon: '🐰',
+                startDate: '04-01',
+                endDate: '04-30',
+                decorations: {
+                    header: '🐰 ChoreStar 🐰',
+                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    accentColor: '#ec4899'
+                },
+                seasonalChores: [
+                    { name: 'Dye Easter Eggs', icon: '🥚', category: 'Holiday' },
+                    { name: 'Decorate Easter Basket', icon: '🧺', category: 'Holiday' },
+                    { name: 'Spring Cleaning', icon: '🌸', category: 'Cleaning' },
+                    { name: 'Plant Flowers', icon: '🌷', category: 'Outdoor' }
+                ]
+            },
+            summer: {
+                name: 'Summer',
+                icon: '☀️',
+                startDate: '06-01',
+                endDate: '08-31',
+                decorations: {
+                    header: '☀️ ChoreStar ☀️',
+                    background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                    accentColor: '#fbbf24'
+                },
+                seasonalChores: [
+                    { name: 'Water Plants', icon: '💧', category: 'Outdoor' },
+                    { name: 'Clean Pool', icon: '🏊', category: 'Outdoor' },
+                    { name: 'BBQ Prep', icon: '🍖', category: 'Kitchen' },
+                    { name: 'Beach Cleanup', icon: '🏖️', category: 'Outdoor' }
+                ]
+            }
+        };
+    }
+
+    getCurrentSeasonalTheme() {
+        if (!this.isPremiumUser()) return null;
+        
+        const today = new Date();
+        const currentDate = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        for (const [season, theme] of Object.entries(this.seasonalThemes)) {
+            if (currentDate >= theme.startDate && currentDate <= theme.endDate) {
+                return theme;
+            }
+        }
+        
+        return null;
+    }
+
+    applySeasonalTheme() {
+        const theme = this.getCurrentSeasonalTheme();
+        if (!theme) return;
+        
+        // Apply theme decorations
+        const header = document.querySelector('.app-header h1');
+        if (header) {
+            header.textContent = theme.decorations.header;
+        }
+        
+        // Apply background gradient
+        document.documentElement.style.setProperty('--seasonal-bg', theme.decorations.background);
+        document.documentElement.style.setProperty('--seasonal-accent', theme.decorations.accentColor);
+        
+        // Add seasonal class to body
+        document.body.classList.add(`seasonal-${theme.name.toLowerCase()}`);
+        
+        // Show seasonal notification
+        this.showToast(`🎉 ${theme.name} theme activated! Check out seasonal chore suggestions!`, 'success');
+    }
+
+    getSeasonalChoreSuggestions() {
+        const theme = this.getCurrentSeasonalTheme();
+        if (!theme) return [];
+        
+        return theme.seasonalChores;
+    }
+
+    // Check if user has premium features
+    isPremiumUser() {
+        // This would check the user's subscription status
+        // For now, return false to keep features basic for free users
+        return false;
     }
 
     addQuickActionHandlers(card, childChores, childId) {
@@ -2383,6 +2710,14 @@ class FamilyChoreChart {
         if (challengesBtn) {
             challengesBtn.addEventListener('click', async () => {
                 await this.showChoreChallenges(childId);
+            });
+        }
+
+        // Bulk Edit button
+        const bulkEditBtn = card.querySelector('.bulk-edit-btn');
+        if (bulkEditBtn) {
+            bulkEditBtn.addEventListener('click', async () => {
+                this.openBulkEditModal(childId);
             });
         }
     }
@@ -2694,7 +3029,7 @@ class FamilyChoreChart {
             return !childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
         });
         if (uncompletedChores.length === 0) {
-            this.showToast('All chores are already completed for today!', 'info');
+            // Removed "already completed" toast to reduce noise
             return;
         }
         // INSTANT optimistic update
@@ -2727,7 +3062,7 @@ class FamilyChoreChart {
             }
         }
         if (completedCount > 0) {
-            this.showToast(`✅ Marked ${completedCount} chores as completed!`, 'success');
+            // Removed bulk action toast to reduce noise
             this.playSound('success');
         }
     }
@@ -2739,7 +3074,7 @@ class FamilyChoreChart {
         const currentCompleted = childCompletions.length;
         const remaining = totalPossible - currentCompleted;
         if (remaining === 0) {
-            this.showToast('All chores are already completed for the week!', 'info');
+            // Removed "already completed" toast to reduce noise
             return;
         }
         const confirmed = confirm(`This will mark ${remaining} chore completions for the entire week. Continue?`);
@@ -2775,7 +3110,7 @@ class FamilyChoreChart {
         await this.refreshChoreSection(childId, true); // forceUpdate = true
         
         if (completedCount > 0) {
-            this.showToast(`✅ Marked ${completedCount} chores for the week!`, 'success');
+            // Removed bulk action toast to reduce noise
             this.playSound('success');
         }
     }
@@ -2788,7 +3123,7 @@ class FamilyChoreChart {
             return childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === dayOfWeek);
         });
         if (completedChores.length === 0) {
-            this.showToast('No chores are completed for today!', 'info');
+            // Removed "no chores completed" toast to reduce noise
             return;
         }
         const confirmed = confirm(`This will unmark ${completedChores.length} chores for today. Continue?`);
@@ -2813,7 +3148,7 @@ class FamilyChoreChart {
         await this.refreshChoreSection(childId, true); // forceUpdate = true
         
         if (clearedCount > 0) {
-            this.showToast(`❌ Cleared ${clearedCount} chores for today!`, 'success');
+            // Removed bulk action toast to reduce noise
             this.playSound('notification');
         }
     }
@@ -2869,7 +3204,7 @@ class FamilyChoreChart {
                         
                         if (result.completed) {
                             const streak = this.updateStreak(childId, chore.id);
-                            if (streak >= 3) {
+                            if (streak >= 5) {
                                 this.showToast(`${this.getChildName(childId)} is on a ${streak}-day streak! 🔥`, 'success');
                             }
                         }
@@ -3104,7 +3439,7 @@ class FamilyChoreChart {
                             // Update streak
                             if (result.completed) {
                                 const streak = this.updateStreak(chore.child_id, choreId);
-                                if (streak >= 3) {
+                                if (streak >= 5) {
                                     this.showToast(`${this.getChildName(chore.child_id)} is on a ${streak}-day streak! 🔥`, 'success');
                                 }
                             }
@@ -3116,6 +3451,9 @@ class FamilyChoreChart {
                             
                             // Just regenerate the child card - simple and reliable
                             this.rerenderChildCard(chore.child_id);
+                            
+                            // Update family dashboard
+                            this.updateFamilyDashboard();
                             
                         } else {
                             // API failed - revert
@@ -3179,24 +3517,40 @@ class FamilyChoreChart {
     calculateChildProgress(childId, childChores, childCompletions) {
         let totalEarnings = 0;
         let totalDaysCompleted = 0;
-        let totalChoreDays = childChores.length * 7; // Each chore should be completed 7 days per week
+        
+        // Calculate total possible chore days for the current week
+        // Each chore can be completed once per day, so total possible = chores × days in week
+        const daysInWeek = 7;
+        const totalChoreDays = childChores.length * daysInWeek;
+        
         // Get family settings for reward calculation
         const dailyReward = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
+        
         // Filter completions for current week only
         const currentWeekCompletions = childCompletions.filter(comp => {
             // Make sure we're only counting completions from the current week
             return comp.week_start === this.currentWeekStart;
         });
-        // Count total completed days for this week
-        totalDaysCompleted = currentWeekCompletions.length;
-        const completionPercentage = totalChoreDays > 0 ? Math.round((totalDaysCompleted / totalChoreDays) * 100) : 0;
+        
+        // Count unique days where at least one chore was completed
+        const completedDaysSet = new Set();
+        currentWeekCompletions.forEach(comp => {
+            completedDaysSet.add(comp.day_of_week);
+        });
+        totalDaysCompleted = completedDaysSet.size;
+        
+        // Calculate completion percentage based on days completed vs total days in week
+        const completionPercentage = daysInWeek > 0 ? Math.round((totalDaysCompleted / daysInWeek) * 100) : 0;
+        
         // Calculate earnings using family settings
         totalEarnings = totalDaysCompleted * dailyReward;
-        // Add weekly bonus if all chores are completed for the week
-        if (totalDaysCompleted === totalChoreDays && totalChoreDays > 0) {
+        
+        // Add weekly bonus if all days are completed for the week
+        if (totalDaysCompleted === daysInWeek && daysInWeek > 0) {
             totalEarnings += weeklyBonus;
         }
+        
         console.log('Progress calculation:', {
             childId,
             childChores: childChores.length,
@@ -3207,12 +3561,15 @@ class FamilyChoreChart {
             dailyReward,
             weeklyBonus,
             currentWeekStart: this.currentWeekStart,
-            currentWeekCompletions: currentWeekCompletions.length
+            currentWeekCompletions: currentWeekCompletions.length,
+            completedDaysSet: Array.from(completedDaysSet)
         });
+        
         return {
             completionPercentage: completionPercentage,
             totalEarnings: totalEarnings,
-            completedDays: totalDaysCompleted
+            completedDays: totalDaysCompleted,
+            totalChoreDays: daysInWeek
         };
     }
 
@@ -3261,7 +3618,7 @@ class FamilyChoreChart {
         const earningsAmount = childCard.querySelector('.earnings-amount');
         if (progressFill && progressStats && starsContainer && earningsAmount) {
             progressFill.style.width = `${progress.completionPercentage}%`;
-            progressStats.innerHTML = `<span>${progress.completedDays}/${childChores.length * 7} days</span><span>${progress.completionPercentage}% complete</span>`;
+            progressStats.innerHTML = `<span>${progress.completionPercentage}% complete</span>`;
             starsContainer.innerHTML = this.calculateStars(progress.completionPercentage);
             earningsAmount.textContent = this.formatCents(progress.totalEarnings);
         }
@@ -4000,10 +4357,7 @@ class FamilyChoreChart {
         console.log('Switching from', currentTheme, 'to', newTheme);
         this.setTheme(newTheme);
         
-        // Only show toast if theme actually changed
-        if (this.settings.theme === newTheme) {
-            this.showToast(`Switched to ${newTheme} mode`, 'success');
-        }
+        // Removed theme switching toast to reduce noise
         this.updateMobileMenuStates();
     }
 
@@ -4435,7 +4789,7 @@ class FamilyChoreChart {
                 progressFill.style.width = `${progress.completionPercentage}%`;
                 
                 // Stats update (no transition needed)
-                progressStats.innerHTML = `<span>${progress.completedDays}/${childChores.length * 7} days</span><span>${progress.completionPercentage}% complete</span>`;
+                progressStats.innerHTML = `<span>${progress.completionPercentage}% complete</span>`;
                 
                 // Stars with fade effect
                 const newStars = this.calculateStars(progress.completionPercentage);
@@ -4773,6 +5127,661 @@ class FamilyChoreChart {
             mobileSoundToggle.querySelector('.mobile-menu-text').textContent = isMuted ? 'Unmute' : 'Mute';
             mobileSoundToggle.querySelector('.mobile-menu-icon').textContent = isMuted ? '🔇' : '��';
         }
+    }
+
+    // Analytics Dashboard Methods
+    async initializeAnalytics() {
+        console.log('Initializing analytics...');
+        if (!this.apiClient) {
+            console.log('No API client available');
+            return;
+        }
+        
+        console.log('Analytics data state:', {
+            children: this.children?.length || 0,
+            chores: this.chores?.length || 0,
+            completions: this.completions?.length || 0
+        });
+        
+        // Check if required DOM elements exist
+        const requiredElements = [
+            'weekly-progress-value',
+            'total-earnings-value', 
+            'best-streak-value',
+            'perfect-days-value',
+            'progress-chart',
+            'comparison-chart',
+            'activity-chart',
+            'insights-grid',
+            'analytics-date-range'
+        ];
+        
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        if (missingElements.length > 0) {
+            console.error('Missing required DOM elements:', missingElements);
+            return;
+        }
+        
+        // Load analytics data
+        await this.loadAnalyticsData();
+        
+        // Set up event listeners
+        this.setupAnalyticsHandlers();
+        
+        // Initialize charts
+        this.initializeCharts();
+        
+        // Generate insights
+        this.generateInsights();
+        
+        console.log('Analytics initialization complete');
+    }
+
+    async loadAnalyticsData() {
+        try {
+            console.log('Loading analytics data...');
+            // Check if we have the necessary data
+            if (!this.children || !this.chores || !this.completions) {
+                console.log('Analytics: Missing data:', {
+                    children: !!this.children,
+                    chores: !!this.chores,
+                    completions: !!this.completions
+                });
+                this.showNoDataMessage();
+                return;
+            }
+            
+            const days = parseInt(document.getElementById('analytics-date-range')?.value || 30);
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            this.analyticsData = {
+                startDate,
+                endDate,
+                days,
+                children: this.children,
+                chores: this.chores,
+                completions: this.completions,
+                familySettings: this.familySettings
+            };
+            
+            // Calculate analytics metrics
+            this.calculateAnalyticsMetrics();
+            
+        } catch (error) {
+            console.error('Error loading analytics data:', error);
+            this.showNoDataMessage();
+        }
+    }
+
+    calculateAnalyticsMetrics() {
+        if (!this.analyticsData) return;
+        
+        const { children, chores, completions, startDate, endDate } = this.analyticsData;
+        
+        // Check if we have any data
+        if (!children || children.length === 0) {
+            this.showNoDataMessage();
+            return;
+        }
+        
+        // Calculate metrics for each child
+        this.analyticsMetrics = children.map(child => {
+            const childChores = chores.filter(chore => chore.child_id === child.id);
+            const childCompletions = completions.filter(comp => {
+                const chore = childChores.find(c => c.id === comp.chore_id);
+                if (!chore) return false;
+                
+                // Convert week_start + day_of_week to a proper date
+                const weekStart = new Date(comp.week_start);
+                const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+                const compDate = new Date(weekStart);
+                compDate.setDate(weekStart.getDate() + dayOffset);
+                
+                return compDate >= startDate && compDate <= endDate;
+            });
+            
+            const totalPossible = childChores.length * this.analyticsData.days;
+            const completionRate = totalPossible > 0 ? (childCompletions.length / totalPossible) * 100 : 0;
+            const totalEarnings = childCompletions.length * (this.familySettings?.daily_reward_cents || 7);
+            
+            // Calculate streak
+            const streak = this.calculateStreak(child.id);
+            
+            // Calculate perfect days
+            const perfectDays = this.calculatePerfectDays(child.id, startDate, endDate);
+            
+            return {
+                childId: child.id,
+                childName: child.name,
+                completionRate: Math.round(completionRate),
+                totalCompletions: childCompletions.length,
+                totalPossible,
+                totalEarnings,
+                streak,
+                perfectDays
+            };
+        });
+        
+        // Check if we have any meaningful data
+        const hasData = this.analyticsMetrics.some(m => m.totalCompletions > 0);
+        if (!hasData) {
+            this.showNoDataMessage();
+            return;
+        }
+        
+        // Calculate family-wide metrics
+        this.familyMetrics = {
+            totalEarnings: this.analyticsMetrics.reduce((sum, m) => sum + m.totalEarnings, 0),
+            averageCompletionRate: Math.round(this.analyticsMetrics.reduce((sum, m) => sum + m.completionRate, 0) / this.analyticsMetrics.length),
+            bestStreak: Math.max(...this.analyticsMetrics.map(m => m.streak)),
+            totalPerfectDays: this.analyticsMetrics.reduce((sum, m) => sum + m.perfectDays, 0)
+        };
+        
+        // Update UI
+        this.updateAnalyticsCards();
+        this.hideNoDataMessage();
+    }
+
+    updateAnalyticsCards() {
+        if (!this.familyMetrics) return;
+        
+        // Weekly Progress
+        const weeklyProgressEl = document.getElementById('weekly-progress-value');
+        if (weeklyProgressEl) {
+            weeklyProgressEl.textContent = `${this.familyMetrics.averageCompletionRate}%`;
+        }
+        
+        // Total Earnings
+        const totalEarningsEl = document.getElementById('total-earnings-value');
+        if (totalEarningsEl) {
+            totalEarningsEl.textContent = this.formatCents(this.familyMetrics.totalEarnings);
+        }
+        
+        // Best Streak
+        const bestStreakEl = document.getElementById('best-streak-value');
+        if (bestStreakEl) {
+            bestStreakEl.textContent = `${this.familyMetrics.bestStreak} days`;
+        }
+        
+        // Perfect Days
+        const perfectDaysEl = document.getElementById('perfect-days-value');
+        if (perfectDaysEl) {
+            perfectDaysEl.textContent = this.familyMetrics.totalPerfectDays;
+        }
+    }
+
+    showNoDataMessage() {
+        console.log('Showing no data message...');
+        // Hide charts and insights
+        const chartsSection = document.querySelector('.charts-section');
+        const insightsSection = document.querySelector('.insights-section');
+        const exportSection = document.querySelector('.export-section');
+        
+        if (chartsSection) chartsSection.style.display = 'none';
+        if (insightsSection) insightsSection.style.display = 'none';
+        if (exportSection) exportSection.style.display = 'none';
+        
+        // Show no data message
+        const analyticsContent = document.querySelector('.analytics-content');
+        if (analyticsContent) {
+            let noDataMessage = analyticsContent.querySelector('.no-data-message');
+            if (!noDataMessage) {
+                noDataMessage = document.createElement('div');
+                noDataMessage.className = 'no-data-message';
+                noDataMessage.innerHTML = `
+                    <div style="font-size: 4rem; margin-bottom: var(--space-4);">📊</div>
+                    <h3>No Data Collected Yet</h3>
+                    <p>Start completing chores to see beautiful analytics, charts, and insights here!</p>
+                    <div class="steps-grid">
+                        <div class="step-card">
+                            <div class="step-icon">👶</div>
+                            <div class="step-title">Add Children</div>
+                            <div class="step-description">Create profiles for your kids</div>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-icon">📝</div>
+                            <div class="step-title">Add Chores</div>
+                            <div class="step-description">Create daily tasks</div>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-icon">✅</div>
+                            <div class="step-title">Complete Chores</div>
+                            <div class="step-description">Mark them as done</div>
+                        </div>
+                    </div>
+                `;
+                analyticsContent.appendChild(noDataMessage);
+            }
+            noDataMessage.style.display = 'block';
+        }
+        
+        // Clear analytics cards
+        const cardValues = ['weekly-progress-value', 'total-earnings-value', 'best-streak-value', 'perfect-days-value'];
+        cardValues.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+    }
+
+    hideNoDataMessage() {
+        // Show charts and insights
+        const chartsSection = document.querySelector('.charts-section');
+        const insightsSection = document.querySelector('.insights-section');
+        const exportSection = document.querySelector('.export-section');
+        
+        if (chartsSection) chartsSection.style.display = 'grid';
+        if (insightsSection) insightsSection.style.display = 'block';
+        if (exportSection) exportSection.style.display = 'block';
+        
+        // Hide no data message
+        const noDataMessage = document.querySelector('.no-data-message');
+        if (noDataMessage) {
+            noDataMessage.style.display = 'none';
+        }
+    }
+
+    calculateStreak(childId) {
+        // Simple streak calculation - can be enhanced
+        const childCompletions = this.completions.filter(comp => {
+            const chore = this.chores.find(c => c.id === comp.chore_id && c.child_id === childId);
+            return chore;
+        });
+        
+        return childCompletions.length; // Simplified for now
+    }
+
+    calculatePerfectDays(childId, startDate, endDate) {
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => {
+            const chore = childChores.find(c => c.id === comp.chore_id);
+            if (!chore) return false;
+            
+            // Convert week_start + day_of_week to a proper date
+            const weekStart = new Date(comp.week_start);
+            const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+            const compDate = new Date(weekStart);
+            compDate.setDate(weekStart.getDate() + dayOffset);
+            
+            return compDate >= startDate && compDate <= endDate;
+        });
+        
+        // Group completions by date
+        const completionsByDate = {};
+        childCompletions.forEach(comp => {
+            const weekStart = new Date(comp.week_start);
+            const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+            const compDate = new Date(weekStart);
+            compDate.setDate(weekStart.getDate() + dayOffset);
+            const date = compDate.toDateString();
+            if (!completionsByDate[date]) completionsByDate[date] = 0;
+            completionsByDate[date]++;
+        });
+        
+        // Count perfect days (all chores completed)
+        let perfectDays = 0;
+        Object.values(completionsByDate).forEach(count => {
+            if (count >= childChores.length) perfectDays++;
+        });
+        
+        return perfectDays;
+    }
+
+    initializeCharts() {
+        this.createProgressChart();
+        this.createComparisonChart();
+        this.createActivityChart();
+    }
+
+    createProgressChart() {
+        const ctx = document.getElementById('progress-chart');
+        if (!ctx) return;
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            return;
+        }
+        
+        const labels = this.analyticsMetrics?.map(m => m.childName) || [];
+        const data = this.analyticsMetrics?.map(m => m.completionRate) || [];
+        
+        // Don't create chart if no data
+        if (labels.length === 0 || data.every(d => d === 0)) {
+            return;
+        }
+        
+        this.progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Completion Rate (%)',
+                    data,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createComparisonChart() {
+        const ctx = document.getElementById('comparison-chart');
+        if (!ctx) return;
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            return;
+        }
+        
+        const labels = this.analyticsMetrics?.map(m => m.childName) || [];
+        const earningsData = this.analyticsMetrics?.map(m => m.totalEarnings / 100) || [];
+        const completionsData = this.analyticsMetrics?.map(m => m.totalCompletions) || [];
+        
+        // Don't create chart if no data
+        if (labels.length === 0 || (earningsData.every(d => d === 0) && completionsData.every(d => d === 0))) {
+            return;
+        }
+        
+        this.comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Earnings ($)',
+                    data: earningsData,
+                    backgroundColor: '#10b981',
+                    yAxisID: 'y'
+                }, {
+                    label: 'Completions',
+                    data: completionsData,
+                    backgroundColor: '#667eea',
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Earnings ($)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Completions'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+    }
+
+    createActivityChart() {
+        const ctx = document.getElementById('activity-chart');
+        if (!ctx) return;
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            return;
+        }
+        
+        // Generate daily activity data
+        const days = this.analyticsData?.days || 30;
+        const labels = [];
+        const data = [];
+        
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            
+            // Count completions for this day
+            const dayCompletions = this.completions.filter(comp => {
+                const weekStart = new Date(comp.week_start);
+                const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+                const compDate = new Date(weekStart);
+                compDate.setDate(weekStart.getDate() + dayOffset);
+                return compDate.toDateString() === date.toDateString();
+            });
+            data.push(dayCompletions.length);
+        }
+        
+        // Don't create chart if no activity
+        if (data.every(d => d === 0)) {
+            return;
+        }
+        
+        this.activityChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Daily Completions',
+                    data,
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    generateInsights() {
+        if (!this.analyticsMetrics || !this.familyMetrics) return;
+        
+        const insightsGrid = document.getElementById('insights-grid');
+        if (!insightsGrid) return;
+        
+        // Check if we have any meaningful data
+        const hasData = this.analyticsMetrics.some(m => m.totalCompletions > 0);
+        if (!hasData) {
+            insightsGrid.innerHTML = '';
+            return;
+        }
+        
+        const insights = [];
+        
+        // Best performer
+        const bestPerformer = this.analyticsMetrics.reduce((best, current) => 
+            current.completionRate > best.completionRate ? current : best
+        );
+        insights.push({
+            icon: '🏆',
+            title: 'Top Performer',
+            description: `${bestPerformer.childName} leads with ${bestPerformer.completionRate}% completion rate!`,
+            type: 'positive'
+        });
+        
+        // Most earnings
+        const topEarner = this.analyticsMetrics.reduce((best, current) => 
+            current.totalEarnings > best.totalEarnings ? current : best
+        );
+        insights.push({
+            icon: '💰',
+            title: 'Highest Earner',
+            description: `${topEarner.childName} earned ${this.formatCents(topEarner.totalEarnings)}!`,
+            type: 'positive'
+        });
+        
+        // Streak insight
+        if (this.familyMetrics.bestStreak > 5) {
+            insights.push({
+                icon: '🔥',
+                title: 'Amazing Streak',
+                description: `Your family has a ${this.familyMetrics.bestStreak}-day streak!`,
+                type: 'positive'
+            });
+        }
+        
+        // Perfect days insight
+        if (this.familyMetrics.totalPerfectDays > 0) {
+            insights.push({
+                icon: '⭐',
+                title: 'Perfect Days',
+                description: `${this.familyMetrics.totalPerfectDays} perfect days this period!`,
+                type: 'positive'
+            });
+        }
+        
+        // Areas for improvement
+        const lowestPerformer = this.analyticsMetrics.reduce((worst, current) => 
+            current.completionRate < worst.completionRate ? current : worst
+        );
+        if (lowestPerformer.completionRate < 50) {
+            insights.push({
+                icon: '📈',
+                title: 'Room for Growth',
+                description: `${lowestPerformer.childName} could use some encouragement.`,
+                type: 'neutral'
+            });
+        }
+        
+        // Render insights
+        insightsGrid.innerHTML = insights.map(insight => `
+            <div class="insight-card ${insight.type}">
+                <div class="insight-icon">${insight.icon}</div>
+                <div class="insight-title">${insight.title}</div>
+                <div class="insight-description">${insight.description}</div>
+            </div>
+        `).join('');
+    }
+
+    setupAnalyticsHandlers() {
+        // Date range selector
+        const dateRangeSelect = document.getElementById('analytics-date-range');
+        if (dateRangeSelect) {
+            dateRangeSelect.addEventListener('change', async () => {
+                await this.loadAnalyticsData();
+                this.updateAnalyticsCards();
+                this.updateCharts();
+                this.generateInsights();
+            });
+        }
+        
+        // Export buttons
+        const exportPdfBtn = document.getElementById('export-pdf');
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', () => this.exportPDF());
+        }
+        
+        const exportCsvBtn = document.getElementById('export-csv');
+        if (exportCsvBtn) {
+            exportCsvBtn.addEventListener('click', () => this.exportCSV());
+        }
+        
+        const exportWeeklyBtn = document.getElementById('export-weekly');
+        if (exportWeeklyBtn) {
+            exportWeeklyBtn.addEventListener('click', () => this.exportWeekly());
+        }
+    }
+
+    updateCharts() {
+        if (this.progressChart) {
+            this.progressChart.destroy();
+            this.createProgressChart();
+        }
+        if (this.comparisonChart) {
+            this.comparisonChart.destroy();
+            this.createComparisonChart();
+        }
+        if (this.activityChart) {
+            this.activityChart.destroy();
+            this.createActivityChart();
+        }
+    }
+
+    exportPDF() {
+        this.showToast('PDF export coming soon!', 'info');
+    }
+
+    exportCSV() {
+        if (!this.analyticsMetrics) return;
+        
+        const csvContent = [
+            ['Child Name', 'Completion Rate (%)', 'Total Completions', 'Total Earnings ($)', 'Streak (days)', 'Perfect Days'],
+            ...this.analyticsMetrics.map(m => [
+                m.childName,
+                m.completionRate,
+                m.totalCompletions,
+                (m.totalEarnings / 100).toFixed(2),
+                m.streak,
+                m.perfectDays
+            ])
+        ].map(row => row.join(',')).join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `chorestar-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        this.showToast('CSV exported successfully!', 'success');
+    }
+
+    exportWeekly() {
+        this.showToast('Weekly summary coming soon!', 'info');
     }
 }
 
