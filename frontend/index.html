@@ -73,6 +73,13 @@
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" required>
                 </div>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me" checked>
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
                 <p class="auth-switch">
                     Don't have an account? 
@@ -134,20 +141,78 @@
                     <h1>🏠 Family Chore Chart</h1>
                     <p id="family-name">Loading...</p>
                 </div>
-                            <div class="header-right">
-                <button class="btn btn-outline" id="theme-toggle" title="Toggle Dark Mode">
-                    <span class="toggle-icon">🌙</span>
-                    <span class="toggle-label">Dark Mode</span>
-                </button>
-                <button class="btn btn-outline" id="sound-toggle" title="Toggle Sounds">
-                    <span class="toggle-icon">🔊</span>
-                    <span class="toggle-label">Sounds</span>
-                </button>
-                <button class="btn btn-outline" id="faq-btn" title="Frequently Asked Questions">❓ FAQ</button>
-                <button class="btn btn-outline" id="contact-btn" title="Contact Support">📧 Contact</button>
-                <button class="btn btn-outline" id="settings-btn">⚙️ Settings</button>
-                <button class="btn btn-outline" id="logout-btn">🚪 Logout</button>
+                <div class="header-right">
+                    <!-- Hamburger menu for mobile -->
+                    <button class="btn btn-outline hamburger-menu-btn" id="hamburger-menu-btn" title="Menu">
+                        <span class="hamburger-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                    </button>
+                    
+                    <!-- Desktop navigation buttons -->
+                    <div class="desktop-nav">
+                        <button class="btn btn-outline" id="theme-toggle" title="Toggle Dark Mode">
+                            <span class="toggle-icon">🌙</span>
+                            <span class="toggle-label">Dark Mode</span>
+                        </button>
+                        <button class="btn btn-outline" id="sound-toggle" title="Toggle Sounds">
+                            <span class="toggle-icon">🔊</span>
+                            <span class="toggle-label">Sounds</span>
+                        </button>
+                        <button class="btn btn-outline" id="faq-btn" title="Frequently Asked Questions">❓ FAQ</button>
+                        <button class="btn btn-outline" id="contact-btn" title="Contact Support">📧 Contact</button>
+                        <button class="btn btn-outline" id="settings-btn">⚙️ Settings</button>
+                        <button class="btn btn-outline" id="logout-btn">🚪 Logout</button>
+                    </div>
+                </div>
             </div>
+            
+            <!-- Mobile slide-out menu -->
+            <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+            <div class="mobile-menu" id="mobile-menu">
+                <div class="mobile-menu-header">
+                    <h3>Menu</h3>
+                    <button class="mobile-menu-close" id="mobile-menu-close">&times;</button>
+                </div>
+                <div class="mobile-menu-content">
+                    <div class="mobile-menu-section">
+                        <h4>Quick Actions</h4>
+                        <button class="mobile-menu-btn" id="mobile-theme-toggle">
+                            <span class="mobile-menu-icon">🌙</span>
+                            <span class="mobile-menu-text">Dark Mode</span>
+                        </button>
+                        <button class="mobile-menu-btn" id="mobile-sound-toggle">
+                            <span class="mobile-menu-icon">🔊</span>
+                            <span class="mobile-menu-text">Sounds</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mobile-menu-section">
+                        <h4>Support & Settings</h4>
+                        <button class="mobile-menu-btn" id="mobile-faq-btn">
+                            <span class="mobile-menu-icon">❓</span>
+                            <span class="mobile-menu-text">FAQ</span>
+                        </button>
+                        <button class="mobile-menu-btn" id="mobile-contact-btn">
+                            <span class="mobile-menu-icon">📧</span>
+                            <span class="mobile-menu-text">Contact</span>
+                        </button>
+                        <button class="mobile-menu-btn" id="mobile-settings-btn">
+                            <span class="mobile-menu-icon">⚙️</span>
+                            <span class="mobile-menu-text">Settings</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mobile-menu-section">
+                        <h4>Account</h4>
+                        <button class="mobile-menu-btn mobile-menu-btn-danger" id="mobile-logout-btn">
+                            <span class="mobile-menu-icon">🚪</span>
+                            <span class="mobile-menu-text">Logout</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -527,24 +592,29 @@
             
             <!-- Rewards Tab -->
             <div id="rewards-tab" class="tab-content active">
-                <form id="settings-form" class="modal-form">
-                    <div class="rewards-row">
-                        <div class="form-group">
-                            <label for="daily-reward">Daily Reward (cents)</label>
-                            <input type="number" id="daily-reward" min="1" max="100" value="7" required>
-                            <small>Amount earned per day when all chores are completed</small>
+                <div class="rewards-content">
+                    <h3>💰 Reward Settings</h3>
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Configure how much children earn for completing chores.</p>
+                    
+                    <form id="settings-form">
+                        <div class="rewards-row">
+                            <div class="form-group">
+                                <label for="daily-reward">Daily Reward (cents)</label>
+                                <input type="number" id="daily-reward" min="1" max="100" value="7" required>
+                                <small>Amount earned per day when all chores are completed</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="weekly-bonus">Weekly Bonus (cents)</label>
+                                <input type="number" id="weekly-bonus" min="0" max="50" value="1" required>
+                                <small>Bonus for completing all chores all week</small>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="weekly-bonus">Weekly Bonus (cents)</label>
-                            <input type="number" id="weekly-bonus" min="0" max="50" value="1" required>
-                            <small>Bonus for completing all chores all week</small>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" data-modal="settings-modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
                         </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" data-modal="settings-modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Settings</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
             
             <!-- Manage Children Tab -->

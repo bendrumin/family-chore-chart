@@ -1,0 +1,25 @@
+# Ignore build artifacts
+public/
+
+# Ignore development files
+.git/
+.gitignore
+README.md
+SETUP.md
+PROJECT_SUMMARY.md
+quick-start.sh
+
+# Ignore database files
+*.sql
+
+# Ignore deployment configs
+deployment/
+
+# Ignore email templates
+email-templates/
+
+# Ignore backend (not needed for frontend deployment)
+backend/
+
+# Ignore environment files
+.env* 

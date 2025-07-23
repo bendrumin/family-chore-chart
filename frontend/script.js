@@ -365,6 +365,7 @@ class FamilyChoreChart {
     async handleLogin() {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
+        const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : true;
 
         if (!email || !password) {
             this.showToast('Please fill in all fields', 'error');
@@ -378,6 +379,15 @@ class FamilyChoreChart {
         if (result.success) {
             this.currentUser = result.user;
             window.analytics.trackLogin(email);
+            // Store session based on Remember Me
+            const sessionStr = JSON.stringify(result.session);
+            if (rememberMe) {
+                localStorage.setItem('chorestar_session', sessionStr);
+                sessionStorage.removeItem('chorestar_session');
+            } else {
+                sessionStorage.setItem('chorestar_session', sessionStr);
+                localStorage.removeItem('chorestar_session');
+            }
             await this.loadApp();
         } else {
             window.analytics.trackError('login', result.error);
@@ -465,6 +475,7 @@ class FamilyChoreChart {
         
         // FAQ and Contact handlers
         this.setupHelpModals();
+        this.setupMobileMenu();
         
         // Add child button (main header)
         const addChildBtn = document.getElementById('add-child-btn');
@@ -610,7 +621,10 @@ class FamilyChoreChart {
             
             // Close modal when clicking outside (on backdrop)
             if (e.target.classList.contains('modal')) {
-                this.hideModal(e.target.id);
+                // Only close if clicking directly on the modal backdrop, not on content
+                if (e.target === e.currentTarget) {
+                    this.hideModal(e.target.id);
+                }
             }
         });
 
@@ -715,6 +729,10 @@ class FamilyChoreChart {
     async showModal(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
+        
+        // Prevent body scroll when modal is open
+        document.body.classList.add('modal-open');
+        
         // Close all other modals first
         const allModals = document.querySelectorAll('.modal');
         allModals.forEach(m => {
@@ -723,6 +741,7 @@ class FamilyChoreChart {
             }
         });
         modal.classList.remove('hidden');
+        
         // Populate child select for chore form and check premium features
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
@@ -737,6 +756,9 @@ class FamilyChoreChart {
         if (modal) {
             modal.classList.add('hidden');
         }
+        
+        // Re-enable body scroll when modal is closed
+        document.body.classList.remove('modal-open');
         
         // Reset forms
         if (modalId === 'add-child-modal') {
@@ -2271,8 +2293,9 @@ class FamilyChoreChart {
                 const isCompleted = choreCompletions.some(comp => comp.day_of_week === day);
                 const cellClass = isCompleted ? 'completed' : 'empty';
                 const cellContent = isCompleted ? '✓' : '';
+                const dayName = days[day];
                 html += `
-                    <td>
+                    <td data-day="${dayName}">
                         <div class="chore-cell ${cellClass}" 
                              data-chore-id="${chore.id}" 
                              data-day="${day}">
@@ -3981,6 +4004,7 @@ class FamilyChoreChart {
         if (this.settings.theme === newTheme) {
             this.showToast(`Switched to ${newTheme} mode`, 'success');
         }
+        this.updateMobileMenuStates();
     }
 
     setTheme(theme) {
@@ -4070,6 +4094,7 @@ class FamilyChoreChart {
                 this.justToggled = false;
             }, 100);
         }
+        this.updateMobileMenuStates();
     }
 
     updateSoundToggle() {
@@ -4669,6 +4694,84 @@ class FamilyChoreChart {
             btnText.style.display = 'inline';
             btnLoading.style.display = 'none';
             submitBtn.disabled = false;
+        }
+    }
+
+    setupMobileMenu() {
+        const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        
+        // Open mobile menu
+        hamburgerBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        // Close mobile menu
+        const closeMobileMenu = () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+        
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Connect mobile menu buttons to desktop buttons
+        const mobileButtons = {
+            'mobile-theme-toggle': 'theme-toggle',
+            'mobile-sound-toggle': 'sound-toggle',
+            'mobile-faq-btn': 'faq-btn',
+            'mobile-contact-btn': 'contact-btn',
+            'mobile-settings-btn': 'settings-btn',
+            'mobile-logout-btn': 'logout-btn'
+        };
+        
+        Object.entries(mobileButtons).forEach(([mobileId, desktopId]) => {
+            const mobileBtn = document.getElementById(mobileId);
+            const desktopBtn = document.getElementById(desktopId);
+            
+            if (mobileBtn && desktopBtn) {
+                mobileBtn.addEventListener('click', () => {
+                    // Trigger the desktop button's click event
+                    desktopBtn.click();
+                    // Close the mobile menu
+                    closeMobileMenu();
+                });
+            }
+        });
+        
+        // Update mobile menu button states based on desktop button states
+        this.updateMobileMenuStates();
+    }
+    
+    updateMobileMenuStates() {
+        // Update theme toggle state
+        const themeToggle = document.getElementById('theme-toggle');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        if (themeToggle && mobileThemeToggle) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            mobileThemeToggle.querySelector('.mobile-menu-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            mobileThemeToggle.querySelector('.mobile-menu-icon').textContent = isDark ? '☀️' : '🌙';
+        }
+        
+        // Update sound toggle state
+        const soundToggle = document.getElementById('sound-toggle');
+        const mobileSoundToggle = document.getElementById('mobile-sound-toggle');
+        if (soundToggle && mobileSoundToggle) {
+            const isMuted = soundToggle.classList.contains('muted');
+            mobileSoundToggle.querySelector('.mobile-menu-text').textContent = isMuted ? 'Unmute' : 'Mute';
+            mobileSoundToggle.querySelector('.mobile-menu-icon').textContent = isMuted ? '🔇' : '��';
         }
     }
 }

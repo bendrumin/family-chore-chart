@@ -15,6 +15,7 @@ yarn-error.log*
 dist/
 build/
 out/
+public/
 
 # IDE and editor files
 .vscode/
@@ -57,3 +58,4 @@ temp/
 
 # Netlify
 .netlify 
+.env*.local

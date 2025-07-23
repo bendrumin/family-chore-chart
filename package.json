@@ -1,0 +1,11 @@
+{
+  "name": "family-chore-chart",
+  "version": "1.0.0",
+  "description": "A family chore tracking app",
+  "scripts": {
+    "start": "echo 'Deploy to Vercel to start the app'"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+} 
