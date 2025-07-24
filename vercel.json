@@ -2,14 +2,26 @@
   "version": 2,
   "builds": [
     {
+      "src": "frontend/api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "frontend/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/api/send-contact-email",
+      "dest": "/frontend/api/send-contact-email.js"
+    },
+    {
+      "src": "/api/create-checkout-session",
+      "dest": "/frontend/api/create-checkout-session.js"
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/frontend/api/$1"
+      "dest": "/frontend/api/$1.js"
     },
     {
       "src": "/(.*)",

@@ -4,10 +4,34 @@
 - Contact form is working and storing submissions in Supabase
 - Email API route is deployed and ready
 - Contact form will call the email API when submissions are made
+- **Gmail support is now configured and ready!**
 
 ## To Enable Email Notifications
 
-### Option 1: Zoho Mail (Recommended)
+### Option 1: Gmail (Recommended - Easiest)
+
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate an App Password**:
+   - Go to Google Account settings
+   - Security → 2-Step Verification → App passwords
+   - Generate a password for "Mail"
+   - **Copy the 16-character password**
+3. **Add Environment Variables to Vercel**:
+   ```bash
+   vercel env add EMAIL_SERVICE
+   # Enter: gmail
+   
+   vercel env add EMAIL_USER
+   # Enter: your-gmail@gmail.com
+   
+   vercel env add EMAIL_PASS
+   # Enter: your-app-password-from-step-2
+   
+   vercel env add ADMIN_EMAIL
+   # Enter: bsiegel13@gmail.com
+   ```
+
+### Option 2: Zoho Mail (Alternative)
 
 1. **Get your Zoho Mail credentials**:
    - Log into your Zoho Mail account
@@ -39,28 +63,6 @@
    # Enter: bsiegel13@gmail.com
    ```
 
-### Option 2: Gmail (Alternative)
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate an App Password**:
-   - Go to Google Account settings
-   - Security → 2-Step Verification → App passwords
-   - Generate a password for "Mail"
-3. **Add Environment Variables to Vercel**:
-   ```bash
-   vercel env add EMAIL_SERVICE
-   # Enter: gmail
-   
-   vercel env add EMAIL_USER
-   # Enter: your-gmail@gmail.com
-   
-   vercel env add EMAIL_PASS
-   # Enter: your-app-password-from-step-2
-   
-   vercel env add ADMIN_EMAIL
-   # Enter: bsiegel13@gmail.com
-   ```
-
 ### Option 3: Resend (Alternative)
 
 1. **Sign up at [resend.com](https://resend.com)**
@@ -86,13 +88,13 @@ Right now, the contact form:
 - ✅ Stores submissions in Supabase database
 - ✅ Calls the email API
 - ✅ Logs email content to Vercel console
-- ⏳ **Needs Zoho Mail credentials to send actual emails**
+- ⏳ **Needs Gmail credentials to send actual emails**
 
 ## Next Steps
 
-1. Get your Zoho Mail SMTP credentials
-2. Set up the environment variables using the commands above
-3. Uncomment the email sending code in `frontend/api/send-contact-email.js`
-4. Deploy again
+1. **Enable 2FA on your Gmail account**
+2. **Generate an App Password** for Gmail
+3. **Set up the environment variables** using the commands above
+4. **Deploy again**
 
-The email API is ready to go - just needs the Zoho Mail credentials configured! 
+The email API is now configured for Gmail and ready to go - just needs the Gmail credentials configured! 

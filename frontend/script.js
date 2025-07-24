@@ -80,6 +80,7 @@ class FamilyChoreChart {
     constructor() {
         this.apiClient = window.apiClient;
         this.currentUser = null;
+        this.profile = null; // Store user profile for premium checks
         this.children = [];
         this.chores = [];
         this.completions = [];
@@ -140,6 +141,7 @@ class FamilyChoreChart {
             
             // Update family name in header
             const profile = await this.apiClient.getProfile();
+            this.profile = profile; // Store profile for premium checks
             
             if (profile) {
                 document.getElementById('family-name').textContent = profile.family_name;
@@ -200,6 +202,9 @@ class FamilyChoreChart {
             
             // Apply seasonal theme (premium feature)
             this.applySeasonalTheme();
+            
+            // Load notification preferences
+            this.loadNotificationPreferences();
             
             // Add dashboard refresh handler
             this.addDashboardHandlers();
@@ -1061,9 +1066,11 @@ class FamilyChoreChart {
         });
         document.getElementById(`${tabName}-tab`).classList.add('active');
         
-        // Initialize analytics if analytics tab is selected
-        if (tabName === 'analytics') {
-            this.initializeAnalytics();
+        // Load specific tab data
+        if (tabName === 'appearance') {
+            this.loadAppearanceTab();
+        } else if (tabName === 'insights') {
+            this.loadInsightsTab();
         }
     }
 
@@ -1080,6 +1087,215 @@ class FamilyChoreChart {
         } catch (error) {
             console.error('Error loading family settings:', error);
         }
+    }
+
+    async loadAppearanceTab() {
+        // Populate current theme display
+        this.updateCurrentThemeDisplay();
+        
+        // Populate available themes grid
+        this.populateThemesGrid();
+        
+        // Load theme settings
+        this.loadThemeSettings();
+    }
+
+    updateCurrentThemeDisplay() {
+        const currentThemeDisplay = document.getElementById('current-theme-display');
+        if (!currentThemeDisplay) return;
+        
+        const currentTheme = this.getCurrentSeasonalTheme();
+        if (currentTheme) {
+            currentThemeDisplay.innerHTML = `
+                <div class="current-theme-card">
+                    <div class="theme-preview-large" style="background: ${currentTheme.decorations.background}">
+                        <div class="theme-preview-content">
+                            <div class="theme-icon-large">${currentTheme.icon}</div>
+                            <div class="theme-preview-text">${currentTheme.decorations.header}</div>
+                        </div>
+                    </div>
+                    <div class="theme-info">
+                        <h5>${currentTheme.name}</h5>
+                        <p>Active until ${this.getThemeEndDate(currentTheme)}</p>
+                        <button class="btn btn-outline btn-sm" onclick="app.disableSeasonalTheme()">
+                            Disable Theme
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            currentThemeDisplay.innerHTML = `
+                <div class="no-theme-message">
+                    <div class="no-theme-icon">🎨</div>
+                    <p>No seasonal theme active</p>
+                    <small>Browse available themes below to get started!</small>
+                </div>
+            `;
+        }
+    }
+
+    populateThemesGrid() {
+        const themesGrid = document.getElementById('themes-grid');
+        if (!themesGrid) return;
+        
+        const themes = this.seasonalThemes;
+        const currentTheme = this.getCurrentSeasonalTheme();
+        
+        themesGrid.innerHTML = Object.entries(themes).map(([key, theme]) => {
+            const isActive = currentTheme && currentTheme.name === theme.name;
+            const isAvailable = this.isThemeAvailable(theme);
+            const isUpcoming = this.isThemeUpcoming(theme);
+            
+            return `
+                <div class="theme-card ${isActive ? 'active' : ''} ${!isAvailable && !isUpcoming ? 'disabled' : ''}" 
+                     onclick="${isAvailable ? `app.activateTheme('${key}')` : ''}">
+                    <div class="theme-preview" style="background: ${theme.decorations.background}">
+                        <div class="theme-preview-content">
+                            <div class="theme-icon">${theme.icon}</div>
+                            <div class="theme-preview-text">${theme.decorations.header}</div>
+                        </div>
+                    </div>
+                    <div class="theme-info">
+                        <h5>${theme.name}</h5>
+                        <p>${this.getThemeDateRange(theme)}</p>
+                        ${isUpcoming ? '<span class="upcoming-badge">Coming Soon</span>' : ''}
+                    </div>
+                    <div class="theme-actions">
+                        ${isActive ? 
+                            '<span class="active-badge">Active</span>' : 
+                            `<button class="btn btn-primary btn-sm" ${!isAvailable ? 'disabled' : ''}>
+                                ${isAvailable ? 'Activate' : 'Coming Soon'}
+                            </button>`
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    isThemeUpcoming(theme) {
+        const today = new Date();
+        const currentDate = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        return currentDate < theme.startDate;
+    }
+
+    isThemeAvailable(theme) {
+        const today = new Date();
+        const currentDate = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        return currentDate >= theme.startDate && currentDate <= theme.endDate;
+    }
+
+    getThemeDateRange(theme) {
+        const startDate = this.formatThemeDate(theme.startDate);
+        const endDate = this.formatThemeDate(theme.endDate);
+        return `${startDate} - ${endDate}`;
+    }
+
+    getThemeEndDate(theme) {
+        return this.formatThemeDate(theme.endDate);
+    }
+
+    formatThemeDate(dateStr) {
+        const [month, day] = dateStr.split('-');
+        const date = new Date(2024, parseInt(month) - 1, parseInt(day));
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    loadThemeSettings() {
+        // Load saved theme settings from localStorage
+        const autoThemes = localStorage.getItem('auto-seasonal-themes') !== 'false';
+        const seasonalNotifications = localStorage.getItem('seasonal-notifications') !== 'false';
+        
+        document.getElementById('auto-seasonal-themes').checked = autoThemes;
+        document.getElementById('seasonal-notifications').checked = seasonalNotifications;
+        
+        // Show/hide premium notice based on user status
+        const premiumNotice = document.getElementById('seasonal-premium-notice');
+        if (premiumNotice) {
+            premiumNotice.style.display = this.isPremiumUser() ? 'none' : 'block';
+        }
+    }
+
+    async loadInsightsTab() {
+        // Initialize analytics
+        this.initializeAnalytics();
+        
+        // Load notification preferences
+        this.loadNotificationPreferences();
+        
+        // Check notification permissions
+        this.checkNotificationPermissions();
+    }
+
+    activateTheme(themeKey) {
+        if (!this.isPremiumUser()) {
+            this.showToast('Upgrade to Premium to use seasonal themes!', 'error');
+            return;
+        }
+        
+        const theme = this.seasonalThemes[themeKey];
+        if (!theme) return;
+        
+        // Apply the theme
+        this.applySpecificTheme(theme);
+        
+        // Update the display
+        this.updateCurrentThemeDisplay();
+        
+        this.showToast(`🎉 ${theme.name} theme activated!`, 'success');
+    }
+
+    applySpecificTheme(theme) {
+        // Apply theme decorations
+        const header = document.querySelector('.app-header h1');
+        if (header) {
+            header.textContent = theme.decorations.header;
+        }
+        
+        // Apply background gradient to header
+        const appHeader = document.querySelector('.app-header');
+        if (appHeader) {
+            appHeader.style.background = theme.decorations.background;
+        }
+        
+        // Apply accent color
+        document.documentElement.style.setProperty('--seasonal-accent', theme.decorations.accentColor);
+        
+        // Add seasonal class to body
+        document.body.classList.add(theme.decorations.bodyClass);
+        
+        // Add seasonal chore suggestions button
+        this.addSeasonalChoreSuggestions(theme);
+    }
+
+    disableSeasonalTheme() {
+        // Remove all seasonal classes
+        document.body.classList.remove('seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
+            'seasonal-summer', 'seasonal-spring', 'seasonal-fall', 'seasonal-winter', 
+            'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving');
+        
+        // Reset header
+        const header = document.querySelector('.app-header h1');
+        if (header) {
+            header.textContent = '🏠 ChoreStar';
+        }
+        
+        // Reset header background
+        const appHeader = document.querySelector('.app-header');
+        if (appHeader) {
+            appHeader.style.background = '';
+        }
+        
+        // Remove seasonal button
+        const seasonalBtn = document.querySelector('.seasonal-suggestions-btn');
+        if (seasonalBtn) {
+            seasonalBtn.remove();
+        }
+        
+        // Update display
+        this.updateCurrentThemeDisplay();
+        
+        this.showToast('Seasonal theme disabled', 'info');
     }
 
     async loadChildrenList() {
@@ -2565,15 +2781,37 @@ class FamilyChoreChart {
                 startDate: '12-01',
                 endDate: '12-31',
                 decorations: {
-                    header: '🎄 ChoreStar 🎄',
+                    header: 'Christmas',
                     background: 'linear-gradient(135deg, #dc2626, #7f1d1d)',
-                    accentColor: '#dc2626'
+                    accentColor: '#dc2626',
+                    bodyClass: 'seasonal-christmas'
                 },
                 seasonalChores: [
                     { name: 'Decorate Christmas Tree', icon: '🎄', category: 'Holiday' },
                     { name: 'Wrap Presents', icon: '🎁', category: 'Holiday' },
                     { name: 'Bake Cookies', icon: '🍪', category: 'Kitchen' },
-                    { name: 'Write Thank You Cards', icon: '✉️', category: 'Holiday' }
+                    { name: 'Write Thank You Cards', icon: '✉️', category: 'Holiday' },
+                    { name: 'Hang Stockings', icon: '🧦', category: 'Holiday' },
+                    { name: 'Set Up Nativity', icon: '👼', category: 'Holiday' }
+                ]
+            },
+            thanksgiving: {
+                name: 'Thanksgiving',
+                icon: '🦃',
+                startDate: '11-20',
+                endDate: '11-30',
+                decorations: {
+                    header: 'Thanksgiving',
+                    background: 'linear-gradient(135deg, #d97706, #92400e)',
+                    accentColor: '#d97706',
+                    bodyClass: 'seasonal-thanksgiving'
+                },
+                seasonalChores: [
+                    { name: 'Set Thanksgiving Table', icon: '🍽️', category: 'Kitchen' },
+                    { name: 'Help Cook Turkey', icon: '🦃', category: 'Kitchen' },
+                    { name: 'Make Side Dishes', icon: '🥔', category: 'Kitchen' },
+                    { name: 'Clean Guest Room', icon: '🛏️', category: 'Bedroom' },
+                    { name: 'Decorate with Fall Colors', icon: '🍁', category: 'Holiday' }
                 ]
             },
             halloween: {
@@ -2582,15 +2820,18 @@ class FamilyChoreChart {
                 startDate: '10-01',
                 endDate: '10-31',
                 decorations: {
-                    header: '🎃 ChoreStar 🎃',
+                    header: 'Halloween',
                     background: 'linear-gradient(135deg, #f59e0b, #92400e)',
-                    accentColor: '#f59e0b'
+                    accentColor: '#f59e0b',
+                    bodyClass: 'seasonal-halloween'
                 },
                 seasonalChores: [
                     { name: 'Carve Pumpkin', icon: '🎃', category: 'Holiday' },
                     { name: 'Decorate House', icon: '👻', category: 'Holiday' },
                     { name: 'Make Costume', icon: '🧙‍♀️', category: 'Holiday' },
-                    { name: 'Trick or Treat Prep', icon: '🍬', category: 'Holiday' }
+                    { name: 'Trick or Treat Prep', icon: '🍬', category: 'Holiday' },
+                    { name: 'Set Up Scary Decorations', icon: '🕷️', category: 'Holiday' },
+                    { name: 'Organize Candy', icon: '🍭', category: 'Kitchen' }
                 ]
             },
             easter: {
@@ -2599,15 +2840,55 @@ class FamilyChoreChart {
                 startDate: '04-01',
                 endDate: '04-30',
                 decorations: {
-                    header: '🐰 ChoreStar 🐰',
+                    header: 'Easter',
                     background: 'linear-gradient(135deg, #ec4899, #be185d)',
-                    accentColor: '#ec4899'
+                    accentColor: '#ec4899',
+                    bodyClass: 'seasonal-easter'
                 },
                 seasonalChores: [
                     { name: 'Dye Easter Eggs', icon: '🥚', category: 'Holiday' },
                     { name: 'Decorate Easter Basket', icon: '🧺', category: 'Holiday' },
                     { name: 'Spring Cleaning', icon: '🌸', category: 'Cleaning' },
-                    { name: 'Plant Flowers', icon: '🌷', category: 'Outdoor' }
+                    { name: 'Plant Flowers', icon: '🌷', category: 'Outdoor' },
+                    { name: 'Hide Easter Eggs', icon: '🥚', category: 'Holiday' },
+                    { name: 'Make Easter Crafts', icon: '🎨', category: 'Holiday' }
+                ]
+            },
+            valentines: {
+                name: 'Valentine\'s Day',
+                icon: '💝',
+                startDate: '02-10',
+                endDate: '02-14',
+                decorations: {
+                    header: 'Valentines',
+                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    accentColor: '#ec4899',
+                    bodyClass: 'seasonal-valentines'
+                },
+                seasonalChores: [
+                    { name: 'Make Valentine Cards', icon: '💌', category: 'Holiday' },
+                    { name: 'Decorate with Hearts', icon: '💖', category: 'Holiday' },
+                    { name: 'Bake Heart Cookies', icon: '🍪', category: 'Kitchen' },
+                    { name: 'Set Romantic Table', icon: '🕯️', category: 'Kitchen' },
+                    { name: 'Clean for Date Night', icon: '✨', category: 'Cleaning' }
+                ]
+            },
+            stpatricks: {
+                name: 'St. Patrick\'s Day',
+                icon: '☘️',
+                startDate: '03-15',
+                endDate: '03-17',
+                decorations: {
+                    header: 'St. Patricks',
+                    background: 'linear-gradient(135deg, #10b981, #065f46)',
+                    accentColor: '#10b981',
+                    bodyClass: 'seasonal-stpatricks'
+                },
+                seasonalChores: [
+                    { name: 'Decorate with Shamrocks', icon: '☘️', category: 'Holiday' },
+                    { name: 'Make Green Food', icon: '🥗', category: 'Kitchen' },
+                    { name: 'Wear Green Clothes', icon: '👕', category: 'Personal' },
+                    { name: 'Clean for Party', icon: '🍀', category: 'Cleaning' }
                 ]
             },
             summer: {
@@ -2616,15 +2897,75 @@ class FamilyChoreChart {
                 startDate: '06-01',
                 endDate: '08-31',
                 decorations: {
-                    header: '☀️ ChoreStar ☀️',
+                    header: 'Summer',
                     background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-                    accentColor: '#fbbf24'
+                    accentColor: '#fbbf24',
+                    bodyClass: 'seasonal-summer'
                 },
                 seasonalChores: [
                     { name: 'Water Plants', icon: '💧', category: 'Outdoor' },
                     { name: 'Clean Pool', icon: '🏊', category: 'Outdoor' },
                     { name: 'BBQ Prep', icon: '🍖', category: 'Kitchen' },
-                    { name: 'Beach Cleanup', icon: '🏖️', category: 'Outdoor' }
+                    { name: 'Beach Cleanup', icon: '🏖️', category: 'Outdoor' },
+                    { name: 'Mow Lawn', icon: '🌱', category: 'Outdoor' },
+                    { name: 'Wash Car', icon: '🚗', category: 'Outdoor' }
+                ]
+            },
+            spring: {
+                name: 'Spring',
+                icon: '🌸',
+                startDate: '03-20',
+                endDate: '06-20',
+                decorations: {
+                    header: 'Spring',
+                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    accentColor: '#ec4899',
+                    bodyClass: 'seasonal-spring'
+                },
+                seasonalChores: [
+                    { name: 'Spring Cleaning', icon: '🧹', category: 'Cleaning' },
+                    { name: 'Plant Garden', icon: '🌱', category: 'Outdoor' },
+                    { name: 'Clean Windows', icon: '🪟', category: 'Cleaning' },
+                    { name: 'Organize Closets', icon: '👕', category: 'Cleaning' },
+                    { name: 'Wash Curtains', icon: '🪟', category: 'Cleaning' }
+                ]
+            },
+            fall: {
+                name: 'Fall',
+                icon: '🍁',
+                startDate: '09-22',
+                endDate: '12-20',
+                decorations: {
+                    header: 'Fall',
+                    background: 'linear-gradient(135deg, #d97706, #92400e)',
+                    accentColor: '#d97706',
+                    bodyClass: 'seasonal-fall'
+                },
+                seasonalChores: [
+                    { name: 'Rake Leaves', icon: '🍂', category: 'Outdoor' },
+                    { name: 'Clean Gutters', icon: '🏠', category: 'Outdoor' },
+                    { name: 'Store Summer Items', icon: '📦', category: 'Cleaning' },
+                    { name: 'Decorate for Fall', icon: '🎃', category: 'Holiday' },
+                    { name: 'Make Hot Chocolate', icon: '☕', category: 'Kitchen' }
+                ]
+            },
+            winter: {
+                name: 'Winter',
+                icon: '❄️',
+                startDate: '12-21',
+                endDate: '03-19',
+                decorations: {
+                    header: 'Winter',
+                    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+                    accentColor: '#3b82f6',
+                    bodyClass: 'seasonal-winter'
+                },
+                seasonalChores: [
+                    { name: 'Shovel Snow', icon: '❄️', category: 'Outdoor' },
+                    { name: 'Salt Driveway', icon: '🧂', category: 'Outdoor' },
+                    { name: 'Make Hot Soup', icon: '🍲', category: 'Kitchen' },
+                    { name: 'Build Snowman', icon: '⛄', category: 'Outdoor' },
+                    { name: 'Clean Fireplace', icon: '🔥', category: 'Cleaning' }
                 ]
             }
         };
@@ -2647,7 +2988,13 @@ class FamilyChoreChart {
 
     applySeasonalTheme() {
         const theme = this.getCurrentSeasonalTheme();
-        if (!theme) return;
+        if (!theme) {
+            // Remove any existing seasonal classes
+            document.body.classList.remove('seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
+                'seasonal-summer', 'seasonal-spring', 'seasonal-fall', 'seasonal-winter', 
+                'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving');
+            return;
+        }
         
         // Apply theme decorations
         const header = document.querySelector('.app-header h1');
@@ -2655,15 +3002,116 @@ class FamilyChoreChart {
             header.textContent = theme.decorations.header;
         }
         
-        // Apply background gradient
-        document.documentElement.style.setProperty('--seasonal-bg', theme.decorations.background);
+        // Apply background gradient to header
+        const appHeader = document.querySelector('.app-header');
+        if (appHeader) {
+            appHeader.style.background = theme.decorations.background;
+        }
+        
+        // Apply accent color to various elements
         document.documentElement.style.setProperty('--seasonal-accent', theme.decorations.accentColor);
         
         // Add seasonal class to body
-        document.body.classList.add(`seasonal-${theme.name.toLowerCase()}`);
+        document.body.classList.add(theme.decorations.bodyClass);
         
-        // Show seasonal notification
-        this.showToast(`🎉 ${theme.name} theme activated! Check out seasonal chore suggestions!`, 'success');
+        // Show seasonal notification with chore suggestions
+        this.showSeasonalNotification(theme);
+        
+        // Add seasonal chore suggestions button if premium
+        this.addSeasonalChoreSuggestions(theme);
+    }
+
+    showSeasonalNotification(theme) {
+        const message = `🎉 ${theme.name} theme activated! Check out seasonal chore suggestions!`;
+        this.showToast(message, 'success');
+        
+        // Show a more detailed notification after a delay
+        setTimeout(() => {
+            const suggestions = theme.seasonalChores.slice(0, 3).map(chore => chore.name).join(', ');
+            this.showToast(`💡 Try these seasonal chores: ${suggestions}`, 'info');
+        }, 3000);
+    }
+
+    addSeasonalChoreSuggestions(theme) {
+        // Remove existing seasonal button if any
+        const existingBtn = document.querySelector('.seasonal-suggestions-btn');
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+        
+        // Add seasonal suggestions button to the dashboard
+        const dashboardActions = document.querySelector('.dashboard-actions');
+        if (dashboardActions) {
+            const seasonalBtn = document.createElement('button');
+            seasonalBtn.className = 'btn btn-outline btn-sm seasonal-suggestions-btn';
+            seasonalBtn.innerHTML = `${theme.icon} ${theme.name} Chores`;
+            seasonalBtn.onclick = () => this.showSeasonalChoreModal(theme);
+            dashboardActions.appendChild(seasonalBtn);
+        }
+    }
+
+    showSeasonalChoreModal(theme) {
+        // Populate the seasonal chore modal content
+        const modalContent = document.getElementById('seasonal-chore-content');
+        if (!modalContent) return;
+        
+        modalContent.innerHTML = `
+            <div class="seasonal-chore-modal">
+                <div class="seasonal-header">
+                    <h2>${theme.icon} ${theme.name} Chore Suggestions</h2>
+                    <p>Add these seasonal chores to make ${theme.name} special!</p>
+                </div>
+                <div class="seasonal-chores-grid">
+                    ${theme.seasonalChores.map(chore => `
+                        <div class="seasonal-chore-item">
+                            <div class="chore-icon">${chore.icon}</div>
+                            <div class="chore-details">
+                                <h4>${chore.name}</h4>
+                                <span class="chore-category">${chore.category}</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="app.addSeasonalChore('${chore.name}', '${chore.icon}', '${chore.category}')">
+                                Add Chore
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        // Show the modal
+        this.showModal('seasonal-chore-modal');
+    }
+
+    async addSeasonalChore(choreName, choreIcon, choreCategory) {
+        // Get the first child (or prompt user to select)
+        const children = this.children;
+        if (children.length === 0) {
+            this.showToast('Please add a child first!', 'error');
+            return;
+        }
+        
+        const childId = children[0].id; // Default to first child
+        
+        const choreData = {
+            name: choreName,
+            icon: choreIcon,
+            category: choreCategory,
+            child_id: childId,
+            reward: 7 // Default reward
+        };
+        
+        try {
+            const result = await this.apiClient.addChore(choreData);
+            if (result.success) {
+                await this.loadChores();
+                this.renderChildren();
+                this.showToast(`Added ${choreName} to your chores!`, 'success');
+            } else {
+                this.showToast('Failed to add seasonal chore', 'error');
+            }
+        } catch (error) {
+            this.showToast('Error adding seasonal chore', 'error');
+        }
     }
 
     getSeasonalChoreSuggestions() {
@@ -2675,6 +3123,11 @@ class FamilyChoreChart {
 
     // Check if user has premium features
     isPremiumUser() {
+        // Admin user (bsiegel13@gmail.com) always has premium access
+        if (this.profile?.email === 'bsiegel13@gmail.com') {
+            return true;
+        }
+        
         // This would check the user's subscription status
         // For now, return false to keep features basic for free users
         return false;
@@ -2687,6 +3140,273 @@ class FamilyChoreChart {
                 await this.updateFamilyDashboard();
                 this.showToast('Dashboard refreshed!', 'success');
             });
+        }
+        
+        // Add notification handlers
+        this.addNotificationHandlers();
+    }
+
+    addNotificationHandlers() {
+        const requestBtn = document.getElementById('request-notifications-btn');
+        if (requestBtn) {
+            requestBtn.addEventListener('click', () => {
+                this.requestNotificationPermission();
+            });
+        }
+        
+        // Add preference change handlers
+        const preferenceCheckboxes = [
+            'chore-completion-notifications',
+            'streak-notifications', 
+            'achievement-notifications',
+            'family-goal-notifications'
+        ];
+        
+        preferenceCheckboxes.forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    this.saveNotificationPreference(id, e.target.checked);
+                });
+            }
+        });
+        
+        // Initialize notification status
+        this.updateNotificationStatus();
+    }
+
+    async requestNotificationPermission() {
+        try {
+            const permission = await Notification.requestPermission();
+            this.updateNotificationStatus();
+            
+            if (permission === 'granted') {
+                this.showToast('Notifications enabled! You\'ll now receive alerts.', 'success');
+            } else {
+                this.showToast('Notifications are disabled. Enable them in your browser settings.', 'warning');
+            }
+        } catch (error) {
+            console.error('Error requesting notification permission:', error);
+            this.showToast('Could not enable notifications. Please check your browser settings.', 'error');
+        }
+    }
+
+    updateNotificationStatus() {
+        const statusText = document.getElementById('notification-status-text');
+        const requestBtn = document.getElementById('request-notifications-btn');
+        
+        if (!statusText || !requestBtn) return;
+        
+        if (Notification.permission === 'granted') {
+            statusText.textContent = 'Notifications are enabled! You\'ll receive alerts for chore completions, streaks, and achievements.';
+            requestBtn.textContent = 'Notifications Enabled';
+            requestBtn.disabled = true;
+            requestBtn.classList.add('btn-success');
+        } else if (Notification.permission === 'denied') {
+            statusText.textContent = 'Notifications are blocked. Please enable them in your browser settings to receive alerts.';
+            requestBtn.textContent = 'Enable in Browser Settings';
+            requestBtn.disabled = true;
+            requestBtn.classList.add('btn-error');
+        } else {
+            statusText.textContent = 'Enable notifications to get alerts for chore completions, streaks, and achievements.';
+            requestBtn.textContent = 'Enable Notifications';
+            requestBtn.disabled = false;
+            requestBtn.classList.remove('btn-success', 'btn-error');
+        }
+    }
+
+    saveNotificationPreference(preferenceId, enabled) {
+        // Save to localStorage
+        localStorage.setItem(`notification_${preferenceId}`, enabled);
+        
+        // Show feedback
+        const action = enabled ? 'enabled' : 'disabled';
+        this.showToast(`${preferenceId.replace('-', ' ')} ${action}!`, 'success');
+    }
+
+    loadNotificationPreferences() {
+        const preferences = [
+            'chore-completion-notifications',
+            'streak-notifications',
+            'achievement-notifications', 
+            'family-goal-notifications'
+        ];
+        
+        preferences.forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                const saved = localStorage.getItem(`notification_${id}`);
+                checkbox.checked = saved !== 'false'; // Default to true if not set
+            }
+        });
+    }
+
+    checkNotificationPermissions() {
+        const statusText = document.getElementById('notification-status-text');
+        const requestBtn = document.getElementById('request-notifications-btn');
+        
+        if (!statusText || !requestBtn) return;
+        
+        if (Notification.permission === 'granted') {
+            statusText.textContent = 'Notifications are enabled! You\'ll receive alerts for important events.';
+            requestBtn.textContent = 'Notifications Enabled';
+            requestBtn.disabled = true;
+            requestBtn.classList.add('btn-success');
+        } else if (Notification.permission === 'denied') {
+            statusText.textContent = 'Notifications are blocked. Please enable them in your browser settings to receive alerts.';
+            requestBtn.textContent = 'Enable in Browser Settings';
+            requestBtn.disabled = true;
+            requestBtn.classList.add('btn-error');
+        } else {
+            statusText.textContent = 'Click the button below to enable notifications for chore alerts and achievements.';
+            requestBtn.textContent = 'Enable Notifications';
+            requestBtn.disabled = false;
+            requestBtn.classList.remove('btn-success', 'btn-error');
+        }
+    }
+
+    async sendSmartNotification(type, data) {
+        // Check if user has premium and notifications are enabled
+        if (!this.isPremiumUser() || !this.getNotificationPreference(type)) {
+            return;
+        }
+        
+        // Check browser permission
+        if (Notification.permission !== 'granted') {
+            return;
+        }
+        
+        let notification;
+        
+        switch (type) {
+            case 'chore_completion':
+                notification = new Notification('Chore Completed! 🎉', {
+                    body: `${data.childName} completed "${data.choreName}"!`,
+                    icon: '/favicon.ico',
+                    tag: 'chore-completion'
+                });
+                break;
+                
+            case 'streak_alert':
+                notification = new Notification('Streak Alert! 🔥', {
+                    body: `${data.childName} is on a ${data.streakCount}-day streak! Keep it up!`,
+                    icon: '/favicon.ico',
+                    tag: 'streak-alert'
+                });
+                break;
+                
+            case 'achievement':
+                notification = new Notification('Achievement Unlocked! 🏆', {
+                    body: `${data.childName} earned the "${data.badgeName}" badge!`,
+                    icon: '/favicon.ico',
+                    tag: 'achievement'
+                });
+                break;
+                
+            case 'family_goal':
+                notification = new Notification('Family Goal Update! 🎯', {
+                    body: `Your family is ${data.progress}% toward the ${data.goalType} goal!`,
+                    icon: '/favicon.ico',
+                    tag: 'family-goal'
+                });
+                break;
+        }
+        
+        // Store notification in recent list
+        this.addToRecentNotifications(type, data);
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+            if (notification) {
+                notification.close();
+            }
+        }, 5000);
+    }
+
+    getNotificationPreference(type) {
+        const preferenceMap = {
+            'chore_completion': 'chore-completion-notifications',
+            'streak_alert': 'streak-notifications',
+            'achievement': 'achievement-notifications',
+            'family_goal': 'family-goal-notifications'
+        };
+        
+        const preferenceId = preferenceMap[type];
+        if (!preferenceId) return false;
+        
+        const saved = localStorage.getItem(`notification_${preferenceId}`);
+        return saved !== 'false'; // Default to true
+    }
+
+    addToRecentNotifications(type, data) {
+        const notificationsList = document.getElementById('notifications-list');
+        if (!notificationsList) return;
+        
+        const notificationItem = document.createElement('div');
+        notificationItem.className = 'notification-item';
+        
+        const icon = this.getNotificationIcon(type);
+        const title = this.getNotificationTitle(type);
+        const message = this.getNotificationMessage(type, data);
+        const time = new Date().toLocaleTimeString();
+        
+        notificationItem.innerHTML = `
+            <div class="notification-icon">${icon}</div>
+            <div class="notification-content">
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+                <div class="notification-time">${time}</div>
+            </div>
+        `;
+        
+        // Add to top of list
+        notificationsList.insertBefore(notificationItem, notificationsList.firstChild);
+        
+        // Remove old notifications if more than 10
+        const notifications = notificationsList.querySelectorAll('.notification-item');
+        if (notifications.length > 10) {
+            notifications[notifications.length - 1].remove();
+        }
+        
+        // Remove "no notifications" message if present
+        const noNotifications = notificationsList.querySelector('.no-notifications');
+        if (noNotifications) {
+            noNotifications.remove();
+        }
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'chore_completion': '✅',
+            'streak_alert': '🔥',
+            'achievement': '🏆',
+            'family_goal': '🎯'
+        };
+        return icons[type] || '🔔';
+    }
+
+    getNotificationTitle(type) {
+        const titles = {
+            'chore_completion': 'Chore Completed!',
+            'streak_alert': 'Streak Alert!',
+            'achievement': 'Achievement Unlocked!',
+            'family_goal': 'Family Goal Update!'
+        };
+        return titles[type] || 'Notification';
+    }
+
+    getNotificationMessage(type, data) {
+        switch (type) {
+            case 'chore_completion':
+                return `${data.childName} completed "${data.choreName}"!`;
+            case 'streak_alert':
+                return `${data.childName} is on a ${data.streakCount}-day streak!`;
+            case 'achievement':
+                return `${data.childName} earned the "${data.badgeName}" badge!`;
+            case 'family_goal':
+                return `Your family is ${data.progress}% toward the ${data.goalType} goal!`;
+            default:
+                return 'New notification received';
         }
     }
 
@@ -3224,7 +3944,21 @@ class FamilyChoreChart {
                             const streak = this.updateStreak(childId, chore.id);
                             if (streak >= 5) {
                                 this.showToast(`${this.getChildName(childId)} is on a ${streak}-day streak! 🔥`, 'success');
+                                
+                                // Send streak notification (premium feature)
+                                await this.sendSmartNotification('streak_alert', {
+                                    childName: this.getChildName(childId),
+                                    streakCount: streak
+                                });
                             }
+                        }
+                        
+                        // Send chore completion notification (premium feature)
+                        if (result.completed) {
+                            await this.sendSmartNotification('chore_completion', {
+                                childName: this.getChildName(childId),
+                                choreName: chore.name
+                            });
                         }
                         
                         // Check for achievements
@@ -3509,343 +4243,6 @@ class FamilyChoreChart {
                 }
             });
         });
-
-        // Simple button handlers
-        card.querySelectorAll('.add-chore-empty-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.showModal('add-chore-modal');
-                const childSelect = document.getElementById('chore-child');
-                if (childSelect) {
-                    childSelect.value = childId;
-                }
-            });
-        });
-
-        card.querySelectorAll('.add-chore-grid-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.showModal('add-chore-modal');
-                const childSelect = document.getElementById('chore-child');
-                if (childSelect) {
-                    childSelect.value = childId;
-                }
-            });
-        });
-    }
-
-    calculateChildProgress(childId, childChores, childCompletions) {
-        let totalEarnings = 0;
-        let totalDaysCompleted = 0;
-        
-        // Calculate total possible chore days for the current week
-        // Each chore can be completed once per day, so total possible = chores × days in week
-        const daysInWeek = 7;
-        const totalChoreDays = childChores.length * daysInWeek;
-        
-        // Get family settings for reward calculation
-        const dailyReward = this.familySettings?.daily_reward_cents || 7;
-        const weeklyBonus = this.familySettings?.weekly_bonus_cents || 1;
-        
-        // Filter completions for current week only
-        const currentWeekCompletions = childCompletions.filter(comp => {
-            // Make sure we're only counting completions from the current week
-            return comp.week_start === this.currentWeekStart;
-        });
-        
-        // Count unique days where at least one chore was completed
-        const completedDaysSet = new Set();
-        currentWeekCompletions.forEach(comp => {
-            completedDaysSet.add(comp.day_of_week);
-        });
-        totalDaysCompleted = completedDaysSet.size;
-        
-        // Calculate completion percentage based on days completed vs total days in week
-        const completionPercentage = daysInWeek > 0 ? Math.round((totalDaysCompleted / daysInWeek) * 100) : 0;
-        
-        // Calculate earnings using family settings
-        totalEarnings = totalDaysCompleted * dailyReward;
-        
-        // Add weekly bonus if all days are completed for the week
-        if (totalDaysCompleted === daysInWeek && daysInWeek > 0) {
-            totalEarnings += weeklyBonus;
-        }
-        
-        console.log('Progress calculation:', {
-            childId,
-            childChores: childChores.length,
-            totalChoreDays,
-            totalDaysCompleted,
-            completionPercentage,
-            totalEarnings,
-            dailyReward,
-            weeklyBonus,
-            currentWeekStart: this.currentWeekStart,
-            currentWeekCompletions: currentWeekCompletions.length,
-            completedDaysSet: Array.from(completedDaysSet)
-        });
-        
-        return {
-            completionPercentage: completionPercentage,
-            totalEarnings: totalEarnings,
-            completedDays: totalDaysCompleted,
-            totalChoreDays: daysInWeek
-        };
-    }
-
-    calculateStars(completionPercentage) {
-        let starsHtml = '';
-        const fullStars = Math.floor(completionPercentage / 14.29); // 14.29% per star (7 stars max, 100% / 7)
-        const remainder = completionPercentage % 14.29;
-        // Add full stars
-        for (let i = 0; i < fullStars; i++) {
-            starsHtml += '⭐️';
-        }
-        // Add partial star if there's significant progress (7% threshold)
-        if (remainder >= 7 && fullStars < 7) {
-            starsHtml += '✨'; // Use a different star for partial progress
-        }
-        // Add empty star placeholders for visual consistency
-        const totalStars = fullStars + (remainder >= 7 ? 1 : 0);
-        for (let i = totalStars; i < 7; i++) {
-            starsHtml += '☆'; // Empty star
-        }
-        return starsHtml;
-    }
-
-    formatCents(cents) {
-        const dollars = cents / 100;
-        return `${dollars.toFixed(2)}`;
-    }
-
-    // Improved optimistic update method with better error handling:
-
-
-
-    updateChildProgressWithRealData(childId) {
-        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
-        if (!childCard) return;
-        // Get real progress data
-        const childChores = this.chores.filter(chore => chore.child_id === childId);
-        const childCompletions = this.completions.filter(comp => 
-            childChores.some(chore => chore.id === comp.chore_id)
-        );
-        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
-        // Update UI elements with real data
-        const progressFill = childCard.querySelector('.progress-fill');
-        const progressStats = childCard.querySelector('.progress-stats');
-        const starsContainer = childCard.querySelector('.stars-container');
-        const earningsAmount = childCard.querySelector('.earnings-amount');
-        if (progressFill && progressStats && starsContainer && earningsAmount) {
-            progressFill.style.width = `${progress.completionPercentage}%`;
-            progressStats.innerHTML = `<span>${progress.completionPercentage}% complete</span>`;
-            starsContainer.innerHTML = this.calculateStars(progress.completionPercentage);
-            earningsAmount.textContent = this.formatCents(progress.totalEarnings);
-        }
-    }
-
-    // Celebration Functions
-    celebrateFullDay(childName) {
-        // Show a toast notification
-        this.showToast(`🎉 ${childName} completed all chores for today! Amazing job!`, 'success');
-        
-        // Add a fun animation to the child's card
-        const childCard = document.querySelector(`[data-child-id="${this.children.find(c => c.name === childName)?.id}"]`);
-        if (childCard) {
-            childCard.style.animation = 'bounce 0.6s ease-in-out';
-            setTimeout(() => {
-                childCard.style.animation = '';
-            }, 600);
-        }
-        
-        // Play a success sound (if available)
-        this.playSound('success');
-    }
-
-    celebrateFullWeek(childName) {
-        // Show confetti
-        try {
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
-                console.log('Confetti triggered for:', childName);
-            } else {
-                console.warn('Confetti library not loaded');
-            }
-        } catch (error) {
-            console.error('Confetti error:', error);
-        }
-        
-        // Show a special toast
-        this.showToast(`🌟 ${childName} completed the ENTIRE WEEK! You're a superstar! 🌟`, 'success');
-        
-        // Add a special animation to the child's card
-        const childCard = document.querySelector(`[data-child-id="${this.children.find(c => c.name === childName)?.id}"]`);
-        if (childCard) {
-            childCard.style.animation = 'starPop 1s ease-in-out';
-            setTimeout(() => {
-                childCard.style.animation = '';
-            }, 1000);
-        }
-        
-        // Play a celebration sound (if available)
-        this.playSound('celebration');
-    }
-
-    playSuccessSound() {
-        // Create a simple success sound using Web Audio API
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
-        } catch (error) {
-            console.log('Audio not supported');
-        }
-    }
-
-    playCelebrationSound() {
-        // Create a celebration sound using Web Audio API
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Play a sequence of notes
-            const notes = [523, 659, 784, 1047]; // C, E, G, C (higher)
-            let time = audioContext.currentTime;
-            
-            notes.forEach((frequency, index) => {
-                oscillator.frequency.setValueAtTime(frequency, time + index * 0.1);
-                gainNode.gain.setValueAtTime(0.1, time + index * 0.1);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + (index + 1) * 0.1);
-            });
-            
-            oscillator.start(time);
-            oscillator.stop(time + notes.length * 0.1);
-        } catch (error) {
-            console.log('Audio not supported');
-        }
-    }
-
-    // Check for achievements when chore is completed
-    checkAchievements(childId, choreId) {
-        const child = this.children.find(c => c.id === childId);
-        if (!child) return;
-        
-        const childChores = this.chores.filter(chore => chore.child_id === childId);
-        const childCompletions = this.completions.filter(comp => 
-            childChores.some(chore => chore.id === comp.chore_id)
-        );
-        
-        // Check for full day completion
-        const today = new Date();
-        const todayCompletions = childCompletions.filter(comp => {
-            const compDate = new Date(comp.completed_at);
-            return compDate.toDateString() === today.toDateString();
-        });
-        
-        if (todayCompletions.length === childChores.length && childChores.length > 0) {
-            this.celebrateFullDay(child.name);
-        }
-        
-        // Check for full week completion
-        const weekStart = this.apiClient.getWeekStart();
-        const weekStartDate = new Date(weekStart);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        
-        const weekCompletions = childCompletions.filter(comp => {
-            const compDate = new Date(comp.completed_at);
-            return compDate >= weekStartDate && compDate <= weekEnd;
-        });
-        
-        const totalWeekChores = childChores.length * 7; // Each chore should be completed 7 days per week
-        
-        console.log('Checking achievements:', {
-            childName: child.name,
-            weekCompletions: weekCompletions.length,
-            totalWeekChores,
-            weekStart: weekStart,
-            weekEnd: weekEnd.toISOString()
-        });
-        
-        if (weekCompletions.length >= totalWeekChores && totalWeekChores > 0) {
-            console.log('🎉 Full week achievement triggered for:', child.name);
-            this.celebrateFullWeek(child.name);
-        }
-    }
-
-    populateManageChildrenList() {
-        const container = document.getElementById('manage-children-list');
-        if (!container) return;
-        if (this.children.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
-                    <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
-                    <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No children yet</h4>
-                    <p style="margin-bottom: var(--space-4);">Add your first child to get started!</p>
-                </div>
-            `;
-            return;
-        }
-        // Deduplicate children by name and age
-        const seen = new Set();
-        const uniqueChildren = [];
-        this.children.forEach(child => {
-            const key = `${child.name}-${child.age}`;
-            if (!seen.has(key)) {
-                uniqueChildren.push(child);
-                seen.add(key);
-            } else {
-                console.warn('Duplicate child detected in manage children:', child);
-            }
-        });
-        let html = '';
-        uniqueChildren.forEach(child => {
-            const gradient = this.getChildGradient(child.avatar_color);
-            let avatarHtml = '';
-            if (child.avatar_url) {
-                avatarHtml = `<img src="${child.avatar_url}" class="child-avatar-small" style="object-fit:cover;">`;
-            } else if (child.avatar_file) {
-                avatarHtml = `<img src="${child.avatar_file}" class="child-avatar-small" style="object-fit:cover;">`;
-            } else {
-                avatarHtml = `<div class="child-avatar-small" style="background:${gradient};">${child.name.charAt(0).toUpperCase()}</div>`;
-            }
-            const childChores = this.chores.filter(chore => chore.child_id === child.id);
-            html += `
-                <div class="manage-child-item" data-child-id="${child.id}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border:1px solid var(--gray-200);border-radius:var(--radius);margin-bottom:var(--space-3);background:white;">
-                    <div style="display:flex;align-items:center;gap:var(--space-3);">
-                        ${avatarHtml}
-                        <div>
-                            <h4 style="margin:0;color:var(--gray-800);">${child.name}</h4>
-                            <p style="margin:0;color:var(--gray-600);font-size:var(--font-size-sm);">Age ${child.age} • ${childChores.length} chore${childChores.length !== 1 ? 's' : ''}</p>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:var(--space-2);">
-                        <button class="btn btn-danger btn-sm remove-child-manage" data-child-id="${child.id}">🗑️ Remove</button>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        // Add event listeners
-        this.addManageChildrenHandlers();
     }
 
     addManageChildrenHandlers() {
@@ -4761,7 +5158,7 @@ class FamilyChoreChart {
         // Find the child and its data
         const child = this.children.find(c => c.id === childId);
         if (!child) return;
-        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childChores = this.chores.filter(chore => chore.child_id === child.id);
         const childCompletions = this.completions.filter(comp => childChores.some(chore => chore.id === comp.chore_id));
         // Create a new card
         const newCard = this.createChildCard(child);
@@ -4911,7 +5308,7 @@ class FamilyChoreChart {
         const child = this.children.find(c => c.id === childId);
         if (!child) return;
         
-        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childChores = this.chores.filter(chore => chore.child_id === child.id);
         const childCompletions = this.completions.filter(comp => 
             childChores.some(chore => chore.id === comp.chore_id)
         );
@@ -5801,6 +6198,376 @@ class FamilyChoreChart {
     exportWeekly() {
         this.showToast('Weekly summary coming soon!', 'info');
     }
+
+    // Interactive Chore Card Methods (Premium Features)
+    addSwipeGestures(cell, childChores, childId) {
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let isSwiping = false;
+        let swipeThreshold = 50;
+        
+        // Add swipe feedback element
+        const feedback = document.createElement('div');
+        feedback.className = 'swipe-feedback';
+        cell.appendChild(feedback);
+        
+        const handleStart = (e) => {
+            const touch = e.touches ? e.touches[0] : e;
+            startX = touch.clientX;
+            startY = touch.clientY;
+            currentX = startX;
+            isSwiping = false;
+            cell.classList.add('swiping');
+        };
+        
+        const handleMove = (e) => {
+            if (!startX) return;
+            
+            const touch = e.touches ? e.touches[0] : e;
+            currentX = touch.clientX;
+            const deltaX = currentX - startX;
+            const deltaY = Math.abs(touch.clientY - startY);
+            
+            // Only handle horizontal swipes
+            if (Math.abs(deltaX) > 10 && deltaY < 50) {
+                e.preventDefault();
+                isSwiping = true;
+                
+                // Visual feedback
+                if (deltaX > 0) {
+                    cell.classList.add('swipe-complete');
+                    cell.classList.remove('swipe-undo');
+                    feedback.textContent = '✅';
+                    feedback.className = 'swipe-feedback show complete';
+                } else {
+                    cell.classList.add('swipe-undo');
+                    cell.classList.remove('swipe-complete');
+                    feedback.textContent = '↩️';
+                    feedback.className = 'swipe-feedback show undo';
+                }
+            }
+        };
+        
+        const handleEnd = (e) => {
+            if (!isSwiping) {
+                cell.classList.remove('swiping');
+                return;
+            }
+            
+            const deltaX = currentX - startX;
+            
+            if (Math.abs(deltaX) > swipeThreshold) {
+                const choreId = cell.dataset.choreId;
+                const day = cell.dataset.day;
+                const chore = childChores.find(c => c.id === parseInt(choreId));
+                
+                if (chore) {
+                    if (deltaX > 0) {
+                        // Swipe right to complete
+                        this.handleChoreCellClick(cell, chore, childId, day);
+                    } else {
+                        // Swipe left to undo
+                        this.handleChoreCellClick(cell, chore, childId, day);
+                    }
+                }
+            }
+            
+            // Reset
+            setTimeout(() => {
+                cell.classList.remove('swiping', 'swipe-complete', 'swipe-undo');
+                feedback.className = 'swipe-feedback';
+            }, 300);
+            
+            startX = 0;
+            startY = 0;
+            isSwiping = false;
+        };
+        
+        // Touch events for mobile
+        cell.addEventListener('touchstart', handleStart, { passive: false });
+        cell.addEventListener('touchmove', handleMove, { passive: false });
+        cell.addEventListener('touchend', handleEnd);
+        
+        // Mouse events for desktop
+        cell.addEventListener('mousedown', handleStart);
+        cell.addEventListener('mousemove', handleMove);
+        cell.addEventListener('mouseup', handleEnd);
+        cell.addEventListener('mouseleave', handleEnd);
+    }
+
+    addDragAndDrop(cell, childChores, childId) {
+        let isDragging = false;
+        let dragStartIndex = 0;
+        
+        cell.draggable = true;
+        
+        cell.addEventListener('dragstart', (e) => {
+            isDragging = true;
+            dragStartIndex = Array.from(cell.parentNode.children).indexOf(cell);
+            cell.classList.add('dragging');
+            
+            // Create drag image
+            const dragImage = cell.cloneNode(true);
+            dragImage.style.opacity = '0.5';
+            document.body.appendChild(dragImage);
+            e.dataTransfer.setDragImage(dragImage, 0, 0);
+            
+            setTimeout(() => {
+                document.body.removeChild(dragImage);
+            }, 0);
+        });
+        
+        cell.addEventListener('dragend', () => {
+            isDragging = false;
+            cell.classList.remove('dragging');
+        });
+        
+        cell.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!isDragging) return;
+            
+            const rect = cell.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            
+            if (e.clientY < centerY) {
+                cell.classList.add('drag-over');
+            } else {
+                cell.classList.remove('drag-over');
+            }
+        });
+        
+        cell.addEventListener('drop', (e) => {
+            e.preventDefault();
+            cell.classList.remove('drag-over');
+            
+            if (!isDragging) return;
+            
+            const draggedCell = document.querySelector('.dragging');
+            if (draggedCell && draggedCell !== cell) {
+                // Reorder chores (this would need backend support)
+                this.showToast('Chore reordering coming soon!', 'info');
+            }
+        });
+        
+        cell.addEventListener('dragleave', () => {
+            cell.classList.remove('drag-over');
+        });
+    }
+
+    addQuickEdit(cell, childChores, childId) {
+        let longPressTimer = null;
+        let isLongPressed = false;
+        
+        const handleStart = () => {
+            longPressTimer = setTimeout(() => {
+                isLongPressed = true;
+                cell.classList.add('quick-edit');
+                
+                // Show quick edit menu
+                this.showQuickEditMenu(cell, childChores, childId);
+            }, 500);
+        };
+        
+        const handleEnd = () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+            
+            if (isLongPressed) {
+                setTimeout(() => {
+                    cell.classList.remove('quick-edit');
+                    isLongPressed = false;
+                }, 300);
+            }
+        };
+        
+        // Touch events
+        cell.addEventListener('touchstart', handleStart);
+        cell.addEventListener('touchend', handleEnd);
+        cell.addEventListener('touchcancel', handleEnd);
+        
+        // Mouse events
+        cell.addEventListener('mousedown', handleStart);
+        cell.addEventListener('mouseup', handleEnd);
+        cell.addEventListener('mouseleave', handleEnd);
+    }
+
+    showQuickEditMenu(cell, childChores, childId) {
+        const choreId = cell.dataset.choreId;
+        const chore = childChores.find(c => c.id === parseInt(choreId));
+        
+        if (!chore) return;
+        
+        // Create quick edit menu
+        const menu = document.createElement('div');
+        menu.className = 'quick-edit-menu';
+        menu.innerHTML = `
+            <div class="quick-edit-item" data-action="edit">
+                <span>✏️</span> Edit
+            </div>
+            <div class="quick-edit-item" data-action="delete">
+                <span>🗑️</span> Delete
+            </div>
+            <div class="quick-edit-item" data-action="duplicate">
+                <span>📋</span> Duplicate
+            </div>
+        `;
+        
+        // Position menu
+        const rect = cell.getBoundingClientRect();
+        menu.style.position = 'absolute';
+        menu.style.top = `${rect.bottom + 5}px`;
+        menu.style.left = `${rect.left}px`;
+        menu.style.zIndex = '1000';
+        
+        // Add to DOM
+        cell.appendChild(menu);
+        
+        // Handle menu actions
+        menu.addEventListener('click', (e) => {
+            const action = e.target.closest('.quick-edit-item')?.dataset.action;
+            
+            switch (action) {
+                case 'edit':
+                    this.openEditChoreModal(chore.id, chore.name, chore.reward, chore.notes);
+                    break;
+                case 'delete':
+                    this.deleteChore(chore.id);
+                    break;
+                case 'duplicate':
+                    this.duplicateChore(chore);
+                    break;
+            }
+            
+            menu.remove();
+        });
+        
+        // Auto-remove menu after 3 seconds
+        setTimeout(() => {
+            if (menu.parentNode) {
+                menu.remove();
+            }
+        }, 3000);
+        
+        // Remove menu when clicking outside
+        document.addEventListener('click', function removeMenu(e) {
+            if (!menu.contains(e.target) && !cell.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', removeMenu);
+            }
+        });
+    }
+
+    async duplicateChore(chore) {
+        try {
+            const newChore = {
+                ...chore,
+                name: `${chore.name} (Copy)`,
+                id: undefined
+            };
+            
+            const result = await this.apiClient.addChore(newChore);
+            if (result.success) {
+                this.showToast('Chore duplicated successfully!', 'success');
+                await this.loadChores();
+                this.renderChildren();
+            } else {
+                this.showToast('Failed to duplicate chore.', 'error');
+            }
+        } catch (error) {
+            console.error('Error duplicating chore:', error);
+            this.showToast('Error duplicating chore.', 'error');
+        }
+    }
+
+    calculateChildProgress(childId, childChores, childCompletions) {
+        if (childChores.length === 0) {
+            return {
+                completionPercentage: 0,
+                totalEarnings: 0
+            };
+        }
+
+        // Get current week start
+        const weekStart = this.apiClient.getWeekStart();
+        const weekStartDate = new Date(weekStart);
+        const today = new Date();
+        
+        // Calculate total possible completions for this week
+        const daysInWeek = 7;
+        const totalPossibleCompletions = childChores.length * daysInWeek;
+        
+        // Count actual completions for this week
+        const weekCompletions = childCompletions.filter(comp => {
+            const compDate = new Date(comp.week_start);
+            const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
+            const actualDate = new Date(compDate);
+            actualDate.setDate(compDate.getDate() + dayOffset);
+            
+            return actualDate >= weekStartDate && actualDate <= today;
+        });
+        
+        const completedCount = weekCompletions.length;
+        const completionPercentage = Math.round((completedCount / totalPossibleCompletions) * 100);
+        
+        // Calculate earnings (7 cents per completed day + weekly bonus if applicable)
+        const dailyRewardCents = this.familySettings?.daily_reward_cents || 7;
+        const weeklyBonusCents = this.familySettings?.weekly_bonus_cents || 0;
+        
+        // Count unique days with completions for earnings
+        const completedDays = new Set();
+        weekCompletions.forEach(comp => {
+            completedDays.add(comp.day_of_week);
+        });
+        
+        const totalEarnings = (completedDays.size * dailyRewardCents) + 
+            (completionPercentage >= 80 ? weeklyBonusCents : 0);
+        
+        return {
+            completionPercentage,
+            totalEarnings
+        };
+    }
+
+    calculateStars(percentage) {
+        const fullStars = Math.floor(percentage / 20);
+        const hasHalfStar = percentage % 20 >= 10;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let stars = '';
+        for (let i = 0; i < fullStars; i++) {
+            stars += '⭐';
+        }
+        if (hasHalfStar) {
+            stars += '⭐';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            stars += '☆';
+        }
+        
+        return stars;
+    }
+
+    formatCents(cents) {
+        return `$${(cents / 100).toFixed(2)}`;
+    }
+
+    checkAchievements(childId, choreId) {
+        // This method checks for achievements when a chore is completed
+        // For now, we'll just log that achievements are being checked
+        console.log(`Checking achievements for child ${childId}, chore ${choreId}`);
+        
+        // In a full implementation, this would:
+        // 1. Check for streak achievements
+        // 2. Check for completion milestones
+        // 3. Check for perfect day/week achievements
+        // 4. Award badges if criteria are met
+        
+        // For now, we'll just return without doing anything specific
+        return;
+    }
 }
 
 // Initialize the application
@@ -5842,332 +6609,34 @@ if (!window.location.pathname.endsWith('settings.html')) {
         
         initApp();
 
-    // --- Custom Avatar Logic for Add/Edit Child Modals ---
-    async function isPremiumUser() {
-        if (!window.apiClient) return false;
-        const type = await window.apiClient.getSubscriptionType();
-        return type === 'premium';
+    });
+}
+
+// Global functions for external access
+async function isPremiumUser() {
+    return app ? await app.isPremiumUser() : false;
+}
+
+function renderAddDicebearPicker(name) {
+    if (app) {
+        app.renderAddDicebearPicker(name);
     }
+}
 
-    // --- Add Child Modal DiceBear Picker ---
-    const addDicebearPicker = document.getElementById('add-dicebear-picker');
-    let selectedAddDicebearUrl = '';
-    function renderAddDicebearPicker(name) {
-        addDicebearPicker.innerHTML = '';
-        // Show 20 avatars instead of 10 (matching Edit Child modal)
-        const seeds = diceBearSeeds.concat(name || 'Avatar');
-        for (let i = 0; i < 20; i++) {
-            const seed = seeds[i % seeds.length] + (i > 9 ? i : '');
-            const url = getDiceBearUrl(seed);
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'dicebear-avatar-btn';
-            btn.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
-            btn.onclick = () => {
-                selectedAddDicebearUrl = url;
-                // Update preview
-                addAvatarPreview.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
-                addAvatarPreview.dataset.avatarUrl = url;
-                delete addAvatarPreview.dataset.avatarFile;
-                addAvatarPreview.style.display = '';
-                // Mark selected
-                addDicebearPicker.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            };
-            addDicebearPicker.appendChild(btn);
-        }
+function renderEditDicebearPicker(name) {
+    if (app) {
+        app.renderEditDicebearPicker(name);
     }
-    document.getElementById('child-name').addEventListener('input', e => {
-        renderAddDicebearPicker(e.target.value);
-    });
-    renderAddDicebearPicker('');
+}
 
-    // --- Add Child Modal Avatar Logic ---
-    document.getElementById('add-avatar-remove-btn').onclick = () => {
-        // Always clear the preview and dataset before inserting fallback initial
-        while (addAvatarPreview.firstChild) {
-            addAvatarPreview.removeChild(addAvatarPreview.firstChild);
-        }
-        addAvatarPreview.removeAttribute('data-avatar-url');
-        addAvatarPreview.removeAttribute('data-avatar-file');
-        addAvatarPreview.style.display = 'none';
-        selectedAddDicebearUrl = '';
-    };
-
-    // --- Edit Child Modal DiceBear Picker ---
-    const editDicebearPicker = document.getElementById('edit-dicebear-picker');
-    let selectedEditDicebearUrl = '';
-    function renderEditDicebearPicker(name) {
-        editDicebearPicker.innerHTML = '';
-        // Show 20 avatars instead of 10
-        const seeds = diceBearSeeds.concat(name || 'Avatar');
-        for (let i = 0; i < 20; i++) {
-            const seed = seeds[i % seeds.length] + (i > 9 ? i : '');
-            const url = getDiceBearUrl(seed);
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'dicebear-avatar-btn';
-            btn.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
-            btn.onclick = () => {
-                selectedEditDicebearUrl = url;
-                // Update preview
-                editAvatarPreview.innerHTML = `<img src="${url}" style="width:40px;height:40px;border-radius:50%;">`;
-                editAvatarPreview.dataset.avatarUrl = url;
-                delete editAvatarPreview.dataset.avatarFile;
-                editAvatarPreview.style.display = '';
-                // Mark selected
-                editDicebearPicker.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            };
-            editDicebearPicker.appendChild(btn);
-        }
+function updateAddChildAvatarPreview() {
+    if (app) {
+        app.updateAddChildAvatarPreview();
     }
-    document.getElementById('edit-child-name').addEventListener('input', e => {
-        renderEditDicebearPicker(e.target.value);
-    });
+}
 
-    // --- Color Picker Active State for Edit Modal ---
-    const editSelectedColor = document.getElementById('edit-selected-color');
-    const editColorInput = document.getElementById('edit-child-color');
-    document.querySelectorAll('#edit-child-modal .color-preset').forEach(preset => {
-        preset.addEventListener('click', () => {
-            const color = preset.dataset.color;
-            editSelectedColor.style.background = color;
-            editColorInput.value = color;
-            document.querySelectorAll('#edit-child-modal .color-preset').forEach(p => p.classList.remove('active'));
-            preset.classList.add('active');
-        });
-    });
-
-    // Update selected color circle when color picker changes
-    editColorInput.addEventListener('input', () => {
-        editSelectedColor.style.background = editColorInput.value;
-    });
-
-
-
-    // --- Edit Child Modal Avatar Logic ---
-    const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
-    document.getElementById('edit-avatar-remove-btn').onclick = () => {
-        // Always clear the preview and dataset before inserting fallback initial
-        while (editAvatarPreview.firstChild) {
-            editAvatarPreview.removeChild(editAvatarPreview.firstChild);
-        }
-        editAvatarPreview.removeAttribute('data-avatar-url');
-        editAvatarPreview.removeAttribute('data-avatar-file');
-        editAvatarPreview.style.display = 'none';
-        selectedEditDicebearUrl = '';
-    };
-
-    // --- On openEditChildModal, render picker and set selected ---
-    window.openEditChildModal = function(child) {
-        const editChildModal = document.getElementById('edit-child-modal');
-        const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
-        const editSelectedColor = document.getElementById('edit-selected-color');
-        const editColorInput = document.getElementById('edit-child-color');
-        const editPreviewCircle = document.getElementById('edit-child-avatar-preview-circle');
-        
-        document.getElementById('edit-child-name').value = child.name;
-        document.getElementById('edit-child-age').value = child.age;
-        
-        // Set selected color circle and input
-        const color = child.avatar_color || '#6366f1';
-        editSelectedColor.style.background = color;
-        editColorInput.value = color;
-        
-        // Set preview circle with child's actual initial
-        const name = child.name.trim();
-        const initial = name ? name[0].toUpperCase() : 'A';
-        editPreviewCircle.textContent = initial;
-        editPreviewCircle.style.background = color;
-        
-        // Set active color swatch
-        document.querySelectorAll('#edit-child-modal .color-preset').forEach(preset => {
-            if (preset.dataset.color === color) {
-                preset.classList.add('active');
-            } else {
-                preset.classList.remove('active');
-            }
-        });
-        renderEditDicebearPicker(child.name);
-        selectedEditDicebearUrl = '';
-        // Only show preview if avatar is selected
-        editAvatarPreview.innerHTML = '';
-        editAvatarPreview.style.display = 'none';
-        delete editAvatarPreview.dataset.avatarUrl;
-        delete editAvatarPreview.dataset.avatarFile;
-        if (child.avatar_url) {
-            const img = document.createElement('img');
-            img.src = child.avatar_url;
-            img.style.width = '40px';
-            img.style.height = '40px';
-            img.style.borderRadius = '50%';
-            img.style.objectFit = 'cover';
-            editAvatarPreview.appendChild(img);
-            editAvatarPreview.dataset.avatarUrl = child.avatar_url;
-            editAvatarPreview.style.display = '';
-        } else if (child.avatar_file) {
-            const img = document.createElement('img');
-            img.src = child.avatar_file;
-            img.style.width = '40px';
-            img.style.height = '40px';
-            img.style.borderRadius = '50%';
-            img.style.objectFit = 'cover';
-            editAvatarPreview.appendChild(img);
-            editAvatarPreview.dataset.avatarFile = child.avatar_file;
-            editAvatarPreview.style.display = '';
-        }
-        editChildModal.classList.remove('hidden');
-        editChildModal.dataset.childId = child.id;
-    };
-
-    // --- Save handler for edit-child-form ---
-    document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const editChildModal = document.getElementById('edit-child-modal');
-        const childId = editChildModal.dataset.childId;
-        const name = document.getElementById('edit-child-name').value;
-        const age = parseInt(document.getElementById('edit-child-age').value);
-        const editColorInput = document.getElementById('edit-child-color');
-        const color = editColorInput.value;
-        let avatarUrl = '';
-        let avatarFile = '';
-        const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
-        if (editAvatarPreview) {
-            if (editAvatarPreview.dataset.avatarUrl) {
-                avatarUrl = editAvatarPreview.dataset.avatarUrl;
-            } else if (editAvatarPreview.dataset.avatarFile) {
-                avatarFile = editAvatarPreview.dataset.avatarFile;
-            }
-        }
-        // Save selected DiceBear avatar if no custom avatar
-        if (!avatarUrl && selectedEditDicebearUrl) {
-            avatarUrl = selectedEditDicebearUrl;
-        }
-        const updates = { name, age, avatar_color: color, avatar_url: avatarUrl, avatar_file: avatarFile };
-        const result = await app.apiClient.updateChild(childId, updates);
-        if (result.success) {
-            editChildModal.classList.add('hidden');
-            await app.loadChildren();
-            app.renderChildren();
-            app.showToast('Child updated!', 'success');
-        } else {
-            app.showToast(result.error || 'Failed to update child', 'error');
-        }
-    });
-
-    // --- Cancel handler for edit-child-modal ---
-    document.addEventListener('click', (e) => {
-        if (e.target.matches('[data-modal="edit-child-modal"]') || 
-            e.target.closest('[data-modal="edit-child-modal"]')) {
-            const editChildModal = document.getElementById('edit-child-modal');
-            editChildModal.classList.add('hidden');
-            // Reset form
-            document.getElementById('edit-child-form').reset();
-            // Clear avatar preview
-            const editAvatarPreview = document.getElementById('edit-child-avatar-preview');
-            if (editAvatarPreview) {
-                editAvatarPreview.innerHTML = '';
-                editAvatarPreview.style.display = 'none';
-                delete editAvatarPreview.dataset.avatarUrl;
-                delete editAvatarPreview.dataset.avatarFile;
-            }
-            // Reset DiceBear selection
-            selectedEditDicebearUrl = '';
-        }
-    });
-
-    // --- Save handler for add-child-form ---
-    // REMOVED: Duplicate event listener - this is now handled in the class method
-
-    // Live avatar preview for Add Child modal
-    const addNameInput = document.getElementById('child-name');
-    const addColorInput = document.getElementById('child-color');
-    const addPreviewCircle = document.getElementById('add-child-avatar-preview-circle');
-    const addAvatarPreview = document.getElementById('child-avatar-preview');
-    
-    // --- Color Picker Active State for Add Modal ---
-    const addSelectedColor = document.getElementById('add-selected-color');
-    document.querySelectorAll('#add-child-modal .color-preset').forEach(preset => {
-        preset.addEventListener('click', () => {
-            const color = preset.dataset.color;
-            addSelectedColor.style.background = color;
-            addColorInput.value = color;
-            document.querySelectorAll('#add-child-modal .color-preset').forEach(p => p.classList.remove('active'));
-            preset.classList.add('active');
-        });
-    });
-
-    // Update selected color circle when color picker changes
-    addColorInput.addEventListener('input', () => {
-        addSelectedColor.style.background = addColorInput.value;
-    });
-    function updateAddChildAvatarPreview() {
-        // If an image is uploaded, hide the circle
-        if (addAvatarPreview && addAvatarPreview.querySelector('img')) {
-            addPreviewCircle.style.display = 'none';
-            return;
-        } else {
-            addPreviewCircle.style.display = 'flex';
-        }
-        const name = addNameInput.value.trim();
-        const color = addColorInput.value || '#6366f1';
-        addPreviewCircle.style.background = color;
-        addPreviewCircle.textContent = name ? name[0].toUpperCase() : 'A';
+function updateEditChildAvatarPreview2() {
+    if (app) {
+        app.updateEditChildAvatarPreview2();
     }
-    addNameInput.addEventListener('input', updateAddChildAvatarPreview);
-    addColorInput.addEventListener('input', updateAddChildAvatarPreview);
-    if (addAvatarPreview) {
-        const observer = new MutationObserver(updateAddChildAvatarPreview);
-        observer.observe(addAvatarPreview, { childList: true });
-    }
-    updateAddChildAvatarPreview();
-
-    // Live avatar preview for Edit Child modal
-    const editNameInput2 = document.getElementById('edit-child-name');
-    const editColorInput2 = document.getElementById('edit-child-color');
-    const editPreviewCircle2 = document.getElementById('edit-child-avatar-preview-circle');
-    const editAvatarPreview2 = document.getElementById('edit-child-avatar-preview');
-    function updateEditChildAvatarPreview2() {
-        // If an image is uploaded, hide the circle
-        if (editAvatarPreview2 && editAvatarPreview2.querySelector('img')) {
-            editPreviewCircle2.style.display = 'none';
-            return;
-        } else {
-            editPreviewCircle2.style.display = 'flex';
-        }
-        const name = editNameInput2.value.trim();
-        const color = editColorInput2.value || '#6366f1';
-        editPreviewCircle2.style.background = color;
-        editPreviewCircle2.textContent = name ? name[0].toUpperCase() : 'A';
-    }
-    editNameInput2.addEventListener('input', updateEditChildAvatarPreview2);
-    editColorInput2.addEventListener('input', updateEditChildAvatarPreview2);
-    if (editAvatarPreview2) {
-        const observer2 = new MutationObserver(updateEditChildAvatarPreview2);
-        observer2.observe(editAvatarPreview2, { childList: true });
-    }
-    updateEditChildAvatarPreview2();
-});
-} 
-
-// Add a helper to open the settings modal from the header button
-if (typeof window !== 'undefined') {
-    window.app = window.app || {};
-    window.app.openModal = function(modalId) {
-        if (window.app && typeof window.app.showModal === 'function') {
-            window.app.showModal(modalId);
-        } else {
-            // fallback: show the modal directly
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.remove('hidden');
-        }
-    };
-    
-    // Make copyFamilyCode available globally
-    window.app.copyFamilyCode = function() {
-        if (app && typeof app.copyFamilyCode === 'function') {
-            app.copyFamilyCode();
-        }
-    };
 }

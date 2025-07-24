@@ -209,6 +209,12 @@ class NotificationManager {
 
     // Check if user has premium features
     isPremiumUser() {
+        // Admin user (bsiegel13@gmail.com) always has premium access
+        // We need to check the current user's profile
+        if (window.app && window.app.profile?.email === 'bsiegel13@gmail.com') {
+            return true;
+        }
+        
         // This would check the user's subscription status
         // For now, return false to keep notifications basic for free users
         return false;
