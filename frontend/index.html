@@ -308,18 +308,6 @@
                 </p>
             </form>
         </div>
-        <div class="premium-highlight">
-          <h3>🌟 Unlock Premium Features!</h3>
-          <ul>
-            <li>🎨 Custom Chore Icons</li>
-            <li>📂 Chore Categories</li>
-            <li>🏆 Achievement Badges</li>
-            <li>📊 Advanced Analytics</li>
-            <li>🔔 Smart Notifications</li>
-            <li>🎄 Seasonal Themes</li>
-          </ul>
-          <button class="btn btn-primary" type="button" onclick="app.showUpgradeModal()">Learn More & Upgrade</button>
-        </div>
     </div>
 
     <!-- Main App Container -->
@@ -373,6 +361,10 @@
                         <button class="mobile-menu-btn" id="mobile-sound-toggle" aria-label="Toggle sound effects">
                             <span class="mobile-menu-icon" aria-hidden="true">🔊</span>
                             <span class="mobile-menu-text">Sounds</span>
+                        </button>
+                        <button class="mobile-menu-btn" id="mobile-settings-btn" aria-label="Open settings">
+                            <span class="mobile-menu-icon" aria-hidden="true">⚙️</span>
+                            <span class="mobile-menu-text">Settings</span>
                         </button>
                     </section>
                     
@@ -1097,6 +1089,15 @@
                                         Family goal progress
                                     </label>
                                     <small>Updates on family-wide goals</small>
+                                </div>
+                                
+                                <div class="preference-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="seasonal-theme-notifications" checked>
+                                        <span class="checkmark"></span>
+                                        Seasonal theme alerts
+                                    </label>
+                                    <small>Get notified when seasonal themes activate</small>
                                 </div>
                             </div>
                         </div>

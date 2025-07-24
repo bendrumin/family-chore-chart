@@ -107,6 +107,9 @@ class FamilyChoreChart {
         try {
             this.showLoading();
             
+            // Add anti-jump CSS early
+            this.addAntiJumpCSS();
+            
             // Load settings and streaks
             this.loadSettings();
             this.loadStreaks();
@@ -140,11 +143,20 @@ class FamilyChoreChart {
             this.familySettings = await this.apiClient.getFamilySettings();
             
             // Update family name in header
-            const profile = await this.apiClient.getProfile();
-            this.profile = profile; // Store profile for premium checks
-            
-            if (profile) {
-                document.getElementById('family-name').textContent = profile.family_name;
+            try {
+                const profile = await this.apiClient.getProfile();
+                this.profile = profile; // Store profile for premium checks
+                
+                if (profile) {
+                    document.getElementById('family-name').textContent = profile.family_name;
+                } else {
+                    console.warn('No profile data received');
+                    document.getElementById('family-name').textContent = 'Family';
+                }
+            } catch (profileError) {
+                console.error('Error loading profile:', profileError);
+                document.getElementById('family-name').textContent = 'Family';
+                this.showToast('Family info failed to load', 'error');
             }
             
             // Load children and chores
@@ -165,7 +177,7 @@ class FamilyChoreChart {
             
             window.analytics.init(
                 this.currentUser.id,
-                profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
+                this.profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
                 subscriptionType || 'free',
                 this.children.length
             );
@@ -176,9 +188,9 @@ class FamilyChoreChart {
                 await window.notificationManager.init();
                 
                 // Send welcome notification for new users
-                if (profile && this.children.length === 0) {
+                if (this.profile && this.children.length === 0) {
                     setTimeout(() => {
-                        window.notificationManager.sendWelcomeNotification(profile.family_name);
+                        window.notificationManager.sendWelcomeNotification(this.profile.family_name);
                     }, 2000);
                 }
             } catch (error) {
@@ -212,7 +224,13 @@ class FamilyChoreChart {
         } catch (error) {
             console.error('Load app error:', error);
             window.analytics.trackError('load_app', error.message);
-            this.showToast('Error loading family data', 'error');
+            
+            // More specific error message for family info
+            if (error.message.includes('family') || error.message.includes('profile')) {
+                this.showToast('Family info failed to load. Please refresh the page.', 'error');
+            } else {
+                this.showToast('Error loading family data', 'error');
+            }
         }
     }
 
@@ -2466,13 +2484,7 @@ class FamilyChoreChart {
                 </div>
             </div>
             
-            <!-- Today's Focus Section -->
-            <div class="todays-focus-section" style="margin: var(--space-4) 0; padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">🎯 Today's Focus</h4>
-                <div class="todays-chores">
-                    ${this.renderTodaysChores(childChores, childCompletions)}
-                </div>
-            </div>
+
             <div class="chore-grid">
                 ${this.renderChoreGrid(child.id, childChores, childCompletions)}
             </div>
@@ -2585,43 +2597,7 @@ class FamilyChoreChart {
         return html;
     }
 
-    renderTodaysChores(childChores, childCompletions) {
-        const today = this.getCurrentDayOfWeek();
-        const todaysChores = childChores.map(chore => {
-            const isCompleted = childCompletions.some(comp => 
-                comp.chore_id === chore.id && comp.day_of_week === today
-            );
-            return {
-                ...chore,
-                isCompleted
-            };
-        });
 
-        if (todaysChores.length === 0) {
-            return '<p style="color: var(--gray-500); font-style: italic;">No chores assigned for today</p>';
-        }
-
-        const completedCount = todaysChores.filter(chore => chore.isCompleted).length;
-        const totalCount = todaysChores.length;
-
-        return `
-            <div class="todays-progress">
-                <div class="todays-stats">
-                    <span class="todays-count">${completedCount}/${totalCount} completed</span>
-                    <span class="todays-percentage">${Math.round((completedCount / totalCount) * 100)}% done</span>
-                </div>
-                <div class="todays-chores-list">
-                    ${todaysChores.map(chore => `
-                        <div class="todays-chore-item ${chore.isCompleted ? 'completed' : ''}">
-                            <span class="chore-icon">${chore.icon || '📝'}</span>
-                            <span class="chore-name">${chore.name}</span>
-                            <span class="chore-status">${chore.isCompleted ? '✅' : '⏳'}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
 
     async updateFamilyDashboard() {
         if (this.children.length === 0) return;
@@ -3022,6 +2998,11 @@ class FamilyChoreChart {
     }
 
     showSeasonalNotification(theme) {
+        // Check if seasonal theme notifications are enabled
+        if (!this.getNotificationPreference('seasonal_theme')) {
+            return;
+        }
+        
         const message = `🎉 ${theme.name} theme activated! Check out seasonal chore suggestions!`;
         this.showToast(message, 'success');
         
@@ -3229,7 +3210,8 @@ class FamilyChoreChart {
             'chore-completion-notifications',
             'streak-notifications',
             'achievement-notifications', 
-            'family-goal-notifications'
+            'family-goal-notifications',
+            'seasonal-theme-notifications'
         ];
         
         preferences.forEach(id => {
@@ -3328,7 +3310,8 @@ class FamilyChoreChart {
             'chore_completion': 'chore-completion-notifications',
             'streak_alert': 'streak-notifications',
             'achievement': 'achievement-notifications',
-            'family_goal': 'family-goal-notifications'
+            'family_goal': 'family-goal-notifications',
+            'seasonal_theme': 'seasonal-theme-notifications'
         };
         
         const preferenceId = preferenceMap[type];
@@ -3892,6 +3875,7 @@ class FamilyChoreChart {
     }
 
     // Improved chore cell click handler with better error handling:
+    // 5. Improve the handleChoreCellClick method to prevent table jumping
     async handleChoreCellClick(cell, chore, childId, day) {
         // Prevent rapid-fire clicks
         if (cell.dataset.processing === 'true') {
@@ -3903,7 +3887,7 @@ class FamilyChoreChart {
             console.log('Chore cell clicked:', { choreId: chore.id, day, childId });
             const isCurrentlyCompleted = cell.classList.contains('completed');
             
-            // Optimistic UI update - update cell immediately
+            // Optimistic UI update - ONLY the cell
             if (isCurrentlyCompleted) {
                 cell.classList.remove('completed');
                 cell.textContent = '';
@@ -3922,80 +3906,50 @@ class FamilyChoreChart {
                 });
             }
             
-            // Update progress and stars immediately
-            const changeInCompletions = isCurrentlyCompleted ? -1 : 1;
-            this.updateChildProgressOptimistically(childId, changeInCompletions);
+            // IMMEDIATELY update progress (no re-rendering)
+            this.updateProgressElementsOnly(childId);
             
-            // Add subtle loading state
-            cell.style.opacity = '0.8';
-            cell.style.pointerEvents = 'none';
+            // Add subtle feedback
+            this.addCellBounce(cell);
             
             try {
                 // API call
                 const result = await this.apiClient.toggleChoreCompletion(chore.id, parseInt(day));
                 
                 if (result.success) {
-                    // Check if API result matches our optimistic update
-                    if (result.completed === !isCurrentlyCompleted) {
-                        // Success! Play sound and update streak
-                        this.playSound(result.completed ? 'success' : 'notification');
-                        
-                        if (result.completed) {
-                            const streak = this.updateStreak(childId, chore.id);
-                            if (streak >= 5) {
-                                this.showToast(`${this.getChildName(childId)} is on a ${streak}-day streak! 🔥`, 'success');
-                                
-                                // Send streak notification (premium feature)
-                                await this.sendSmartNotification('streak_alert', {
-                                    childName: this.getChildName(childId),
-                                    streakCount: streak
-                                });
-                            }
+                    // Play sound
+                    this.playSound(result.completed ? 'success' : 'notification');
+                    
+                    // Update streak
+                    if (result.completed) {
+                        const streak = this.updateStreak(childId, chore.id);
+                        if (streak >= 5) {
+                            this.showToast(`${this.getChildName(childId)} is on a ${streak}-day streak! 🔥`, 'success');
                         }
-                        
-                        // Send chore completion notification (premium feature)
-                        if (result.completed) {
-                            await this.sendSmartNotification('chore_completion', {
-                                childName: this.getChildName(childId),
-                                choreName: chore.name
-                            });
-                        }
-                        
-                        // Check for achievements
-                        this.checkAchievements(childId, chore.id);
-                        await this.checkAchievementBadges(childId);
-                    } else {
-                        // API result doesn't match, revert optimistic update
-                        console.warn('API result mismatch, reverting optimistic update');
-                        this.revertOptimisticUpdate(cell, chore.id, parseInt(day), isCurrentlyCompleted);
-                        this.updateChildProgressOptimistically(childId, -changeInCompletions);
                     }
                     
-                    // Sync with server data
+                    // CRITICAL: Sync data but DO NOT re-render anything
                     await this.loadCompletions();
                     
-                    // Update progress with real data
-                    this.updateProgressSection(childId, 
-                        this.chores.filter(c => c.child_id === childId),
-                        this.completions.filter(comp => 
-                            this.chores.some(chore => chore.id === comp.chore_id && chore.child_id === childId)
-                        ),
-                        cell.closest(`[data-child-id="${childId}"]`)
-                    );
+                    // Update progress with real data (still no re-rendering)
+                    this.updateProgressElementsOnly(childId);
+                    
+                    // Achievements (but don't re-render)
+                    this.checkAchievements(childId, chore.id);
+                    // REMOVE this line if it causes re-rendering:
+                    // await this.checkAchievementBadges(childId);
                     
                 } else {
-                    // API failed, revert optimistic update
-                    console.error('API call failed:', result.error);
+                    // Revert optimistic update
                     this.revertOptimisticUpdate(cell, chore.id, parseInt(day), isCurrentlyCompleted);
-                    this.updateChildProgressOptimistically(childId, -changeInCompletions);
+                    this.updateProgressElementsOnly(childId);
                     this.playSound('error');
                     this.showToast('Failed to update chore. Please try again.', 'error');
                 }
             } catch (apiError) {
-                // Handle API errors
                 console.error('API error:', apiError);
                 this.revertOptimisticUpdate(cell, chore.id, parseInt(day), isCurrentlyCompleted);
-                this.updateChildProgressOptimistically(childId, -changeInCompletions);
+                this.updateProgressElementsOnly(childId);
                 this.playSound('error');
                 this.showToast('Connection error. Please try again.', 'error');
             }
@@ -4140,109 +4094,29 @@ class FamilyChoreChart {
 
 
 
-        addChoreCellHandlers(card, childChores, childId) {
-        // Add quick action handlers
-        this.addQuickActionHandlers(card, childChores, childId);
-        
-        // Add FAQ and Contact modal handlers
-        this.setupHelpModals();
-        
-        card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
-            const day = cell.dataset.day;
-            const choreId = cell.dataset.choreId;
+        addChoreCellHandlers(card, childChores, cardChildId) {
+            // Add quick action handlers
+            this.addQuickActionHandlers(card, childChores, cardChildId);
+            
+            // Add FAQ and Contact modal handlers
+            this.setupHelpModals();
+            
+            card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
+                const day = cell.dataset.day;
+                const choreId = cell.dataset.choreId;
 
-            cell.addEventListener('click', async () => {
-                // Prevent rapid-fire clicks
-                if (cell.dataset.processing === 'true') {
-                    return;
-                }
-                cell.dataset.processing = 'true';
-                
-                console.log('Chore cell clicked:', { choreId, day });
-                const chore = childChores.find(ch => ch.id === choreId);
-                if (chore) {
-                    console.log('Found chore:', chore.name);
-                    
-                    // Simple optimistic update - just toggle the cell
-                    const isCurrentlyCompleted = cell.classList.contains('completed');
-                    if (isCurrentlyCompleted) {
-                        cell.classList.remove('completed');
-                        cell.textContent = '';
-                    } else {
-                        cell.classList.add('completed');
-                        cell.textContent = '✓';
+                cell.addEventListener('click', async () => {
+                    if (cell.dataset.processing === 'true') {
+                        return;
                     }
                     
-                    // Add a quick bounce to the cell for satisfying feedback
-                    this.addCellBounce(cell);
-                    
-                    // Loading state
-                    cell.style.opacity = '0.9';
-                    cell.style.pointerEvents = 'none';
-                    
-                    try {
-                        // API call
-                        const result = await this.apiClient.toggleChoreCompletion(choreId, parseInt(day));
-                        
-                        if (result.success) {
-                            // Play sound
-                            this.playSound(result.completed ? 'success' : 'notification');
-                            
-                            // Update streak
-                            if (result.completed) {
-                                const streak = this.updateStreak(chore.child_id, choreId);
-                                if (streak >= 5) {
-                                    this.showToast(`${this.getChildName(chore.child_id)} is on a ${streak}-day streak! 🔥`, 'success');
-                                }
-                            }
-                            
-                            // Reload data and update UI - SIMPLE approach
-                            await this.loadCompletions();
-                            this.checkAchievements(chore.child_id, choreId);
-                            await this.checkAchievementBadges(chore.child_id);
-                            
-                            // Just regenerate the child card - simple and reliable
-                            this.rerenderChildCard(chore.child_id);
-                            
-                            // Update family dashboard
-                            await this.updateFamilyDashboard();
-                            
-                        } else {
-                            // API failed - revert
-                            console.error('Failed to update chore:', result.error);
-                            if (isCurrentlyCompleted) {
-                                cell.classList.add('completed');
-                                cell.textContent = '✓';
-                            } else {
-                                cell.classList.remove('completed');
-                                cell.textContent = '';
-                            }
-                            this.playSound('error');
-                            this.showToast('Failed to update chore. Please try again.', 'error');
-                        }
-                        
-                    } catch (error) {
-                        // Error - revert
-                        console.error('Unexpected error updating chore:', error);
-                        if (isCurrentlyCompleted) {
-                            cell.classList.add('completed');
-                            cell.textContent = '✓';
-                        } else {
-                            cell.classList.remove('completed');
-                            cell.textContent = '';
-                        }
-                        this.playSound('error');
-                        this.showToast('An unexpected error occurred. Please try again.', 'error');
-                        
-                    } finally {
-                        // Remove loading state
-                        cell.style.opacity = '';
-                        cell.style.pointerEvents = '';
-                        cell.dataset.processing = 'false';
+                    const chore = childChores.find(ch => ch.id === choreId);
+                    if (chore) {
+                        // Use the chore's actual child_id, not the card's child_id
+                        await this.handleChoreCellClick(cell, chore, chore.child_id, day);
                     }
-                }
+                });
             });
-        });
     }
 
     addManageChildrenHandlers() {
@@ -4834,6 +4708,11 @@ class FamilyChoreChart {
         if (themeSelector) {
             themeSelector.value = theme;
         }
+        
+        // Force a repaint to ensure theme changes are applied
+        root.style.display = 'none';
+        root.offsetHeight; // Trigger reflow
+        root.style.display = '';
     }
 
     setColorScheme(scheme) {
@@ -6482,68 +6361,134 @@ class FamilyChoreChart {
         }
     }
 
+    // 1. Fix the missing updateChildProgressOptimistically method
+    updateChildProgressOptimistically(childId, changeInCompletions) {
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (!childCard) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Calculate updated progress
+        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
+        
+        // Update progress elements immediately
+        this.updateProgressElements(childCard, progress);
+    }
+
+    // 2. Add the missing updateProgressSection method
+    updateProgressSection(childId, childChores, childCompletions, childCard) {
+        if (!childCard) {
+            childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        }
+        if (!childCard) return;
+
+        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
+        this.updateProgressElements(childCard, progress);
+    }
+
+    // 3. Create a helper method to update progress elements
+    updateProgressElements(childCard, progress) {
+        const progressFill = childCard.querySelector('.progress-fill');
+        const progressStats = childCard.querySelector('.progress-stats');
+        const starsContainer = childCard.querySelector('.stars-container');
+        const earningsAmount = childCard.querySelector('.earnings-amount');
+        
+        if (progressFill) {
+            progressFill.style.width = `${progress.completionPercentage}%`;
+        }
+        
+        if (progressStats) {
+            progressStats.innerHTML = `<span>${progress.completionPercentage}% complete</span>`;
+        }
+        
+        if (starsContainer) {
+            const stars = this.calculateStars(progress.completionPercentage);
+            starsContainer.innerHTML = stars;
+        }
+        
+        if (earningsAmount) {
+            earningsAmount.textContent = this.formatCents(progress.totalEarnings);
+        }
+        
+        console.log('Progress updated:', {
+            percentage: progress.completionPercentage,
+            earnings: progress.totalEarnings,
+            stars: this.calculateStars(progress.completionPercentage)
+        });
+    }
+
+    // 4. Fix the calculateChildProgress method with better debugging
     calculateChildProgress(childId, childChores, childCompletions) {
         if (childChores.length === 0) {
             return {
                 completionPercentage: 0,
-                totalEarnings: 0
+                totalEarnings: 0,
+                completedDays: 0,
+                totalDays: 7
             };
         }
 
-        // Get current week start
-        const weekStart = this.apiClient.getWeekStart();
-        const weekStartDate = new Date(weekStart);
-        const today = new Date();
-        
-        // Calculate total possible completions for this week
-        const daysInWeek = 7;
-        const totalPossibleCompletions = childChores.length * daysInWeek;
-        
-        // Count actual completions for this week
+        // Get current week completions only
+        const currentWeekStart = this.currentWeekStart;
         const weekCompletions = childCompletions.filter(comp => {
-            const compDate = new Date(comp.week_start);
-            const dayOffset = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(comp.day_of_week);
-            const actualDate = new Date(compDate);
-            actualDate.setDate(compDate.getDate() + dayOffset);
-            
-            return actualDate >= weekStartDate && actualDate <= today;
+            return comp.week_start === currentWeekStart;
         });
-        
-        const completedCount = weekCompletions.length;
-        const completionPercentage = Math.round((completedCount / totalPossibleCompletions) * 100);
-        
-        // Calculate earnings (7 cents per completed day + weekly bonus if applicable)
+
+        // Count completions per day (0-6, where 0 = Sunday)
+        const completionsPerDay = new Map();
+        weekCompletions.forEach(comp => {
+            const day = comp.day_of_week;
+            if (!completionsPerDay.has(day)) {
+                completionsPerDay.set(day, 0);
+            }
+            completionsPerDay.set(day, completionsPerDay.get(day) + 1);
+        });
+
+        // Count perfect days (days where ALL chores are completed)
+        let perfectDays = 0;
+        completionsPerDay.forEach((count, day) => {
+            if (count >= childChores.length) {
+                perfectDays++;
+            }
+        });
+
+        // FIX: Calculate percentage based on perfect days only
+        const completionPercentage = Math.round((perfectDays / 7) * 100);
+
+        // Calculate earnings - count unique days with ANY completions
         const dailyRewardCents = this.familySettings?.daily_reward_cents || 7;
         const weeklyBonusCents = this.familySettings?.weekly_bonus_cents || 0;
         
-        // Count unique days with completions for earnings
-        const completedDays = new Set();
-        weekCompletions.forEach(comp => {
-            completedDays.add(comp.day_of_week);
-        });
-        
-        const totalEarnings = (completedDays.size * dailyRewardCents) + 
-            (completionPercentage >= 80 ? weeklyBonusCents : 0);
-        
+        const daysWithAnyCompletions = completionsPerDay.size;
+        const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) + 
+            (perfectDays === 7 ? weeklyBonusCents : 0); // Only bonus for 7 perfect days
+
         return {
             completionPercentage,
-            totalEarnings
+            totalEarnings,
+            completedDays: perfectDays,
+            totalDays: 7
         };
     }
 
     calculateStars(percentage) {
-        const fullStars = Math.floor(percentage / 20);
-        const hasHalfStar = percentage % 20 >= 10;
-        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        // Each perfect day = 1 star (since 7 perfect days = 7 stars = 100%)
+        // So percentage / 14.29 = number of stars (100/7 = 14.29 per star)
+        const starCount = Math.round(percentage / 14.29);
+        const clampedStars = Math.max(0, Math.min(7, starCount)); // Ensure 0-7 stars
         
         let stars = '';
-        for (let i = 0; i < fullStars; i++) {
+        
+        // Add filled stars
+        for (let i = 0; i < clampedStars; i++) {
             stars += '⭐';
         }
-        if (hasHalfStar) {
-            stars += '⭐';
-        }
-        for (let i = 0; i < emptyStars; i++) {
+        
+        // Add empty stars
+        for (let i = clampedStars; i < 7; i++) {
             stars += '☆';
         }
         
@@ -6556,9 +6501,6 @@ class FamilyChoreChart {
 
     checkAchievements(childId, choreId) {
         // This method checks for achievements when a chore is completed
-        // For now, we'll just log that achievements are being checked
-        console.log(`Checking achievements for child ${childId}, chore ${choreId}`);
-        
         // In a full implementation, this would:
         // 1. Check for streak achievements
         // 2. Check for completion milestones
@@ -6568,6 +6510,315 @@ class FamilyChoreChart {
         // For now, we'll just return without doing anything specific
         return;
     }
+
+
+
+    // 7. Add smooth progress update method (no table re-rendering)
+    updateProgressSmoothly(childId) {
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (!childCard) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Calculate progress
+        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
+        
+        // Update ONLY the progress elements - don't touch the table
+        const progressFill = childCard.querySelector('.progress-fill');
+        const progressStats = childCard.querySelector('.progress-stats');
+        const starsContainer = childCard.querySelector('.stars-container');
+        const earningsAmount = childCard.querySelector('.earnings-amount');
+        
+        // Use requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+            if (progressFill) {
+                progressFill.style.transition = 'width 0.3s ease-out';
+                progressFill.style.width = `${progress.completionPercentage}%`;
+            }
+            
+            if (progressStats) {
+                progressStats.innerHTML = `<span>${progress.completionPercentage}% complete</span>`;
+            }
+            
+            if (starsContainer) {
+                const newStars = this.calculateStars(progress.completionPercentage);
+                // Only update if stars changed to prevent unnecessary reflow
+                if (starsContainer.innerHTML !== newStars) {
+                    starsContainer.style.transition = 'opacity 0.2s ease-in-out';
+                    starsContainer.style.opacity = '0.7';
+                    setTimeout(() => {
+                        starsContainer.innerHTML = newStars;
+                        starsContainer.style.opacity = '1';
+                    }, 100);
+                }
+            }
+            
+            if (earningsAmount) {
+                earningsAmount.style.transition = 'transform 0.2s ease-out';
+                earningsAmount.style.transform = 'scale(1.02)';
+                earningsAmount.textContent = this.formatCents(progress.totalEarnings);
+                setTimeout(() => {
+                    earningsAmount.style.transform = 'scale(1)';
+                }, 200);
+            }
+        });
+        
+        console.log('Progress updated smoothly without re-rendering table');
+    }
+
+    // 8. Add CSS to prevent layout jumping
+    addAntiJumpCSS() {
+        const style = document.createElement('style');
+        style.id = 'anti-jump-css';
+        style.textContent = `
+            /* Prevent table jumping */
+            .chore-grid-table {
+                table-layout: fixed;
+                contain: layout style;
+            }
+            
+            .child-card {
+                contain: layout style;
+            }
+            
+            .progress-section {
+                contain: layout;
+                height: auto;
+                min-height: 120px; /* Prevent height changes */
+            }
+            
+            .chore-grid {
+                contain: layout;
+            }
+            
+            /* Smooth progress bar transitions */
+            .progress-fill {
+                transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                will-change: width;
+            }
+            
+            /* Prevent star container jumping */
+            .stars-container {
+                min-height: 1.5em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* Prevent earnings jumping */
+            .earnings-amount {
+                transition: transform 0.2s ease-out;
+                will-change: transform;
+            }
+            
+            /* Smooth cell updates */
+            .chore-cell {
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* Prevent content shifting during updates */
+            .child-content {
+                overflow: hidden;
+            }
+        `;
+        
+        // Only add once
+        if (!document.getElementById('anti-jump-css')) {
+            document.head.appendChild(style);
+        }
+    }
+
+    // 9. Replace any calls to rerenderChildCard with this smooth version
+    updateChildCardSmoothly(childId) {
+        // Instead of re-rendering the entire card, just update what changed
+        this.updateProgressSmoothly(childId);
+    }
+
+    // 10. Add method to update today's focus without table re-render
+
+
+    // 11. Create a minimal progress update that touches NOTHING else
+    updateProgressElementsOnly(childId) {
+        const childCard = document.querySelector(`[data-child-id="${childId}"]`);
+        if (!childCard) return;
+
+        const childChores = this.chores.filter(chore => chore.child_id === childId);
+        const childCompletions = this.completions.filter(comp => 
+            childChores.some(chore => chore.id === comp.chore_id)
+        );
+
+        // Calculate progress with debug output
+        const progress = this.calculateChildProgress(childId, childChores, childCompletions);
+        
+        // Update ONLY these 4 elements - nothing else!
+        const progressFill = childCard.querySelector('.progress-fill');
+        const progressStats = childCard.querySelector('.progress-stats span');
+        const starsContainer = childCard.querySelector('.stars-container');
+        const earningsAmount = childCard.querySelector('.earnings-amount');
+        
+
+        
+        // Use requestAnimationFrame for smoothness
+        requestAnimationFrame(() => {
+            if (progressFill) {
+                progressFill.style.width = `${progress.completionPercentage}%`;
+            }
+            
+            if (progressStats) {
+                progressStats.textContent = `${progress.completionPercentage}% complete`;
+            }
+            
+            if (starsContainer) {
+                const newStars = this.calculateStars(progress.completionPercentage);
+                starsContainer.innerHTML = newStars;
+            }
+            
+            if (earningsAmount) {
+                earningsAmount.textContent = this.formatCents(progress.totalEarnings);
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // 18. Fix the handleChoreCellClick to use the correct child ID
+    async handleChoreCellClick(cell, chore, childId, day) {
+        // CRITICAL FIX: Use the chore's actual child_id, not the passed childId
+        const actualChildId = chore.child_id;
+        
+        // Prevent rapid-fire clicks
+        if (cell.dataset.processing === 'true') {
+            return;
+        }
+        cell.dataset.processing = 'true';
+        
+        try {
+            const isCurrentlyCompleted = cell.classList.contains('completed');
+            
+            // Optimistic UI update
+            if (isCurrentlyCompleted) {
+                cell.classList.remove('completed');
+                cell.textContent = '';
+                this.completions = this.completions.filter(comp => 
+                    !(comp.chore_id === chore.id && comp.day_of_week === parseInt(day))
+                );
+            } else {
+                cell.classList.add('completed');
+                cell.textContent = '✓';
+                this.completions.push({
+                    chore_id: chore.id,
+                    day_of_week: parseInt(day),
+                    week_start: this.currentWeekStart
+                });
+            }
+            
+            // CRITICAL FIX: Update progress for the ACTUAL child who owns this chore
+            this.updateProgressElementsOnly(actualChildId);
+            
+            // Add feedback
+            this.addCellBounce(cell);
+            
+            try {
+                // API call
+                const result = await this.apiClient.toggleChoreCompletion(chore.id, parseInt(day));
+                
+                if (result.success) {
+                    this.playSound(result.completed ? 'success' : 'notification');
+                    
+                    if (result.completed) {
+                        const streak = this.updateStreak(actualChildId, chore.id);
+                        if (streak >= 5) {
+                            this.showToast(`${this.getChildName(actualChildId)} is on a ${streak}-day streak! 🔥`, 'success');
+                        }
+                    }
+                    
+                    // Sync data
+                    await this.loadCompletions();
+                    
+                    // Update progress for the correct child
+                    this.updateProgressElementsOnly(actualChildId);
+                    
+                    this.checkAchievements(actualChildId, chore.id);
+                    
+                } else {
+                    this.revertOptimisticUpdate(cell, chore.id, parseInt(day), isCurrentlyCompleted);
+                    this.updateProgressElementsOnly(actualChildId);
+                    this.playSound('error');
+                    this.showToast('Failed to update chore. Please try again.', 'error');
+                }
+            } catch (apiError) {
+                console.error('API error:', apiError);
+                this.revertOptimisticUpdate(cell, chore.id, parseInt(day), isCurrentlyCompleted);
+                this.updateProgressElementsOnly(actualChildId);
+                this.playSound('error');
+                this.showToast('Connection error. Please try again.', 'error');
+            }
+            
+        } finally {
+            cell.style.opacity = '';
+            cell.style.pointerEvents = '';
+            cell.dataset.processing = 'false';
+        }
+    }
+
+    // 19. Fix the tab switching to ensure correct child is active
+    switchChildTab(childId) {
+        // Update activeChildId
+        this.activeChildId = childId;
+        
+        // Update tab buttons
+        document.querySelectorAll('.child-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        const activeTab = document.querySelector(`[data-child-id="${childId}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+        
+        // Update content
+        document.querySelectorAll('.child-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        const activeContent = document.querySelector(`.child-content[data-child-id="${childId}"]`);
+        if (activeContent) {
+            activeContent.classList.add('active');
+        }
+    }
+
+    // 20. Add method to fix child tab data
+    fixChildTabs() {
+        // Find children with chores
+        const childrenWithChores = this.children.filter(child => {
+            const hasChores = this.chores.some(chore => chore.child_id === child.id);
+            return hasChores;
+        });
+        
+        if (childrenWithChores.length > 0) {
+            // Switch to first child with chores
+            const firstChildWithChores = childrenWithChores[0];
+            this.switchChildTab(firstChildWithChores.id);
+        }
+    }
+
+
 }
 
 // Initialize the application

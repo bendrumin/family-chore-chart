@@ -7912,68 +7912,7 @@ body.modal-open {
     border-color: var(--seasonal-accent);
 }
 
-/* Today's Focus Section */
-.todays-progress {
-    margin-top: var(--space-2);
-}
 
-.todays-stats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-3);
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-}
-
-.todays-count {
-    color: var(--gray-700);
-}
-
-.todays-percentage {
-    color: var(--primary-600);
-}
-
-.todays-chores-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.todays-chore-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background: var(--white);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--gray-200);
-    transition: all 0.2s ease;
-}
-
-.todays-chore-item.completed {
-    background: var(--green-50);
-    border-color: var(--green-200);
-}
-
-.todays-chore-item .chore-icon {
-    font-size: 1.2rem;
-}
-
-.todays-chore-item .chore-name {
-    flex: 1;
-    font-weight: 500;
-    color: var(--gray-800);
-}
-
-.todays-chore-item.completed .chore-name {
-    color: var(--green-700);
-    text-decoration: line-through;
-}
-
-.todays-chore-item .chore-status {
-    font-size: 1.1rem;
-}
 
 .analytics-no-data.hidden {
     display: none;
