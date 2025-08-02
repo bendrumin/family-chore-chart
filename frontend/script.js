@@ -755,8 +755,188 @@ class FamilyChoreChart {
             await this.handleEditChore();
         });
 
+        // Edit child form
+        document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleEditChild();
+        });
+
+        // Settings edit child form
+        document.getElementById('settings-edit-child-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleEditChild();
+        });
+
         // Setup color picker functionality
         this.setupChoreColorSwatches();
+    }
+
+    openEditChildModal(child) {
+        // Hide the manage children list
+        document.getElementById('manage-children-list').style.display = 'none';
+        
+        // Show the inline edit form
+        const editForm = document.getElementById('inline-edit-child-form');
+        editForm.style.display = 'block';
+        
+        // Populate the edit form with child data
+        document.getElementById('settings-edit-child-name').value = child.name;
+        document.getElementById('settings-edit-child-age').value = child.age;
+        document.getElementById('settings-edit-child-color').value = child.avatar_color || '#6366f1';
+        
+        // Set the child ID for the form
+        document.getElementById('settings-edit-child-form').dataset.childId = child.id;
+        
+        // Update avatar preview
+        this.updateSettingsEditChildAvatarPreview(child);
+        
+        // Setup color presets
+        this.setupSettingsEditChildColorPresets();
+    }
+
+    cancelEditChild() {
+        // Hide the inline edit form
+        document.getElementById('inline-edit-child-form').style.display = 'none';
+        
+        // Show the manage children list
+        document.getElementById('manage-children-list').style.display = 'block';
+    }
+
+    updateSettingsEditChildAvatarPreview(child) {
+        const avatarPreview = document.getElementById('settings-edit-child-avatar-preview');
+        const avatarPreviewCircle = document.getElementById('settings-edit-child-avatar-preview-circle');
+        
+        if (child.avatar_url) {
+            avatarPreview.innerHTML = `<img src="${child.avatar_url}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
+            avatarPreview.dataset.avatarUrl = child.avatar_url;
+            avatarPreview.dataset.avatarFile = '';
+        } else if (child.avatar_file) {
+            avatarPreview.innerHTML = `<img src="${child.avatar_file}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
+            avatarPreview.dataset.avatarUrl = '';
+            avatarPreview.dataset.avatarFile = child.avatar_file;
+        } else {
+            avatarPreview.innerHTML = '';
+            avatarPreview.dataset.avatarUrl = '';
+            avatarPreview.dataset.avatarFile = '';
+            
+            // Show initial in circle
+            if (avatarPreviewCircle) {
+                avatarPreviewCircle.textContent = child.name.charAt(0).toUpperCase();
+                avatarPreviewCircle.style.background = child.avatar_color || '#6366f1';
+            }
+        }
+    }
+
+    setupSettingsEditChildColorPresets() {
+        const selectedColor = document.getElementById('settings-edit-selected-color');
+        
+        // Setup color presets for settings edit form
+        document.querySelectorAll('#inline-edit-child-form .color-preset').forEach(preset => {
+            preset.addEventListener('click', () => {
+                const color = preset.dataset.color;
+                document.getElementById('settings-edit-child-color').value = color;
+                
+                // Update active state
+                document.querySelectorAll('#inline-edit-child-form .color-preset').forEach(p => p.classList.remove('active'));
+                preset.classList.add('active');
+                
+                // Update preview
+                if (selectedColor) {
+                    selectedColor.style.background = color;
+                }
+                const avatarPreviewCircle = document.getElementById('settings-edit-child-avatar-preview-circle');
+                if (avatarPreviewCircle) {
+                    avatarPreviewCircle.style.background = color;
+                }
+            });
+        });
+        
+        // Setup avatar color change handler
+        document.getElementById('settings-edit-child-color').addEventListener('change', (e) => {
+            const color = e.target.value;
+            if (selectedColor) {
+                selectedColor.style.background = color;
+            }
+            const avatarPreviewCircle = document.getElementById('settings-edit-child-avatar-preview-circle');
+            if (avatarPreviewCircle) {
+                avatarPreviewCircle.style.background = color;
+            }
+        });
+        
+        // Setup remove avatar button
+        const removeAvatarBtn = document.getElementById('settings-edit-avatar-remove-btn');
+        if (removeAvatarBtn) {
+            removeAvatarBtn.addEventListener('click', () => {
+                const avatarPreview = document.getElementById('settings-edit-child-avatar-preview');
+                const avatarPreviewCircle = document.getElementById('settings-edit-child-avatar-preview-circle');
+                
+                avatarPreview.innerHTML = '';
+                avatarPreview.dataset.avatarUrl = '';
+                avatarPreview.dataset.avatarFile = '';
+                
+                if (avatarPreviewCircle) {
+                    const childName = document.getElementById('settings-edit-child-name').value;
+                    avatarPreviewCircle.textContent = childName.charAt(0).toUpperCase();
+                    avatarPreviewCircle.style.background = document.getElementById('settings-edit-child-color').value;
+                }
+            });
+        }
+    }
+
+    async handleEditChild() {
+        const form = document.getElementById('settings-edit-child-form');
+        const childId = form.dataset.childId;
+        
+        if (!childId) {
+            this.showToast('No child selected for editing', 'error');
+            return;
+        }
+
+        const name = document.getElementById('settings-edit-child-name').value.trim();
+        const age = parseInt(document.getElementById('settings-edit-child-age').value);
+        const avatarColor = document.getElementById('settings-edit-child-color').value;
+        const avatarUrl = document.getElementById('settings-edit-child-avatar-preview').dataset.avatarUrl || null;
+        const avatarFile = document.getElementById('settings-edit-child-avatar-preview').dataset.avatarFile || null;
+
+        if (!name || !age) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const result = await this.apiClient.updateChild(childId, {
+                name,
+                age,
+                avatar_color: avatarColor,
+                avatar_url: avatarUrl,
+                avatar_file: avatarFile
+            });
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update child');
+            }
+
+            // Update the child in the local array
+            const childIndex = this.children.findIndex(c => c.id === childId);
+            if (childIndex !== -1) {
+                this.children[childIndex] = { ...this.children[childIndex], ...result.child };
+            }
+
+            // Refresh the manage children list
+            this.populateManageChildrenList();
+            
+            // Also refresh the children list in the main app
+            this.renderChildren();
+
+            this.showToast(`${name} has been updated successfully!`, 'success');
+            
+            // Hide the inline edit form and show the manage children list
+            this.cancelEditChild();
+            
+        } catch (error) {
+            console.error('Error updating child:', error);
+            this.showToast('Failed to update child. Please try again.', 'error');
+        }
     }
 
     async showModal(modalId) {
@@ -4119,7 +4299,78 @@ class FamilyChoreChart {
             });
     }
 
+    populateManageChildrenList() {
+        const manageChildrenList = document.getElementById('manage-children-list');
+        if (!manageChildrenList) return;
+
+        if (this.children.length === 0) {
+            manageChildrenList.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: var(--space-6); color: var(--gray-600);">
+                    <div style="font-size: 3em; margin-bottom: var(--space-3);">👶</div>
+                    <h4>No Children Added Yet</h4>
+                    <p>Add your first child to get started with ChoreStar!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        this.children.forEach(child => {
+            // Get child's chores count
+            const childChores = this.chores.filter(chore => chore.child_id === child.id);
+            const choresCount = childChores.length;
+            
+            // Avatar logic
+            let avatarHtml = '';
+            if (child.avatar_url) {
+                avatarHtml = `<img src="${child.avatar_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
+            } else if (child.avatar_file) {
+                avatarHtml = `<img src="${child.avatar_file}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
+            } else {
+                avatarHtml = `<div style="width:40px;height:40px;border-radius:50%;background:${child.avatar_color || '#6366f1'};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2em;">${child.name.charAt(0).toUpperCase()}</div>`;
+            }
+
+            html += `
+                <div class="manage-child-item" data-child-id="${child.id}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: var(--space-3); background: white;">
+                    <div style="flex-shrink: 0;">
+                        ${avatarHtml}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h5 style="margin: 0 0 var(--space-1) 0; font-size: 1.1em;">${child.name}</h5>
+                        <p style="margin: 0; color: var(--gray-600); font-size: var(--font-size-sm);">
+                            Age ${child.age} • ${choresCount} chore${choresCount !== 1 ? 's' : ''}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
+                        <button class="btn btn-sm btn-outline edit-child-manage" data-child-id="${child.id}" aria-label="Edit ${child.name}">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger remove-child-manage" data-child-id="${child.id}" aria-label="Remove ${child.name}">
+                            🗑️ Remove
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        manageChildrenList.innerHTML = html;
+        
+        // Add event handlers for the new buttons
+        this.addManageChildrenHandlers();
+    }
+
     addManageChildrenHandlers() {
+        // Edit child buttons
+        document.querySelectorAll('.edit-child-manage').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const childId = e.target.dataset.childId;
+                const child = this.children.find(c => c.id === childId);
+                if (child) {
+                    this.openEditChildModal(child);
+                }
+            });
+        });
+
         // Remove child buttons
         document.querySelectorAll('.remove-child-manage').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -6889,5 +7140,17 @@ function updateAddChildAvatarPreview() {
 function updateEditChildAvatarPreview2() {
     if (app) {
         app.updateEditChildAvatarPreview2();
+    }
+}
+
+function openEditChildModal(child) {
+    if (app) {
+        app.openEditChildModal(child);
+    }
+}
+
+function cancelEditChild() {
+    if (app) {
+        app.cancelEditChild();
     }
 }

@@ -867,6 +867,60 @@
                             <!-- Children will be listed here -->
                         </div>
                         
+                        <!-- Inline Edit Child Form (Hidden by default) -->
+                        <div id="inline-edit-child-form" class="inline-edit-form" style="display: none;">
+                            <div class="edit-form-header">
+                                <h5>Edit Child</h5>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="app.cancelEditChild()">Cancel</button>
+                            </div>
+                            <form id="settings-edit-child-form" class="edit-form-content">
+                                <div class="edit-form-row">
+                                    <div class="avatar-col">
+                                        <div id="settings-edit-child-avatar-preview-circle" class="avatar-circle" aria-hidden="true">A</div>
+                                    </div>
+                                    <div class="form-col">
+                                        <div class="fields-row">
+                                            <div class="form-group">
+                                                <label for="settings-edit-child-name">Child's Name</label>
+                                                <input type="text" id="settings-edit-child-name" required placeholder="e.g., Emma" autocomplete="given-name" aria-required="true">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="settings-edit-child-age">Age</label>
+                                                <input type="number" id="settings-edit-child-age" min="1" max="18" required aria-required="true">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="settings-edit-child-color">Avatar Color</label>
+                                                <div class="color-picker-row" style="display: flex; align-items: center; gap: 8px;">
+                                                    <span id="settings-edit-selected-color" class="color-preset selected-color-circle" style="background: #6366f1;" aria-hidden="true"></span>
+                                                    <input type="color" id="settings-edit-child-color" value="#6366f1" aria-label="Select custom avatar color">
+                                                    <div class="color-presets" role="group" aria-label="Preset colors">
+                                                        <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;" aria-label="Blue"></button>
+                                                        <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;" aria-label="Green"></button>
+                                                        <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;" aria-label="Orange"></button>
+                                                        <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;" aria-label="Red"></button>
+                                                        <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;" aria-label="Purple"></button>
+                                                        <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;" aria-label="Pink"></button>
+                                                    </div>
+                                                </div>
+                                                <small class="help-text" style="margin-top: 4px; color: var(--gray-600); font-size: 0.875rem;">Click the color picker for custom colors or choose from the preset swatches</small>
+                                            </div>
+                                        </div>
+                                        <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
+                                            <span class="avatar-upload-preview" id="settings-edit-child-avatar-preview"></span>
+                                        </div>
+                                        <div class="dicebear-row">
+                                            <div id="settings-edit-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
+                                            <button type="button" id="settings-edit-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="button" class="btn btn-outline" onclick="app.cancelEditChild()">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
                         <div style="text-align: center; margin-top: var(--space-6);">
                             <button class="btn btn-primary" onclick="app.showModal('add-child-modal')" aria-label="Add a new child to your family">
                                 <span aria-hidden="true">➕</span> Add New Child
