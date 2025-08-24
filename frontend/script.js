@@ -329,6 +329,45 @@ class FamilyChoreChart {
         if (loadingScreen) loadingScreen.classList.add('hidden');
     }
 
+    // Enhanced loading system for individual buttons
+    setButtonLoading(button, isLoading = true) {
+        if (!button) return;
+        
+        if (isLoading) {
+            // Store original content
+            button.dataset.originalContent = button.innerHTML;
+            button.dataset.originalDisabled = button.disabled;
+            
+            // Show loading state
+            button.innerHTML = `
+                <span class="loading-spinner" aria-hidden="true"></span>
+                <span class="loading-text">Loading...</span>
+            `;
+            button.disabled = true;
+            button.classList.add('loading');
+        } else {
+            // Restore original state
+            if (button.dataset.originalContent) {
+                button.innerHTML = button.dataset.originalContent;
+            }
+            if (button.dataset.originalDisabled !== undefined) {
+                button.disabled = button.dataset.originalDisabled === 'true';
+            }
+            button.classList.remove('loading');
+        }
+    }
+
+    // Helper method to find button by text content
+    findButtonByText(text, container = document) {
+        const buttons = container.querySelectorAll('button');
+        for (const button of buttons) {
+            if (button.textContent.trim().includes(text)) {
+                return button;
+            }
+        }
+        return null;
+    }
+
     showAuth() {
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
@@ -408,9 +447,12 @@ class FamilyChoreChart {
             return;
         }
 
-        this.showLoading();
+        // Find and set loading state on login button
+        const loginButton = document.querySelector('#login-form button[type="submit"]');
+        this.setButtonLoading(loginButton, true);
+
         const result = await this.apiClient.signIn(email, password);
-        this.hideLoading();
+        this.setButtonLoading(loginButton, false);
 
         if (result.success) {
             this.currentUser = result.user;
@@ -452,9 +494,12 @@ class FamilyChoreChart {
             return;
         }
 
-        this.showLoading();
+        // Find and set loading state on signup button
+        const signupButton = document.querySelector('#signup-form button[type="submit"]');
+        this.setButtonLoading(signupButton, true);
+
         const result = await this.apiClient.signUp(email, password, familyName);
-        this.hideLoading();
+        this.setButtonLoading(signupButton, false);
 
         if (result.success) {
             window.analytics.trackRegistration(email, familyName);
@@ -474,9 +519,12 @@ class FamilyChoreChart {
             return;
         }
 
-        this.showLoading();
+        // Find and set loading state on forgot password button
+        const forgotButton = document.querySelector('#forgot-form button[type="submit"]');
+        this.setButtonLoading(forgotButton, true);
+
         const result = await this.apiClient.resetPassword(email);
-        this.hideLoading();
+        this.setButtonLoading(forgotButton, false);
 
         if (result.success) {
             this.showToast('Password reset email sent!', 'success');
@@ -628,21 +676,34 @@ class FamilyChoreChart {
     }
 
     async handleLogout() {
-        const result = await this.apiClient.signOut();
-        if (result.success) {
-            this.currentUser = null;
-            this.children = [];
-            this.chores = [];
-            this.completions = [];
-            this.familySettings = null;
-            
-            if (this.subscription) {
-                this.subscription.unsubscribe();
+        try {
+            // Find and set loading state on logout button
+            const logoutButton = document.querySelector('#logout-btn');
+            this.setButtonLoading(logoutButton, true);
+
+            const result = await this.apiClient.signOut();
+            if (result.success) {
+                this.currentUser = null;
+                this.children = [];
+                this.chores = [];
+                this.completions = [];
+                this.familySettings = null;
+                
+                if (this.subscription) {
+                    this.subscription.unsubscribe();
+                }
+                
+                this.showAuth();
+            } else {
+                this.showToast('Error logging out', 'error');
             }
-            
-            this.showAuth();
-        } else {
+        } catch (error) {
+            console.error('Error logging out:', error);
             this.showToast('Error logging out', 'error');
+        } finally {
+            // Reset loading state
+            const logoutButton = document.querySelector('#logout-btn');
+            this.setButtonLoading(logoutButton, false);
         }
     }
 
@@ -1220,8 +1281,14 @@ class FamilyChoreChart {
                 return;
             }
 
+            // Find and set loading state on add child button
+            const addChildButton = document.querySelector('#add-child-form button[type="submit"]');
+            this.setButtonLoading(addChildButton, true);
+
             // Pass avatar info to createChild
             const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
+            
+            this.setButtonLoading(addChildButton, false);
             
             if (result.success) {
                 window.analytics.trackAddChild(name, age);
@@ -1295,12 +1362,17 @@ class FamilyChoreChart {
             return;
         }
 
+        // Find and set loading state on add chore button
+        const addChoreButton = document.querySelector('#add-chore-form button[type="submit"]');
+        this.setButtonLoading(addChoreButton, true);
+
         // Prevent duplicate submissions
         const submissionKey = `add-chore-${childId}-${choresToAdd.length}`;
         const now = Date.now();
         const lastSubmission = this.formSubmissions.get(submissionKey);
         if (lastSubmission && (now - lastSubmission) < 2000) { // 2 second debounce
             console.log('Preventing duplicate chore submission');
+            this.setButtonLoading(addChoreButton, false);
             return;
         }
         this.formSubmissions.set(submissionKey, now);
@@ -1342,6 +1414,9 @@ class FamilyChoreChart {
         } else {
             this.showToast('Failed to add any chores', 'error');
         }
+
+        // Reset loading state
+        this.setButtonLoading(addChoreButton, false);
     }
 
     async handleUpdateSettings() {
@@ -1353,10 +1428,16 @@ class FamilyChoreChart {
             return;
         }
 
+        // Find and set loading state on save settings button
+        const saveButton = document.querySelector('#settings-form button[type="submit"]');
+        this.setButtonLoading(saveButton, true);
+
         const result = await this.apiClient.updateFamilySettings({
             daily_reward_cents: dailyReward,
             weekly_bonus_cents: weeklyBonus
         });
+        
+        this.setButtonLoading(saveButton, false);
         
         if (result.success) {
             this.familySettings = result.settings;
@@ -2164,9 +2245,12 @@ class FamilyChoreChart {
             return;
         }
 
-        this.showLoading();
+        // Find and set loading state on join family button
+        const joinButton = document.querySelector('button[onclick*="handleJoinFamily"]');
+        this.setButtonLoading(joinButton, true);
+
         const result = await window.familySharing.joinFamily(code);
-        this.hideLoading();
+        this.setButtonLoading(joinButton, false);
 
         if (result.success) {
             this.showToast('Successfully joined family!', 'success');
@@ -2178,14 +2262,22 @@ class FamilyChoreChart {
         }
     }
 
-    copyFamilyCode() {
+    async copyFamilyCode() {
         const code = document.getElementById('family-code').textContent;
         if (code && code !== 'Loading...') {
-            navigator.clipboard.writeText(code).then(() => {
+            // Find and set loading state on copy button
+            const copyButton = document.querySelector('button[onclick*="copyFamilyCode"]');
+            this.setButtonLoading(copyButton, true);
+
+            try {
+                await navigator.clipboard.writeText(code);
                 this.showToast('Family code copied to clipboard!', 'success');
-            }).catch(() => {
+            } catch (error) {
                 this.showToast('Failed to copy code', 'error');
-            });
+            } finally {
+                // Reset loading state
+                this.setButtonLoading(copyButton, false);
+            }
         }
     }
 
@@ -2250,6 +2342,12 @@ class FamilyChoreChart {
 
     async handleUpgrade() {
         try {
+            // Find and set loading state on upgrade button
+            const upgradeButton = document.querySelector('button[onclick*="handleUpgrade"]');
+            if (upgradeButton) {
+                this.setButtonLoading(upgradeButton, true);
+            }
+
             // Use the payment manager to handle the upgrade
             if (window.paymentManager && typeof window.paymentManager.handleUpgrade === 'function') {
                 await window.paymentManager.handleUpgrade();
@@ -2260,6 +2358,11 @@ class FamilyChoreChart {
         } catch (error) {
             console.error('Upgrade failed:', error);
             this.showToast('Failed to process upgrade. Please try again or contact support.', 'error');
+        } finally {
+            // Reset loading state
+            if (upgradeButton) {
+                this.setButtonLoading(upgradeButton, false);
+            }
         }
     }
 
@@ -2317,7 +2420,13 @@ class FamilyChoreChart {
             return;
         }
 
+        // Find and set loading state on export button
+        const exportButton = document.querySelector('button[onclick*="exportFamilyReport"]');
+        this.setButtonLoading(exportButton, true);
+
         const result = await this.apiClient.exportFamilyReport();
+        this.setButtonLoading(exportButton, false);
+
         if (result.success) {
             // Create and download PDF report
             const report = result.report;
@@ -3409,7 +3518,14 @@ class FamilyChoreChart {
         };
         
         try {
+            // Find and set loading state on add seasonal chore button
+            const addButton = document.querySelector(`button[onclick*="addSeasonalChore('${choreName}"]`);
+            if (addButton) {
+                this.setButtonLoading(addButton, true);
+            }
+
             const result = await this.apiClient.addChore(choreData);
+            
             if (result.success) {
                 await this.loadChores();
                 this.renderChildren();
@@ -3419,6 +3535,11 @@ class FamilyChoreChart {
             }
         } catch (error) {
             this.showToast('Error adding seasonal chore', 'error');
+        } finally {
+            // Reset loading state
+            if (addButton) {
+                this.setButtonLoading(addButton, false);
+            }
         }
     }
 
@@ -3445,8 +3566,22 @@ class FamilyChoreChart {
         const refreshBtn = document.getElementById('refresh-dashboard');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', async () => {
+                this.setButtonLoading(refreshBtn, true);
                 await this.updateFamilyDashboard();
+                this.setButtonLoading(refreshBtn, false);
                 this.showToast('Dashboard refreshed!', 'success');
+            });
+        }
+
+        // Demo loading button
+        const demoLoadingBtn = document.getElementById('demo-loading-btn');
+        if (demoLoadingBtn) {
+            demoLoadingBtn.addEventListener('click', async () => {
+                this.setButtonLoading(demoLoadingBtn, true);
+                // Simulate a 2-second operation
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                this.setButtonLoading(demoLoadingBtn, false);
+                this.showToast('Demo loading completed!', 'success');
             });
         }
         
@@ -3485,6 +3620,10 @@ class FamilyChoreChart {
 
     async requestNotificationPermission() {
         try {
+            // Find and set loading state on notification button
+            const requestBtn = document.getElementById('request-notifications-btn');
+            this.setButtonLoading(requestBtn, true);
+
             const permission = await Notification.requestPermission();
             this.updateNotificationStatus();
             
@@ -3496,6 +3635,10 @@ class FamilyChoreChart {
         } catch (error) {
             console.error('Error requesting notification permission:', error);
             this.showToast('Could not enable notifications. Please check your browser settings.', 'error');
+        } finally {
+            // Reset loading state
+            const requestBtn = document.getElementById('request-notifications-btn');
+            this.setButtonLoading(requestBtn, false);
         }
     }
 

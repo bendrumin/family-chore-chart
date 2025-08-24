@@ -1,11 +1,18 @@
 // Contact form email API endpoint
 let nodemailer;
+let sendgrid;
 
-// Initialize nodemailer only if available
+// Initialize email services only if available
 try {
     nodemailer = require('nodemailer');
 } catch (error) {
     console.warn('Nodemailer not available:', error.message);
+}
+
+try {
+    sendgrid = require('@sendgrid/mail');
+} catch (error) {
+    console.warn('SendGrid not available:', error.message);
 }
 
 export default async function handler(req, res) {
@@ -121,26 +128,59 @@ This message was sent from your ChoreStar contact form.
 </html>
     `;
 
-    // Check if nodemailer is available
+    // Check if SendGrid is available (preferred method)
+    if (sendgrid && process.env.SENDGRID_API_KEY) {
+      try {
+        console.log('Using SendGrid to send email...');
+        sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+        
+        const adminEmail = process.env.ADMIN_EMAIL || 'hi@chorestar.app';
+        
+        const msg = {
+          to: adminEmail,
+          from: 'noreply@chorestar.app', // This should be your verified sender
+          subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
+          text: emailContent,
+          html: htmlEmailContent,
+        };
+        
+        const result = await sendgrid.send(msg);
+        console.log('SendGrid email sent successfully:', result[0].statusCode);
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Email notification sent successfully via SendGrid',
+          messageId: result[0].headers['x-message-id'] || 'sendgrid-message-id',
+          service: 'sendgrid'
+        });
+        
+      } catch (sendgridError) {
+        console.error('SendGrid error:', sendgridError);
+        // Fall back to nodemailer if SendGrid fails
+      }
+    }
+
+    // Check if nodemailer is available as fallback
     if (!nodemailer) {
       console.log('Email notification would be sent to admin:');
       console.log(emailContent);
       
       return res.status(200).json({ 
         success: true, 
-        message: 'Email notification logged (nodemailer dependency not available)',
+        message: 'Email notification logged (no email service available)',
         debug: {
+          sendgridAvailable: !!sendgrid,
           nodemailerAvailable: false,
-          message: 'Dependency not loaded'
+          message: 'Dependencies not loaded'
         }
       });
     }
 
-    // Check if email credentials are configured
+    // Check if email credentials are configured for nodemailer fallback
     const emailService = process.env.EMAIL_SERVICE;
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
-    const adminEmail = process.env.ADMIN_EMAIL || 'bsiegel13@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'hi@chorestar.app';
 
     console.log('Email configuration check:');
     console.log('- EMAIL_SERVICE:', emailService ? 'SET' : 'NOT SET');
@@ -155,7 +195,7 @@ This message was sent from your ChoreStar contact form.
       
       return res.status(200).json({ 
         success: true, 
-        message: 'Email notification logged (configure Gmail credentials to send actual emails)',
+        message: 'Email notification logged (configure email credentials to send actual emails)',
         debug: {
           emailService: emailService ? 'SET' : 'NOT SET',
           emailUser: emailUser ? 'SET' : 'NOT SET',
@@ -165,7 +205,7 @@ This message was sent from your ChoreStar contact form.
       });
     }
 
-    // Create transporter based on email service
+    // Create transporter based on email service (fallback)
     let transporter;
     
     try {
@@ -209,8 +249,9 @@ This message was sent from your ChoreStar contact form.
 
       return res.status(200).json({ 
         success: true, 
-        message: 'Email notification sent successfully',
-        messageId: result.messageId
+        message: 'Email notification sent successfully via nodemailer',
+        messageId: result.messageId,
+        service: 'nodemailer'
       });
 
     } catch (transporterError) {
