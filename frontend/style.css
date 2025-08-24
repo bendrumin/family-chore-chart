@@ -3211,32 +3211,148 @@ body.modal-open {
     overflow-y: auto;
 }
 
-/* Inline Edit Child Form Styles */
-.inline-edit-form {
+/* Edit All Children Controls - Simplified */
+.edit-all-children-controls {
     background: var(--gray-50);
-    border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    margin: var(--space-4) 0;
+    padding: var(--space-4);
 }
 
-.edit-form-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.edit-form-header h5 {
-    margin: 0;
+.edit-all-header h5 {
+    margin: 0 0 var(--space-2) 0;
     color: var(--gray-900);
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
-.edit-form-content {
+.edit-all-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+/* Page Modal - Uses existing modal styles with custom sizing */
+.page-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.page-modal.hidden {
+    display: none;
+}
+
+.page-modal-content {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.page-modal-header h2 {
+    margin: 0;
+    color: var(--gray-900);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.page-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.page-modal-close:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.page-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-6);
+}
+
+/* Edit Children Page - Uses existing styles */
+.edit-children-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.child-navigation {
+    margin-bottom: var(--space-6);
+    text-align: center;
+}
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.child-counter {
+    font-weight: 600;
+    color: var(--gray-700);
+    min-width: 80px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.child-progress {
+    margin-top: var(--space-3);
+}
+
+.child-progress .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.child-progress .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+    transition: width 0.3s ease;
+}
+
+.edit-form-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    border: 1px solid var(--gray-200);
+}
+
+.edit-form {
     margin: 0;
 }
 
@@ -3244,30 +3360,56 @@ body.modal-open {
     display: flex;
     gap: var(--space-6);
     align-items: flex-start;
+    margin-bottom: var(--space-6);
 }
 
-.edit-form-row .avatar-col {
+.avatar-section {
     flex-shrink: 0;
+    text-align: center;
 }
 
-.edit-form-row .form-col {
+.avatar-section .avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 auto var(--space-4) auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
     flex: 1;
 }
 
-.edit-form-row .fields-row {
+.form-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
     margin-bottom: var(--space-4);
 }
 
-.edit-form-row .form-actions {
+.avatar-actions {
     margin-top: var(--space-4);
     padding-top: var(--space-4);
     border-top: 1px solid var(--gray-200);
+}
+
+.dicebear-picker {
+    margin-bottom: var(--space-3);
+}
+
+.form-actions {
     display: flex;
     gap: var(--space-3);
     justify-content: flex-end;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--gray-200);
+    margin-top: var(--space-4);
 }
 
 /* Celebration Animations */
@@ -5281,7 +5423,6 @@ body.modal-open {
 /* Toggle Button Styles */
 .toggle-icon {
     font-size: var(--font-size-lg);
-    margin-right: var(--space-2);
 }
 
 .toggle-label {

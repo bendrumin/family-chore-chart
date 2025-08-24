@@ -34,8 +34,14 @@ class PaymentManager {
             await this.createCheckoutSession();
         } catch (error) {
             console.error('Upgrade failed:', error);
-            // Fallback for demo
-            window.app.showToast('Payment integration coming soon! Contact us for early access.', 'info');
+            
+            // Try to show toast if app is available
+            if (window.app && typeof window.app.showToast === 'function') {
+                window.app.showToast('Payment system is currently unavailable. Please try again later or contact support.', 'error');
+            } else {
+                // Fallback error message
+                alert('Payment system is currently unavailable. Please try again later or contact support.');
+            }
         }
     }
 }

@@ -1,4 +1,12 @@
-import nodemailer from 'nodemailer';
+// Contact form email API endpoint
+let nodemailer;
+
+// Initialize nodemailer only if available
+try {
+    nodemailer = require('nodemailer');
+} catch (error) {
+    console.warn('Nodemailer not available:', error.message);
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -113,6 +121,21 @@ This message was sent from your ChoreStar contact form.
 </html>
     `;
 
+    // Check if nodemailer is available
+    if (!nodemailer) {
+      console.log('Email notification would be sent to admin:');
+      console.log(emailContent);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Email notification logged (nodemailer dependency not available)',
+        debug: {
+          nodemailerAvailable: false,
+          message: 'Dependency not loaded'
+        }
+      });
+    }
+
     // Check if email credentials are configured
     const emailService = process.env.EMAIL_SERVICE;
     const emailUser = process.env.EMAIL_USER;
@@ -145,54 +168,64 @@ This message was sent from your ChoreStar contact form.
     // Create transporter based on email service
     let transporter;
     
-    if (emailService === 'gmail') {
-      console.log('Creating Gmail transporter...');
-      console.log('Using email user:', emailUser);
-      console.log('Email pass configured:', emailPass ? 'YES' : 'NO');
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: emailUser,
-          pass: emailPass
-        }
+    try {
+      if (emailService === 'gmail') {
+        console.log('Creating Gmail transporter...');
+        console.log('Using email user:', emailUser);
+        console.log('Email pass configured:', emailPass ? 'YES' : 'NO');
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: emailUser,
+            pass: emailPass
+          }
+        });
+      } else {
+        // Fallback to Zoho Mail if configured
+        console.log('Creating Zoho transporter...');
+        transporter = nodemailer.createTransport({
+          host: process.env.ZOHO_HOST || 'smtp.zoho.com',
+          port: process.env.ZOHO_PORT || 587,
+          secure: false,
+          auth: {
+            user: process.env.ZOHO_USER || emailUser,
+            pass: process.env.ZOHO_PASS || emailPass
+          }
+        });
+      }
+
+      console.log('Sending email to:', adminEmail);
+      
+      // Send the email
+      const result = await transporter.sendMail({
+        from: emailUser,
+        to: adminEmail,
+        subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
+        text: emailContent,
+        html: htmlEmailContent
       });
-    } else {
-      // Fallback to Zoho Mail if configured
-      console.log('Creating Zoho transporter...');
-      transporter = nodemailer.createTransport({
-        host: process.env.ZOHO_HOST || 'smtp.zoho.com',
-        port: process.env.ZOHO_PORT || 587,
-        secure: false,
-        auth: {
-          user: process.env.ZOHO_USER || emailUser,
-          pass: process.env.ZOHO_PASS || emailPass
-        }
+
+      console.log('Email sent successfully:', result.messageId);
+
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Email notification sent successfully',
+        messageId: result.messageId
+      });
+
+    } catch (transporterError) {
+      console.error('Transporter creation or email sending error:', transporterError);
+      return res.status(500).json({ 
+        error: 'Failed to send email notification',
+        details: transporterError.message,
+        fallback: 'Email content logged to console'
       });
     }
 
-    console.log('Sending email to:', adminEmail);
-    
-    // Send the email
-    const result = await transporter.sendMail({
-      from: emailUser,
-      to: adminEmail,
-      subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
-      text: emailContent,
-      html: htmlEmailContent
-    });
-
-    console.log('Email sent successfully:', result.messageId);
-
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Email notification sent successfully',
-      messageId: result.messageId
-    });
-
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('Contact form processing error:', error);
     return res.status(500).json({ 
-      error: 'Failed to send email notification',
+      error: 'Failed to process contact form',
       details: error.message
     });
   }

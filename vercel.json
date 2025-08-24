@@ -12,6 +12,10 @@
   ],
   "routes": [
     {
+      "src": "/api/health",
+      "dest": "/frontend/api/health.js"
+    },
+    {
       "src": "/api/send-contact-email",
       "dest": "/frontend/api/send-contact-email.js"
     },
