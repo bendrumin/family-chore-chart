@@ -9015,3 +9015,74 @@ body.modal-open {
     background: var(--gray-600);
     border-color: var(--primary);
 }
+
+/* Loading Spinner Styles */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.loading-text {
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Button loading states */
+.btn.loading {
+    position: relative;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.btn.loading:hover {
+    transform: none;
+}
+
+.btn.loading:active {
+    transform: none;
+}
+
+/* Loading button variants */
+.btn-primary.loading {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline.loading {
+    background: transparent;
+    border-color: var(--gray-300);
+    color: var(--gray-500);
+}
+
+.btn-secondary.loading {
+    background: var(--gray-200);
+    border-color: var(--gray-300);
+    color: var(--gray-600);
+}
+
+/* Dark theme loading states */
+[data-theme="dark"] .btn.loading {
+    opacity: 0.7;
+}
+
+[data-theme="dark"] .btn-outline.loading {
+    border-color: var(--gray-600);
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .btn-secondary.loading {
+    background: var(--gray-700);
+    border-color: var(--gray-600);
+    color: var(--gray-400);
+}

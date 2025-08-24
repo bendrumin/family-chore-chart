@@ -15,7 +15,8 @@ export default async function handler(req, res) {
         service: process.env.EMAIL_SERVICE || 'not_set',
         user: process.env.EMAIL_USER ? 'configured' : 'missing',
         pass: process.env.EMAIL_PASS ? 'configured' : 'missing',
-        admin: process.env.ADMIN_EMAIL || 'not_set'
+        admin: process.env.ADMIN_EMAIL || 'not_set',
+        sendgrid: process.env.SENDGRID_API_KEY ? 'configured' : 'missing'
       },
       node: {
         version: process.version,
@@ -40,6 +41,13 @@ export default async function handler(req, res) {
       dependencies.nodemailer = 'missing';
     }
 
+    try {
+      const sendgrid = require('@sendgrid/mail');
+      dependencies.sendgrid = 'available';
+    } catch (error) {
+      dependencies.sendgrid = 'missing';
+    }
+
     const healthStatus = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -56,8 +64,7 @@ export default async function handler(req, res) {
 
     // Determine overall health status
     const hasCriticalIssues = !envCheck.stripe.configured || 
-                             !envCheck.email.user || 
-                             !envCheck.email.pass;
+                             (!envCheck.email.sendgrid && !envCheck.email.user || !envCheck.email.pass);
 
     if (hasCriticalIssues) {
       healthStatus.status = 'degraded';
@@ -66,7 +73,7 @@ export default async function handler(req, res) {
       if (!envCheck.stripe.configured) {
         healthStatus.warnings.push('Stripe not configured - payments will fail');
       }
-      if (!envCheck.email.user || !envCheck.email.pass) {
+      if (!envCheck.email.sendgrid && (!envCheck.email.user || !envCheck.email.pass)) {
         healthStatus.warnings.push('Email not configured - contact form emails will not be sent');
       }
     }
