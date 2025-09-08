@@ -117,13 +117,18 @@ function loadDemoData() {
     }
 }
 
-// Function to setup demo button
-function setupDemoButton() {
-    const demoBtn = document.getElementById('demo-loading-btn');
-    if (demoBtn && !demoBtn.hasAttribute('data-demo-setup')) {
-        demoBtn.setAttribute('data-demo-setup', 'true');
+// Function to setup demo buttons
+function setupDemoButtons() {
+    // Note: The main demo button (demo-loading-btn) was removed from the main page
+    // as it should only be available to non-authenticated users on the signup form
+    console.log('✅ Demo button setup complete (no main demo button needed)');
+    
+    // Signup demo button (for registration page)
+    const signupDemoBtn = document.getElementById('signup-demo-btn');
+    if (signupDemoBtn && !signupDemoBtn.hasAttribute('data-demo-setup')) {
+        signupDemoBtn.setAttribute('data-demo-setup', 'true');
         
-        demoBtn.addEventListener('click', async function() {
+        signupDemoBtn.addEventListener('click', async function() {
             const originalText = this.innerHTML;
             this.innerHTML = '<span aria-hidden="true">⏳</span> Loading Demo...';
             this.disabled = true;
@@ -142,22 +147,48 @@ function setupDemoButton() {
                     this.innerHTML = originalText;
                     this.disabled = false;
                 }, 2000);
-                
-                if (window.app && window.app.showToast) {
-                    window.app.showToast('Demo failed to load', 'error');
-                }
             }
         });
         
-        console.log('✅ Demo button setup complete');
+        console.log('✅ Signup demo button setup complete');
+    }
+    
+    // Login demo button (for login page)
+    const loginDemoBtn = document.getElementById('login-demo-btn');
+    if (loginDemoBtn && !loginDemoBtn.hasAttribute('data-demo-setup')) {
+        loginDemoBtn.setAttribute('data-demo-setup', 'true');
+        
+        loginDemoBtn.addEventListener('click', async function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span aria-hidden="true">⏳</span> Loading Demo...';
+            this.disabled = true;
+            
+            try {
+                // Simulate loading
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Redirect to demo page
+                window.location.href = 'demo.html';
+                
+            } catch (error) {
+                console.error('Demo loading error:', error);
+                this.innerHTML = '<span aria-hidden="true">❌</span> Demo Failed';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 2000);
+            }
+        });
+        
+        console.log('✅ Login demo button setup complete');
     }
 }
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupDemoButton);
+    document.addEventListener('DOMContentLoaded', setupDemoButtons);
 } else {
-    setupDemoButton();
+    setupDemoButtons();
 }
 
 // Demo exit functions removed - now using separate demo page

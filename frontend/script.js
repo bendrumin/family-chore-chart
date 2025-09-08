@@ -115,16 +115,24 @@ class FamilyChoreChart {
             this.loadStreaks();
             
             // Check authentication
-            const user = await this.apiClient.getCurrentUser();
-            if (user) {
-                this.currentUser = user;
-                await this.loadApp();
-            } else {
+            try {
+                const user = await this.apiClient.getCurrentUser();
+                if (user && user.id) {
+                    this.currentUser = user;
+                    await this.loadApp();
+                } else {
+                    console.log('No authenticated user found, showing auth screen');
+                    this.showAuth();
+                }
+            } catch (authError) {
+                console.log('Authentication check failed, showing auth screen:', authError);
                 this.showAuth();
             }
         } catch (error) {
             console.error('Initialization error:', error);
             this.showToast('Failed to initialize app. Please refresh the page.', 'error');
+            // Fallback to auth screen on any error
+            this.showAuth();
         } finally {
             this.hideLoading();
         }
@@ -136,6 +144,13 @@ class FamilyChoreChart {
             if (!this.apiClient) {
                 console.error('API client not initialized');
                 this.showToast('Error initializing app', 'error');
+                return;
+            }
+            
+            // Ensure user is authenticated
+            if (!this.currentUser || !this.currentUser.id) {
+                console.error('No authenticated user found in loadApp');
+                this.showAuth();
                 return;
             }
             

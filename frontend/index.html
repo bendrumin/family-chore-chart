@@ -217,7 +217,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css?v=20250109-16">
+    <link rel="stylesheet" href="style.css?v=20250109-17">
 </head>
 <body>
     <!-- Skip Navigation for Accessibility -->
@@ -259,6 +259,15 @@
                     </label>
                 </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
+                
+                <div class="demo-section">
+                    <p>Want to see what it's like first?</p>
+                    <button type="button" class="btn btn-outline" id="login-demo-btn">
+                        <span aria-hidden="true">🎮</span> Try Demo
+                    </button>
+                    <p class="demo-subtext">If you like what you see, come back and sign up!</p>
+                </div>
+                
                 <p class="auth-switch">
                     Don't have an account? 
                     <a href="#" id="show-signup">Create one here</a>
@@ -289,6 +298,15 @@
                     <input type="password" id="signup-confirm-password" required minlength="6" autocomplete="new-password" aria-required="true">
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
+                
+                <div class="demo-section">
+                    <p>Want to see what it's like first?</p>
+                    <button type="button" class="btn btn-outline" id="signup-demo-btn">
+                        <span aria-hidden="true">🎮</span> Try Demo
+                    </button>
+                    <p class="demo-subtext">If you like what you see, come back and sign up!</p>
+                </div>
+                
                 <p class="auth-switch">
                     Already have an account? 
                     <a href="#" id="show-login">Sign in here</a>
@@ -423,9 +441,6 @@
                     <div class="dashboard-actions">
                         <button class="btn btn-primary btn-sm" id="refresh-dashboard" aria-label="Refresh dashboard data">
                             <span aria-hidden="true">🔄</span> Refresh
-                        </button>
-                        <button class="btn btn-outline btn-sm" id="demo-loading-btn" aria-label="Try the demo">
-                            <span aria-hidden="true">🎮</span> Try Demo
                         </button>
                     </div>
                 </div>
@@ -1968,9 +1983,9 @@
     <script src="notifications.js?v=1"></script>
     <script src="family-sharing.js?v=1"></script>
     <script src="payment.js?v=1"></script>
-    <script src="script.js?v=17"></script>
+    <script src="script.js?v=19"></script>
     <script src="safe-optimizations.js?v=1"></script>
-    <script src="demo-data.js?v=1"></script>
+    <script src="demo-data.js?v=5"></script>
     <script src="toast-cleanup.js?v=2"></script>
     <script src="recover-family-data.js?v=1"></script>
 </body>

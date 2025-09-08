@@ -376,6 +376,32 @@ body {
     text-align: center;
 }
 
+/* Demo section styling */
+.demo-section {
+    margin: var(--space-6) 0;
+    padding: var(--space-6);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    border: 1px solid var(--gray-200);
+}
+
+.demo-section p {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.demo-section .btn {
+    margin-bottom: var(--space-3);
+}
+
+.demo-subtext {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
