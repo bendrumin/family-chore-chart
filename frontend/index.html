@@ -6,6 +6,7 @@
     
     <!-- Primary Meta Tags -->
     <title>ChoreStar - Family Chore Chart & Reward Tracker | Make Chores Fun</title>
+    <!-- v20250109-8 -->
     <meta name="title" content="ChoreStar - Family Chore Chart & Reward Tracker | Make Chores Fun">
     <meta name="description" content="Transform household chores into fun family activities with ChoreStar. Track progress, earn rewards, and build good habits with our interactive chore chart app for families with children.">
     <meta name="keywords" content="family chore chart, kids chores, chore tracker, family rewards, children responsibility, household tasks, parenting app, chore management, family organization, kids motivation">
@@ -216,7 +217,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20250109-16">
 </head>
 <body>
     <!-- Skip Navigation for Accessibility -->
@@ -329,22 +330,27 @@
                         </span>
                     </button>
                     
-                    <!-- Desktop navigation - simplified -->
+                    <!-- Desktop navigation - improved with labels -->
                     <div class="desktop-nav">
-                        <button class="btn btn-outline" id="add-child-btn" title="Add A Child" aria-label="Add a new child to your family">
-                            <span class="toggle-icon" aria-hidden="true">👶</span>
+                        <button class="btn btn-outline desktop-nav-btn" id="add-child-btn" title="Add A Child" aria-label="Add a new child to your family">
+                            <span class="nav-icon" aria-hidden="true">👶</span>
+                            <span class="nav-label">Add Child</span>
                         </button>
-                        <button class="btn btn-outline" onclick="app.openEditChildrenPage()" title="Edit Children" aria-label="Edit children">
-                            <span class="toggle-icon" aria-hidden="true">✏️</span>
+                        <button class="btn btn-outline desktop-nav-btn" onclick="app.openEditChildrenPage()" title="Edit Children" aria-label="Edit children">
+                            <span class="nav-icon" aria-hidden="true">✏️</span>
+                            <span class="nav-label">Edit Children</span>
                         </button>
-                        <button class="btn btn-outline" id="theme-toggle" title="Toggle Dark Mode" aria-label="Toggle dark mode">
-                            <span class="toggle-icon" aria-hidden="true">🌙</span>
+                        <button class="btn btn-outline desktop-nav-btn" id="theme-toggle" title="Toggle Dark Mode" aria-label="Toggle dark mode">
+                            <span class="nav-icon" aria-hidden="true">🌙</span>
+                            <span class="nav-label">Theme</span>
                         </button>
-                        <button class="btn btn-outline" id="settings-btn" aria-label="Open settings">
-                            <span class="toggle-icon" aria-hidden="true">⚙️</span>
+                        <button class="btn btn-outline desktop-nav-btn" id="settings-btn" aria-label="Open settings">
+                            <span class="nav-icon" aria-hidden="true">⚙️</span>
+                            <span class="nav-label">Settings</span>
                         </button>
-                        <button class="btn btn-outline" id="logout-btn" aria-label="Sign out of account">
-                            <span class="toggle-icon" aria-hidden="true">🚪</span>
+                        <button class="btn btn-outline desktop-nav-btn" id="logout-btn" aria-label="Sign out of account">
+                            <span class="nav-icon" aria-hidden="true">🚪</span>
+                            <span class="nav-label">Logout</span>
                         </button>
                     </div>
                 </nav>
@@ -418,8 +424,8 @@
                         <button class="btn btn-primary btn-sm" id="refresh-dashboard" aria-label="Refresh dashboard data">
                             <span aria-hidden="true">🔄</span> Refresh
                         </button>
-                        <button class="btn btn-outline btn-sm" id="demo-loading-btn" aria-label="Demo loading spinner">
-                            <span aria-hidden="true">⚡</span> Demo Loading
+                        <button class="btn btn-outline btn-sm" id="demo-loading-btn" aria-label="Try the demo">
+                            <span aria-hidden="true">🎮</span> Try Demo
                         </button>
                     </div>
                 </div>
@@ -536,7 +542,7 @@
                         </div>
                         <div class="form-group">
                             <label for="child-color">Avatar Color</label>
-                            <div class="color-picker-row" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="color-picker-row">
                                 <span id="add-selected-color" class="color-preset selected-color-circle" style="background: #6366f1;" aria-hidden="true"></span>
                                 <input type="color" id="child-color" value="#6366f1" aria-label="Select custom avatar color">
                                 <div class="color-presets" role="group" aria-label="Preset colors">
@@ -552,10 +558,12 @@
                         </div>
                     </div>
                     <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
-                        <span class="avatar-upload-preview" id="child-avatar-preview"></span>
+                        <!-- Avatar preview removed - now handled by main avatar circle -->
                     </div>
                     <div class="dicebear-row">
-                        <div id="add-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
+                        <button type="button" id="add-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handleAddChildIconSelect(iconUrl, iconType); })">
+                            🎨 Choose Icon
+                        </button>
                         <button type="button" id="add-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
                     </div>
                     <div class="form-actions">
@@ -600,7 +608,6 @@
                             <div class="edit-form-row">
                                 <div class="avatar-section">
                                     <div id="page-edit-child-avatar-preview-circle" class="avatar-circle" aria-hidden="true">A</div>
-                                    <div class="avatar-upload-preview" id="page-edit-child-avatar-preview"></div>
                                 </div>
                                 <div class="form-section">
                                     <div class="form-fields">
@@ -630,7 +637,9 @@
                                         </div>
                                     </div>
                                     <div class="avatar-actions">
-                                        <div id="page-edit-dicebear-picker" class="dicebear-picker"></div>
+                                        <button type="button" id="page-edit-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handlePageEditChildIconSelect(iconUrl, iconType); })">
+                                            🎨 Choose Icon
+                                        </button>
                                         <button type="button" id="page-edit-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
                                     </div>
                                 </div>
@@ -669,7 +678,7 @@
                         </div>
                         <div class="form-group">
                             <label for="edit-child-color">Avatar Color</label>
-                            <div class="color-picker-row" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="color-picker-row">
                                 <span id="edit-selected-color" class="color-preset selected-color-circle" style="background: #6366f1;" aria-hidden="true"></span>
                                 <input type="color" id="edit-child-color" value="#6366f1" aria-label="Select custom avatar color">
                                 <div class="color-presets" role="group" aria-label="Preset colors">
@@ -685,10 +694,12 @@
                         </div>
                     </div>
                     <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
-                        <span class="avatar-upload-preview" id="edit-child-avatar-preview"></span>
+                        <!-- Avatar preview removed - now handled by main avatar circle -->
                     </div>
                     <div class="dicebear-row">
-                        <div id="edit-dicebear-picker" style="display:flex;gap:8px;margin:8px 0;"></div>
+                        <button type="button" id="edit-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handleEditChildIconSelect(iconUrl, iconType); })">
+                            🎨 Choose Icon
+                        </button>
                         <button type="button" id="edit-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
                     </div>
                     <div class="form-actions">
@@ -730,7 +741,7 @@
                         <div class="premium-features" id="premium-chore-features-1" style="display: none;">
                             <div class="form-group">
                                 <label for="chore-color-1">Chore Color</label>
-                                <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                                <div class="color-picker-row">
                                     <input type="color" id="chore-color-1" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;" aria-label="Select chore color">
                                     <div class="color-presets" style="display: flex; gap: var(--space-1);" role="group" aria-label="Preset chore colors">
                                         <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Red"></button>
@@ -1659,7 +1670,7 @@
                 <div class="edit-premium-features" id="edit-premium-features" style="display:none;">
                     <div class="form-group">
                         <label for="edit-chore-color">Chore Color</label>
-                        <div class="color-picker-row" style="display: flex; align-items: center; gap: var(--space-2);">
+                        <div class="color-picker-row">
                             <input type="color" id="edit-chore-color" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;" aria-label="Select chore color">
                             <div class="color-presets" style="display: flex; gap: var(--space-1);" role="group" aria-label="Preset chore colors">
                                 <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Red"></button>
@@ -1911,6 +1922,40 @@
         </div>
     </div>
 
+    <!-- Icon Picker Modal -->
+    <div id="icon-picker-modal" class="modal hidden" role="dialog" aria-labelledby="icon-picker-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="icon-picker-modal-title">🎨 Choose an Icon</h2>
+                <button class="modal-close" data-modal="icon-picker-modal" onclick="closeIconPicker()" aria-label="Close icon picker">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="icon-picker-tabs">
+                    <button type="button" class="icon-tab active" data-tab="robots">🤖 Robots</button>
+                    <button type="button" class="icon-tab" data-tab="adventurers">🧑‍🚀 Adventurers</button>
+                    <button type="button" class="icon-tab" data-tab="emojis">😄 Fun Emojis</button>
+                </div>
+                <div class="icon-picker-content">
+                    <div id="robots-tab" class="icon-tab-content active">
+                        <div class="icon-grid" id="robots-grid">
+                            <!-- Robot icons will be populated here -->
+                        </div>
+                    </div>
+                    <div id="adventurers-tab" class="icon-tab-content">
+                        <div class="icon-grid" id="adventurers-grid">
+                            <!-- Adventurer icons will be populated here -->
+                        </div>
+                    </div>
+                    <div id="emojis-tab" class="icon-tab-content">
+                        <div class="icon-grid" id="emojis-grid">
+                            <!-- Fun emoji icons will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
 
@@ -1923,6 +1968,10 @@
     <script src="notifications.js?v=1"></script>
     <script src="family-sharing.js?v=1"></script>
     <script src="payment.js?v=1"></script>
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=17"></script>
+    <script src="safe-optimizations.js?v=1"></script>
+    <script src="demo-data.js?v=1"></script>
+    <script src="toast-cleanup.js?v=2"></script>
+    <script src="recover-family-data.js?v=1"></script>
 </body>
 </html>

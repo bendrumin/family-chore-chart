@@ -91,6 +91,24 @@ CREATE TABLE family_members (
     UNIQUE(user_id, family_id)
 );
 
+-- Contact submissions table (for contact form)
+CREATE TABLE contact_submissions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    family_name TEXT,
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    user_agent TEXT,
+    url TEXT,
+    status TEXT DEFAULT 'new' CHECK (status IN ('new', 'in_progress', 'resolved', 'spam')),
+    admin_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_children_user_id ON children(user_id);
 CREATE INDEX idx_chores_child_id ON chores(child_id);
@@ -99,6 +117,9 @@ CREATE INDEX idx_chores_category ON chores(category);
 CREATE INDEX idx_chore_completions_chore_id ON chore_completions(chore_id);
 CREATE INDEX idx_chore_completions_week ON chore_completions(week_start, day_of_week);
 CREATE INDEX idx_family_settings_user_id ON family_settings(user_id);
+CREATE INDEX idx_contact_submissions_user_id ON contact_submissions(user_id);
+CREATE INDEX idx_contact_submissions_status ON contact_submissions(status);
+CREATE INDEX idx_contact_submissions_timestamp ON contact_submissions(timestamp);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -114,6 +135,7 @@ CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW
 CREATE TRIGGER update_children_updated_at BEFORE UPDATE ON children FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_chores_updated_at BEFORE UPDATE ON chores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_family_settings_updated_at BEFORE UPDATE ON family_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_contact_submissions_updated_at BEFORE UPDATE ON contact_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Row Level Security (RLS) Policies
 
@@ -123,6 +145,7 @@ ALTER TABLE children ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chore_completions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE family_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON profiles
@@ -280,6 +303,13 @@ CREATE POLICY "Users can delete family members" ON family_members
         auth.uid() = user_id OR 
         auth.uid() = family_id
     );
+
+-- Contact submissions policies
+CREATE POLICY "Users can insert their own contact submissions" ON contact_submissions
+    FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Users can view their own contact submissions" ON contact_submissions
+    FOR SELECT USING (auth.uid() = user_id);
 
 
 
