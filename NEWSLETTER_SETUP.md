@@ -18,7 +18,7 @@ npm install @sendgrid/mail
 ## 🔑 **Step 2: Set Your SendGrid API Key**
 
 ```bash
-export SENDGRID_API_KEY="your_sendgrid_api_key_here"
+export SENDGRID_API_KEY="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"
 ```
 
 ## 👥 **Step 3: Get Your User List**
