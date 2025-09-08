@@ -443,7 +443,7 @@ class FamilyChoreChart {
         const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : true;
 
         if (!email || !password) {
-            this.showToast('Please fill in all fields', 'error');
+            this.showToast('Please fill in all required fields', 'error');
             return;
         }
 
@@ -480,7 +480,7 @@ class FamilyChoreChart {
         const confirmPassword = document.getElementById('signup-confirm-password').value;
 
         if (!email || !familyName || !password || !confirmPassword) {
-            this.showToast('Please fill in all fields', 'error');
+            this.showToast('Please fill in all required fields', 'error');
             return;
         }
 
@@ -833,13 +833,13 @@ class FamilyChoreChart {
         // Edit child form
         document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await this.handleEditChild();
+            await this.handleEditChildModal();
         });
 
         // Page edit child form
         document.getElementById('page-edit-child-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await this.handleEditChild();
+            await this.handlePageEditChildSave();
         });
 
         // Setup color picker functionality
@@ -897,6 +897,279 @@ class FamilyChoreChart {
         // Exit edit page mode
         this.editPageMode = false;
         this.currentEditIndex = 0;
+    }
+
+    // Icon Picker Methods
+    openIconPicker(currentIcon = '', callback = null) {
+        this.iconPickerCallback = callback;
+        this.currentSelectedIcon = currentIcon;
+        
+        // Populate all icon types
+        this.populateRobotIcons();
+        this.populateAdventurerIcons();
+        this.populateEmojiIcons();
+        
+        // Set up tab switching
+        this.setupIconPickerTabs();
+        
+        // Show the modal
+        this.showModal('icon-picker-modal');
+    }
+
+    closeIconPicker() {
+        this.hideModal('icon-picker-modal');
+        this.iconPickerCallback = null;
+        this.currentSelectedIcon = '';
+    }
+
+    populateRobotIcons() {
+        const robotsGrid = document.getElementById('robots-grid');
+        if (!robotsGrid) return;
+
+        robotsGrid.innerHTML = '';
+        
+        // Robot seeds for variety
+        const robotSeeds = [
+            'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan',
+            'Isabella', 'William', 'Charlotte', 'James', 'Amelia', 'Benjamin', 'Harper', 'Evelyn', 'Henry',
+            'Abigail', 'Alexander', 'Emily', 'Michael', 'Elizabeth', 'Daniel', 'Sofia', 'Matthew', 'Avery', 'Jackson'
+        ];
+
+        robotSeeds.forEach(seed => {
+            const url = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+            const isSelected = this.currentSelectedIcon === url;
+            
+            const iconOption = document.createElement('button');
+            iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
+            iconOption.type = 'button';
+            iconOption.onclick = () => this.selectIcon(url, 'robot');
+            
+            iconOption.innerHTML = `
+                <img src="${url}" alt="Robot ${seed}" loading="lazy">
+                <span class="icon-label">${seed}</span>
+            `;
+            
+            robotsGrid.appendChild(iconOption);
+        });
+    }
+
+    populateAdventurerIcons() {
+        const adventurersGrid = document.getElementById('adventurers-grid');
+        if (!adventurersGrid) return;
+
+        adventurersGrid.innerHTML = '';
+        
+        // Adventurer seeds
+        const adventurerSeeds = [
+            'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan',
+            'Isabella', 'William', 'Charlotte', 'James', 'Amelia', 'Benjamin', 'Harper', 'Evelyn', 'Henry',
+            'Abigail', 'Alexander', 'Emily', 'Michael', 'Elizabeth', 'Daniel', 'Sofia', 'Matthew', 'Avery', 'Jackson'
+        ];
+
+        adventurerSeeds.forEach(seed => {
+            const url = `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+            const isSelected = this.currentSelectedIcon === url;
+            
+            const iconOption = document.createElement('button');
+            iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
+            iconOption.type = 'button';
+            iconOption.onclick = () => this.selectIcon(url, 'adventurer');
+            
+            iconOption.innerHTML = `
+                <img src="${url}" alt="Adventurer ${seed}" loading="lazy">
+                <span class="icon-label">${seed}</span>
+            `;
+            
+            adventurersGrid.appendChild(iconOption);
+        });
+    }
+
+    populateEmojiIcons() {
+        const emojisGrid = document.getElementById('emojis-grid');
+        if (!emojisGrid) return;
+
+        emojisGrid.innerHTML = '';
+        
+        // Fun emoji seeds
+        const emojiSeeds = [
+            'Happy', 'Joy', 'Laugh', 'Smile', 'Grin', 'Wink', 'Love', 'Heart', 'Star', 'Sun',
+            'Moon', 'Rainbow', 'Fire', 'Lightning', 'Thunder', 'Storm', 'Cloud', 'Snow', 'Rain', 'Wind',
+            'Flower', 'Tree', 'Leaf', 'Butterfly', 'Bee', 'Bird', 'Cat', 'Dog', 'Fish', 'Dolphin',
+            'Pizza', 'Burger', 'Cake', 'Ice', 'Coffee', 'Tea', 'Apple', 'Banana', 'Grape', 'Cherry',
+            'Car', 'Bike', 'Plane', 'Boat', 'Train', 'Bus', 'Rocket', 'Balloon', 'Gift', 'Party'
+        ];
+
+        emojiSeeds.forEach(seed => {
+            const url = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}`;
+            const isSelected = this.currentSelectedIcon === url;
+            
+            const iconOption = document.createElement('button');
+            iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
+            iconOption.type = 'button';
+            iconOption.onclick = () => this.selectIcon(url, 'emoji');
+            
+            iconOption.innerHTML = `
+                <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy">
+                <span class="icon-label">${seed}</span>
+            `;
+            
+            emojisGrid.appendChild(iconOption);
+        });
+    }
+
+    setupIconPickerTabs() {
+        const tabs = document.querySelectorAll('.icon-tab');
+        const tabContents = document.querySelectorAll('.icon-tab-content');
+
+        tabs.forEach(tab => {
+            tab.onclick = () => {
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                const content = document.getElementById(`${tabId}-tab`);
+                if (content) {
+                    content.classList.add('active');
+                }
+            };
+        });
+    }
+
+    selectIcon(iconUrl, iconType) {
+        // Update visual selection
+        document.querySelectorAll('.icon-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        event.target.closest('.icon-option').classList.add('selected');
+        
+        // Store the selection
+        this.currentSelectedIcon = iconUrl;
+        
+        // If there's a callback, call it with the selected icon
+        if (this.iconPickerCallback) {
+            this.iconPickerCallback(iconUrl, iconType);
+        }
+        
+        // Close the picker
+        this.closeIconPicker();
+    }
+
+    // Icon picker callback handlers
+    handleAddChildIconSelect(iconUrl, iconType) {
+        const mainCircle = document.getElementById('add-child-avatar-preview-circle');
+        
+        if (!mainCircle) return;
+
+        // Clear existing preview
+        mainCircle.innerHTML = '';
+
+        // All new icon types are images from DiceBear API
+        if (iconType === 'robot' || iconType === 'adventurer' || iconType === 'emoji') {
+            // Put the icon directly in the main avatar circle
+            mainCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            mainCircle.dataset.avatarUrl = iconUrl;
+        }
+
+        // Update the preview circle
+        this.updateAddChildAvatarPreview();
+    }
+
+    handleEditChildIconSelect(iconUrl, iconType) {
+        const mainCircle = document.getElementById('edit-child-avatar-preview-circle');
+        
+        if (!mainCircle) return;
+
+        // Clear existing preview
+        mainCircle.innerHTML = '';
+
+        // All new icon types are images from DiceBear API
+        if (iconType === 'robot' || iconType === 'adventurer' || iconType === 'emoji') {
+            // Put the icon directly in the main avatar circle
+            mainCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            mainCircle.dataset.avatarUrl = iconUrl;
+        }
+
+        // Update the preview circle
+        this.updateEditChildAvatarPreview2();
+    }
+
+    handlePageEditChildIconSelect(iconUrl, iconType) {
+        const previewCircle = document.getElementById('page-edit-child-avatar-preview-circle');
+        const form = document.getElementById('page-edit-child-form');
+        
+        if (!previewCircle || !form) return;
+
+        // Clear existing preview
+        previewCircle.innerHTML = '';
+
+        // All new icon types are images from DiceBear API
+        if (iconType === 'robot' || iconType === 'adventurer' || iconType === 'emoji') {
+            // Put the icon directly in the main avatar circle
+            previewCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            
+            // Store the icon URL in the form for submission
+            form.dataset.avatarUrl = iconUrl;
+        }
+    }
+
+    async handlePageEditChildSave() {
+        const form = document.getElementById('page-edit-child-form');
+        const childId = form.dataset.childId;
+        
+        if (!childId) {
+            this.showToast('No child selected for editing', 'error');
+            return;
+        }
+
+        const name = document.getElementById('page-edit-child-name').value.trim();
+        const age = parseInt(document.getElementById('page-edit-child-age').value);
+        const avatarColor = document.getElementById('page-edit-child-color').value;
+        const avatarUrl = form.dataset.avatarUrl || null;
+        const avatarFile = form.dataset.avatarFile || null;
+
+        if (!name || !age) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const result = await this.apiClient.updateChild(childId, {
+                name,
+                age,
+                avatar_color: avatarColor,
+                avatar_url: avatarUrl,
+                avatar_file: avatarFile
+            });
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update child');
+            }
+
+            // Update the child in the local array
+            const childIndex = this.children.findIndex(c => c.id === childId);
+            if (childIndex !== -1) {
+                this.children[childIndex] = { ...this.children[childIndex], ...result.child };
+            }
+
+            // Refresh the manage children list
+            this.populateManageChildrenList();
+            
+            // Also refresh the children list in the main app
+            this.renderChildren();
+
+            this.showToast(`${name} has been updated successfully!`, 'success');
+            
+            // Close the page modal instead of advancing to next child
+            this.closeEditChildrenPage();
+            
+        } catch (error) {
+            console.error('Error updating child:', error);
+            this.showToast('Failed to update child. Please try again.', 'error');
+        }
     }
 
     nextChild() {
@@ -985,27 +1258,30 @@ class FamilyChoreChart {
     }
 
     updatePageEditChildAvatarPreview(child) {
-        const avatarPreview = document.getElementById('page-edit-child-avatar-preview');
         const avatarPreviewCircle = document.getElementById('page-edit-child-avatar-preview-circle');
+        const form = document.getElementById('page-edit-child-form');
+        
+        if (!avatarPreviewCircle || !form) return;
+        
+        // Clear the circle first
+        avatarPreviewCircle.innerHTML = '';
         
         if (child.avatar_url) {
-            avatarPreview.innerHTML = `<img src="${child.avatar_url}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
-            avatarPreview.dataset.avatarUrl = child.avatar_url;
-            avatarPreview.dataset.avatarFile = '';
+            // Show the current avatar image in the main circle
+            avatarPreviewCircle.innerHTML = `<img src="${child.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            form.dataset.avatarUrl = child.avatar_url;
+            form.dataset.avatarFile = '';
         } else if (child.avatar_file) {
-            avatarPreview.innerHTML = `<img src="${child.avatar_file}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`;
-            avatarPreview.dataset.avatarUrl = '';
-            avatarPreview.dataset.avatarFile = child.avatar_file;
+            // Show the current avatar file in the main circle
+            avatarPreviewCircle.innerHTML = `<img src="${child.avatar_file}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            form.dataset.avatarUrl = '';
+            form.dataset.avatarFile = child.avatar_file;
         } else {
-            avatarPreview.innerHTML = '';
-            avatarPreview.dataset.avatarUrl = '';
-            avatarPreview.dataset.avatarFile = '';
-            
-            // Show initial in circle
-            if (avatarPreviewCircle) {
-                avatarPreviewCircle.textContent = child.name.charAt(0).toUpperCase();
-                avatarPreviewCircle.style.background = child.avatar_color || '#6366f1';
-            }
+            // Show initial letter in circle
+            avatarPreviewCircle.textContent = child.name.charAt(0).toUpperCase();
+            avatarPreviewCircle.style.background = child.avatar_color || '#6366f1';
+            form.dataset.avatarUrl = '';
+            form.dataset.avatarFile = '';
         }
     }
 
@@ -1049,17 +1325,19 @@ class FamilyChoreChart {
         const removeAvatarBtn = document.getElementById('page-edit-avatar-remove-btn');
         if (removeAvatarBtn) {
             removeAvatarBtn.addEventListener('click', () => {
-                const avatarPreview = document.getElementById('page-edit-child-avatar-preview');
                 const avatarPreviewCircle = document.getElementById('page-edit-child-avatar-preview-circle');
-                
-                avatarPreview.innerHTML = '';
-                avatarPreview.dataset.avatarUrl = '';
-                avatarPreview.dataset.avatarFile = '';
+                const form = document.getElementById('page-edit-child-form');
                 
                 if (avatarPreviewCircle) {
                     const childName = document.getElementById('page-edit-child-name').value;
+                    avatarPreviewCircle.innerHTML = '';
                     avatarPreviewCircle.textContent = childName.charAt(0).toUpperCase();
                     avatarPreviewCircle.style.background = document.getElementById('page-edit-child-color').value;
+                }
+                
+                if (form) {
+                    form.dataset.avatarUrl = '';
+                    form.dataset.avatarFile = '';
                 }
             });
         }
@@ -1077,8 +1355,8 @@ class FamilyChoreChart {
         const name = document.getElementById('page-edit-child-name').value.trim();
         const age = parseInt(document.getElementById('page-edit-child-age').value);
         const avatarColor = document.getElementById('page-edit-child-color').value;
-        const avatarUrl = document.getElementById('page-edit-child-avatar-preview').dataset.avatarUrl || null;
-        const avatarFile = document.getElementById('page-edit-child-avatar-preview').dataset.avatarFile || null;
+        const avatarUrl = form.dataset.avatarUrl || null;
+        const avatarFile = form.dataset.avatarFile || null;
 
         if (!name || !age) {
             this.showToast('Please fill in all required fields', 'error');
@@ -1123,6 +1401,62 @@ class FamilyChoreChart {
                     this.showToast('All children have been updated!', 'success');
                 }
             }
+            
+        } catch (error) {
+            console.error('Error updating child:', error);
+            this.showToast('Failed to update child. Please try again.', 'error');
+        }
+    }
+
+    async handleEditChildModal() {
+        const form = document.getElementById('edit-child-form');
+        const childId = form.dataset.childId;
+        
+        if (!childId) {
+            this.showToast('No child selected for editing', 'error');
+            return;
+        }
+
+        const name = document.getElementById('edit-child-name').value.trim();
+        const age = parseInt(document.getElementById('edit-child-age').value);
+        const avatarColor = document.getElementById('edit-child-color').value;
+        const avatarUrl = document.getElementById('edit-child-avatar-preview-circle').dataset.avatarUrl || null;
+        const avatarFile = document.getElementById('edit-child-avatar-preview-circle').dataset.avatarFile || null;
+
+        if (!name || !age) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const result = await this.apiClient.updateChild(childId, {
+                name,
+                age,
+                avatar_color: avatarColor,
+                avatar_url: avatarUrl,
+                avatar_file: avatarFile
+            });
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update child');
+            }
+
+            // Update the child in the local array
+            const childIndex = this.children.findIndex(c => c.id === childId);
+            if (childIndex !== -1) {
+                this.children[childIndex] = { ...this.children[childIndex], ...result.child };
+            }
+
+            // Refresh the manage children list
+            this.populateManageChildrenList();
+            
+            // Also refresh the children list in the main app
+            this.renderChildren();
+
+            this.showToast(`${name} has been updated successfully!`, 'success');
+            
+            // Close the modal
+            this.hideModal('edit-child-modal');
             
         } catch (error) {
             console.error('Error updating child:', error);
@@ -1260,7 +1594,7 @@ class FamilyChoreChart {
             const color = document.getElementById('child-color').value;
             let avatarUrl = '';
             let avatarFile = '';
-            const avatarPreview = document.getElementById('child-avatar-preview');
+            const avatarPreview = document.getElementById('add-child-avatar-preview-circle');
             if (avatarPreview) {
                 if (avatarPreview.dataset.avatarUrl) {
                     avatarUrl = avatarPreview.dataset.avatarUrl;
@@ -1704,7 +2038,7 @@ class FamilyChoreChart {
         // Update display
         this.updateCurrentThemeDisplay();
         
-        this.showToast('Seasonal theme disabled', 'info');
+        // Theme disabled - no need for toast notification
     }
 
     async loadChildrenList() {
@@ -2055,7 +2389,6 @@ class FamilyChoreChart {
                     const result = await this.apiClient.updateChild(child.id, updates);
                     if (result.success) {
                         await this.loadChildrenList();
-                        this.showToast('Child updated!', 'success');
                     } else {
                         this.showToast(result.error || 'Failed to update child', 'error');
                     }
@@ -3573,17 +3906,7 @@ class FamilyChoreChart {
             });
         }
 
-        // Demo loading button
-        const demoLoadingBtn = document.getElementById('demo-loading-btn');
-        if (demoLoadingBtn) {
-            demoLoadingBtn.addEventListener('click', async () => {
-                this.setButtonLoading(demoLoadingBtn, true);
-                // Simulate a 2-second operation
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                this.setButtonLoading(demoLoadingBtn, false);
-                this.showToast('Demo loading completed!', 'success');
-            });
-        }
+        // Demo loading button is now handled by demo-data.js
         
         // Add notification handlers
         this.addNotificationHandlers();
@@ -7458,5 +7781,24 @@ function nextChild() {
 function previousChild() {
     if (app) {
         app.previousChild();
+    }
+}
+
+// Icon Picker Functions
+function openIconPicker(currentIcon = '', callback = null) {
+    if (app) {
+        app.openIconPicker(currentIcon, callback);
+    }
+}
+
+function closeIconPicker() {
+    if (app) {
+        app.closeIconPicker();
+    }
+}
+
+function selectIcon(iconUrl, iconType) {
+    if (app) {
+        app.selectIcon(iconUrl, iconType);
     }
 }

@@ -3104,7 +3104,22 @@ body.modal-open {
   border: 2px dashed #e67e22;
 } 
 
-/* Make color picker input a circle and match color swatches */
+/* Color picker row layout */
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.color-picker-row .selected-color-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    flex-shrink: 0;
+}
+
 .color-picker-row input[type="color"] {
     width: 30px;
     height: 30px;
@@ -3114,9 +3129,14 @@ body.modal-open {
     padding: 0;
     background: none;
     cursor: pointer;
-    display: inline-block;
-    vertical-align: middle;
-    margin: 0;
+    flex-shrink: 0;
+}
+
+.color-picker-row .color-presets {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 /* DiceBear avatar button styles */
@@ -3145,8 +3165,7 @@ body.modal-open {
     display: block;
 }
 
-/* Avatar preview circle always a circle and centered */
-.avatar-upload-preview,
+/* Avatar circle styling */
 .avatar-circle {
     width: 48px;
     height: 48px;
@@ -3231,7 +3250,162 @@ body.modal-open {
     justify-content: center;
 }
 
-/* Page Modal - Uses existing modal styles with custom sizing */
+/* Icon Picker Modal - v20250109-16 - Three tabs: Robots, Adventurers, Fun Emojis */
+.icon-picker-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--space-2);
+    justify-content: center;
+}
+
+.icon-tab {
+    background: none;
+    border: none;
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.icon-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+    transform: translateY(-1px);
+}
+
+.icon-tab.active {
+    color: white;
+    border-bottom-color: var(--primary);
+    background: var(--primary);
+    transform: translateY(-1px);
+}
+
+.icon-picker-content {
+    position: relative;
+}
+
+.icon-tab-content {
+    display: none;
+}
+
+.icon-tab-content.active {
+    display: block;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--space-3);
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--space-4);
+    justify-items: center;
+}
+
+.icon-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-3);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--text-primary);
+    width: 100%;
+    max-width: 80px;
+    min-height: 100px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.icon-option:hover {
+    border-color: var(--primary);
+    background: var(--bg-hover);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+}
+
+.icon-option.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(99, 102, 241, 0.1);
+    transform: scale(1.02);
+}
+
+.icon-option img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: var(--space-2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.icon-option .icon-emoji {
+    font-size: 36px;
+    margin-bottom: var(--space-2);
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.icon-option .icon-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-muted);
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: var(--space-1);
+}
+
+/* Removed tooltip styling - using small labels instead for better mobile support */
+
+.icon-option.selected img {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Responsive design for icon picker */
+@media (max-width: 768px) {
+    .icon-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: var(--space-2);
+        padding: var(--space-3);
+    }
+    
+    .icon-option {
+        max-width: 70px;
+        min-height: 90px;
+        padding: var(--space-2);
+    }
+    
+    .icon-option img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .icon-option .icon-emoji {
+        font-size: 28px;
+    }
+    
+    .icon-tab {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+}
+
+/* Page Modal - Uses existing modal styles with custom sizing - v20250109-7 */
 .page-modal {
     position: fixed;
     top: 0;
@@ -3240,10 +3414,13 @@ body.modal-open {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1000;
     backdrop-filter: blur(4px);
+    padding: 2rem 1rem 1rem 1rem;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .page-modal.hidden {
@@ -3256,10 +3433,11 @@ body.modal-open {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 90%;
     max-width: 800px;
-    max-height: 90vh;
+    max-height: calc(100vh - 4rem);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    margin: 0 auto;
 }
 
 .page-modal-header {
@@ -3516,30 +3694,7 @@ body.modal-open {
     background: var(--gray-500);
 }
 
-.icon-option {
-    width: 40px;
-    height: 40px;
-    border: 2px solid var(--gray-300);
-    border-radius: var(--radius);
-    background: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: all 0.2s ease;
-}
-
-.icon-option:hover {
-    border-color: var(--primary);
-    transform: scale(1.05);
-}
-
-.icon-option.active {
-    border-color: var(--primary);
-    background: var(--primary);
-    color: white;
-}
+/* Removed conflicting icon-option styles - using the main icon picker styles instead */
 
 .upgrade-banner {
     display: flex;
@@ -6531,6 +6686,52 @@ body.modal-open {
     display: flex;
     gap: var(--space-3);
     flex-wrap: wrap;
+}
+
+/* Desktop Navigation Buttons */
+.desktop-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    min-width: auto;
+    white-space: nowrap;
+}
+
+.desktop-nav-btn .nav-icon {
+    font-size: var(--font-size-base);
+    line-height: 1;
+}
+
+.desktop-nav-btn .nav-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+/* Desktop nav button hover effects */
+.desktop-nav-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.desktop-nav-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive: Hide labels on smaller screens */
+@media (max-width: 768px) {
+    .desktop-nav-btn .nav-label {
+        display: none;
+    }
+    
+    .desktop-nav-btn {
+        padding: var(--space-2);
+        min-width: 40px;
+        justify-content: center;
+    }
 }
 
 /* Hamburger menu button */
