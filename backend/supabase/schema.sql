@@ -20,6 +20,8 @@ CREATE TABLE children (
     name TEXT NOT NULL,
     age INTEGER CHECK (age >= 0 AND age <= 18),
     avatar_color TEXT DEFAULT '#6366f1',
+    avatar_url TEXT, -- URL for avatar image from DiceBear API or other external source
+    avatar_file TEXT, -- File path for uploaded avatar image
     user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -120,6 +122,10 @@ CREATE INDEX idx_family_settings_user_id ON family_settings(user_id);
 CREATE INDEX idx_contact_submissions_user_id ON contact_submissions(user_id);
 CREATE INDEX idx_contact_submissions_status ON contact_submissions(status);
 CREATE INDEX idx_contact_submissions_timestamp ON contact_submissions(timestamp);
+
+-- Avatar indexes for performance
+CREATE INDEX idx_children_avatar_url ON children(avatar_url);
+CREATE INDEX idx_children_avatar_file ON children(avatar_file);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
