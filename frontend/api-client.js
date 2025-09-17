@@ -200,6 +200,11 @@ class ApiClient {
     // Children Methods
     async getChildren() {
         try {
+            if (!this.currentUser || !this.currentUser.id) {
+                console.log('No current user - returning empty children array');
+                return [];
+            }
+            
             console.log('Getting children for user:', this.currentUser?.id);
             
             // Check if we're in a PIN session
@@ -300,6 +305,11 @@ class ApiClient {
     // Chores Methods
     async getChores(childId = null) {
         try {
+            if (!this.currentUser || !this.currentUser.id) {
+                console.log('No current user - returning empty chores array');
+                return [];
+            }
+            
             // Check if we're in a PIN session
             const pinSessionStr = localStorage.getItem('chorestar_pin_session');
             let userId = this.currentUser.id;
@@ -531,7 +541,11 @@ class ApiClient {
                 user_id: this.currentUser.id,
                 daily_reward_cents: 7,
                 weekly_bonus_cents: 1,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                currency_code: this.detectCurrency(),
+                locale: navigator.language || 'en-US',
+                date_format: 'auto',
+                language: 'en'
             };
 
             const { data, error } = await this.supabase
@@ -679,6 +693,26 @@ class ApiClient {
         } catch (error) {
             console.error('Error getting subscription type:', error);
             return 'free';
+        }
+    }
+
+    async updateSubscriptionStatus(subscriptionType) {
+        try {
+            const { data: { user } } = await this.supabase.auth.getUser();
+            if (!user) throw new Error('User not authenticated');
+
+            const { data, error } = await this.supabase
+                .from('profiles')
+                .update({ subscription_type: subscriptionType })
+                .eq('id', user.id)
+                .select();
+
+            if (error) throw error;
+            console.log('Subscription status updated:', subscriptionType);
+            return data;
+        } catch (error) {
+            console.error('Error updating subscription status:', error);
+            throw error;
         }
     }
 
@@ -865,6 +899,56 @@ class ApiClient {
             console.error('Contact form submission error:', error);
             return { success: false, error: error.message };
         }
+    }
+    
+    detectCurrency() {
+        // Detect currency based on user's locale
+        const locale = navigator.language || 'en-US';
+        const country = locale.split('-')[1];
+        
+        const currencyMap = {
+            'US': 'USD',
+            'GB': 'GBP',
+            'CA': 'CAD',
+            'AU': 'AUD',
+            'DE': 'EUR',
+            'FR': 'EUR',
+            'IT': 'EUR',
+            'ES': 'EUR',
+            'NL': 'EUR',
+            'BE': 'EUR',
+            'AT': 'EUR',
+            'IE': 'EUR',
+            'FI': 'EUR',
+            'PT': 'EUR',
+            'LU': 'EUR',
+            'CY': 'EUR',
+            'MT': 'EUR',
+            'SK': 'EUR',
+            'SI': 'EUR',
+            'EE': 'EUR',
+            'LV': 'EUR',
+            'LT': 'EUR',
+            'JP': 'JPY',
+            'CN': 'CNY',
+            'IN': 'INR',
+            'BR': 'BRL',
+            'MX': 'MXN',
+            'RU': 'RUB',
+            'KR': 'KRW',
+            'SG': 'SGD',
+            'HK': 'HKD',
+            'NZ': 'NZD',
+            'CH': 'CHF',
+            'SE': 'SEK',
+            'NO': 'NOK',
+            'DK': 'DKK',
+            'PL': 'PLN',
+            'CZ': 'CZK',
+            'HU': 'HUF'
+        };
+        
+        return currencyMap[country] || 'USD';
     }
 }
 
