@@ -57,6 +57,10 @@ CREATE TABLE family_settings (
     daily_reward_cents INTEGER DEFAULT 7 CHECK (daily_reward_cents >= 0),
     weekly_bonus_cents INTEGER DEFAULT 1 CHECK (weekly_bonus_cents >= 0),
     timezone TEXT DEFAULT 'UTC',
+    currency_code TEXT DEFAULT 'USD' CHECK (currency_code ~ '^[A-Z]{3}$'),
+    locale TEXT DEFAULT 'en-US' CHECK (locale ~ '^[a-z]{2}-[A-Z]{2}$'),
+    date_format TEXT DEFAULT 'auto' CHECK (date_format IN ('auto', 'MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD', 'DD.MM.YYYY')),
+    language TEXT DEFAULT 'en' CHECK (language IN ('en', 'es', 'fr', 'de')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -119,6 +123,8 @@ CREATE INDEX idx_chores_category ON chores(category);
 CREATE INDEX idx_chore_completions_chore_id ON chore_completions(chore_id);
 CREATE INDEX idx_chore_completions_week ON chore_completions(week_start, day_of_week);
 CREATE INDEX idx_family_settings_user_id ON family_settings(user_id);
+CREATE INDEX idx_family_settings_currency ON family_settings(currency_code);
+CREATE INDEX idx_family_settings_locale ON family_settings(locale);
 CREATE INDEX idx_contact_submissions_user_id ON contact_submissions(user_id);
 CREATE INDEX idx_contact_submissions_status ON contact_submissions(status);
 CREATE INDEX idx_contact_submissions_timestamp ON contact_submissions(timestamp);
