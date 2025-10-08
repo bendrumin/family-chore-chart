@@ -97,16 +97,34 @@ struct ChildDetailCard: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            // Avatar
-            Circle()
-                .fill(Color.fromString(child.avatarColor))
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Text(child.initials)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                )
+            // Avatar with edit button overlay
+            ZStack(alignment: .topTrailing) {
+                Circle()
+                    .fill(Color.fromString(child.avatarColor))
+                    .frame(width: 80, height: 80)
+                    .overlay(
+                        Text(child.initials)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    )
+                
+                // Edit button
+                Button(action: { showingEditSheet = true }) {
+                    Circle()
+                        .fill(Color.choreStarPrimary)
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "pencil")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        )
+                        .shadow(color: Color.choreStarPrimary.opacity(0.4), radius: 4, x: 0, y: 2)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .offset(x: 8, y: -8)
+            }
             
             // Child info
             VStack(spacing: 8) {
