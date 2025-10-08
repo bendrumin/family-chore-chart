@@ -65,3 +65,11 @@ chorestar-emails.csv
 chorestar-users.json
 *user-data*.json
 *email-list*.csv
+
+# iOS Configuration with secrets
+ChoreStar-iOS/ChoreStar/Info.plist
+
+# Xcode user-specific files
+**/xcuserdata/
+**/*.xcuserstate
+**/DerivedData/
