@@ -18,7 +18,25 @@ struct AddEditChoreView: View {
     @State private var errorMessage: String?
     
     private let categories = ["Bedroom", "Kitchen", "Bathroom", "Pets", "Homework", "General", "Outdoor", "Personal"]
-    private let icons = ["star.fill", "house.fill", "bed.double", "fork.knife", "pawprint", "book.fill", "trash.fill", "shower.fill", "leaf.fill", "tshirt.fill", "trophy.fill", "heart.fill"]
+    
+    // Emojis matching web app
+    private let icons = [
+        // Household
+        "📝", "🛏️", "🧹", "🧺", "🍽️", "🚿", "🧽", "🗑️", "🚪", "🪟",
+        // Personal
+        "👕", "👖", "👟", "🎒", "🧸",
+        // School
+        "📚", "📖", "✏️", "🎨", "🧠",
+        // Tech
+        "📱", "💻", "🎮",
+        // Pets
+        "🐕", "🐱", "🐦", "🐠", "🐹",
+        // Nature
+        "🌱", "🌺", "🌳", "🌿", "🍃",
+        // Transport
+        "🚗", "🚲", "🛴", "🏠"
+    ]
+    
     private let colors = ["blue", "green", "orange", "purple", "pink", "red", "yellow", "teal", "indigo", "mint"]
     
     init(chore: Chore? = nil, preselectedChildId: UUID? = nil) {
@@ -28,7 +46,7 @@ struct AddEditChoreView: View {
         _rewardDollars = State(initialValue: chore?.reward ?? 1.0)
         _description = State(initialValue: chore?.description ?? "")
         _category = State(initialValue: chore?.category ?? "General")
-        _selectedIcon = State(initialValue: chore?.icon ?? "star.fill")
+        _selectedIcon = State(initialValue: chore?.icon ?? "📝")
         _selectedColor = State(initialValue: chore?.color ?? "blue")
         _notes = State(initialValue: chore?.notes ?? "")
     }
@@ -230,17 +248,24 @@ struct IconOption: View {
         Button(action: onTap) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.fromString(color).opacity(0.2))
-                    .frame(width: 50, height: 50)
+                    .fill(Color.fromString(color).opacity(0.15))
+                    .frame(width: 55, height: 55)
                 
-                Image(systemName: iconName)
-                    .font(.title3)
-                    .foregroundColor(Color.fromString(color))
+                // Display emoji
+                Text(iconName)
+                    .font(.system(size: 28))
                 
                 if isSelected {
                     RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Color.choreStarPrimary, lineWidth: 3)
-                        .frame(width: 50, height: 50)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.choreStarPrimary, Color.choreStarSecondary],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                        .frame(width: 55, height: 55)
                 }
             }
             .scaleEffect(isSelected ? 1.1 : 1.0)
