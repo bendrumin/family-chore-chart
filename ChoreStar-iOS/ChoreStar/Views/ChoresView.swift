@@ -3,6 +3,7 @@ import SwiftUI
 struct ChoresView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var selectedFilter: ChoreFilter = .all
+    @State private var showingAddChore = false
 
     enum ChoreFilter: String, CaseIterable {
         case all = "All"
@@ -100,6 +101,20 @@ struct ChoresView: View {
             .background(Color.choreStarBackground)
             .navigationTitle("Chores")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        showingAddChore = true
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.choreStarGradient)
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddChore) {
+                AddEditChoreView()
+            }
         }
     }
 }
@@ -165,6 +180,8 @@ struct ChoreGroupCard: View {
 struct EnhancedChoreRow: View {
     let chore: Chore
     let manager: SupabaseManager
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
@@ -233,6 +250,28 @@ struct EnhancedChoreRow: View {
         .cornerRadius(12)
         .opacity(isCompleted ? 0.7 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: isCompleted)
+        .contextMenu {
+            Button(action: { showingEditSheet = true }) {
+                Label("Edit", systemImage: "pencil")
+            }
+            
+            Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            AddEditChoreView(chore: chore)
+        }
+        .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    try? await manager.deleteChore(choreId: chore.id)
+                }
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
     }
 }
 

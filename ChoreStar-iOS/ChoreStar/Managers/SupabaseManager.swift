@@ -450,6 +450,197 @@ class SupabaseManager: ObservableObject {
         }
     }
     
+    // MARK: - Children Management
+    
+    func createChild(name: String, age: Int, avatarColor: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        guard let uid = await MainActor.run({ debugUserId }) else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID"])
+        }
+        
+        struct NewChildRow: Encodable {
+            let name: String
+            let age: Int
+            let avatar_color: String
+            let user_id: String
+            let child_access_enabled: Bool
+        }
+        
+        let newChild = NewChildRow(
+            name: name,
+            age: age,
+            avatar_color: avatarColor,
+            user_id: uid,
+            child_access_enabled: false
+        )
+        
+        try await client.database
+            .from("children")
+            .insert(newChild)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Child created: \(name)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
+    func updateChild(childId: UUID, name: String?, age: Int?, avatarColor: String?, childPin: String?, childAccessEnabled: Bool?) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        var updates: [String: Any] = [:]
+        if let name = name { updates["name"] = name }
+        if let age = age { updates["age"] = age }
+        if let avatarColor = avatarColor { updates["avatar_color"] = avatarColor }
+        if let childPin = childPin { updates["child_pin"] = childPin }
+        if let childAccessEnabled = childAccessEnabled { updates["child_access_enabled"] = childAccessEnabled }
+        updates["updated_at"] = ISO8601DateFormatter().string(from: Date())
+        
+        try await client.database
+            .from("children")
+            .update(updates)
+            .eq("id", value: childId.uuidString)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Child updated: \(childId)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
+    func deleteChild(childId: UUID) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        try await client.database
+            .from("children")
+            .delete()
+            .eq("id", value: childId.uuidString)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Child deleted: \(childId)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
+    // MARK: - Chores Management
+    
+    func createChore(name: String, childId: UUID, rewardCents: Int, description: String?, category: String?, icon: String?, color: String?, notes: String?) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        guard let uid = await MainActor.run({ debugUserId }) else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID"])
+        }
+        
+        struct NewChoreRow: Encodable {
+            let name: String
+            let child_id: String
+            let user_id: String
+            let reward_cents: Int
+            let description: String?
+            let category: String?
+            let icon: String?
+            let color: String?
+            let notes: String?
+            let is_active: Bool
+        }
+        
+        let newChore = NewChoreRow(
+            name: name,
+            child_id: childId.uuidString,
+            user_id: uid,
+            reward_cents: rewardCents,
+            description: description,
+            category: category,
+            icon: icon,
+            color: color,
+            notes: notes,
+            is_active: true
+        )
+        
+        try await client.database
+            .from("chores")
+            .insert(newChore)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Chore created: \(name)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
+    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, description: String?, category: String?, icon: String?, color: String?, notes: String?) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        var updates: [String: Any] = [:]
+        if let name = name { updates["name"] = name }
+        if let childId = childId { updates["child_id"] = childId.uuidString }
+        if let rewardCents = rewardCents { updates["reward_cents"] = rewardCents }
+        if let description = description { updates["description"] = description }
+        if let category = category { updates["category"] = category }
+        if let icon = icon { updates["icon"] = icon }
+        if let color = color { updates["color"] = color }
+        if let notes = notes { updates["notes"] = notes }
+        updates["updated_at"] = ISO8601DateFormatter().string(from: Date())
+        
+        try await client.database
+            .from("chores")
+            .update(updates)
+            .eq("id", value: choreId.uuidString)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Chore updated: \(choreId)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
+    func deleteChore(choreId: UUID) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        try await client.database
+            .from("chores")
+            .delete()
+            .eq("id", value: choreId.uuidString)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Chore deleted: \(choreId)"
+        }
+        
+        await loadRemoteData()
+        #endif
+    }
+    
     // Demo data for testing
     @MainActor
     func loadSampleData() {

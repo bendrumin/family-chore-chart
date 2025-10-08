@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChildrenView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @State private var showingAddChild = false
 
     var body: some View {
         NavigationView {
@@ -48,6 +49,20 @@ struct ChildrenView: View {
             .background(Color.choreStarBackground)
             .navigationTitle("Family")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        showingAddChild = true
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.choreStarGradient)
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddChild) {
+                AddEditChildView()
+            }
         }
     }
 }
@@ -56,6 +71,8 @@ struct ChildDetailCard: View {
     let child: Child
     let index: Int
     let manager: SupabaseManager
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
     
     private var childChores: [Chore] {
         manager.chores.filter { $0.childId == child.id }
@@ -145,6 +162,28 @@ struct ChildDetailCard: View {
         .background(Color.choreStarCardBackground)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .contextMenu {
+            Button(action: { showingEditSheet = true }) {
+                Label("Edit", systemImage: "pencil")
+            }
+            
+            Button(role: .destructive, action: { showingDeleteAlert = true }) {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            AddEditChildView(child: child)
+        }
+        .alert("Delete \(child.name)?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    try? await manager.deleteChild(childId: child.id)
+                }
+            }
+        } message: {
+            Text("This will also delete all of \(child.name)'s chores. This action cannot be undone.")
+        }
     }
 }
 
