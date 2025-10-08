@@ -592,19 +592,31 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        var updates: [String: Any] = [:]
-        if let name = name { updates["name"] = name }
-        if let age = age { updates["age"] = age }
-        if let avatarColor = avatarColor { updates["avatar_color"] = avatarColor }
-        if let childPin = childPin { updates["child_pin"] = childPin }
-        if let childAccessEnabled = childAccessEnabled { updates["child_access_enabled"] = childAccessEnabled }
-        updates["updated_at"] = ISO8601DateFormatter().string(from: Date())
+        struct ChildUpdate: Encodable {
+            let name: String?
+            let age: Int?
+            let avatar_color: String?
+            let child_pin: String?
+            let child_access_enabled: Bool?
+            let updated_at: String
+        }
         
-        try await client.database
+        let update = ChildUpdate(
+            name: name,
+            age: age,
+            avatar_color: avatarColor,
+            child_pin: childPin,
+            child_access_enabled: childAccessEnabled,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+        
+        let _: [ChildRow] = try await client.database
             .from("children")
-            .update(updates)
+            .update(update)
             .eq("id", value: childId.uuidString)
+            .select()
             .execute()
+            .value
         
         await MainActor.run {
             debugLastError = "Child updated: \(childId)"
@@ -693,22 +705,37 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        var updates: [String: Any] = [:]
-        if let name = name { updates["name"] = name }
-        if let childId = childId { updates["child_id"] = childId.uuidString }
-        if let rewardCents = rewardCents { updates["reward_cents"] = rewardCents }
-        if let description = description { updates["description"] = description }
-        if let category = category { updates["category"] = category }
-        if let icon = icon { updates["icon"] = icon }
-        if let color = color { updates["color"] = color }
-        if let notes = notes { updates["notes"] = notes }
-        updates["updated_at"] = ISO8601DateFormatter().string(from: Date())
+        struct ChoreUpdate: Encodable {
+            let name: String?
+            let child_id: String?
+            let reward_cents: Int?
+            let description: String?
+            let category: String?
+            let icon: String?
+            let color: String?
+            let notes: String?
+            let updated_at: String
+        }
         
-        try await client.database
+        let update = ChoreUpdate(
+            name: name,
+            child_id: childId?.uuidString,
+            reward_cents: rewardCents,
+            description: description,
+            category: category,
+            icon: icon,
+            color: color,
+            notes: notes,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+        
+        let _: [ChoreRow] = try await client.database
             .from("chores")
-            .update(updates)
+            .update(update)
             .eq("id", value: choreId.uuidString)
+            .select()
             .execute()
+            .value
         
         await MainActor.run {
             debugLastError = "Chore updated: \(choreId)"
