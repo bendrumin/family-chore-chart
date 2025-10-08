@@ -218,7 +218,7 @@ struct EnhancedChoreRow: View {
                     .font(.caption)
                     .foregroundColor(.choreStarAccent)
                 
-                Text("\(chore.reward, specifier: "%.2f")")
+                Text(String(format: "%.2f", chore.reward))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.choreStarAccent)

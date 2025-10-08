@@ -130,7 +130,7 @@ struct ChildDetailCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "dollarsign.circle.fill")
                         .foregroundColor(.choreStarAccent)
-                    Text("$\(totalEarnings, specifier: "%.2f")")
+                    Text(String(format: "$%.2f", totalEarnings))
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.choreStarTextPrimary)

@@ -77,7 +77,7 @@ struct ChildDetailView: View {
                         
                         StatCard(
                             icon: "dollarsign.circle.fill",
-                            value: "$\(totalEarnings, specifier: "%.2f")",
+                            value: String(format: "$%.2f", totalEarnings),
                             label: "Earned",
                             color: .choreStarAccent
                         )
@@ -263,7 +263,7 @@ struct ChildChoreCard: View {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.caption)
                     .foregroundStyle(Color.choreStarAccentGradient)
-                Text("\(chore.reward, specifier: "%.2f")")
+                Text(String(format: "%.2f", chore.reward))
                     .font(.subheadline)
                     .fontWeight(.bold)
                     .foregroundStyle(Color.choreStarAccentGradient)

@@ -370,7 +370,7 @@ struct ChoreCard: View {
                         Image(systemName: "dollarsign.circle.fill")
                             .font(.caption)
                             .foregroundStyle(Color.choreStarAccentGradient)
-                        Text("\(chore.reward, specifier: "%.2f")")
+                        Text(String(format: "%.2f", chore.reward))
                             .font(.subheadline)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.choreStarAccentGradient)
