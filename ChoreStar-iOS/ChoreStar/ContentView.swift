@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
     @State private var isLoading = true
+    @State private var showingChildAuth = false
 
     var body: some View {
         Group {
@@ -11,7 +12,34 @@ struct ContentView: View {
             } else if supabaseManager.isChildSession {
                 ChildMainView()
             } else if supabaseManager.isAuthenticated {
-                MainTabs()
+                ZStack(alignment: .bottomTrailing) {
+                    MainTabs()
+                    
+                    // Floating child mode button
+                    if supabaseManager.children.filter({ $0.hasChildAccess }).count > 0 {
+                        Button(action: {
+                            showingChildAuth = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "figure.child")
+                                    .font(.title3)
+                                Text("Kids")
+                                    .font(.headline)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 14)
+                            .background(Color.choreStarGradient)
+                            .cornerRadius(30)
+                            .shadow(color: Color.choreStarPrimary.opacity(0.4), radius: 12, x: 0, y: 4)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 100)
+                    }
+                }
+                .sheet(isPresented: $showingChildAuth) {
+                    ChildAuthView()
+                }
             } else {
                 AuthView()
             }
@@ -104,17 +132,7 @@ struct MainTabs: View {
     }
 }
 
-// Placeholder for child view
-struct ChildMainView: View {
-    var body: some View {
-        VStack {
-            Text("Child View")
-                .font(.title)
-            Text("Coming soon!")
-                .foregroundColor(.secondary)
-        }
-    }
-}
+// Child view is now in ChildMainView.swift
 
 #Preview {
     ContentView().environmentObject(SupabaseManager.shared)

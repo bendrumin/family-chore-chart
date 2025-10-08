@@ -118,13 +118,71 @@ class SupabaseManager: ObservableObject {
     }
     
     func checkChildSession() async {
-        // For now, just set to false
-        // This will be implemented when we add child account features
-        await MainActor.run {
-            isChildSession = false
-            currentChild = nil
-            childSession = nil
+        // Check if there's a saved child session
+        guard let savedChildId = UserDefaults.standard.string(forKey: "child_session_id"),
+              let childUUID = UUID(uuidString: savedChildId),
+              let sessionToken = UserDefaults.standard.string(forKey: "child_session_token") else {
+            await MainActor.run {
+                isChildSession = false
+                currentChild = nil
+                childSession = nil
+            }
+            return
         }
+        
+        // Find the child
+        let foundChild = await MainActor.run { children.first { $0.id == childUUID } }
+        
+        await MainActor.run {
+            if let child = foundChild {
+                self.currentChild = child
+                self.isChildSession = true
+                debugLastError = "Child session restored: \(child.name)"
+            } else {
+                isChildSession = false
+                currentChild = nil
+                childSession = nil
+            }
+        }
+    }
+    
+    func authenticateChild(childId: UUID, pin: String) async -> Bool {
+        let child = await MainActor.run { children.first { $0.id == childId } }
+        
+        guard let child = child,
+              let storedPin = child.childPin,
+              storedPin == pin else {
+            await MainActor.run {
+                debugLastError = "Child auth failed: invalid PIN"
+            }
+            return false
+        }
+        
+        // Create session
+        let sessionToken = UUID().uuidString
+        
+        await MainActor.run {
+            self.currentChild = child
+            self.isChildSession = true
+            debugLastError = "Child authenticated: \(child.name)"
+        }
+        
+        // Save session
+        UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
+        UserDefaults.standard.set(sessionToken, forKey: "child_session_token")
+        
+        return true
+    }
+    
+    func signOutChild() {
+        UserDefaults.standard.removeObject(forKey: "child_session_id")
+        UserDefaults.standard.removeObject(forKey: "child_session_token")
+        
+        isChildSession = false
+        currentChild = nil
+        childSession = nil
+        
+        debugLastError = "Child signed out"
     }
     
     func signIn(email: String, password: String) async {

@@ -23,6 +23,8 @@
 		A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234596 /* ViewModifiers.swift */; };
 		A1234567890ABCDEF1234597 /* AddEditChildView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234598 /* AddEditChildView.swift */; };
 		A1234567890ABCDEF1234599 /* AddEditChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459A /* AddEditChoreView.swift */; };
+		A1234567890ABCDEF123459B /* ChildAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459C /* ChildAuthView.swift */; };
+		A1234567890ABCDEF123459D /* ChildMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459E /* ChildMainView.swift */; };
 		A1234567890ABCDEF1234590 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF1234591 /* Supabase */; };
 /* End PBXBuildFile section */
 
@@ -44,6 +46,8 @@
 		A1234567890ABCDEF1234596 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF1234598 /* AddEditChildView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditChildView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF123459A /* AddEditChoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditChoreView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF123459C /* ChildAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildAuthView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF123459E /* ChildMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildMainView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF1234581 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -125,6 +129,8 @@
 				A1234567890ABCDEF1234598 /* AddEditChildView.swift */,
 				A1234567890ABCDEF1234579 /* ChoresView.swift */,
 				A1234567890ABCDEF123459A /* AddEditChoreView.swift */,
+				A1234567890ABCDEF123459C /* ChildAuthView.swift */,
+				A1234567890ABCDEF123459E /* ChildMainView.swift */,
 				A1234567890ABCDEF123457B /* SettingsView.swift */,
 			);
 			path = Views;
@@ -226,6 +232,8 @@
 				A1234567890ABCDEF1234597 /* AddEditChildView.swift in Sources */,
 				A1234567890ABCDEF123457A /* ChoresView.swift in Sources */,
 				A1234567890ABCDEF1234599 /* AddEditChoreView.swift in Sources */,
+				A1234567890ABCDEF123459B /* ChildAuthView.swift in Sources */,
+				A1234567890ABCDEF123459D /* ChildMainView.swift in Sources */,
 				A1234567890ABCDEF123457C /* SettingsView.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,

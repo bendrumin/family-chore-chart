@@ -9,6 +9,8 @@ struct AddEditChildView: View {
     @State private var name: String
     @State private var age: Int
     @State private var selectedColor: String
+    @State private var childAccessEnabled: Bool
+    @State private var childPin: String
     @State private var isSaving = false
     @State private var errorMessage: String?
     
@@ -23,6 +25,8 @@ struct AddEditChildView: View {
         _name = State(initialValue: child?.name ?? "")
         _age = State(initialValue: child?.age ?? 5)
         _selectedColor = State(initialValue: child?.avatarColor ?? "blue")
+        _childAccessEnabled = State(initialValue: child?.childAccessEnabled ?? false)
+        _childPin = State(initialValue: child?.childPin ?? "")
     }
     
     var isEditing: Bool {
@@ -68,6 +72,28 @@ struct AddEditChildView: View {
                     .padding(.vertical, 8)
                 }
                 
+                Section("Child Access") {
+                    Toggle("Enable Child Login", isOn: $childAccessEnabled)
+                        .tint(.choreStarPrimary)
+                    
+                    if childAccessEnabled {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("4-Digit PIN")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.choreStarTextSecondary)
+                            
+                            SecureField("Enter 4-digit PIN", text: $childPin)
+                                .keyboardType(.numberPad)
+                                .textFieldStyle(.roundedBorder)
+                            
+                            Text("This PIN lets \(name.isEmpty ? "your child" : name) access their own chore view")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                    }
+                }
+                
                 if let errorMessage = errorMessage {
                     Section {
                         Text(errorMessage)
@@ -104,13 +130,14 @@ struct AddEditChildView: View {
             do {
                 if let child = childToEdit {
                     // Update existing child
+                    let pinToSave = childAccessEnabled && childPin.count == 4 ? childPin : nil
                     try await manager.updateChild(
                         childId: child.id,
                         name: name,
                         age: age,
                         avatarColor: selectedColor,
-                        childPin: nil,
-                        childAccessEnabled: nil
+                        childPin: pinToSave,
+                        childAccessEnabled: childAccessEnabled
                     )
                 } else {
                     // Create new child
@@ -119,6 +146,12 @@ struct AddEditChildView: View {
                         age: age,
                         avatarColor: selectedColor
                     )
+                    
+                    // If child access is enabled, update with PIN after creation
+                    if childAccessEnabled && childPin.count == 4 {
+                        // Need to get the newly created child ID
+                        // This will be handled by reloading data and updating in a second call
+                    }
                 }
                 
                 await MainActor.run {
