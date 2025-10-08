@@ -632,7 +632,7 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        try await client.database
+        let _ = try await client.database
             .from("children")
             .delete()
             .eq("id", value: childId.uuidString)
@@ -751,7 +751,7 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        try await client.database
+        let _ = try await client.database
             .from("chores")
             .delete()
             .eq("id", value: choreId.uuidString)
