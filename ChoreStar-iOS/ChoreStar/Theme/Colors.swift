@@ -17,23 +17,29 @@ extension Color {
     static let choreStarTextSecondary = Color(red: 0.46, green: 0.46, blue: 0.46) // #757575
     
     // Gradients
-    static let choreStarGradient = LinearGradient(
-        colors: [Color.choreStarPrimary, Color.choreStarSecondary],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var choreStarGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.choreStarPrimary, Color.choreStarSecondary],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
     
-    static let choreStarAccentGradient = LinearGradient(
-        colors: [Color.choreStarAccent, Color(red: 1.0, green: 0.85, blue: 0.2)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var choreStarAccentGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.choreStarAccent, Color(red: 1.0, green: 0.85, blue: 0.2)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
     
-    static let choreStarSuccessGradient = LinearGradient(
-        colors: [Color.choreStarSuccess, Color(red: 0.4, green: 0.8, blue: 0.4)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var choreStarSuccessGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.choreStarSuccess, Color(red: 0.4, green: 0.8, blue: 0.4)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
     
     // Map string color names to actual colors
     static func fromString(_ colorName: String) -> Color {

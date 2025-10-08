@@ -28,7 +28,6 @@ struct AuthView: View {
                             )
                         )
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                        .floating(offset: 10, duration: 3.0)
                     
                     Text("ChoreStar")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
