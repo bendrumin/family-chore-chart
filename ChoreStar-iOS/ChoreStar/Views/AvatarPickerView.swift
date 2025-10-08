@@ -159,9 +159,9 @@ struct DiceBearAvatarOption: View {
                                     .strokeBorder(Color.choreStarBackground, lineWidth: 2)
                             )
                     case .failure(_), .empty:
-                        // Show colored circle while loading
+                        // Show subtle placeholder while loading
                         Circle()
-                            .fill(Color.fromString(color).opacity(0.3))
+                            .fill(Color.choreStarSecondary.opacity(0.2))
                             .frame(width: 70, height: 70)
                             .overlay(
                                 Circle()
