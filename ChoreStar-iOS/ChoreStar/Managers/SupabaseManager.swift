@@ -496,12 +496,10 @@ class SupabaseManager: ObservableObject {
                     reward_earned: chore.reward
                 )
                 
-                let _: [ChoreCompletionRow] = try await client.database
+                try await client.database
                     .from("chore_completions")
                     .insert(completion)
-                    .select()
                     .execute()
-                    .value
                 
                 await MainActor.run {
                     debugLastError = "Saved completion for chore: \(chore.name)"
@@ -551,7 +549,8 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        guard let uid = await MainActor.run({ debugUserId }) else {
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID"])
         }
         
@@ -571,12 +570,10 @@ class SupabaseManager: ObservableObject {
             child_access_enabled: false
         )
         
-        let _: [ChildRow] = try await client.database
+        try await client.database
             .from("children")
             .insert(newChild)
-            .select()
             .execute()
-            .value
         
         await MainActor.run {
             debugLastError = "Child created: \(name)"
@@ -610,13 +607,11 @@ class SupabaseManager: ObservableObject {
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
-        let _: [ChildRow] = try await client.database
+        try await client.database
             .from("children")
             .update(update)
             .eq("id", value: childId.uuidString)
-            .select()
             .execute()
-            .value
         
         await MainActor.run {
             debugLastError = "Child updated: \(childId)"
@@ -654,7 +649,8 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        guard let uid = await MainActor.run({ debugUserId }) else {
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID"])
         }
         
@@ -684,12 +680,10 @@ class SupabaseManager: ObservableObject {
             is_active: true
         )
         
-        let _: [ChoreRow] = try await client.database
+        try await client.database
             .from("chores")
             .insert(newChore)
-            .select()
             .execute()
-            .value
         
         await MainActor.run {
             debugLastError = "Chore created: \(name)"
@@ -729,13 +723,11 @@ class SupabaseManager: ObservableObject {
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
-        let _: [ChoreRow] = try await client.database
+        try await client.database
             .from("chores")
             .update(update)
             .eq("id", value: choreId.uuidString)
-            .select()
             .execute()
-            .value
         
         await MainActor.run {
             debugLastError = "Chore updated: \(choreId)"
