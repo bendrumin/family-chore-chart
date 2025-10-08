@@ -8,21 +8,50 @@ struct AvatarView: View {
         Group {
             if let avatarUrl = child.avatarUrl, !avatarUrl.isEmpty {
                 // DiceBear avatar from URL
-                AsyncImage(url: URL(string: avatarUrl)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    // Fallback while loading
-                    Circle()
-                        .fill(Color.fromString(child.avatarColor))
-                        .overlay(
-                            ProgressView()
-                                .tint(.white)
-                        )
+                AsyncImage(url: URL(string: avatarUrl)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: size, height: size)
+                            .clipShape(Circle())
+                    case .failure(_):
+                        // Fallback to initials if image fails to load
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: size, height: size)
+                            .overlay(
+                                Text(child.initials)
+                                    .font(.system(size: size * 0.4, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                            )
+                    case .empty:
+                        // Show initials while loading (no spinner)
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: size, height: size)
+                            .overlay(
+                                Text(child.initials)
+                                    .font(.system(size: size * 0.4, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                            )
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
-                .frame(width: size, height: size)
-                .clipShape(Circle())
                 
             } else if let avatarFile = child.avatarFile, !avatarFile.isEmpty {
                 // Emoji avatar

@@ -146,19 +146,31 @@ struct DiceBearAvatarOption: View {
         Button(action: onTap) {
             ZStack {
                 // Avatar preview using AsyncImage
-                AsyncImage(url: URL(string: avatarUrl)) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    ProgressView()
+                AsyncImage(url: URL(string: avatarUrl)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 70, height: 70)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.choreStarBackground, lineWidth: 2)
+                            )
+                    case .failure(_), .empty:
+                        // Show colored circle while loading
+                        Circle()
+                            .fill(Color.fromString(color).opacity(0.3))
+                            .frame(width: 70, height: 70)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.choreStarBackground, lineWidth: 2)
+                            )
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
-                .frame(width: 70, height: 70)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .strokeBorder(Color.choreStarBackground, lineWidth: 2)
-                )
                 
                 if isSelected {
                     Circle()

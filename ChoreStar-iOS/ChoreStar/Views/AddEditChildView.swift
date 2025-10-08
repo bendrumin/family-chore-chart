@@ -48,17 +48,32 @@ struct AddEditChildView: View {
                         VStack(spacing: 12) {
                             // Avatar preview
                             if let avatarUrl = avatarUrl, !avatarUrl.isEmpty {
-                                AsyncImage(url: URL(string: avatarUrl)) { image in
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                } placeholder: {
-                                    ProgressView()
+                                AsyncImage(url: URL(string: avatarUrl)) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 100, height: 100)
+                                            .clipShape(Circle())
+                                            .overlay(Circle().strokeBorder(Color.fromString(selectedColor), lineWidth: 3))
+                                            .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
+                                    case .failure(_), .empty:
+                                        // Show colored circle while loading or on error
+                                        Circle()
+                                            .fill(Color.fromString(selectedColor))
+                                            .frame(width: 100, height: 100)
+                                            .overlay(
+                                                Text(name.isEmpty ? "?" : String(name.prefix(2).uppercased()))
+                                                    .font(.largeTitle)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            )
+                                            .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
                                 }
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                                .overlay(Circle().strokeBorder(Color.fromString(selectedColor), lineWidth: 3))
-                                .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
                             } else if let avatarFile = avatarFile, !avatarFile.isEmpty {
                                 // Emoji avatar
                                 Circle()

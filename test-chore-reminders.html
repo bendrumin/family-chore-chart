@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chore Reminders - ChoreStar</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; text-align: center; }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { background: #5a67d8; transform: translateY(-1px); }
+        .status { 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            font-weight: 500;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .feature-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-list h3 { margin-top: 0; color: #495057; }
+        .feature-list ul { padding-left: 20px; }
+        .feature-list li { margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔔 Chore Reminders Test</h1>
+        
+        <div class="feature-list">
+            <h3>✨ New Features Added:</h3>
+            <ul>
+                <li><strong>Scheduled Reminders:</strong> Automatic notifications at 8AM, 4PM, and 7PM</li>
+                <li><strong>Smart Timing:</strong> 30-minute, 10-minute, and on-time reminders</li>
+                <li><strong>Personalized Messages:</strong> Each child gets their own reminder</li>
+                <li><strong>Premium Feature:</strong> Available for premium subscribers</li>
+                <li><strong>Configurable:</strong> Can be turned on/off in settings</li>
+            </ul>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div style="text-align: center;">
+            <button class="btn" onclick="requestPermission()">
+                📱 Enable Notifications
+            </button>
+            
+            <button class="btn" onclick="testReminder()">
+                ⏰ Test Chore Reminder
+            </button>
+            
+            <button class="btn" onclick="testUpcoming()">
+                📋 Test Upcoming Chores
+            </button>
+            
+            <button class="btn" onclick="scheduleDemo()">
+                ⏱️ Schedule Demo Reminders
+            </button>
+        </div>
+        
+        <div class="feature-list">
+            <h3>📱 How It Works:</h3>
+            <ul>
+                <li>Parents enable notifications in ChoreStar settings</li>
+                <li>System automatically schedules reminders for active chores</li>
+                <li>Kids get personalized push notifications on their devices</li>
+                <li>Notifications include "Open App" and "Mark Complete" actions</li>
+                <li>Reminder times are smart: morning, after-school, and evening</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+
+        async function requestPermission() {
+            if (!('Notification' in window)) {
+                showStatus('This browser does not support notifications', 'error');
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                showStatus('✅ Notifications enabled! You can now test chore reminders.', 'success');
+            } else {
+                showStatus('❌ Notifications denied. Please enable them in browser settings.', 'error');
+            }
+        }
+
+        function testReminder() {
+            if (Notification.permission !== 'granted') {
+                showStatus('Please enable notifications first', 'error');
+                return;
+            }
+
+            const notification = new Notification('⏰ Chore Reminder', {
+                body: 'Emma, don\'t forget to "Clean your room"!',
+                icon: '/favicon.ico',
+                tag: 'chore-reminder',
+                actions: [
+                    { action: 'open', title: 'Open App' },
+                    { action: 'remind_later', title: 'Remind Later' },
+                    { action: 'dismiss', title: 'Dismiss' }
+                ]
+            });
+
+            notification.onclick = () => {
+                showStatus('🎯 User clicked on chore reminder!', 'success');
+                notification.close();
+            };
+
+            showStatus('🔔 Test chore reminder sent!', 'success');
+        }
+
+        function testUpcoming() {
+            if (Notification.permission !== 'granted') {
+                showStatus('Please enable notifications first', 'error');
+                return;
+            }
+
+            const notification = new Notification('📋 Upcoming Chores', {
+                body: 'Chores coming up:\\n• Emma: Clean room\\n• Jake: Take out trash\\n• Sophie: Feed pets',
+                icon: '/favicon.ico',
+                tag: 'upcoming-chores'
+            });
+
+            notification.onclick = () => {
+                showStatus('📱 User opened upcoming chores!', 'success');
+                notification.close();
+            };
+
+            showStatus('📋 Upcoming chores notification sent!', 'success');
+        }
+
+        function scheduleDemo() {
+            if (Notification.permission !== 'granted') {
+                showStatus('Please enable notifications first', 'error');
+                return;
+            }
+
+            showStatus('⏱️ Scheduling demo reminders...', 'info');
+
+            // Schedule 3 demo reminders over the next 30 seconds
+            const reminders = [
+                { delay: 5000, child: 'Emma', chore: 'Clean room', time: 'in 30 minutes' },
+                { delay: 15000, child: 'Jake', chore: 'Take out trash', time: 'in 10 minutes' },
+                { delay: 25000, child: 'Sophie', chore: 'Feed pets', time: 'now' }
+            ];
+
+            reminders.forEach((reminder, index) => {
+                setTimeout(() => {
+                    const notification = new Notification(`⏰ Chore Reminder ${reminder.time}`, {
+                        body: `${reminder.child}, don't forget to "${reminder.chore}"!`,
+                        icon: '/favicon.ico',
+                        tag: `demo-reminder-${index}`,
+                        actions: [
+                            { action: 'open', title: 'Open App' },
+                            { action: 'complete', title: 'Mark Complete' },
+                            { action: 'dismiss', title: 'Dismiss' }
+                        ]
+                    });
+
+                    notification.onclick = () => {
+                        showStatus(`🎯 ${reminder.child} clicked on their chore reminder!`, 'success');
+                        notification.close();
+                    };
+                }, reminder.delay);
+            });
+
+            showStatus('✅ Demo reminders scheduled! You\'ll get 3 notifications over the next 30 seconds.', 'success');
+        }
+
+        // Check notification permission on load
+        window.addEventListener('load', () => {
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    showStatus('✅ Notifications are enabled and ready to test!', 'success');
+                } else if (Notification.permission === 'denied') {
+                    showStatus('❌ Notifications are blocked. Please enable them in browser settings.', 'error');
+                } else {
+                    showStatus('📱 Click "Enable Notifications" to test chore reminders.', 'info');
+                }
+            } else {
+                showStatus('❌ This browser does not support push notifications.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
