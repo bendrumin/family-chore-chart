@@ -434,32 +434,42 @@ class SupabaseManager: ObservableObject {
         guard let client = client else { return }
         
         do {
-            let today = Calendar.current.startOfDay(for: Date())
-            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+            let now = Date()
+            let calendar = Calendar.current
             
-            let formatter = ISO8601DateFormatter()
-            let todayString = formatter.string(from: today)
-            let tomorrowString = formatter.string(from: tomorrow)
+            // Get current day of week (0=Sunday, 1=Monday, etc.)
+            let dayOfWeek = calendar.component(.weekday, from: now) - 1
+            
+            // Get week start (Sunday)
+            let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let weekStartString = dateFormatter.string(from: weekStart)
+            
+            print("DEBUG: Loading completions for day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
             
             let completions: [ChoreCompletionRow] = try await client.database
                 .from("chore_completions")
                 .select()
-                .gte("completed_at", value: todayString)
-                .lt("completed_at", value: tomorrowString)
+                .eq("day_of_week", value: dayOfWeek)
+                .eq("week_start", value: weekStartString)
                 .execute()
                 .value
             
+            print("DEBUG: Loaded \(completions.count) completions for today")
+            
             var newCompletions: [UUID: Date] = [:]
             for completion in completions {
-                if let date = ISO8601DateFormatter().date(from: completion.completed_at) {
-                    newCompletions[completion.chore_id] = date
-                }
+                // Use current time as the completion date for display
+                newCompletions[completion.chore_id] = now
             }
             
             await MainActor.run {
                 self.choreCompletions = newCompletions
+                debugLastError = "Loaded \(completions.count) completions for today"
             }
         } catch {
+            print("DEBUG: Error loading completions: \(error)")
             await MainActor.run {
                 debugLastError = "Completions error: \(error.localizedDescription)"
             }
@@ -506,15 +516,25 @@ class SupabaseManager: ObservableObject {
             
             // Save to database
             do {
+                // Calculate day_of_week (0=Sunday, 1=Monday, etc.)
+                let calendar = Calendar.current
+                let dayOfWeek = calendar.component(.weekday, from: now) - 1 // Adjust from 1-7 to 0-6
+                
+                // Calculate week_start (Sunday of current week)
+                let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                let weekStartString = formatter.string(from: weekStart)
+                
                 let completion = ChoreCompletionRow(
                     id: UUID(),
                     chore_id: chore.id,
-                    child_id: chore.childId,
-                    completed_at: ISO8601DateFormatter().string(from: now),
-                    reward_earned: chore.reward
+                    day_of_week: dayOfWeek,
+                    week_start: weekStartString,
+                    completed_at: ISO8601DateFormatter().string(from: now)
                 )
                 
-                print("DEBUG: Calling database insert...")
+                print("DEBUG: Calling database insert with day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
                 try await client.database
                     .from("chore_completions")
                     .insert(completion)

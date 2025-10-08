@@ -147,7 +147,7 @@ struct ChoreRow: Codable {
 struct ChoreCompletionRow: Codable {
     let id: UUID
     let chore_id: UUID
-    let child_id: UUID
-    let completed_at: String
-    let reward_earned: Double?
+    let day_of_week: Int
+    let week_start: String
+    let completed_at: String?
 }
