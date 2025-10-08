@@ -25,6 +25,8 @@
 		A1234567890ABCDEF1234599 /* AddEditChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459A /* AddEditChoreView.swift */; };
 		A1234567890ABCDEF123459B /* ChildAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459C /* ChildAuthView.swift */; };
 		A1234567890ABCDEF123459D /* ChildMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459E /* ChildMainView.swift */; };
+		A1234567890ABCDEF123459F /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */; };
+		A1234567890ABCDEF12345A1 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A2 /* HistoryView.swift */; };
 		A1234567890ABCDEF1234590 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF1234591 /* Supabase */; };
 /* End PBXBuildFile section */
 
@@ -48,6 +50,8 @@
 		A1234567890ABCDEF123459A /* AddEditChoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditChoreView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF123459C /* ChildAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildAuthView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF123459E /* ChildMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildMainView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345A2 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF1234581 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,7 +135,9 @@
 				A1234567890ABCDEF123459A /* AddEditChoreView.swift */,
 				A1234567890ABCDEF123459C /* ChildAuthView.swift */,
 				A1234567890ABCDEF123459E /* ChildMainView.swift */,
+				A1234567890ABCDEF12345A2 /* HistoryView.swift */,
 				A1234567890ABCDEF123457B /* SettingsView.swift */,
+				A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -234,7 +240,9 @@
 				A1234567890ABCDEF1234599 /* AddEditChoreView.swift in Sources */,
 				A1234567890ABCDEF123459B /* ChildAuthView.swift in Sources */,
 				A1234567890ABCDEF123459D /* ChildMainView.swift in Sources */,
+				A1234567890ABCDEF12345A1 /* HistoryView.swift in Sources */,
 				A1234567890ABCDEF123457C /* SettingsView.swift in Sources */,
+				A1234567890ABCDEF123459F /* ChangePasswordView.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,
 			);

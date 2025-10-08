@@ -256,10 +256,36 @@ class SupabaseManager: ObservableObject {
                 chores = []
                 choreCompletions = [:]
                 debugLastError = "Signed out successfully"
+                
+                // Also clear remember me
+                UserDefaults.standard.removeObject(forKey: "saved_email")
+                UserDefaults.standard.removeObject(forKey: "saved_password")
+                UserDefaults.standard.set(false, forKey: "remember_me")
             }
         }
         #else
         debugLastError = "Supabase not available for sign out"
+        #endif
+    }
+    
+    func changePassword(newPassword: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        try await client.auth.update(user: UserAttributes(password: newPassword))
+        
+        await MainActor.run {
+            debugLastError = "Password changed successfully"
+            
+            // Update saved password if remember me is enabled
+            if UserDefaults.standard.bool(forKey: "remember_me") {
+                UserDefaults.standard.set(newPassword, forKey: "saved_password")
+            }
+        }
+        #else
+        throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
         #endif
     }
     

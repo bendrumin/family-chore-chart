@@ -98,11 +98,17 @@ struct MainTabs: View {
                 }
                 .tag(2)
 
+            HistoryView()
+                .tabItem {
+                    Label("Stats", systemImage: "chart.bar.fill")
+                }
+                .tag(3)
+
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(.choreStarPrimary)
         .onAppear {

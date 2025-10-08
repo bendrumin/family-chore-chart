@@ -3,18 +3,54 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var buttonPressCount = 0
+    @State private var showingChangePassword = false
 
     var body: some View {
         NavigationView {
             Form {
                 Section("Account") {
-                    Text(manager.currentUserEmail ?? "Not signed in")
-                    Button("Refresh Data") { manager.refreshData() }
-                    Button("Check Session") {
-                        buttonPressCount += 1
-                        manager.checkAuthStatusSync()
+                    HStack {
+                        Text("Email")
+                            .foregroundColor(.choreStarTextSecondary)
+                        Spacer()
+                        Text(manager.currentUserEmail ?? "Not signed in")
+                            .foregroundColor(.choreStarTextPrimary)
                     }
-                    Button("Sign Out", role: .destructive) { manager.signOut() }
+                    
+                    Button(action: { showingChangePassword = true }) {
+                        HStack {
+                            Text("Change Password")
+                            Spacer()
+                            Image(systemName: "lock.rotation")
+                                .foregroundColor(.choreStarPrimary)
+                        }
+                    }
+                }
+                
+                Section("Data") {
+                    Button("Refresh Data") {
+                        manager.refreshData()
+                    }
+                    
+                    HStack {
+                        Text("Children")
+                        Spacer()
+                        Text("\(manager.children.count)")
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                    
+                    HStack {
+                        Text("Chores")
+                        Spacer()
+                        Text("\(manager.chores.count)")
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                }
+                
+                Section {
+                    Button("Sign Out", role: .destructive) {
+                        manager.signOut()
+                    }
                 }
                 Section("Debug Info") {
                     VStack(alignment: .leading, spacing: 8) {
@@ -79,6 +115,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $showingChangePassword) {
+                ChangePasswordView()
+            }
         }
     }
 }
