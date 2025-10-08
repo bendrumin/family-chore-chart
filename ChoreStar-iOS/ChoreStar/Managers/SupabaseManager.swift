@@ -562,10 +562,12 @@ class SupabaseManager: ObservableObject {
             child_access_enabled: false
         )
         
-        try await client.database
+        let _: [ChildRow] = try await client.database
             .from("children")
             .insert(newChild)
+            .select()
             .execute()
+            .value
         
         await MainActor.run {
             debugLastError = "Child created: \(name)"
@@ -661,10 +663,12 @@ class SupabaseManager: ObservableObject {
             is_active: true
         )
         
-        try await client.database
+        let _: [ChoreRow] = try await client.database
             .from("chores")
             .insert(newChore)
+            .select()
             .execute()
+            .value
         
         await MainActor.run {
             debugLastError = "Chore created: \(name)"
