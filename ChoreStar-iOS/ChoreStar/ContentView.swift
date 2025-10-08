@@ -55,23 +55,120 @@ struct ContentView: View {
 }
 
 struct LoadingView: View {
+    @State private var isAnimating = false
+    @State private var starScale: CGFloat = 0.5
+    @State private var starRotation: Double = 0
+    @State private var showText = false
+    
     var body: some View {
-        VStack(spacing: 20) {
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.choreStarPrimary)
-
-            Text("ChoreStar")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.choreStarTextPrimary)
-
-            Text("Loading...")
-                .font(.subheadline)
-                .foregroundColor(.choreStarTextSecondary)
+        ZStack {
+            // Gradient background
+            Color.choreStarGradient
+                .ignoresSafeArea()
+            
+            VStack(spacing: 30) {
+                Spacer()
+                
+                // Animated star
+                ZStack {
+                    // Outer glow ring
+                    ForEach(0..<3) { index in
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.5), Color.choreStarAccent.opacity(0.3)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                            .frame(width: 120 + CGFloat(index) * 30, height: 120 + CGFloat(index) * 30)
+                            .opacity(isAnimating ? 0 : 0.8)
+                            .scaleEffect(isAnimating ? 1.5 : 1.0)
+                            .animation(
+                                Animation
+                                    .easeOut(duration: 1.5)
+                                    .repeatForever(autoreverses: false)
+                                    .delay(Double(index) * 0.2),
+                                value: isAnimating
+                            )
+                    }
+                    
+                    // Main star icon
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 70))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.white, Color.choreStarAccent],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+                        .scaleEffect(starScale)
+                        .rotationEffect(.degrees(starRotation))
+                        .onAppear {
+                            withAnimation(.spring(response: 0.8, dampingFraction: 0.6)) {
+                                starScale = 1.0
+                            }
+                            
+                            withAnimation(
+                                Animation
+                                    .linear(duration: 3.0)
+                                    .repeatForever(autoreverses: false)
+                            ) {
+                                starRotation = 360
+                            }
+                        }
+                }
+                .frame(height: 200)
+                
+                // App name
+                VStack(spacing: 12) {
+                    Text("ChoreStar")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        .opacity(showText ? 1 : 0)
+                        .offset(y: showText ? 0 : 20)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3), value: showText)
+                    
+                    Text("Make chores fun!")
+                        .font(.title3)
+                        .foregroundColor(.white.opacity(0.9))
+                        .opacity(showText ? 1 : 0)
+                        .offset(y: showText ? 0 : 20)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.5), value: showText)
+                    
+                    // Animated loading dots
+                    HStack(spacing: 8) {
+                        ForEach(0..<3) { index in
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 8, height: 8)
+                                .opacity(isAnimating ? 0.3 : 1.0)
+                                .animation(
+                                    Animation
+                                        .easeInOut(duration: 0.6)
+                                        .repeatForever(autoreverses: true)
+                                        .delay(Double(index) * 0.2),
+                                    value: isAnimating
+                                )
+                        }
+                    }
+                    .padding(.top, 20)
+                    .opacity(showText ? 1 : 0)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.7), value: showText)
+                }
+                
+                Spacer()
+                Spacer()
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.choreStarBackground)
+        .onAppear {
+            isAnimating = true
+            showText = true
+        }
     }
 }
 
