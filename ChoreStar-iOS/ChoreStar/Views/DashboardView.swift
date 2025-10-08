@@ -145,7 +145,10 @@ struct DashboardView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 16) {
                                     ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
-                                        ChildCard(child: child, index: index, manager: manager)
+                                        NavigationLink(destination: ChildDetailView(child: child)) {
+                                            ChildCard(child: child, index: index, manager: manager)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
                                     }
                                 }
                                 .padding(.horizontal, 20)
