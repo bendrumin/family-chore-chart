@@ -28,6 +28,8 @@
 		A1234567890ABCDEF123459D /* ChildMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123459E /* ChildMainView.swift */; };
 		A1234567890ABCDEF123459F /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */; };
 		A1234567890ABCDEF12345A1 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A2 /* HistoryView.swift */; };
+		A1234567890ABCDEF12345A3 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A4 /* AvatarPickerView.swift */; };
+		A1234567890ABCDEF12345A5 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A6 /* AvatarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +55,8 @@
 		A1234567890ABCDEF123459E /* ChildMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildMainView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345A2 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345A4 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345A6 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,8 @@
 				A1234567890ABCDEF12345A2 /* HistoryView.swift */,
 				A1234567890ABCDEF123457B /* SettingsView.swift */,
 				A1234567890ABCDEF12345A0 /* ChangePasswordView.swift */,
+				A1234567890ABCDEF12345A4 /* AvatarPickerView.swift */,
+				A1234567890ABCDEF12345A6 /* AvatarView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -243,6 +249,8 @@
 				A1234567890ABCDEF12345A1 /* HistoryView.swift in Sources */,
 				A1234567890ABCDEF123457C /* SettingsView.swift in Sources */,
 				A1234567890ABCDEF123459F /* ChangePasswordView.swift in Sources */,
+				A1234567890ABCDEF12345A3 /* AvatarPickerView.swift in Sources */,
+				A1234567890ABCDEF12345A5 /* AvatarView.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,
 			);

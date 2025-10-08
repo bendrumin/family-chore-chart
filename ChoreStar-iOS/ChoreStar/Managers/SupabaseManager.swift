@@ -634,7 +634,7 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Children Management
     
-    func createChild(name: String, age: Int, avatarColor: String) async throws {
+    func createChild(name: String, age: Int, avatarColor: String, avatarUrl: String? = nil, avatarFile: String? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -649,6 +649,8 @@ class SupabaseManager: ObservableObject {
             let name: String
             let age: Int
             let avatar_color: String
+            let avatar_url: String?
+            let avatar_file: String?
             let user_id: String
             let child_access_enabled: Bool
         }
@@ -657,6 +659,8 @@ class SupabaseManager: ObservableObject {
             name: name,
             age: age,
             avatar_color: avatarColor,
+            avatar_url: avatarUrl,
+            avatar_file: avatarFile,
             user_id: uid,
             child_access_enabled: false
         )
@@ -674,7 +678,7 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func updateChild(childId: UUID, name: String?, age: Int?, avatarColor: String?, childPin: String?, childAccessEnabled: Bool?) async throws {
+    func updateChild(childId: UUID, name: String?, age: Int?, avatarColor: String?, avatarUrl: String?, avatarFile: String?, childPin: String?, childAccessEnabled: Bool?) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -684,6 +688,8 @@ class SupabaseManager: ObservableObject {
             let name: String?
             let age: Int?
             let avatar_color: String?
+            let avatar_url: String?
+            let avatar_file: String?
             let child_pin: String?
             let child_access_enabled: Bool?
             let updated_at: String
@@ -693,6 +699,8 @@ class SupabaseManager: ObservableObject {
             name: name,
             age: age,
             avatar_color: avatarColor,
+            avatar_url: avatarUrl,
+            avatar_file: avatarFile,
             child_pin: childPin,
             child_access_enabled: childAccessEnabled,
             updated_at: ISO8601DateFormatter().string(from: Date())

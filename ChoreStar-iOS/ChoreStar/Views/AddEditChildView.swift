@@ -9,8 +9,11 @@ struct AddEditChildView: View {
     @State private var name: String
     @State private var age: Int
     @State private var selectedColor: String
+    @State private var avatarUrl: String?
+    @State private var avatarFile: String?
     @State private var childAccessEnabled: Bool
     @State private var childPin: String
+    @State private var showingAvatarPicker = false
     @State private var isSaving = false
     @State private var errorMessage: String?
     
@@ -25,6 +28,8 @@ struct AddEditChildView: View {
         _name = State(initialValue: child?.name ?? "")
         _age = State(initialValue: child?.age ?? 5)
         _selectedColor = State(initialValue: child?.avatarColor ?? "blue")
+        _avatarUrl = State(initialValue: child?.avatarUrl)
+        _avatarFile = State(initialValue: child?.avatarFile)
         _childAccessEnabled = State(initialValue: child?.childAccessEnabled ?? false)
         _childPin = State(initialValue: child?.childPin ?? "")
     }
@@ -36,6 +41,71 @@ struct AddEditChildView: View {
     var body: some View {
         NavigationView {
             Form {
+                Section("Avatar") {
+                    HStack {
+                        Spacer()
+                        
+                        VStack(spacing: 12) {
+                            // Avatar preview
+                            if let avatarUrl = avatarUrl, !avatarUrl.isEmpty {
+                                AsyncImage(url: URL(string: avatarUrl)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(width: 100, height: 100)
+                                .clipShape(Circle())
+                                .overlay(Circle().strokeBorder(Color.fromString(selectedColor), lineWidth: 3))
+                                .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
+                            } else if let avatarFile = avatarFile, !avatarFile.isEmpty {
+                                // Emoji avatar
+                                Circle()
+                                    .fill(Color.fromString(selectedColor))
+                                    .frame(width: 100, height: 100)
+                                    .overlay(
+                                        Text(avatarFile)
+                                            .font(.system(size: 50))
+                                    )
+                                    .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
+                            } else {
+                                // Default color circle
+                                Circle()
+                                    .fill(Color.fromString(selectedColor))
+                                    .frame(width: 100, height: 100)
+                                    .overlay(
+                                        Text(name.isEmpty ? "?" : String(name.prefix(2).uppercased()))
+                                            .font(.largeTitle)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                    )
+                                    .shadow(color: Color.fromString(selectedColor).opacity(0.4), radius: 8, x: 0, y: 4)
+                            }
+                            
+                            // Choose avatar button
+                            Button(action: {
+                                showingAvatarPicker = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "photo.circle.fill")
+                                    Text("Choose Avatar")
+                                }
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.choreStarPrimary)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.choreStarPrimary.opacity(0.1))
+                                .cornerRadius(12)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                }
+                
                 Section("Child Information") {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Name")
@@ -104,6 +174,12 @@ struct AddEditChildView: View {
             }
             .navigationTitle(isEditing ? "Edit Child" : "Add Child")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingAvatarPicker) {
+                AvatarPickerView { url, file in
+                    avatarUrl = url.isEmpty ? nil : url
+                    avatarFile = file.isEmpty ? nil : file
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -136,6 +212,8 @@ struct AddEditChildView: View {
                         name: name,
                         age: age,
                         avatarColor: selectedColor,
+                        avatarUrl: avatarUrl,
+                        avatarFile: avatarFile,
                         childPin: pinToSave,
                         childAccessEnabled: childAccessEnabled
                     )
@@ -144,14 +222,10 @@ struct AddEditChildView: View {
                     try await manager.createChild(
                         name: name,
                         age: age,
-                        avatarColor: selectedColor
+                        avatarColor: selectedColor,
+                        avatarUrl: avatarUrl,
+                        avatarFile: avatarFile
                     )
-                    
-                    // If child access is enabled, update with PIN after creation
-                    if childAccessEnabled && childPin.count == 4 {
-                        // Need to get the newly created child ID
-                        // This will be handled by reloading data and updating in a second call
-                    }
                 }
                 
                 await MainActor.run {
