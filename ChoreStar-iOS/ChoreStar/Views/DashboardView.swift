@@ -303,7 +303,7 @@ struct ChildCard: View {
 
 struct ChoreCard: View {
     let chore: Chore
-    let manager: SupabaseManager
+    @ObservedObject var manager: SupabaseManager
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)

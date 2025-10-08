@@ -179,7 +179,7 @@ struct ChoreGroupCard: View {
 
 struct EnhancedChoreRow: View {
     let chore: Chore
-    let manager: SupabaseManager
+    @ObservedObject var manager: SupabaseManager
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     

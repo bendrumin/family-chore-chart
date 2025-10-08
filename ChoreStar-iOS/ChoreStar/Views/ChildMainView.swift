@@ -198,7 +198,7 @@ struct StatBubble: View {
 struct BigChoreCard: View {
     let chore: Chore
     let child: Child
-    let manager: SupabaseManager
+    @ObservedObject var manager: SupabaseManager
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
