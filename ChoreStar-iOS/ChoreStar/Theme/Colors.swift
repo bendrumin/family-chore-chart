@@ -1,15 +1,39 @@
 import SwiftUI
 
 extension Color {
-    // Using standard SwiftUI colors for immediate compatibility
-    static let choreStarPrimary = Color.purple
-    static let choreStarSecondary = Color.cyan
-    static let choreStarAccent = Color.orange
-    static let choreStarSuccess = Color.green
-    static let choreStarBackground = Color(.systemGroupedBackground)
-    static let choreStarCardBackground = Color(.secondarySystemGroupedBackground)
-    static let choreStarTextPrimary = Color(.label)
-    static let choreStarTextSecondary = Color(.secondaryLabel)
+    // Brand colors matching web app
+    static let choreStarPrimary = Color(red: 0.4, green: 0.49, blue: 0.92)      // #667eea
+    static let choreStarPrimaryLight = Color(red: 0.49, green: 0.58, blue: 0.95) // Lighter shade
+    static let choreStarSecondary = Color(red: 0.46, green: 0.82, blue: 0.96)   // #76d1f5
+    static let choreStarAccent = Color(red: 1.0, green: 0.76, blue: 0.03)       // #ffc107
+    static let choreStarSuccess = Color(red: 0.3, green: 0.69, blue: 0.31)      // #4caf50
+    static let choreStarWarning = Color(red: 1.0, green: 0.6, blue: 0.0)        // #ff9800
+    static let choreStarDanger = Color(red: 0.96, green: 0.26, blue: 0.21)      // #f44336
+    
+    // UI colors
+    static let choreStarBackground = Color(red: 0.96, green: 0.97, blue: 0.98)  // #f5f7fa
+    static let choreStarCardBackground = Color.white
+    static let choreStarTextPrimary = Color(red: 0.13, green: 0.13, blue: 0.13) // #212121
+    static let choreStarTextSecondary = Color(red: 0.46, green: 0.46, blue: 0.46) // #757575
+    
+    // Gradients
+    static let choreStarGradient = LinearGradient(
+        colors: [Color.choreStarPrimary, Color.choreStarSecondary],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    static let choreStarAccentGradient = LinearGradient(
+        colors: [Color.choreStarAccent, Color(red: 1.0, green: 0.85, blue: 0.2)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    static let choreStarSuccessGradient = LinearGradient(
+        colors: [Color.choreStarSuccess, Color(red: 0.4, green: 0.8, blue: 0.4)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
     
     // Map string color names to actual colors
     static func fromString(_ colorName: String) -> Color {

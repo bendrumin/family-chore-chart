@@ -39,50 +39,95 @@ struct DashboardView: View {
                         .padding(.top, 10)
                     }
 
-                    // Progress Card
-                    VStack(spacing: 16) {
-                        HStack {
-                            Text("Today's Progress")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.choreStarTextPrimary)
-                            Spacer()
-                            Text("\(completedChores)/\(totalChores)")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.choreStarPrimary)
-                        }
-
-                        // Progress Bar
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.choreStarSecondary)
-                                    .frame(height: 12)
-
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.choreStarPrimary, .choreStarSuccess],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .frame(width: geometry.size.width * completionPercentage, height: 12)
-                                    .animation(.easeInOut(duration: 0.5), value: completionPercentage)
+                    // Progress Card with gradient
+                    ZStack {
+                        // Gradient background
+                        LinearGradient(
+                            colors: [Color.choreStarPrimary.opacity(0.1), Color.choreStarSecondary.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        
+                        VStack(spacing: 16) {
+                            HStack {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "chart.bar.fill")
+                                        .foregroundStyle(Color.choreStarGradient)
+                                    Text("Today's Progress")
+                                        .font(.headline)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.choreStarTextPrimary)
+                                }
+                                Spacer()
+                                Text("\(completedChores)")
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.choreStarGradient)
+                                + Text("/\(totalChores)")
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.choreStarTextSecondary)
                             }
-                        }
-                        .frame(height: 12)
 
-                        Text("\(Int(completionPercentage * 100))% Complete")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.choreStarTextSecondary)
+                            // Animated Progress Bar
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    // Background
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.choreStarBackground)
+                                        .frame(height: 16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.choreStarPrimary.opacity(0.1), lineWidth: 1)
+                                        )
+
+                                    // Progress fill with gradient
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.choreStarGradient)
+                                        .frame(width: geometry.size.width * completionPercentage, height: 16)
+                                        .overlay(
+                                            // Shimmer effect
+                                            LinearGradient(
+                                                colors: [
+                                                    .clear,
+                                                    .white.opacity(0.3),
+                                                    .clear
+                                                ],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                            .blur(radius: 3)
+                                        )
+                                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: completionPercentage)
+                                }
+                            }
+                            .frame(height: 16)
+
+                            HStack {
+                                Text("\(Int(completionPercentage * 100))% Complete")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.choreStarTextSecondary)
+                                
+                                Spacer()
+                                
+                                if completionPercentage == 1.0 {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.choreStarSuccess)
+                                        Text("Amazing!")
+                                            .font(.subheadline)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.choreStarSuccess)
+                                    }
+                                    .transition(.scale.combined(with: .opacity))
+                                }
+                            }
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionPercentage)
+                        }
+                        .padding(20)
                     }
-                    .padding(20)
                     .background(Color.choreStarCardBackground)
-                    .cornerRadius(16)
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .cornerRadius(20)
+                    .shadow(color: Color.choreStarPrimary.opacity(0.15), radius: 15, x: 0, y: 5)
                     .padding(.horizontal, 20)
 
                     // Children Cards
@@ -158,51 +203,98 @@ struct ChildCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 12) {
-            // Avatar
-            Circle()
-                .fill(Color.fromString(child.avatarColor))
-                .frame(width: 60, height: 60)
-                .overlay(
-                    Text(child.initials)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                )
+        VStack(spacing: 14) {
+            // Avatar with gradient ring
+            ZStack {
+                // Gradient ring
+                Circle()
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.5)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
+                    .frame(width: 68, height: 68)
+                
+                // Avatar
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Text(child.initials)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                    )
+                    .shadow(color: Color.fromString(child.avatarColor).opacity(0.4), radius: 8, x: 0, y: 4)
+            }
             
             // Name and progress
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Text(child.name)
                     .font(.headline)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .foregroundColor(.choreStarTextPrimary)
+                    .lineLimit(1)
                 
-                Text("\(completedChores)/\(totalChores)")
-                    .font(.subheadline)
-                    .foregroundColor(.choreStarTextSecondary)
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.choreStarSuccess)
+                    Text("\(completedChores)/\(totalChores)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.choreStarTextSecondary)
+                }
                 
-                // Mini progress bar
+                // Mini progress bar with gradient
                 if totalChores > 0 {
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.choreStarSecondary.opacity(0.3))
-                                .frame(height: 6)
+                                .fill(Color.choreStarBackground)
+                                .frame(height: 8)
                             
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.fromString(child.avatarColor))
-                                .frame(width: geometry.size.width * (Double(completedChores) / Double(totalChores)), height: 6)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.7)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: geometry.size.width * (Double(completedChores) / Double(totalChores)), height: 8)
+                                .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completedChores)
                         }
                     }
-                    .frame(height: 6)
+                    .frame(height: 8)
                 }
             }
         }
-        .padding(16)
-        .frame(width: 140)
-        .background(Color.choreStarCardBackground)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .padding(18)
+        .frame(width: 150)
+        .background(
+            LinearGradient(
+                colors: [Color.choreStarCardBackground, Color.choreStarBackground.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.fromString(child.avatarColor).opacity(0.2), lineWidth: 1)
+        )
     }
 }
 
@@ -219,49 +311,98 @@ struct ChoreCard: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Completion button
+        HStack(spacing: 14) {
+            // Animated completion button
             Button(action: {
+                let impact = UIImpactFeedbackGenerator(style: .medium)
+                impact.impactOccurred()
                 Task {
                     await manager.toggleChoreCompletion(chore)
                 }
             }) {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+                ZStack {
+                    // Outer ring
+                    Circle()
+                        .strokeBorder(
+                            isCompleted ? Color.choreStarSuccess : Color.choreStarTextSecondary.opacity(0.3),
+                            lineWidth: 2.5
+                        )
+                        .frame(width: 32, height: 32)
+                    
+                    // Checkmark
+                    if isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.choreStarSuccess)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isCompleted)
             }
             .buttonStyle(PlainButtonStyle())
             
             // Chore info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(chore.name)
-                    .font(.headline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.choreStarTextPrimary)
-                    .strikethrough(isCompleted)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
                 
-                HStack {
-                    Text(childName)
-                        .font(.subheadline)
-                        .foregroundColor(.choreStarTextSecondary)
+                HStack(spacing: 8) {
+                    // Child name with icon
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.fill")
+                            .font(.caption)
+                            .foregroundColor(.choreStarTextSecondary)
+                        Text(childName)
+                            .font(.caption)
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
                     
                     Spacer()
                     
-                    Text("$\(chore.reward, specifier: "%.2f")")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.choreStarAccent)
+                    // Reward badge
+                    HStack(spacing: 4) {
+                        Image(systemName: "dollarsign.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(Color.choreStarAccentGradient)
+                        Text("\(chore.reward, specifier: "%.2f")")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.choreStarAccentGradient)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.choreStarAccent.opacity(0.15))
+                    .cornerRadius(8)
                 }
             }
             
             Spacer()
         }
         .padding(16)
-        .background(Color.choreStarCardBackground)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        .opacity(isCompleted ? 0.7 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isCompleted)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.choreStarCardBackground,
+                    isCompleted ? Color.choreStarSuccess.opacity(0.05) : Color.choreStarCardBackground
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .cornerRadius(16)
+        .shadow(color: isCompleted ? Color.choreStarSuccess.opacity(0.1) : Color.black.opacity(0.06), radius: 8, x: 0, y: 3)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    isCompleted ? Color.choreStarSuccess.opacity(0.3) : Color.choreStarBackground,
+                    lineWidth: 1.5
+                )
+        )
+        .scaleEffect(isCompleted ? 0.98 : 1.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isCompleted)
     }
 }
 
