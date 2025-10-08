@@ -468,23 +468,41 @@ class SupabaseManager: ObservableObject {
     }
     
     func toggleChoreCompletion(_ chore: Chore) async {
-        #if canImport(Supabase)
-        guard let client = client else { return }
-        
         let isCompleted = await MainActor.run { isChoreCompleted(chore) }
         
+        print("DEBUG: Toggling chore '\(chore.name)', currently completed: \(isCompleted)")
+        
+        #if canImport(Supabase)
+        guard let client = client else {
+            print("DEBUG: No Supabase client, toggling locally")
+            await MainActor.run {
+                if isCompleted {
+                    choreCompletions.removeValue(forKey: chore.id)
+                } else {
+                    choreCompletions[chore.id] = Date()
+                }
+                debugLastError = "Toggled locally: \(chore.name)"
+            }
+            return
+        }
+        
         if isCompleted {
-            // Remove completion
+            // Remove completion - just update local state for now
+            // TODO: Delete from database when we implement deletion from chore_completions
             await MainActor.run {
                 choreCompletions.removeValue(forKey: chore.id)
-                debugLastError = "Removed completion for chore: \(chore.name)"
+                debugLastError = "✅ Unchecked: \(chore.name)"
             }
+            print("DEBUG: Removed completion from local state")
         } else {
             // Add completion
             let now = Date()
             await MainActor.run {
                 choreCompletions[chore.id] = now
+                debugLastError = "⏳ Saving completion for: \(chore.name)"
             }
+            
+            print("DEBUG: Added to local state, now saving to database...")
             
             // Save to database
             do {
@@ -496,17 +514,20 @@ class SupabaseManager: ObservableObject {
                     reward_earned: chore.reward
                 )
                 
+                print("DEBUG: Calling database insert...")
                 try await client.database
                     .from("chore_completions")
                     .insert(completion)
                     .execute()
                 
+                print("DEBUG: Database insert successful!")
                 await MainActor.run {
-                    debugLastError = "Saved completion for chore: \(chore.name)"
+                    debugLastError = "✅ Saved: \(chore.name)"
                 }
             } catch {
+                print("DEBUG: Database insert failed: \(error)")
                 await MainActor.run {
-                    debugLastError = "Failed to save completion: \(error.localizedDescription)"
+                    debugLastError = "❌ Save failed: \(error.localizedDescription)"
                     // Remove from local state if save failed
                     choreCompletions.removeValue(forKey: chore.id)
                 }
@@ -521,6 +542,7 @@ class SupabaseManager: ObservableObject {
                 choreCompletions[chore.id] = Date()
             }
         }
+        print("DEBUG: Toggled in demo mode")
         #endif
     }
     
