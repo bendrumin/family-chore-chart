@@ -497,35 +497,70 @@ class SupabaseManager: ObservableObject {
         }
         
         if isCompleted {
-            // Remove completion - just update local state for now
-            // TODO: Delete from database when we implement deletion from chore_completions
+            // Remove completion - delete from database
             await MainActor.run {
+                self.objectWillChange.send()
                 choreCompletions.removeValue(forKey: chore.id)
-                debugLastError = "✅ Unchecked: \(chore.name)"
+                debugLastError = "⏳ Removing: \(chore.name)"
             }
-            print("DEBUG: Removed completion from local state")
-        } else {
-            // Add completion
-            let now = Date()
-            await MainActor.run {
-                choreCompletions[chore.id] = now
-                debugLastError = "⏳ Saving completion for: \(chore.name)"
-            }
+            print("DEBUG: Removed completion from local state, deleting from database...")
             
-            print("DEBUG: Added to local state, now saving to database...")
-            
-            // Save to database
+            // Delete from database
             do {
-                // Calculate day_of_week (0=Sunday, 1=Monday, etc.)
                 let calendar = Calendar.current
-                let dayOfWeek = calendar.component(.weekday, from: now) - 1 // Adjust from 1-7 to 0-6
-                
-                // Calculate week_start (Sunday of current week)
+                let now = Date()
+                let dayOfWeek = calendar.component(.weekday, from: now) - 1
                 let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
                 let formatter = DateFormatter()
                 formatter.dateFormat = "yyyy-MM-dd"
                 let weekStartString = formatter.string(from: weekStart)
                 
+                print("DEBUG: Deleting completion for chore_id=\(chore.id), day=\(dayOfWeek), week=\(weekStartString)")
+                
+                let _ = try await client.database
+                    .from("chore_completions")
+                    .delete()
+                    .eq("chore_id", value: chore.id.uuidString)
+                    .eq("day_of_week", value: dayOfWeek)
+                    .eq("week_start", value: weekStartString)
+                    .execute()
+                
+                print("DEBUG: Database delete successful!")
+                await MainActor.run {
+                    debugLastError = "✅ Unchecked: \(chore.name)"
+                }
+            } catch {
+                print("DEBUG: Database delete failed: \(error)")
+                await MainActor.run {
+                    // Keep it removed from local state even if delete fails
+                    debugLastError = "✅ Unchecked (local): \(chore.name)"
+                }
+            }
+        } else {
+            // Add completion
+            let now = Date()
+            let calendar = Calendar.current
+            
+            // Calculate day_of_week (0=Sunday, 1=Monday, etc.)
+            let dayOfWeek = calendar.component(.weekday, from: now) - 1
+            
+            // Calculate week_start (Sunday of current week)
+            let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            let weekStartString = formatter.string(from: weekStart)
+            
+            print("DEBUG: Adding completion to local state...")
+            await MainActor.run {
+                self.objectWillChange.send()
+                choreCompletions[chore.id] = now
+                debugLastError = "⏳ Saving completion for: \(chore.name)"
+            }
+            
+            print("DEBUG: Saving to database with day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
+            
+            // Save to database (upsert behavior - insert or ignore if exists)
+            do {
                 let completion = ChoreCompletionRow(
                     id: UUID(),
                     chore_id: chore.id,
@@ -534,7 +569,6 @@ class SupabaseManager: ObservableObject {
                     completed_at: ISO8601DateFormatter().string(from: now)
                 )
                 
-                print("DEBUG: Calling database insert with day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
                 try await client.database
                     .from("chore_completions")
                     .insert(completion)
@@ -543,6 +577,21 @@ class SupabaseManager: ObservableObject {
                 print("DEBUG: Database insert successful!")
                 await MainActor.run {
                     debugLastError = "✅ Saved: \(chore.name)"
+                }
+            } catch let error as PostgrestError {
+                // If it's a duplicate key error, that's okay - it means it's already completed
+                if error.code == "23505" {
+                    print("DEBUG: Chore already completed in database (duplicate key)")
+                    await MainActor.run {
+                        debugLastError = "✅ Already saved: \(chore.name)"
+                    }
+                } else {
+                    print("DEBUG: Database insert failed: \(error)")
+                    await MainActor.run {
+                        debugLastError = "❌ Save failed: \(error.message)"
+                        // Remove from local state if save failed
+                        choreCompletions.removeValue(forKey: chore.id)
+                    }
                 }
             } catch {
                 print("DEBUG: Database insert failed: \(error)")
