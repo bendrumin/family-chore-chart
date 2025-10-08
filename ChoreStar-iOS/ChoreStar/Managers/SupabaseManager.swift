@@ -195,9 +195,12 @@ class SupabaseManager: ObservableObject {
         }
         
         do {
-            let response = try await client.auth.signIn(email: email, password: password)
+            let session = try await client.auth.signIn(
+                email: email,
+                password: password
+            )
             await MainActor.run {
-                debugLastError = "Sign-in response: \(response)"
+                debugLastError = "Sign-in successful"
             }
             
             // Check session immediately
@@ -274,7 +277,11 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        try await client.auth.update(user: UserAttributes(password: newPassword))
+        try await client.auth.update(
+            user: UserAttributes(
+                password: newPassword
+            )
+        )
         
         await MainActor.run {
             debugLastError = "Password changed successfully"
@@ -489,10 +496,12 @@ class SupabaseManager: ObservableObject {
                     reward_earned: chore.reward
                 )
                 
-                try await client.database
+                let _: [ChoreCompletionRow] = try await client.database
                     .from("chore_completions")
                     .insert(completion)
+                    .select()
                     .execute()
+                    .value
                 
                 await MainActor.run {
                     debugLastError = "Saved completion for chore: \(chore.name)"
