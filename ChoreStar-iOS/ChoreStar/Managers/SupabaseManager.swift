@@ -271,30 +271,24 @@ class SupabaseManager: ObservableObject {
         // Load chores
         do {
             var choresFetched: [ChoreRow] = []
-            let uid = await MainActor.run { debugUserId }
             let currentChildren = await MainActor.run { children }
             
-            if let uid = uid {
-                choresFetched = try await client.database
-                    .from("chores")
-                    .select()
-                    .eq("user_id", value: uid)
-                    .limit(200)
-                    .execute()
-                    .value
-            }
-            
-            // If no chores found by user_id, try by child_id
-            if choresFetched.isEmpty, !currentChildren.isEmpty {
+            // Load chores by child_id (matching web app approach)
+            if !currentChildren.isEmpty {
                 let ids = currentChildren.map { $0.id.uuidString }
                 if !ids.isEmpty {
                     choresFetched = try await client.database
                         .from("chores")
                         .select()
                         .in("child_id", values: ids)
+                        .eq("is_active", value: true)
                         .limit(200)
                         .execute()
                         .value
+                    
+                    await MainActor.run {
+                        debugLastError = "Querying chores for \(ids.count) children, is_active=true"
+                    }
                 }
             }
             
