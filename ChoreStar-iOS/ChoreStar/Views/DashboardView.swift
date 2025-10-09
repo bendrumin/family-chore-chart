@@ -385,11 +385,11 @@ struct ChoreCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: "dollarsign.circle.fill")
                             .font(.caption)
-                            .foregroundStyle(Color.choreStarAccentGradient)
+                            .foregroundStyle(Color.choreStarWarningGradient)
                         Text(String(format: "%.2f", chore.reward))
                             .font(.subheadline)
                             .fontWeight(.bold)
-                            .foregroundStyle(Color.choreStarAccentGradient)
+                            .foregroundStyle(Color.choreStarWarningGradient)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
