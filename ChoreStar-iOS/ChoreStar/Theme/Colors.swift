@@ -10,11 +10,11 @@ extension Color {
     static let choreStarWarning = Color(red: 1.0, green: 0.65, blue: 0.01)      // #ffa502 (Orange)
     static let choreStarDanger = Color(red: 1.0, green: 0.28, blue: 0.34)       // #ff4757 (Error Red)
     
-    // UI colors
-    static let choreStarBackground = Color(red: 0.96, green: 0.97, blue: 0.98)  // #f5f7fa
-    static let choreStarCardBackground = Color.white
-    static let choreStarTextPrimary = Color(red: 0.13, green: 0.13, blue: 0.13) // #212121
-    static let choreStarTextSecondary = Color(red: 0.46, green: 0.46, blue: 0.46) // #757575
+    // UI colors (adapt automatically to dark mode)
+    static let choreStarBackground = Color(UIColor.systemGroupedBackground)
+    static let choreStarCardBackground = Color(UIColor.secondarySystemGroupedBackground)
+    static let choreStarTextPrimary = Color(UIColor.label)
+    static let choreStarTextSecondary = Color(UIColor.secondaryLabel)
     
     // Playful Gradients matching web app 🌈
     static var choreStarGradient: LinearGradient {

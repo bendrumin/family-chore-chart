@@ -2,8 +2,20 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
+    @AppStorage("darkModePreference") private var darkModePreference: String = "System"
     @State private var isLoading = true
     @State private var showingChildAuth = false
+    
+    private var preferredColorScheme: ColorScheme? {
+        switch darkModePreference {
+        case "Light":
+            return .light
+        case "Dark":
+            return .dark
+        default:
+            return nil // System default
+        }
+    }
 
     var body: some View {
         Group {
@@ -44,6 +56,7 @@ struct ContentView: View {
                 AuthView()
             }
         }
+        .preferredColorScheme(preferredColorScheme)
         .onAppear {
             Task {
                 await supabaseManager.checkAuthStatus()

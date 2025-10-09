@@ -3,13 +3,43 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
     @ObservedObject var soundManager = SoundManager.shared
+    @Environment(\.colorScheme) var colorScheme
+    @AppStorage("darkModePreference") private var darkModePreference: DarkModePreference = .system
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
+    
+    enum DarkModePreference: String, CaseIterable {
+        case light = "Light"
+        case dark = "Dark"
+        case system = "System"
+    }
 
     var body: some View {
         NavigationView {
             Form {
-                Section("Preferences") {
+                Section("Appearance") {
+                    Picker("Theme", selection: $darkModePreference) {
+                        ForEach(DarkModePreference.allCases, id: \.self) { preference in
+                            HStack {
+                                Image(systemName: iconForPreference(preference))
+                                Text(preference.rawValue)
+                            }
+                            .tag(preference)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    
+                    HStack {
+                        Image(systemName: colorScheme == .dark ? "moon.fill" : "sun.max.fill")
+                            .foregroundColor(colorScheme == .dark ? .purple : .orange)
+                        Text("Current Theme")
+                        Spacer()
+                        Text(colorScheme == .dark ? "Dark" : "Light")
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                }
+                
+                Section("Audio") {
                     Toggle(isOn: $soundManager.isSoundEnabled) {
                         HStack {
                             Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.3.fill" : "speaker.slash.fill")
@@ -134,6 +164,17 @@ struct SettingsView: View {
             .sheet(isPresented: $showingChangePassword) {
                 ChangePasswordView()
             }
+        }
+    }
+    
+    private func iconForPreference(_ preference: DarkModePreference) -> String {
+        switch preference {
+        case .light:
+            return "sun.max.fill"
+        case .dark:
+            return "moon.fill"
+        case .system:
+            return "gear"
         }
     }
 }
