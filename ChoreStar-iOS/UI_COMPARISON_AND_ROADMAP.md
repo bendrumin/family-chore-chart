@@ -112,6 +112,17 @@ Updated `Colors.swift` to match the web app's playful coral/pink palette:
 - ✅ NavigationLink from ChildDetailView to see all achievements
 - ✅ Badge types: First Chore 🎯, Perfect Week 🌟, Dedicated 💪
 
+#### 8. **📅 Week Calendar Grid View** ✅ DONE
+- ✅ Full week grid showing all 7 days (Sun-Sat)
+- ✅ Chore rows with icon, name, and category
+- ✅ Tappable cells to toggle completion for any day
+- ✅ Visual indicators for today vs other days
+- ✅ Checkmarks for completed days
+- ✅ Loads full week completions from database
+- ✅ Accessible via calendar icon in ChildDetailView toolbar
+- ✅ Confetti and achievement alerts on completion
+- ✅ Sound effects integrated
+
 ---
 
 ### 🎯 STILL NEEDED
@@ -272,6 +283,7 @@ Improved with emoji and friendly messages throughout
 | **Haptic Feedback** | ❌ | ✅ | ✅ **iOS Advantage** |
 | **Achievements** | ✅ | ✅ | ✅ **IMPLEMENTED** |
 | **Push Notifications** | ✅ (Web) | ❌ | **Missing** |
+| **Week Calendar Grid** | ✅ | ✅ | ✅ **IMPLEMENTED** |
 | **Analytics Charts** | ✅ | 🟡 Basic | **Needs Enhancement** |
 | **Seasonal Themes** | ✅ | ❌ | **Missing** |
 | **Swipe Actions** | ❌ | ❌ | **Future Enhancement** |

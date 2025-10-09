@@ -13,7 +13,8 @@ class SupabaseManager: ObservableObject {
     @Published var currentUserEmail: String?
     @Published var children: [Child] = []
     @Published var chores: [Chore] = []
-    @Published var choreCompletions: [UUID: Date] = [:]
+    @Published var choreCompletions: [UUID: Date] = [:] // Today's completions
+    @Published var weekCompletions: [(choreId: UUID, dayOfWeek: Int)] = [] // Full week completions
     @Published var achievements: [Achievement] = []
     @Published var isChildSession = false
     @Published var currentChild: Child?
@@ -448,23 +449,32 @@ class SupabaseManager: ObservableObject {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(from: weekStart)
             
-            let completions: [ChoreCompletionRow] = try await client.database
+            // Load ALL completions for the current week (all 7 days)
+            let allWeekCompletions: [ChoreCompletionRow] = try await client.database
                 .from("chore_completions")
                 .select()
-                .eq("day_of_week", value: dayOfWeek)
                 .eq("week_start", value: weekStartString)
                 .execute()
                 .value
             
-            var newCompletions: [UUID: Date] = [:]
-            for completion in completions {
-                // Use current time as the completion date for display
-                newCompletions[completion.chore_id] = now
+            // Separate into today's completions and full week completions
+            var todayCompletions: [UUID: Date] = [:]
+            var fullWeekCompletions: [(choreId: UUID, dayOfWeek: Int)] = []
+            
+            for completion in allWeekCompletions {
+                // Add to full week list
+                fullWeekCompletions.append((choreId: completion.chore_id, dayOfWeek: completion.day_of_week))
+                
+                // Add to today's list if it's for today
+                if completion.day_of_week == dayOfWeek {
+                    todayCompletions[completion.chore_id] = now
+                }
             }
             
             await MainActor.run {
-                self.choreCompletions = newCompletions
-                debugLastError = "Loaded \(completions.count) completions for today"
+                self.choreCompletions = todayCompletions
+                self.weekCompletions = fullWeekCompletions
+                debugLastError = "Loaded \(todayCompletions.count) completions for today, \(fullWeekCompletions.count) for week"
             }
         } catch {
             await MainActor.run {
@@ -474,40 +484,40 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func toggleChoreCompletion(_ chore: Chore) async -> [Achievement] {
-        let isCompleted = await MainActor.run { isChoreCompleted(chore) }
+    func isChoreCompleted(_ chore: Chore, forDay dayOfWeek: Int) -> Bool {
+        return weekCompletions.contains(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
+    }
+    
+    // Toggle completion for a specific day
+    func toggleChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int) async -> [Achievement] {
+        #if canImport(Supabase)
+        guard let client = client else { return [] }
+        
+        let isCompleted = isChoreCompleted(chore, forDay: dayOfWeek)
         var newAchievements: [Achievement] = []
         
-        #if canImport(Supabase)
-        guard let client = client else {
-            await MainActor.run {
-                if isCompleted {
-                    choreCompletions.removeValue(forKey: chore.id)
-                } else {
-                    choreCompletions[chore.id] = Date()
-                }
-                debugLastError = "Toggled locally: \(chore.name)"
-            }
-            return newAchievements
-        }
+        let calendar = Calendar.current
+        let now = Date()
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let weekStartString = formatter.string(from: weekStart)
         
         if isCompleted {
-            // Remove completion - delete from database
+            // Remove completion
             await MainActor.run {
                 self.objectWillChange.send()
-                choreCompletions.removeValue(forKey: chore.id)
+                weekCompletions.removeAll(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
+                
+                // Also remove from today's completions if it's today
+                let currentDay = calendar.component(.weekday, from: now) - 1
+                if dayOfWeek == currentDay {
+                    choreCompletions.removeValue(forKey: chore.id)
+                }
             }
             
             // Delete from database
             do {
-                let calendar = Calendar.current
-                let now = Date()
-                let dayOfWeek = calendar.component(.weekday, from: now) - 1
-                let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd"
-                let weekStartString = formatter.string(from: weekStart)
-                
                 let _ = try await client.database
                     .from("chore_completions")
                     .delete()
@@ -520,24 +530,18 @@ class SupabaseManager: ObservableObject {
             }
         } else {
             // Add completion
-            let now = Date()
-            let calendar = Calendar.current
-            
-            // Calculate day_of_week (0=Sunday, 1=Monday, etc.)
-            let dayOfWeek = calendar.component(.weekday, from: now) - 1
-            
-            // Calculate week_start (Sunday of current week)
-            let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let weekStartString = formatter.string(from: weekStart)
-            
             await MainActor.run {
                 self.objectWillChange.send()
-                choreCompletions[chore.id] = now
+                weekCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek))
+                
+                // Also add to today's completions if it's today
+                let currentDay = calendar.component(.weekday, from: now) - 1
+                if dayOfWeek == currentDay {
+                    choreCompletions[chore.id] = now
+                }
             }
             
-            // Save to database (upsert behavior - insert or ignore if exists)
+            // Save to database
             do {
                 let completion = ChoreCompletionRow(
                     id: UUID(),
@@ -552,35 +556,43 @@ class SupabaseManager: ObservableObject {
                     .insert(completion)
                     .execute()
                 
-                // Check for achievements after successful completion
-                newAchievements = await checkAndAwardAchievements(for: chore.childId)
+                // Check for achievements if it's today
+                let currentDay = calendar.component(.weekday, from: now) - 1
+                if dayOfWeek == currentDay {
+                    newAchievements = await checkAndAwardAchievements(for: chore.childId)
+                }
             } catch let error as PostgrestError {
-                // If it's a duplicate key error, that's okay - it means it's already completed
+                // If it's a duplicate key error, that's okay
                 if error.code != "23505" {
-                    // Remove from local state if save failed (but not for duplicate key)
+                    // Remove from local state if save failed
                     await MainActor.run {
-                        choreCompletions.removeValue(forKey: chore.id)
+                        weekCompletions.removeAll(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
+                        let currentDay = calendar.component(.weekday, from: now) - 1
+                        if dayOfWeek == currentDay {
+                            choreCompletions.removeValue(forKey: chore.id)
+                        }
                     }
                 }
             } catch {
                 // Remove from local state if save failed
                 await MainActor.run {
-                    choreCompletions.removeValue(forKey: chore.id)
+                    weekCompletions.removeAll(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
+                    let currentDay = calendar.component(.weekday, from: now) - 1
+                    if dayOfWeek == currentDay {
+                        choreCompletions.removeValue(forKey: chore.id)
+                    }
                 }
-            }
-        }
-        #else
-        // Demo mode - just toggle locally
-        await MainActor.run {
-            if isChoreCompleted(chore) {
-                choreCompletions.removeValue(forKey: chore.id)
-            } else {
-                choreCompletions[chore.id] = Date()
             }
         }
         #endif
         
         return newAchievements
+    }
+    
+    // Toggle completion for today (convenience method)
+    func toggleChoreCompletion(_ chore: Chore) async -> [Achievement] {
+        let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
+        return await toggleChoreCompletion(chore, forDay: currentDay)
     }
     
     func isChoreCompleted(_ chore: Chore) -> Bool {

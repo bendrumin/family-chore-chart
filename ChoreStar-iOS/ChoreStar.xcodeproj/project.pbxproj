@@ -33,6 +33,7 @@
 		A1234567890ABCDEF12345A7 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A8 /* ConfettiView.swift */; };
 		A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AA /* SoundManager.swift */; };
 		A1234567890ABCDEF12345AB /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AC /* AchievementsView.swift */; };
+		A1234567890ABCDEF12345AD /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AE /* WeekCalendarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		A1234567890ABCDEF12345A8 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345AA /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345AC /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345AE /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +155,7 @@
 				A1234567890ABCDEF12345A6 /* AvatarView.swift */,
 				A1234567890ABCDEF12345A8 /* ConfettiView.swift */,
 				A1234567890ABCDEF12345AC /* AchievementsView.swift */,
+				A1234567890ABCDEF12345AE /* WeekCalendarView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -262,6 +265,7 @@
 				A1234567890ABCDEF12345A5 /* AvatarView.swift in Sources */,
 				A1234567890ABCDEF12345A7 /* ConfettiView.swift in Sources */,
 				A1234567890ABCDEF12345AB /* AchievementsView.swift in Sources */,
+				A1234567890ABCDEF12345AD /* WeekCalendarView.swift in Sources */,
 				A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,

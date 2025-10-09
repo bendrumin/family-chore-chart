@@ -5,6 +5,7 @@ struct ChildDetailView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.dismiss) var dismiss
     @State private var showingAddChore = false
+    @State private var showWeekView = false
     
     private var childChores: [Chore] {
         manager.chores.filter { $0.childId == child.id }
@@ -185,18 +186,43 @@ struct ChildDetailView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: {
-                    showingAddChore = true
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(Color.choreStarGradient)
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 16) {
+                    // Week Calendar View button
+                    Button(action: {
+                        showWeekView = true
+                    }) {
+                        Image(systemName: "calendar")
+                            .font(.title3)
+                            .foregroundColor(.choreStarPrimary)
+                    }
+                    
+                    // Add Chore button
+                    Button(action: {
+                        showingAddChore = true
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.choreStarGradient)
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingAddChore) {
             AddEditChoreView(chore: nil, preselectedChildId: child.id)
+        }
+        .sheet(isPresented: $showWeekView) {
+            NavigationView {
+                WeekCalendarView(child: child)
+                    .environmentObject(manager)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showWeekView = false
+                            }
+                        }
+                    }
+            }
         }
     }
 }
