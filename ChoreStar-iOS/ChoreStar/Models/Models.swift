@@ -206,3 +206,19 @@ struct AchievementBadgeRow: Codable {
     let badge_icon: String
     let earned_at: String
 }
+
+struct FamilySettings: Codable {
+    let id: UUID
+    let userId: UUID
+    let dailyRewardCents: Int
+    let weeklyBonusCents: Int
+    let timezone: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case dailyRewardCents = "daily_reward_cents"
+        case weeklyBonusCents = "weekly_bonus_cents"
+        case timezone
+    }
+}

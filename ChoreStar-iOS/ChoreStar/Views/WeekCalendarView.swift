@@ -6,7 +6,12 @@ struct WeekCalendarView: View {
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
+    @State private var viewMode: ViewMode = .grid
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
+    enum ViewMode {
+        case grid, daily
+    }
     
     private let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     private let fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
@@ -28,13 +33,32 @@ struct WeekCalendarView: View {
         horizontalSizeClass == .regular ? 60 : 50
     }
     
-    private var weekCompletionStats: (completed: Int, total: Int, percentage: Int) {
+    private var weekCompletionStats: (completed: Int, total: Int, percentage: Int, perfectDays: Int, earnings: Double) {
         let totalPossible = childChores.count * 7
         let completed = manager.weekCompletions.filter { completion in
             childChores.contains(where: { $0.id == completion.choreId })
         }.count
         let percentage = totalPossible > 0 ? Int((Double(completed) / Double(totalPossible)) * 100) : 0
-        return (completed, totalPossible, percentage)
+        
+        // Count perfect days
+        var perfectDays = 0
+        var totalEarnings = 0.0
+        for day in 0..<7 {
+            if manager.isPerfectDay(for: child.id, dayOfWeek: day) {
+                perfectDays += 1
+                totalEarnings += manager.calculateDayEarnings(for: child.id, dayOfWeek: day)
+            }
+        }
+        
+        return (completed, totalPossible, percentage, perfectDays, totalEarnings)
+    }
+    
+    private func isDayPerfect(_ dayIndex: Int) -> Bool {
+        return manager.isPerfectDay(for: child.id, dayOfWeek: dayIndex)
+    }
+    
+    private func dayEarnings(_ dayIndex: Int) -> Double {
+        return manager.calculateDayEarnings(for: child.id, dayOfWeek: dayIndex)
     }
     
     var body: some View {
@@ -48,47 +72,78 @@ struct WeekCalendarView: View {
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarTextPrimary)
                         
-                        Text("Tap any cell to toggle completion")
-                            .font(.subheadline)
-                            .foregroundColor(.choreStarTextSecondary)
-                    }
-                    .padding(.top, 20)
+                    Text("Tap any cell to toggle completion")
+                        .font(.subheadline)
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+                .padding(.top, 20)
+                
+                // View Mode Picker
+                Picker("View Mode", selection: $viewMode) {
+                    Text("Grid").tag(ViewMode.grid)
+                    Text("Daily List").tag(ViewMode.daily)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 20)
                 
                 // Week Summary Card
                 if !childChores.isEmpty {
-                    HStack(spacing: 20) {
-                        VStack(spacing: 4) {
-                            Text("\(weekCompletionStats.completed)")
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color.choreStarGradient)
-                            Text("Completed")
-                                .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
+                    VStack(spacing: 16) {
+                        HStack(spacing: 16) {
+                            VStack(spacing: 4) {
+                                Text("\(weekCompletionStats.perfectDays)")
+                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.choreStarGradient)
+                                Image(systemName: "star.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarAccent)
+                                Text("Perfect Days")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            Divider()
+                                .frame(height: 60)
+                            
+                            VStack(spacing: 4) {
+                                Text(String(format: "$%.2f", weekCompletionStats.earnings))
+                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.choreStarWarningGradient)
+                                Image(systemName: "dollarsign.circle.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarAccent)
+                                Text("Earned")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            Divider()
+                                .frame(height: 60)
+                            
+                            VStack(spacing: 4) {
+                                Text("\(weekCompletionStats.percentage)%")
+                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color.choreStarSuccessGradient)
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarSuccess)
+                                Text("Complete")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                         
-                        Divider()
-                            .frame(height: 50)
-                        
-                        VStack(spacing: 4) {
-                            Text("\(weekCompletionStats.total)")
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(.choreStarTextPrimary)
-                            Text("Total")
+                        // Show daily reward info
+                        HStack(spacing: 6) {
+                            Image(systemName: "info.circle.fill")
                                 .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
-                        }
-                        
-                        Divider()
-                            .frame(height: 50)
-                        
-                        VStack(spacing: 4) {
-                            Text("\(weekCompletionStats.percentage)%")
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color.choreStarSuccessGradient)
-                            Text("Complete")
+                            Text("Complete all chores in a day to earn \(String(format: "$%.2f", Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0))")
                                 .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
                         }
+                        .foregroundColor(.choreStarTextSecondary)
                     }
                     .padding(20)
                     .background(Color.choreStarCardBackground)
@@ -99,8 +154,8 @@ struct WeekCalendarView: View {
                 
                 if childChores.isEmpty {
                     EmptyWeekView(childName: child.name)
-                } else {
-                    // Week grid - scrollable horizontally for small screens
+                } else if viewMode == .grid {
+                    // GRID VIEW - Week grid - scrollable horizontally for small screens
                     let gridWidth = choreColumnWidth + (cellSize * 7) + 40
                     let needsScroll = gridWidth > geometry.size.width
                     
@@ -133,6 +188,18 @@ struct WeekCalendarView: View {
                                             Circle()
                                                 .fill(Color.clear)
                                                 .frame(width: 6, height: 6)
+                                        }
+                                        
+                                        // Show earnings if perfect day
+                                        if isDayPerfect(dayIndex) {
+                                            Text(String(format: "$%.2f", dayEarnings(dayIndex)))
+                                                .font(.caption2)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.choreStarAccent)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(Color.choreStarAccent.opacity(0.15))
+                                                .cornerRadius(6)
                                         }
                                     }
                                     .frame(width: cellSize)
@@ -169,6 +236,23 @@ struct WeekCalendarView: View {
                         .shadow(color: .black.opacity(0.08), radius: 15, x: 0, y: 5)
                     }
                     .padding(.horizontal, 16)
+                } else {
+                    // DAILY LIST VIEW
+                    VStack(spacing: 16) {
+                        ForEach(0..<7) { dayIndex in
+                            DayBreakdownCard(
+                                dayIndex: dayIndex,
+                                dayName: fullDays[dayIndex],
+                                shortDayName: days[dayIndex],
+                                chores: childChores,
+                                manager: manager,
+                                earnedAchievements: $earnedAchievements,
+                                showAchievementAlert: $showAchievementAlert,
+                                showConfetti: $showConfetti
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
                 }
                 
                     Spacer(minLength: 40)
@@ -214,24 +298,14 @@ struct ChoreWeekRow: View {
                         .foregroundColor(.choreStarTextPrimary)
                         .lineLimit(2)
                     
-                    HStack(spacing: 8) {
-                        if let category = chore.category {
-                            HStack(spacing: 4) {
-                                Image(systemName: "tag.fill")
-                                    .font(.system(size: 8))
-                                Text(category)
-                                    .font(.caption)
-                            }
-                            .foregroundColor(.choreStarTextSecondary)
-                        }
-                        
+                    if let category = chore.category {
                         HStack(spacing: 4) {
-                            Image(systemName: "dollarsign.circle.fill")
+                            Image(systemName: "tag.fill")
                                 .font(.system(size: 8))
-                            Text(String(format: "$%.2f", chore.reward))
+                            Text(category)
                                 .font(.caption)
                         }
-                        .foregroundColor(.choreStarAccent)
+                        .foregroundColor(.choreStarTextSecondary)
                     }
                 }
             }
@@ -318,6 +392,242 @@ struct DayCell: View {
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isCompleted ? 1.0 : 0.95)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isCompleted)
+    }
+}
+
+struct DayBreakdownCard: View {
+    let dayIndex: Int
+    let dayName: String
+    let shortDayName: String
+    let chores: [Chore]
+    @ObservedObject var manager: SupabaseManager
+    @Binding var earnedAchievements: [Achievement]
+    @Binding var showAchievementAlert: Bool
+    @Binding var showConfetti: Bool
+    
+    private var currentDayOfWeek: Int {
+        Calendar.current.component(.weekday, from: Date()) - 1
+    }
+    
+    private var isToday: Bool {
+        dayIndex == currentDayOfWeek
+    }
+    
+    private var completedChores: [Chore] {
+        chores.filter { manager.isChoreCompleted($0, forDay: dayIndex) }
+    }
+    
+    private var pendingChores: [Chore] {
+        chores.filter { !manager.isChoreCompleted($0, forDay: dayIndex) }
+    }
+    
+    private var completionPercentage: Double {
+        guard !chores.isEmpty else { return 0 }
+        return Double(completedChores.count) / Double(chores.count)
+    }
+    
+    private var isPerfectDay: Bool {
+        !chores.isEmpty && completedChores.count == chores.count
+    }
+    
+    private var dayEarnings: Double {
+        guard isPerfectDay, let firstChore = chores.first else { return 0.0 }
+        return manager.calculateDayEarnings(for: firstChore.childId, dayOfWeek: dayIndex)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Day Header
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(dayName)
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(isToday ? .choreStarPrimary : .choreStarTextPrimary)
+                        
+                        if isToday {
+                            Text("TODAY")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.choreStarPrimary)
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    HStack(spacing: 8) {
+                        Text("\(completedChores.count) of \(chores.count) completed")
+                            .font(.caption)
+                            .foregroundColor(.choreStarTextSecondary)
+                        
+                        // Show earnings ONLY if all chores complete
+                        if isPerfectDay && dayEarnings > 0 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 10))
+                                Text(String(format: "$%.2f", dayEarnings))
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            }
+                            .foregroundColor(.choreStarAccent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.choreStarAccent.opacity(0.15))
+                            .cornerRadius(8)
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                // Circular progress
+                ZStack {
+                    Circle()
+                        .stroke(Color.choreStarTextSecondary.opacity(0.2), lineWidth: 4)
+                        .frame(width: 50, height: 50)
+                    
+                    Circle()
+                        .trim(from: 0, to: completionPercentage)
+                        .stroke(
+                            isPerfectDay ? Color.choreStarAccent : Color.choreStarSuccess,
+                            style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                        )
+                        .frame(width: 50, height: 50)
+                        .rotationEffect(.degrees(-90))
+                    
+                    if isPerfectDay {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.choreStarAccent)
+                    } else {
+                        Text("\(Int(completionPercentage * 100))%")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.choreStarTextPrimary)
+                    }
+                }
+            }
+            .padding(.bottom, 8)
+            
+            // Chores list
+            VStack(spacing: 8) {
+                ForEach(chores) { chore in
+                    DailyChoreRow(
+                        chore: chore,
+                        dayIndex: dayIndex,
+                        manager: manager,
+                        earnedAchievements: $earnedAchievements,
+                        showAchievementAlert: $showAchievementAlert,
+                        showConfetti: $showConfetti
+                    )
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            LinearGradient(
+                colors: isToday ? 
+                    [Color.choreStarPrimary.opacity(0.05), Color.choreStarCardBackground] :
+                    [Color.choreStarCardBackground, Color.choreStarCardBackground],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(isToday ? Color.choreStarPrimary.opacity(0.3) : Color.clear, lineWidth: 2)
+        )
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+    }
+}
+
+struct DailyChoreRow: View {
+    let chore: Chore
+    let dayIndex: Int
+    @ObservedObject var manager: SupabaseManager
+    @Binding var earnedAchievements: [Achievement]
+    @Binding var showAchievementAlert: Bool
+    @Binding var showConfetti: Bool
+    
+    private var currentDayOfWeek: Int {
+        Calendar.current.component(.weekday, from: Date()) - 1
+    }
+    
+    private var isToday: Bool {
+        dayIndex == currentDayOfWeek
+    }
+    
+    private var isCompleted: Bool {
+        manager.isChoreCompleted(chore, forDay: dayIndex)
+    }
+    
+    var body: some View {
+        Button(action: {
+            let impact = UIImpactFeedbackGenerator(style: .medium)
+            impact.impactOccurred()
+            
+            let wasCompleted = isCompleted
+            Task {
+                let achievements = await manager.toggleChoreCompletion(chore, forDay: dayIndex)
+                if !wasCompleted && isToday {
+                    SoundManager.shared.play(.success)
+                    await MainActor.run {
+                        if !achievements.isEmpty {
+                            earnedAchievements = achievements
+                            showAchievementAlert = true
+                        }
+                        showConfetti = true
+                    }
+                }
+            }
+        }) {
+            HStack(spacing: 12) {
+                // Completion checkbox
+                ZStack {
+                    Circle()
+                        .strokeBorder(
+                            isCompleted ? Color.choreStarSuccess : Color.choreStarTextSecondary.opacity(0.3),
+                            lineWidth: 2
+                        )
+                        .frame(width: 24, height: 24)
+                    
+                    if isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.choreStarSuccess)
+                    }
+                }
+                
+                // Chore icon
+                Text(chore.icon ?? "📝")
+                    .font(.title3)
+                
+                // Chore info
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(chore.name)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                        .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                    
+                    if let category = chore.category {
+                        Text(category)
+                            .font(.caption2)
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(10)
+            .background(isCompleted ? Color.choreStarSuccess.opacity(0.05) : Color.clear)
+            .cornerRadius(10)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

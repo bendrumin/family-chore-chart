@@ -16,6 +16,7 @@ class SupabaseManager: ObservableObject {
     @Published var choreCompletions: [UUID: Date] = [:] // Today's completions
     @Published var weekCompletions: [(choreId: UUID, dayOfWeek: Int)] = [] // Full week completions
     @Published var achievements: [Achievement] = []
+    @Published var familySettings: FamilySettings?
     @Published var isChildSession = false
     @Published var currentChild: Child?
     
@@ -413,6 +414,7 @@ class SupabaseManager: ObservableObject {
         
         await loadCurrentDayCompletions()
         await loadAchievements()
+        await loadFamilySettings()
         
         // If no data loaded, fall back to demo data
         let currentChildren = await MainActor.run { children }
@@ -613,20 +615,72 @@ class SupabaseManager: ObservableObject {
         return allCompleted
     }
     
-    // Calculate earnings for a child based on today's completions
+    // Check if ALL chores for a child are completed for a specific day (perfect day)
+    func isPerfectDay(for childId: UUID, dayOfWeek: Int) -> Bool {
+        let childChores = chores.filter { $0.childId == childId }
+        guard !childChores.isEmpty else { return false }
+        
+        // Check if all chores are completed for this specific day
+        let allCompleted = childChores.allSatisfy { chore in
+            isChoreCompleted(chore, forDay: dayOfWeek)
+        }
+        
+        return allCompleted
+    }
+    
+    // Calculate earnings for a child for a specific day
     // Money is only earned when ALL chores for the day are completed
-    func calculateTodayEarnings(for childId: UUID) -> Double {
+    func calculateDayEarnings(for childId: UUID, dayOfWeek: Int) -> Double {
         let childChores = chores.filter { $0.childId == childId }
         guard !childChores.isEmpty else { return 0.0 }
         
-        // Check if today is a perfect day (all chores completed)
-        if isTodayPerfectDay(for: childId) {
-            // Calculate the daily reward as the sum of all chore rewards
-            let totalReward = childChores.reduce(0.0) { $0 + $1.reward }
-            return totalReward
+        // Check if this day is a perfect day (all chores completed)
+        if isPerfectDay(for: childId, dayOfWeek: dayOfWeek) {
+            // Use the fixed daily reward from settings (default 7 cents = $0.07)
+            let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
+            return Double(dailyRewardCents) / 100.0
         }
         
         return 0.0
+    }
+    
+    // Calculate earnings for a child based on today's completions
+    // Money is only earned when ALL chores for the day are completed
+    func calculateTodayEarnings(for childId: UUID) -> Double {
+        let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
+        return calculateDayEarnings(for: childId, dayOfWeek: currentDay)
+    }
+    
+    // MARK: - Family Settings
+    
+    func loadFamilySettings() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+        
+        do {
+            let settings: [FamilySettings] = try await client.database
+                .from("family_settings")
+                .select()
+                .eq("user_id", value: uid)
+                .limit(1)
+                .execute()
+                .value
+            
+            await MainActor.run {
+                self.familySettings = settings.first
+                if let settings = settings.first {
+                    debugLastError = "Loaded settings: \(settings.dailyRewardCents)¢ per day"
+                }
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Settings error: \(error.localizedDescription)"
+            }
+        }
+        #endif
     }
     
     func refreshData() {
