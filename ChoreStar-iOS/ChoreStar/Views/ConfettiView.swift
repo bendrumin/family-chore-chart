@@ -112,7 +112,7 @@ struct ConfettiShape: Shape {
             let center = CGPoint(x: rect.midX, y: rect.midY)
             let outerRadius = min(rect.width, rect.height) / 2
             let innerRadius = outerRadius * 0.4
-            let angleIncrement = .pi / 5
+            let angleIncrement = CGFloat.pi / 5
             
             for i in 0..<10 {
                 let angle = -CGFloat.pi / 2 + angleIncrement * CGFloat(i)
