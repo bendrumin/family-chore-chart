@@ -48,7 +48,8 @@ struct AddEditChildView: View {
                         VStack(spacing: 12) {
                             // Avatar preview
                             if let avatarUrl = avatarUrl, !avatarUrl.isEmpty {
-                                AsyncImage(url: URL(string: avatarUrl)) { phase in
+                                let pngUrl = avatarUrl.convertDiceBearToPNG(size: 200)
+                                AsyncImage(url: URL(string: pngUrl)) { phase in
                                     switch phase {
                                     case .success(let image):
                                         image

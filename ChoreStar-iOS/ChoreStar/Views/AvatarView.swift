@@ -1,5 +1,22 @@
 import SwiftUI
 
+extension String {
+    /// Converts DiceBear SVG URLs to PNG format for iOS compatibility
+    func convertDiceBearToPNG(size: Int = 200) -> String {
+        // If it's already a DiceBear URL, convert SVG to PNG
+        if self.contains("dicebear.com") && self.contains("/svg?") {
+            var url = self.replacingOccurrences(of: "/svg?", with: "/png?")
+            // Add size parameter if not present
+            if !url.contains("size=") {
+                url += url.contains("?") ? "&size=\(size)" : "?size=\(size)"
+            }
+            return url
+        }
+        // If it's already PNG or not a DiceBear URL, return as-is
+        return self
+    }
+}
+
 struct AvatarView: View {
     let child: Child
     let size: CGFloat
@@ -7,8 +24,9 @@ struct AvatarView: View {
     var body: some View {
         Group {
             if let avatarUrl = child.avatarUrl, !avatarUrl.isEmpty {
-                // DiceBear avatar from URL
-                AsyncImage(url: URL(string: avatarUrl)) { phase in
+                // DiceBear avatar from URL (convert SVG to PNG for iOS)
+                let pngUrl = avatarUrl.convertDiceBearToPNG(size: Int(size * 2))
+                AsyncImage(url: URL(string: pngUrl)) { phase in
                     switch phase {
                     case .success(let image):
                         image
