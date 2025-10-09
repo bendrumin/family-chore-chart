@@ -55,6 +55,7 @@ struct ChildrenView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: {
+                        SoundManager.shared.play(.pop)
                         showingAddChild = true
                     }) {
                         Image(systemName: "plus.circle.fill")

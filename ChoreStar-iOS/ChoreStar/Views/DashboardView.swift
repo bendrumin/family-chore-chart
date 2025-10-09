@@ -345,8 +345,9 @@ struct ChoreCard: View {
                 let wasCompleted = isCompleted
                 Task {
                     await manager.toggleChoreCompletion(chore)
-                    // Show confetti if newly completed
+                    // Show confetti and play sound if newly completed
                     if !wasCompleted {
+                        SoundManager.shared.play(.success)
                         await MainActor.run {
                             onComplete?()
                         }

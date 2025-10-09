@@ -31,6 +31,7 @@
 		A1234567890ABCDEF12345A3 /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A4 /* AvatarPickerView.swift */; };
 		A1234567890ABCDEF12345A5 /* AvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A6 /* AvatarView.swift */; };
 		A1234567890ABCDEF12345A7 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345A8 /* ConfettiView.swift */; };
+		A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AA /* SoundManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		A1234567890ABCDEF12345A4 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345A6 /* AvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345A8 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345AA /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				A1234567890ABCDEF1234570 /* SupabaseManager.swift */,
+				A1234567890ABCDEF12345AA /* SoundManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 				A1234567890ABCDEF12345A3 /* AvatarPickerView.swift in Sources */,
 				A1234567890ABCDEF12345A5 /* AvatarView.swift in Sources */,
 				A1234567890ABCDEF12345A7 /* ConfettiView.swift in Sources */,
+				A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,
 			);

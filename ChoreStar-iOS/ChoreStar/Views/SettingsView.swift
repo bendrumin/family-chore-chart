@@ -2,12 +2,28 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @ObservedObject var soundManager = SoundManager.shared
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
 
     var body: some View {
         NavigationView {
             Form {
+                Section("Preferences") {
+                    Toggle(isOn: $soundManager.isSoundEnabled) {
+                        HStack {
+                            Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.3.fill" : "speaker.slash.fill")
+                                .foregroundColor(soundManager.isSoundEnabled ? .choreStarSuccess : .choreStarTextSecondary)
+                            Text("Sound Effects")
+                        }
+                    }
+                    .onChange(of: soundManager.isSoundEnabled) { newValue in
+                        if newValue {
+                            SoundManager.shared.play(.cheer)
+                        }
+                    }
+                }
+                
                 Section("Account") {
                     HStack {
                         Text("Email")
