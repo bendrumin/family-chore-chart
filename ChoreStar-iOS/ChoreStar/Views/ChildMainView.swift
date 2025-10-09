@@ -17,7 +17,8 @@ struct ChildMainView: View {
     }
     
     private var totalEarnings: Double {
-        completedChores.reduce(0) { $0 + $1.reward }
+        // Only earn money when ALL chores for today are completed
+        manager.calculateTodayEarnings(for: manager.currentChild?.id ?? UUID())
     }
     
     var body: some View {

@@ -620,6 +620,35 @@ class SupabaseManager: ObservableObject {
         return Calendar.current.isDate(completionDate, inSameDayAs: Date())
     }
     
+    // Check if ALL chores for a child are completed today (perfect day)
+    func isTodayPerfectDay(for childId: UUID) -> Bool {
+        let childChores = chores.filter { $0.childId == childId }
+        guard !childChores.isEmpty else { return false }
+        
+        // Check if all chores are completed
+        let allCompleted = childChores.allSatisfy { chore in
+            isChoreCompleted(chore)
+        }
+        
+        return allCompleted
+    }
+    
+    // Calculate earnings for a child based on today's completions
+    // Money is only earned when ALL chores for the day are completed
+    func calculateTodayEarnings(for childId: UUID) -> Double {
+        let childChores = chores.filter { $0.childId == childId }
+        guard !childChores.isEmpty else { return 0.0 }
+        
+        // Check if today is a perfect day (all chores completed)
+        if isTodayPerfectDay(for: childId) {
+            // Calculate the daily reward as the sum of all chore rewards
+            let totalReward = childChores.reduce(0.0) { $0 + $1.reward }
+            return totalReward
+        }
+        
+        return 0.0
+    }
+    
     func refreshData() {
         Task {
             await loadRemoteData()

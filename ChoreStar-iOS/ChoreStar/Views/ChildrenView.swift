@@ -91,7 +91,8 @@ struct ChildDetailCard: View {
     }
     
     private var totalEarnings: Double {
-        childChores.filter { manager.isChoreCompleted($0) }.reduce(0) { $0 + $1.reward }
+        // Only earn money when ALL chores for today are completed
+        manager.calculateTodayEarnings(for: child.id)
     }
     
     private var completionPercentage: Double {
