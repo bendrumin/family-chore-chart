@@ -117,7 +117,8 @@ struct AvatarPickerView: View {
                                 if type == "emoji" {
                                     onSelect("", value) // emoji goes in avatarFile
                                 } else {
-                                    let url = "https://api.dicebear.com/7.x/\(type)/svg?seed=\(value)"
+                                    // Use PNG format for iOS compatibility
+                                    let url = "https://api.dicebear.com/7.x/\(type)/png?seed=\(value)&size=200"
                                     onSelect(url, value)
                                 }
                             }
@@ -139,7 +140,7 @@ struct DiceBearAvatarOption: View {
     let onTap: () -> Void
     
     private var avatarUrl: String {
-        "https://api.dicebear.com/7.x/\(style)/svg?seed=\(seed)"
+        "https://api.dicebear.com/7.x/\(style)/png?seed=\(seed)&size=140"
     }
     
     var body: some View {
