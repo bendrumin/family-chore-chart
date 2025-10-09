@@ -748,35 +748,26 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        let uid = await MainActor.run { debugUserId }
-        guard let uid = uid else {
-            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user ID"])
-        }
-        
         struct NewChoreRow: Encodable {
             let name: String
             let child_id: String
-            let user_id: String
             let reward_cents: Int
             let description: String?
             let category: String?
             let icon: String?
             let color: String?
             let notes: String?
-            let is_active: Bool
         }
         
         let newChore = NewChoreRow(
             name: name,
             child_id: childId.uuidString,
-            user_id: uid,
             reward_cents: rewardCents,
             description: description,
             category: category,
             icon: icon,
             color: color,
-            notes: notes,
-            is_active: true
+            notes: notes
         )
         
         try await client.database
