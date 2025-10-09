@@ -195,7 +195,7 @@ struct EnhancedChoreRow: View {
             // Completion button with animation
             Button(action: {
                 Task {
-                    await manager.toggleChoreCompletion(chore)
+                    let _ = await manager.toggleChoreCompletion(chore)
                 }
             }) {
                 ZStack {

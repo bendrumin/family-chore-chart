@@ -3,6 +3,8 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var showConfetti = false
+    @State private var showAchievementAlert = false
+    @State private var earnedAchievements: [Achievement] = []
 
     private var completedChores: Int {
         manager.chores.filter { manager.isChoreCompleted($0) }.count
@@ -185,9 +187,15 @@ struct DashboardView: View {
 
                             LazyVStack(spacing: 8) {
                                 ForEach(manager.chores, id: \.id) { chore in
-                                    ChoreCard(chore: chore, manager: manager) {
-                                        showConfetti = true
-                                    }
+                                    ChoreCard(
+                                        chore: chore,
+                                        manager: manager,
+                                        onComplete: {
+                                            showConfetti = true
+                                        },
+                                        earnedAchievements: $earnedAchievements,
+                                        showAchievementAlert: $showAchievementAlert
+                                    )
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -206,6 +214,13 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.large)
         }
         .confetti(isPresented: $showConfetti)
+        .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
+            Button("Awesome!", role: .cancel) { }
+        } message: {
+            if let first = earnedAchievements.first {
+                Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
+            }
+        }
     }
 }
 
@@ -326,13 +341,15 @@ struct ChoreCard: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
     var onComplete: (() -> Void)? = nil
+    @Binding var earnedAchievements: [Achievement]
+    @Binding var showAchievementAlert: Bool
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
     }
     
     private var childName: String {
-        manager.children.first { $0.id == chore.childId }?.name ?? "Unknown"
+        manager.children.first(where: { $0.id == chore.childId })?.name ?? "Unknown"
     }
     
     var body: some View {
@@ -344,12 +361,18 @@ struct ChoreCard: View {
                 
                 let wasCompleted = isCompleted
                 Task {
-                    await manager.toggleChoreCompletion(chore)
+                    let achievements = await manager.toggleChoreCompletion(chore)
                     // Show confetti and play sound if newly completed
                     if !wasCompleted {
                         SoundManager.shared.play(.success)
                         await MainActor.run {
                             onComplete?()
+                            
+                            // Show achievement alert if any were earned
+                            if !achievements.isEmpty {
+                                earnedAchievements = achievements
+                                showAchievementAlert = true
+                            }
                         }
                     }
                 }

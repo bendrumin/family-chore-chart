@@ -210,7 +210,7 @@ struct BigChoreCard: View {
             let impact = UIImpactFeedbackGenerator(style: .heavy)
             impact.impactOccurred()
             Task {
-                await manager.toggleChoreCompletion(chore)
+                let _ = await manager.toggleChoreCompletion(chore)
             }
         }) {
             VStack(spacing: 16) {

@@ -97,21 +97,66 @@ struct ChildSession: Codable {
     }
 }
 
-struct ChildAchievement: Codable, Identifiable {
+struct Achievement: Codable, Identifiable {
     let id: UUID
     let childId: UUID
-    let title: String
-    let description: String
-    let icon: String
+    let badgeType: String
+    let badgeName: String
+    let badgeDescription: String
+    let badgeIcon: String
     let earnedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id
         case childId = "child_id"
-        case title
-        case description
-        case icon
+        case badgeType = "badge_type"
+        case badgeName = "badge_name"
+        case badgeDescription = "badge_description"
+        case badgeIcon = "badge_icon"
         case earnedAt = "earned_at"
+    }
+}
+
+// Badge types matching web app
+enum BadgeType: String {
+    case firstChore = "first_chore"
+    case perfectWeek = "perfect_week"
+    case dedicated = "dedicated"
+    case earlyBird = "early_bird"
+    case nightOwl = "night_owl"
+    case weekendWarrior = "weekend_warrior"
+    
+    var name: String {
+        switch self {
+        case .firstChore: return "First Step"
+        case .perfectWeek: return "Perfect Week"
+        case .dedicated: return "Dedicated Helper"
+        case .earlyBird: return "Early Bird"
+        case .nightOwl: return "Night Owl"
+        case .weekendWarrior: return "Weekend Warrior"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .firstChore: return "Completed your first chore!"
+        case .perfectWeek: return "Completed all chores for the entire week!"
+        case .dedicated: return "Completed 10 chores total!"
+        case .earlyBird: return "Completed chores before 9 AM!"
+        case .nightOwl: return "Completed chores after 8 PM!"
+        case .weekendWarrior: return "Completed all weekend chores!"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .firstChore: return "🎯"
+        case .perfectWeek: return "🌟"
+        case .dedicated: return "💪"
+        case .earlyBird: return "🌅"
+        case .nightOwl: return "🌙"
+        case .weekendWarrior: return "⚔️"
+        }
     }
 }
 
@@ -150,4 +195,14 @@ struct ChoreCompletionRow: Codable {
     let day_of_week: Int
     let week_start: String
     let completed_at: String?
+}
+
+struct AchievementBadgeRow: Codable {
+    let id: UUID
+    let child_id: UUID
+    let badge_type: String
+    let badge_name: String
+    let badge_description: String
+    let badge_icon: String
+    let earned_at: String
 }

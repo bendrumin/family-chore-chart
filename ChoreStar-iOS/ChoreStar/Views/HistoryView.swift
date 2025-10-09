@@ -62,12 +62,12 @@ struct HistoryView: View {
                             color: .choreStarAccent
                         )
                         
-                        SummaryCard(
-                            icon: "flame.fill",
-                            value: "0",
-                            label: "Streak Days",
-                            color: .choreStarWarning
-                        )
+                    SummaryCard(
+                        icon: "trophy.fill",
+                        value: "\(manager.achievements.count)",
+                        label: "Total Badges",
+                        color: .choreStarWarning
+                    )
                         
                         SummaryCard(
                             icon: "chart.line.uptrend.xyaxis",
@@ -169,7 +169,11 @@ struct LeaderboardRow: View {
     }
     
     private var totalEarnings: Double {
-        childChores.filter { manager.isChoreCompleted($0) }.reduce(0) { $0 + $1.reward }
+        manager.calculateTodayEarnings(for: child.id)
+    }
+    
+    private var badgeCount: Int {
+        manager.getAchievements(for: child.id).count
     }
     
     private var rankColor: Color {
@@ -235,6 +239,15 @@ struct LeaderboardRow: View {
                             .font(.caption)
                             .foregroundColor(.choreStarAccent)
                         Text(String(format: "$%.2f", totalEarnings))
+                            .font(.subheadline)
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                    
+                    HStack(spacing: 4) {
+                        Image(systemName: "trophy.fill")
+                            .font(.caption)
+                            .foregroundColor(.choreStarWarning)
+                        Text("\(badgeCount)")
                             .font(.subheadline)
                             .foregroundColor(.choreStarTextSecondary)
                     }

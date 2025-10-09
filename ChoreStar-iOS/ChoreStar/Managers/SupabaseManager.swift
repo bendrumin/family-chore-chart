@@ -14,6 +14,7 @@ class SupabaseManager: ObservableObject {
     @Published var children: [Child] = []
     @Published var chores: [Chore] = []
     @Published var choreCompletions: [UUID: Date] = [:]
+    @Published var achievements: [Achievement] = []
     @Published var isChildSession = false
     @Published var currentChild: Child?
     
@@ -131,7 +132,7 @@ class SupabaseManager: ObservableObject {
         }
         
         // Find the child
-        let foundChild = await MainActor.run { children.first { $0.id == childUUID } }
+        let foundChild = await MainActor.run { children.first(where: { $0.id == childUUID }) }
         
         await MainActor.run {
             if let child = foundChild {
@@ -147,7 +148,7 @@ class SupabaseManager: ObservableObject {
     }
     
     func authenticateChild(childId: UUID, pin: String) async -> Bool {
-        let child = await MainActor.run { children.first { $0.id == childId } }
+        let child = await MainActor.run { children.first(where: { $0.id == childId }) }
         
         guard let child = child,
               let storedPin = child.childPin,
@@ -410,6 +411,7 @@ class SupabaseManager: ObservableObject {
         }
         
         await loadCurrentDayCompletions()
+        await loadAchievements()
         
         // If no data loaded, fall back to demo data
         let currentChildren = await MainActor.run { children }
@@ -446,8 +448,6 @@ class SupabaseManager: ObservableObject {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = dateFormatter.string(from: weekStart)
             
-            print("DEBUG: Loading completions for day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
-            
             let completions: [ChoreCompletionRow] = try await client.database
                 .from("chore_completions")
                 .select()
@@ -455,8 +455,6 @@ class SupabaseManager: ObservableObject {
                 .eq("week_start", value: weekStartString)
                 .execute()
                 .value
-            
-            print("DEBUG: Loaded \(completions.count) completions for today")
             
             var newCompletions: [UUID: Date] = [:]
             for completion in completions {
@@ -469,7 +467,6 @@ class SupabaseManager: ObservableObject {
                 debugLastError = "Loaded \(completions.count) completions for today"
             }
         } catch {
-            print("DEBUG: Error loading completions: \(error)")
             await MainActor.run {
                 debugLastError = "Completions error: \(error.localizedDescription)"
             }
@@ -477,14 +474,12 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func toggleChoreCompletion(_ chore: Chore) async {
+    func toggleChoreCompletion(_ chore: Chore) async -> [Achievement] {
         let isCompleted = await MainActor.run { isChoreCompleted(chore) }
-        
-        print("DEBUG: Toggling chore '\(chore.name)', currently completed: \(isCompleted)")
+        var newAchievements: [Achievement] = []
         
         #if canImport(Supabase)
         guard let client = client else {
-            print("DEBUG: No Supabase client, toggling locally")
             await MainActor.run {
                 if isCompleted {
                     choreCompletions.removeValue(forKey: chore.id)
@@ -493,7 +488,7 @@ class SupabaseManager: ObservableObject {
                 }
                 debugLastError = "Toggled locally: \(chore.name)"
             }
-            return
+            return newAchievements
         }
         
         if isCompleted {
@@ -501,9 +496,7 @@ class SupabaseManager: ObservableObject {
             await MainActor.run {
                 self.objectWillChange.send()
                 choreCompletions.removeValue(forKey: chore.id)
-                debugLastError = "⏳ Removing: \(chore.name)"
             }
-            print("DEBUG: Removed completion from local state, deleting from database...")
             
             // Delete from database
             do {
@@ -515,8 +508,6 @@ class SupabaseManager: ObservableObject {
                 formatter.dateFormat = "yyyy-MM-dd"
                 let weekStartString = formatter.string(from: weekStart)
                 
-                print("DEBUG: Deleting completion for chore_id=\(chore.id), day=\(dayOfWeek), week=\(weekStartString)")
-                
                 let _ = try await client.database
                     .from("chore_completions")
                     .delete()
@@ -524,17 +515,8 @@ class SupabaseManager: ObservableObject {
                     .eq("day_of_week", value: dayOfWeek)
                     .eq("week_start", value: weekStartString)
                     .execute()
-                
-                print("DEBUG: Database delete successful!")
-                await MainActor.run {
-                    debugLastError = "✅ Unchecked: \(chore.name)"
-                }
             } catch {
-                print("DEBUG: Database delete failed: \(error)")
-                await MainActor.run {
-                    // Keep it removed from local state even if delete fails
-                    debugLastError = "✅ Unchecked (local): \(chore.name)"
-                }
+                // Keep it removed from local state even if delete fails
             }
         } else {
             // Add completion
@@ -550,14 +532,10 @@ class SupabaseManager: ObservableObject {
             formatter.dateFormat = "yyyy-MM-dd"
             let weekStartString = formatter.string(from: weekStart)
             
-            print("DEBUG: Adding completion to local state...")
             await MainActor.run {
                 self.objectWillChange.send()
                 choreCompletions[chore.id] = now
-                debugLastError = "⏳ Saving completion for: \(chore.name)"
             }
-            
-            print("DEBUG: Saving to database with day_of_week=\(dayOfWeek), week_start=\(weekStartString)")
             
             // Save to database (upsert behavior - insert or ignore if exists)
             do {
@@ -574,30 +552,19 @@ class SupabaseManager: ObservableObject {
                     .insert(completion)
                     .execute()
                 
-                print("DEBUG: Database insert successful!")
-                await MainActor.run {
-                    debugLastError = "✅ Saved: \(chore.name)"
-                }
+                // Check for achievements after successful completion
+                newAchievements = await checkAndAwardAchievements(for: chore.childId)
             } catch let error as PostgrestError {
                 // If it's a duplicate key error, that's okay - it means it's already completed
-                if error.code == "23505" {
-                    print("DEBUG: Chore already completed in database (duplicate key)")
+                if error.code != "23505" {
+                    // Remove from local state if save failed (but not for duplicate key)
                     await MainActor.run {
-                        debugLastError = "✅ Already saved: \(chore.name)"
-                    }
-                } else {
-                    print("DEBUG: Database insert failed: \(error)")
-                    await MainActor.run {
-                        debugLastError = "❌ Save failed: \(error.message)"
-                        // Remove from local state if save failed
                         choreCompletions.removeValue(forKey: chore.id)
                     }
                 }
             } catch {
-                print("DEBUG: Database insert failed: \(error)")
+                // Remove from local state if save failed
                 await MainActor.run {
-                    debugLastError = "❌ Save failed: \(error.localizedDescription)"
-                    // Remove from local state if save failed
                     choreCompletions.removeValue(forKey: chore.id)
                 }
             }
@@ -611,8 +578,9 @@ class SupabaseManager: ObservableObject {
                 choreCompletions[chore.id] = Date()
             }
         }
-        print("DEBUG: Toggled in demo mode")
         #endif
+        
+        return newAchievements
     }
     
     func isChoreCompleted(_ chore: Chore) -> Bool {
@@ -874,6 +842,152 @@ class SupabaseManager: ObservableObject {
         
         await loadRemoteData()
         #endif
+    }
+    
+    // MARK: - Achievement Management
+    
+    func loadAchievements() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        
+        do {
+            let currentChildren = await MainActor.run { children }
+            guard !currentChildren.isEmpty else { return }
+            
+            let childIds = currentChildren.map { $0.id.uuidString }
+            
+            let achievementRows: [AchievementBadgeRow] = try await client.database
+                .from("achievement_badges")
+                .select()
+                .in("child_id", values: childIds)
+                .order("earned_at", ascending: false)
+                .execute()
+                .value
+            
+            let mappedAchievements = achievementRows.map { row in
+                Achievement(
+                    id: row.id,
+                    childId: row.child_id,
+                    badgeType: row.badge_type,
+                    badgeName: row.badge_name,
+                    badgeDescription: row.badge_description,
+                    badgeIcon: row.badge_icon,
+                    earnedAt: ISO8601DateFormatter().date(from: row.earned_at) ?? Date()
+                )
+            }
+            
+            await MainActor.run {
+                self.achievements = mappedAchievements
+                debugLastError = "Loaded \(self.achievements.count) achievements"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Achievements error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+    
+    func awardAchievement(childId: UUID, badgeType: BadgeType) async -> Bool {
+        #if canImport(Supabase)
+        guard let client = client else { return false }
+        
+        // Check if badge already earned
+        let existingBadge = await MainActor.run {
+            achievements.first(where: { $0.childId == childId && $0.badgeType == badgeType.rawValue })
+        }
+        
+        if existingBadge != nil {
+            return false // Already earned
+        }
+        
+        struct NewAchievement: Encodable {
+            let child_id: String
+            let badge_type: String
+            let badge_name: String
+            let badge_description: String
+            let badge_icon: String
+        }
+        
+        let newAchievement = NewAchievement(
+            child_id: childId.uuidString,
+            badge_type: badgeType.rawValue,
+            badge_name: badgeType.name,
+            badge_description: badgeType.description,
+            badge_icon: badgeType.icon
+        )
+        
+        do {
+            try await client.database
+                .from("achievement_badges")
+                .insert(newAchievement)
+                .execute()
+            
+            await loadAchievements()
+            
+            await MainActor.run {
+                debugLastError = "✅ Achievement awarded: \(badgeType.name)"
+            }
+            
+            return true
+        } catch {
+            await MainActor.run {
+                debugLastError = "❌ Achievement error: \(error.localizedDescription)"
+            }
+            return false
+        }
+        #else
+        return false
+        #endif
+    }
+    
+    func checkAndAwardAchievements(for childId: UUID) async -> [Achievement] {
+        var newAchievements: [Achievement] = []
+        
+        let childChores = await MainActor.run {
+            chores.filter { $0.childId == childId }
+        }
+        
+        guard !childChores.isEmpty else { return newAchievements }
+        
+        // Count total completions for this child (simple count of completed today)
+        let completedToday = await MainActor.run {
+            childChores.filter { isChoreCompleted($0) }.count
+        }
+        
+        // Check for First Chore achievement
+        if completedToday == 1 {
+            let awarded = await awardAchievement(childId: childId, badgeType: .firstChore)
+            if awarded {
+                let foundAchievement = await MainActor.run {
+                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.firstChore.rawValue })
+                }
+                if let achievement = foundAchievement {
+                    newAchievements.append(achievement)
+                }
+            }
+        }
+        
+        // Check for Perfect Week achievement (all chores completed today)
+        if completedToday == childChores.count && completedToday > 0 {
+            let awarded = await awardAchievement(childId: childId, badgeType: .perfectWeek)
+            if awarded {
+                let foundAchievement = await MainActor.run {
+                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.perfectWeek.rawValue })
+                }
+                if let achievement = foundAchievement {
+                    newAchievements.append(achievement)
+                }
+            }
+        }
+        
+        // TODO: Add more achievement checks (dedicated, etc.) when we have historical completion data
+        
+        return newAchievements
+    }
+    
+    func getAchievements(for childId: UUID) -> [Achievement] {
+        return achievements.filter { $0.childId == childId }
     }
     
     // Demo data for testing

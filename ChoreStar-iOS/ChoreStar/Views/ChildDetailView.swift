@@ -83,6 +83,16 @@ struct ChildDetailView: View {
                             label: "Earned",
                             color: .choreStarAccent
                         )
+                        
+                        NavigationLink(destination: AchievementsView(child: child)) {
+                            StatCard(
+                                icon: "trophy.fill",
+                                value: "\(manager.getAchievements(for: child.id).count)",
+                                label: "Badges",
+                                color: .choreStarWarning
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     
                     // Progress bar
@@ -237,7 +247,7 @@ struct ChildChoreCard: View {
                 let impact = UIImpactFeedbackGenerator(style: .medium)
                 impact.impactOccurred()
                 Task {
-                    await manager.toggleChoreCompletion(chore)
+                    let _ = await manager.toggleChoreCompletion(chore)
                 }
             }) {
                 ZStack {
