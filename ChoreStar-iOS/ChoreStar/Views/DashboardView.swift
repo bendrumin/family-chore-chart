@@ -16,6 +16,20 @@ struct DashboardView: View {
         guard totalChores > 0 else { return 0 }
         return Double(completedChores) / Double(totalChores)
     }
+    
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 0..<12:
+            return "Good morning! ☀️"
+        case 12..<17:
+            return "Good afternoon! 👋"
+        case 17..<21:
+            return "Good evening! 🌆"
+        default:
+            return "Good night! 🌙"
+        }
+    }
 
     var body: some View {
         NavigationView {
@@ -25,7 +39,7 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("Good morning! 👋")
+                                Text(greeting)
                                     .font(.title2)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.choreStarTextPrimary)

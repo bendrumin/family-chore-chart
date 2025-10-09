@@ -102,15 +102,8 @@ struct ChildDetailCard: View {
         VStack(spacing: 16) {
             // Avatar with edit button overlay
             ZStack(alignment: .topTrailing) {
-                Circle()
-                    .fill(Color.fromString(child.avatarColor))
-                    .frame(width: 80, height: 80)
-                    .overlay(
-                        Text(child.initials)
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                    )
+                AvatarView(child: child, size: 80)
+                    .shadow(color: Color.fromString(child.avatarColor).opacity(0.4), radius: 8, x: 0, y: 4)
                 
                 // Edit button
                 Button(action: { showingEditSheet = true }) {
