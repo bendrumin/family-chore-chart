@@ -28,27 +28,83 @@ struct WeekCalendarView: View {
         horizontalSizeClass == .regular ? 60 : 50
     }
     
+    private var weekCompletionStats: (completed: Int, total: Int, percentage: Int) {
+        let totalPossible = childChores.count * 7
+        let completed = manager.weekCompletions.filter { completion in
+            childChores.contains(where: { $0.id == completion.choreId })
+        }.count
+        let percentage = totalPossible > 0 ? Int((Double(completed) / Double(totalPossible)) * 100) : 0
+        return (completed, totalPossible, percentage)
+    }
+    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("\(child.name)'s Week")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.choreStarTextPrimary)
-                    
-                    Text("Tap any cell to toggle completion")
-                        .font(.subheadline)
-                        .foregroundColor(.choreStarTextSecondary)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header
+                    VStack(spacing: 8) {
+                        Text("\(child.name)'s Week")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.choreStarTextPrimary)
+                        
+                        Text("Tap any cell to toggle completion")
+                            .font(.subheadline)
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                    .padding(.top, 20)
+                
+                // Week Summary Card
+                if !childChores.isEmpty {
+                    HStack(spacing: 20) {
+                        VStack(spacing: 4) {
+                            Text("\(weekCompletionStats.completed)")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.choreStarGradient)
+                            Text("Completed")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                        
+                        Divider()
+                            .frame(height: 50)
+                        
+                        VStack(spacing: 4) {
+                            Text("\(weekCompletionStats.total)")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(.choreStarTextPrimary)
+                            Text("Total")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                        
+                        Divider()
+                            .frame(height: 50)
+                        
+                        VStack(spacing: 4) {
+                            Text("\(weekCompletionStats.percentage)%")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.choreStarSuccessGradient)
+                            Text("Complete")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                    }
+                    .padding(20)
+                    .background(Color.choreStarCardBackground)
+                    .cornerRadius(20)
+                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
+                    .padding(.horizontal, 20)
                 }
-                .padding(.top, 20)
                 
                 if childChores.isEmpty {
                     EmptyWeekView(childName: child.name)
                 } else {
                     // Week grid - scrollable horizontally for small screens
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    let gridWidth = choreColumnWidth + (cellSize * 7) + 40
+                    let needsScroll = gridWidth > geometry.size.width
+                    
+                    ScrollView(.horizontal, showsIndicators: needsScroll) {
                         VStack(spacing: 0) {
                             // Day headers
                             HStack(spacing: 4) {
@@ -89,7 +145,7 @@ struct WeekCalendarView: View {
                             Divider()
                             
                             // Chore rows
-                            ForEach(childChores) { chore in
+                            ForEach(Array(childChores.enumerated()), id: \.element.id) { index, chore in
                                 ChoreWeekRow(
                                     chore: chore,
                                     child: child,
@@ -98,9 +154,14 @@ struct WeekCalendarView: View {
                                     showAchievementAlert: $showAchievementAlert,
                                     showConfetti: $showConfetti,
                                     choreColumnWidth: choreColumnWidth,
-                                    cellSize: cellSize
+                                    cellSize: cellSize,
+                                    isEvenRow: index % 2 == 0
                                 )
-                                Divider()
+                                
+                                if index < childChores.count - 1 {
+                                    Divider()
+                                        .padding(.leading, choreColumnWidth + 20)
+                                }
                             }
                         }
                         .background(Color.choreStarCardBackground)
@@ -110,10 +171,11 @@ struct WeekCalendarView: View {
                     .padding(.horizontal, 16)
                 }
                 
-                Spacer(minLength: 40)
+                    Spacer(minLength: 40)
+                }
             }
+            .background(Color.choreStarBackground)
         }
-        .background(Color.choreStarBackground)
         .navigationTitle("Week View")
         .navigationBarTitleDisplayMode(.inline)
         .confetti(isPresented: $showConfetti)
@@ -136,25 +198,40 @@ struct ChoreWeekRow: View {
     @Binding var showConfetti: Bool
     let choreColumnWidth: CGFloat
     let cellSize: CGFloat
+    let isEvenRow: Bool
     
     var body: some View {
         HStack(spacing: 4) {
             // Chore info
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 Text(chore.icon ?? "📝")
-                    .font(.title2)
+                    .font(.title)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(chore.name)
-                        .font(.body)
+                        .font(.callout)
                         .fontWeight(.semibold)
                         .foregroundColor(.choreStarTextPrimary)
                         .lineLimit(2)
                     
-                    if let category = chore.category {
-                        Text(category)
-                            .font(.caption)
+                    HStack(spacing: 8) {
+                        if let category = chore.category {
+                            HStack(spacing: 4) {
+                                Image(systemName: "tag.fill")
+                                    .font(.system(size: 8))
+                                Text(category)
+                                    .font(.caption)
+                            }
                             .foregroundColor(.choreStarTextSecondary)
+                        }
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "dollarsign.circle.fill")
+                                .font(.system(size: 8))
+                            Text(String(format: "$%.2f", chore.reward))
+                                .font(.caption)
+                        }
+                        .foregroundColor(.choreStarAccent)
                     }
                 }
             }
@@ -175,7 +252,8 @@ struct ChoreWeekRow: View {
                 .frame(width: cellSize)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 18)
+        .background(isEvenRow ? Color.choreStarBackground.opacity(0.3) : Color.clear)
     }
 }
 
