@@ -9,7 +9,6 @@ struct AddEditChoreView: View {
     @State private var name: String
     @State private var selectedChild: UUID?
     @State private var rewardDollars: Double
-    @State private var description: String
     @State private var category: String
     @State private var selectedIcon: String
     @State private var selectedColor: String
@@ -44,7 +43,6 @@ struct AddEditChoreView: View {
         _name = State(initialValue: chore?.name ?? "")
         _selectedChild = State(initialValue: chore?.childId ?? preselectedChildId)
         _rewardDollars = State(initialValue: chore?.reward ?? 1.0)
-        _description = State(initialValue: chore?.description ?? "")
         _category = State(initialValue: chore?.category ?? "General")
         _selectedIcon = State(initialValue: chore?.icon ?? "📝")
         _selectedColor = State(initialValue: chore?.color ?? "blue")
@@ -66,16 +64,6 @@ struct AddEditChoreView: View {
                             .foregroundColor(.choreStarTextSecondary)
                         
                         TextField("e.g., Make bed", text: $name)
-                            .textFieldStyle(.roundedBorder)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Description (Optional)")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.choreStarTextSecondary)
-                        
-                        TextField("What needs to be done?", text: $description)
                             .textFieldStyle(.roundedBorder)
                     }
                     
@@ -205,7 +193,7 @@ struct AddEditChoreView: View {
                         name: name,
                         childId: childId,
                         rewardCents: rewardCents,
-                        description: description.isEmpty ? nil : description,
+                        description: nil,
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
@@ -217,7 +205,7 @@ struct AddEditChoreView: View {
                         name: name,
                         childId: childId,
                         rewardCents: rewardCents,
-                        description: description.isEmpty ? nil : description,
+                        description: nil,
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
