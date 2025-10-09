@@ -10,8 +10,9 @@
 ### Fixed Daily Reward
 - **NOT** based on individual chore values
 - **Fixed amount per perfect day** from family settings
-- Default: **7¢** (or customize in settings)
-- Example: If daily reward is set to 25¢, every perfect day earns 25¢
+- Default: **7¢ = $0.07** (or customize in settings)
+- Example: If daily reward is set to 10¢, every perfect day earns $0.10
+- Realistic range: 5¢-25¢ per day (kids aren't getting rich! 😄)
 
 ### Perfect Day Definition
 A "perfect day" means:
@@ -21,7 +22,7 @@ A "perfect day" means:
 
 ## 📊 Examples
 
-### Example 1: Monday with 5 Chores (Daily Reward: $0.25)
+### Example 1: Monday with 5 Chores (Daily Reward: $0.07)
 
 **Scenario A - Incomplete Day:**
 ```
@@ -44,7 +45,7 @@ Monday:
   ✓ Dishes
   ✓ Take Out Trash
 
-Result: 5/5 complete = $0.25 earned! ✅
+Result: 5/5 complete = $0.07 earned! ✅
 ```
 
 ### Example 2: Full Week (Daily Reward: $0.07)

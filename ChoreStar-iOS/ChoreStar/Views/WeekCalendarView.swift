@@ -6,11 +6,11 @@ struct WeekCalendarView: View {
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
-    @State private var viewMode: ViewMode = .grid
+    @State private var viewMode: ViewMode = .daily
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     enum ViewMode {
-        case grid, daily
+        case daily, grid
     }
     
     private let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -80,8 +80,8 @@ struct WeekCalendarView: View {
                 
                 // View Mode Picker
                 Picker("View Mode", selection: $viewMode) {
-                    Text("Grid").tag(ViewMode.grid)
                     Text("Daily List").tag(ViewMode.daily)
+                    Text("Week View").tag(ViewMode.grid)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
@@ -154,8 +154,25 @@ struct WeekCalendarView: View {
                 
                 if childChores.isEmpty {
                     EmptyWeekView(childName: child.name)
-                } else if viewMode == .grid {
-                    // GRID VIEW - Week grid - scrollable horizontally for small screens
+                } else if viewMode == .daily {
+                    // DAILY LIST VIEW
+                    VStack(spacing: 16) {
+                        ForEach(0..<7) { dayIndex in
+                            DayBreakdownCard(
+                                dayIndex: dayIndex,
+                                dayName: fullDays[dayIndex],
+                                shortDayName: days[dayIndex],
+                                chores: childChores,
+                                manager: manager,
+                                earnedAchievements: $earnedAchievements,
+                                showAchievementAlert: $showAchievementAlert,
+                                showConfetti: $showConfetti
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                } else {
+                    // WEEK VIEW (GRID) - scrollable horizontally for small screens
                     let gridWidth = choreColumnWidth + (cellSize * 7) + 40
                     let needsScroll = gridWidth > geometry.size.width
                     
@@ -236,23 +253,6 @@ struct WeekCalendarView: View {
                         .shadow(color: .black.opacity(0.08), radius: 15, x: 0, y: 5)
                     }
                     .padding(.horizontal, 16)
-                } else {
-                    // DAILY LIST VIEW
-                    VStack(spacing: 16) {
-                        ForEach(0..<7) { dayIndex in
-                            DayBreakdownCard(
-                                dayIndex: dayIndex,
-                                dayName: fullDays[dayIndex],
-                                shortDayName: days[dayIndex],
-                                chores: childChores,
-                                manager: manager,
-                                earnedAchievements: $earnedAchievements,
-                                showAchievementAlert: $showAchievementAlert,
-                                showConfetti: $showConfetti
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 20)
                 }
                 
                     Spacer(minLength: 40)
