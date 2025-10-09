@@ -99,6 +99,9 @@ struct ChoresView: View {
                 .padding(.top, 10)
             }
             .background(Color.choreStarBackground)
+            .refreshable {
+                await manager.refreshData()
+            }
             .navigationTitle("Chores")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -279,28 +282,40 @@ struct EmptyChoresView: View {
     let filter: ChoresView.ChoreFilter
     
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: filter == .completed ? "checkmark.circle" : "list.bullet.clipboard")
-                .font(.system(size: 60))
-                .foregroundColor(.choreStarTextSecondary)
+        VStack(spacing: 20) {
+            // Large emoji instead of SF Symbol
+            Text(emptyEmoji)
+                .font(.system(size: 80))
             
             Text(emptyMessage)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.title2)
+                .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
             
             Text(emptySubtitle)
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
         }
         .padding(40)
+    }
+    
+    private var emptyEmoji: String {
+        switch filter {
+        case .all:
+            return "📋"
+        case .pending:
+            return "🎉"
+        case .completed:
+            return "⏰"
+        }
     }
     
     private var emptyMessage: String {
         switch filter {
         case .all:
-            return "No chores yet"
+            return "No chores yet!"
         case .pending:
             return "All done! 🎉"
         case .completed:
@@ -311,11 +326,11 @@ struct EmptyChoresView: View {
     private var emptySubtitle: String {
         switch filter {
         case .all:
-            return "Add chores to get started"
+            return "Tap the + button to create your first chore and start earning rewards!"
         case .pending:
-            return "All chores are completed for today"
+            return "Awesome work! All chores are completed for today. Time to relax!"
         case .completed:
-            return "Complete some chores to see them here"
+            return "Complete some chores to see them here and track your progress!"
         }
     }
 }

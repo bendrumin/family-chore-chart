@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @State private var showConfetti = false
 
     private var completedChores: Int {
         manager.chores.filter { manager.isChoreCompleted($0) }.count
@@ -170,7 +171,9 @@ struct DashboardView: View {
 
                             LazyVStack(spacing: 8) {
                                 ForEach(manager.chores, id: \.id) { chore in
-                                    ChoreCard(chore: chore, manager: manager)
+                                    ChoreCard(chore: chore, manager: manager) {
+                                        showConfetti = true
+                                    }
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -182,9 +185,13 @@ struct DashboardView: View {
                 .padding(.top, 10)
             }
             .background(Color.choreStarBackground)
+            .refreshable {
+                await manager.refreshData()
+            }
             .navigationTitle("Dashboard")
             .navigationBarTitleDisplayMode(.large)
         }
+        .confetti(isPresented: $showConfetti)
     }
 }
 
@@ -304,6 +311,7 @@ struct ChildCard: View {
 struct ChoreCard: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
+    var onComplete: (() -> Void)? = nil
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
@@ -319,8 +327,16 @@ struct ChoreCard: View {
             Button(action: {
                 let impact = UIImpactFeedbackGenerator(style: .medium)
                 impact.impactOccurred()
+                
+                let wasCompleted = isCompleted
                 Task {
                     await manager.toggleChoreCompletion(chore)
+                    // Show confetti if newly completed
+                    if !wasCompleted {
+                        await MainActor.run {
+                            onComplete?()
+                        }
+                    }
                 }
             }) {
                 ZStack {

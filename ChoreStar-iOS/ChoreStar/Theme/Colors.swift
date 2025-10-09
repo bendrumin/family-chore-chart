@@ -1,14 +1,14 @@
 import SwiftUI
 
 extension Color {
-    // Brand colors matching web app
-    static let choreStarPrimary = Color(red: 0.4, green: 0.49, blue: 0.92)      // #667eea
-    static let choreStarPrimaryLight = Color(red: 0.49, green: 0.58, blue: 0.95) // Lighter shade
-    static let choreStarSecondary = Color(red: 0.46, green: 0.82, blue: 0.96)   // #76d1f5
-    static let choreStarAccent = Color(red: 1.0, green: 0.76, blue: 0.03)       // #ffc107
-    static let choreStarSuccess = Color(red: 0.3, green: 0.69, blue: 0.31)      // #4caf50
-    static let choreStarWarning = Color(red: 1.0, green: 0.6, blue: 0.0)        // #ff9800
-    static let choreStarDanger = Color(red: 0.96, green: 0.26, blue: 0.21)      // #f44336
+    // Brand colors matching web app - Playful coral/pink palette! 🎨
+    static let choreStarPrimary = Color(red: 1.0, green: 0.42, blue: 0.42)      // #ff6b6b (Coral Red)
+    static let choreStarPrimaryLight = Color(red: 1.0, green: 0.54, blue: 0.54) // #ff8a8a (Lighter coral)
+    static let choreStarSecondary = Color(red: 0.18, green: 0.84, blue: 0.45)   // #2ed573 (Success Green)
+    static let choreStarAccent = Color(red: 1.0, green: 0.65, blue: 0.01)       // #ffa502 (Warning Orange)
+    static let choreStarSuccess = Color(red: 0.18, green: 0.84, blue: 0.45)     // #2ed573 (Green)
+    static let choreStarWarning = Color(red: 1.0, green: 0.65, blue: 0.01)      // #ffa502 (Orange)
+    static let choreStarDanger = Color(red: 1.0, green: 0.28, blue: 0.34)       // #ff4757 (Error Red)
     
     // UI colors
     static let choreStarBackground = Color(red: 0.96, green: 0.97, blue: 0.98)  // #f5f7fa
@@ -16,18 +16,10 @@ extension Color {
     static let choreStarTextPrimary = Color(red: 0.13, green: 0.13, blue: 0.13) // #212121
     static let choreStarTextSecondary = Color(red: 0.46, green: 0.46, blue: 0.46) // #757575
     
-    // Gradients
+    // Playful Gradients matching web app 🌈
     static var choreStarGradient: LinearGradient {
         LinearGradient(
-            colors: [Color.choreStarPrimary, Color.choreStarSecondary],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-    
-    static var choreStarAccentGradient: LinearGradient {
-        LinearGradient(
-            colors: [Color.choreStarAccent, Color(red: 1.0, green: 0.85, blue: 0.2)],
+            colors: [Color.choreStarPrimary, Color.choreStarPrimaryLight],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -35,11 +27,56 @@ extension Color {
     
     static var choreStarSuccessGradient: LinearGradient {
         LinearGradient(
-            colors: [Color.choreStarSuccess, Color(red: 0.4, green: 0.8, blue: 0.4)],
+            colors: [Color.choreStarSuccess, Color(red: 0.09, green: 0.75, blue: 0.92)], // #2ed573 to #17c0eb
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
+    
+    static var choreStarWarningGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.choreStarWarning, Color(red: 1.0, green: 0.84, blue: 0.0)], // #ffa502 to #ffd700
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    // Child-specific playful gradients 🎨
+    static var childGradient1: LinearGradient {
+        LinearGradient(
+            colors: [Color(red: 1.0, green: 0.6, blue: 0.62), Color(red: 0.996, green: 0.812, blue: 0.937)], // #ff9a9e to #fecfef
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    static var childGradient2: LinearGradient {
+        LinearGradient(
+            colors: [Color(red: 0.659, green: 0.929, blue: 0.918), Color(red: 0.996, green: 0.839, blue: 0.89)], // #a8edea to #fed6e3
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    static var childGradient3: LinearGradient {
+        LinearGradient(
+            colors: [Color(red: 1.0, green: 0.925, blue: 0.824), Color(red: 0.988, green: 0.714, blue: 0.624)], // #ffecd2 to #fcb69f
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    static var childGradient4: LinearGradient {
+        LinearGradient(
+            colors: [Color(red: 0.659, green: 0.792, blue: 0.729), Color(red: 0.365, green: 0.306, blue: 0.459)], // #a8caba to #5d4e75
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    static let childGradients: [LinearGradient] = [
+        childGradient1, childGradient2, childGradient3, childGradient4
+    ]
     
     // Map string color names to actual colors
     static func fromString(_ colorName: String) -> Color {

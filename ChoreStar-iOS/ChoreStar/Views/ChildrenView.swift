@@ -47,6 +47,9 @@ struct ChildrenView: View {
                 .padding(.top, 10)
             }
             .background(Color.choreStarBackground)
+            .refreshable {
+                await manager.refreshData()
+            }
             .navigationTitle("Family")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -207,19 +210,21 @@ struct ChildDetailCard: View {
 
 struct EmptyChildrenView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.3.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.choreStarTextSecondary)
+        VStack(spacing: 20) {
+            // Large emoji instead of SF Symbol for more playfulness
+            Text("👨‍👩‍👧‍👦")
+                .font(.system(size: 80))
             
-            Text("No family members yet")
-                .font(.title3)
-                .fontWeight(.semibold)
+            Text("No family members yet!")
+                .font(.title2)
+                .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
             
-            Text("Add family members to get started")
+            Text("Tap the + button to add your first kiddo and start tracking chores together!")
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
         }
         .padding(40)
     }

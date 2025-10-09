@@ -130,6 +130,25 @@ extension View {
         modifier(CardModifier(padding: padding, shadowRadius: shadowRadius, shadowY: shadowY))
     }
     
+    /// Enhanced card shadow with more depth and playfulness
+    func cardShadow(intensity: ShadowIntensity = .medium) -> some View {
+        switch intensity {
+        case .light:
+            return AnyView(self.shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2))
+        case .medium:
+            return AnyView(self.shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4))
+        case .heavy:
+            return AnyView(self.shadow(color: Color.black.opacity(0.15), radius: 16, x: 0, y: 8))
+        case .playful:
+            // Multiple layers for depth
+            return AnyView(
+                self
+                    .shadow(color: Color.choreStarPrimary.opacity(0.2), radius: 16, x: 0, y: 8)
+                    .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+            )
+        }
+    }
+    
     func bouncyPress(onPress: @escaping () -> Void) -> some View {
         modifier(BouncyPressEffect(onPress: onPress))
     }
@@ -141,5 +160,9 @@ extension View {
     func floating(offset: CGFloat = 8, duration: Double = 2.0) -> some View {
         modifier(FloatingModifier(offset: offset, duration: duration))
     }
+}
+
+enum ShadowIntensity {
+    case light, medium, heavy, playful
 }
 
