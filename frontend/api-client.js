@@ -334,7 +334,7 @@ class ApiClient {
         }
     }
 
-    async createChore(name, rewardCents, childId, icon = '📝', category = 'General', notes = '', color = null) {
+    async createChore(name, rewardCents, childId, icon = '📝', category = 'household_chores', notes = '', color = null) {
         try {
             const { data, error } = await this.supabase
                 .from('chores')

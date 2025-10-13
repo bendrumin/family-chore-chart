@@ -87,6 +87,7 @@ class FamilyChoreChart {
         this.currentWeekStart = null;
         this.currentChildTab = null;
         this.activeChildId = null; // Track active child for tab switching
+        this.categoryFilter = 'all'; // Category filter state
         this.settings = {
             dailyReward: 50,
             weeklyBonus: 200,
@@ -663,6 +664,17 @@ class FamilyChoreChart {
                 this.saveSettings();
             });
             soundEnabled.hasListener = true;
+        }
+
+        // Category filter
+        const categoryFilter = document.getElementById('category-filter');
+        if (categoryFilter && !categoryFilter.hasListener) {
+            categoryFilter.addEventListener('change', (e) => {
+                this.categoryFilter = e.target.value;
+                this.renderChildren();
+                this.updateCategoryFilterCount();
+            });
+            categoryFilter.hasListener = true;
         }
 
         // Sound volume slider
@@ -1694,7 +1706,7 @@ class FamilyChoreChart {
                 }
             }
             
-            const category = entry.querySelector(`#chore-category-${i + 1}`)?.value || 'General';
+            const category = entry.querySelector(`#chore-category-${i + 1}`)?.value || 'household_chores';
             const notes = entry.querySelector(`#chore-notes-${i + 1}`)?.value || '';
             let color = null;
             if (limits.isPremium) {
@@ -2859,6 +2871,19 @@ class FamilyChoreChart {
                 <label for="chore-name-${entryCount}">Chore Name</label>
                 <input type="text" id="chore-name-${entryCount}" required placeholder="e.g., Make bed">
             </div>
+            <div class="form-group">
+                <label for="chore-category-${entryCount}">Activity Category</label>
+                <select id="chore-category-${entryCount}" class="category-selector">
+                    <option value="household_chores" selected>🏠 Household Chores</option>
+                    <option value="learning_education">📚 Learning & Education</option>
+                    <option value="physical_activity">🏃 Physical Activity</option>
+                    <option value="creative_time">🎨 Creative Time</option>
+                    <option value="games_play">🎮 Games & Play</option>
+                    <option value="reading">📖 Reading</option>
+                    <option value="family_time">❤️ Family Time</option>
+                    <option value="custom">⚙️ Custom</option>
+                </select>
+            </div>
             <!-- Premium Features -->
             <div class="premium-features" id="premium-chore-features-${entryCount}" style="display: none;">
                 <div class="form-group">
@@ -2988,18 +3013,6 @@ class FamilyChoreChart {
                     <input type="hidden" id="chore-icon-${entryCount}" value="📝">
                 </div>
                 <div class="form-group">
-                    <label for="chore-category-${entryCount}">Category</label>
-                    <select id="chore-category-${entryCount}">
-                        <option value="General">General</option>
-                        <option value="Kitchen">Kitchen</option>
-                        <option value="Bedroom">Bedroom</option>
-                        <option value="Bathroom">Bathroom</option>
-                        <option value="Outdoor">Outdoor</option>
-                        <option value="School">School</option>
-                        <option value="Pets">Pets</option>
-                    </select>
-                </div>
-                <div class="form-group">
                     <label for="chore-notes-${entryCount}">Notes (Optional)</label>
                     <textarea id="chore-notes-${entryCount}" placeholder="e.g., Remember to use soap! Or special instructions..." rows="2" style="resize: vertical;"></textarea>
                 </div>
@@ -3122,6 +3135,9 @@ class FamilyChoreChart {
             if (!document.querySelector('.child-tab.active')) {
                 this.switchChildTab(uniqueChildren[0].id);
             }
+            
+            // Update category filter count
+            this.updateCategoryFilterCount();
         }, 0); // Use setTimeout to ensure DOM is ready
     }
 
@@ -3271,6 +3287,11 @@ class FamilyChoreChart {
     }
 
     renderChoreGrid(childId, chores, completions) {
+        // Filter chores by category
+        const filteredChores = this.categoryFilter === 'all' 
+            ? chores 
+            : chores.filter(chore => chore.category === this.categoryFilter);
+        
         if (chores.length === 0) {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
@@ -3281,6 +3302,18 @@ class FamilyChoreChart {
                 </div>
             `;
         }
+        
+        if (filteredChores.length === 0) {
+            return `
+                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                    <p>No chores in this category yet.</p>
+                    <button class="btn btn-primary add-chore-empty-btn">
+                        <span>📝</span> Add Chore
+                    </button>
+                </div>
+            `;
+        }
+        
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         let html = `
             <table class="chore-grid-table">
@@ -3292,19 +3325,25 @@ class FamilyChoreChart {
                 </thead>
                 <tbody>
         `;
-        chores.forEach(chore => {
+        filteredChores.forEach(chore => {
             const choreCompletions = completions.filter(comp => comp.chore_id === chore.id);
             const icon = chore.icon || '📝';
-            const category = chore.category || 'General';
+            const category = chore.category || 'household_chores';
+            const categoryInfo = this.getCategoryInfo(category);
             const notes = chore.notes || '';
             html += `
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: var(--space-2);">
                             <span style="font-size: 1.2rem;">${icon}</span>
-                            <div>
-                                <span style="font-weight: 600;">${chore.name}</span>
-                                <div style="font-size: var(--font-size-xs); color: var(--gray-500);">${category}</div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px;">
+                                    <span style="font-weight: 600;">${chore.name}</span>
+                                    <span class="category-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${categoryInfo.bgColor}; color: ${categoryInfo.color}; border: 1px solid ${categoryInfo.color};">
+                                        <span>${categoryInfo.icon}</span>
+                                        <span>${categoryInfo.label}</span>
+                                    </span>
+                                </div>
                                 ${notes ? `<div style="font-size: var(--font-size-xs); color: var(--gray-600); font-style: italic; margin-top: 2px;">📝 ${notes}</div>` : ''}
                             </div>
                         </div>
@@ -7430,6 +7469,72 @@ class FamilyChoreChart {
 
     formatCents(cents) {
         return `$${(cents / 100).toFixed(2)}`;
+    }
+
+    getCategoryInfo(category) {
+        const categories = {
+            household_chores: { 
+                color: '#3b82f6', 
+                label: 'Household Chores', 
+                icon: '🏠',
+                bgColor: 'rgba(59, 130, 246, 0.1)'
+            },
+            learning_education: { 
+                color: '#8b5cf6', 
+                label: 'Learning & Education', 
+                icon: '📚',
+                bgColor: 'rgba(139, 92, 246, 0.1)'
+            },
+            physical_activity: { 
+                color: '#f97316', 
+                label: 'Physical Activity', 
+                icon: '🏃',
+                bgColor: 'rgba(249, 115, 22, 0.1)'
+            },
+            creative_time: { 
+                color: '#ec4899', 
+                label: 'Creative Time', 
+                icon: '🎨',
+                bgColor: 'rgba(236, 72, 153, 0.1)'
+            },
+            games_play: { 
+                color: '#10b981', 
+                label: 'Games & Play', 
+                icon: '🎮',
+                bgColor: 'rgba(16, 185, 129, 0.1)'
+            },
+            reading: { 
+                color: '#14b8a6', 
+                label: 'Reading', 
+                icon: '📖',
+                bgColor: 'rgba(20, 184, 166, 0.1)'
+            },
+            family_time: { 
+                color: '#f59e0b', 
+                label: 'Family Time', 
+                icon: '❤️',
+                bgColor: 'rgba(245, 158, 11, 0.1)'
+            },
+            custom: { 
+                color: '#6b7280', 
+                label: 'Custom', 
+                icon: '⚙️',
+                bgColor: 'rgba(107, 114, 128, 0.1)'
+            }
+        };
+        return categories[category] || categories.household_chores;
+    }
+
+    updateCategoryFilterCount() {
+        const countElement = document.getElementById('category-filter-count');
+        if (!countElement) return;
+        
+        if (this.categoryFilter === 'all') {
+            countElement.textContent = `${this.chores.length} total activities`;
+        } else {
+            const filteredCount = this.chores.filter(chore => chore.category === this.categoryFilter).length;
+            countElement.textContent = `${filteredCount} ${filteredCount === 1 ? 'activity' : 'activities'}`;
+        }
     }
 
     checkAchievements(childId, choreId) {
