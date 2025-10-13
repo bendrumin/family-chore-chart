@@ -134,7 +134,7 @@ This message was sent from your ChoreStar contact form.
         console.log('Using SendGrid to send email...');
         sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
         
-        const adminEmail = process.env.ADMIN_EMAIL || 'hi@chorestar.app';
+        const adminEmail = process.env.ADMIN_EMAIL || 'support@chorestar.app';
         
         const msg = {
           to: adminEmail,
@@ -180,7 +180,7 @@ This message was sent from your ChoreStar contact form.
     const emailService = process.env.EMAIL_SERVICE;
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
-    const adminEmail = process.env.ADMIN_EMAIL || 'hi@chorestar.app';
+    const adminEmail = process.env.ADMIN_EMAIL || 'support@chorestar.app';
 
     console.log('Email configuration check:');
     console.log('- EMAIL_SERVICE:', emailService ? 'SET' : 'NOT SET');

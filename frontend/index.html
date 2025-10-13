@@ -215,9 +215,14 @@
     <!-- External Resources -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- i18n for internationalization -->
+    <script src="i18n-setup.js"></script>
     
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css?v=20250109-17">
+    <link rel="stylesheet" href="style.css?v=20250109-22">
+    <link rel="stylesheet" href="clean-ui.css?v=20250109-23">
 </head>
 <body>
     <!-- Skip Navigation for Accessibility -->
@@ -263,7 +268,7 @@
                 <div class="demo-section">
                     <p>Want to see what it's like first?</p>
                     <button type="button" class="btn btn-outline" id="login-demo-btn">
-                        <span aria-hidden="true">🎮</span> Try Demo
+                        <span aria-hidden="true">🎮</span> Test it out
                     </button>
                     <p class="demo-subtext">If you like what you see, come back and sign up!</p>
                 </div>
@@ -348,26 +353,18 @@
                         </span>
                     </button>
                     
-                    <!-- Desktop navigation - improved with labels -->
+                    <!-- Desktop navigation - simplified -->
                     <div class="desktop-nav">
                         <button class="btn btn-outline desktop-nav-btn" id="add-child-btn" title="Add A Child" aria-label="Add a new child to your family">
-                            <span class="nav-icon" aria-hidden="true">👶</span>
+                            <span class="nav-icon" aria-hidden="true">👤</span>
                             <span class="nav-label">Add Child</span>
                         </button>
-                        <button class="btn btn-outline desktop-nav-btn" onclick="app.openEditChildrenPage()" title="Edit Children" aria-label="Edit children">
-                            <span class="nav-icon" aria-hidden="true">✏️</span>
-                            <span class="nav-label">Edit Children</span>
-                        </button>
-                        <button class="btn btn-outline desktop-nav-btn" id="theme-toggle" title="Toggle Dark Mode" aria-label="Toggle dark mode">
-                            <span class="nav-icon" aria-hidden="true">🌙</span>
-                            <span class="nav-label">Theme</span>
-                        </button>
                         <button class="btn btn-outline desktop-nav-btn" id="settings-btn" aria-label="Open settings">
-                            <span class="nav-icon" aria-hidden="true">⚙️</span>
-                            <span class="nav-label">Settings</span>
+                            <span class="nav-icon" aria-hidden="true">⚙</span>
+                            <span class="nav-label" data-i18n="settings">Settings</span>
                         </button>
                         <button class="btn btn-outline desktop-nav-btn" id="logout-btn" aria-label="Sign out of account">
-                            <span class="nav-icon" aria-hidden="true">🚪</span>
+                            <span class="nav-icon" aria-hidden="true">↗</span>
                             <span class="nav-label">Logout</span>
                         </button>
                     </div>
@@ -385,43 +382,23 @@
                     <section class="mobile-menu-section">
                         <h4>Quick Actions</h4>
                         <button class="mobile-menu-btn" id="mobile-add-child-btn" aria-label="Add a new child to your family">
-                            <span class="mobile-menu-icon" aria-hidden="true">👶</span>
-                            <span class="mobile-menu-text">Add A Child</span>
+                            <span class="mobile-menu-icon" aria-hidden="true">👤</span>
+                            <span class="mobile-menu-text">Add Child</span>
                         </button>
                         <button class="mobile-menu-btn" onclick="app.openEditChildrenPage()" aria-label="Edit children">
-                            <span class="mobile-menu-icon" aria-hidden="true">✏️</span>
+                            <span class="mobile-menu-icon" aria-hidden="true">✏</span>
                             <span class="mobile-menu-text">Edit Children</span>
                         </button>
-                        <button class="mobile-menu-btn" id="mobile-theme-toggle" aria-label="Toggle dark mode">
-                            <span class="mobile-menu-icon" aria-hidden="true">🌙</span>
-                            <span class="mobile-menu-text">Dark Mode</span>
-                        </button>
-                        <button class="mobile-menu-btn" id="mobile-sound-toggle" aria-label="Toggle sound effects">
-                            <span class="mobile-menu-icon" aria-hidden="true">🔊</span>
-                            <span class="mobile-menu-text">Sounds</span>
-                        </button>
                         <button class="mobile-menu-btn" id="mobile-settings-btn" aria-label="Open settings">
-                            <span class="mobile-menu-icon" aria-hidden="true">⚙️</span>
-                            <span class="mobile-menu-text">Settings</span>
-                        </button>
-                    </section>
-                    
-                    <section class="mobile-menu-section">
-                        <h4>Help & Support</h4>
-                        <button class="mobile-menu-btn" id="mobile-faq-btn" aria-label="View frequently asked questions">
-                            <span class="mobile-menu-icon" aria-hidden="true">❓</span>
-                            <span class="mobile-menu-text">FAQ</span>
-                        </button>
-                        <button class="mobile-menu-btn" id="mobile-contact-btn" aria-label="Contact customer support">
-                            <span class="mobile-menu-icon" aria-hidden="true">📧</span>
-                            <span class="mobile-menu-text">Contact</span>
+                            <span class="mobile-menu-icon" aria-hidden="true">⚙</span>
+                            <span class="mobile-menu-text" data-i18n="settings">Settings</span>
                         </button>
                     </section>
                     
                     <section class="mobile-menu-section">
                         <h4>Account</h4>
                         <button class="mobile-menu-btn mobile-menu-btn-danger" id="mobile-logout-btn" aria-label="Sign out of account">
-                            <span class="mobile-menu-icon" aria-hidden="true">🚪</span>
+                            <span class="mobile-menu-icon" aria-hidden="true">↗</span>
                             <span class="mobile-menu-text">Logout</span>
                         </button>
                     </section>
@@ -751,7 +728,7 @@
     <div id="add-chore-modal" class="modal hidden" role="dialog" aria-labelledby="add-chore-modal-title" aria-hidden="true">
         <div class="modal-content">
             <header class="modal-header">
-                <h2 id="add-chore-modal-title">📝 Add New Chores</h2>
+                <h2 id="add-chore-modal-title">✓ Add New Chores</h2>
                 <button class="modal-close" data-modal="add-chore-modal" aria-label="Close modal">&times;</button>
             </header>
             <form id="add-chore-form" class="modal-form" role="form">
@@ -968,17 +945,17 @@
     <div id="settings-modal" class="modal hidden" role="dialog" aria-labelledby="settings-modal-title" aria-hidden="true">
         <div class="modal-content">
             <header class="modal-header">
-                <h2 id="settings-modal-title">⚙️ Family Settings</h2>
+                <h2 id="settings-modal-title">⚙ Family Settings</h2>
                 <button class="modal-close" data-modal="settings-modal" aria-label="Close modal">&times;</button>
             </header>
             
             <!-- Settings Tabs -->
             <nav class="settings-tabs" id="settings-tabs" role="tablist" aria-label="Settings categories">
                 <button class="tab-btn active" data-tab="family" role="tab" aria-selected="true" aria-controls="family-tab">
-                    <span aria-hidden="true">👨‍👩‍👧‍👦</span> Family
+                    <span aria-hidden="true">👥</span> Family
                 </button>
                 <button class="tab-btn" data-tab="chores" role="tab" aria-selected="false" aria-controls="chores-tab">
-                    <span aria-hidden="true">📝</span> Chores
+                    <span aria-hidden="true">✓</span> Chores
                 </button>
                 <button class="tab-btn" data-tab="appearance" role="tab" aria-selected="false" aria-controls="appearance-tab">
                     <span aria-hidden="true">🎨</span> Appearance
@@ -991,12 +968,12 @@
             <!-- Family Tab (Combines Rewards + Manage Children) -->
             <div id="family-tab" class="tab-content active" role="tabpanel" aria-labelledby="family-tab-label">
                 <div class="family-content">
-                    <h3 id="family-tab-label">👨‍👩‍👧‍👦 Family Management</h3>
+                    <h3 id="family-tab-label">👥 Family Management</h3>
                     <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Manage your family members and reward settings.</p>
                     
                     <!-- Rewards Section -->
                     <section class="settings-section">
-                        <h4>💰 Reward Settings</h4>
+                        <h4>$ Reward Settings</h4>
                         <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Configure how much children earn for completing chores.</p>
                         
                         <form id="settings-form" role="form">
@@ -1011,6 +988,60 @@
                                     <input type="number" id="weekly-bonus" min="0" max="50" value="1" required aria-required="true" aria-describedby="weekly-bonus-help">
                                     <small id="weekly-bonus-help">Bonus for completing all chores all week</small>
                                 </div>
+                            </div>
+                            
+                            <!-- Currency and Locale Settings -->
+                            <div class="form-group">
+                                <label for="currency-select">$ Currency</label>
+                                <select id="currency-select" aria-describedby="currency-help">
+                                    <option value="USD">🇺🇸 US Dollar (USD)</option>
+                                    <option value="GBP">🇬🇧 British Pound (GBP)</option>
+                                    <option value="EUR">🇪🇺 Euro (EUR)</option>
+                                    <option value="CAD">🇨🇦 Canadian Dollar (CAD)</option>
+                                    <option value="AUD">🇦🇺 Australian Dollar (AUD)</option>
+                                    <option value="JPY">🇯🇵 Japanese Yen (JPY)</option>
+                                    <option value="CHF">🇨🇭 Swiss Franc (CHF)</option>
+                                    <option value="SEK">🇸🇪 Swedish Krona (SEK)</option>
+                                    <option value="NOK">🇳🇴 Norwegian Krone (NOK)</option>
+                                    <option value="DKK">🇩🇰 Danish Krone (DKK)</option>
+                                    <option value="PLN">🇵🇱 Polish Złoty (PLN)</option>
+                                    <option value="CZK">🇨🇿 Czech Koruna (CZK)</option>
+                                    <option value="HUF">🇭🇺 Hungarian Forint (HUF)</option>
+                                    <option value="INR">🇮🇳 Indian Rupee (INR)</option>
+                                    <option value="BRL">🇧🇷 Brazilian Real (BRL)</option>
+                                    <option value="MXN">🇲🇽 Mexican Peso (MXN)</option>
+                                    <option value="KRW">🇰🇷 South Korean Won (KRW)</option>
+                                    <option value="SGD">🇸🇬 Singapore Dollar (SGD)</option>
+                                    <option value="HKD">🇭🇰 Hong Kong Dollar (HKD)</option>
+                                    <option value="NZD">🇳🇿 New Zealand Dollar (NZD)</option>
+                                </select>
+                                <small id="currency-help">Choose your preferred currency for displaying rewards and earnings</small>
+                            </div>
+                            
+                            <!-- Date Format Settings -->
+                            <div class="form-group">
+                                <label for="date-format-select">📆 Date Format</label>
+                                <select id="date-format-select" aria-describedby="date-format-help">
+                                    <option value="auto">🌍 Auto (Based on Locale)</option>
+                                    <option value="MM/DD/YYYY">🇺🇸 US Format (MM/DD/YYYY)</option>
+                                    <option value="DD/MM/YYYY">🇬🇧 UK Format (DD/MM/YYYY)</option>
+                                    <option value="YYYY-MM-DD">🌐 ISO Format (YYYY-MM-DD)</option>
+                                    <option value="DD.MM.YYYY">🇩🇪 German Format (DD.MM.YYYY)</option>
+                                    <option value="DD/MM/YYYY">🇫🇷 French Format (DD/MM/YYYY)</option>
+                                </select>
+                                <small id="date-format-help">Choose how dates are displayed throughout the app</small>
+                            </div>
+                            
+                            <!-- Language Settings -->
+                            <div class="form-group">
+                                <label for="language-select">🌐 Language</label>
+                                <select id="language-select" aria-describedby="language-help">
+                                    <option value="en">🇺🇸 English</option>
+                                    <option value="es">🇪🇸 Español</option>
+                                    <option value="fr">🇫🇷 Français</option>
+                                    <option value="de">🇩🇪 Deutsch</option>
+                                </select>
+                                <small id="language-help">Choose your preferred language for the app interface</small>
                             </div>
                         </form>
                     </section>
@@ -1054,7 +1085,7 @@
             <!-- Chores Tab -->
             <div id="chores-tab" class="tab-content" role="tabpanel" aria-labelledby="chores-tab-label">
                 <div class="chores-management-content">
-                    <h3 id="chores-tab-label">📝 Manage Chores</h3>
+                    <h3 id="chores-tab-label">✓ Manage Chores</h3>
                     <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Edit and organize chores for each child.</p>
                     
                     <div id="chores-management-tabs">
@@ -1186,6 +1217,14 @@
                             <p>Download a comprehensive report of your family's chore progress and achievements.</p>
                             <button class="export-button" onclick="app.exportFamilyReport()" aria-label="Export family progress report">
                                 📥 Export Report
+                            </button>
+                        </section>
+                        
+                        <section class="features-section">
+                            <h5>🎉 What's New</h5>
+                            <p>Check out the latest features and improvements in ChoreStar!</p>
+                            <button class="btn btn-outline" onclick="app.showNewFeatures()" aria-label="View new features">
+                                <span aria-hidden="true">✨</span> View New Features
                             </button>
                         </section>
                         
@@ -1739,6 +1778,16 @@
                     <input type="text" id="edit-chore-notes" placeholder="Any additional notes about this chore..." />
                     <small style="color: var(--gray-500); margin-top: 4px;">Add helpful details like specific instructions or reminders</small>
                 </div>
+                
+                <!-- Drag and Drop Chore Reordering Section -->
+                <div class="form-group" id="edit-chore-reorder-section" style="display: none;">
+                    <label>🔄 Reorder Chores</label>
+                    <div class="chore-reorder-list" id="edit-chore-reorder-list">
+                        <!-- Chores will be populated here -->
+                    </div>
+                    <small style="color: var(--gray-500); margin-top: 4px;">Drag and drop chores to reorder them</small>
+                </div>
+                
                 <div class="form-actions">
                     <button type="button" class="btn btn-outline" onclick="app.hideModal('edit-chore-modal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -1972,6 +2021,74 @@
         </div>
     </div>
 
+    <!-- New Features Modal -->
+    <div id="new-features-modal" class="modal hidden" role="dialog" aria-labelledby="new-features-modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="new-features-modal-title">🎉 What's New in ChoreStar!</h2>
+                <button class="modal-close" data-modal="new-features-modal" aria-label="Close modal">&times;</button>
+            </header>
+            
+            <div class="new-features-content">
+                <div class="features-intro">
+                    <p>We've been busy adding exciting new features to make your family's chore experience even better!</p>
+                </div>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h3>Weekly Summary Export</h3>
+                            <p>Export detailed weekly reports showing completion rates, earnings, and perfect days for each child. Perfect for tracking progress over time!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📄</div>
+                        <div class="feature-content">
+                            <h3>PDF Reports</h3>
+                            <p>Generate professional PDF reports of your family's chore progress. Great for sharing with grandparents or keeping records!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🔄</div>
+                        <div class="feature-content">
+                            <h3>Chore Reordering</h3>
+                            <p>Drag and drop to reorder chores for each child. Organize them however works best for your family!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📧</div>
+                        <div class="feature-content">
+                            <h3>Enhanced Contact Support</h3>
+                            <p>Improved contact form with better email integration. We'll get back to you faster than ever!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-content">
+                            <h3>New Icon Picker</h3>
+                            <p>Choose from 50+ fun icons for chores! Kids love picking their own icons to make chores more personal.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-footer">
+                    <p class="features-note">💡 <strong>Pro Tip:</strong> Try the new drag-and-drop chore reordering by dragging any chore cell in the chore grid!</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="app.hideModal('new-features-modal')">
+                    Awesome! Let's Go! 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Icon Picker Modal -->
     <div id="icon-picker-modal" class="modal hidden" role="dialog" aria-labelledby="icon-picker-modal-title" aria-hidden="true">
         <div class="modal-content">
@@ -2012,6 +2129,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="config.js"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="api-client.js?v=2"></script>
     <script src="analytics.js?v=1"></script>
@@ -2023,5 +2141,76 @@
     <script src="demo-data.js?v=5"></script>
     <script src="toast-cleanup.js?v=2"></script>
     <script src="recover-family-data.js?v=1"></script>
+    
+    <!-- Smart Footer -->
+    <footer class="smart-footer" id="smart-footer">
+        <div class="footer-content">
+            <!-- Language & Currency Settings -->
+            <div class="footer-settings">
+                <div class="footer-setting-group">
+                    <label for="footer-language-select" class="footer-label">🌐</label>
+                    <select id="footer-language-select" class="footer-select" aria-label="Select language" title="🌐 Change App Language">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                    </select>
+                </div>
+                
+                <div class="footer-setting-group">
+                    <label for="footer-currency-select" class="footer-label">$</label>
+                    <select id="footer-currency-select" class="footer-select" aria-label="Select currency" title="$ Change Currency">
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="GBP">🇬🇧 GBP</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                        <option value="CAD">🇨🇦 CAD</option>
+                        <option value="AUD">🇦🇺 AUD</option>
+                        <option value="JPY">🇯🇵 JPY</option>
+                        <option value="CHF">🇨🇭 CHF</option>
+                        <option value="SEK">🇸🇪 SEK</option>
+                        <option value="NOK">🇳🇴 NOK</option>
+                        <option value="DKK">🇩🇰 DKK</option>
+                        <option value="PLN">🇵🇱 PLN</option>
+                        <option value="CZK">🇨🇿 CZK</option>
+                        <option value="HUF">🇭🇺 HUF</option>
+                        <option value="INR">🇮🇳 INR</option>
+                        <option value="BRL">🇧🇷 BRL</option>
+                        <option value="MXN">🇲🇽 MXN</option>
+                        <option value="KRW">🇰🇷 KRW</option>
+                        <option value="SGD">🇸🇬 SGD</option>
+                        <option value="HKD">🇭🇰 HKD</option>
+                        <option value="NZD">🇳🇿 NZD</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="footer-actions">
+                <button class="footer-action-btn" id="footer-theme-toggle" title="🌙 Toggle Dark/Light Mode" aria-label="Toggle dark mode">
+                    <span class="footer-icon">🌙</span>
+                    <span class="footer-label-text">Theme</span>
+                </button>
+                <button class="footer-action-btn" id="footer-sound-toggle" title="♪ Toggle Sound Effects On/Off" aria-label="Toggle sound effects">
+                    <span class="footer-icon">♪</span>
+                    <span class="footer-label-text">Sound</span>
+                </button>
+                <button class="footer-action-btn" id="footer-help-btn" title="❓ View Help & FAQ" aria-label="Help and support">
+                    <span class="footer-icon">❓</span>
+                    <span class="footer-label-text">Help</span>
+                </button>
+                <button class="footer-action-btn" id="footer-contact-btn" title="✉ Contact Support" aria-label="Contact support">
+                    <span class="footer-icon">✉</span>
+                    <span class="footer-label-text">Contact</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="footer-info">
+            <span class="footer-brand">ChoreStar</span>
+            <span class="footer-separator">•</span>
+            <span class="footer-version">v2025.1</span>
+        </div>
+    </footer>
 </body>
 </html>

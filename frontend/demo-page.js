@@ -423,7 +423,7 @@ class DemoFamilyChoreChart {
                     ${totalStreak > 0 ? `<div class="streak-badge">🔥 ${totalStreak} day streak</div>` : ''}
                 </div>
                 <div class="child-actions">
-                    <button class="btn btn-outline btn-sm" onclick="demoApp.openAddChoreModal()" title="Add Chore">
+                    <button class="btn btn-outline btn-sm" onclick="window.demoApp.openAddChoreModal()" title="Add Chore">
                         <span aria-hidden="true">➕</span> Add Chore
                     </button>
                 </div>
@@ -447,7 +447,7 @@ class DemoFamilyChoreChart {
             </div>
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
-                <div class="earnings-label">💰 Earnings (7¢ per completed day)</div>
+                <div class="earnings-label">💰 Earnings (${this.formatCents(7)} per completed day)</div>
             </div>
         `;
         
@@ -568,7 +568,7 @@ class DemoFamilyChoreChart {
                 this.completions = this.completions.filter(comp => 
                     !(comp.chore_id === choreId && comp.day_of_week === dayIndex)
                 );
-                this.showToast('Chore unchecked!', 'info');
+                // "Chore unchecked!" toast removed - redundant
                 console.log('🎭 Removed completion');
             } else {
                 cell.classList.remove('empty');
@@ -685,8 +685,20 @@ class DemoFamilyChoreChart {
         return Math.floor(Math.random() * 5);
     }
 
-    formatCents(cents) {
-        return `$${(cents / 100).toFixed(2)}`;
+    formatCents(cents, currency = 'USD') {
+        try {
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            return formatter.format(cents / 100);
+        } catch (error) {
+            // Fallback to USD if currency is not supported
+            console.warn('Currency not supported, falling back to USD:', currency);
+            return `$${(cents / 100).toFixed(2)}`;
+        }
     }
 
     // Add cell bounce animation - EXACTLY like main app
@@ -920,8 +932,18 @@ class DemoFamilyChoreChart {
         }
         
         if (mobileMenuOverlay) {
-            mobileMenuOverlay.addEventListener('click', () => {
-                this.closeMobileMenu();
+            mobileMenuOverlay.addEventListener('click', (e) => {
+                // Only close if clicking directly on the overlay, not on child elements
+                if (e.target === mobileMenuOverlay) {
+                    this.closeMobileMenu();
+                }
+            });
+        }
+        
+        // Prevent mobile menu clicks from bubbling up to overlay
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
             });
         }
     }
@@ -1217,7 +1239,7 @@ class DemoFamilyChoreChart {
                 role="tab"
                 aria-selected="${child.id === this.activeChildId}"
                 aria-controls="child-content-${child.id}"
-                onclick="demoApp.switchToChild('${child.id}')"
+                onclick="window.demoApp.switchToChild('${child.id}')"
             >
                 <div class="child-tab-avatar" style="background-color: ${child.avatar_color};width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                     <img src="${child.avatar_url}" alt="${child.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
@@ -1313,7 +1335,7 @@ class DemoFamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'robot');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Robot ${seed}" loading="lazy">
+                <img src="${url}" alt="Robot ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1344,7 +1366,7 @@ class DemoFamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'adventurer');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Adventurer ${seed}" loading="lazy">
+                <img src="${url}" alt="Adventurer ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1377,7 +1399,7 @@ class DemoFamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'emoji');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy">
+                <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1481,8 +1503,7 @@ class DemoFamilyChoreChart {
     }
 }
 
-// Create demo app instance
-const demoApp = new DemoFamilyChoreChart();
+// Demo app instance will be created in DOMContentLoaded
 
 // Add demo-specific styles
 const demoStyles = `

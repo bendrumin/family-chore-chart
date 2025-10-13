@@ -72,7 +72,13 @@ const redundantToasts = [
     'demo: try adding chores',
     'switched to mode',
     'child updated!',
-    'chore unchecked!'
+    'chore unchecked!',
+    'dashboard refreshed',
+    'theme activated',
+    'all children have been updated',
+    'pdf export coming soon',
+    'weekly summary coming soon',
+    'chore reordering coming soon'
 ];
 
 // Function to check if a toast message is essential
