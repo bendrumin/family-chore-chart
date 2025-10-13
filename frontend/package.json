@@ -10,10 +10,11 @@
     "vercel-dev": "vercel dev"
   },
   "dependencies": {
+    "i18next": "^25.5.2",
+    "i18next-browser-languagedetector": "^8.2.0",
     "nodemailer": "^6.9.7",
     "serve": "^14.2.1"
   },
-  "devDependencies": {},
   "keywords": [
     "chore",
     "family",
@@ -22,4 +23,4 @@
   ],
   "author": "ChoreStar Team",
   "license": "MIT"
-} 
+}

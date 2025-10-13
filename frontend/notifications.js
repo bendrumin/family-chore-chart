@@ -208,16 +208,24 @@ class NotificationManager {
     }
 
     // Check if user has premium features
-    isPremiumUser() {
+    async isPremiumUser() {
         // Admin user (bsiegel13@gmail.com) always has premium access
         // We need to check the current user's profile
         if (window.app && window.app.profile?.email === 'bsiegel13@gmail.com') {
             return true;
         }
         
-        // This would check the user's subscription status
-        // For now, return false to keep notifications basic for free users
-        return false;
+        // Check the user's actual subscription status from database
+        try {
+            if (window.apiClient) {
+                const limits = await window.apiClient.checkSubscriptionLimits();
+                return limits.isPremium;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking premium status:', error);
+            return false;
+        }
     }
 
     // Convert VAPID key to Uint8Array

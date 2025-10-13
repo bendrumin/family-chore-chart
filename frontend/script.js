@@ -104,6 +104,194 @@ class FamilyChoreChart {
         this.init();
     }
 
+    // Apply translations to elements with data-i18n attributes
+    applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = t(key);
+            if (translation !== key) { // Only update if translation exists
+                element.textContent = translation;
+            }
+        });
+    }
+    
+    // Setup footer functionality
+    setupFooterHandlers() {
+        // Check if footer exists
+        const footer = document.getElementById('smart-footer');
+        if (!footer) {
+            console.warn('Smart footer not found yet. Will retry...');
+            // Retry after a short delay
+            setTimeout(() => {
+                this.setupFooterHandlers();
+            }, 200);
+            return;
+        }
+        
+        console.log('Setting up footer handlers - footer found!');
+        
+        // Check if handlers are already set up to prevent duplicates
+        if (footer.dataset.handlersSetup === 'true') {
+            console.log('Footer handlers already set up, skipping...');
+            return;
+        }
+        
+        // Language selector
+        const footerLanguageSelect = document.getElementById('footer-language-select');
+        if (footerLanguageSelect) {
+            footerLanguageSelect.addEventListener('change', (e) => {
+                const newLanguage = e.target.value;
+                if (changeLanguage(newLanguage)) {
+                    // Update settings if user is logged in
+                    if (this.familySettings) {
+                        this.updateLanguageSetting(newLanguage);
+                    }
+                    this.showToast(t('language_changed_success'), 'info');
+                }
+            });
+        }
+        
+        // Currency selector
+        const footerCurrencySelect = document.getElementById('footer-currency-select');
+        if (footerCurrencySelect) {
+            footerCurrencySelect.addEventListener('change', (e) => {
+                const newCurrency = e.target.value;
+                if (this.familySettings) {
+                    this.updateCurrencySetting(newCurrency);
+                }
+                this.showToast('Currency updated!', 'info');
+            });
+        }
+        
+        // Theme toggle
+        const footerThemeToggle = document.getElementById('footer-theme-toggle');
+        if (footerThemeToggle) {
+            footerThemeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleTheme();
+            });
+        }
+        
+        // Sound toggle
+        const footerSoundToggle = document.getElementById('footer-sound-toggle');
+        if (footerSoundToggle) {
+            footerSoundToggle.addEventListener('click', () => {
+                this.toggleSound();
+            });
+        }
+        
+        // Help button
+        const footerHelpBtn = document.getElementById('footer-help-btn');
+        if (footerHelpBtn) {
+            footerHelpBtn.addEventListener('click', () => {
+                console.log('Footer help button clicked - showing FAQ modal');
+                this.showModal('faq-modal');
+            });
+        }
+        
+        // Contact button
+        const footerContactBtn = document.getElementById('footer-contact-btn');
+        if (footerContactBtn) {
+            footerContactBtn.addEventListener('click', () => {
+                console.log('Footer contact button clicked - showing contact modal');
+                this.showModal('contact-modal');
+            });
+        }
+        
+        // Mark footer as set up to prevent duplicate handlers
+        footer.dataset.handlersSetup = 'true';
+        console.log('Footer handlers setup complete!');
+    }
+    
+    // Debug function to check footer elements (call from console)
+    debugFooter() {
+        console.log('=== Footer Debug Info ===');
+        console.log('Smart footer:', document.getElementById('smart-footer'));
+        console.log('Language select:', document.getElementById('footer-language-select'));
+        console.log('Currency select:', document.getElementById('footer-currency-select'));
+        console.log('Theme toggle:', document.getElementById('footer-theme-toggle'));
+        console.log('Sound toggle:', document.getElementById('footer-sound-toggle'));
+        console.log('Help button:', document.getElementById('footer-help-btn'));
+        console.log('Contact button:', document.getElementById('footer-contact-btn'));
+        console.log('FAQ modal:', document.getElementById('faq-modal'));
+        console.log('Contact modal:', document.getElementById('contact-modal'));
+        console.log('Document ready state:', document.readyState);
+        console.log('========================');
+        
+        // Test modal functionality
+        console.log('Testing modal functionality...');
+        const faqModal = document.getElementById('faq-modal');
+        const contactModal = document.getElementById('contact-modal');
+        if (faqModal) {
+            console.log('FAQ modal found, testing showModal...');
+            this.showModal('faq-modal');
+            setTimeout(() => {
+                console.log('FAQ modal should be visible now');
+                this.hideModal('faq-modal');
+            }, 2000);
+        }
+    }
+    
+    // Update language setting
+    async updateLanguageSetting(language) {
+        try {
+            const result = await this.apiClient.updateFamilySettings({
+                language: language
+            });
+            if (result.success) {
+                this.familySettings = result.settings;
+            }
+        } catch (error) {
+            console.warn('Failed to update language setting:', error);
+        }
+    }
+    
+    // Update currency setting
+    async updateCurrencySetting(currency) {
+        try {
+            const result = await this.apiClient.updateFamilySettings({
+                currency_code: currency
+            });
+            if (result.success) {
+                this.familySettings = result.settings;
+                this.renderChildren(); // Refresh to show new currency
+            }
+        } catch (error) {
+            console.warn('Failed to update currency setting:', error);
+        }
+    }
+    
+    
+    
+    // Initialize footer theme button with correct icon
+    initializeFooterThemeButton() {
+        const footerThemeToggle = document.getElementById('footer-theme-toggle');
+        if (footerThemeToggle) {
+            const currentTheme = this.settings.theme || 'light';
+            const icon = footerThemeToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+            }
+        } else {
+            console.warn('Footer theme toggle not found during initialization');
+        }
+    }
+    
+    // Initialize footer sound button with correct icon
+    initializeFooterSoundButton() {
+        const footerSoundToggle = document.getElementById('footer-sound-toggle');
+        if (footerSoundToggle) {
+            const currentSound = this.settings.soundEnabled || false;
+            const icon = footerSoundToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = currentSound ? '🔊' : '🔇';
+            }
+        } else {
+            console.warn('Footer sound toggle not found during initialization');
+        }
+    }
+    
     async init() {
         try {
             this.showLoading();
@@ -175,6 +363,9 @@ class FamilyChoreChart {
                 this.showToast('Family info failed to load', 'error');
             }
             
+            // Check if we should show new features modal
+            this.checkNewFeatures();
+            
             // Load children and chores
             await this.loadChildren();
             await this.loadChores();
@@ -215,6 +406,9 @@ class FamilyChoreChart {
                 console.error('Notification initialization failed:', error);
             }
             
+            // Check for payment success/cancellation
+            await this.checkForPaymentSuccess();
+            
             // Set up real-time subscriptions
             this.setupRealtime();
             
@@ -232,6 +426,38 @@ class FamilyChoreChart {
             
             // Apply seasonal theme (premium feature)
             this.applySeasonalTheme();
+            
+            // Apply translations
+            this.applyTranslations();
+            
+            // Listen for language changes
+            window.addEventListener('languageChanged', () => {
+                this.applyTranslations();
+                this.renderChildren(); // Refresh to show translated content
+            });
+            
+            // Setup footer functionality after DOM is ready
+            const setupFooter = () => {
+                this.setupFooterHandlers();
+                this.initializeFooterThemeButton();
+                this.initializeFooterSoundButton();
+            };
+            
+            // Use multiple strategies to ensure footer is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupFooter);
+            } else {
+                // DOM is already ready, but footer might not be parsed yet
+                setTimeout(setupFooter, 100);
+            }
+            
+            // Also try again after a longer delay as backup
+            setTimeout(setupFooter, 500);
+            
+            // Final fallback when window is fully loaded
+            window.addEventListener('load', () => {
+                setTimeout(setupFooter, 100);
+            });
             
             // Load notification preferences
             this.loadNotificationPreferences();
@@ -972,7 +1198,7 @@ class FamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'robot');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Robot ${seed}" loading="lazy">
+                <img src="${url}" alt="Robot ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1003,7 +1229,7 @@ class FamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'adventurer');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Adventurer ${seed}" loading="lazy">
+                <img src="${url}" alt="Adventurer ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1036,7 +1262,7 @@ class FamilyChoreChart {
             iconOption.onclick = () => this.selectIcon(url, 'emoji');
             
             iconOption.innerHTML = `
-                <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy">
+                <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span class="icon-label">${seed}</span>
             `;
             
@@ -1425,7 +1651,7 @@ class FamilyChoreChart {
                 } else {
                     // Finished editing all children
                     this.closeEditChildrenPage();
-                    this.showToast('All children have been updated!', 'success');
+                    // "All children have been updated!" toast removed - redundant
                 }
             }
             
@@ -1562,10 +1788,10 @@ class FamilyChoreChart {
                             <label for="chore-icon-1">Chore Icon</label>
                             <div class="icon-picker" id="icon-picker-1">
                                 <button type="button" class="icon-option active" data-icon="📝">📝</button>
-                                <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
-                                <button type="button" class="icon-option" data-icon="🧹">🧹</button>
+                                <button type="button" class="icon-option" data-icon="🛏">🛏</button>
+                                <button type="button" class="icon-option" data-icon="🧽">🧽</button>
                                 <button type="button" class="icon-option" data-icon="🧺">🧺</button>
-                                <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
+                                <button type="button" class="icon-option" data-icon="🍴">🍴</button>
                             </div>
                             <input type="hidden" id="chore-icon-1" value="📝">
                         </div>
@@ -1783,9 +2009,12 @@ class FamilyChoreChart {
     async handleUpdateSettings() {
         const dailyReward = parseInt(document.getElementById('daily-reward').value);
         const weeklyBonus = parseInt(document.getElementById('weekly-bonus').value);
+        const currencyCode = document.getElementById('currency-select').value;
+        const dateFormat = document.getElementById('date-format-select').value;
+        const language = document.getElementById('language-select').value;
 
-        if (!dailyReward || !weeklyBonus) {
-            this.showToast('Please fill in all fields', 'error');
+        if (!dailyReward || !weeklyBonus || !currencyCode || !dateFormat || !language) {
+            this.showToast(t('please_fill_all_fields'), 'error');
             return;
         }
 
@@ -1795,18 +2024,29 @@ class FamilyChoreChart {
 
         const result = await this.apiClient.updateFamilySettings({
             daily_reward_cents: dailyReward,
-            weekly_bonus_cents: weeklyBonus
+            weekly_bonus_cents: weeklyBonus,
+            currency_code: currencyCode,
+            date_format: dateFormat,
+            language: language
         });
         
         this.setButtonLoading(saveButton, false);
         
         if (result.success) {
             this.familySettings = result.settings;
-            // Don't reload the entire view, just close the modal
+            
+            // Change language if it was updated
+            if (language !== getCurrentLanguage()) {
+                changeLanguage(language);
+                this.showToast(t('language_changed_success'), 'info');
+            }
+            
+            // Refresh the display to show new currency formatting
+            this.renderChildren();
             this.hideModal('settings-modal');
-            this.showToast('Settings updated!', 'success');
+            this.showToast(t('settings_updated_success'), 'success');
         } else {
-            this.showToast(result.error, 'error');
+            this.showToast(result.error || t('something_went_wrong'), 'error');
         }
     }
 
@@ -1821,6 +2061,25 @@ class FamilyChoreChart {
         this.generateChildTabs();
         this.populateManageChildrenList();
         this.checkPremiumFeatures();
+        
+        // Populate settings form with current values
+        if (this.familySettings) {
+            document.getElementById('daily-reward').value = this.familySettings.daily_reward_cents || 7;
+            document.getElementById('weekly-bonus').value = this.familySettings.weekly_bonus_cents || 1;
+            document.getElementById('currency-select').value = this.familySettings.currency_code || 'USD';
+            document.getElementById('date-format-select').value = this.familySettings.date_format || 'auto';
+            document.getElementById('language-select').value = this.familySettings.language || 'en';
+            
+            // Populate footer selectors
+            const footerLanguageSelect = document.getElementById('footer-language-select');
+            const footerCurrencySelect = document.getElementById('footer-currency-select');
+            if (footerLanguageSelect) {
+                footerLanguageSelect.value = this.familySettings.language || 'en';
+            }
+            if (footerCurrencySelect) {
+                footerCurrencySelect.value = this.familySettings.currency_code || 'USD';
+            }
+        }
     }
 
     switchSettingsTab(tabName) {
@@ -1965,11 +2224,7 @@ class FamilyChoreChart {
         return this.formatThemeDate(theme.endDate);
     }
 
-    formatThemeDate(dateStr) {
-        const [month, day] = dateStr.split('-');
-        const date = new Date(2024, parseInt(month) - 1, parseInt(day));
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
+    // formatThemeDate is now defined above with international support
 
     loadThemeSettings() {
         // Load saved theme settings from localStorage
@@ -2012,7 +2267,7 @@ class FamilyChoreChart {
         // Update the display
         this.updateCurrentThemeDisplay();
         
-        this.showToast(`🎉 ${theme.name} theme activated!`, 'success');
+        // Theme activation toast removed - redundant with seasonal theme message
     }
 
     applySpecificTheme(theme) {
@@ -2101,7 +2356,7 @@ class FamilyChoreChart {
         this.children.forEach((child, index) => {
             const childId = child.id;
             const childChores = this.chores.filter(chore => chore.child_id === childId);
-            const tabIcon = child.avatar_color ? `🎨` : `👶`;
+            const tabIcon = child.avatar_color ? `🎨` : `👤`;
             
             // Create tab button
             const tabButton = document.createElement('button');
@@ -2119,7 +2374,7 @@ class FamilyChoreChart {
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
                         <h3>${child.name}'s Chores</h3>
                         <button class="btn btn-outline btn-sm bulk-edit-chores" data-child-id="${childId}">
-                            <span>✏️</span> Bulk Edit
+                            <span>✏</span> Bulk Edit
                         </button>
                     </div>
                     <div class="child-chores-list" id="child-${childId}-chores">
@@ -2268,7 +2523,10 @@ class FamilyChoreChart {
         document.getElementById('edit-chore-form').dataset.choreId = choreId;
         
         // Store the child ID to return to after save
-        document.getElementById('edit-chore-form').dataset.returnChildId = chore.child_id;
+        document.getElementById('edit-chore-form').dataset.childId = chore.child_id;
+        
+        // Show and populate the chore reorder section
+        this.populateEditChoreReorderSection(chore.child_id);
         
         // Show the modal
         this.showModal('edit-chore-modal');
@@ -2555,6 +2813,57 @@ class FamilyChoreChart {
         });
     }
 
+    async checkForPaymentSuccess() {
+        // Check if user just completed a payment
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            try {
+                // Upgrade user to premium in database
+                await this.apiClient.updateSubscriptionStatus('premium');
+                
+                // Show success notification
+                this.showToast('🎉 Welcome to ChoreStar Premium! You now have access to all premium features.', 'success');
+                
+                // Track payment success
+                if (window.analytics) {
+                    window.analytics.trackPaymentSuccess();
+                }
+                
+                // Send notification
+                if (window.notificationManager) {
+                    await window.notificationManager.sendPaymentConfirmation();
+                }
+                
+                // Remove success parameter from URL
+                const newUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                // Reload data to reflect new premium status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error upgrading user to premium:', error);
+                this.showToast('Payment successful, but there was an issue activating premium features. Please contact support.', 'error');
+            }
+        }
+        
+        // Check for payment cancellation
+        if (urlParams.get('canceled') === 'true') {
+            this.showToast('Payment was canceled. You can try upgrading again anytime.', 'info');
+            
+            // Track payment cancellation
+            if (window.analytics) {
+                window.analytics.trackPaymentCancel();
+            }
+            
+            // Remove canceled parameter from URL
+            const newUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }
+
     async loadFamilySharingData() {
         try {
             // Load family code
@@ -2589,7 +2898,7 @@ class FamilyChoreChart {
                     <div class="family-member-avatar">${initial}</div>
                     <div class="family-member-info">
                         <div class="family-member-email">${email}</div>
-                        <div class="family-member-joined">Joined ${new Date(member.joined_at).toLocaleDateString()}</div>
+                        <div class="family-member-joined">Joined ${this.formatDate(member.joined_at)}</div>
                     </div>
                 </div>
             `;
@@ -3278,7 +3587,7 @@ class FamilyChoreChart {
             </div>
             <div class="earnings-section">
                 <div class="earnings-amount">${this.formatCents(progress.totalEarnings)}</div>
-                <div class="earnings-label">💰 Earnings (${this.familySettings?.daily_reward_cents || 7}¢ per completed day${this.familySettings?.weekly_bonus_cents ? ` + ${this.familySettings.weekly_bonus_cents}¢ weekly bonus` : ''})</div>
+                <div class="earnings-label">💰 Earnings (${this.formatCents(this.familySettings?.daily_reward_cents || 7)} per completed day${this.familySettings?.weekly_bonus_cents ? ` + ${this.formatCents(this.familySettings.weekly_bonus_cents)} weekly bonus` : ''})</div>
             </div>
         `;
         // Add click handlers for chore cells
@@ -3938,15 +4247,20 @@ class FamilyChoreChart {
     }
 
     // Check if user has premium features
-    isPremiumUser() {
+    async isPremiumUser() {
         // Admin user (bsiegel13@gmail.com) always has premium access
         if (this.profile?.email === 'bsiegel13@gmail.com') {
             return true;
         }
         
-        // This would check the user's subscription status
-        // For now, return false to keep features basic for free users
-        return false;
+        // Check the user's actual subscription status from database
+        try {
+            const limits = await this.apiClient.checkSubscriptionLimits();
+            return limits.isPremium;
+        } catch (error) {
+            console.error('Error checking premium status:', error);
+            return false;
+        }
     }
 
     addDashboardHandlers() {
@@ -3956,7 +4270,7 @@ class FamilyChoreChart {
                 this.setButtonLoading(refreshBtn, true);
                 await this.updateFamilyDashboard();
                 this.setButtonLoading(refreshBtn, false);
-                this.showToast('Dashboard refreshed!', 'success');
+                // "Dashboard refreshed!" toast removed - redundant
             });
         }
 
@@ -4178,7 +4492,7 @@ class FamilyChoreChart {
         const icon = this.getNotificationIcon(type);
         const title = this.getNotificationTitle(type);
         const message = this.getNotificationMessage(type, data);
-        const time = new Date().toLocaleTimeString();
+        const time = this.formatTime(new Date());
         
         notificationItem.innerHTML = `
             <div class="notification-icon">${icon}</div>
@@ -4347,11 +4661,7 @@ class FamilyChoreChart {
         Object.keys(completionsByWeek).sort().reverse().slice(0, 4).forEach(weekStart => {
             const weekCompletions = completionsByWeek[weekStart];
             const weekDate = new Date(weekStart);
-            const weekLabel = weekDate.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
-            });
+            const weekLabel = this.formatWeekLabel(weekDate);
 
             historyHtml += `
                 <div class="week-history">
@@ -4967,6 +5277,9 @@ class FamilyChoreChart {
             
             // Add FAQ and Contact modal handlers
             this.setupHelpModals();
+        
+        // Add drag and drop functionality for chore row reordering (not individual cells)
+        this.addChoreRowDragAndDrop(card, childChores, cardChildId);
             
             card.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
                 const day = cell.dataset.day;
@@ -5641,6 +5954,16 @@ class FamilyChoreChart {
             }
         }
         
+        // Update footer theme toggle button icon
+        const footerThemeToggle = document.getElementById('footer-theme-toggle');
+        if (footerThemeToggle) {
+            const icon = footerThemeToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+                console.log('Updated footer theme icon to:', icon.textContent);
+            }
+        }
+        
         // Update theme selector
         const themeSelector = document.getElementById('theme-selector');
         if (themeSelector) {
@@ -5720,6 +6043,16 @@ class FamilyChoreChart {
         const soundEnabled = document.getElementById('sound-enabled');
         if (soundEnabled) {
             soundEnabled.checked = this.settings.soundEnabled;
+        }
+        
+        // Update footer sound toggle button
+        const footerSoundToggle = document.getElementById('footer-sound-toggle');
+        if (footerSoundToggle) {
+            const icon = footerSoundToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = this.settings.soundEnabled ? '🔊' : '🔇';
+                console.log('Updated footer sound icon to:', icon.textContent);
+            }
         }
     }
 
@@ -6304,7 +6637,19 @@ class FamilyChoreChart {
         };
         
         mobileMenuClose.addEventListener('click', closeMobileMenu);
-        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        
+        // Close mobile menu when clicking on overlay
+        mobileMenuOverlay.addEventListener('click', (e) => {
+            // Only close if clicking directly on the overlay, not on child elements
+            if (e.target === mobileMenuOverlay) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Prevent mobile menu clicks from bubbling up to overlay
+        mobileMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
         
         // Close menu on escape key
         document.addEventListener('keydown', (e) => {
@@ -6351,6 +6696,16 @@ class FamilyChoreChart {
             mobileThemeToggle.querySelector('.mobile-menu-icon').textContent = isDark ? '☀️' : '🌙';
         }
         
+        // Update footer theme toggle state
+        const footerThemeToggle = document.getElementById('footer-theme-toggle');
+        if (footerThemeToggle) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const icon = footerThemeToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = isDark ? '☀️' : '🌙';
+            }
+        }
+        
         // Update sound toggle state
         const soundToggle = document.getElementById('sound-toggle');
         const mobileSoundToggle = document.getElementById('mobile-sound-toggle');
@@ -6358,6 +6713,16 @@ class FamilyChoreChart {
             const isMuted = soundToggle.classList.contains('muted');
             mobileSoundToggle.querySelector('.mobile-menu-text').textContent = isMuted ? 'Unmute' : 'Mute';
             mobileSoundToggle.querySelector('.mobile-menu-icon').textContent = isMuted ? '🔇' : '🔊';
+        }
+        
+        // Update footer sound toggle state
+        const footerSoundToggle = document.getElementById('footer-sound-toggle');
+        if (footerSoundToggle) {
+            const isMuted = !this.settings.soundEnabled;
+            const icon = footerSoundToggle.querySelector('.footer-icon');
+            if (icon) {
+                icon.textContent = isMuted ? '🔇' : '🔊';
+            }
         }
     }
 
@@ -6819,7 +7184,7 @@ class FamilyChoreChart {
         for (let i = days - 1; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            labels.push(this.formatShortDate(date));
             
             // Count completions for this day
             const dayCompletions = this.completions.filter(comp => {
@@ -6992,8 +7357,116 @@ class FamilyChoreChart {
         }
     }
 
-    exportPDF() {
-        this.showToast('PDF export coming soon!', 'info');
+    async exportPDF() {
+        try {
+            // Check if jsPDF is available
+            if (typeof window.jspdf === 'undefined') {
+                this.showToast('PDF library not loaded. Please refresh the page.', 'error');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get family data
+            const children = this.children;
+            const chores = this.chores;
+            const completions = await this.apiClient.getChoreCompletions();
+            const weekStart = this.apiClient.getWeekStart();
+            
+            // Header
+            doc.setFontSize(20);
+            doc.text('ChoreStar Family Report', 20, 30);
+            doc.setFontSize(12);
+            doc.text(`Generated on ${this.formatDate(new Date())}`, 20, 40);
+            doc.text(`Week of ${this.formatDate(weekStart)}`, 20, 50);
+            
+            let yPosition = 70;
+            
+            // Family Overview
+            doc.setFontSize(16);
+            doc.text('Family Overview', 20, yPosition);
+            yPosition += 15;
+            
+            doc.setFontSize(10);
+            doc.text(`Total Children: ${children.length}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Total Chores: ${chores.length}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Total Completions This Week: ${completions.filter(c => c.week_start === weekStart.toISOString().split('T')[0]).length}`, 20, yPosition);
+            yPosition += 20;
+            
+            // Individual Child Reports
+            for (const child of children) {
+                // Check if we need a new page
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                const childChores = chores.filter(c => c.child_id === child.id);
+                const childCompletions = completions.filter(c => 
+                    childChores.some(chore => chore.id === c.chore_id) && 
+                    c.week_start === weekStart.toISOString().split('T')[0]
+                );
+                
+                const totalPossibleCompletions = childChores.length * 7;
+                const completionRate = totalPossibleCompletions > 0 
+                    ? Math.round((childCompletions.length / totalPossibleCompletions) * 100)
+                    : 0;
+                
+                const totalEarnings = childCompletions.reduce((sum, comp) => {
+                    const chore = childChores.find(c => c.id === comp.chore_id);
+                    return sum + (chore ? chore.reward_cents : 0);
+                }, 0);
+                
+                // Child header
+                doc.setFontSize(14);
+                doc.text(`${child.name} (Age ${child.age})`, 20, yPosition);
+                yPosition += 15;
+                
+                // Child stats
+                doc.setFontSize(10);
+                doc.text(`Completion Rate: ${completionRate}%`, 20, yPosition);
+                yPosition += 8;
+                doc.text(`Total Completions: ${childCompletions.length}`, 20, yPosition);
+                yPosition += 8;
+                doc.text(`Total Earnings: $${(totalEarnings / 100).toFixed(2)}`, 20, yPosition);
+                yPosition += 8;
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                doc.text(`Perfect Days: ${this.calculatePerfectDays(child.id, weekStart, weekEnd)}`, 20, yPosition);
+                yPosition += 15;
+                
+                // Chore breakdown
+                if (childChores.length > 0) {
+                    doc.text('Chore Breakdown:', 20, yPosition);
+                    yPosition += 8;
+                    
+                    for (const chore of childChores) {
+                        const choreCompletions = childCompletions.filter(c => c.chore_id === chore.id);
+                        doc.text(`• ${chore.name}: ${choreCompletions.length}/7 days ($${(chore.reward_cents / 100).toFixed(2)} each)`, 30, yPosition);
+                        yPosition += 6;
+                    }
+                }
+                
+                yPosition += 15;
+            }
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.text('Generated by ChoreStar - Making chores fun for the whole family!', 20, 280);
+            
+            // Save the PDF
+            const fileName = `chorestar-report-${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            this.showToast('PDF report exported successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            this.showToast('Failed to export PDF report', 'error');
+        }
     }
 
     exportCSV() {
@@ -7022,8 +7495,100 @@ class FamilyChoreChart {
         this.showToast('CSV exported successfully!', 'success');
     }
 
-    exportWeekly() {
-        this.showToast('Weekly summary coming soon!', 'info');
+    async exportWeekly() {
+        try {
+            // Get current week's data
+            const weekStart = this.apiClient.getWeekStart();
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            // Get children and chores
+            const children = this.children;
+            const chores = this.chores;
+            const completions = await this.apiClient.getChoreCompletions();
+            
+            // Filter completions for current week
+            const weekCompletions = completions.filter(comp => 
+                comp.week_start === weekStart.toISOString().split('T')[0]
+            );
+            
+            // Calculate weekly stats for each child
+            const weeklyStats = children.map(child => {
+                const childChores = chores.filter(c => c.child_id === child.id);
+                const childCompletions = weekCompletions.filter(c => 
+                    childChores.some(chore => chore.id === c.chore_id)
+                );
+                
+                const totalPossibleCompletions = childChores.length * 7; // 7 days
+                const completionRate = totalPossibleCompletions > 0 
+                    ? Math.round((childCompletions.length / totalPossibleCompletions) * 100)
+                    : 0;
+                
+                const totalEarnings = childCompletions.reduce((sum, comp) => {
+                    const chore = childChores.find(c => c.id === comp.chore_id);
+                    return sum + (chore ? chore.reward_cents : 0);
+                }, 0);
+                
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                const perfectDays = this.calculatePerfectDays(child.id, weekStart, weekEnd);
+                
+                return {
+                    name: child.name,
+                    age: child.age,
+                    completionRate,
+                    totalCompletions: childCompletions.length,
+                    totalEarnings: (totalEarnings / 100).toFixed(2),
+                    perfectDays,
+                    chores: childChores.map(chore => ({
+                        name: chore.name,
+                        completions: childCompletions.filter(c => c.chore_id === chore.id).length,
+                        earnings: (chore.reward_cents / 100).toFixed(2)
+                    }))
+                };
+            });
+            
+            // Create CSV content
+            const csvContent = [
+                ['Weekly Summary Report', `Week of ${this.formatDate(weekStart)}`],
+                [''],
+                ['Child Name', 'Age', 'Completion Rate (%)', 'Total Completions', 'Total Earnings ($)', 'Perfect Days'],
+                ...weeklyStats.map(child => [
+                    child.name,
+                    child.age,
+                    child.completionRate,
+                    child.totalCompletions,
+                    child.totalEarnings,
+                    child.perfectDays
+                ]),
+                [''],
+                ['Detailed Chore Breakdown'],
+                ['Child', 'Chore', 'Completions', 'Earnings ($)'],
+                ...weeklyStats.flatMap(child => 
+                    child.chores.map(chore => [
+                        child.name,
+                        chore.name,
+                        chore.completions,
+                        chore.earnings
+                    ])
+                )
+            ].map(row => row.join(',')).join('\n');
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chorestar-weekly-summary-${weekStart.toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            this.showToast('Weekly summary exported successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error exporting weekly summary:', error);
+            this.showToast('Failed to export weekly summary', 'error');
+        }
     }
 
     // Interactive Chore Card Methods (Premium Features)
@@ -7123,15 +7688,126 @@ class FamilyChoreChart {
         cell.addEventListener('mouseleave', handleEnd);
     }
 
-    addDragAndDrop(cell, childChores, childId) {
-        let isDragging = false;
-        let dragStartIndex = 0;
+    addChoreRowDragAndDrop(card, childChores, childId) {
+        const table = card.querySelector('.chore-grid-table');
+        if (!table) return;
         
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.draggable = true;
+            row.style.cursor = 'grab';
+            
+            row.addEventListener('dragstart', (e) => {
+                row.classList.add('dragging');
+                row.style.opacity = '0.5';
+                
+                // Create drag image
+                const dragImage = row.cloneNode(true);
+                dragImage.style.opacity = '0.8';
+                dragImage.style.backgroundColor = 'white';
+                dragImage.style.border = '2px solid var(--primary)';
+                dragImage.style.borderRadius = '8px';
+                dragImage.style.padding = '8px';
+                dragImage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                document.body.appendChild(dragImage);
+                e.dataTransfer.setDragImage(dragImage, 0, 0);
+                
+                setTimeout(() => {
+                    document.body.removeChild(dragImage);
+                }, 0);
+            });
+            
+            row.addEventListener('dragend', () => {
+                row.classList.remove('dragging');
+                row.style.opacity = '1';
+                // Remove drag-over class from all rows
+                rows.forEach(r => r.classList.remove('drag-over'));
+            });
+            
+            row.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                
+                const draggedRow = document.querySelector('.dragging');
+                if (!draggedRow || draggedRow === row) return;
+                
+                const rect = row.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                
+                if (e.clientY < centerY) {
+                    row.classList.add('drag-over');
+                } else {
+                    row.classList.remove('drag-over');
+                }
+            });
+            
+            row.addEventListener('drop', (e) => {
+                e.preventDefault();
+                row.classList.remove('drag-over');
+                
+                const draggedRow = document.querySelector('.dragging');
+                if (draggedRow && draggedRow !== row) {
+                    // Get chore IDs from the rows
+                    const draggedChoreId = this.getChoreIdFromRow(draggedRow);
+                    const targetChoreId = this.getChoreIdFromRow(row);
+                    
+                    if (draggedChoreId && targetChoreId && draggedChoreId !== targetChoreId) {
+                        this.reorderChoresById(draggedChoreId, targetChoreId, childId);
+                    }
+                }
+            });
+            
+            row.addEventListener('dragleave', () => {
+                row.classList.remove('drag-over');
+            });
+        });
+    }
+    
+    getChoreIdFromRow(row) {
+        // Get the first chore cell in the row to find the chore ID
+        const firstCell = row.querySelector('.chore-cell');
+        return firstCell ? firstCell.dataset.choreId : null;
+    }
+    
+    reorderChoresById(draggedChoreId, targetChoreId, childId) {
+        try {
+            const childChores = this.chores.filter(c => c.child_id === childId);
+            
+            const draggedChore = childChores.find(c => c.id == draggedChoreId);
+            const targetChore = childChores.find(c => c.id == targetChoreId);
+            
+            if (!draggedChore || !targetChore) {
+                return;
+            }
+            
+            // Get current order indices
+            const draggedIndex = childChores.findIndex(c => c.id == draggedChoreId);
+            const targetIndex = childChores.findIndex(c => c.id == targetChoreId);
+            
+            // Reorder the chores array
+            const reorderedChores = [...childChores];
+            const [movedChore] = reorderedChores.splice(draggedIndex, 1);
+            reorderedChores.splice(targetIndex, 0, movedChore);
+            
+            // Update the chores array with new order
+            const otherChores = this.chores.filter(c => c.child_id !== childId);
+            this.chores = [...otherChores, ...reorderedChores];
+            
+            // Re-render the chore grid to reflect new order
+            this.renderChildrenContent();
+            
+            // Show success message
+            this.showToast('Chores reordered!', 'success');
+            
+        } catch (error) {
+            console.error('Error reordering chores:', error);
+            this.showToast('Failed to reorder chores', 'error');
+        }
+    }
+
+    addDragAndDrop(cell, childChores, childId) {
         cell.draggable = true;
         
         cell.addEventListener('dragstart', (e) => {
-            isDragging = true;
-            dragStartIndex = Array.from(cell.parentNode.children).indexOf(cell);
             cell.classList.add('dragging');
             
             // Create drag image
@@ -7146,13 +7822,16 @@ class FamilyChoreChart {
         });
         
         cell.addEventListener('dragend', () => {
-            isDragging = false;
             cell.classList.remove('dragging');
+            // Remove drag-over class from all cells
+            document.querySelectorAll('.chore-cell').forEach(c => c.classList.remove('drag-over'));
         });
         
         cell.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (!isDragging) return;
+            
+            const draggedCell = document.querySelector('.dragging');
+            if (!draggedCell || draggedCell === cell) return;
             
             const rect = cell.getBoundingClientRect();
             const centerY = rect.top + rect.height / 2;
@@ -7168,18 +7847,244 @@ class FamilyChoreChart {
             e.preventDefault();
             cell.classList.remove('drag-over');
             
-            if (!isDragging) return;
-            
             const draggedCell = document.querySelector('.dragging');
             if (draggedCell && draggedCell !== cell) {
-                // Reorder chores (this would need backend support)
-                this.showToast('Chore reordering coming soon!', 'info');
+                // Reorder chores - implement local reordering
+                this.reorderChores(draggedCell, cell);
             }
         });
         
         cell.addEventListener('dragleave', () => {
             cell.classList.remove('drag-over');
         });
+    }
+    
+    populateEditChoreReorderSection(childId) {
+        const reorderSection = document.getElementById('edit-chore-reorder-section');
+        const reorderList = document.getElementById('edit-chore-reorder-list');
+        
+        if (!reorderSection || !reorderList) return;
+        
+        // Get chores for this child
+        const childChores = this.chores.filter(c => c.child_id === childId);
+        
+        if (childChores.length <= 1) {
+            // Hide section if there's only one or no chores
+            reorderSection.style.display = 'none';
+            return;
+        }
+        
+        // Show section and populate with chores
+        reorderSection.style.display = 'block';
+        
+        let html = '';
+        childChores.forEach(chore => {
+            html += `
+                <div class="chore-reorder-item" data-chore-id="${chore.id}">
+                    <span class="chore-reorder-icon">${chore.icon || '📝'}</span>
+                    <div class="chore-reorder-details">
+                        <div class="chore-reorder-name">${chore.name}</div>
+                        <div class="chore-reorder-category">${chore.category || 'General'}</div>
+                    </div>
+                    <span class="chore-reorder-handle">⋮⋮</span>
+                </div>
+            `;
+        });
+        
+        reorderList.innerHTML = html;
+        
+        // Add drag and drop functionality to the reorder items
+        this.addEditModalDragAndDrop(reorderList, childId);
+    }
+    
+    addEditModalDragAndDrop(container, childId) {
+        const items = container.querySelectorAll('.chore-reorder-item');
+        
+        items.forEach(item => {
+            item.draggable = true;
+            
+            item.addEventListener('dragstart', (e) => {
+                item.classList.add('dragging');
+                
+                // Create drag image
+                const dragImage = item.cloneNode(true);
+                dragImage.style.opacity = '0.8';
+                dragImage.style.backgroundColor = 'white';
+                dragImage.style.border = '2px solid var(--primary)';
+                dragImage.style.borderRadius = '8px';
+                dragImage.style.padding = '8px';
+                dragImage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                document.body.appendChild(dragImage);
+                e.dataTransfer.setDragImage(dragImage, 0, 0);
+                
+                setTimeout(() => {
+                    document.body.removeChild(dragImage);
+                }, 0);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                // Remove drag-over class from all items
+                items.forEach(i => i.classList.remove('drag-over'));
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                
+                const draggedItem = container.querySelector('.dragging');
+                if (!draggedItem || draggedItem === item) return;
+                
+                const rect = item.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                
+                if (e.clientY < centerY) {
+                    item.classList.add('drag-over');
+                } else {
+                    item.classList.remove('drag-over');
+                }
+            });
+            
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+                
+                const draggedItem = container.querySelector('.dragging');
+                if (draggedItem && draggedItem !== item) {
+                    const draggedChoreId = draggedItem.dataset.choreId;
+                    const targetChoreId = item.dataset.choreId;
+                    
+                    if (draggedChoreId && targetChoreId && draggedChoreId !== targetChoreId) {
+                        this.reorderChoresById(draggedChoreId, targetChoreId, childId);
+                        // Re-populate the list to reflect the new order
+                        this.populateEditChoreReorderSection(childId);
+                    }
+                }
+            });
+            
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+        });
+    }
+
+    // Chore reordering functionality
+    reorderChores(draggedCell, targetCell) {
+        try {
+            // Get the chore IDs from the cells
+            const draggedChoreId = draggedCell.dataset.choreId;
+            const targetChoreId = targetCell.dataset.choreId;
+            
+            if (!draggedChoreId || !targetChoreId || draggedChoreId === targetChoreId) {
+                return;
+            }
+            
+            // Find the chores in the current child's chore list
+            const currentChildId = this.activeChildId;
+            const childChores = this.chores.filter(c => c.child_id === currentChildId);
+            
+            const draggedChore = childChores.find(c => c.id === draggedChoreId);
+            const targetChore = childChores.find(c => c.id === targetChoreId);
+            
+            if (!draggedChore || !targetChore) {
+                return;
+            }
+            
+            // Get current order indices
+            const draggedIndex = childChores.findIndex(c => c.id === draggedChoreId);
+            const targetIndex = childChores.findIndex(c => c.id === targetChoreId);
+            
+            // Reorder the chores array
+            const reorderedChores = [...childChores];
+            const [movedChore] = reorderedChores.splice(draggedIndex, 1);
+            reorderedChores.splice(targetIndex, 0, movedChore);
+            
+            // Update the chores array with new order
+            const otherChores = this.chores.filter(c => c.child_id !== currentChildId);
+            this.chores = [...otherChores, ...reorderedChores];
+            
+            // Re-render the chore grid to reflect new order
+            this.renderChildrenContent();
+            
+            // Show success message
+            this.showToast('Chores reordered!', 'success');
+            
+            // TODO: In the future, save the new order to the backend
+            // await this.apiClient.updateChoreOrder(currentChildId, reorderedChores.map(c => c.id));
+            
+        } catch (error) {
+            console.error('Error reordering chores:', error);
+            this.showToast('Failed to reorder chores', 'error');
+        }
+    }
+
+    // New Features and Changelog System
+    checkNewFeatures() {
+        try {
+            const lastSeenVersion = localStorage.getItem('chorestar_last_seen_version');
+            const currentVersion = '2025.1.0'; // Current version with new features
+            
+            // If user hasn't seen this version yet, show new features modal
+            if (!lastSeenVersion || lastSeenVersion !== currentVersion) {
+                // Wait a bit for the app to fully load
+                setTimeout(() => {
+                    this.showModal('new-features-modal');
+                    // Mark this version as seen
+                    localStorage.setItem('chorestar_last_seen_version', currentVersion);
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Error checking new features:', error);
+        }
+    }
+
+    // Method to manually show new features (for testing or user request)
+    showNewFeatures() {
+        this.showModal('new-features-modal');
+    }
+
+    // Method to reset version tracking (for testing)
+    resetVersionTracking() {
+        localStorage.removeItem('chorestar_last_seen_version');
+        this.showToast('Version tracking reset. New features will show on next login.', 'info');
+    }
+
+    // Changelog data for future updates
+    getChangelogData() {
+        return {
+            '2025.1.0': {
+                version: '2025.1.0',
+                date: 'January 2025',
+                title: 'Major Feature Update',
+                features: [
+                    {
+                        icon: '📊',
+                        title: 'Weekly Summary Export',
+                        description: 'Export detailed weekly reports showing completion rates, earnings, and perfect days for each child.'
+                    },
+                    {
+                        icon: '📄',
+                        title: 'PDF Reports',
+                        description: 'Generate professional PDF reports of your family\'s chore progress.'
+                    },
+                    {
+                        icon: '🔄',
+                        title: 'Chore Reordering',
+                        description: 'Drag and drop to reorder chores for each child.'
+                    },
+                    {
+                        icon: '📧',
+                        title: 'Enhanced Contact Support',
+                        description: 'Improved contact form with better email integration.'
+                    },
+                    {
+                        icon: '🎨',
+                        title: 'New Icon Picker',
+                        description: 'Choose from 50+ fun icons for chores!'
+                    }
+                ]
+            }
+            // Future versions can be added here
+        };
     }
 
     addQuickEdit(cell, childChores, childId) {
@@ -7467,8 +8372,206 @@ class FamilyChoreChart {
         return stars;
     }
 
-    formatCents(cents) {
-        return `$${(cents / 100).toFixed(2)}`;
+    formatCents(cents, currency = null) {
+        // Use family settings currency if available, otherwise default to USD
+        const currencyCode = currency || this.familySettings?.currency_code || 'USD';
+        
+        try {
+            const formatter = new Intl.NumberFormat(this.getLocale(), {
+                style: 'currency',
+                currency: currencyCode,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            return formatter.format(cents / 100);
+        } catch (error) {
+            // Fallback to USD if currency is not supported
+            console.warn('Currency not supported, falling back to USD:', currencyCode);
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            return formatter.format(cents / 100);
+        }
+    }
+    
+    getLocale() {
+        // Get user's locale from browser or family settings
+        return this.familySettings?.locale || navigator.language || 'en-US';
+    }
+    
+    // International Date Formatting Functions
+    formatDate(date, options = {}) {
+        const locale = this.getLocale();
+        const dateFormat = this.familySettings?.date_format || 'auto';
+        
+        // Handle custom date formats
+        if (dateFormat !== 'auto') {
+            return this.formatCustomDate(date, dateFormat);
+        }
+        
+        const defaultOptions = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        };
+        
+        const formatOptions = { ...defaultOptions, ...options };
+        
+        try {
+            const dateObj = new Date(date);
+            
+            // Handle invalid dates
+            if (isNaN(dateObj.getTime())) {
+                console.warn('Invalid date provided to formatDate:', date);
+                return 'Invalid Date';
+            }
+            
+            return dateObj.toLocaleDateString(locale, formatOptions);
+        } catch (error) {
+            console.warn('Date formatting failed, using fallback:', error);
+            try {
+                return new Date(date).toLocaleDateString('en-US', formatOptions);
+            } catch (fallbackError) {
+                console.warn('Fallback date formatting also failed:', fallbackError);
+                return 'Invalid Date';
+            }
+        }
+    }
+    
+    formatCustomDate(date, format) {
+        const d = new Date(date);
+        
+        // Handle invalid dates
+        if (isNaN(d.getTime())) {
+            console.warn('Invalid date provided to formatCustomDate:', date);
+            return 'Invalid Date';
+        }
+        
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        
+        switch (format) {
+            case 'MM/DD/YYYY':
+                return `${month}/${day}/${year}`;
+            case 'DD/MM/YYYY':
+                return `${day}/${month}/${year}`;
+            case 'YYYY-MM-DD':
+                return `${year}-${month}-${day}`;
+            case 'DD.MM.YYYY':
+                return `${day}.${month}.${year}`;
+            default:
+                return this.formatDate(date);
+        }
+    }
+    
+    formatTime(date, options = {}) {
+        const locale = this.getLocale();
+        const defaultOptions = {
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        
+        const formatOptions = { ...defaultOptions, ...options };
+        
+        try {
+            const dateObj = new Date(date);
+            
+            // Handle invalid dates
+            if (isNaN(dateObj.getTime())) {
+                console.warn('Invalid date provided to formatTime:', date);
+                return 'Invalid Time';
+            }
+            
+            return dateObj.toLocaleTimeString(locale, formatOptions);
+        } catch (error) {
+            console.warn('Time formatting failed, using fallback:', error);
+            try {
+                return new Date(date).toLocaleTimeString('en-US', formatOptions);
+            } catch (fallbackError) {
+                console.warn('Fallback time formatting also failed:', fallbackError);
+                return 'Invalid Time';
+            }
+        }
+    }
+    
+    formatDateTime(date, options = {}) {
+        const locale = this.getLocale();
+        const defaultOptions = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        
+        const formatOptions = { ...defaultOptions, ...options };
+        
+        try {
+            return new Date(date).toLocaleString(locale, formatOptions);
+        } catch (error) {
+            console.warn('DateTime formatting failed, using fallback:', error);
+            return new Date(date).toLocaleString('en-US', formatOptions);
+        }
+    }
+    
+    formatShortDate(date) {
+        // Short format like "Jan 15" or "15 Jan" depending on locale
+        const locale = this.getLocale();
+        const isUSFormat = locale.startsWith('en-US') || locale.startsWith('en-CA');
+        
+        const options = {
+            month: 'short',
+            day: 'numeric'
+        };
+        
+        try {
+            return new Date(date).toLocaleDateString(locale, options);
+        } catch (error) {
+            console.warn('Short date formatting failed, using fallback:', error);
+            return new Date(date).toLocaleDateString('en-US', options);
+        }
+    }
+    
+    formatWeekLabel(date) {
+        // Format week labels like "Jan 15, 2024"
+        return this.formatDate(date, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+    
+    formatThemeDate(dateStr) {
+        // Enhanced theme date formatting with international support
+        const [month, day] = dateStr.split('-');
+        const date = new Date(2024, parseInt(month) - 1, parseInt(day));
+        return this.formatShortDate(date);
+    }
+    
+    formatRelativeDate(date) {
+        // Format relative dates like "2 days ago", "Last week"
+        const locale = this.getLocale();
+        const now = new Date();
+        const targetDate = new Date(date);
+        const diffTime = now - targetDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            return 'Today';
+        } else if (diffDays === 1) {
+            return 'Yesterday';
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+            const weeks = Math.floor(diffDays / 7);
+            return weeks === 1 ? 'Last week' : `${weeks} weeks ago`;
+        } else {
+            return this.formatShortDate(date);
+        }
     }
 
     getCategoryInfo(category) {
@@ -7875,6 +8978,15 @@ function updateEditChildAvatarPreview2() {
 function openEditChildModal(child) {
     if (app) {
         app.openEditChildModal(child);
+    }
+}
+
+// Global debug function for footer
+function debugFooter() {
+    if (app) {
+        app.debugFooter();
+    } else {
+        console.log('App not initialized yet');
     }
 }
 

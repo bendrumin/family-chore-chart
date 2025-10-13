@@ -1,7 +1,7 @@
 // Payment Integration with Stripe
 class PaymentManager {
     constructor() {
-        this.stripe = Stripe('pk_live_CMPtLmI4NqSpnKcAXbPXte2w00F0PbtPp0');
+        this.stripe = Stripe(window.STRIPE_PUBLISHABLE_KEY || 'pk_test_default_key');
     }
 
     async createCheckoutSession() {

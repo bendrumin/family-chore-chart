@@ -4,11 +4,24 @@
 - Contact form is working and storing submissions in Supabase
 - Email API route is deployed and ready
 - Contact form will call the email API when submissions are made
-- **Gmail support is now configured and ready!**
+- **SendGrid support is now configured and ready!**
+- **Gmail support is also available as fallback**
 
 ## To Enable Email Notifications
 
-### Option 1: Gmail (Recommended - Easiest)
+### Option 1: SendGrid (Recommended - Most Reliable)
+
+1. **Get your SendGrid API key** from your SendGrid dashboard
+2. **Add Environment Variable to Vercel**:
+   ```bash
+   vercel env add SENDGRID_API_KEY
+   # Enter: your_sendgrid_api_key_here
+   
+   vercel env add ADMIN_EMAIL
+   # Enter: bsiegel13@gmail.com
+   ```
+
+### Option 2: Gmail (Fallback Option)
 
 1. **Enable 2-Factor Authentication** on your Gmail account
 2. **Generate an App Password**:
@@ -31,7 +44,7 @@
    # Enter: bsiegel13@gmail.com
    ```
 
-### Option 2: Zoho Mail (Alternative)
+### Option 3: Zoho Mail (Alternative)
 
 1. **Get your Zoho Mail credentials**:
    - Log into your Zoho Mail account
@@ -63,7 +76,7 @@
    # Enter: bsiegel13@gmail.com
    ```
 
-### Option 3: Resend (Alternative)
+### Option 4: Resend (Alternative)
 
 1. **Sign up at [resend.com](https://resend.com)**
 2. **Get your API key**
@@ -87,14 +100,14 @@
 Right now, the contact form:
 - ✅ Stores submissions in Supabase database
 - ✅ Calls the email API
+- ✅ **SendGrid integration is ready and configured**
+- ✅ Falls back to Gmail if SendGrid is not available
 - ✅ Logs email content to Vercel console
-- ⏳ **Needs Gmail credentials to send actual emails**
 
 ## Next Steps
 
-1. **Enable 2FA on your Gmail account**
-2. **Generate an App Password** for Gmail
-3. **Set up the environment variables** using the commands above
-4. **Deploy again**
+1. **Set up the SendGrid environment variable** using the command above
+2. **Deploy again** to activate SendGrid email sending
+3. **Test the contact form** to verify emails are being sent
 
-The email API is now configured for Gmail and ready to go - just needs the Gmail credentials configured! 
+The email API is now configured for SendGrid as the primary method and Gmail as fallback - just needs the SendGrid API key configured! 

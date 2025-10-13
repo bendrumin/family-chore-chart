@@ -4,9 +4,7 @@ public/
 # Ignore development files
 .git/
 .gitignore
-README.md
-SETUP.md
-PROJECT_SUMMARY.md
+*.md
 quick-start.sh
 
 # Ignore database files
