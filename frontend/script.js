@@ -4265,15 +4265,15 @@ class FamilyChoreChart {
         if (dashboardActions) {
             const seasonalBtn = document.createElement('button');
             seasonalBtn.className = 'btn btn-outline btn-sm seasonal-suggestions-btn';
-            seasonalBtn.innerHTML = `${theme.icon} ${theme.name} Chores`;
-            seasonalBtn.onclick = () => this.showSeasonalChoreModal(theme);
+            seasonalBtn.innerHTML = `${theme.icon} ${theme.name} Activities`;
+            seasonalBtn.onclick = () => this.showSeasonalActivityModal(theme);
             dashboardActions.appendChild(seasonalBtn);
         }
     }
 
-    showSeasonalChoreModal(theme) {
-        // Populate the seasonal chore modal content
-        const modalContent = document.getElementById('seasonal-chore-content');
+    showSeasonalActivityModal(theme) {
+        // Populate the seasonal activity modal content
+        const modalContent = document.getElementById('seasonal-activity-content');
         if (!modalContent) return;
         
         modalContent.innerHTML = `
@@ -4300,7 +4300,7 @@ class FamilyChoreChart {
         `;
         
         // Show the modal
-        this.showModal('seasonal-chore-modal');
+        this.showModal('seasonal-activity-modal');
     }
 
     async addSeasonalActivity(activityName, activityIcon, activityCategory) {
@@ -4347,11 +4347,11 @@ class FamilyChoreChart {
         }
     }
 
-    getSeasonalChoreSuggestions() {
+    getSeasonalActivitySuggestions() {
         const theme = this.getCurrentSeasonalTheme();
         if (!theme) return [];
         
-        return theme.seasonalChores;
+        return theme.seasonalActivities;
     }
 
     // Check if user has premium features
