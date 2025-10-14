@@ -4315,6 +4315,617 @@ body.modal-open {
     .suggestion-meta {
         justify-content: center;
     }
+}
+
+/* Seasonal Activities Modal Improvements */
+.seasonal-activity-modal-content {
+    max-width: 600px;
+    width: 90vw;
+}
+
+.seasonal-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 12px;
+    color: white;
+}
+
+.seasonal-header h2 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.seasonal-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.seasonal-activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.seasonal-activity-item {
+    background: var(--bg-primary);
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.seasonal-activity-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+
+.seasonal-activity-item:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.seasonal-activity-item:hover::before {
+    transform: scaleX(1);
+}
+
+.activity-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.activity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-details h4 {
+    margin: 0 0 var(--space-1) 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.activity-category {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dark mode improvements for seasonal activities */
+[data-theme="dark"] .seasonal-activity-item {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .seasonal-activity-item:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .activity-details h4 {
+    color: var(--text-primary);
+}
+
+/* Mobile responsive for seasonal activities */
+@media (max-width: 768px) {
+    .seasonal-activity-modal-content {
+        width: 95vw;
+        max-height: 90vh;
+    }
+    
+    .seasonal-activities-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+    
+    .seasonal-activity-item {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-2);
+    }
+}
+
+/* Contact and FAQ Modal Improvements */
+.contact-modal-content,
+.faq-modal-content {
+    max-width: 700px;
+    width: 90vw;
+    max-height: 85vh;
+}
+
+.contact-content,
+.faq-content {
+    padding: 0 var(--space-6) var(--space-6);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.contact-info,
+.faq-section {
+    margin-bottom: var(--space-6);
+}
+
+.contact-info h3,
+.faq-section h3 {
+    margin: 0 0 var(--space-3) 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.contact-info p,
+.faq-section p {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+.contact-methods {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.contact-method {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-primary);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    transition: all var(--transition);
+}
+
+.contact-method:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contact-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.contact-method strong {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.contact-method p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 14px;
+}
+
+.faq-item {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all var(--transition);
+}
+
+.faq-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.faq-question {
+    padding: var(--space-4);
+    background: var(--bg-primary);
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    transition: all var(--transition);
+}
+
+.faq-question:hover {
+    background: var(--gray-50);
+}
+
+.faq-question.active {
+    background: var(--primary);
+    color: white;
+}
+
+.faq-answer {
+    padding: 0 var(--space-4) var(--space-4);
+    background: var(--bg-primary);
+    color: var(--gray-700);
+    line-height: 1.6;
+    display: none;
+}
+
+.faq-answer.active {
+    display: block;
+}
+
+.faq-toggle {
+    font-size: 1.2rem;
+    transition: transform var(--transition);
+}
+
+.faq-question.active .faq-toggle {
+    transform: rotate(45deg);
+}
+
+/* Dark mode improvements for contact and FAQ */
+[data-theme="dark"] .contact-method,
+[data-theme="dark"] .faq-item {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .contact-method:hover,
+[data-theme="dark"] .faq-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .contact-info h3,
+[data-theme="dark"] .faq-section h3,
+[data-theme="dark"] .contact-method strong {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .contact-info p,
+[data-theme="dark"] .faq-section p,
+[data-theme="dark"] .contact-method p,
+[data-theme="dark"] .faq-answer {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .faq-question {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .faq-question:hover {
+    background: var(--gray-700);
+}
+
+[data-theme="dark"] .faq-answer {
+    background: var(--card-bg);
+}
+
+/* Mobile responsive for contact and FAQ */
+@media (max-width: 768px) {
+    .contact-modal-content,
+    .faq-modal-content {
+        width: 95vw;
+        max-height: 90vh;
+    }
+    
+    .contact-content,
+    .faq-content {
+        padding: 0 var(--space-4) var(--space-4);
+        max-height: 50vh;
+    }
+    
+    .contact-methods {
+        gap: var(--space-3);
+    }
+    
+    .contact-method {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-2);
+    }
+}
+
+/* Enhanced Modal Animations and Micro-interactions */
+.modal {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal:not(.hidden) {
+    animation: modal-fade-in 0.3s ease-out;
+}
+
+.modal.hidden {
+    animation: modal-fade-out 0.2s ease-in;
+}
+
+.modal-content {
+    animation: modal-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center bottom;
+}
+
+.modal.hidden .modal-content {
+    animation: modal-slide-down 0.2s ease-in;
+}
+
+/* Enhanced button interactions */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* Enhanced form interactions */
+.form-group input:focus,
+.form-group select:focus,
+.category-selector:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Enhanced card interactions */
+.child-card,
+.chore-entry,
+.insight-card,
+.suggestion-card,
+.seasonal-activity-item,
+.contact-method,
+.faq-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.child-card:hover,
+.chore-entry:hover,
+.insight-card:hover,
+.suggestion-card:hover,
+.seasonal-activity-item:hover,
+.contact-method:hover,
+.faq-item:hover {
+    transform: translateY(-2px);
+}
+
+/* Enhanced tab interactions */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.tab-btn.active::after {
+    width: 100%;
+}
+
+/* Enhanced modal close button */
+.modal-close {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.modal-close:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.modal-close:active {
+    transform: scale(0.95) rotate(90deg);
+}
+
+/* Enhanced color preset interactions */
+.color-preset {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.color-preset::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.color-preset:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+.color-preset:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.color-preset.active {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 3px var(--primary);
+}
+
+/* Enhanced chore number badges */
+.chore-number {
+    transition: all 0.3s ease;
+}
+
+.chore-entry:hover .chore-number {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Enhanced category badges */
+.category-badge {
+    transition: all 0.2s ease;
+}
+
+.category-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced difficulty badges */
+.difficulty-badge {
+    transition: all 0.2s ease;
+}
+
+.difficulty-badge:hover {
+    transform: scale(1.1);
+}
+
+/* Enhanced FAQ toggle */
+.faq-toggle {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-question:hover .faq-toggle {
+    transform: scale(1.2);
+}
+
+/* Keyframe animations */
+@keyframes modal-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modal-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes modal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modal-slide-down {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+}
+
+@keyframes ai-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Dark mode enhancements */
+[data-theme="dark"] .btn-primary {
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .category-selector:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .color-preset:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .chore-entry:hover .chore-number {
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="dark"] .category-badge:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 } 
 
 .selected-color-circle {
