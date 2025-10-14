@@ -2554,10 +2554,13 @@ class FamilyChoreChart {
         if (childChores.length === 0) {
             return `
                 <div style="text-align:center;color:var(--gray-500);padding:2rem;">
-                    <p>No chores yet for ${child.name}.</p>
-                    <button class="btn btn-primary" onclick="app.showModal('add-chore-modal'); document.getElementById('chore-child').value='${child.id}';">
-                        <span>📝</span> Add First Chore
+                    <div class="empty-state-icon">🎯</div>
+                    <h4 class="empty-state-title">No Activities Yet</h4>
+                    <p class="empty-state-description">${child.name} doesn't have any activities yet. Let's add some to get started!</p>
+                    <button class="btn btn-primary btn-lg" onclick="app.showModal('add-chore-modal'); document.getElementById('chore-child').value='${child.id}';">
+                        <span>✨</span> Add First Activity
                     </button>
+                    <p class="empty-state-hint">💡 Try the Smart Suggestions button for personalized ideas!</p>
                 </div>
             `;
         }
@@ -2715,11 +2718,13 @@ class FamilyChoreChart {
         if (this.children.length === 0) {
             container.innerHTML = `<div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
                     <div style="font-size: 3rem; margin-bottom: var(--space-3);">👶</div>
-                    <h4 style="margin-bottom: var(--space-2); color: var(--gray-700);">No children yet</h4>
-                    <p style="margin-bottom: var(--space-4);">Add your first child to get started with ChoreStar!</p>
-                    <button class="btn btn-primary" id="add-first-child-btn">
-                        <span>➕</span> Add Your First Child
+                    <div class="empty-state-icon">👨‍👩‍👧‍👦</div>
+                    <h3 class="empty-state-title">Welcome to Your Family Dashboard!</h3>
+                    <p class="empty-state-description">Let's start by adding your first child to begin tracking activities and earning rewards together.</p>
+                    <button class="btn btn-primary btn-lg" id="add-first-child-btn">
+                        <span>👶</span> Add Your First Child
                     </button>
+                    <p class="empty-state-hint">💡 Tip: You can add multiple children and track each one's progress separately</p>
             </div>`;
             return;
         }
