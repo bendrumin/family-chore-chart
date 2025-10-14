@@ -1034,6 +1034,14 @@ class FamilyChoreChart {
             });
         }
 
+        // Event listener for edit child color input
+        const editChildColorInput = document.getElementById('edit-child-color');
+        if (editChildColorInput) {
+            editChildColorInput.addEventListener('change', (e) => {
+                this.updateEditChildAvatarPreview2();
+            });
+        }
+
         // Add chore form
         document.getElementById('add-chore-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1383,6 +1391,21 @@ class FamilyChoreChart {
         }
     }
 
+    updateEditChildAvatarPreview2() {
+        const mainCircle = document.getElementById('edit-child-avatar-preview-circle');
+        const colorInput = document.getElementById('edit-child-color');
+        
+        if (!mainCircle || !colorInput) return;
+
+        const selectedColor = colorInput.value;
+        mainCircle.style.backgroundColor = selectedColor;
+        
+        const avatarUrl = mainCircle.dataset.avatarUrl;
+        if (avatarUrl && !mainCircle.querySelector('img')) {
+            mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        }
+    }
+
     setupAddChildModal() {
         // Set initial active state for color presets
         const colorInput = document.getElementById('child-color');
@@ -1402,6 +1425,22 @@ class FamilyChoreChart {
             
             // Update avatar preview
             this.updateAddChildAvatarPreview();
+        }
+    }
+
+    setupEditChildModal() {
+        // Set initial active state for color presets
+        const colorInput = document.getElementById('edit-child-color');
+        const editChildModal = document.getElementById('edit-child-modal');
+        
+        if (colorInput && editChildModal) {
+            const currentColor = colorInput.value;
+            editChildModal.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+            const matchingPreset = editChildModal.querySelector(`.color-preset[data-color="${currentColor}"]`);
+            if (matchingPreset) {
+                matchingPreset.classList.add('active');
+            }
+            this.updateEditChildAvatarPreview2();
         }
     }
 
@@ -1816,6 +1855,10 @@ class FamilyChoreChart {
         }
         if (modalId === 'add-child-modal') {
             this.setupAddChildModal();
+        }
+        
+        if (modalId === 'edit-child-modal') {
+            this.setupEditChildModal();
         }
     }
 
@@ -3251,11 +3294,14 @@ class FamilyChoreChart {
         newEntry.className = 'chore-entry';
         newEntry.innerHTML = `
             <div class="chore-entry-header">
-                <h3>Chore #${entryCount}</h3>
+                <div class="chore-entry-title">
+                    <span class="chore-number">${entryCount}</span>
+                    <h3>Activity Details</h3>
+                </div>
                 <button type="button" class="btn btn-outline btn-sm remove-chore">Remove</button>
             </div>
             <div class="form-group">
-                <label for="chore-name-${entryCount}">Chore Name</label>
+                <label for="chore-name-${entryCount}">Activity Name</label>
                 <input type="text" id="chore-name-${entryCount}" required placeholder="e.g., Make bed">
             </div>
             <div class="form-group">
