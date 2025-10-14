@@ -2150,6 +2150,156 @@
         </div>
     </div>
 
+    <!-- Onboarding Wizard -->
+    <div id="onboarding-wizard" class="modal hidden" role="dialog" aria-labelledby="onboarding-title" aria-hidden="true">
+        <div class="modal-content modal-flex onboarding-modal-content">
+            <div class="onboarding-step active" data-step="1">
+                <div class="onboarding-header">
+                    <h2 id="onboarding-title">👋 Welcome to ChoreStar!</h2>
+                    <p>Let's get your family set up in just a few steps</p>
+                </div>
+                <div class="onboarding-body">
+                    <div class="onboarding-illustration">🏠</div>
+                    <h3>Transform Chores into Fun Activities!</h3>
+                    <p>ChoreStar helps your family track household tasks, learn new skills, stay active, and earn rewards together.</p>
+                    <ul class="feature-list">
+                        <li><span class="feature-icon">✨</span> Track activities across 8 different categories</li>
+                        <li><span class="feature-icon">🏆</span> Earn achievement badges and streaks</li>
+                        <li><span class="feature-icon">🤖</span> Get AI-powered smart suggestions</li>
+                        <li><span class="feature-icon">🎃</span> Enjoy seasonal themes and activities</li>
+                    </ul>
+                </div>
+                <div class="onboarding-footer">
+                    <div class="onboarding-progress">
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot"></div>
+                        <div class="progress-dot"></div>
+                        <div class="progress-dot"></div>
+                    </div>
+                    <div class="onboarding-actions">
+                        <button class="btn btn-outline" onclick="app.skipOnboarding()">Skip Tutorial</button>
+                        <button class="btn btn-primary" onclick="app.nextOnboardingStep()">Get Started! 🚀</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="onboarding-step" data-step="2">
+                <div class="onboarding-header">
+                    <h2>👶 Add Your Children</h2>
+                    <p>Let's add the first member of your family</p>
+                </div>
+                <div class="onboarding-body">
+                    <div class="onboarding-illustration">👨‍👩‍👧‍👦</div>
+                    <h3>Create Profiles for Your Kids</h3>
+                    <p>Each child gets their own profile with a custom avatar, activity tracking, and rewards.</p>
+                    <div class="onboarding-tip">
+                        <span class="tip-icon">💡</span>
+                        <p><strong>Pro Tip:</strong> You can add multiple children and track activities for each one separately!</p>
+                    </div>
+                </div>
+                <div class="onboarding-footer">
+                    <div class="onboarding-progress">
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot"></div>
+                        <div class="progress-dot"></div>
+                    </div>
+                    <div class="onboarding-actions">
+                        <button class="btn btn-outline" onclick="app.previousOnboardingStep()">← Back</button>
+                        <button class="btn btn-primary" onclick="app.showModal('add-child-modal'); app.hideModal('onboarding-wizard')">Add First Child 👶</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="onboarding-step" data-step="3">
+                <div class="onboarding-header">
+                    <h2>✓ Create Activities</h2>
+                    <p>Set up tasks and activities for your family</p>
+                </div>
+                <div class="onboarding-body">
+                    <div class="onboarding-illustration">🎯</div>
+                    <h3>8 Activity Categories</h3>
+                    <p>Go beyond chores! Track household tasks, learning, physical activity, creative time, reading, family time, and more.</p>
+                    <div class="category-showcase">
+                        <span class="category-pill">🏠 Household</span>
+                        <span class="category-pill">📚 Learning</span>
+                        <span class="category-pill">🏃 Physical</span>
+                        <span class="category-pill">🎨 Creative</span>
+                        <span class="category-pill">🎮 Games</span>
+                        <span class="category-pill">📖 Reading</span>
+                        <span class="category-pill">❤️ Family</span>
+                        <span class="category-pill">⚙️ Custom</span>
+                    </div>
+                </div>
+                <div class="onboarding-footer">
+                    <div class="onboarding-progress">
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot"></div>
+                    </div>
+                    <div class="onboarding-actions">
+                        <button class="btn btn-outline" onclick="app.previousOnboardingStep()">← Back</button>
+                        <button class="btn btn-primary" onclick="app.nextOnboardingStep()">Continue →</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="onboarding-step" data-step="4">
+                <div class="onboarding-header">
+                    <h2>🎉 You're All Set!</h2>
+                    <p>Here are some tips to get the most out of ChoreStar</p>
+                </div>
+                <div class="onboarding-body">
+                    <div class="onboarding-illustration">🚀</div>
+                    <h3>Quick Tips for Success</h3>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <div class="tip-icon">🤖</div>
+                            <div class="tip-content">
+                                <strong>Smart Suggestions</strong>
+                                <p>Click the AI button on any child's card for personalized activity ideas</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">🏆</div>
+                            <div class="tip-content">
+                                <strong>Achievement Badges</strong>
+                                <p>Kids earn badges for streaks, perfect weeks, and category mastery</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">🎃</div>
+                            <div class="tip-content">
+                                <strong>Seasonal Themes</strong>
+                                <p>Go to Settings → Appearance to enable holiday themes</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <div class="tip-icon">🔍</div>
+                            <div class="tip-content">
+                                <strong>Category Filter</strong>
+                                <p>Use the filter above the activity grid to view specific types</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="onboarding-footer">
+                    <div class="onboarding-progress">
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot complete"></div>
+                        <div class="progress-dot active"></div>
+                    </div>
+                    <div class="onboarding-actions">
+                        <button class="btn btn-outline" onclick="app.previousOnboardingStep()">← Back</button>
+                        <button class="btn btn-primary" onclick="app.completeOnboarding()">Start Using ChoreStar! 🎉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Icon Picker Modal -->
     <div id="icon-picker-modal" class="modal hidden" role="dialog" aria-labelledby="icon-picker-modal-title" aria-hidden="true">
         <div class="modal-content">
