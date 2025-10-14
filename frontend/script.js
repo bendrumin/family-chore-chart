@@ -844,6 +844,14 @@ class FamilyChoreChart {
             contactBtn.addEventListener('click', () => this.showModal('contact-modal'));
             contactBtn.hasListener = true;
         }
+
+        // Add More Chores button (delegated event handling for dynamically created buttons)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-chore-grid-btn')) {
+                e.preventDefault();
+                this.showModal('add-chore-modal');
+            }
+        });
         
         // Settings button
         const settingsBtn = document.getElementById('settings-btn');
@@ -3643,12 +3651,12 @@ class FamilyChoreChart {
             html += `
                 <tr>
                     <td>
-                        <div style="display: flex; align-items: center; gap: var(--space-2);">
-                            <span style="font-size: 1.2rem;">${icon}</span>
-                            <div style="flex: 1;">
-                                <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px;">
-                                    <span style="font-weight: 600;">${chore.name}</span>
-                                    <span class="category-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${categoryInfo.bgColor}; color: ${categoryInfo.color}; border: 1px solid ${categoryInfo.color};">
+                        <div style="display: flex; align-items: flex-start; gap: var(--space-2); min-width: 0;">
+                            <span style="font-size: 1.2rem; flex-shrink: 0;">${icon}</span>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px; flex-wrap: wrap;">
+                                    <span style="font-weight: 600; flex-shrink: 1; min-width: 0;">${chore.name}</span>
+                                    <span class="category-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${categoryInfo.bgColor}; color: ${categoryInfo.color}; border: 1px solid ${categoryInfo.color}; flex-shrink: 0;">
                                         <span>${categoryInfo.icon}</span>
                                         <span>${categoryInfo.label}</span>
                                     </span>
@@ -3883,12 +3891,12 @@ class FamilyChoreChart {
                     bodyClass: 'seasonal-christmas'
                 },
                 seasonalChores: [
-                    { name: 'Decorate Christmas Tree', icon: '🎄', category: 'Holiday' },
-                    { name: 'Wrap Presents', icon: '🎁', category: 'Holiday' },
-                    { name: 'Bake Cookies', icon: '🍪', category: 'Kitchen' },
-                    { name: 'Write Thank You Cards', icon: '✉️', category: 'Holiday' },
-                    { name: 'Hang Stockings', icon: '🧦', category: 'Holiday' },
-                    { name: 'Set Up Nativity', icon: '👼', category: 'Holiday' }
+                    { name: 'Decorate Christmas Tree', icon: '🎄', category: 'family_time' },
+                    { name: 'Wrap Presents', icon: '🎁', category: 'creative_time' },
+                    { name: 'Bake Cookies', icon: '🍪', category: 'creative_time' },
+                    { name: 'Write Thank You Cards', icon: '✉️', category: 'learning_education' },
+                    { name: 'Hang Stockings', icon: '🧦', category: 'household_chores' },
+                    { name: 'Set Up Nativity', icon: '👼', category: 'family_time' }
                 ]
             },
             thanksgiving: {
@@ -3903,11 +3911,11 @@ class FamilyChoreChart {
                     bodyClass: 'seasonal-thanksgiving'
                 },
                 seasonalChores: [
-                    { name: 'Set Thanksgiving Table', icon: '🍽️', category: 'Kitchen' },
-                    { name: 'Help Cook Turkey', icon: '🦃', category: 'Kitchen' },
-                    { name: 'Make Side Dishes', icon: '🥔', category: 'Kitchen' },
-                    { name: 'Clean Guest Room', icon: '🛏️', category: 'Bedroom' },
-                    { name: 'Decorate with Fall Colors', icon: '🍁', category: 'Holiday' }
+                    { name: 'Set Thanksgiving Table', icon: '🍽️', category: 'household_chores' },
+                    { name: 'Help Cook Turkey', icon: '🦃', category: 'creative_time' },
+                    { name: 'Make Side Dishes', icon: '🥔', category: 'creative_time' },
+                    { name: 'Clean Guest Room', icon: '🛏️', category: 'household_chores' },
+                    { name: 'Decorate with Fall Colors', icon: '🍁', category: 'creative_time' }
                 ]
             },
             halloween: {
@@ -3917,17 +3925,17 @@ class FamilyChoreChart {
                 endDate: '10-31',
                 decorations: {
                     header: 'Halloween',
-                    background: 'linear-gradient(135deg, #f59e0b, #92400e)',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706, #92400e)',
                     accentColor: '#f59e0b',
                     bodyClass: 'seasonal-halloween'
                 },
                 seasonalChores: [
-                    { name: 'Carve Pumpkin', icon: '🎃', category: 'Holiday' },
-                    { name: 'Decorate House', icon: '👻', category: 'Holiday' },
-                    { name: 'Make Costume', icon: '🧙‍♀️', category: 'Holiday' },
-                    { name: 'Trick or Treat Prep', icon: '🍬', category: 'Holiday' },
-                    { name: 'Set Up Scary Decorations', icon: '🕷️', category: 'Holiday' },
-                    { name: 'Organize Candy', icon: '🍭', category: 'Kitchen' }
+                    { name: 'Carve Pumpkin', icon: '🎃', category: 'creative_time' },
+                    { name: 'Decorate House', icon: '👻', category: 'creative_time' },
+                    { name: 'Make Costume', icon: '🧙‍♀️', category: 'creative_time' },
+                    { name: 'Trick or Treat Prep', icon: '🍬', category: 'family_time' },
+                    { name: 'Set Up Scary Decorations', icon: '🕷️', category: 'creative_time' },
+                    { name: 'Organize Candy', icon: '🍭', category: 'household_chores' }
                 ]
             },
             easter: {
@@ -3994,17 +4002,17 @@ class FamilyChoreChart {
                 endDate: '08-31',
                 decorations: {
                     header: 'Summer',
-                    background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
                     accentColor: '#fbbf24',
                     bodyClass: 'seasonal-summer'
                 },
                 seasonalChores: [
-                    { name: 'Water Plants', icon: '💧', category: 'Outdoor' },
-                    { name: 'Clean Pool', icon: '🏊', category: 'Outdoor' },
-                    { name: 'BBQ Prep', icon: '🍖', category: 'Kitchen' },
-                    { name: 'Beach Cleanup', icon: '🏖️', category: 'Outdoor' },
-                    { name: 'Mow Lawn', icon: '🌱', category: 'Outdoor' },
-                    { name: 'Wash Car', icon: '🚗', category: 'Outdoor' }
+                    { name: 'Water Plants', icon: '💧', category: 'physical_activity' },
+                    { name: 'Clean Pool', icon: '🏊', category: 'household_chores' },
+                    { name: 'BBQ Prep', icon: '🍖', category: 'creative_time' },
+                    { name: 'Beach Cleanup', icon: '🏖️', category: 'physical_activity' },
+                    { name: 'Mow Lawn', icon: '🌱', category: 'physical_activity' },
+                    { name: 'Wash Car', icon: '🚗', category: 'household_chores' }
                 ]
             },
             spring: {
@@ -4019,11 +4027,11 @@ class FamilyChoreChart {
                     bodyClass: 'seasonal-spring'
                 },
                 seasonalChores: [
-                    { name: 'Spring Cleaning', icon: '🧹', category: 'Cleaning' },
-                    { name: 'Plant Garden', icon: '🌱', category: 'Outdoor' },
-                    { name: 'Clean Windows', icon: '🪟', category: 'Cleaning' },
-                    { name: 'Organize Closets', icon: '👕', category: 'Cleaning' },
-                    { name: 'Wash Curtains', icon: '🪟', category: 'Cleaning' }
+                    { name: 'Spring Cleaning', icon: '🧹', category: 'household_chores' },
+                    { name: 'Plant Garden', icon: '🌱', category: 'physical_activity' },
+                    { name: 'Clean Windows', icon: '🪟', category: 'household_chores' },
+                    { name: 'Organize Closets', icon: '👕', category: 'household_chores' },
+                    { name: 'Wash Curtains', icon: '🪟', category: 'household_chores' }
                 ]
             },
             fall: {
@@ -4038,11 +4046,11 @@ class FamilyChoreChart {
                     bodyClass: 'seasonal-fall'
                 },
                 seasonalChores: [
-                    { name: 'Rake Leaves', icon: '🍂', category: 'Outdoor' },
-                    { name: 'Clean Gutters', icon: '🏠', category: 'Outdoor' },
-                    { name: 'Store Summer Items', icon: '📦', category: 'Cleaning' },
-                    { name: 'Decorate for Fall', icon: '🎃', category: 'Holiday' },
-                    { name: 'Make Hot Chocolate', icon: '☕', category: 'Kitchen' }
+                    { name: 'Rake Leaves', icon: '🍂', category: 'physical_activity' },
+                    { name: 'Clean Gutters', icon: '🏠', category: 'household_chores' },
+                    { name: 'Store Summer Items', icon: '📦', category: 'household_chores' },
+                    { name: 'Decorate for Fall', icon: '🎃', category: 'creative_time' },
+                    { name: 'Make Hot Chocolate', icon: '☕', category: 'creative_time' }
                 ]
             },
             winter: {
@@ -4057,11 +4065,69 @@ class FamilyChoreChart {
                     bodyClass: 'seasonal-winter'
                 },
                 seasonalChores: [
-                    { name: 'Shovel Snow', icon: '❄️', category: 'Outdoor' },
-                    { name: 'Salt Driveway', icon: '🧂', category: 'Outdoor' },
-                    { name: 'Make Hot Soup', icon: '🍲', category: 'Kitchen' },
-                    { name: 'Build Snowman', icon: '⛄', category: 'Outdoor' },
-                    { name: 'Clean Fireplace', icon: '🔥', category: 'Cleaning' }
+                    { name: 'Shovel Snow', icon: '❄️', category: 'physical_activity' },
+                    { name: 'Salt Driveway', icon: '🧂', category: 'household_chores' },
+                    { name: 'Make Hot Soup', icon: '🍲', category: 'creative_time' },
+                    { name: 'Build Snowman', icon: '⛄', category: 'games_play' },
+                    { name: 'Clean Fireplace', icon: '🔥', category: 'household_chores' }
+                ]
+            },
+            back_to_school: {
+                name: 'Back to School',
+                icon: '🎒',
+                startDate: '08-15',
+                endDate: '09-15',
+                decorations: {
+                    header: 'Back to School',
+                    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+                    accentColor: '#3b82f6',
+                    bodyClass: 'seasonal-backtoschool'
+                },
+                seasonalChores: [
+                    { name: 'Organize School Supplies', icon: '📚', category: 'learning_education' },
+                    { name: 'Set Up Study Space', icon: '🖥️', category: 'learning_education' },
+                    { name: 'Pack Lunch', icon: '🥪', category: 'household_chores' },
+                    { name: 'Review Homework', icon: '✏️', category: 'learning_education' },
+                    { name: 'Plan School Outfit', icon: '👕', category: 'household_chores' },
+                    { name: 'Create Study Schedule', icon: '📅', category: 'learning_education' }
+                ]
+            },
+            new_year: {
+                name: 'New Year',
+                icon: '🎆',
+                startDate: '01-01',
+                endDate: '01-07',
+                decorations: {
+                    header: 'New Year',
+                    background: 'linear-gradient(135deg, #8b5cf6, #5b21b6)',
+                    accentColor: '#8b5cf6',
+                    bodyClass: 'seasonal-newyear'
+                },
+                seasonalChores: [
+                    { name: 'Set New Year Goals', icon: '🎯', category: 'learning_education' },
+                    { name: 'Organize Room', icon: '🧹', category: 'household_chores' },
+                    { name: 'Clean Out Old Things', icon: '📦', category: 'household_chores' },
+                    { name: 'Write Thank You Notes', icon: '✉️', category: 'learning_education' },
+                    { name: 'Plan Healthy Habits', icon: '💪', category: 'physical_activity' }
+                ]
+            },
+            mothers_day: {
+                name: 'Mother\'s Day',
+                icon: '🌷',
+                startDate: '05-07',
+                endDate: '05-14',
+                decorations: {
+                    header: 'Mother\'s Day',
+                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    accentColor: '#ec4899',
+                    bodyClass: 'seasonal-mothersday'
+                },
+                seasonalChores: [
+                    { name: 'Make Mom Breakfast', icon: '🥞', category: 'creative_time' },
+                    { name: 'Clean House for Mom', icon: '🏠', category: 'household_chores' },
+                    { name: 'Make Mother\'s Day Card', icon: '💌', category: 'creative_time' },
+                    { name: 'Plan Special Day', icon: '📅', category: 'family_time' },
+                    { name: 'Help with Gardening', icon: '🌱', category: 'physical_activity' }
                 ]
             }
         };
@@ -4088,7 +4154,8 @@ class FamilyChoreChart {
             // Remove any existing seasonal classes
             document.body.classList.remove('seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
                 'seasonal-summer', 'seasonal-spring', 'seasonal-fall', 'seasonal-winter', 
-                'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving');
+                'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving',
+                'seasonal-backtoschool', 'seasonal-newyear', 'seasonal-mothersday');
             return;
         }
         
@@ -8630,12 +8697,21 @@ class FamilyChoreChart {
 
     updateCategoryFilterCount() {
         const countElement = document.getElementById('category-filter-count');
-        if (!countElement) return;
+        const headerElement = document.getElementById('category-header');
+        const descriptionElement = document.getElementById('category-description');
+        
+        if (!countElement || !headerElement || !descriptionElement) return;
         
         if (this.categoryFilter === 'all') {
+            headerElement.innerHTML = '<span aria-hidden="true">🏠</span> All Activities';
+            descriptionElement.textContent = 'View all your family\'s activities and tasks in one place';
             countElement.textContent = `${this.chores.length} total activities`;
         } else {
+            const categoryInfo = this.getCategoryInfo(this.categoryFilter);
             const filteredCount = this.chores.filter(chore => chore.category === this.categoryFilter).length;
+            
+            headerElement.innerHTML = `<span aria-hidden="true">${categoryInfo.icon}</span> ${categoryInfo.label}`;
+            descriptionElement.textContent = `Showing ${filteredCount} ${filteredCount === 1 ? 'activity' : 'activities'} in this category`;
             countElement.textContent = `${filteredCount} ${filteredCount === 1 ? 'activity' : 'activities'}`;
         }
     }

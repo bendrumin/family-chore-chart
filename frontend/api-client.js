@@ -247,6 +247,11 @@ class ApiClient {
 
     async createChild(name, age, avatarColor, avatarUrl = '', avatarFile = '') {
         try {
+            if (!this.currentUser || !this.currentUser.id) {
+                console.error('No current user - cannot create child');
+                return { success: false, error: 'User not authenticated' };
+            }
+            
             const { data, error } = await this.supabase
                 .from('children')
                 .insert({

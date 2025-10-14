@@ -11,12 +11,14 @@
  * 2. Run: node export-users.js
  */
 
+require('dotenv').config({ path: '.env.local' });
+
 // Database connection (update these with your actual database details)
 const DATABASE_CONFIG = {
     // For Supabase (recommended)
     supabase: {
         url: process.env.SUPABASE_URL || 'your_supabase_url',
-        key: process.env.SUPABASE_ANON_KEY || 'your_supabase_anon_key'
+        key: process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'your_supabase_key'
     },
     
     // Alternative: Direct PostgreSQL connection
@@ -145,11 +147,11 @@ async function exportUsersWithSupabase() {
         
         console.log('🔍 Fetching users from Supabase...');
         
-        // Get all confirmed users
+        // Get all profiles (these are the actual users)
         const { data: users, error } = await supabase
-            .from('users')
-            .select('id, email, created_at, last_sign_in_at, family_id')
-            .not('email_confirmed_at', 'is', null);
+            .from('profiles')
+            .select('id, email, family_name, created_at')
+            .order('created_at', { ascending: false });
         
         if (error) {
             throw error;
