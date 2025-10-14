@@ -1026,6 +1026,14 @@ class FamilyChoreChart {
             await this.handleAddChild();
         });
 
+        // Add child color picker
+        const addChildColorInput = document.getElementById('child-color');
+        if (addChildColorInput) {
+            addChildColorInput.addEventListener('change', (e) => {
+                this.updateAddChildAvatarPreview();
+            });
+        }
+
         // Add chore form
         document.getElementById('add-chore-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1047,6 +1055,9 @@ class FamilyChoreChart {
                 // Update active state
                 document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
                 preset.classList.add('active');
+                
+                // Update avatar preview
+                this.updateAddChildAvatarPreview();
             });
         });
 
@@ -1350,6 +1361,23 @@ class FamilyChoreChart {
 
         // Update the preview circle
         this.updateAddChildAvatarPreview();
+    }
+
+    updateAddChildAvatarPreview() {
+        const mainCircle = document.getElementById('add-child-avatar-preview-circle');
+        const colorInput = document.getElementById('child-color');
+        
+        if (!mainCircle || !colorInput) return;
+
+        // Update the background color of the preview circle
+        const selectedColor = colorInput.value;
+        mainCircle.style.backgroundColor = selectedColor;
+        
+        // If there's an avatar image, make sure it's displayed
+        const avatarUrl = mainCircle.dataset.avatarUrl;
+        if (avatarUrl && !mainCircle.querySelector('img')) {
+            mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        }
     }
 
     handleEditChildIconSelect(iconUrl, iconType) {
