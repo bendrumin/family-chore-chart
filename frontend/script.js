@@ -103,6 +103,7 @@ class FamilyChoreChart {
         this.seasonalThemes = this.initializeSeasonalThemes();
         this.achievementBadges = this.initializeAchievementBadges();
         this.unlockedBadges = new Set();
+        this.aiSuggestions = this.initializeAISuggestions();
         this.init();
     }
 
@@ -3585,6 +3586,9 @@ class FamilyChoreChart {
                     ` : ''}
                 </div>
                 <div class="child-actions">
+                    <button class="btn btn-outline btn-sm ai-suggestions-btn" onclick="app.showAISuggestionsModal('${child.id}')" title="Get AI-powered activity suggestions">
+                        <span>🤖</span> Smart Suggestions
+                    </button>
                 </div>
             </div>
             <div class="progress-section">
@@ -4834,6 +4838,343 @@ class FamilyChoreChart {
                 
                 setTimeout(() => confetti.remove(), 3000);
             }, i * 20);
+        }
+    }
+
+    // AI-Powered Chore Suggestions System
+    initializeAISuggestions() {
+        return {
+            choreTemplates: {
+                household_chores: [
+                    { name: 'Make Bed', icon: '🛏️', difficulty: 'easy', timeEstimate: 5 },
+                    { name: 'Put Away Toys', icon: '🧸', difficulty: 'easy', timeEstimate: 10 },
+                    { name: 'Set Table', icon: '🍽️', difficulty: 'easy', timeEstimate: 5 },
+                    { name: 'Clear Table', icon: '🧹', difficulty: 'easy', timeEstimate: 5 },
+                    { name: 'Feed Pet', icon: '🐕', difficulty: 'easy', timeEstimate: 5 },
+                    { name: 'Water Plants', icon: '🌱', difficulty: 'easy', timeEstimate: 5 },
+                    { name: 'Take Out Trash', icon: '🗑️', difficulty: 'medium', timeEstimate: 10 },
+                    { name: 'Vacuum Room', icon: '🧽', difficulty: 'medium', timeEstimate: 15 },
+                    { name: 'Load Dishwasher', icon: '🍽️', difficulty: 'medium', timeEstimate: 10 },
+                    { name: 'Fold Laundry', icon: '👕', difficulty: 'medium', timeEstimate: 20 },
+                    { name: 'Clean Bathroom', icon: '🚿', difficulty: 'hard', timeEstimate: 30 },
+                    { name: 'Organize Closet', icon: '👗', difficulty: 'hard', timeEstimate: 45 }
+                ],
+                learning_education: [
+                    { name: 'Read for 20 Minutes', icon: '📚', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Practice Math Facts', icon: '🔢', difficulty: 'easy', timeEstimate: 15 },
+                    { name: 'Write in Journal', icon: '📝', difficulty: 'easy', timeEstimate: 15 },
+                    { name: 'Study Spelling Words', icon: '✏️', difficulty: 'medium', timeEstimate: 20 },
+                    { name: 'Complete Homework', icon: '📖', difficulty: 'medium', timeEstimate: 30 },
+                    { name: 'Research Project', icon: '🔍', difficulty: 'hard', timeEstimate: 60 },
+                    { name: 'Practice Piano', icon: '🎹', difficulty: 'medium', timeEstimate: 30 },
+                    { name: 'Learn New Language', icon: '🗣️', difficulty: 'medium', timeEstimate: 25 }
+                ],
+                physical_activity: [
+                    { name: 'Go for Walk', icon: '🚶', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Ride Bike', icon: '🚲', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Play Outside', icon: '🏃', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Do Yoga', icon: '🧘', difficulty: 'medium', timeEstimate: 20 },
+                    { name: 'Practice Sports', icon: '⚽', difficulty: 'medium', timeEstimate: 45 },
+                    { name: 'Go Swimming', icon: '🏊', difficulty: 'medium', timeEstimate: 60 },
+                    { name: 'Hike Trail', icon: '🥾', difficulty: 'hard', timeEstimate: 120 },
+                    { name: 'Run Mile', icon: '🏃‍♂️', difficulty: 'hard', timeEstimate: 15 }
+                ],
+                creative_time: [
+                    { name: 'Draw Picture', icon: '🎨', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Build with Blocks', icon: '🧱', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Make Craft', icon: '✂️', difficulty: 'medium', timeEstimate: 45 },
+                    { name: 'Write Story', icon: '📖', difficulty: 'medium', timeEstimate: 30 },
+                    { name: 'Paint Canvas', icon: '🖌️', difficulty: 'hard', timeEstimate: 60 },
+                    { name: 'Build Model', icon: '🏗️', difficulty: 'hard', timeEstimate: 90 },
+                    { name: 'Create Music', icon: '🎵', difficulty: 'medium', timeEstimate: 40 },
+                    { name: 'Design Poster', icon: '📋', difficulty: 'medium', timeEstimate: 35 }
+                ],
+                games_play: [
+                    { name: 'Play Board Game', icon: '🎲', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Solve Puzzle', icon: '🧩', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Play Video Game', icon: '🎮', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Build Fort', icon: '🏰', difficulty: 'medium', timeEstimate: 45 },
+                    { name: 'Play Hide & Seek', icon: '👀', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Create Treasure Hunt', icon: '🗺️', difficulty: 'hard', timeEstimate: 60 },
+                    { name: 'Play Charades', icon: '🎭', difficulty: 'medium', timeEstimate: 25 },
+                    { name: 'Build Card House', icon: '🃏', difficulty: 'medium', timeEstimate: 30 }
+                ],
+                reading: [
+                    { name: 'Read Picture Book', icon: '📚', difficulty: 'easy', timeEstimate: 15 },
+                    { name: 'Read Chapter Book', icon: '📖', difficulty: 'medium', timeEstimate: 30 },
+                    { name: 'Read Comic Book', icon: '📰', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Read Poetry', icon: '📜', difficulty: 'medium', timeEstimate: 25 },
+                    { name: 'Read Biography', icon: '👤', difficulty: 'hard', timeEstimate: 45 },
+                    { name: 'Read Science Book', icon: '🔬', difficulty: 'hard', timeEstimate: 40 },
+                    { name: 'Read to Sibling', icon: '👶', difficulty: 'easy', timeEstimate: 20 },
+                    { name: 'Read Aloud', icon: '🗣️', difficulty: 'medium', timeEstimate: 25 }
+                ],
+                family_time: [
+                    { name: 'Help with Cooking', icon: '👨‍🍳', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Family Game Night', icon: '🎲', difficulty: 'easy', timeEstimate: 60 },
+                    { name: 'Watch Movie Together', icon: '🎬', difficulty: 'easy', timeEstimate: 120 },
+                    { name: 'Go to Park', icon: '🌳', difficulty: 'medium', timeEstimate: 90 },
+                    { name: 'Visit Grandparents', icon: '👴', difficulty: 'medium', timeEstimate: 180 },
+                    { name: 'Family Photo Session', icon: '📸', difficulty: 'easy', timeEstimate: 30 },
+                    { name: 'Plan Family Trip', icon: '✈️', difficulty: 'hard', timeEstimate: 60 },
+                    { name: 'Family Story Time', icon: '📚', difficulty: 'easy', timeEstimate: 30 }
+                ]
+            },
+            timePreferences: {
+                morning: ['Make Bed', 'Feed Pet', 'Water Plants', 'Go for Walk', 'Read for 20 Minutes'],
+                afternoon: ['Put Away Toys', 'Practice Math Facts', 'Play Outside', 'Draw Picture', 'Play Board Game'],
+                evening: ['Set Table', 'Clear Table', 'Complete Homework', 'Family Game Night', 'Read Chapter Book']
+            },
+            difficultyProgression: {
+                easy: ['Make Bed', 'Put Away Toys', 'Set Table', 'Read Picture Book', 'Play Board Game'],
+                medium: ['Take Out Trash', 'Vacuum Room', 'Complete Homework', 'Make Craft', 'Build Fort'],
+                hard: ['Clean Bathroom', 'Organize Closet', 'Research Project', 'Paint Canvas', 'Create Treasure Hunt']
+            }
+        };
+    }
+
+    analyzeChildPatterns(childId) {
+        const childCompletions = this.completions.filter(c => c.child_id === childId);
+        const childChores = this.chores.filter(c => c.child_id === childId);
+        
+        // Analyze completion patterns
+        const patterns = {
+            favoriteCategories: this.getFavoriteCategories(childId, childCompletions),
+            preferredTimes: this.getPreferredTimes(childId, childCompletions),
+            difficultyPreference: this.getDifficultyPreference(childId, childCompletions),
+            completionRate: this.getCompletionRate(childId, childCompletions),
+            recentTrends: this.getRecentTrends(childId, childCompletions)
+        };
+        
+        return patterns;
+    }
+
+    getFavoriteCategories(childId, completions) {
+        const categoryCounts = {};
+        completions.forEach(completion => {
+            const chore = this.chores.find(c => c.id === completion.chore_id);
+            if (chore) {
+                categoryCounts[chore.category] = (categoryCounts[chore.category] || 0) + 1;
+            }
+        });
+        
+        return Object.entries(categoryCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 3)
+            .map(([category]) => category);
+    }
+
+    getPreferredTimes(childId, completions) {
+        const timeCounts = { morning: 0, afternoon: 0, evening: 0 };
+        
+        completions.forEach(completion => {
+            const hour = new Date(completion.completed_at).getHours();
+            if (hour >= 6 && hour < 12) timeCounts.morning++;
+            else if (hour >= 12 && hour < 18) timeCounts.afternoon++;
+            else timeCounts.evening++;
+        });
+        
+        return Object.entries(timeCounts)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 2)
+            .map(([time]) => time);
+    }
+
+    getDifficultyPreference(childId, completions) {
+        const difficultyCounts = { easy: 0, medium: 0, hard: 0 };
+        
+        completions.forEach(completion => {
+            const chore = this.chores.find(c => c.id === completion.chore_id);
+            if (chore) {
+                // Estimate difficulty based on time estimate
+                const timeEstimate = this.getTimeEstimate(chore.name);
+                if (timeEstimate <= 15) difficultyCounts.easy++;
+                else if (timeEstimate <= 30) difficultyCounts.medium++;
+                else difficultyCounts.hard++;
+            }
+        });
+        
+        return Object.entries(difficultyCounts)
+            .sort(([,a], [,b]) => b - a)[0][0];
+    }
+
+    getCompletionRate(childId, completions) {
+        const childChores = this.chores.filter(c => c.child_id === childId);
+        const totalPossible = childChores.length * 7; // 7 days per week
+        return completions.length / totalPossible;
+    }
+
+    getRecentTrends(childId, completions) {
+        const lastWeek = completions.filter(c => {
+            const completionDate = new Date(c.completed_at);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return completionDate >= weekAgo;
+        });
+        
+        return {
+            recentCompletions: lastWeek.length,
+            isImproving: lastWeek.length > completions.length / 4
+        };
+    }
+
+    getTimeEstimate(choreName) {
+        const template = Object.values(this.aiSuggestions.choreTemplates)
+            .flat()
+            .find(t => t.name === choreName);
+        return template ? template.timeEstimate : 15;
+    }
+
+    generateSmartSuggestions(childId) {
+        const patterns = this.analyzeChildPatterns(childId);
+        const suggestions = [];
+        
+        // Category-based suggestions
+        patterns.favoriteCategories.forEach(category => {
+            const categoryTemplates = this.aiSuggestions.choreTemplates[category] || [];
+            const newChores = categoryTemplates.filter(template => 
+                !this.chores.some(chore => 
+                    chore.child_id === childId && chore.name === template.name
+                )
+            );
+            suggestions.push(...newChores.slice(0, 2));
+        });
+        
+        // Time-based suggestions
+        patterns.preferredTimes.forEach(time => {
+            const timeTemplates = this.aiSuggestions.timePreferences[time] || [];
+            timeTemplates.forEach(choreName => {
+                const template = Object.values(this.aiSuggestions.choreTemplates)
+                    .flat()
+                    .find(t => t.name === choreName);
+                if (template && !this.chores.some(chore => 
+                    chore.child_id === childId && chore.name === template.name
+                )) {
+                    suggestions.push(template);
+                }
+            });
+        });
+        
+        // Difficulty progression
+        if (patterns.completionRate > 0.7) {
+            const nextDifficulty = this.getNextDifficulty(patterns.difficultyPreference);
+            const progressionTemplates = this.aiSuggestions.difficultyProgression[nextDifficulty] || [];
+            progressionTemplates.forEach(choreName => {
+                const template = Object.values(this.aiSuggestions.choreTemplates)
+                    .flat()
+                    .find(t => t.name === choreName);
+                if (template && !this.chores.some(chore => 
+                    chore.child_id === childId && chore.name === template.name
+                )) {
+                    suggestions.push(template);
+                }
+            });
+        }
+        
+        // Remove duplicates and limit to 6 suggestions
+        const uniqueSuggestions = suggestions.filter((suggestion, index, self) => 
+            index === self.findIndex(s => s.name === suggestion.name)
+        );
+        
+        return uniqueSuggestions.slice(0, 6);
+    }
+
+    getNextDifficulty(currentDifficulty) {
+        const progression = { easy: 'medium', medium: 'hard', hard: 'hard' };
+        return progression[currentDifficulty] || 'medium';
+    }
+
+    showAISuggestionsModal(childId) {
+        const childName = this.getChildName(childId);
+        const suggestions = this.generateSmartSuggestions(childId);
+        const patterns = this.analyzeChildPatterns(childId);
+        
+        const modalContent = document.getElementById('ai-suggestions-content');
+        if (!modalContent) return;
+        
+        modalContent.innerHTML = `
+            <div class="ai-suggestions-modal">
+                <div class="ai-header">
+                    <div class="ai-icon">🤖</div>
+                    <div class="ai-title">
+                        <h2>Smart Suggestions for ${childName}</h2>
+                        <p>Based on ${childName}'s activity patterns and preferences</p>
+                    </div>
+                </div>
+                
+                <div class="ai-insights">
+                    <div class="insight-card">
+                        <div class="insight-icon">📊</div>
+                        <div class="insight-text">
+                            <h4>Favorite Categories</h4>
+                            <p>${patterns.favoriteCategories.map(cat => this.getCategoryInfo(cat).label).join(', ') || 'Still discovering preferences'}</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">⏰</div>
+                        <div class="insight-text">
+                            <h4>Best Times</h4>
+                            <p>${patterns.preferredTimes.map(time => time.charAt(0).toUpperCase() + time.slice(1)).join(', ') || 'Any time'}</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-text">
+                            <h4>Difficulty Level</h4>
+                            <p>${patterns.difficultyPreference.charAt(0).toUpperCase() + patterns.difficultyPreference.slice(1)} tasks work best</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="suggestions-grid">
+                    ${suggestions.map(suggestion => `
+                        <div class="suggestion-card" data-category="${this.getCategoryForSuggestion(suggestion)}">
+                            <div class="suggestion-icon">${suggestion.icon}</div>
+                            <div class="suggestion-details">
+                                <h4>${suggestion.name}</h4>
+                                <div class="suggestion-meta">
+                                    <span class="difficulty-badge difficulty-${suggestion.difficulty}">${suggestion.difficulty}</span>
+                                    <span class="time-estimate">${suggestion.timeEstimate} min</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="app.addAISuggestion('${suggestion.name}', '${suggestion.icon}', '${this.getCategoryForSuggestion(suggestion)}', '${childId}')">
+                                Add Activity
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${suggestions.length === 0 ? `
+                    <div class="no-suggestions">
+                        <div class="no-suggestions-icon">🎉</div>
+                        <h3>Great job!</h3>
+                        <p>${childName} already has a great variety of activities. Keep up the excellent work!</p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        this.showModal('ai-suggestions-modal');
+    }
+
+    getCategoryForSuggestion(suggestion) {
+        // Find which category this suggestion belongs to
+        for (const [category, templates] of Object.entries(this.aiSuggestions.choreTemplates)) {
+            if (templates.some(t => t.name === suggestion.name)) {
+                return category;
+            }
+        }
+        return 'custom';
+    }
+
+    async addAISuggestion(name, icon, category, childId) {
+        const result = await this.apiClient.createChore(name, 7, childId, icon, category);
+        if (result.success) {
+            this.showToast(`Added "${name}" to ${this.getChildName(childId)}'s activities!`, 'success');
+            await this.loadData();
+            this.renderChildren();
+        } else {
+            this.showToast('Failed to add activity', 'error');
         }
     }
 
