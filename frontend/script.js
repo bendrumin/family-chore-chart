@@ -5102,6 +5102,35 @@ class FamilyChoreChart {
         return progression[currentDifficulty] || 'medium';
     }
 
+    createAISuggestionsModal() {
+        // Create the modal HTML dynamically
+        const modalHTML = `
+            <div id="ai-suggestions-modal" class="modal hidden" role="dialog" aria-labelledby="ai-suggestions-modal-title" aria-hidden="true">
+                <div class="modal-content">
+                    <header class="modal-header">
+                        <h2 id="ai-suggestions-modal-title">🤖 Smart Activity Suggestions</h2>
+                        <button class="modal-close" data-modal="ai-suggestions-modal" aria-label="Close modal">&times;</button>
+                    </header>
+                    <div id="ai-suggestions-content" class="modal-form">
+                        <!-- AI suggestions content will be populated here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        console.log('✅ AI suggestions modal created dynamically');
+        
+        // Set up close button handler
+        const closeBtn = document.querySelector('#ai-suggestions-modal .modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.hideModal('ai-suggestions-modal');
+            });
+        }
+    }
+
     showAISuggestionsModal(childId) {
         console.log('showAISuggestionsModal called with childId:', childId);
         
@@ -5115,20 +5144,23 @@ class FamilyChoreChart {
         if (!modal) {
             console.error('❌ AI suggestions modal not found in DOM!');
             console.log('Creating modal dynamically...');
-            // Modal doesn't exist, we need to create it or it's not loaded yet
+            this.createAISuggestionsModal();
+        }
+        
+        // Get modal reference (either existing or newly created)
+        const modalElement = document.getElementById('ai-suggestions-modal');
+        if (!modalElement) {
+            console.error('❌ Failed to find or create modal');
             return;
         }
         
         // First, show the modal
         this.showModal('ai-suggestions-modal');
-        console.log('Modal should be showing now');
-        console.log('Modal classes:', modal?.classList.toString());
-        
-        if (modal) {
-            console.log('Modal display:', window.getComputedStyle(modal).display);
-            console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
-            console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
-        }
+        console.log('✅ Modal should be showing now');
+        console.log('Modal classes:', modalElement.classList.toString());
+        console.log('Modal display:', window.getComputedStyle(modalElement).display);
+        console.log('Modal visibility:', window.getComputedStyle(modalElement).visibility);
+        console.log('Modal opacity:', window.getComputedStyle(modalElement).opacity);
         
         // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
