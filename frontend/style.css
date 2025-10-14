@@ -3739,6 +3739,96 @@ body.modal-open {
     background: var(--gray-100);
     color: var(--gray-900);
     margin-bottom: 8px;
+}
+
+/* Add Child Modal Layout */
+.modal-flex {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-body-flex {
+    display: flex;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    flex: 1;
+    overflow: hidden;
+}
+
+.avatar-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+}
+
+.avatar-col .avatar-circle {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+    margin-bottom: var(--space-4);
+    border: 3px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.fields-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.dicebear-row {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+}
+
+.actions-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+/* Mobile responsive design for add child modal */
+@media (max-width: 768px) {
+    .modal-body-flex {
+        flex-direction: column;
+        gap: var(--space-4);
+        padding: var(--space-4);
+    }
+    
+    .avatar-col {
+        align-items: center;
+        min-width: auto;
+    }
+    
+    .avatar-col .avatar-circle {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+    
+    .dicebear-row {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    
+    .dicebear-row .btn {
+        width: 100%;
+        justify-content: center;
+    }
 } 
 
 .selected-color-circle {

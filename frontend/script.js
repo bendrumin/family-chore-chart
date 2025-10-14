@@ -1052,9 +1052,12 @@ class FamilyChoreChart {
                 const color = preset.dataset.color;
                 document.getElementById('child-color').value = color;
                 
-                // Update active state
-                document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-                preset.classList.add('active');
+                // Update active state - only for presets in the add child modal
+                const addChildModal = document.getElementById('add-child-modal');
+                if (addChildModal && addChildModal.contains(preset)) {
+                    addChildModal.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+                    preset.classList.add('active');
+                }
                 
                 // Update avatar preview
                 this.updateAddChildAvatarPreview();
@@ -1377,6 +1380,28 @@ class FamilyChoreChart {
         const avatarUrl = mainCircle.dataset.avatarUrl;
         if (avatarUrl && !mainCircle.querySelector('img')) {
             mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        }
+    }
+
+    setupAddChildModal() {
+        // Set initial active state for color presets
+        const colorInput = document.getElementById('child-color');
+        const addChildModal = document.getElementById('add-child-modal');
+        
+        if (colorInput && addChildModal) {
+            const currentColor = colorInput.value;
+            
+            // Remove active state from all presets
+            addChildModal.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+            
+            // Set active state for matching preset
+            const matchingPreset = addChildModal.querySelector(`.color-preset[data-color="${currentColor}"]`);
+            if (matchingPreset) {
+                matchingPreset.classList.add('active');
+            }
+            
+            // Update avatar preview
+            this.updateAddChildAvatarPreview();
         }
     }
 
@@ -1788,6 +1813,9 @@ class FamilyChoreChart {
         }
         if (modalId === 'edit-chore-modal') {
             await this.checkPremiumFeatures();
+        }
+        if (modalId === 'add-child-modal') {
+            this.setupAddChildModal();
         }
     }
 
