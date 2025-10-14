@@ -10868,3 +10868,144 @@ body.modal-open {
 .modal-content {
     animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ========================================
+   SEASONAL ACTIVITIES MODAL IMPROVEMENTS
+   ======================================== */
+
+.seasonal-activity-modal {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.seasonal-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.seasonal-header h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.seasonal-header p {
+    font-size: var(--font-size-base);
+    color: var(--gray-600);
+    line-height: var(--line-height-relaxed);
+    margin: 0;
+}
+
+.seasonal-activities-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.seasonal-activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seasonal-activity-item:hover {
+    background: var(--gray-100);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.activity-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-details h4 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--gray-900);
+    margin: 0 0 var(--space-1) 0;
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.activity-category {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--primary-50);
+    color: var(--primary);
+    border: 1px solid var(--primary-200);
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: capitalize;
+    letter-spacing: var(--letter-spacing-wide);
+}
+
+.seasonal-activity-item .btn {
+    flex-shrink: 0;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    min-width: 100px;
+}
+
+/* Dark mode improvements */
+[data-theme="dark"] .seasonal-header {
+    border-bottom-color: var(--gray-700);
+}
+
+[data-theme="dark"] .seasonal-header h2 {
+    color: var(--gray-100);
+}
+
+[data-theme="dark"] .seasonal-header p {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .seasonal-activity-item {
+    background: var(--gray-800);
+    border-color: var(--gray-700);
+}
+
+[data-theme="dark"] .seasonal-activity-item:hover {
+    background: var(--gray-750);
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .activity-icon {
+    background: var(--gray-700);
+}
+
+[data-theme="dark"] .activity-details h4 {
+    color: var(--gray-100);
+}
+
+[data-theme="dark"] .activity-category {
+    background: var(--primary-900);
+    color: var(--primary-200);
+    border-color: var(--primary-700);
+}
