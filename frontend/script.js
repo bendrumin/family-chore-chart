@@ -4273,7 +4273,7 @@ class FamilyChoreChart {
 
     showSeasonalActivityModal(theme) {
         // Populate the seasonal activity modal content
-        const modalContent = document.getElementById('seasonal-activity-content');
+        const modalContent = document.getElementById('seasonal-chore-content');
         if (!modalContent) return;
         
         modalContent.innerHTML = `
@@ -4300,7 +4300,7 @@ class FamilyChoreChart {
         `;
         
         // Show the modal
-        this.showModal('seasonal-activity-modal');
+        this.showModal('seasonal-chore-modal');
     }
 
     async addSeasonalActivity(activityName, activityIcon, activityCategory) {
