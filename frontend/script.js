@@ -104,6 +104,7 @@ class FamilyChoreChart {
         this.achievementBadges = this.initializeAchievementBadges();
         this.unlockedBadges = new Set();
         this.aiSuggestions = this.initializeAISuggestions();
+        this.currentOnboardingStep = 1;
         this.init();
     }
 
@@ -294,7 +295,7 @@ class FamilyChoreChart {
             console.warn('Footer sound toggle not found during initialization');
         }
     }
-    
+
     async init() {
         try {
             this.showLoading();
@@ -426,6 +427,9 @@ class FamilyChoreChart {
             
             // Update family dashboard overview
             await this.updateFamilyDashboard();
+            
+            // Check if first-time user and show onboarding
+            this.checkFirstTimeUser();
             
             // Apply seasonal theme (premium feature)
             this.applySeasonalTheme();
@@ -1064,7 +1068,7 @@ class FamilyChoreChart {
                 const addChildModal = document.getElementById('add-child-modal');
                 if (addChildModal && addChildModal.contains(preset)) {
                     addChildModal.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-                    preset.classList.add('active');
+                preset.classList.add('active');
                 }
                 
                 // Update avatar preview
@@ -2316,7 +2320,7 @@ class FamilyChoreChart {
                                 <span class="toggle-slider"></span>
                                 <span class="toggle-label">${isEnabled ? 'Enabled' : 'Disabled'}</span>
                             </label>
-                        </div>
+                    </div>
                     </div>
                 </div>
             `;
@@ -2843,7 +2847,7 @@ class FamilyChoreChart {
     }
 
     // The following methods are not used in the provided edit, but are kept as they were in the original file.
-    showToast(message, type) {
+    showToast(message, type = 'info', duration = 4000) {
         const key = `${type}:${message}`;
         const now = Date.now();
         const lastShown = this.recentToasts.get(key);
@@ -2864,15 +2868,23 @@ class FamilyChoreChart {
         this.recentToasts.set(key, now);
         
         const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
+        toast.className = `toast toast-${type} toast-enter`;
         toast.innerHTML = `
-            <div class="toast-content">
+            <div class="toast-icon-wrapper">
                 <div class="toast-icon">${this.getToastIcon(type)}</div>
+            </div>
+            <div class="toast-content">
                 <div class="toast-message">
                     <div class="toast-title">${this.getToastTitle(type)}</div>
                     <div class="toast-description">${message}</div>
                 </div>
             </div>
+            <button class="toast-close" aria-label="Close notification">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M1 1l12 12M13 1L1 13"/>
+                </svg>
+            </button>
+            <div class="toast-progress"></div>
             <div class="toast-actions">
                 <button class="toast-action btn btn-primary btn-sm">OK</button>
                 <button class="toast-close">&times;</button>
@@ -2883,20 +2895,33 @@ class FamilyChoreChart {
         if (toastContainer) {
             toastContainer.appendChild(toast);
             
-            toast.querySelector('.toast-action').addEventListener('click', () => {
-                toast.remove();
+            // Trigger entrance animation
+            requestAnimationFrame(() => {
+                toast.classList.add('toast-show');
             });
             
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
-            });
+            // Close button handler
+            const closeBtn = toast.querySelector('.toast-close');
+            const removeToast = () => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-exit');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            };
             
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 5000);
+            closeBtn.addEventListener('click', removeToast);
+            
+            // Progress bar animation
+            const progressBar = toast.querySelector('.toast-progress');
+            if (progressBar) {
+                progressBar.style.animation = `toast-progress ${duration}ms linear forwards`;
+            }
+            
+            // Auto-remove after duration
+            setTimeout(removeToast, duration);
         }
     }
 
@@ -2918,6 +2943,61 @@ class FamilyChoreChart {
             case 'info': return 'Info!';
             default: return 'Message';
         }
+    }
+
+    // Onboarding Wizard Methods
+    checkFirstTimeUser() {
+        const hasSeenOnboarding = localStorage.getItem('onboarding_completed');
+        const hasChildren = this.children && this.children.length > 0;
+        
+        // Show onboarding if: never seen it AND no children yet
+        if (!hasSeenOnboarding && !hasChildren) {
+            setTimeout(() => {
+                this.showModal('onboarding-wizard');
+            }, 1000);
+        }
+    }
+
+    nextOnboardingStep() {
+        const currentStep = document.querySelector(`.onboarding-step[data-step="${this.currentOnboardingStep}"]`);
+        if (currentStep) {
+            currentStep.classList.remove('active');
+        }
+        
+        this.currentOnboardingStep++;
+        
+        const nextStep = document.querySelector(`.onboarding-step[data-step="${this.currentOnboardingStep}"]`);
+        if (nextStep) {
+            nextStep.classList.add('active');
+        }
+    }
+
+    previousOnboardingStep() {
+        const currentStep = document.querySelector(`.onboarding-step[data-step="${this.currentOnboardingStep}"]`);
+        if (currentStep) {
+            currentStep.classList.remove('active');
+        }
+        
+        this.currentOnboardingStep--;
+        
+        const prevStep = document.querySelector(`.onboarding-step[data-step="${this.currentOnboardingStep}"]`);
+        if (prevStep) {
+            prevStep.classList.add('active');
+        }
+    }
+
+    skipOnboarding() {
+        localStorage.setItem('onboarding_completed', 'true');
+        this.hideModal('onboarding-wizard');
+        this.currentOnboardingStep = 1;
+        this.showToast('You can always access help from the menu!', 'info');
+    }
+
+    completeOnboarding() {
+        localStorage.setItem('onboarding_completed', 'true');
+        this.hideModal('onboarding-wizard');
+        this.currentOnboardingStep = 1;
+        this.showToast('Welcome to ChoreStar! Let\'s get started! 🎉', 'success');
     }
 
     setupFamilySharing() {
@@ -4386,7 +4466,7 @@ class FamilyChoreChart {
             if (currentDate >= theme.startDate && currentDate <= theme.endDate) {
                 // Check if this theme is enabled in user preferences
                 if (this.isSeasonalThemeEnabled(season)) {
-                    return theme;
+                return theme;
                 }
             }
         }
@@ -5367,7 +5447,7 @@ class FamilyChoreChart {
             return limits.isPremium;
         } catch (error) {
             console.error('Error checking premium status:', error);
-            return false;
+        return false;
         }
     }
 
