@@ -858,18 +858,10 @@ class FamilyChoreChart {
             // AI Suggestions button
             if (e.target.classList.contains('ai-suggestions-btn') || e.target.closest('.ai-suggestions-btn')) {
                 e.preventDefault();
-                console.log('AI suggestions button clicked');
                 const button = e.target.classList.contains('ai-suggestions-btn') ? e.target : e.target.closest('.ai-suggestions-btn');
                 const childId = button.getAttribute('data-child-id');
-                console.log('Child ID from button:', childId);
-                console.log('Button element:', button);
-                console.log('Button classes:', button.className);
                 if (childId) {
-                    console.log('Calling showAISuggestionsModal with childId:', childId);
                     this.showAISuggestionsModal(childId);
-                } else {
-                    console.error('No child ID found on AI suggestions button');
-                    console.log('Button attributes:', button.attributes);
                 }
             }
         });
@@ -5120,7 +5112,6 @@ class FamilyChoreChart {
         
         // Add to body
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        console.log('✅ AI suggestions modal created dynamically');
         
         // Set up close button handler
         const closeBtn = document.querySelector('#ai-suggestions-modal .modal-close');
@@ -5132,51 +5123,30 @@ class FamilyChoreChart {
     }
 
     showAISuggestionsModal(childId) {
-        console.log('showAISuggestionsModal called with childId:', childId);
-        
-        // Debug: Check if modal exists in DOM
-        console.log('All modals in DOM:', Array.from(document.querySelectorAll('.modal')).map(m => m.id));
-        console.log('Looking for modal with id: ai-suggestions-modal');
-        
+        // Check if modal exists in DOM, create if not
         const modal = document.getElementById('ai-suggestions-modal');
-        console.log('Modal element found?', modal);
-        
         if (!modal) {
-            console.error('❌ AI suggestions modal not found in DOM!');
-            console.log('Creating modal dynamically...');
             this.createAISuggestionsModal();
         }
         
         // Get modal reference (either existing or newly created)
         const modalElement = document.getElementById('ai-suggestions-modal');
         if (!modalElement) {
-            console.error('❌ Failed to find or create modal');
             return;
         }
         
-        // First, show the modal
+        // Show the modal
         this.showModal('ai-suggestions-modal');
-        console.log('✅ Modal should be showing now');
-        console.log('Modal classes:', modalElement.classList.toString());
-        console.log('Modal display:', window.getComputedStyle(modalElement).display);
-        console.log('Modal visibility:', window.getComputedStyle(modalElement).visibility);
-        console.log('Modal opacity:', window.getComputedStyle(modalElement).opacity);
         
         // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
             const childName = this.getChildName(childId);
-            console.log('Child name:', childName);
-            
             const suggestions = this.generateSmartSuggestions(childId);
-            console.log('Generated suggestions:', suggestions);
-            
             const patterns = this.analyzeChildPatterns(childId);
-            console.log('Analyzed patterns:', patterns);
             
-            // Try multiple ways to find the element
+            // Find the modal content element
             let modalContent = document.getElementById('ai-suggestions-content');
             if (!modalContent) {
-                // Try finding it within the modal
                 const modal = document.getElementById('ai-suggestions-modal');
                 if (modal) {
                     modalContent = modal.querySelector('#ai-suggestions-content');
@@ -5184,17 +5154,6 @@ class FamilyChoreChart {
             }
             
             if (!modalContent) {
-                // Try finding by class
-                modalContent = document.querySelector('.modal-form');
-            }
-            
-            if (!modalContent) {
-                console.error('ai-suggestions-content element not found');
-                console.log('Available elements with ai-suggestions:', document.querySelectorAll('[id*="ai-suggestions"]'));
-                console.log('Modal element:', document.getElementById('ai-suggestions-modal'));
-                console.log('All modal elements:', document.querySelectorAll('.modal'));
-                console.log('Modal visibility:', document.getElementById('ai-suggestions-modal')?.classList.toString());
-                console.log('All elements with modal-form class:', document.querySelectorAll('.modal-form'));
                 return;
             }
             
@@ -5265,8 +5224,6 @@ class FamilyChoreChart {
                 ` : ''}
             </div>
         `;
-        
-        console.log('AI suggestions modal should now be visible');
     }
 
     getCategoryForSuggestion(suggestion) {
@@ -5280,8 +5237,6 @@ class FamilyChoreChart {
     }
 
     async addAISuggestion(name, icon, category, childId) {
-        console.log('addAISuggestion called:', { name, icon, category, childId });
-        
         try {
             const result = await this.apiClient.createChore(name, 7, childId, icon, category);
             if (result.success) {
