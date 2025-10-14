@@ -101,6 +101,8 @@ class FamilyChoreChart {
         this.recentToasts = new Map(); // Initialize toast deduplication
         this.handlersInitialized = false;
         this.seasonalThemes = this.initializeSeasonalThemes();
+        this.achievementBadges = this.initializeAchievementBadges();
+        this.unlockedBadges = new Set();
         this.init();
     }
 
@@ -3878,6 +3880,101 @@ class FamilyChoreChart {
     }
 
     // Premium: Seasonal Themes
+    initializeAchievementBadges() {
+        return {
+            first_chore: {
+                id: 'first_chore',
+                name: 'First Steps',
+                description: 'Complete your first chore!',
+                icon: '👶',
+                color: '#10b981',
+                condition: (childId, completions) => completions.length >= 1,
+                rarity: 'common'
+            },
+            week_warrior: {
+                id: 'week_warrior',
+                name: 'Week Warrior',
+                description: 'Complete all chores for a full week!',
+                icon: '⚔️',
+                color: '#3b82f6',
+                condition: (childId, completions) => this.checkWeeklyStreak(childId, completions) >= 7,
+                rarity: 'rare'
+            },
+            streak_master: {
+                id: 'streak_master',
+                name: 'Streak Master',
+                description: 'Maintain a 10-day streak!',
+                icon: '🔥',
+                color: '#f59e0b',
+                condition: (childId, completions) => this.checkDailyStreak(childId, completions) >= 10,
+                rarity: 'epic'
+            },
+            perfect_week: {
+                id: 'perfect_week',
+                name: 'Perfect Week',
+                description: 'Complete every single chore for a week!',
+                icon: '⭐',
+                color: '#8b5cf6',
+                condition: (childId, completions) => this.checkPerfectWeek(childId, completions),
+                rarity: 'legendary'
+            },
+            early_bird: {
+                id: 'early_bird',
+                name: 'Early Bird',
+                description: 'Complete chores before 9 AM for 5 days!',
+                icon: '🐦',
+                color: '#06b6d4',
+                condition: (childId, completions) => this.checkEarlyBird(childId, completions),
+                rarity: 'rare'
+            },
+            helper: {
+                id: 'helper',
+                name: 'Family Helper',
+                description: 'Help with 50 household chores!',
+                icon: '🏠',
+                color: '#ef4444',
+                condition: (childId, completions) => this.checkHouseholdChores(childId, completions) >= 50,
+                rarity: 'common'
+            },
+            scholar: {
+                id: 'scholar',
+                name: 'Little Scholar',
+                description: 'Complete 25 learning activities!',
+                icon: '📚',
+                color: '#8b5cf6',
+                condition: (childId, completions) => this.checkLearningActivities(childId, completions) >= 25,
+                rarity: 'rare'
+            },
+            artist: {
+                id: 'artist',
+                name: 'Creative Artist',
+                description: 'Complete 20 creative activities!',
+                icon: '🎨',
+                color: '#ec4899',
+                condition: (childId, completions) => this.checkCreativeActivities(childId, completions) >= 20,
+                rarity: 'rare'
+            },
+            athlete: {
+                id: 'athlete',
+                name: 'Young Athlete',
+                description: 'Complete 30 physical activities!',
+                icon: '🏃',
+                color: '#f97316',
+                condition: (childId, completions) => this.checkPhysicalActivities(childId, completions) >= 30,
+                rarity: 'rare'
+            },
+            champion: {
+                id: 'champion',
+                name: 'Chore Champion',
+                description: 'Complete 100 total chores!',
+                icon: '🏆',
+                color: '#fbbf24',
+                condition: (childId, completions) => completions.length >= 100,
+                rarity: 'legendary'
+            }
+        };
+    }
+
     initializeSeasonalThemes() {
         return {
             christmas: {
@@ -4352,6 +4449,198 @@ class FamilyChoreChart {
         if (!theme) return [];
         
         return theme.seasonalActivities;
+    }
+
+    // Achievement Badge Methods
+    checkWeeklyStreak(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        const today = new Date();
+        let streak = 0;
+        
+        for (let i = 0; i < 7; i++) {
+            const checkDate = new Date(today);
+            checkDate.setDate(today.getDate() - i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            const dayCompletions = childCompletions.filter(c => c.completed_date === dateStr);
+            if (dayCompletions.length > 0) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
+
+    checkDailyStreak(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        const today = new Date();
+        let streak = 0;
+        
+        for (let i = 0; i < 30; i++) {
+            const checkDate = new Date(today);
+            checkDate.setDate(today.getDate() - i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            const dayCompletions = childCompletions.filter(c => c.completed_date === dateStr);
+            if (dayCompletions.length > 0) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
+
+    checkPerfectWeek(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        const childChores = this.chores.filter(c => c.child_id === childId);
+        const today = new Date();
+        
+        for (let i = 0; i < 7; i++) {
+            const checkDate = new Date(today);
+            checkDate.setDate(today.getDate() - i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            const dayCompletions = childCompletions.filter(c => c.completed_date === dateStr);
+            if (dayCompletions.length < childChores.length) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    checkEarlyBird(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        let earlyBirdDays = 0;
+        
+        childCompletions.forEach(completion => {
+            const completionTime = new Date(completion.completed_at);
+            if (completionTime.getHours() < 9) {
+                earlyBirdDays++;
+            }
+        });
+        
+        return earlyBirdDays >= 5;
+    }
+
+    checkHouseholdChores(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        return childCompletions.filter(c => {
+            const chore = this.chores.find(chore => chore.id === c.chore_id);
+            return chore && chore.category === 'household_chores';
+        }).length;
+    }
+
+    checkLearningActivities(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        return childCompletions.filter(c => {
+            const chore = this.chores.find(chore => chore.id === c.chore_id);
+            return chore && chore.category === 'learning_education';
+        }).length;
+    }
+
+    checkCreativeActivities(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        return childCompletions.filter(c => {
+            const chore = this.chores.find(chore => chore.id === c.chore_id);
+            return chore && chore.category === 'creative_time';
+        }).length;
+    }
+
+    checkPhysicalActivities(childId, completions) {
+        const childCompletions = completions.filter(c => c.child_id === childId);
+        return childCompletions.filter(c => {
+            const chore = this.chores.find(chore => chore.id === c.chore_id);
+            return chore && chore.category === 'physical_activity';
+        }).length;
+    }
+
+    checkAchievements(childId) {
+        const childCompletions = this.completions.filter(c => c.child_id === childId);
+        const newBadges = [];
+        
+        Object.values(this.achievementBadges).forEach(badge => {
+            if (!this.unlockedBadges.has(badge.id) && badge.condition(childId, childCompletions)) {
+                this.unlockedBadges.add(badge.id);
+                newBadges.push(badge);
+            }
+        });
+        
+        if (newBadges.length > 0) {
+            this.showBadgeUnlockAnimation(newBadges);
+        }
+        
+        return newBadges;
+    }
+
+    showBadgeUnlockAnimation(badges) {
+        badges.forEach((badge, index) => {
+            setTimeout(() => {
+                this.createBadgeNotification(badge);
+            }, index * 500);
+        });
+    }
+
+    createBadgeNotification(badge) {
+        // Create badge notification element
+        const notification = document.createElement('div');
+        notification.className = 'badge-notification';
+        notification.setAttribute('data-rarity', badge.rarity);
+        notification.innerHTML = `
+            <div class="badge-notification-content">
+                <div class="badge-icon" style="background: ${badge.color}">${badge.icon}</div>
+                <div class="badge-text">
+                    <h4>🏆 Achievement Unlocked!</h4>
+                    <h3>${badge.name}</h3>
+                    <p>${badge.description}</p>
+                </div>
+                <div class="badge-close">&times;</div>
+            </div>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+        
+        // Close button
+        notification.querySelector('.badge-close').addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Play sound if enabled
+        if (this.settings.soundEnabled) {
+            this.playAchievementSound();
+        }
+    }
+
+    playAchievementSound() {
+        // Create a simple achievement sound using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
     }
 
     // Check if user has premium features
@@ -5182,6 +5471,9 @@ class FamilyChoreChart {
                         if (streak >= 5) {
                             this.showToast(`${this.getChildName(actualChildId)} is on a ${streak}-day streak! 🔥`, 'success');
                         }
+                        
+                        // Check for new achievements
+                        this.checkAchievements(actualChildId);
                     }
                     
                     // CRITICAL: Sync data but DO NOT re-render anything
