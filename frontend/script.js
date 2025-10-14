@@ -3562,17 +3562,27 @@ class FamilyChoreChart {
         // Calculate stars based on completion percentage
         const stars = this.calculateStars(progress.completionPercentage);
         
-        // Calculate total streak for this child
-        const totalStreak = childChores.reduce((sum, chore) => {
-            return sum + this.getStreak(child.id, chore.id);
-        }, 0);
+        // Calculate current streak for this child
+        const currentStreak = this.getCurrentStreak(child.id);
+        const streakMilestone = this.getStreakMilestone(currentStreak);
+        const streakProgress = this.getStreakProgress(currentStreak);
+        
         card.innerHTML = `
             <div class="child-header">
                 ${avatarHtml}
                 <div class="child-info">
                     <h3>${child.name}</h3>
                     <p>Age ${child.age}</p>
-                    ${totalStreak > 0 ? `<div class="streak-badge">🔥 ${totalStreak} day streak</div>` : ''}
+                    ${currentStreak > 0 ? `
+                        <div class="streak-display">
+                            <div class="streak-badge ${streakMilestone ? 'streak-milestone' : ''}" style="${streakMilestone ? `background: ${streakMilestone.color}` : ''}">
+                                <span class="streak-icon">🔥</span>
+                                <span class="streak-count">${currentStreak}</span>
+                                <span class="streak-label">day streak</span>
+                            </div>
+                            ${streakMilestone ? `<div class="milestone-badge" style="color: ${streakMilestone.color}">${streakMilestone.icon} ${streakMilestone.name}</div>` : ''}
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="child-actions">
                 </div>
@@ -3591,6 +3601,25 @@ class FamilyChoreChart {
                     ${stars}
                 </div>
             </div>
+            
+            ${currentStreak > 0 ? `
+                <div class="streak-progress-section">
+                    <div class="streak-progress-header">
+                        <div class="streak-progress-title">🔥 Streak Progress</div>
+                        <div class="streak-progress-stats">
+                            ${streakProgress.nextMilestone ? `<span>${currentStreak}/${streakProgress.nextMilestone} days</span>` : '<span>Max streak reached!</span>'}
+                        </div>
+                    </div>
+                    <div class="streak-progress-bar">
+                        <div class="streak-progress-fill" style="width: ${streakProgress.progress}%"></div>
+                    </div>
+                    ${streakProgress.nextMilestone ? `
+                        <div class="next-milestone">
+                            <span class="next-milestone-text">Next milestone: ${streakProgress.nextMilestone} days</span>
+                        </div>
+                    ` : ''}
+                </div>
+            ` : ''}
             
 
             <div class="chore-grid">
@@ -4643,6 +4672,171 @@ class FamilyChoreChart {
         oscillator.stop(audioContext.currentTime + 0.5);
     }
 
+    // Enhanced Streak Methods
+    getCurrentStreak(childId) {
+        const childCompletions = this.completions.filter(c => c.child_id === childId);
+        const today = new Date();
+        let streak = 0;
+        
+        for (let i = 0; i < 30; i++) {
+            const checkDate = new Date(today);
+            checkDate.setDate(today.getDate() - i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            const dayCompletions = childCompletions.filter(c => c.completed_date === dateStr);
+            if (dayCompletions.length > 0) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return streak;
+    }
+
+    getStreakMilestone(streak) {
+        const milestones = [
+            { days: 3, name: 'Getting Started', icon: '🌱', color: '#10b981' },
+            { days: 7, name: 'Week Warrior', icon: '⚔️', color: '#3b82f6' },
+            { days: 14, name: 'Two Week Champion', icon: '🏆', color: '#8b5cf6' },
+            { days: 21, name: 'Three Week Master', icon: '👑', color: '#f59e0b' },
+            { days: 30, name: 'Monthly Legend', icon: '🌟', color: '#ef4444' },
+            { days: 50, name: 'Streak Superstar', icon: '⭐', color: '#fbbf24' },
+            { days: 100, name: 'Century Champion', icon: '💎', color: '#06b6d4' }
+        ];
+        
+        for (let i = milestones.length - 1; i >= 0; i--) {
+            if (streak >= milestones[i].days) {
+                return milestones[i];
+            }
+        }
+        return null;
+    }
+
+    getNextStreakMilestone(streak) {
+        const milestones = [3, 7, 14, 21, 30, 50, 100];
+        return milestones.find(milestone => milestone > streak) || null;
+    }
+
+    getStreakProgress(streak) {
+        const nextMilestone = this.getNextStreakMilestone(streak);
+        if (!nextMilestone) return { progress: 100, nextMilestone: null };
+        
+        const previousMilestone = this.getPreviousMilestone(streak);
+        const progress = ((streak - previousMilestone) / (nextMilestone - previousMilestone)) * 100;
+        
+        return { progress: Math.min(progress, 100), nextMilestone };
+    }
+
+    getPreviousMilestone(streak) {
+        const milestones = [0, 3, 7, 14, 21, 30, 50, 100];
+        for (let i = milestones.length - 1; i >= 0; i--) {
+            if (milestones[i] <= streak) {
+                return milestones[i];
+            }
+        }
+        return 0;
+    }
+
+    checkStreakMilestone(childId, newStreak) {
+        const milestone = this.getStreakMilestone(newStreak);
+        if (milestone && newStreak === milestone.days) {
+            this.showStreakMilestoneCelebration(childId, milestone);
+        }
+    }
+
+    showStreakMilestoneCelebration(childId, milestone) {
+        const childName = this.getChildName(childId);
+        
+        // Create celebration notification
+        const notification = document.createElement('div');
+        notification.className = 'streak-milestone-notification';
+        notification.innerHTML = `
+            <div class="streak-milestone-content">
+                <div class="milestone-icon" style="background: ${milestone.color}">${milestone.icon}</div>
+                <div class="milestone-text">
+                    <h3>🎉 Streak Milestone!</h3>
+                    <h2>${milestone.name}</h2>
+                    <p>${childName} has maintained a ${milestone.days}-day streak!</p>
+                </div>
+                <div class="milestone-close">&times;</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Auto remove after 6 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 6000);
+        
+        // Close button
+        notification.querySelector('.milestone-close').addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Play celebration sound
+        if (this.settings.soundEnabled) {
+            this.playStreakMilestoneSound();
+        }
+        
+        // Show confetti effect
+        this.showConfetti();
+    }
+
+    playStreakMilestoneSound() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create a more elaborate celebration sound
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((note, index) => {
+            setTimeout(() => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(note, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }, index * 100);
+        });
+    }
+
+    showConfetti() {
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+        const confettiCount = 50;
+        
+        for (let i = 0; i < confettiCount; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    top: -10px;
+                    left: ${Math.random() * 100}vw;
+                    z-index: 10000;
+                    animation: confetti-fall 3s linear forwards;
+                `;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }, i * 20);
+        }
+    }
+
     // Check if user has premium features
     async isPremiumUser() {
         // Admin user (bsiegel13@gmail.com) always has premium access
@@ -5474,6 +5668,10 @@ class FamilyChoreChart {
                         
                         // Check for new achievements
                         this.checkAchievements(actualChildId);
+                        
+                        // Check for streak milestones
+                        const newStreak = this.getCurrentStreak(actualChildId);
+                        this.checkStreakMilestone(actualChildId, newStreak);
                     }
                     
                     // CRITICAL: Sync data but DO NOT re-render anything
