@@ -10713,3 +10713,158 @@ body.modal-open {
         max-width: none;
     }
 }
+
+/* ========================================
+   PROFESSIONAL MICRO-INTERACTIONS
+   ======================================== */
+
+/* Success Animations */
+@keyframes checkmark-pop {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: scale(1.3) rotate(-45deg); }
+    100% { transform: scale(1) rotate(-45deg); opacity: 1; }
+}
+
+@keyframes pulse-success {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+}
+
+@keyframes slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+}
+
+@keyframes confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes point-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Applied Animation Classes */
+.chore-completed {
+    animation: pulse-success 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkmark-animate {
+    animation: checkmark-pop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-up-enter {
+    animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bounce-in-enter {
+    animation: bounce-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shake-error {
+    animation: shake 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glow-attention {
+    animation: glow 2s ease-in-out infinite;
+}
+
+.points-earned {
+    animation: point-bounce 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--success);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ========================================
+   BEAUTIFUL EMPTY STATES
+   ======================================== */
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-12) var(--space-6);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.5;
+    animation: bounce-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.empty-state-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--gray-800);
+    margin-bottom: var(--space-2);
+}
+
+.empty-state-description {
+    font-size: var(--font-size-base);
+    color: var(--gray-600);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-6);
+}
+
+.empty-state-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+[data-theme="dark"] .empty-state-title {
+    color: var(--gray-200);
+}
+
+[data-theme="dark"] .empty-state-description {
+    color: var(--gray-400);
+}
+
+/* Chore cell success state */
+.chore-cell.completed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    transform: scale(1.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chore-cell.just-completed {
+    animation: pulse-success 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced button interactions */
+.btn:active {
+    transform: scale(0.95);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* Card entrance animations */
+.child-card,
+.chore-entry,
+.modal-content {
+    animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
