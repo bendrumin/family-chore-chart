@@ -854,6 +854,20 @@ class FamilyChoreChart {
                 e.preventDefault();
                 this.showModal('add-chore-modal');
             }
+            
+            // AI Suggestions button
+            if (e.target.classList.contains('ai-suggestions-btn') || e.target.closest('.ai-suggestions-btn')) {
+                e.preventDefault();
+                console.log('AI suggestions button clicked');
+                const button = e.target.classList.contains('ai-suggestions-btn') ? e.target : e.target.closest('.ai-suggestions-btn');
+                const childId = button.getAttribute('data-child-id');
+                console.log('Child ID from button:', childId);
+                if (childId) {
+                    this.showAISuggestionsModal(childId);
+                } else {
+                    console.error('No child ID found on AI suggestions button');
+                }
+            }
         });
         
         // Settings button
@@ -3586,7 +3600,7 @@ class FamilyChoreChart {
                     ` : ''}
                 </div>
                 <div class="child-actions">
-                    <button class="btn btn-outline btn-sm ai-suggestions-btn" onclick="app.showAISuggestionsModal('${child.id}')" title="Get AI-powered activity suggestions">
+                    <button class="btn btn-outline btn-sm ai-suggestions-btn" data-child-id="${child.id}" title="Get AI-powered activity suggestions">
                         <span>🤖</span> Smart Suggestions
                     </button>
                 </div>
@@ -5085,12 +5099,22 @@ class FamilyChoreChart {
     }
 
     showAISuggestionsModal(childId) {
+        console.log('showAISuggestionsModal called with childId:', childId);
+        
         const childName = this.getChildName(childId);
+        console.log('Child name:', childName);
+        
         const suggestions = this.generateSmartSuggestions(childId);
+        console.log('Generated suggestions:', suggestions);
+        
         const patterns = this.analyzeChildPatterns(childId);
+        console.log('Analyzed patterns:', patterns);
         
         const modalContent = document.getElementById('ai-suggestions-content');
-        if (!modalContent) return;
+        if (!modalContent) {
+            console.error('ai-suggestions-content element not found');
+            return;
+        }
         
         modalContent.innerHTML = `
             <div class="ai-suggestions-modal">
@@ -5155,6 +5179,7 @@ class FamilyChoreChart {
         `;
         
         this.showModal('ai-suggestions-modal');
+        console.log('AI suggestions modal should now be visible');
     }
 
     getCategoryForSuggestion(suggestion) {
@@ -5168,12 +5193,19 @@ class FamilyChoreChart {
     }
 
     async addAISuggestion(name, icon, category, childId) {
-        const result = await this.apiClient.createChore(name, 7, childId, icon, category);
-        if (result.success) {
-            this.showToast(`Added "${name}" to ${this.getChildName(childId)}'s activities!`, 'success');
-            await this.loadData();
-            this.renderChildren();
-        } else {
+        console.log('addAISuggestion called:', { name, icon, category, childId });
+        
+        try {
+            const result = await this.apiClient.createChore(name, 7, childId, icon, category);
+            if (result.success) {
+                this.showToast(`Added "${name}" to ${this.getChildName(childId)}'s activities!`, 'success');
+                await this.loadData();
+                this.renderChildren();
+            } else {
+                this.showToast('Failed to add activity', 'error');
+            }
+        } catch (error) {
+            console.error('Error adding AI suggestion:', error);
             this.showToast('Failed to add activity', 'error');
         }
     }
