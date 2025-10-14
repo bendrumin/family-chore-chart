@@ -172,7 +172,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -182,14 +182,14 @@ body {
 
 .loading-content {
     text-align: center;
-    color: white;
+    color: var(--gray-700);
 }
 
 .loading-spinner {
     width: 60px;
     height: 60px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid white;
+    border: 4px solid var(--gray-300);
+    border-top: 4px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto var(--space-6);
@@ -202,12 +202,14 @@ body {
 
 .loading-content h2 {
     font-size: var(--font-size-2xl);
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: var(--space-2);
+    color: var(--gray-800);
 }
 
 .loading-content p {
     font-size: var(--font-size-lg);
+    color: var(--gray-600);
     opacity: 0.9;
 }
 
@@ -244,19 +246,20 @@ body {
 .btn {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-6);
+    gap: 8px;
+    padding: 12px 20px;
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
+    font-size: 14px;
     font-weight: 600;
     text-decoration: none;
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition);
-    box-shadow: var(--shadow);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
+    letter-spacing: -0.025em;
 }
 
 .btn::before {
@@ -282,32 +285,38 @@ body {
 .btn-primary {
     background: var(--gradient-primary);
     color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: var(--gray-100);
+    color: var(--gray-900);
+    border: 1px solid var(--gray-200);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    background: var(--gray-200);
+    border-color: var(--gray-300);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-outline {
     background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: black;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-success {
@@ -413,30 +422,42 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 8px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
     font-weight: 600;
-    color: var(--gray-700);
-    font-size: var(--font-size-sm);
+    color: var(--gray-900);
+    font-size: 14px;
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
 }
 
-.form-group input {
-    padding: var(--space-3) var(--space-4);
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
+.form-group input,
+.form-group select {
+    padding: 12px 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    transition: all var(--transition);
+    font-size: 16px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     background: white;
     color: var(--gray-900);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+.form-group input::placeholder {
+    color: var(--gray-400);
+    font-weight: 400;
 }
 
 /* Checkbox styles */
@@ -1589,27 +1610,60 @@ body {
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow);
+    table-layout: fixed;
+}
+
+/* Make chore name column wider, day columns narrower */
+.chore-grid-table th:first-child,
+.chore-grid-table td:first-child {
+    width: 60%;
+    text-align: left;
+    padding-left: var(--space-3);
+    padding-right: var(--space-2);
+}
+
+.chore-grid-table th:not(:first-child),
+.chore-grid-table td:not(:first-child) {
+    width: calc(40% / 7);
+    min-width: 50px;
 }
 
 .chore-grid-table th {
-    background: var(--gray-50);
-    padding: var(--space-3);
+    background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+    padding: var(--space-3) var(--space-1);
     text-align: center;
-    font-weight: 600;
-    color: var(--gray-700);
+    font-weight: 700;
+    color: var(--gray-800);
     font-size: var(--font-size-sm);
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 2px solid var(--gray-300);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .chore-grid-table td {
-    padding: var(--space-2);
+    padding: var(--space-3) var(--space-1);
     text-align: center;
     border-bottom: 1px solid var(--gray-100);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.chore-grid-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.chore-grid-table tbody tr:hover {
+    background-color: var(--gray-25);
+}
+
+.chore-grid-table tbody tr:nth-child(even) {
+    background-color: var(--gray-25);
 }
 
 .chore-cell {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius);
     cursor: pointer;
     transition: all var(--transition);
@@ -1617,7 +1671,7 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
 }
 
 .chore-cell.empty {
@@ -1656,6 +1710,10 @@ body {
     font-weight: 600;
     white-space: nowrap;
     transition: all var(--transition);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
 }
 
 .category-badge:hover {
@@ -1695,25 +1753,28 @@ body {
 /* Category Selector in Forms */
 .category-selector {
     width: 100%;
-    padding: var(--space-2);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-size: var(--font-size-sm);
+    padding: 12px 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    background: white;
+    color: var(--gray-900);
+    font-size: 16px;
     font-family: var(--font-family);
-    transition: all var(--transition);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .category-selector:hover {
     border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .category-selector:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
 }
 
 /* Earnings Section */
@@ -1857,16 +1918,16 @@ body.modal-open {
 
 .modal-content {
     background: white;
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    max-width: 90vw;
-    width: 100%;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 600px;
+    width: 90vw;
     min-width: 0;
     max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: var(--shadow-2xl);
-    transform: scale(0.9);
-    transition: transform var(--transition);
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    transform: scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1001;
     position: relative;
     /* Improve scrolling on iOS */
@@ -2059,71 +2120,97 @@ body.modal-open {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-4);
+    padding: 24px 32px;
     border-bottom: 1px solid var(--gray-200);
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    border-radius: 16px 16px 0 0;
     /* Ensure header stays at top when scrolling */
     position: sticky;
     top: 0;
-    background: white;
     z-index: 10;
-    margin-top: calc(-1 * var(--space-6));
-    padding-top: var(--space-6);
+    margin: 0;
 }
 
 .modal-header h2 {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 600;
     color: var(--gray-900);
+    margin: 0;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
 }
 
 .modal-close {
-    position: absolute;
-    top: var(--space-4);
-    right: var(--space-4);
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--gray-200);
-    font-size: var(--font-size-2xl);
+    font-size: 18px;
     color: var(--gray-500);
     cursor: pointer;
-    padding: var(--space-2);
-    border-radius: var(--radius);
-    transition: all var(--transition);
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1002;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Ensure close button is always accessible */
-    position: sticky;
-    top: var(--space-4);
-    right: var(--space-4);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .modal-close:hover {
-    background: var(--gray-100);
+    background: rgba(255, 255, 255, 1);
     color: var(--gray-700);
-    transform: scale(1.1);
+    transform: scale(1.05);
+    border-color: var(--gray-300);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .modal-form {
-    padding: var(--space-6);
+    padding: 32px;
+    background: white;
+    overflow-y: auto;
+    max-height: calc(85vh - 80px);
+}
+
+/* Chore Entry Styling */
+.chore-entry {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.chore-entry:hover {
+    border-color: var(--gray-300);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chore-entry:last-child {
+    margin-bottom: 0;
+}
+
+.chore-entry h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    letter-spacing: -0.025em;
 }
 
 .form-actions {
     display: flex;
-    gap: var(--space-3);
+    gap: 12px;
     justify-content: flex-end;
-    margin-top: var(--space-6);
-    /* Ensure actions stay at bottom when scrolling */
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-200);
+    background: white;
     position: sticky;
     bottom: 0;
-    background: white;
-    padding-top: var(--space-4);
-    margin-bottom: calc(-1 * var(--space-6));
-    padding-bottom: var(--space-6);
-    border-top: 1px solid var(--gray-200);
 }
 
 /* Color Picker */
@@ -5750,7 +5837,7 @@ body.modal-open {
 }
 
 [data-theme="dark"] .modal-header {
-    background: var(--bg-secondary);
+    background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
     border-bottom-color: var(--border-color);
 }
 
@@ -5760,6 +5847,47 @@ body.modal-open {
 
 [data-theme="dark"] .modal-close {
     color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.2);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-close:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: var(--gray-500);
+}
+
+[data-theme="dark"] .modal-form {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .chore-entry {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .chore-entry:hover {
+    border-color: var(--gray-600);
+}
+
+[data-theme="dark"] .chore-entry h4 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-group label {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .category-selector {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-actions {
+    background: var(--bg-primary);
+    border-top-color: var(--border-color);
 }
 
 [data-theme="dark"] .toast {
@@ -7727,11 +7855,24 @@ body.modal-open {
         overflow: hidden;
     }
     
-    .chore-cell.empty {
-        background: var(--gray-100);
-        color: var(--gray-400);
-        border: 2px solid var(--gray-200);
-    }
+.chore-cell.empty {
+    background: var(--gray-50);
+    color: var(--gray-400);
+    border: 1px solid var(--gray-200);
+}
+
+.chore-cell.completed {
+    background: var(--success-500);
+    color: white;
+    border-color: var(--success-600);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+}
+
+.chore-cell:hover {
+    border-color: var(--primary);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
     
     .chore-cell.empty:hover,
     .chore-cell.empty:active {
@@ -8798,23 +8939,68 @@ body.modal-open {
 
 /* Premium: Seasonal Themes */
 .seasonal-christmas {
-    --seasonal-bg: linear-gradient(135deg, #dc2626, #7f1d1d);
+    --seasonal-bg: #fef2f2;
     --seasonal-accent: #dc2626;
 }
 
 .seasonal-halloween {
-    --seasonal-bg: linear-gradient(135deg, #f59e0b, #92400e);
-    --seasonal-accent: #f59e0b;
+    --seasonal-bg: #fffbeb;
+    --seasonal-accent: #d97706;
 }
 
 .seasonal-easter {
-    --seasonal-bg: linear-gradient(135deg, #ec4899, #be185d);
+    --seasonal-bg: #fdf2f8;
     --seasonal-accent: #ec4899;
 }
 
 .seasonal-summer {
-    --seasonal-bg: linear-gradient(135deg, #fbbf24, #d97706);
-    --seasonal-accent: #fbbf24;
+    --seasonal-bg: #fffbeb;
+    --seasonal-accent: #f59e0b;
+}
+
+.seasonal-spring {
+    --seasonal-bg: #f0fdf4;
+    --seasonal-accent: #22c55e;
+}
+
+.seasonal-fall {
+    --seasonal-bg: #fffbeb;
+    --seasonal-accent: #ea580c;
+}
+
+.seasonal-winter {
+    --seasonal-bg: #eff6ff;
+    --seasonal-accent: #3b82f6;
+}
+
+.seasonal-valentines {
+    --seasonal-bg: #fdf2f8;
+    --seasonal-accent: #ec4899;
+}
+
+.seasonal-stpatricks {
+    --seasonal-bg: #f0fdf4;
+    --seasonal-accent: #059669;
+}
+
+.seasonal-thanksgiving {
+    --seasonal-bg: #fffbeb;
+    --seasonal-accent: #ea580c;
+}
+
+.seasonal-backtoschool {
+    --seasonal-bg: #eff6ff;
+    --seasonal-accent: #2563eb;
+}
+
+.seasonal-newyear {
+    --seasonal-bg: #faf5ff;
+    --seasonal-accent: #8b5cf6;
+}
+
+.seasonal-mothersday {
+    --seasonal-bg: #fdf2f8;
+    --seasonal-accent: #ec4899;
 }
 
 /* Apply seasonal background to dashboard when active */
@@ -8826,25 +9012,106 @@ body.modal-open {
     border-color: var(--seasonal-accent);
 }
 
+/* Override main app background for seasonal themes */
+.seasonal-christmas body,
+.seasonal-christmas .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-halloween body,
+.seasonal-halloween .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-easter body,
+.seasonal-easter .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-summer body,
+.seasonal-summer .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-spring body,
+.seasonal-spring .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-fall body,
+.seasonal-fall .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-winter body,
+.seasonal-winter .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-valentines body,
+.seasonal-valentines .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-stpatricks body,
+.seasonal-stpatricks .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-thanksgiving body,
+.seasonal-thanksgiving .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-backtoschool body,
+.seasonal-backtoschool .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-newyear body,
+.seasonal-newyear .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
+.seasonal-mothersday body,
+.seasonal-mothersday .app-container {
+    background: var(--seasonal-bg) !important;
+}
+
 /* Seasonal accent colors for buttons and highlights */
-.seasonal-christmas .btn-primary {
+.seasonal-christmas .btn-primary,
+.seasonal-halloween .btn-primary,
+.seasonal-easter .btn-primary,
+.seasonal-summer .btn-primary,
+.seasonal-spring .btn-primary,
+.seasonal-fall .btn-primary,
+.seasonal-winter .btn-primary,
+.seasonal-valentines .btn-primary,
+.seasonal-stpatricks .btn-primary,
+.seasonal-thanksgiving .btn-primary,
+.seasonal-backtoschool .btn-primary,
+.seasonal-newyear .btn-primary,
+.seasonal-mothersday .btn-primary {
     background: var(--seasonal-accent);
     border-color: var(--seasonal-accent);
 }
 
-.seasonal-halloween .btn-primary {
+.seasonal-christmas .btn-primary:hover,
+.seasonal-halloween .btn-primary:hover,
+.seasonal-easter .btn-primary:hover,
+.seasonal-summer .btn-primary:hover,
+.seasonal-spring .btn-primary:hover,
+.seasonal-fall .btn-primary:hover,
+.seasonal-winter .btn-primary:hover,
+.seasonal-valentines .btn-primary:hover,
+.seasonal-stpatricks .btn-primary:hover,
+.seasonal-thanksgiving .btn-primary:hover,
+.seasonal-backtoschool .btn-primary:hover,
+.seasonal-newyear .btn-primary:hover,
+.seasonal-mothersday .btn-primary:hover {
     background: var(--seasonal-accent);
     border-color: var(--seasonal-accent);
-}
-
-.seasonal-easter .btn-primary {
-    background: var(--seasonal-accent);
-    border-color: var(--seasonal-accent);
-}
-
-.seasonal-summer .btn-primary {
-    background: var(--seasonal-accent);
-    border-color: var(--seasonal-accent);
+    filter: brightness(1.1);
 }
 
 
@@ -9204,7 +9471,7 @@ body.modal-open {
 
 /* Seasonal Theme Decorations */
 .seasonal-christmas .app-header {
-    background: linear-gradient(135deg, #dc2626, #7f1d1d) !important;
+    background: var(--seasonal-accent) !important;
     position: relative;
     overflow: hidden;
 }
@@ -9219,7 +9486,7 @@ body.modal-open {
 }
 
 .seasonal-halloween .app-header {
-    background: linear-gradient(135deg, #f59e0b, #92400e) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-halloween .app-header::before {
@@ -9231,8 +9498,27 @@ body.modal-open {
     animation: spooky-bounce 2s infinite;
 }
 
+/* Halloween mode button improvements for better contrast */
+.seasonal-halloween .app-header .btn,
+.seasonal-halloween .app-header button {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--seasonal-accent) !important;
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.seasonal-halloween .app-header .btn:hover,
+.seasonal-halloween .app-header button:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(255, 255, 255, 1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
 .seasonal-easter .app-header {
-    background: linear-gradient(135deg, #ec4899, #be185d) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-easter .app-header::before {
@@ -9245,7 +9531,7 @@ body.modal-open {
 }
 
 .seasonal-summer .app-header {
-    background: linear-gradient(135deg, #fbbf24, #d97706) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-summer .app-header::before {
@@ -9258,7 +9544,7 @@ body.modal-open {
 }
 
 .seasonal-spring .app-header {
-    background: linear-gradient(135deg, #ec4899, #be185d) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-spring .app-header::before {
@@ -9271,7 +9557,7 @@ body.modal-open {
 }
 
 .seasonal-fall .app-header {
-    background: linear-gradient(135deg, #d97706, #92400e) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-fall .app-header::before {
@@ -9284,7 +9570,7 @@ body.modal-open {
 }
 
 .seasonal-winter .app-header {
-    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-winter .app-header::before {
@@ -9297,7 +9583,7 @@ body.modal-open {
 }
 
 .seasonal-valentines .app-header {
-    background: linear-gradient(135deg, #ec4899, #be185d) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-valentines .app-header::before {
@@ -9310,7 +9596,7 @@ body.modal-open {
 }
 
 .seasonal-stpatricks .app-header {
-    background: linear-gradient(135deg, #10b981, #065f46) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-stpatricks .app-header::before {
@@ -9323,7 +9609,7 @@ body.modal-open {
 }
 
 .seasonal-thanksgiving .app-header {
-    background: linear-gradient(135deg, #d97706, #92400e) !important;
+    background: var(--seasonal-accent) !important;
 }
 
 .seasonal-thanksgiving .app-header::before {
@@ -10174,4 +10460,79 @@ body.modal-open {
 
 [data-theme="dark"] .features-section p {
     color: var(--gray-300);
+}
+
+/* Dark theme improvements for better readability */
+[data-theme="dark"] {
+    --text-secondary: #e5e5e5;
+    --border-color: #404040;
+    --card-bg: #262626;
+    --modal-bg: #262626;
+    --gray-50: #1f1f1f;
+    --gray-100: #2a2a2a;
+    --gray-200: #404040;
+    --gray-300: #525252;
+    --gray-400: #737373;
+    --gray-500: #a3a3a3;
+    --gray-600: #d4d4d4;
+    --gray-700: #e5e5e5;
+}
+
+/* Dark theme category badges */
+[data-theme="dark"] .category-badge {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .category-badge:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark theme filter dropdown */
+[data-theme="dark"] .category-filter-select {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .category-filter-select:hover {
+    border-color: var(--primary);
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] .category-filter-select:focus {
+    background: var(--card-bg);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+/* Dark theme chore grid improvements */
+[data-theme="dark"] .chore-grid-table {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .chore-grid-table th {
+    background: var(--gray-800);
+    color: var(--gray-200);
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .chore-grid-table td {
+    border-bottom-color: var(--gray-700);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .category-filter-container {
+        padding: var(--space-2);
+    }
+    
+    .category-filter-container > div {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    
+    .category-filter-select {
+        max-width: none;
+    }
 }
