@@ -2817,10 +2817,21 @@ class FamilyChoreChart {
     }
 
     async deleteChild(childId) {
-        if (confirm('Are you sure you want to delete this child?')) {
+        const child = this.children.find(c => c.id === childId);
+        const childName = child ? child.name : 'this child';
+        
+        const confirmed = await this.showConfirmation(
+            `Are you sure you want to remove ${childName}? This will also delete all their activities and completion data. This action cannot be undone.`,
+            'Delete Child',
+            'danger',
+            'Yes, Delete',
+            'Cancel'
+        );
+        
+        if (confirmed) {
             const result = await this.apiClient.deleteChild(childId);
             if (result.success) {
-                this.showToast('Child deleted!', 'success');
+                this.showToast(`${childName} has been removed`, 'success');
                 await this.loadChildren();
                 this.renderChildren();
                 return { success: true };
@@ -2998,6 +3009,64 @@ class FamilyChoreChart {
         this.hideModal('onboarding-wizard');
         this.currentOnboardingStep = 1;
         this.showToast('Welcome to ChoreStar! Let\'s get started! 🎉', 'success');
+    }
+
+    // Confirmation Modal Helper
+    async showConfirmation(message, title = 'Confirm Action', type = 'warning', confirmText = 'Confirm', cancelText = 'Cancel') {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirmation-modal');
+            const header = modal.querySelector('.confirmation-header');
+            const icon = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+            const confirmBtn = document.getElementById('confirmation-confirm');
+            const cancelBtn = document.getElementById('confirmation-cancel');
+            
+            // Set icon and colors based on type
+            const iconMap = {
+                danger: '🗑️',
+                warning: '⚠️',
+                info: 'ℹ️',
+                success: '✓'
+            };
+            
+            icon.textContent = iconMap[type] || '⚠️';
+            header.className = `modal-header confirmation-header ${type}`;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            confirmBtn.textContent = confirmText;
+            cancelBtn.textContent = cancelText;
+            
+            // Add danger class to confirm button for destructive actions
+            if (type === 'danger') {
+                confirmBtn.classList.add('danger');
+            } else {
+                confirmBtn.classList.remove('danger');
+            }
+            
+            // Event handlers
+            const handleConfirm = () => {
+                this.hideModal('confirmation-modal');
+                cleanup();
+                resolve(true);
+            };
+            
+            const handleCancel = () => {
+                this.hideModal('confirmation-modal');
+                cleanup();
+                resolve(false);
+            };
+            
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            cancelBtn.addEventListener('click', handleCancel);
+            
+            this.showModal('confirmation-modal');
+        });
     }
 
     setupFamilySharing() {
@@ -6131,7 +6200,13 @@ class FamilyChoreChart {
             // Removed "already completed" toast to reduce noise
             return;
         }
-        const confirmed = confirm(`This will mark ${remaining} chore completions for the entire week. Continue?`);
+        const confirmed = await this.showConfirmation(
+            `This will mark ${remaining} activity completions for the entire week. Continue?`,
+            'Fill Entire Week',
+            'info',
+            'Yes, Fill Week',
+            'Cancel'
+        );
         if (!confirmed) return;
         // INSTANT optimistic update
         let addedCompletions = 0;
@@ -6180,7 +6255,13 @@ class FamilyChoreChart {
             // Removed "no chores completed" toast to reduce noise
             return;
         }
-        const confirmed = confirm(`This will unmark ${completedChores.length} chores for today. Continue?`);
+        const confirmed = await this.showConfirmation(
+            `This will unmark ${completedChores.length} activities for today. Continue?`,
+            'Clear Today',
+            'warning',
+            'Yes, Clear',
+            'Cancel'
+        );
         if (!confirmed) return;
         // INSTANT optimistic update
         const removedCompletions = completedChores.length;
@@ -6572,20 +6653,14 @@ class FamilyChoreChart {
                 const childId = e.target.dataset.childId;
                 const child = this.children.find(c => c.id === childId);
                 if (child) {
-                    const confirmed = confirm(`Are you sure you want to remove ${child.name}? This will also delete all their chores and completion data.`);
-                    if (confirmed) {
-                        const result = await this.deleteChild(childId);
-                        if (result.success) {
-                            this.showToast(`${child.name} has been removed`, 'success');
-                            // Refresh the manage children list
-                            this.populateManageChildrenList();
-                            // Also refresh the child tabs
-                            this.generateChildTabs();
-                            // Refresh the main view
-                            this.renderChildren();
-                        } else {
-                            this.showToast('Failed to remove child', 'error');
-                        }
+                    const result = await this.deleteChild(childId);
+                    if (result.success) {
+                        // Refresh the manage children list
+                        this.populateManageChildrenList();
+                        // Also refresh the child tabs
+                        this.generateChildTabs();
+                        // Refresh the main view
+                        this.renderChildren();
                     }
                 }
             });
@@ -7362,12 +7437,20 @@ class FamilyChoreChart {
         streakDisplay.innerHTML = html;
     }
 
-    resetAllStreaks() {
-        if (confirm('Are you sure you want to reset all streaks? This cannot be undone.')) {
+    async resetAllStreaks() {
+        const confirmed = await this.showConfirmation(
+            'Are you sure you want to reset all streaks? This will erase all streak progress and cannot be undone.',
+            'Reset All Streaks',
+            'danger',
+            'Yes, Reset All',
+            'Cancel'
+        );
+        
+        if (confirmed) {
             this.streaks = {};
             this.saveStreaks();
             this.updateStreakDisplay();
-            this.showToast('All streaks have been reset.', 'success');
+            this.showToast('All streaks have been reset', 'success');
         }
     }
 

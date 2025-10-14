@@ -5565,6 +5565,112 @@ body.modal-open {
     .onboarding-actions .btn {
         width: 100%;
     }
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal-content {
+    max-width: 500px;
+    width: 90vw;
+}
+
+.confirmation-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+}
+
+.confirmation-header.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.confirmation-header.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.confirmation-header.info {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.confirmation-icon {
+    font-size: 4rem;
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.confirmation-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.confirmation-body {
+    padding: var(--space-6);
+    text-align: center;
+}
+
+.confirmation-body p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--gray-200);
+    background: var(--bg-primary);
+}
+
+.confirmation-actions .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+.confirmation-actions .btn-primary.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.confirmation-actions .btn-primary.danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Dark mode confirmation */
+[data-theme="dark"] .confirmation-body p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .confirmation-actions {
+    background: var(--card-bg);
+    border-top-color: var(--border-color);
+}
+
+/* Mobile responsive confirmation */
+@media (max-width: 768px) {
+    .confirmation-modal-content {
+        width: 95vw;
+    }
+    
+    .confirmation-icon {
+        font-size: 3rem;
+    }
+    
+    .confirmation-header h2 {
+        font-size: 20px;
+    }
+    
+    .confirmation-actions {
+        flex-direction: column;
+    }
+    
+    .confirmation-actions .btn {
+        width: 100%;
+    }
 } 
 
 .selected-color-circle {
