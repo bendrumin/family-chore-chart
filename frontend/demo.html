@@ -325,6 +325,16 @@
             </nav>
         </header>
 
+        <!-- Demo Banner -->
+        <div class="demo-banner" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: var(--space-4); text-align: center; border-bottom: 3px solid #4f46e5;">
+            <p style="margin: 0; font-size: 16px; font-weight: 600;">
+                🎮 <strong>Demo Mode Active</strong> - You're exploring a limited version of ChoreStar. 
+                <button onclick="document.getElementById('show-signup').click()" style="background: white; color: #6366f1; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-left: 12px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                    Sign Up for Full Features! ✨
+                </button>
+            </p>
+        </div>
+
         <!-- Main Content -->
         <main class="app-main" id="main-content" role="main">
             <!-- Family Dashboard Overview -->
@@ -424,7 +434,7 @@
     <div id="seasonal-chore-modal" class="modal hidden" role="dialog" aria-labelledby="seasonal-chore-modal-title" aria-hidden="true">
         <div class="modal-content">
             <header class="modal-header">
-                <h2 id="seasonal-chore-modal-title">🌟 Seasonal Chore Suggestions</h2>
+                <h2 id="seasonal-chore-modal-title">🌟 Seasonal Activity Suggestions</h2>
                 <button class="modal-close" data-modal="seasonal-chore-modal" aria-label="Close modal">&times;</button>
             </header>
             <div class="modal-body">
@@ -577,7 +587,7 @@
     <div id="add-chore-modal" class="modal hidden" role="dialog" aria-labelledby="add-chore-modal-title" aria-hidden="true">
         <div class="modal-content">
             <header class="modal-header">
-                <h2 id="add-chore-modal-title">📝 Add New Chores</h2>
+                <h2 id="add-chore-modal-title">✓ Add New Activities</h2>
                 <button class="modal-close" data-modal="add-chore-modal" aria-label="Close modal">&times;</button>
             </header>
             <form id="add-chore-form" class="modal-form" role="form">
@@ -731,6 +741,88 @@
                     <button type="submit" class="btn btn-primary">Add Chores</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- New Features Modal -->
+    <div id="new-features-modal" class="modal hidden" role="dialog" aria-labelledby="new-features-modal-title" aria-hidden="true">
+        <div class="modal-content modal-flex new-features-modal-content">
+            <header class="modal-header">
+                <h2 id="new-features-modal-title">🎉 What's New in ChoreStar!</h2>
+                <button class="modal-close" data-modal="new-features-modal" aria-label="Close modal">&times;</button>
+            </header>
+            <div class="modal-body-flex">
+            
+            <div class="new-features-content">
+                <div class="features-intro">
+                    <p>🎉 <strong>Major Update!</strong> We've completely redesigned ChoreStar with beautiful new features and a professional polish!</p>
+                    <p style="margin-top: var(--space-3); font-size: 16px; opacity: 0.95;">📝 <strong>This is a demo version.</strong> Sign up to access all features including AI suggestions, achievement badges, seasonal themes, and more!</p>
+                </div>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-content">
+                            <h3>Activity Categories</h3>
+                            <p>Go beyond chores! Categorize tasks as Learning, Physical Activity, Creative Time, Reading, Family Time, and more.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">✨</div>
+                        <div class="feature-content">
+                            <h3>Beautiful Modal System</h3>
+                            <p>All modals redesigned with smooth animations, professional layouts, and delightful micro-interactions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-content">
+                            <h3>Smart AI Suggestions</h3>
+                            <p>Get personalized activity recommendations based on your child's patterns and preferences. <strong>(Sign up to unlock!)</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-content">
+                            <h3>Achievement Badges & Streaks</h3>
+                            <p>Kids earn special badges for milestones like 7-day streaks and perfect weeks. <strong>(Sign up to unlock!)</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎃</div>
+                        <div class="feature-content">
+                            <h3>Seasonal Themes</h3>
+                            <p>Celebrate holidays with themed interfaces and seasonal activity suggestions! <strong>(Sign up to unlock!)</strong></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🌙</div>
+                        <div class="feature-content">
+                            <h3>Enhanced Dark Mode</h3>
+                            <p>Improved dark mode with better contrast and beautiful styling throughout the entire app.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-footer">
+                    <p class="features-note">💡 <strong>Want the full experience?</strong> Sign up for a free account to unlock AI suggestions, achievement badges, seasonal themes, advanced settings, and all premium features!</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="app.hideModal('new-features-modal')">
+                    Continue Demo
+                </button>
+                <button class="btn btn-primary" onclick="document.getElementById('show-signup').click(); app.hideModal('new-features-modal')">
+                    Sign Up Now! 🚀
+                </button>
+            </div>
+            </div>
         </div>
     </div>
 
