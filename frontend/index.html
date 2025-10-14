@@ -2150,6 +2150,25 @@
         </div>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal hidden" role="dialog" aria-labelledby="confirmation-title" aria-modal="true">
+        <div class="modal-content modal-flex confirmation-modal-content">
+            <header class="modal-header confirmation-header">
+                <div class="confirmation-icon" id="confirmation-icon">⚠️</div>
+                <h2 id="confirmation-title">Confirm Action</h2>
+            </header>
+            <div class="modal-body-flex">
+                <div class="confirmation-body">
+                    <p id="confirmation-message">Are you sure you want to proceed?</p>
+                </div>
+            </div>
+            <div class="confirmation-actions">
+                <button class="btn btn-outline" id="confirmation-cancel">Cancel</button>
+                <button class="btn btn-primary" id="confirmation-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Onboarding Wizard -->
     <div id="onboarding-wizard" class="modal hidden" role="dialog" aria-labelledby="onboarding-title" aria-hidden="true">
         <div class="modal-content modal-flex onboarding-modal-content">
