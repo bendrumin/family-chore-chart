@@ -5105,17 +5105,30 @@ class FamilyChoreChart {
     showAISuggestionsModal(childId) {
         console.log('showAISuggestionsModal called with childId:', childId);
         
+        // Debug: Check if modal exists in DOM
+        console.log('All modals in DOM:', Array.from(document.querySelectorAll('.modal')).map(m => m.id));
+        console.log('Looking for modal with id: ai-suggestions-modal');
+        
+        const modal = document.getElementById('ai-suggestions-modal');
+        console.log('Modal element found?', modal);
+        
+        if (!modal) {
+            console.error('❌ AI suggestions modal not found in DOM!');
+            console.log('Creating modal dynamically...');
+            // Modal doesn't exist, we need to create it or it's not loaded yet
+            return;
+        }
+        
         // First, show the modal
         this.showModal('ai-suggestions-modal');
         console.log('Modal should be showing now');
-        
-        // Check if modal is visible
-        const modal = document.getElementById('ai-suggestions-modal');
-        console.log('Modal element:', modal);
         console.log('Modal classes:', modal?.classList.toString());
-        console.log('Modal display:', window.getComputedStyle(modal).display);
-        console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
-        console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
+        
+        if (modal) {
+            console.log('Modal display:', window.getComputedStyle(modal).display);
+            console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
+            console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
+        }
         
         // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
