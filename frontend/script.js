@@ -5101,20 +5101,35 @@ class FamilyChoreChart {
     showAISuggestionsModal(childId) {
         console.log('showAISuggestionsModal called with childId:', childId);
         
-        const childName = this.getChildName(childId);
-        console.log('Child name:', childName);
+        // First, show the modal
+        this.showModal('ai-suggestions-modal');
         
-        const suggestions = this.generateSmartSuggestions(childId);
-        console.log('Generated suggestions:', suggestions);
-        
-        const patterns = this.analyzeChildPatterns(childId);
-        console.log('Analyzed patterns:', patterns);
-        
-        const modalContent = document.getElementById('ai-suggestions-content');
-        if (!modalContent) {
-            console.error('ai-suggestions-content element not found');
-            return;
-        }
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+            const childName = this.getChildName(childId);
+            console.log('Child name:', childName);
+            
+            const suggestions = this.generateSmartSuggestions(childId);
+            console.log('Generated suggestions:', suggestions);
+            
+            const patterns = this.analyzeChildPatterns(childId);
+            console.log('Analyzed patterns:', patterns);
+            
+            const modalContent = document.getElementById('ai-suggestions-content');
+            if (!modalContent) {
+                console.error('ai-suggestions-content element not found');
+                console.log('Available elements with ai-suggestions:', document.querySelectorAll('[id*="ai-suggestions"]'));
+                console.log('Modal element:', document.getElementById('ai-suggestions-modal'));
+                console.log('All modal elements:', document.querySelectorAll('.modal'));
+                console.log('Modal visibility:', document.getElementById('ai-suggestions-modal')?.classList.toString());
+                return;
+            }
+            
+            this.populateAISuggestionsModal(modalContent, childName, suggestions, patterns, childId);
+        }, 100);
+    }
+    
+    populateAISuggestionsModal(modalContent, childName, suggestions, patterns, childId) {
         
         modalContent.innerHTML = `
             <div class="ai-suggestions-modal">
@@ -5178,7 +5193,6 @@ class FamilyChoreChart {
             </div>
         `;
         
-        this.showModal('ai-suggestions-modal');
         console.log('AI suggestions modal should now be visible');
     }
 
