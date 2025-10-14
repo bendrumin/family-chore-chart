@@ -5107,6 +5107,15 @@ class FamilyChoreChart {
         
         // First, show the modal
         this.showModal('ai-suggestions-modal');
+        console.log('Modal should be showing now');
+        
+        // Check if modal is visible
+        const modal = document.getElementById('ai-suggestions-modal');
+        console.log('Modal element:', modal);
+        console.log('Modal classes:', modal?.classList.toString());
+        console.log('Modal display:', window.getComputedStyle(modal).display);
+        console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
+        console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
         
         // Use setTimeout to ensure DOM is ready
         setTimeout(() => {
