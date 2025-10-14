@@ -862,10 +862,14 @@ class FamilyChoreChart {
                 const button = e.target.classList.contains('ai-suggestions-btn') ? e.target : e.target.closest('.ai-suggestions-btn');
                 const childId = button.getAttribute('data-child-id');
                 console.log('Child ID from button:', childId);
+                console.log('Button element:', button);
+                console.log('Button classes:', button.className);
                 if (childId) {
+                    console.log('Calling showAISuggestionsModal with childId:', childId);
                     this.showAISuggestionsModal(childId);
                 } else {
                     console.error('No child ID found on AI suggestions button');
+                    console.log('Button attributes:', button.attributes);
                 }
             }
         });
@@ -5115,13 +5119,28 @@ class FamilyChoreChart {
             const patterns = this.analyzeChildPatterns(childId);
             console.log('Analyzed patterns:', patterns);
             
-            const modalContent = document.getElementById('ai-suggestions-content');
+            // Try multiple ways to find the element
+            let modalContent = document.getElementById('ai-suggestions-content');
+            if (!modalContent) {
+                // Try finding it within the modal
+                const modal = document.getElementById('ai-suggestions-modal');
+                if (modal) {
+                    modalContent = modal.querySelector('#ai-suggestions-content');
+                }
+            }
+            
+            if (!modalContent) {
+                // Try finding by class
+                modalContent = document.querySelector('.modal-form');
+            }
+            
             if (!modalContent) {
                 console.error('ai-suggestions-content element not found');
                 console.log('Available elements with ai-suggestions:', document.querySelectorAll('[id*="ai-suggestions"]'));
                 console.log('Modal element:', document.getElementById('ai-suggestions-modal'));
                 console.log('All modal elements:', document.querySelectorAll('.modal'));
                 console.log('Modal visibility:', document.getElementById('ai-suggestions-modal')?.classList.toString());
+                console.log('All elements with modal-form class:', document.querySelectorAll('.modal-form'));
                 return;
             }
             
