@@ -2182,11 +2182,11 @@ class FamilyChoreChart {
             const isActive = currentTheme && currentTheme.name === theme.name;
             const isAvailable = this.isThemeAvailable(theme);
             const isUpcoming = this.isThemeUpcoming(theme);
+            const isEnabled = this.isSeasonalThemeEnabled(key);
             
             return `
-                <div class="theme-card ${isActive ? 'active' : ''} ${!isAvailable && !isUpcoming ? 'disabled' : ''}" 
-                     onclick="${isAvailable ? `app.activateTheme('${key}')` : ''}">
-                    <div class="theme-preview" style="background: ${theme.decorations.background}">
+                <div class="theme-card ${isActive ? 'active' : ''} ${!isAvailable && !isUpcoming ? 'disabled' : ''} ${!isEnabled ? 'theme-disabled' : ''}">
+                    <div class="theme-preview" style="background: ${theme.decorations.background}; opacity: ${isEnabled ? '1' : '0.5'}">
                         <div class="theme-preview-content">
                             <div class="theme-icon">${theme.icon}</div>
                             <div class="theme-preview-text">${theme.decorations.header}</div>
@@ -2196,14 +2196,15 @@ class FamilyChoreChart {
                         <h5>${theme.name}</h5>
                         <p>${this.getThemeDateRange(theme)}</p>
                         ${isUpcoming ? '<span class="upcoming-badge">Coming Soon</span>' : ''}
-                    </div>
-                    <div class="theme-actions">
-                        ${isActive ? 
-                            '<span class="active-badge">Active</span>' : 
-                            `<button class="btn btn-primary btn-sm" ${!isAvailable ? 'disabled' : ''}>
-                                ${isAvailable ? 'Activate' : 'Coming Soon'}
-                            </button>`
-                        }
+                        <div class="theme-toggle" onclick="event.stopPropagation();">
+                            <label class="toggle-switch">
+                                <input type="checkbox" 
+                                       ${isEnabled ? 'checked' : ''} 
+                                       onchange="app.toggleSeasonalTheme('${key}', this.checked)">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">${isEnabled ? 'Enabled' : 'Disabled'}</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2297,8 +2298,8 @@ class FamilyChoreChart {
         // Add seasonal class to body
         document.body.classList.add(theme.decorations.bodyClass);
         
-        // Add seasonal chore suggestions button
-        this.addSeasonalChoreSuggestions(theme);
+        // Add seasonal activity suggestions button
+        this.addSeasonalActivitySuggestions(theme);
     }
 
     disableSeasonalTheme() {
@@ -3886,11 +3887,11 @@ class FamilyChoreChart {
                 endDate: '12-31',
                 decorations: {
                     header: 'Christmas',
-                    background: 'linear-gradient(135deg, #dc2626, #7f1d1d)',
+                    background: '#dc2626',
                     accentColor: '#dc2626',
                     bodyClass: 'seasonal-christmas'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Decorate Christmas Tree', icon: '🎄', category: 'family_time' },
                     { name: 'Wrap Presents', icon: '🎁', category: 'creative_time' },
                     { name: 'Bake Cookies', icon: '🍪', category: 'creative_time' },
@@ -3906,11 +3907,11 @@ class FamilyChoreChart {
                 endDate: '11-30',
                 decorations: {
                     header: 'Thanksgiving',
-                    background: 'linear-gradient(135deg, #d97706, #92400e)',
+                    background: '#d97706',
                     accentColor: '#d97706',
                     bodyClass: 'seasonal-thanksgiving'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Set Thanksgiving Table', icon: '🍽️', category: 'household_chores' },
                     { name: 'Help Cook Turkey', icon: '🦃', category: 'creative_time' },
                     { name: 'Make Side Dishes', icon: '🥔', category: 'creative_time' },
@@ -3925,11 +3926,11 @@ class FamilyChoreChart {
                 endDate: '10-31',
                 decorations: {
                     header: 'Halloween',
-                    background: 'linear-gradient(135deg, #f59e0b, #d97706, #92400e)',
-                    accentColor: '#f59e0b',
+                    background: '#d97706',
+                    accentColor: '#d97706',
                     bodyClass: 'seasonal-halloween'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Carve Pumpkin', icon: '🎃', category: 'creative_time' },
                     { name: 'Decorate House', icon: '👻', category: 'creative_time' },
                     { name: 'Make Costume', icon: '🧙‍♀️', category: 'creative_time' },
@@ -3945,17 +3946,17 @@ class FamilyChoreChart {
                 endDate: '04-30',
                 decorations: {
                     header: 'Easter',
-                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    background: '#ec4899',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-easter'
                 },
-                seasonalChores: [
-                    { name: 'Dye Easter Eggs', icon: '🥚', category: 'Holiday' },
-                    { name: 'Decorate Easter Basket', icon: '🧺', category: 'Holiday' },
-                    { name: 'Spring Cleaning', icon: '🌸', category: 'Cleaning' },
-                    { name: 'Plant Flowers', icon: '🌷', category: 'Outdoor' },
-                    { name: 'Hide Easter Eggs', icon: '🥚', category: 'Holiday' },
-                    { name: 'Make Easter Crafts', icon: '🎨', category: 'Holiday' }
+                seasonalActivities: [
+                    { name: 'Dye Easter Eggs', icon: '🥚', category: 'creative_time' },
+                    { name: 'Decorate Easter Basket', icon: '🧺', category: 'family_time' },
+                    { name: 'Spring Cleaning', icon: '🌸', category: 'household_chores' },
+                    { name: 'Plant Flowers', icon: '🌷', category: 'creative_time' },
+                    { name: 'Hide Easter Eggs', icon: '🥚', category: 'games_play' },
+                    { name: 'Make Easter Crafts', icon: '🎨', category: 'creative_time' }
                 ]
             },
             valentines: {
@@ -3965,16 +3966,16 @@ class FamilyChoreChart {
                 endDate: '02-14',
                 decorations: {
                     header: 'Valentines',
-                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    background: '#ec4899',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-valentines'
                 },
-                seasonalChores: [
-                    { name: 'Make Valentine Cards', icon: '💌', category: 'Holiday' },
-                    { name: 'Decorate with Hearts', icon: '💖', category: 'Holiday' },
-                    { name: 'Bake Heart Cookies', icon: '🍪', category: 'Kitchen' },
-                    { name: 'Set Romantic Table', icon: '🕯️', category: 'Kitchen' },
-                    { name: 'Clean for Date Night', icon: '✨', category: 'Cleaning' }
+                seasonalActivities: [
+                    { name: 'Make Valentine Cards', icon: '💌', category: 'creative_time' },
+                    { name: 'Decorate with Hearts', icon: '💖', category: 'creative_time' },
+                    { name: 'Bake Heart Cookies', icon: '🍪', category: 'creative_time' },
+                    { name: 'Set Romantic Table', icon: '🕯️', category: 'family_time' },
+                    { name: 'Clean for Date Night', icon: '✨', category: 'household_chores' }
                 ]
             },
             stpatricks: {
@@ -3984,15 +3985,15 @@ class FamilyChoreChart {
                 endDate: '03-17',
                 decorations: {
                     header: 'St. Patricks',
-                    background: 'linear-gradient(135deg, #10b981, #065f46)',
-                    accentColor: '#10b981',
+                    background: '#059669',
+                    accentColor: '#059669',
                     bodyClass: 'seasonal-stpatricks'
                 },
-                seasonalChores: [
-                    { name: 'Decorate with Shamrocks', icon: '☘️', category: 'Holiday' },
-                    { name: 'Make Green Food', icon: '🥗', category: 'Kitchen' },
-                    { name: 'Wear Green Clothes', icon: '👕', category: 'Personal' },
-                    { name: 'Clean for Party', icon: '🍀', category: 'Cleaning' }
+                seasonalActivities: [
+                    { name: 'Decorate with Shamrocks', icon: '☘️', category: 'creative_time' },
+                    { name: 'Make Green Food', icon: '🥗', category: 'creative_time' },
+                    { name: 'Wear Green Clothes', icon: '👕', category: 'household_chores' },
+                    { name: 'Clean for Party', icon: '🍀', category: 'household_chores' }
                 ]
             },
             summer: {
@@ -4002,11 +4003,11 @@ class FamilyChoreChart {
                 endDate: '08-31',
                 decorations: {
                     header: 'Summer',
-                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
-                    accentColor: '#fbbf24',
+                    background: '#f59e0b',
+                    accentColor: '#f59e0b',
                     bodyClass: 'seasonal-summer'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Water Plants', icon: '💧', category: 'physical_activity' },
                     { name: 'Clean Pool', icon: '🏊', category: 'household_chores' },
                     { name: 'BBQ Prep', icon: '🍖', category: 'creative_time' },
@@ -4022,13 +4023,13 @@ class FamilyChoreChart {
                 endDate: '06-20',
                 decorations: {
                     header: 'Spring',
-                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
-                    accentColor: '#ec4899',
+                    background: '#22c55e',
+                    accentColor: '#22c55e',
                     bodyClass: 'seasonal-spring'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Spring Cleaning', icon: '🧹', category: 'household_chores' },
-                    { name: 'Plant Garden', icon: '🌱', category: 'physical_activity' },
+                    { name: 'Plant Garden', icon: '🌱', category: 'creative_time' },
                     { name: 'Clean Windows', icon: '🪟', category: 'household_chores' },
                     { name: 'Organize Closets', icon: '👕', category: 'household_chores' },
                     { name: 'Wash Curtains', icon: '🪟', category: 'household_chores' }
@@ -4041,11 +4042,11 @@ class FamilyChoreChart {
                 endDate: '12-20',
                 decorations: {
                     header: 'Fall',
-                    background: 'linear-gradient(135deg, #d97706, #92400e)',
-                    accentColor: '#d97706',
+                    background: '#ea580c',
+                    accentColor: '#ea580c',
                     bodyClass: 'seasonal-fall'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Rake Leaves', icon: '🍂', category: 'physical_activity' },
                     { name: 'Clean Gutters', icon: '🏠', category: 'household_chores' },
                     { name: 'Store Summer Items', icon: '📦', category: 'household_chores' },
@@ -4060,11 +4061,11 @@ class FamilyChoreChart {
                 endDate: '03-19',
                 decorations: {
                     header: 'Winter',
-                    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
+                    background: '#3b82f6',
                     accentColor: '#3b82f6',
                     bodyClass: 'seasonal-winter'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Shovel Snow', icon: '❄️', category: 'physical_activity' },
                     { name: 'Salt Driveway', icon: '🧂', category: 'household_chores' },
                     { name: 'Make Hot Soup', icon: '🍲', category: 'creative_time' },
@@ -4079,11 +4080,11 @@ class FamilyChoreChart {
                 endDate: '09-15',
                 decorations: {
                     header: 'Back to School',
-                    background: 'linear-gradient(135deg, #3b82f6, #1e40af)',
-                    accentColor: '#3b82f6',
+                    background: '#2563eb',
+                    accentColor: '#2563eb',
                     bodyClass: 'seasonal-backtoschool'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Organize School Supplies', icon: '📚', category: 'learning_education' },
                     { name: 'Set Up Study Space', icon: '🖥️', category: 'learning_education' },
                     { name: 'Pack Lunch', icon: '🥪', category: 'household_chores' },
@@ -4099,11 +4100,11 @@ class FamilyChoreChart {
                 endDate: '01-07',
                 decorations: {
                     header: 'New Year',
-                    background: 'linear-gradient(135deg, #8b5cf6, #5b21b6)',
+                    background: '#8b5cf6',
                     accentColor: '#8b5cf6',
                     bodyClass: 'seasonal-newyear'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Set New Year Goals', icon: '🎯', category: 'learning_education' },
                     { name: 'Organize Room', icon: '🧹', category: 'household_chores' },
                     { name: 'Clean Out Old Things', icon: '📦', category: 'household_chores' },
@@ -4118,16 +4119,16 @@ class FamilyChoreChart {
                 endDate: '05-14',
                 decorations: {
                     header: 'Mother\'s Day',
-                    background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                    background: '#ec4899',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-mothersday'
                 },
-                seasonalChores: [
+                seasonalActivities: [
                     { name: 'Make Mom Breakfast', icon: '🥞', category: 'creative_time' },
                     { name: 'Clean House for Mom', icon: '🏠', category: 'household_chores' },
                     { name: 'Make Mother\'s Day Card', icon: '💌', category: 'creative_time' },
                     { name: 'Plan Special Day', icon: '📅', category: 'family_time' },
-                    { name: 'Help with Gardening', icon: '🌱', category: 'physical_activity' }
+                    { name: 'Help with Gardening', icon: '🌱', category: 'creative_time' }
                 ]
             }
         };
@@ -4141,11 +4142,51 @@ class FamilyChoreChart {
         
         for (const [season, theme] of Object.entries(this.seasonalThemes)) {
             if (currentDate >= theme.startDate && currentDate <= theme.endDate) {
-                return theme;
+                // Check if this theme is enabled in user preferences
+                if (this.isSeasonalThemeEnabled(season)) {
+                    return theme;
+                }
             }
         }
         
         return null;
+    }
+    
+    // Check if a specific seasonal theme is enabled
+    isSeasonalThemeEnabled(themeName) {
+        const enabledThemes = JSON.parse(localStorage.getItem('enabled_seasonal_themes') || '{}');
+        // Default to true for all themes except christmas, which should be opt-in
+        if (enabledThemes[themeName] === undefined) {
+            // Christmas is opt-in, all others are default enabled
+            return themeName !== 'christmas';
+        }
+        return enabledThemes[themeName];
+    }
+    
+    // Save enabled/disabled state for a seasonal theme
+    setSeasonalThemeEnabled(themeName, enabled) {
+        const enabledThemes = JSON.parse(localStorage.getItem('enabled_seasonal_themes') || '{}');
+        enabledThemes[themeName] = enabled;
+        localStorage.setItem('enabled_seasonal_themes', JSON.stringify(enabledThemes));
+    }
+    
+    // Toggle a seasonal theme on/off
+    toggleSeasonalTheme(themeName, enabled) {
+        this.setSeasonalThemeEnabled(themeName, enabled);
+        
+        // Show a toast message
+        const themeDisplayName = this.seasonalThemes[themeName]?.name || themeName;
+        if (enabled) {
+            this.showToast(`${themeDisplayName} theme enabled!`, 'success');
+        } else {
+            this.showToast(`${themeDisplayName} theme disabled`, 'info');
+        }
+        
+        // Refresh the themes grid to update UI
+        this.populateThemesGrid();
+        
+        // Re-apply seasonal theme (will check if current theme is still enabled)
+        this.applySeasonalTheme();
     }
 
     applySeasonalTheme() {
@@ -4180,8 +4221,8 @@ class FamilyChoreChart {
         // Show seasonal notification with chore suggestions
         this.showSeasonalNotification(theme);
         
-        // Add seasonal chore suggestions button if premium
-        this.addSeasonalChoreSuggestions(theme);
+        // Add seasonal activity suggestions button if premium
+        this.addSeasonalActivitySuggestions(theme);
     }
 
     showSeasonalNotification(theme) {
@@ -4199,20 +4240,20 @@ class FamilyChoreChart {
             return;
         }
         
-        const message = `🎉 ${theme.name} theme activated! Check out seasonal chore suggestions!`;
+        const message = `🎉 ${theme.name} theme activated! Check out seasonal activity suggestions!`;
         this.showToast(message, 'success');
         
         // Show a more detailed notification after a delay
         setTimeout(() => {
-            const suggestions = theme.seasonalChores.slice(0, 3).map(chore => chore.name).join(', ');
-            this.showToast(`💡 Try these seasonal chores: ${suggestions}`, 'info');
+            const suggestions = theme.seasonalActivities.slice(0, 3).map(activity => activity.name).join(', ');
+            this.showToast(`💡 Try these seasonal activities: ${suggestions}`, 'info');
         }, 3000);
         
         // Mark as shown today
         localStorage.setItem(seasonalNotificationKey, 'true');
     }
 
-    addSeasonalChoreSuggestions(theme) {
+    addSeasonalActivitySuggestions(theme) {
         // Remove existing seasonal button if any
         const existingBtn = document.querySelector('.seasonal-suggestions-btn');
         if (existingBtn) {
@@ -4238,19 +4279,19 @@ class FamilyChoreChart {
         modalContent.innerHTML = `
             <div class="seasonal-chore-modal">
                 <div class="seasonal-header">
-                    <h2>${theme.icon} ${theme.name} Chore Suggestions</h2>
-                    <p>Add these seasonal chores to make ${theme.name} special!</p>
+                    <h2>${theme.icon} ${theme.name} Activity Suggestions</h2>
+                    <p>Add these seasonal activities to make ${theme.name} special!</p>
                 </div>
-                <div class="seasonal-chores-grid">
-                    ${theme.seasonalChores.map(chore => `
-                        <div class="seasonal-chore-item">
-                            <div class="chore-icon">${chore.icon}</div>
-                            <div class="chore-details">
-                                <h4>${chore.name}</h4>
-                                <span class="chore-category">${chore.category}</span>
+                <div class="seasonal-activities-grid">
+                    ${theme.seasonalActivities.map(activity => `
+                        <div class="seasonal-activity-item">
+                            <div class="activity-icon">${activity.icon}</div>
+                            <div class="activity-details">
+                                <h4>${activity.name}</h4>
+                                <span class="activity-category">${activity.category}</span>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="app.addSeasonalChore('${chore.name}', '${chore.icon}', '${chore.category}')">
-                                Add Chore
+                            <button class="btn btn-primary btn-sm" onclick="app.addSeasonalActivity('${activity.name}', '${activity.icon}', '${activity.category}')">
+                                Add Activity
                             </button>
                         </div>
                     `).join('')}
@@ -4262,7 +4303,7 @@ class FamilyChoreChart {
         this.showModal('seasonal-chore-modal');
     }
 
-    async addSeasonalChore(choreName, choreIcon, choreCategory) {
+    async addSeasonalActivity(activityName, activityIcon, activityCategory) {
         // Get the first child (or prompt user to select)
         const children = this.children;
         if (children.length === 0) {
@@ -4272,32 +4313,32 @@ class FamilyChoreChart {
         
         const childId = children[0].id; // Default to first child
         
-        const choreData = {
-            name: choreName,
-            icon: choreIcon,
-            category: choreCategory,
+        const activityData = {
+            name: activityName,
+            icon: activityIcon,
+            category: activityCategory,
             child_id: childId,
             reward: 7 // Default reward
         };
         
         try {
-            // Find and set loading state on add seasonal chore button
-            const addButton = document.querySelector(`button[onclick*="addSeasonalChore('${choreName}"]`);
+            // Find and set loading state on add seasonal activity button
+            const addButton = document.querySelector(`button[onclick*="addSeasonalActivity('${activityName}"]`);
             if (addButton) {
                 this.setButtonLoading(addButton, true);
             }
 
-            const result = await this.apiClient.addChore(choreData);
+            const result = await this.apiClient.addChore(activityData);
             
             if (result.success) {
                 await this.loadChores();
                 this.renderChildren();
-                this.showToast(`Added ${choreName} to your chores!`, 'success');
+                this.showToast(`Added ${activityName} to your activities!`, 'success');
             } else {
-                this.showToast('Failed to add seasonal chore', 'error');
+                this.showToast('Failed to add seasonal activity', 'error');
             }
         } catch (error) {
-            this.showToast('Error adding seasonal chore', 'error');
+            this.showToast('Error adding seasonal activity', 'error');
         } finally {
             // Reset loading state
             if (addButton) {
