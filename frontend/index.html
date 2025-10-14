@@ -741,12 +741,13 @@
 
     <!-- Add Chore Modal -->
     <div id="add-chore-modal" class="modal hidden" role="dialog" aria-labelledby="add-chore-modal-title" aria-hidden="true">
-        <div class="modal-content">
+        <div class="modal-content modal-flex">
             <header class="modal-header">
-                <h2 id="add-chore-modal-title">✓ Add New Chores</h2>
+                <h2 id="add-chore-modal-title">✓ Add New Activities</h2>
                 <button class="modal-close" data-modal="add-chore-modal" aria-label="Close modal">&times;</button>
             </header>
-            <form id="add-chore-form" class="modal-form" role="form">
+            <div class="modal-body-flex">
+                <form id="add-chore-form" class="modal-form form-col" role="form">
                 <div class="form-group">
                     <label for="chore-child">For Child</label>
                     <select id="chore-child" required aria-required="true">
@@ -757,11 +758,14 @@
                 <div id="chores-container">
                     <div class="chore-entry">
                         <div class="chore-entry-header">
-                            <h3>Chore #1</h3>
-                            <button type="button" class="btn btn-outline btn-sm remove-chore" style="display: none;" aria-label="Remove this chore">Remove</button>
+                            <div class="chore-entry-title">
+                                <span class="chore-number">1</span>
+                                <h3>Activity Details</h3>
+                            </div>
+                            <button type="button" class="btn btn-outline btn-sm remove-chore" style="display: none;" aria-label="Remove this activity">Remove</button>
                         </div>
                         <div class="form-group">
-                            <label for="chore-name-1">Chore Name</label>
+                            <label for="chore-name-1">Activity Name</label>
                             <input type="text" id="chore-name-1" required placeholder="e.g., Make bed" aria-required="true">
                         </div>
                         
@@ -950,15 +954,16 @@
                 
                 <div class="form-actions">
                     <button type="button" class="btn btn-outline" data-modal="add-chore-modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add All Chores</button>
+                    <button type="submit" class="btn btn-primary">Add All Activities</button>
                 </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal hidden" role="dialog" aria-labelledby="settings-modal-title" aria-hidden="true">
-        <div class="modal-content">
+        <div class="modal-content modal-flex settings-modal-content">
             <header class="modal-header">
                 <h2 id="settings-modal-title">⚙ Family Settings</h2>
                 <button class="modal-close" data-modal="settings-modal" aria-label="Close modal">&times;</button>
@@ -1448,13 +1453,15 @@
 
     <!-- AI Suggestions Modal -->
     <div id="ai-suggestions-modal" class="modal hidden" role="dialog" aria-labelledby="ai-suggestions-modal-title" aria-hidden="true">
-        <div class="modal-content">
+        <div class="modal-content modal-flex ai-suggestions-modal-content">
             <header class="modal-header">
                 <h2 id="ai-suggestions-modal-title">🤖 Smart Activity Suggestions</h2>
                 <button class="modal-close" data-modal="ai-suggestions-modal" aria-label="Close modal">&times;</button>
             </header>
-            <div id="ai-suggestions-content" class="modal-form">
-                <!-- AI suggestions content will be populated here -->
+            <div class="modal-body-flex">
+                <div id="ai-suggestions-content" class="modal-form form-col">
+                    <!-- AI suggestions content will be populated here -->
+                </div>
             </div>
         </div>
     </div>

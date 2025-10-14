@@ -3741,7 +3741,7 @@ body.modal-open {
     margin-bottom: 8px;
 }
 
-/* Add Child Modal Layout */
+/* Modal Layout Improvements */
 .modal-flex {
     display: flex;
     flex-direction: column;
@@ -3827,6 +3827,492 @@ body.modal-open {
     
     .dicebear-row .btn {
         width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Add Chore Modal Improvements */
+.chore-entry-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.chore-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.chore-entry-title h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chore-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.chore-entry {
+    background: var(--bg-primary);
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+    position: relative;
+    transition: all var(--transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chore-entry:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.chore-entry:last-child {
+    margin-bottom: 0;
+}
+
+/* Dark mode improvements for chore entries */
+[data-theme="dark"] .chore-entry {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .chore-entry:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .chore-entry-header {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .chore-entry-title h3 {
+    color: var(--text-primary);
+}
+
+/* Settings Modal Improvements */
+.settings-modal-content {
+    max-width: 800px;
+    width: 95vw;
+}
+
+.settings-tabs {
+    display: flex;
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 4px;
+    margin: 0 var(--space-6) var(--space-4);
+    gap: 4px;
+}
+
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+}
+
+.tab-btn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.tab-btn.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.tab-btn span {
+    font-size: 16px;
+}
+
+.tab-content {
+    display: none;
+    padding: 0 var(--space-6) var(--space-6);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.settings-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.settings-section h4 {
+    margin: 0 0 var(--space-3) 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.settings-section p {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.rewards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.family-content h3 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Dark mode improvements for settings */
+[data-theme="dark"] .settings-tabs {
+    background: var(--gray-800);
+}
+
+[data-theme="dark"] .tab-btn {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .tab-btn:hover {
+    background: var(--gray-700);
+    color: var(--gray-200);
+}
+
+[data-theme="dark"] .tab-btn.active {
+    background: var(--gray-600);
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .settings-section {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .settings-section h4,
+[data-theme="dark"] .family-content h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-section p {
+    color: var(--gray-400);
+}
+
+/* Mobile responsive for settings */
+@media (max-width: 768px) {
+    .settings-modal-content {
+        width: 98vw;
+        max-height: 95vh;
+    }
+    
+    .settings-tabs {
+        margin: 0 var(--space-4) var(--space-3);
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        flex: 1 1 calc(50% - 2px);
+        font-size: 13px;
+        padding: var(--space-2) var(--space-3);
+    }
+    
+    .tab-content {
+        padding: 0 var(--space-4) var(--space-4);
+        max-height: 50vh;
+    }
+    
+    .rewards-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+}
+
+/* AI Suggestions Modal Improvements */
+.ai-suggestions-modal-content {
+    max-width: 700px;
+    width: 90vw;
+}
+
+.ai-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    border-radius: 12px;
+    color: white;
+}
+
+.ai-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-3);
+    animation: ai-pulse 2s ease-in-out infinite;
+}
+
+.ai-title h2 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.ai-title p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.ai-insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.insight-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-4);
+    text-align: center;
+    transition: all var(--transition);
+}
+
+.insight-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.insight-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-2);
+}
+
+.insight-text h4 {
+    margin: 0 0 var(--space-1) 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.insight-text p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+.suggestions-grid {
+    display: grid;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+}
+
+.suggestion-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.suggestion-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), #8b5cf6);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+
+.suggestion-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.suggestion-card:hover::before {
+    transform: scaleX(1);
+}
+
+.suggestion-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.suggestion-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-details h4 {
+    margin: 0 0 var(--space-1) 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.suggestion-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.difficulty-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.difficulty-badge.easy {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.difficulty-badge.medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.difficulty-badge.hard {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.time-estimate {
+    font-size: 12px;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.no-suggestions {
+    text-align: center;
+    padding: var(--space-8);
+    color: var(--gray-600);
+}
+
+.no-suggestions .icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.5;
+}
+
+/* Dark mode improvements for AI suggestions */
+[data-theme="dark"] .insight-card {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .insight-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .insight-text h4 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .insight-text p {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .suggestion-card {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .suggestion-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .suggestion-details h4 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .time-estimate {
+    color: var(--gray-400);
+}
+
+[data-theme="dark"] .no-suggestions {
+    color: var(--gray-400);
+}
+
+/* Mobile responsive for AI suggestions */
+@media (max-width: 768px) {
+    .ai-suggestions-modal-content {
+        width: 95vw;
+        max-height: 90vh;
+    }
+    
+    .ai-insights {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+    
+    .suggestion-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-2);
+    }
+    
+    .suggestion-meta {
         justify-content: center;
     }
 } 
