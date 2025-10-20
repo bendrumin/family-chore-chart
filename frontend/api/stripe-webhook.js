@@ -71,6 +71,7 @@ export default async function handler(req, res) {
         // Verify webhook signature using the raw request body
         const rawBody = await getRawBody(req);
         console.log('Raw body type:', typeof rawBody, 'Length:', rawBody.length);
+        console.log('Raw body first 100 chars:', rawBody.toString('utf8').substring(0, 100));
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
     } catch (err) {
         console.error('Webhook signature verification failed:', err.message);
@@ -121,18 +122,20 @@ export default async function handler(req, res) {
 
 // Reads the raw request body as a Buffer for signature verification
 async function getRawBody(req) {
-    // Vercel may provide rawBody
-    if (req.rawBody) {
-        return Buffer.isBuffer(req.rawBody) ? req.rawBody : Buffer.from(req.rawBody);
+    // Vercel provides the raw body in req.body when bodyParser: false
+    // But we need to ensure it's a Buffer
+    if (req.body) {
+        if (Buffer.isBuffer(req.body)) {
+            return req.body;
+        }
+        if (typeof req.body === 'string') {
+            return Buffer.from(req.body, 'utf8');
+        }
+        // If it's an object, stringify it
+        return Buffer.from(JSON.stringify(req.body), 'utf8');
     }
 
-    // If body parser has already consumed the stream, we need to reconstruct from req.body
-    if (req.body && !req.readable) {
-        const bodyString = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-        return Buffer.from(bodyString, 'utf8');
-    }
-
-    // Read from the request stream
+    // Fallback: read from stream
     return await new Promise((resolve, reject) => {
         const chunks = [];
         req.on('data', (chunk) => {
