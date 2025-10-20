@@ -4,9 +4,7 @@
 // Vercel webhook configuration
 export const config = {
     api: {
-        bodyParser: {
-            sizeLimit: '1mb',
-        },
+        bodyParser: false, // Disable body parsing to get raw body
     },
 };
 
@@ -70,12 +68,28 @@ export default async function handler(req, res) {
     let event;
 
     try {
-        // TEMPORARY: Skip signature verification for testing
-        // This is NOT secure for production - only for testing
-        console.log('⚠️ SIGNATURE VERIFICATION DISABLED FOR TESTING');
-        console.log('⚠️ DO NOT USE IN PRODUCTION');
+        // Get raw body for signature verification
+        let rawBody;
         
-        event = req.body;
+        if (req.rawBody) {
+            // Vercel provides rawBody when bodyParser is disabled
+            rawBody = req.rawBody;
+            console.log('Using req.rawBody for signature verification');
+        } else {
+            // Read raw body from request stream
+            const chunks = [];
+            for await (const chunk of req) {
+                chunks.push(chunk);
+            }
+            rawBody = Buffer.concat(chunks);
+            console.log('Read raw body from request stream');
+        }
+        
+        console.log('Raw body type:', typeof rawBody, 'Length:', rawBody.length);
+        
+        // Verify webhook signature
+        event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+        console.log('✅ Signature verification successful');
         
         // TODO: Implement proper signature verification for Vercel
         // The issue is that Vercel's body parsing corrupts the raw bytes
