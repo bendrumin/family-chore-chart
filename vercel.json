@@ -28,6 +28,10 @@
       "dest": "/frontend/api/stripe-webhook.js"
     },
     {
+      "src": "/api/test-webhook",
+      "dest": "/frontend/api/test-webhook.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/frontend/api/$1.js"
     },
