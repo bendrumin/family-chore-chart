@@ -24,6 +24,10 @@
       "dest": "/frontend/api/create-checkout-session.js"
     },
     {
+      "src": "/api/stripe-webhook",
+      "dest": "/frontend/api/stripe-webhook.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/frontend/api/$1.js"
     },
