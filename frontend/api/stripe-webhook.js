@@ -1,12 +1,10 @@
 // Stripe Webhook Handler for Subscription Events
 // This endpoint handles Stripe webhooks to automatically upgrade/downgrade users
 
-// Configure for Vercel - we need to handle raw body differently
+// Disable body parsing completely for Vercel
 export const config = {
     api: {
-        bodyParser: {
-            sizeLimit: '1mb',
-        },
+        bodyParser: false,
     },
 };
 
@@ -70,9 +68,21 @@ export default async function handler(req, res) {
     let event;
 
     try {
-        // For Vercel, we need to reconstruct the raw body from the parsed body
-        const rawBody = Buffer.from(JSON.stringify(req.body), 'utf8');
+        // Get raw body - Vercel should provide this when bodyParser: false
+        let rawBody;
+        
+        if (req.body && typeof req.body === 'string') {
+            rawBody = Buffer.from(req.body, 'utf8');
+        } else if (req.body && Buffer.isBuffer(req.body)) {
+            rawBody = req.body;
+        } else {
+            // Fallback: reconstruct from parsed body
+            rawBody = Buffer.from(JSON.stringify(req.body || {}), 'utf8');
+        }
+        
         console.log('Raw body type:', typeof rawBody, 'Length:', rawBody.length);
+        console.log('Body source:', req.body ? typeof req.body : 'undefined');
+        
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
     } catch (err) {
         console.error('Webhook signature verification failed:', err.message);
