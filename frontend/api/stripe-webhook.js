@@ -45,11 +45,16 @@ export default async function handler(req, res) {
 
     // Verify webhook signature
     const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim(); // Remove whitespace
 
     if (!sig) {
         console.error('Missing Stripe signature header');
         return res.status(400).json({ error: 'Missing stripe-signature header' });
+    }
+
+    if (!webhookSecret) {
+        console.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
+        return res.status(500).json({ error: 'Webhook secret not configured' });
     }
 
     if (!stripe || !supabase) {
@@ -64,14 +69,9 @@ export default async function handler(req, res) {
 
     try {
         // Verify webhook signature using the raw request body
-        if (webhookSecret) {
-            const rawBody = await getRawBody(req);
-            event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-        } else {
-            // For testing without webhook signature verification
-            event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-            console.warn('⚠️ Webhook signature verification disabled (testing mode)');
-        }
+        const rawBody = await getRawBody(req);
+        console.log('Raw body type:', typeof rawBody, 'Length:', rawBody.length);
+        event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
     } catch (err) {
         console.error('Webhook signature verification failed:', err.message);
         return res.status(400).json({ error: 'Webhook signature verification failed' });
@@ -119,19 +119,20 @@ export default async function handler(req, res) {
     }
 }
 
-// Reads the raw request body as a Buffer, even if a body parser has populated req.body
+// Reads the raw request body as a Buffer for signature verification
 async function getRawBody(req) {
-    // Some runtimes may attach rawBody
+    // Vercel may provide rawBody
     if (req.rawBody) {
         return Buffer.isBuffer(req.rawBody) ? req.rawBody : Buffer.from(req.rawBody);
     }
 
-    // If the request stream is already consumed but req.body exists, fall back to stringifying
-    if (!req.readable && req.body) {
-        const candidate = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-        return Buffer.from(candidate);
+    // If body parser has already consumed the stream, we need to reconstruct from req.body
+    if (req.body && !req.readable) {
+        const bodyString = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+        return Buffer.from(bodyString, 'utf8');
     }
 
+    // Read from the request stream
     return await new Promise((resolve, reject) => {
         const chunks = [];
         req.on('data', (chunk) => {
