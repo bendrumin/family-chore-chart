@@ -106,6 +106,10 @@ export default async function handler(req, res) {
                 await handlePaymentFailed(event.data.object);
                 break;
                 
+            case 'customer.updated':
+                await handleCustomerUpdated(event.data.object);
+                break;
+                
             default:
                 console.log(`🤷‍♂️ Unhandled event type: ${event.type}`);
         }
@@ -219,6 +223,16 @@ async function handlePaymentSucceeded(invoice) {
 async function handlePaymentFailed(invoice) {
     console.log('💳 Payment failed:', invoice.id);
     // Could implement logic to handle failed payments (grace period, etc.)
+}
+
+async function handleCustomerUpdated(customer) {
+    console.log('👤 Customer updated:', customer.id);
+    
+    // You can add logic here to handle customer updates
+    // For example, sync customer data to your database
+    // or update user profiles based on customer changes
+    
+    console.log(`Customer ${customer.id} was updated`);
 }
 
 async function updateUserSubscriptionStatus(subscription, subscriptionType) {
