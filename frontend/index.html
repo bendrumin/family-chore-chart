@@ -1309,6 +1309,28 @@
                                 <span aria-hidden="true">🌟</span> Upgrade to Premium
                             </button>
                         </div>
+                        
+                        <!-- Premium User Subscription Management -->
+                        <div id="premium-subscription-section" class="premium-subscription-section" style="display: none;">
+                            <h4>💳 Subscription Management</h4>
+                            <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Manage your Premium subscription</p>
+                            
+                            <div class="subscription-info">
+                                <div class="subscription-status">
+                                    <span class="status-badge premium">Premium Active</span>
+                                    <span class="subscription-details" id="subscription-details">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="subscription-actions">
+                                <button class="btn btn-outline" onclick="app.manageSubscription()" aria-label="Manage subscription">
+                                    <span aria-hidden="true">⚙️</span> Manage Subscription
+                                </button>
+                                <button class="btn btn-outline" onclick="app.viewBillingHistory()" aria-label="View billing history">
+                                    <span aria-hidden="true">📄</span> Billing History
+                                </button>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -2414,7 +2436,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+    <!-- Stripe removed - now using Paddle -->
     <script src="config.js"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="api-client.js?v=2"></script>
@@ -2502,6 +2524,8 @@
             <a href="/refund-policy.html" class="footer-link" target="_blank">Refund Policy</a>
             <span class="footer-separator">•</span>
             <a href="/terms-of-service.html" class="footer-link" target="_blank">Terms</a>
+            <span class="footer-separator">•</span>
+            <a href="/privacy-policy.html" class="footer-link" target="_blank">Privacy</a>
         </div>
     </footer>
 </body>

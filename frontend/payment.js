@@ -1,19 +1,21 @@
-// Payment Integration with Stripe
+// Payment Integration with Paddle
 class PaymentManager {
     constructor() {
-        this.stripe = Stripe(window.STRIPE_PUBLISHABLE_KEY || 'pk_test_default_key');
+        this.apiUrl = '/api/create-paddle-checkout';
     }
 
-    async createCheckoutSession() {
+    async createCheckoutSession(priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy') {
         try {
-            const response = await fetch('/api/create-checkout-session', {
+            const customerId = window.apiClient?.currentUser?.id || 'user_' + Date.now();
+            const email = window.apiClient?.currentUser?.email || 'user@example.com';
+            
+            const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priceId: 'price_1Rn5hXBVDszXFoIKPkjkAzaF',
-                    successUrl: window.location.href + '?success=true',
-                    cancelUrl: window.location.href + '?canceled=true',
-                    userId: window.apiClient?.currentUser?.id || 'unknown'
+                    priceId,
+                    customerId,
+                    email
                 })
             });
 
@@ -21,8 +23,8 @@ class PaymentManager {
                 throw new Error('Payment session creation failed');
             }
 
-            const session = await response.json();
-            return this.stripe.redirectToCheckout({ sessionId: session.id });
+            const data = await response.json();
+            return data;
         } catch (error) {
             console.error('Payment error:', error);
             throw error;
@@ -31,7 +33,9 @@ class PaymentManager {
 
     async handleUpgrade() {
         try {
-            await this.createCheckoutSession();
+            const checkout = await this.createCheckoutSession();
+            // Redirect to Paddle checkout
+            window.location.href = checkout.checkoutUrl;
         } catch (error) {
             console.error('Upgrade failed:', error);
             

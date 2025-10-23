@@ -3457,7 +3457,7 @@ class FamilyChoreChart {
                     </div>
                     
                     <div class="upgrade-actions">
-                        <button class="btn btn-primary" onclick="app.handleUpgrade()">Upgrade Now - $4.99/month</button>
+                        <button class="btn btn-primary" onclick="app.handleUpgrade()" data-price-id="pro_01k88sgf2e0gd4maaxq3asx6zy">Upgrade Now - $4.99/month</button>
                         <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Maybe Later</button>
                     </div>
                 </div>
@@ -3468,6 +3468,68 @@ class FamilyChoreChart {
         modal.classList.remove('hidden');
     }
 
+    // Manage subscription for premium users
+    manageSubscription() {
+        // This will redirect to Paddle's customer portal
+        const customerPortalUrl = this.getPaddleCustomerPortalUrl();
+        if (customerPortalUrl) {
+            window.open(customerPortalUrl, '_blank');
+        } else {
+            // Fallback: redirect to pricing page
+            window.open('/pricing.html', '_blank');
+        }
+    }
+
+    // View billing history
+    viewBillingHistory() {
+        // This will redirect to Paddle's billing history
+        const billingUrl = this.getPaddleBillingUrl();
+        if (billingUrl) {
+            window.open(billingUrl, '_blank');
+        } else {
+            // Fallback: show message
+            alert('Billing history will be available once your subscription is active.');
+        }
+    }
+
+    // Get Paddle customer portal URL
+    getPaddleCustomerPortalUrl() {
+        // This will be implemented when we have Paddle integration
+        // For now, redirect to pricing page
+        return '/pricing.html';
+    }
+
+    // Get Paddle billing URL
+    getPaddleBillingUrl() {
+        // This will be implemented when we have Paddle integration
+        return null;
+    }
+
+    // Update subscription display based on user status
+    async updateSubscriptionDisplay() {
+        try {
+            const isPremium = await this.apiClient.checkSubscriptionLimits();
+            const upgradeSection = document.querySelector('.premium-features-grid').parentElement;
+            const subscriptionSection = document.getElementById('premium-subscription-section');
+            
+            if (isPremium.isPremium) {
+                // Show subscription management
+                upgradeSection.style.display = 'none';
+                subscriptionSection.style.display = 'block';
+                
+                // Update subscription details
+                const details = document.getElementById('subscription-details');
+                details.textContent = `Active since ${new Date().toLocaleDateString()}`;
+            } else {
+                // Show upgrade options
+                upgradeSection.style.display = 'block';
+                subscriptionSection.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error updating subscription display:', error);
+        }
+    }
+
     async handleUpgrade() {
         try {
             // Find and set loading state on upgrade button
@@ -3476,18 +3538,39 @@ class FamilyChoreChart {
                 this.setButtonLoading(upgradeButton, true);
             }
 
-            // Use the payment manager to handle the upgrade
-            if (window.paymentManager && typeof window.paymentManager.handleUpgrade === 'function') {
-                await window.paymentManager.handleUpgrade();
-            } else {
-                // Fallback if payment manager is not available
-                this.showToast('Payment system is currently unavailable. Please try again later or contact support.', 'error');
+            // Use Paddle for checkout
+            const priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy'; // Monthly plan
+            const customerId = this.apiClient?.currentUser?.id || 'user_' + Date.now();
+            const email = this.apiClient?.currentUser?.email || 'user@example.com';
+            
+            // Create Paddle checkout
+            const response = await fetch('/api/create-paddle-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    priceId,
+                    customerId,
+                    email
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            const data = await response.json();
+            
+            // Redirect to Paddle checkout
+            window.location.href = data.checkoutUrl;
+            
         } catch (error) {
             console.error('Upgrade failed:', error);
             this.showToast('Failed to process upgrade. Please try again or contact support.', 'error');
         } finally {
             // Reset loading state
+            const upgradeButton = document.querySelector('button[onclick*="handleUpgrade"]');
             if (upgradeButton) {
                 this.setButtonLoading(upgradeButton, false);
             }
