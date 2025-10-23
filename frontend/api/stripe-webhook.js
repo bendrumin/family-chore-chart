@@ -38,6 +38,13 @@ try {
     console.error('Failed to initialize Supabase:', error);
 }
 
+// Disable Vercel's body parser for this endpoint
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+}
+
 export default async function handler(req, res) {
     console.log('🔍 Webhook request received:', {
         method: req.method,
