@@ -57,6 +57,19 @@ export default async function handler(req, res) {
         hasBody: !!req.body
     });
 
+    // Add a simple test endpoint
+    if (req.method === 'GET') {
+        return res.status(200).json({ 
+            message: 'Stripe webhook endpoint is working',
+            timestamp: new Date().toISOString(),
+            environment: {
+                hasStripe: !!stripe,
+                hasSupabase: !!supabase,
+                hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET
+            }
+        });
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -130,32 +143,41 @@ export default async function handler(req, res) {
     console.log('📨 Received Stripe webhook event:', event.type, new Date().toISOString());
 
     try {
+        console.log(`🔄 Processing event: ${event.type}`);
+        
         switch (event.type) {
             case 'checkout.session.completed':
+                console.log('Processing checkout.session.completed');
                 await handleCheckoutCompleted(event.data.object);
                 break;
                 
             case 'customer.subscription.created':
+                console.log('Processing customer.subscription.created');
                 await handleSubscriptionCreated(event.data.object);
                 break;
                 
             case 'customer.subscription.updated':
+                console.log('Processing customer.subscription.updated');
                 await handleSubscriptionUpdated(event.data.object);
                 break;
                 
             case 'customer.subscription.deleted':
+                console.log('Processing customer.subscription.deleted');
                 await handleSubscriptionDeleted(event.data.object);
                 break;
                 
             case 'invoice.payment_succeeded':
+                console.log('Processing invoice.payment_succeeded');
                 await handlePaymentSucceeded(event.data.object);
                 break;
                 
             case 'invoice.payment_failed':
+                console.log('Processing invoice.payment_failed');
                 await handlePaymentFailed(event.data.object);
                 break;
                 
             case 'customer.updated':
+                console.log('Processing customer.updated');
                 await handleCustomerUpdated(event.data.object);
                 break;
                 
@@ -163,12 +185,15 @@ export default async function handler(req, res) {
                 console.log(`🤷‍♂️ Unhandled event type: ${event.type}`);
         }
 
+        console.log('✅ Webhook processed successfully');
         res.status(200).json({ received: true });
     } catch (error) {
-        console.error('Error processing webhook:', error);
+        console.error('❌ Error processing webhook:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
             error: 'Webhook processing failed',
-            details: error.message 
+            details: error.message,
+            stack: error.stack
         });
     }
 }
