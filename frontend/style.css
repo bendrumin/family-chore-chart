@@ -204,6 +204,7 @@ body {
     transition: opacity var(--transition-slow);
 }
 
+
 .loading-content {
     text-align: center;
     color: var(--gray-700);
@@ -282,8 +283,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+    outline: 2px solid var(--seasonal-accent, var(--primary));
+    outline-offset: 3px;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -338,7 +339,7 @@ textarea,
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: 10px 16px;
     font-family: var(--font-family);
     font-size: 14px;
     font-weight: var(--font-weight-semibold);
@@ -352,6 +353,7 @@ textarea,
     overflow: hidden;
     letter-spacing: var(--letter-spacing-tight);
     line-height: var(--line-height-tight);
+    min-height: 44px;
 }
 
 .btn::before {
@@ -2370,14 +2372,9 @@ body.modal-open {
     -webkit-overflow-scrolling: touch;
 }
 
-/* Ensure form actions are at the bottom */
+/* Settings modal form actions - use default styling */
 #settings-modal .form-actions {
-    position: relative;
-    background: white;
-    padding: var(--space-4) 0;
     margin-top: var(--space-6);
-    border-top: 1px solid var(--gray-200);
-    z-index: 1;
 }
 
 @media (max-width: 600px) {
@@ -2401,7 +2398,6 @@ body.modal-open {
     }
     
     .form-actions {
-        /* Better spacing for mobile */
         padding: var(--space-4);
         gap: var(--space-2);
     }
@@ -2504,14 +2500,12 @@ body.modal-open {
 
 .form-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3);
     justify-content: flex-end;
-    margin-top: 32px;
-    padding-top: 24px;
+    padding: var(--space-4) 0;
     border-top: 1px solid var(--gray-200);
     background: white;
-    position: sticky;
-    bottom: 0;
+    margin-top: var(--space-4);
 }
 
 /* Color Picker */
@@ -3111,6 +3105,7 @@ body.modal-open {
     
     .form-actions {
         flex-direction: column;
+        gap: var(--space-2);
     }
     
     .toast-container {
@@ -3347,7 +3342,6 @@ body.modal-open {
     
     .form-actions {
         gap: var(--space-2);
-        margin-top: var(--space-4);
     }
     
     .btn {
@@ -3565,10 +3559,9 @@ body.modal-open {
         padding: var(--space-3);
     }
     
-    /* Improve form actions on very small screens */
+    /* Form actions on very small screens */
     .form-actions {
         flex-direction: column;
-        gap: var(--space-2);
     }
     
     .form-actions .btn {
@@ -4094,7 +4087,19 @@ body.modal-open {
     gap: var(--space-6);
     padding: var(--space-6);
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Important for flex scrolling */
+}
+
+.modal-footer-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    padding: var(--space-6);
+    border-top: 1px solid var(--gray-200);
+    background: white;
+    flex-shrink: 0; /* Prevent footer from being compressed */
 }
 
 .avatar-col {
@@ -4147,6 +4152,16 @@ body.modal-open {
         flex-direction: column;
         gap: var(--space-4);
         padding: var(--space-4);
+    }
+    
+    .modal-footer-actions {
+        padding: var(--space-4);
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+    
+    .modal-footer-actions .btn {
+        width: 100%;
     }
     
     .avatar-col {
@@ -5019,24 +5034,6 @@ body.modal-open {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease;
-}
-
-.btn:active::before {
-    width: 300px;
-    height: 300px;
-}
-
 /* Enhanced form interactions */
 .form-group input:focus,
 .form-group select:focus,
@@ -5240,24 +5237,31 @@ body.modal-open {
 
 /* Dark mode enhancements */
 [data-theme="dark"] .btn-primary {
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
-    border-color: rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(129, 140, 248, 0.4);
+    border-color: rgba(129, 140, 248, 0.5);
 }
 
 [data-theme="dark"] .btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-    border-color: rgba(99, 102, 241, 0.7);
+    background: linear-gradient(135deg, #9ca3ff 0%, #818cf8 100%);
+    box-shadow: 0 6px 20px rgba(129, 140, 248, 0.5);
+    border-color: rgba(129, 140, 248, 0.7);
+    transform: translateY(-1px);
 }
 
 [data-theme="dark"] .btn-outline {
-    border-color: var(--primary-light);
-    color: var(--primary-light);
+    background: rgba(129, 140, 248, 0.05);
+    border: 2px solid #818cf8;
+    color: #a5b4fc;
 }
 
 [data-theme="dark"] .btn-outline:hover {
-    background: rgba(129, 140, 248, 0.1);
-    border-color: var(--primary-light);
-    color: var(--primary-light);
+    background: rgba(129, 140, 248, 0.15);
+    border-color: #a5b4fc;
+    color: #c7d2fe;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(129, 140, 248, 0.3);
 }
 
 [data-theme="dark"] .form-group input:focus,
@@ -5460,12 +5464,16 @@ body.modal-open {
     max-width: 700px;
     width: 90vw;
     max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .onboarding-step {
     display: none;
     flex-direction: column;
     height: 100%;
+    min-height: 0; /* Important for flex scrolling */
 }
 
 .onboarding-step.active {
@@ -5477,6 +5485,7 @@ body.modal-open {
     padding: var(--space-6) var(--space-6) var(--space-4);
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
+    flex-shrink: 0; /* Prevent header from being compressed */
 }
 
 .onboarding-header h2 {
@@ -5495,7 +5504,10 @@ body.modal-open {
     flex: 1;
     padding: var(--space-6);
     overflow-y: auto;
+    overflow-x: hidden;
     text-align: center;
+    min-height: 0; /* Important for flex scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 .onboarding-illustration {
@@ -5660,6 +5672,7 @@ body.modal-open {
     padding: var(--space-6);
     background: var(--bg-primary);
     border-top: 1px solid var(--gray-200);
+    flex-shrink: 0; /* Prevent footer from being compressed */
 }
 
 .onboarding-progress {
@@ -6436,14 +6449,7 @@ body.modal-open {
     margin-bottom: var(--space-3);
 }
 
-.form-actions {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: flex-end;
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--gray-200);
-    margin-top: var(--space-4);
-}
+/* Remove duplicate - consolidated above */
 
 /* Celebration Animations */
 @keyframes bounce {
@@ -7426,7 +7432,8 @@ body.modal-open {
 [data-theme="dark"] .app-header {
     background: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
+    /* Soften header shadow in dark mode */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
     padding: 1rem 1.5rem;
 }
@@ -7453,27 +7460,29 @@ body.modal-open {
 }
 
 [data-theme="dark"] .btn {
-    background: var(--button-bg);
-    color: var(--button-text);
-    border: 1px solid var(--border-color);
+    background: rgba(129, 140, 248, 0.1);
+    color: #e0e7ff;
+    border: 1px solid rgba(129, 140, 248, 0.3);
     border-radius: var(--radius-md);
     padding: 0.5rem 1rem;
     font-weight: var(--font-weight-medium);
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(5px);
 }
 
 [data-theme="dark"] .btn:hover {
-    background: var(--button-hover);
+    background: rgba(129, 140, 248, 0.2);
+    color: #ffffff;
+    border-color: rgba(129, 140, 248, 0.5);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(129, 140, 248, 0.3);
 }
 
 [data-theme="dark"] .btn:active {
     transform: translateY(0);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .children-tabs {
@@ -7620,6 +7629,10 @@ body.modal-open {
     text-align: center;
     font-size: 0.875rem;
     border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="dark"] .chore-table td {
@@ -8208,7 +8221,8 @@ body.modal-open {
     color: var(--text-primary);
 }
 
-[data-theme="dark"] .form-actions {
+[data-theme="dark"] .form-actions,
+[data-theme="dark"] .modal-footer-actions {
     background: var(--bg-primary);
     border-top-color: var(--border-color);
 }
@@ -8550,7 +8564,7 @@ html[data-color-scheme="lavender"],
 
 [data-theme="dark"] .chore-grid-table tr:hover,
 [data-theme="dark"] .chore-item:hover {
-    background: #232347 !important;
+    background: #2a2a4a !important;
     color: #fff !important;
 }
 
@@ -9314,8 +9328,8 @@ html[data-color-scheme="lavender"],
     }
     
     .header-right .btn {
-        min-height: 48px;
-        padding: var(--space-3) var(--space-4);
+        min-height: 44px;
+        padding: 10px 16px;
         font-size: var(--font-size-sm);
         font-weight: 600;
         border-radius: var(--radius-lg);
@@ -9566,6 +9580,38 @@ html[data-color-scheme="lavender"],
 .desktop-nav-btn:active {
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Notification badge for What's New */
+.notification-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(135deg, #ff6b6b, #ff4757);
+    border-radius: 50%;
+    border: 2px solid var(--bg-color);
+    animation: pulse-badge 2s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(255, 75, 87, 0.5);
+}
+
+@keyframes pulse-badge {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+}
+
+/* Mobile menu notification badge positioning */
+.mobile-menu-btn .notification-badge {
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
 }
 
 /* Responsive: Hide labels on smaller screens */
@@ -10092,8 +10138,8 @@ html[data-color-scheme="lavender"],
 
 /* Enhanced Mobile Chore Grid Styling */
 
-@media (max-width: 600px) {
-    /* Transform table into mobile-friendly cards */
+@media (max-width: 768px) {
+    /* Transform table into mobile-friendly cards with horizontal day layout */
     .chore-grid-table {
         display: block;
         background: transparent;
@@ -10122,12 +10168,12 @@ html[data-color-scheme="lavender"],
     
     .chore-grid-table td {
         display: block;
-        padding: var(--space-2) 0;
+        padding: 0;
         text-align: left;
         border: none;
     }
     
-    /* Chore info styling */
+    /* Chore info styling - full width at top */
     .chore-grid-table td:first-child {
         padding-bottom: var(--space-3);
         border-bottom: 1px solid var(--gray-100);
@@ -10148,72 +10194,127 @@ html[data-color-scheme="lavender"],
         margin-bottom: var(--space-2);
     }
     
-    /* Day headers for mobile */
+    /* Days container - horizontal layout */
     .chore-grid-table td:not(:first-child) {
+        display: none; /* Hide individual day cells */
+    }
+    
+    /* Show mobile days row on mobile */
+    .mobile-days-row {
+        display: table-row !important;
+        width: 100%;
+    }
+    
+    .mobile-days-row td {
+        display: table-cell !important;
+        padding: 0 !important;
+        width: 100%;
+        max-width: 100%;
+    }
+    /* Create a new days container after the first cell */
+    .chore-grid-table tr::after {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 0;
+    }
+    
+    /* Days row container */
+    .chore-days-container {
         display: flex;
+        justify-content: stretch;
         align-items: center;
-        justify-content: space-between;
-        padding: var(--space-2) 0;
-        border-bottom: 1px solid var(--gray-50);
+        gap: var(--space-1);
+        margin-top: var(--space-3);
+        padding: var(--space-3);
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        width: 100%;
+        box-sizing: border-box;
     }
     
-    .chore-grid-table td:not(:first-child):last-child {
-        border-bottom: none;
+    /* Individual day in horizontal layout */
+    .chore-day-mobile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+        flex: 1;
+        min-width: 0;
+        width: 100%;
     }
     
-    /* Day labels */
-    .chore-grid-table td:not(:first-child)::before {
-        content: attr(data-day);
-        font-size: var(--font-size-sm);
+    .chore-day-label {
+        font-size: var(--font-size-xs);
         font-weight: 600;
         color: var(--gray-700);
-        min-width: 60px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     /* Enhanced chore cells for mobile */
     .chore-cell {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         border-radius: var(--radius-lg);
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-base);
         margin: 0;
         flex-shrink: 0;
         position: relative;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Mobile chore cell states */
+    .chore-day-mobile .chore-cell {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius);
+        font-size: var(--font-size-sm);
     }
     
     .chore-cell.empty {
-    background: var(--gray-50);
+        background: var(--gray-50);
         color: var(--gray-400);
-    border: 1px solid var(--gray-200);
+        border: 1px solid var(--gray-200);
+    }
+    
+    .chore-cell.completed {
+        background: var(--success-500);
+        color: white;
+        border-color: var(--success-600);
+        box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+    }
 }
 
-.chore-cell.completed {
-    background: var(--success-500);
-    color: white;
-    border-color: var(--success-600);
-    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+/* Hide mobile days row on desktop */
+@media (min-width: 769px) {
+    .mobile-days-row {
+        display: none !important;
+    }
 }
 
 .chore-cell:hover {
     border-color: var(--primary);
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .chore-cell.empty:hover,
-    .chore-cell.empty:active {
-        background: var(--gray-200);
-        color: var(--gray-600);
-        transform: scale(1.05);
-    }
-    
-    .chore-cell.completed {
-        background: var(--gradient-success);
-        color: white;
-        border: 2px solid var(--primary);
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-    }
+}
+
+.chore-cell.empty:hover,
+.chore-cell.empty:active {
+    background: var(--gray-200);
+    color: var(--gray-600);
+    transform: scale(1.05);
+}
+
+.chore-cell.completed {
+    background: var(--gradient-success);
+    color: white;
+    border: 2px solid var(--primary);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
     
     .chore-cell.completed:hover,
     .chore-cell.completed:active {
@@ -10338,7 +10439,7 @@ html[data-color-scheme="lavender"],
 }
 
 /* Dark theme support for mobile chore grid */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     [data-theme="dark"] .chore-grid-table tr {
         background: var(--gray-800);
         border-color: var(--gray-700);
@@ -11352,69 +11453,238 @@ html[data-color-scheme="lavender"],
     border-color: var(--seasonal-accent);
 }
 
-/* Override main app background for seasonal themes */
-.seasonal-christmas body,
-.seasonal-christmas .app-container {
+/* Dark mode dashboard overrides for seasonal themes */
+body[data-theme="dark"].seasonal-christmas .family-dashboard-overview,
+body[data-theme="dark"].seasonal-halloween .family-dashboard-overview,
+body[data-theme="dark"].seasonal-easter .family-dashboard-overview,
+body[data-theme="dark"].seasonal-summer .family-dashboard-overview,
+body[data-theme="dark"].seasonal-spring .family-dashboard-overview,
+body[data-theme="dark"].seasonal-fall .family-dashboard-overview,
+body[data-theme="dark"].seasonal-winter .family-dashboard-overview,
+body[data-theme="dark"].seasonal-valentines .family-dashboard-overview,
+body[data-theme="dark"].seasonal-stpatricks .family-dashboard-overview,
+body[data-theme="dark"].seasonal-thanksgiving .family-dashboard-overview,
+body[data-theme="dark"].seasonal-backtoschool .family-dashboard-overview,
+body[data-theme="dark"].seasonal-newyear .family-dashboard-overview {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-color: var(--seasonal-accent) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Override main app background for seasonal themes - FIXED SELECTORS */
+body.seasonal-christmas,
+body.seasonal-christmas .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-halloween body,
-.seasonal-halloween .app-container {
+body.seasonal-halloween,
+body.seasonal-halloween .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-easter body,
-.seasonal-easter .app-container {
+body.seasonal-easter,
+body.seasonal-easter .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-summer body,
-.seasonal-summer .app-container {
+body.seasonal-summer,
+body.seasonal-summer .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-spring body,
-.seasonal-spring .app-container {
+/* Dark mode overrides for seasonal themes - using higher specificity */
+body[data-theme="dark"].seasonal-christmas,
+body[data-theme="dark"].seasonal-christmas .app-container,
+body.seasonal-christmas[data-theme="dark"],
+body.seasonal-christmas[data-theme="dark"] .app-container {
+    background: #1a0f0f !important;
+}
+
+body[data-theme="dark"].seasonal-halloween,
+body[data-theme="dark"].seasonal-halloween .app-container,
+body.seasonal-halloween[data-theme="dark"],
+body.seasonal-halloween[data-theme="dark"] .app-container {
+    background: #2d1b0f !important;
+}
+
+body[data-theme="dark"].seasonal-easter,
+body[data-theme="dark"].seasonal-easter .app-container,
+body.seasonal-easter[data-theme="dark"],
+body.seasonal-easter[data-theme="dark"] .app-container {
+    background: #1f0f1a !important;
+}
+
+body[data-theme="dark"].seasonal-summer,
+body[data-theme="dark"].seasonal-summer .app-container,
+body.seasonal-summer[data-theme="dark"],
+body.seasonal-summer[data-theme="dark"] .app-container {
+    background: #1f1a0f !important;
+}
+
+body[data-theme="dark"].seasonal-spring,
+body[data-theme="dark"].seasonal-spring .app-container,
+body.seasonal-spring[data-theme="dark"],
+body.seasonal-spring[data-theme="dark"] .app-container {
+    background: #0f1f0f !important;
+}
+
+body[data-theme="dark"].seasonal-fall,
+body[data-theme="dark"].seasonal-fall .app-container,
+body.seasonal-fall[data-theme="dark"],
+body.seasonal-fall[data-theme="dark"] .app-container {
+    background: #1f1a0f !important;
+}
+
+body[data-theme="dark"].seasonal-winter,
+body[data-theme="dark"].seasonal-winter .app-container,
+body.seasonal-winter[data-theme="dark"],
+body.seasonal-winter[data-theme="dark"] .app-container {
+    background: #0f141f !important;
+}
+
+body[data-theme="dark"].seasonal-valentines,
+body[data-theme="dark"].seasonal-valentines .app-container,
+body.seasonal-valentines[data-theme="dark"],
+body.seasonal-valentines[data-theme="dark"] .app-container {
+    background: #1f0f1a !important;
+}
+
+body[data-theme="dark"].seasonal-stpatricks,
+body[data-theme="dark"].seasonal-stpatricks .app-container,
+body.seasonal-stpatricks[data-theme="dark"],
+body.seasonal-stpatricks[data-theme="dark"] .app-container {
+    background: #0f1f0f !important;
+}
+
+body[data-theme="dark"].seasonal-thanksgiving,
+body[data-theme="dark"].seasonal-thanksgiving .app-container,
+body.seasonal-thanksgiving[data-theme="dark"],
+body.seasonal-thanksgiving[data-theme="dark"] .app-container {
+    background: #1f1a0f !important;
+}
+
+body[data-theme="dark"].seasonal-backtoschool,
+body[data-theme="dark"].seasonal-backtoschool .app-container,
+body.seasonal-backtoschool[data-theme="dark"],
+body.seasonal-backtoschool[data-theme="dark"] .app-container {
+    background: #0f141f !important;
+}
+
+body[data-theme="dark"].seasonal-newyear,
+body[data-theme="dark"].seasonal-newyear .app-container,
+body.seasonal-newyear[data-theme="dark"],
+body.seasonal-newyear[data-theme="dark"] .app-container {
+    background: #1a0f1f !important;
+}
+
+body[data-theme="dark"].seasonal-mothersday,
+body[data-theme="dark"].seasonal-mothersday .app-container,
+body.seasonal-mothersday[data-theme="dark"],
+body.seasonal-mothersday[data-theme="dark"] .app-container {
+    background: #1f0f1a !important;
+}
+
+/* Dark mode content styling for seasonal themes */
+body[data-theme="dark"].seasonal-halloween .chore-card,
+body[data-theme="dark"].seasonal-halloween .family-member-card,
+body[data-theme="dark"].seasonal-halloween .modal-content,
+body[data-theme="dark"].seasonal-halloween .settings-panel,
+body[data-theme="dark"].seasonal-christmas .chore-card,
+body[data-theme="dark"].seasonal-christmas .family-member-card,
+body[data-theme="dark"].seasonal-christmas .modal-content,
+body[data-theme="dark"].seasonal-christmas .settings-panel,
+body[data-theme="dark"].seasonal-easter .chore-card,
+body[data-theme="dark"].seasonal-easter .family-member-card,
+body[data-theme="dark"].seasonal-easter .modal-content,
+body[data-theme="dark"].seasonal-easter .settings-panel,
+body[data-theme="dark"].seasonal-summer .chore-card,
+body[data-theme="dark"].seasonal-summer .family-member-card,
+body[data-theme="dark"].seasonal-summer .modal-content,
+body[data-theme="dark"].seasonal-summer .settings-panel,
+body[data-theme="dark"].seasonal-spring .chore-card,
+body[data-theme="dark"].seasonal-spring .family-member-card,
+body[data-theme="dark"].seasonal-spring .modal-content,
+body[data-theme="dark"].seasonal-spring .settings-panel,
+body[data-theme="dark"].seasonal-fall .chore-card,
+body[data-theme="dark"].seasonal-fall .family-member-card,
+body[data-theme="dark"].seasonal-fall .modal-content,
+body[data-theme="dark"].seasonal-fall .settings-panel,
+body[data-theme="dark"].seasonal-winter .chore-card,
+body[data-theme="dark"].seasonal-winter .family-member-card,
+body[data-theme="dark"].seasonal-winter .modal-content,
+body[data-theme="dark"].seasonal-winter .settings-panel,
+body[data-theme="dark"].seasonal-valentines .chore-card,
+body[data-theme="dark"].seasonal-valentines .family-member-card,
+body[data-theme="dark"].seasonal-valentines .modal-content,
+body[data-theme="dark"].seasonal-valentines .settings-panel,
+body[data-theme="dark"].seasonal-stpatricks .chore-card,
+body[data-theme="dark"].seasonal-stpatricks .family-member-card,
+body[data-theme="dark"].seasonal-stpatricks .modal-content,
+body[data-theme="dark"].seasonal-stpatricks .settings-panel,
+body[data-theme="dark"].seasonal-thanksgiving .chore-card,
+body[data-theme="dark"].seasonal-thanksgiving .family-member-card,
+body[data-theme="dark"].seasonal-thanksgiving .modal-content,
+body[data-theme="dark"].seasonal-thanksgiving .settings-panel,
+body[data-theme="dark"].seasonal-backtoschool .chore-card,
+body[data-theme="dark"].seasonal-backtoschool .family-member-card,
+body[data-theme="dark"].seasonal-backtoschool .modal-content,
+body[data-theme="dark"].seasonal-backtoschool .settings-panel,
+body[data-theme="dark"].seasonal-newyear .chore-card,
+body[data-theme="dark"].seasonal-newyear .family-member-card,
+body[data-theme="dark"].seasonal-newyear .modal-content,
+body[data-theme="dark"].seasonal-newyear .settings-panel,
+body[data-theme="dark"].seasonal-mothersday .chore-card,
+body[data-theme="dark"].seasonal-mothersday .family-member-card,
+body[data-theme="dark"].seasonal-mothersday .modal-content,
+body[data-theme="dark"].seasonal-mothersday .settings-panel {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    color: #ffffff !important;
+}
+
+body.seasonal-spring,
+body.seasonal-spring .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-fall body,
-.seasonal-fall .app-container {
+body.seasonal-fall,
+body.seasonal-fall .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-winter body,
-.seasonal-winter .app-container {
+body.seasonal-winter,
+body.seasonal-winter .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-valentines body,
-.seasonal-valentines .app-container {
+body.seasonal-valentines,
+body.seasonal-valentines .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-stpatricks body,
-.seasonal-stpatricks .app-container {
+body.seasonal-stpatricks,
+body.seasonal-stpatricks .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-thanksgiving body,
-.seasonal-thanksgiving .app-container {
+body.seasonal-thanksgiving,
+body.seasonal-thanksgiving .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-backtoschool body,
-.seasonal-backtoschool .app-container {
+body.seasonal-backtoschool,
+body.seasonal-backtoschool .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-newyear body,
-.seasonal-newyear .app-container {
+body.seasonal-newyear,
+body.seasonal-newyear .app-container {
     background: var(--seasonal-bg) !important;
 }
 
-.seasonal-mothersday body,
-.seasonal-mothersday .app-container {
+body.seasonal-mothersday,
+body.seasonal-mothersday .app-container {
     background: var(--seasonal-bg) !important;
 }
 
@@ -11872,6 +12142,69 @@ html[data-color-scheme="lavender"],
     border-color: rgba(255, 255, 255, 1) !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Dark mode header button overrides for seasonal themes */
+body[data-theme="dark"].seasonal-halloween .app-header .btn,
+body[data-theme="dark"].seasonal-halloween .app-header button,
+body[data-theme="dark"].seasonal-christmas .app-header .btn,
+body[data-theme="dark"].seasonal-christmas .app-header button,
+body[data-theme="dark"].seasonal-easter .app-header .btn,
+body[data-theme="dark"].seasonal-easter .app-header button,
+body[data-theme="dark"].seasonal-summer .app-header .btn,
+body[data-theme="dark"].seasonal-summer .app-header button,
+body[data-theme="dark"].seasonal-spring .app-header .btn,
+body[data-theme="dark"].seasonal-spring .app-header button,
+body[data-theme="dark"].seasonal-fall .app-header .btn,
+body[data-theme="dark"].seasonal-fall .app-header button,
+body[data-theme="dark"].seasonal-winter .app-header .btn,
+body[data-theme="dark"].seasonal-winter .app-header button,
+body[data-theme="dark"].seasonal-valentines .app-header .btn,
+body[data-theme="dark"].seasonal-valentines .app-header button,
+body[data-theme="dark"].seasonal-stpatricks .app-header .btn,
+body[data-theme="dark"].seasonal-stpatricks .app-header button,
+body[data-theme="dark"].seasonal-thanksgiving .app-header .btn,
+body[data-theme="dark"].seasonal-thanksgiving .app-header button,
+body[data-theme="dark"].seasonal-backtoschool .app-header .btn,
+body[data-theme="dark"].seasonal-backtoschool .app-header button,
+body[data-theme="dark"].seasonal-newyear .app-header .btn,
+body[data-theme="dark"].seasonal-newyear .app-header button {
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: #ffffff !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"].seasonal-halloween .app-header .btn:hover,
+body[data-theme="dark"].seasonal-halloween .app-header button:hover,
+body[data-theme="dark"].seasonal-christmas .app-header .btn:hover,
+body[data-theme="dark"].seasonal-christmas .app-header button:hover,
+body[data-theme="dark"].seasonal-easter .app-header .btn:hover,
+body[data-theme="dark"].seasonal-easter .app-header button:hover,
+body[data-theme="dark"].seasonal-summer .app-header .btn:hover,
+body[data-theme="dark"].seasonal-summer .app-header button:hover,
+body[data-theme="dark"].seasonal-spring .app-header .btn:hover,
+body[data-theme="dark"].seasonal-spring .app-header button:hover,
+body[data-theme="dark"].seasonal-fall .app-header .btn:hover,
+body[data-theme="dark"].seasonal-fall .app-header button:hover,
+body[data-theme="dark"].seasonal-winter .app-header .btn:hover,
+body[data-theme="dark"].seasonal-winter .app-header button:hover,
+body[data-theme="dark"].seasonal-valentines .app-header .btn:hover,
+body[data-theme="dark"].seasonal-valentines .app-header button:hover,
+body[data-theme="dark"].seasonal-stpatricks .app-header .btn:hover,
+body[data-theme="dark"].seasonal-stpatricks .app-header button:hover,
+body[data-theme="dark"].seasonal-thanksgiving .app-header .btn:hover,
+body[data-theme="dark"].seasonal-thanksgiving .app-header button:hover,
+body[data-theme="dark"].seasonal-backtoschool .app-header .btn:hover,
+body[data-theme="dark"].seasonal-backtoschool .app-header button:hover,
+body[data-theme="dark"].seasonal-newyear .app-header .btn:hover,
+body[data-theme="dark"].seasonal-newyear .app-header button:hover {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
 }
 
 .seasonal-easter .app-header {
@@ -12464,26 +12797,9 @@ html[data-color-scheme="lavender"],
     border-color: var(--primary);
 }
 
-/* Loading Spinner Styles */
-.loading-spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
+/* Loading text styles */
 .loading-text {
-    vertical-align: middle;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    vertical-align: baseline;
 }
 
 /* Button loading states */

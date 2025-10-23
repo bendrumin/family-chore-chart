@@ -51,7 +51,7 @@ class ApiClient {
 
             this.currentUser = data.user;
             console.log('Signed in user:', data.user?.id);
-            return { success: true, user: data.user };
+            return { success: true, user: data.user, session: data.session };
         } catch (error) {
             console.error('Sign in error:', error);
             return { success: false, error: error.message };

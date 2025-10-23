@@ -62,7 +62,7 @@ Keep the default:
 useReplyForAccess: true  // Users reply to request access
 ```
 
-The CTA button will link to `mailto:support@chorestar.app` for signup requests.
+The CTA button will link to `mailto:hi@chorestar.app` for signup requests.
 
 ### Step 4: Send the Newsletter!
 
@@ -85,8 +85,8 @@ node send-ios-announcement.js
 
 📋 Configuration:
    Subject: 🎉 ChoreStar is Coming to iOS! Your Chore Chart, Now in Your Pocket 📱
-   From: support@chorestar.app
-   Reply To: support@chorestar.app
+   From: hi@chorestar.app
+   Reply To: hi@chorestar.app
    Recipients: 17 users
    TestFlight: Reply for access
 
@@ -298,7 +298,7 @@ Check SendGrid dashboard for:
 - Check it has "Mail Send" permissions
 
 **"Sender not verified"**
-- Add and verify `support@chorestar.app` in SendGrid
+- Add and verify `hi@chorestar.app` in SendGrid
 - Can take up to 24 hours
 
 **"Template not found"**

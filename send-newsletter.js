@@ -31,9 +31,9 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 // Newsletter configuration
 const NEWSLETTER_CONFIG = {
     subject: 'ChoreStar: New Icon Picker, Demo System & Major Fixes! 🎨✨',
-    from: 'support@chorestar.app', // Your actual Zoho email address
+    from: 'hi@chorestar.app', // Your actual Zoho email address
     fromName: 'ChoreStar Team',
-    replyTo: 'support@chorestar.app'
+    replyTo: 'hi@chorestar.app'
 };
 
 // Your active users (replace with your actual user list)
