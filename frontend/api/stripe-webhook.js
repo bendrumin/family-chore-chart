@@ -4,10 +4,12 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-// Vercel webhook configuration
+// Vercel webhook configuration - try different approach
 export const config = {
     api: {
-        bodyParser: false, // Disable body parsing to get raw body
+        bodyParser: {
+            sizeLimit: '1mb',
+        },
     },
 };
 
@@ -119,6 +121,12 @@ export default async function handler(req, res) {
             // Body is a string, convert to Buffer
             rawBody = Buffer.from(req.body, 'utf8');
             console.log('✅ Converted req.body string to Buffer for signature verification');
+        } else if (req.body && typeof req.body === 'object') {
+            // Vercel parsed the JSON, we need to reconstruct the raw body
+            // This is a workaround for Vercel's body parsing
+            const jsonString = JSON.stringify(req.body);
+            rawBody = Buffer.from(jsonString, 'utf8');
+            console.log('⚠️ Reconstructed raw body from parsed JSON (Vercel workaround)');
         } else {
             // Fallback: try to read from request stream
             console.log('⚠️ Attempting to read raw body from request stream');
