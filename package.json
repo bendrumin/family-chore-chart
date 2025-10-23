@@ -9,10 +9,10 @@
     "node": "22.x"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.5",
     "@supabase/supabase-js": "^2.57.4",
     "dotenv": "^17.2.2",
     "nodemailer": "^7.0.5",
+    "resend": "^6.1.3",
     "vercel": "^44.5.4"
   }
 }

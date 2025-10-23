@@ -39,6 +39,17 @@ try {
 }
 
 export default async function handler(req, res) {
+    console.log('🔍 Webhook request received:', {
+        method: req.method,
+        headers: {
+            'stripe-signature': req.headers['stripe-signature'] ? 'present' : 'missing',
+            'content-type': req.headers['content-type'],
+            'user-agent': req.headers['user-agent']
+        },
+        hasRawBody: !!req.rawBody,
+        hasBody: !!req.body
+    });
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -96,7 +107,17 @@ export default async function handler(req, res) {
         // needed for signature verification
     } catch (err) {
         console.error('Webhook processing failed:', err.message);
-        return res.status(400).json({ error: 'Webhook processing failed' });
+        console.error('Error details:', {
+            message: err.message,
+            type: err.type,
+            code: err.code,
+            param: err.param
+        });
+        return res.status(400).json({ 
+            error: 'Webhook processing failed',
+            details: err.message,
+            type: err.type || 'unknown'
+        });
     }
 
     console.log('📨 Received Stripe webhook event:', event.type, new Date().toISOString());

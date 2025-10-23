@@ -300,6 +300,7 @@ class FamilyChoreChart {
         try {
             this.showLoading();
             
+            
             // Add anti-jump CSS early
             this.addAntiJumpCSS();
             
@@ -476,12 +477,18 @@ class FamilyChoreChart {
             console.error('Load app error:', error);
             window.analytics.trackError('load_app', error.message);
             
+            // Hide loading screen if it's showing
+            this.hideLoading();
+            
             // More specific error message for family info
             if (error.message.includes('family') || error.message.includes('profile')) {
                 this.showToast('Family info failed to load. Please refresh the page.', 'error');
             } else {
                 this.showToast('Error loading family data', 'error');
             }
+            
+            // Return to auth screen on critical errors
+            this.showAuth();
         }
     }
 
@@ -578,31 +585,30 @@ class FamilyChoreChart {
         if (loadingScreen) loadingScreen.classList.add('hidden');
     }
 
-    // Enhanced loading system for individual buttons
-    setButtonLoading(button, isLoading = true) {
-        if (!button) return;
-        
+    // Bulletproof loading system for individual buttons
+    setButtonLoading(btn, isLoading, fallbackLabel = 'Sign In') {
+        if (!btn) return;
         if (isLoading) {
-            // Store original content
-            button.dataset.originalContent = button.innerHTML;
-            button.dataset.originalDisabled = button.disabled;
-            
-            // Show loading state
-            button.innerHTML = `
-                <span class="loading-spinner" aria-hidden="true"></span>
-                <span class="loading-text">Loading...</span>
-            `;
-            button.disabled = true;
-            button.classList.add('loading');
+            // Preserve original state once
+            if (!btn.dataset.originalContent) {
+                btn.dataset.originalContent = btn.innerHTML;
+                btn.dataset.originalDisabled = btn.disabled ? '1' : '';
+            }
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.innerHTML = '<span class="loading-spinner" aria-hidden="true"></span> Signing in...';
         } else {
-            // Restore original state
-            if (button.dataset.originalContent) {
-                button.innerHTML = button.dataset.originalContent;
+            // Restore original state on ANY exit path
+            if (btn.dataset.originalContent) {
+                btn.innerHTML = btn.dataset.originalContent;
+                delete btn.dataset.originalContent;
+            } else {
+                // Fallback if original not captured for some reason
+                btn.innerHTML = fallbackLabel;
             }
-            if (button.dataset.originalDisabled !== undefined) {
-                button.disabled = button.dataset.originalDisabled === 'true';
-            }
-            button.classList.remove('loading');
+            btn.disabled = !!btn.dataset.originalDisabled;
+            delete btn.dataset.originalDisabled;
+            btn.classList.remove('loading');
         }
     }
 
@@ -687,47 +693,72 @@ class FamilyChoreChart {
     }
 
     async handleLogin() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+        const btn = document.querySelector('#login-form button[type="submit"]');
+        const email = document.getElementById('login-email')?.value?.trim() || '';
+        const password = document.getElementById('login-password')?.value || '';
         const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : true;
 
+        // Basic front-end validation to fail fast (also prevents a stuck spinner)
         if (!email || !password) {
-            this.showToast('Please fill in all required fields', 'error');
+            this.showToast('Please enter your email and password.', 'error');
             return;
         }
 
-        // Find and set loading state on login button
-        const loginButton = document.querySelector('#login-form button[type="submit"]');
-        this.setButtonLoading(loginButton, true);
+        // Prevent double-clicks
+        if (btn?.classList.contains('loading')) return;
 
-        const result = await this.apiClient.signIn(email, password);
-        this.setButtonLoading(loginButton, false);
-
-        if (result.success) {
-            this.currentUser = result.user;
-            window.analytics.trackLogin(email);
-            // Store session based on Remember Me
-            const sessionStr = JSON.stringify(result.session);
-            if (rememberMe) {
-                localStorage.setItem('chorestar_session', sessionStr);
-                sessionStorage.removeItem('chorestar_session');
+        this.setButtonLoading(btn, true);
+        try {
+            const result = await this.apiClient.signIn(email, password);
+            
+            if (result.success) {
+                this.currentUser = result.user;
+                window.analytics.trackLogin(email);
+                // Store session based on Remember Me
+                if (result.session) {
+                    const sessionStr = JSON.stringify(result.session);
+                    if (rememberMe) {
+                        localStorage.setItem('chorestar_session', sessionStr);
+                        sessionStorage.removeItem('chorestar_session');
+                    } else {
+                        sessionStorage.setItem('chorestar_session', sessionStr);
+                        localStorage.removeItem('chorestar_session');
+                    }
+                }
+                
+                // Load the app, but ensure we handle any errors
+                try {
+                    await this.loadApp();
+                } catch (loadError) {
+                    console.error('Error loading app after login:', loadError);
+                    this.hideLoading();
+                    this.showAuth();
+                    this.showToast('Failed to load app. Please try again.', 'error');
+                }
             } else {
-                sessionStorage.setItem('chorestar_session', sessionStr);
-                localStorage.removeItem('chorestar_session');
+                // ⛔ Error: always inform, never stay loading
+                window.analytics.trackError('login', result.error);
+                this.showToast(result.error || 'Invalid email or password.', 'error');
             }
-            await this.loadApp();
-        } else {
-            window.analytics.trackError('login', result.error);
-            this.showToast(result.error, 'error');
+        } catch (err) {
+            // ⛔ Error: always inform, never stay loading
+            console.error('Login error:', err);
+            const msg = err?.message || 'An error occurred during login. Please try again.';
+            this.showToast(msg, 'error');
+        } finally {
+            // 🧹 Always restore the button no matter what happened
+            this.setButtonLoading(btn, false, 'Sign In');
         }
     }
 
     async handleSignup() {
-        const email = document.getElementById('signup-email').value;
-        const familyName = document.getElementById('signup-family-name').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
+        const btn = document.querySelector('#signup-form button[type="submit"]');
+        const email = document.getElementById('signup-email')?.value?.trim() || '';
+        const familyName = document.getElementById('signup-family-name')?.value?.trim() || '';
+        const password = document.getElementById('signup-password')?.value || '';
+        const confirmPassword = document.getElementById('signup-confirm-password')?.value || '';
 
+        // Basic front-end validation to fail fast
         if (!email || !familyName || !password || !confirmPassword) {
             this.showToast('Please fill in all required fields', 'error');
             return;
@@ -743,43 +774,58 @@ class FamilyChoreChart {
             return;
         }
 
-        // Find and set loading state on signup button
-        const signupButton = document.querySelector('#signup-form button[type="submit"]');
-        this.setButtonLoading(signupButton, true);
+        // Prevent double-clicks
+        if (btn?.classList.contains('loading')) return;
 
-        const result = await this.apiClient.signUp(email, password, familyName);
-        this.setButtonLoading(signupButton, false);
+        this.setButtonLoading(btn, true);
+        try {
+            const result = await this.apiClient.signUp(email, password, familyName);
 
-        if (result.success) {
-            window.analytics.trackRegistration(email, familyName);
-            this.showToast('Account created! Please check your email to verify your account.', 'success');
-            this.switchAuthForm('login');
-        } else {
-            window.analytics.trackError('signup', result.error);
-            this.showToast(result.error, 'error');
+            if (result.success) {
+                window.analytics.trackRegistration(email, familyName);
+                this.showToast('Account created! Please check your email to verify your account.', 'success');
+                this.switchAuthForm('login');
+            } else {
+                window.analytics.trackError('signup', result.error);
+                this.showToast(result.error, 'error');
+            }
+        } catch (err) {
+            console.error('Signup error:', err);
+            const msg = err?.message || 'An error occurred during signup. Please try again.';
+            this.showToast(msg, 'error');
+        } finally {
+            this.setButtonLoading(btn, false, 'Create Account');
         }
     }
 
     async handleForgotPassword() {
-        const email = document.getElementById('forgot-email').value;
+        const btn = document.querySelector('#forgot-form button[type="submit"]');
+        const email = document.getElementById('forgot-email')?.value?.trim() || '';
 
         if (!email) {
             this.showToast('Please enter your email', 'error');
             return;
         }
 
-        // Find and set loading state on forgot password button
-        const forgotButton = document.querySelector('#forgot-form button[type="submit"]');
-        this.setButtonLoading(forgotButton, true);
+        // Prevent double-clicks
+        if (btn?.classList.contains('loading')) return;
 
-        const result = await this.apiClient.resetPassword(email);
-        this.setButtonLoading(forgotButton, false);
+        this.setButtonLoading(btn, true);
+        try {
+            const result = await this.apiClient.resetPassword(email);
 
-        if (result.success) {
-            this.showToast('Password reset email sent!', 'success');
-            this.switchAuthForm('login');
-        } else {
-            this.showToast(result.error, 'error');
+            if (result.success) {
+                this.showToast('Password reset email sent!', 'success');
+                this.switchAuthForm('login');
+            } else {
+                this.showToast(result.error, 'error');
+            }
+        } catch (err) {
+            console.error('Forgot password error:', err);
+            const msg = err?.message || 'An error occurred. Please try again.';
+            this.showToast(msg, 'error');
+        } finally {
+            this.setButtonLoading(btn, false, 'Send Reset Link');
         }
     }
 
@@ -852,18 +898,32 @@ class FamilyChoreChart {
             contactBtn.hasListener = true;
         }
 
-        // Add More Chores button (delegated event handling for dynamically created buttons)
+        // Delegated click handler for any element that declares a target modal
+        // Works for dynamically generated buttons/links anywhere on the page
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('add-chore-grid-btn')) {
+            const openModalTrigger = e.target.closest('[data-open-modal]');
+            if (openModalTrigger) {
+                const targetModal = openModalTrigger.getAttribute('data-open-modal');
+                if (targetModal) {
+                    e.preventDefault();
+                    this.showModal(targetModal);
+                    return;
+                }
+            }
+
+            // Backward-compatible: Add Chore buttons without data-open-modal
+            const addChoreBtn = e.target.closest('.add-chore-grid-btn, .add-chore-empty-btn');
+            if (addChoreBtn) {
                 e.preventDefault();
                 this.showModal('add-chore-modal');
+                return;
             }
-            
+
             // AI Suggestions button
-            if (e.target.classList.contains('ai-suggestions-btn') || e.target.closest('.ai-suggestions-btn')) {
+            const aiSuggestionsBtn = e.target.closest('.ai-suggestions-btn');
+            if (aiSuggestionsBtn) {
                 e.preventDefault();
-                const button = e.target.classList.contains('ai-suggestions-btn') ? e.target : e.target.closest('.ai-suggestions-btn');
-                const childId = button.getAttribute('data-child-id');
+                const childId = aiSuggestionsBtn.getAttribute('data-child-id');
                 if (childId) {
                     this.showAISuggestionsModal(childId);
                 }
@@ -877,6 +937,27 @@ class FamilyChoreChart {
                 this.showSettingsModal();
             });
             settingsBtn.hasListener = true;
+        }
+
+        // What's New button (desktop)
+        const whatsNewBtn = document.getElementById('whats-new-btn');
+        if (whatsNewBtn && !whatsNewBtn.hasListener) {
+            whatsNewBtn.addEventListener('click', () => {
+                this.showModal('new-features-modal');
+                this.markNewFeaturesAsSeen();
+            });
+            whatsNewBtn.hasListener = true;
+        }
+
+        // What's New button (mobile)
+        const mobileWhatsNewBtn = document.getElementById('mobile-whats-new-btn');
+        if (mobileWhatsNewBtn && !mobileWhatsNewBtn.hasListener) {
+            mobileWhatsNewBtn.addEventListener('click', () => {
+                this.showModal('new-features-modal');
+                this.markNewFeaturesAsSeen();
+                this.closeMobileMenu();
+            });
+            mobileWhatsNewBtn.hasListener = true;
         }
 
         // Logout button
@@ -1025,9 +1106,26 @@ class FamilyChoreChart {
         });
 
         // Add child form
-        document.getElementById('add-child-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleAddChild();
+        const addChildForm = document.getElementById('add-child-form');
+        if (addChildForm) {
+            addChildForm.addEventListener('submit', async (e) => {
+                console.log('Add child form submitted!');
+                e.preventDefault();
+                await this.handleAddChild();
+            });
+        } else {
+            console.error('Add child form not found!');
+        }
+
+        // Use event delegation for submit button since it might not exist yet
+        document.addEventListener('click', async (e) => {
+            // Check for both the form attribute and text content
+            if (e.target && (e.target.matches('button[form="add-child-form"]') || 
+                           (e.target.textContent.includes('Add Child') && e.target.type === 'submit'))) {
+                console.log('Add child submit button clicked!', e.target);
+                e.preventDefault();
+                await this.handleAddChild();
+            }
         });
 
         // Add child color picker
@@ -1339,13 +1437,6 @@ class FamilyChoreChart {
     }
 
     selectIcon(iconUrl, iconType) {
-        // Update visual selection
-        document.querySelectorAll('.icon-option').forEach(option => {
-            option.classList.remove('selected');
-        });
-        
-        event.target.closest('.icon-option').classList.add('selected');
-        
         // Store the selection
         this.currentSelectedIcon = iconUrl;
         
@@ -1954,10 +2045,19 @@ class FamilyChoreChart {
             document.getElementById('edit-chore-form').reset();
             delete document.getElementById('edit-chore-form').dataset.choreId;
             delete document.getElementById('edit-chore-form').dataset.returnChildId;
+        } else if (modalId === 'new-features-modal') {
+            // Mark features as seen when modal is closed
+            this.markNewFeaturesAsSeen();
         }
     }
 
     async handleAddChild() {
+        console.log('handleAddChild called');
+        
+        // Check if modal is visible
+        const modal = document.getElementById('add-child-modal');
+        console.log('Modal visibility:', modal ? modal.classList.contains('hidden') : 'modal not found');
+        
         // Prevent duplicate submissions immediately
         if (this.isAddingChild) {
             console.log('Preventing duplicate child submission - already in progress');
@@ -1965,10 +2065,21 @@ class FamilyChoreChart {
         }
         this.isAddingChild = true;
 
+        const addChildButton = document.querySelector('button[form="add-child-form"]');
+        console.log('Add child button found:', addChildButton);
+
         try {
-            const name = document.getElementById('child-name').value;
-            const age = parseInt(document.getElementById('child-age').value);
-            const color = document.getElementById('child-color').value;
+            const nameInput = document.getElementById('child-name');
+            const ageInput = document.getElementById('child-age');
+            const colorInput = document.getElementById('child-color');
+            
+            console.log('Form inputs found:', { nameInput, ageInput, colorInput });
+            
+            const name = nameInput ? nameInput.value : '';
+            const age = ageInput ? parseInt(ageInput.value) : 0;
+            const color = colorInput ? colorInput.value : '';
+            
+            console.log('Form values:', { name, age, color });
             let avatarUrl = '';
             let avatarFile = '';
             const avatarPreview = document.getElementById('add-child-avatar-preview-circle');
@@ -1982,35 +2093,52 @@ class FamilyChoreChart {
 
             if (!name || !age) {
                 this.showToast('Please fill in all fields', 'error');
+                this.isAddingChild = false;
                 return;
             }
+
+            // Set loading state on add child button
+            this.setButtonLoading(addChildButton, true);
 
             // Check subscription limits
             const limits = await this.apiClient.checkSubscriptionLimits();
             if (!limits.canAddChildren) {
+                this.setButtonLoading(addChildButton, false);
+                this.isAddingChild = false;
                 this.showUpgradeModal();
                 return;
             }
 
-            // Find and set loading state on add child button
-            const addChildButton = document.querySelector('#add-child-form button[type="submit"]');
-            this.setButtonLoading(addChildButton, true);
-
             // Pass avatar info to createChild
+            console.log('Creating child with:', { name, age, color, avatarUrl, avatarFile });
             const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
+            console.log('Create child result:', result);
             
             this.setButtonLoading(addChildButton, false);
             
             if (result.success) {
+                console.log('Child created successfully, loading children...');
                 window.analytics.trackAddChild(name, age);
+                
+                // Load and render children BEFORE closing modal
+                await this.loadChildren();
+                console.log('Children loaded:', this.children);
+                
+                this.renderChildren();
+                console.log('Children rendered');
+                
+                // Now close modal and show success
                 this.hideModal('add-child-modal');
                 this.showToast(`Added ${name} to your family!`, 'success');
-                await this.loadChildren();
-                this.renderChildren();
             } else {
+                console.error('Failed to create child:', result.error);
                 window.analytics.trackError('add_child', result.error);
                 this.showToast(result.error, 'error');
             }
+        } catch (error) {
+            console.error('Error adding child:', error);
+            this.showToast('Failed to add child. Please try again.', 'error');
+            this.setButtonLoading(addChildButton, false);
         } finally {
             this.isAddingChild = false;
         }
@@ -2405,47 +2533,103 @@ class FamilyChoreChart {
         // Apply background gradient to header
         const appHeader = document.querySelector('.app-header');
         if (appHeader) {
-            appHeader.style.background = theme.decorations.background;
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            if (!isDarkMode) {
+                // Apply the gradient in light mode
+                appHeader.style.background = theme.decorations.background;
+            } else {
+                // In dark mode, let CSS handle the background (clear inline style)
+                appHeader.style.background = '';
+            }
         }
         
-        // Apply accent color
+        // IMPORTANT: Clear any inline background styles on body and app-container
+        // This ensures CSS rules with !important take precedence
+        document.body.style.removeProperty('background');
+        document.body.style.removeProperty('background-color');
+        
+        const appContainer = document.querySelector('.app-container');
+        if (appContainer) {
+            appContainer.style.removeProperty('background');
+            appContainer.style.removeProperty('background-color');
+        }
+        
+        // Apply accent color CSS variable
         document.documentElement.style.setProperty('--seasonal-accent', theme.decorations.accentColor);
         
-        // Add seasonal class to body
+        // Add seasonal class to body (this is what triggers the CSS backgrounds)
         document.body.classList.add(theme.decorations.bodyClass);
         
         // Add seasonal activity suggestions button
         this.addSeasonalActivitySuggestions(theme);
     }
 
+    hasActiveSeasonalTheme() {
+        // Check if any seasonal theme class is active on the body
+        const seasonalClasses = ['seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
+            'seasonal-summer', 'seasonal-spring', 'seasonal-fall', 'seasonal-winter', 
+            'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving', 'seasonal-backtoschool', 'seasonal-newyear'];
+        
+        return seasonalClasses.some(className => document.body.classList.contains(className));
+    }
+
     disableSeasonalTheme() {
         // Remove all seasonal classes
-        document.body.classList.remove('seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
+        document.body.classList.remove(
+            'seasonal-christmas', 'seasonal-halloween', 'seasonal-easter', 
             'seasonal-summer', 'seasonal-spring', 'seasonal-fall', 'seasonal-winter', 
-            'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving');
+            'seasonal-valentines', 'seasonal-stpatricks', 'seasonal-thanksgiving', 
+            'seasonal-backtoschool', 'seasonal-newyear', 'seasonal-mothersday'
+        );
         
-        // Reset header
+        // Reset header text
         const header = document.querySelector('.app-header h1');
         if (header) {
             header.textContent = '🏠 ChoreStar';
         }
         
-        // Reset header background
+        // Clear header background (let default CSS handle it)
         const appHeader = document.querySelector('.app-header');
         if (appHeader) {
             appHeader.style.background = '';
         }
         
-        // Remove seasonal button
-        const seasonalBtn = document.querySelector('.seasonal-suggestions-btn');
+        // Clear any seasonal inline styles
+        document.body.style.removeProperty('background');
+        document.body.style.removeProperty('background-color');
+        
+        const appContainer = document.querySelector('.app-container');
+        if (appContainer) {
+            appContainer.style.removeProperty('background');
+            appContainer.style.removeProperty('background-color');
+        }
+        
+        // Clear seasonal accent color
+        document.documentElement.style.removeProperty('--seasonal-accent');
+        
+        // Remove seasonal activity button if it exists
+        const seasonalBtn = document.querySelector('.seasonal-activities-btn');
         if (seasonalBtn) {
             seasonalBtn.remove();
+        }
+        
+        // Clear stored seasonal theme
+        localStorage.removeItem('current-seasonal-theme');
+        
+        // Reapply base theme (light or dark) to restore proper backgrounds
+        const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+        if (isDarkMode) {
+            document.body.style.backgroundColor = '#0f0f23';
+            document.body.style.color = '#ffffff';
+        } else {
+            document.body.style.backgroundColor = '#ffffff';
+            document.body.style.color = '#111827';
         }
         
         // Update display
         this.updateCurrentThemeDisplay();
         
-        // Theme disabled - no need for toast notification
+        this.showToast('Seasonal theme disabled', 'info');
     }
 
     async loadChildrenList() {
@@ -3915,7 +4099,7 @@ class FamilyChoreChart {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
                     <p>No chores yet! Add some chores to get started.</p>
-                    <button class="btn btn-primary add-chore-empty-btn">
+                    <button class="btn btn-primary add-chore-empty-btn" data-open-modal="add-chore-modal">
                         <span>📝</span> Add Chore
                     </button>
                 </div>
@@ -3926,7 +4110,7 @@ class FamilyChoreChart {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
                     <p>No chores in this category yet.</p>
-                    <button class="btn btn-primary add-chore-empty-btn">
+                    <button class="btn btn-primary add-chore-empty-btn" data-open-modal="add-chore-modal">
                         <span>📝</span> Add Chore
                     </button>
                 </div>
@@ -3984,6 +4168,34 @@ class FamilyChoreChart {
                 `;
             }
             html += '</tr>';
+            
+            // Add mobile days container
+            html += `
+                <tr class="mobile-days-row">
+                    <td colspan="8" style="width: 100%; padding: 0;">
+                        <div class="chore-days-container">
+            `;
+            for (let day = 0; day < 7; day++) {
+                const isCompleted = choreCompletions.some(comp => comp.day_of_week === day);
+                const cellClass = isCompleted ? 'completed' : 'empty';
+                const cellContent = isCompleted ? '✓' : '';
+                const dayName = days[day];
+                html += `
+                    <div class="chore-day-mobile">
+                        <div class="chore-day-label">${dayName}</div>
+                        <div class="chore-cell ${cellClass}" 
+                             data-chore-id="${chore.id}" 
+                             data-day="${day}">
+                            ${cellContent}
+                        </div>
+                    </div>
+                `;
+            }
+            html += `
+                        </div>
+                    </td>
+                </tr>
+            `;
         });
         html += `
                 </tbody>
@@ -3992,7 +4204,7 @@ class FamilyChoreChart {
         // Add "Add Chore" button below the table
         html += `
             <div style="text-align: center; margin-top: var(--space-4);">
-                <button class="btn btn-secondary add-chore-grid-btn">
+                <button class="btn btn-secondary add-chore-grid-btn" data-open-modal="add-chore-modal">
                     <span>📝</span> Add More Chores
                 </button>
             </div>
@@ -4283,7 +4495,7 @@ class FamilyChoreChart {
                 endDate: '12-31',
                 decorations: {
                     header: 'Christmas',
-                    background: '#dc2626',
+                    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
                     accentColor: '#dc2626',
                     bodyClass: 'seasonal-christmas'
                 },
@@ -4303,7 +4515,7 @@ class FamilyChoreChart {
                 endDate: '11-30',
                 decorations: {
                     header: 'Thanksgiving',
-                    background: '#d97706',
+                    background: 'linear-gradient(135deg, #ea580c, #fb923c)',
                     accentColor: '#d97706',
                     bodyClass: 'seasonal-thanksgiving'
                 },
@@ -4322,8 +4534,8 @@ class FamilyChoreChart {
                 endDate: '10-31',
                 decorations: {
                     header: 'Halloween',
-                    background: '#d97706',
-                    accentColor: '#d97706',
+                    background: 'linear-gradient(135deg, #ea580c, #f97316)',
+                    accentColor: '#ea580c',
                     bodyClass: 'seasonal-halloween'
                 },
                 seasonalActivities: [
@@ -4342,7 +4554,7 @@ class FamilyChoreChart {
                 endDate: '04-30',
                 decorations: {
                     header: 'Easter',
-                    background: '#ec4899',
+                    background: 'linear-gradient(135deg, #ec4899, #f472b6)',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-easter'
                 },
@@ -4362,7 +4574,7 @@ class FamilyChoreChart {
                 endDate: '02-14',
                 decorations: {
                     header: 'Valentines',
-                    background: '#ec4899',
+                    background: 'linear-gradient(135deg, #ec4899, #f472b6)',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-valentines'
                 },
@@ -4381,7 +4593,7 @@ class FamilyChoreChart {
                 endDate: '03-17',
                 decorations: {
                     header: 'St. Patricks',
-                    background: '#059669',
+                    background: 'linear-gradient(135deg, #059669, #10b981)',
                     accentColor: '#059669',
                     bodyClass: 'seasonal-stpatricks'
                 },
@@ -4399,7 +4611,7 @@ class FamilyChoreChart {
                 endDate: '08-31',
                 decorations: {
                     header: 'Summer',
-                    background: '#f59e0b',
+                    background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
                     accentColor: '#f59e0b',
                     bodyClass: 'seasonal-summer'
                 },
@@ -4419,7 +4631,7 @@ class FamilyChoreChart {
                 endDate: '06-20',
                 decorations: {
                     header: 'Spring',
-                    background: '#22c55e',
+                    background: 'linear-gradient(135deg, #22c55e, #4ade80)',
                     accentColor: '#22c55e',
                     bodyClass: 'seasonal-spring'
                 },
@@ -4438,7 +4650,7 @@ class FamilyChoreChart {
                 endDate: '12-20',
                 decorations: {
                     header: 'Fall',
-                    background: '#ea580c',
+                    background: 'linear-gradient(135deg, #ea580c, #fb923c)',
                     accentColor: '#ea580c',
                     bodyClass: 'seasonal-fall'
                 },
@@ -4457,7 +4669,7 @@ class FamilyChoreChart {
                 endDate: '03-19',
                 decorations: {
                     header: 'Winter',
-                    background: '#3b82f6',
+                    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
                     accentColor: '#3b82f6',
                     bodyClass: 'seasonal-winter'
                 },
@@ -4476,7 +4688,7 @@ class FamilyChoreChart {
                 endDate: '09-15',
                 decorations: {
                     header: 'Back to School',
-                    background: '#2563eb',
+                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                     accentColor: '#2563eb',
                     bodyClass: 'seasonal-backtoschool'
                 },
@@ -4496,7 +4708,7 @@ class FamilyChoreChart {
                 endDate: '01-07',
                 decorations: {
                     header: 'New Year',
-                    background: '#8b5cf6',
+                    background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
                     accentColor: '#8b5cf6',
                     bodyClass: 'seasonal-newyear'
                 },
@@ -4515,7 +4727,7 @@ class FamilyChoreChart {
                 endDate: '05-14',
                 decorations: {
                     header: 'Mother\'s Day',
-                    background: '#ec4899',
+                    background: 'linear-gradient(135deg, #ec4899, #f472b6)',
                     accentColor: '#ec4899',
                     bodyClass: 'seasonal-mothersday'
                 },
@@ -4602,10 +4814,16 @@ class FamilyChoreChart {
             header.textContent = theme.decorations.header;
         }
         
-        // Apply background gradient to header
+        // Apply background gradient to header (only in light mode)
         const appHeader = document.querySelector('.app-header');
         if (appHeader) {
-            appHeader.style.background = theme.decorations.background;
+            const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+            if (!isDarkMode) {
+                appHeader.style.background = theme.decorations.background;
+            } else {
+                // In dark mode, let CSS handle the background
+                appHeader.style.background = '';
+            }
         }
         
         // Apply accent color to various elements
@@ -7189,26 +7407,71 @@ class FamilyChoreChart {
         // Add new theme class
         root.classList.add(`${theme}-theme`);
         
-        // Set data attribute for CSS selectors
+        // Set data attribute for CSS selectors on html and body for compatibility
         root.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
         
         // Apply CSS custom properties for immediate effect
         if (theme === 'dark') {
-            root.style.setProperty('--bg-primary', '#1a1a1a');
-            root.style.setProperty('--bg-secondary', '#2d2d2d');
+            // Core theme variables
+            root.style.setProperty('--bg-primary', '#0f0f23');
+            root.style.setProperty('--bg-secondary', '#1a1a2e');
             root.style.setProperty('--text-primary', '#ffffff');
-            root.style.setProperty('--text-secondary', '#cccccc');
-            root.style.setProperty('--border-color', '#444444');
-            root.style.setProperty('--card-bg', '#2d2d2d');
-            root.style.setProperty('--modal-bg', '#2d2d2d');
+            root.style.setProperty('--text-secondary', '#b8b8d1');
+            root.style.setProperty('--border-color', '#2d2d44');
+            root.style.setProperty('--card-bg', '#1e1e3a');
+            root.style.setProperty('--modal-bg', '#1e1e3a');
+            
+            // Extended dark mode variables
+            root.style.setProperty('--header-bg', '#16162a');
+            root.style.setProperty('--tab-bg', '#2a2a4a');
+            root.style.setProperty('--tab-active-bg', '#4a4a8a');
+            root.style.setProperty('--button-bg', '#2d2d4d');
+            root.style.setProperty('--button-hover', '#3d3d6d');
+            root.style.setProperty('--button-text', '#ffffff');
+            root.style.setProperty('--progress-bg', '#2a2a4a');
+            root.style.setProperty('--progress-fill', '#4a8a4a');
+            root.style.setProperty('--table-header', '#2a2a4a');
+            root.style.setProperty('--table-row', '#1e1e3a');
+            root.style.setProperty('--table-row-hover', '#2a2a4a');
+            root.style.setProperty('--checkbox-bg', '#2d2d4d');
+            root.style.setProperty('--checkbox-checked', '#4a8a4a');
+            
+            // Enhanced shadows for dark mode
+            root.style.setProperty('--shadow-sm', '0 1px 2px 0 rgba(0, 0, 0, 0.3)');
+            root.style.setProperty('--shadow-md', '0 4px 6px -1px rgba(0, 0, 0, 0.4)');
+            root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgba(0, 0, 0, 0.5)');
+            root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgba(0, 0, 0, 0.6)');
         } else {
+            // Light mode variables
             root.style.setProperty('--bg-primary', '#ffffff');
-            root.style.setProperty('--bg-secondary', '#f8fafc');
-            root.style.setProperty('--text-primary', '#1f2937');
+            root.style.setProperty('--bg-secondary', '#f9fafb');
+            root.style.setProperty('--text-primary', '#111827');
             root.style.setProperty('--text-secondary', '#6b7280');
             root.style.setProperty('--border-color', '#e5e7eb');
-            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.95)');
             root.style.setProperty('--modal-bg', '#ffffff');
+            
+            // Reset extended variables to defaults
+            root.style.setProperty('--header-bg', '');
+            root.style.setProperty('--tab-bg', '');
+            root.style.setProperty('--tab-active-bg', '');
+            root.style.setProperty('--button-bg', '');
+            root.style.setProperty('--button-hover', '');
+            root.style.setProperty('--button-text', '');
+            root.style.setProperty('--progress-bg', '');
+            root.style.setProperty('--progress-fill', '');
+            root.style.setProperty('--table-header', '');
+            root.style.setProperty('--table-row', '');
+            root.style.setProperty('--table-row-hover', '');
+            root.style.setProperty('--checkbox-bg', '');
+            root.style.setProperty('--checkbox-checked', '');
+            
+            // Reset shadows to light mode
+            root.style.setProperty('--shadow-sm', '0 1px 2px 0 rgb(0 0 0 / 0.05)');
+            root.style.setProperty('--shadow-md', '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)');
+            root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)');
+            root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)');
         }
         
         console.log('Theme applied:', {
@@ -7547,29 +7810,90 @@ class FamilyChoreChart {
         // Force remove and re-add classes
         root.classList.remove('light-theme', 'dark-theme');
         root.setAttribute('data-theme', this.settings.theme);
+        document.body.setAttribute('data-theme', this.settings.theme);
         root.classList.add(`${this.settings.theme}-theme`);
         
         // Force apply CSS variables
         if (this.settings.theme === 'dark') {
-            root.style.setProperty('--bg-primary', '#1a1a1a');
-            root.style.setProperty('--bg-secondary', '#2d2d2d');
+            // Core theme variables
+            root.style.setProperty('--bg-primary', '#0f0f23');
+            root.style.setProperty('--bg-secondary', '#1a1a2e');
             root.style.setProperty('--text-primary', '#ffffff');
-            root.style.setProperty('--text-secondary', '#cccccc');
-            root.style.setProperty('--border-color', '#444444');
-            root.style.setProperty('--card-bg', '#2d2d2d');
-            root.style.setProperty('--modal-bg', '#2d2d2d');
-            document.body.style.backgroundColor = '#1a1a1a';
+            root.style.setProperty('--text-secondary', '#b8b8d1');
+            root.style.setProperty('--border-color', '#2d2d44');
+            root.style.setProperty('--card-bg', '#1e1e3a');
+            root.style.setProperty('--modal-bg', '#1e1e3a');
+            
+            // Extended dark mode variables
+            root.style.setProperty('--header-bg', '#16162a');
+            root.style.setProperty('--tab-bg', '#2a2a4a');
+            root.style.setProperty('--tab-active-bg', '#4a4a8a');
+            root.style.setProperty('--button-bg', '#2d2d4d');
+            root.style.setProperty('--button-hover', '#3d3d6d');
+            root.style.setProperty('--button-text', '#ffffff');
+            root.style.setProperty('--progress-bg', '#2a2a4a');
+            root.style.setProperty('--progress-fill', '#4a8a4a');
+            root.style.setProperty('--table-header', '#2a2a4a');
+            root.style.setProperty('--table-row', '#1e1e3a');
+            root.style.setProperty('--table-row-hover', '#2a2a4a');
+            root.style.setProperty('--checkbox-bg', '#2d2d4d');
+            root.style.setProperty('--checkbox-checked', '#4a8a4a');
+            
+            // Enhanced shadows for dark mode
+            root.style.setProperty('--shadow-sm', '0 1px 2px 0 rgba(0, 0, 0, 0.3)');
+            root.style.setProperty('--shadow-md', '0 4px 6px -1px rgba(0, 0, 0, 0.4)');
+            root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgba(0, 0, 0, 0.5)');
+            root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgba(0, 0, 0, 0.6)');
+            
+            // Don't override body background if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                document.body.style.backgroundColor = '#0f0f23';
+            }
             document.body.style.color = '#ffffff';
         } else {
+            // Light mode variables
             root.style.setProperty('--bg-primary', '#ffffff');
-            root.style.setProperty('--bg-secondary', '#f8fafc');
-            root.style.setProperty('--text-primary', '#1f2937');
+            root.style.setProperty('--bg-secondary', '#f9fafb');
+            root.style.setProperty('--text-primary', '#111827');
             root.style.setProperty('--text-secondary', '#6b7280');
             root.style.setProperty('--border-color', '#e5e7eb');
-            root.style.setProperty('--card-bg', '#ffffff');
+            root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.95)');
             root.style.setProperty('--modal-bg', '#ffffff');
-            document.body.style.backgroundColor = '#ffffff';
-            document.body.style.color = '#1f2937';
+            
+            // Reset extended variables to defaults
+            root.style.setProperty('--header-bg', '');
+            root.style.setProperty('--tab-bg', '');
+            root.style.setProperty('--tab-active-bg', '');
+            root.style.setProperty('--button-bg', '');
+            root.style.setProperty('--button-hover', '');
+            root.style.setProperty('--button-text', '');
+            root.style.setProperty('--progress-bg', '');
+            root.style.setProperty('--progress-fill', '');
+            root.style.setProperty('--table-header', '');
+            root.style.setProperty('--table-row', '');
+            root.style.setProperty('--table-row-hover', '');
+            root.style.setProperty('--checkbox-bg', '');
+            root.style.setProperty('--checkbox-checked', '');
+            
+            // Reset shadows to light mode
+            root.style.setProperty('--shadow-sm', '0 1px 2px 0 rgb(0 0 0 / 0.05)');
+            root.style.setProperty('--shadow-md', '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)');
+            root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)');
+            root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)');
+            
+            // Don't override body background if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                document.body.style.backgroundColor = '#ffffff';
+            }
+            document.body.style.color = '#111827';
+        }
+        
+        // If a seasonal theme is active, reapply it to respect dark mode
+        if (this.hasActiveSeasonalTheme()) {
+            const currentThemeKey = localStorage.getItem('current-seasonal-theme');
+            if (currentThemeKey && this.seasonalThemes[currentThemeKey]) {
+                this.applySpecificTheme(this.seasonalThemes[currentThemeKey]);
+            }
         }
         
         console.log('Theme force applied');
@@ -9306,18 +9630,37 @@ class FamilyChoreChart {
             const lastSeenVersion = localStorage.getItem('chorestar_last_seen_version');
             const currentVersion = '2025.1.0'; // Current version with new features
             
-            // If user hasn't seen this version yet, show new features modal
+            // If user hasn't seen this version yet, show notification badge
             if (!lastSeenVersion || lastSeenVersion !== currentVersion) {
-                // Wait a bit for the app to fully load
-                setTimeout(() => {
-                    this.showModal('new-features-modal');
-                    // Mark this version as seen
-                    localStorage.setItem('chorestar_last_seen_version', currentVersion);
-                }, 2000);
+                // Show the notification badges
+                this.showNewFeaturesBadge();
+            } else {
+                // Hide the notification badges if already seen
+                this.hideNewFeaturesBadge();
             }
         } catch (error) {
             console.error('Error checking new features:', error);
         }
+    }
+
+    showNewFeaturesBadge() {
+        const desktopBadge = document.getElementById('whats-new-badge');
+        const mobileBadge = document.getElementById('mobile-whats-new-badge');
+        if (desktopBadge) desktopBadge.style.display = 'block';
+        if (mobileBadge) mobileBadge.style.display = 'block';
+    }
+
+    hideNewFeaturesBadge() {
+        const desktopBadge = document.getElementById('whats-new-badge');
+        const mobileBadge = document.getElementById('mobile-whats-new-badge');
+        if (desktopBadge) desktopBadge.style.display = 'none';
+        if (mobileBadge) mobileBadge.style.display = 'none';
+    }
+
+    markNewFeaturesAsSeen() {
+        const currentVersion = '2025.1.0';
+        localStorage.setItem('chorestar_last_seen_version', currentVersion);
+        this.hideNewFeaturesBadge();
     }
 
     // Method to manually show new features (for testing or user request)
@@ -10200,9 +10543,42 @@ class FamilyChoreChart {
 let app;
 let isInitializing = false;
 
+// Force reset any stuck loading buttons immediately
+function forceResetStuckButtons() {
+    const stuckButtons = document.querySelectorAll('button[data-original-content], .btn[data-original-content]');
+    stuckButtons.forEach(button => {
+        console.log('Force resetting stuck button:', button);
+        // Clear all loading state data
+        delete button.dataset.originalContent;
+        delete button.dataset.originalDisabled;
+        button.disabled = false;
+        button.classList.remove('loading');
+        
+        // Reset button content based on form type
+        if (button.type === 'submit') {
+            if (button.closest('#login-form')) {
+                button.innerHTML = 'Sign In';
+            } else if (button.closest('#signup-form')) {
+                button.innerHTML = 'Create Account';
+            } else if (button.closest('#forgot-form')) {
+                button.innerHTML = 'Send Reset Link';
+            }
+        }
+    });
+    
+    if (stuckButtons.length > 0) {
+        console.log(`Force reset ${stuckButtons.length} stuck buttons`);
+    }
+}
+
+// Run immediate reset as soon as possible
+forceResetStuckButtons();
+
 // Only run main app initialization if not on settings.html
 if (!window.location.pathname.endsWith('settings.html')) {
     document.addEventListener('DOMContentLoaded', async () => {
+        // Reset stuck buttons again after DOM is ready
+        forceResetStuckButtons();
         // Ensure API client is loaded before initializing app
         const initApp = () => {
             if (isInitializing) {

@@ -1,18 +1,24 @@
 // Contact form email API endpoint
-let nodemailer;
-let sendgrid;
+let supabase;
+let Resend;
 
-// Initialize email services only if available
+// Initialize Resend for email sending
 try {
-    nodemailer = require('nodemailer');
+    const resendModule = require('resend');
+    Resend = resendModule.Resend;
 } catch (error) {
-    console.warn('Nodemailer not available:', error.message);
+    console.warn('Resend not available:', error.message);
 }
 
 try {
-    sendgrid = require('@sendgrid/mail');
+    const { createClient } = require('@supabase/supabase-js');
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseKey) {
+        supabase = createClient(supabaseUrl, supabaseKey);
+    }
 } catch (error) {
-    console.warn('SendGrid not available:', error.message);
+    console.warn('Supabase initialization error:', error.message);
 }
 
 export default async function handler(req, res) {
@@ -26,6 +32,30 @@ export default async function handler(req, res) {
     // Validate required fields
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // STEP 1: Save to Supabase first (this always works)
+    let supabaseSuccess = false;
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from('contact_submissions')
+          .insert([{
+            name,
+            email,
+            subject,
+            message,
+            status: 'new'
+          }]);
+        
+        if (error) {
+          console.error('Supabase insert error:', error);
+        } else {
+          supabaseSuccess = true;
+        }
+      } catch (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+      }
     }
 
     // Create email content
@@ -128,144 +158,56 @@ This message was sent from your ChoreStar contact form.
 </html>
     `;
 
-    // Check if SendGrid is available (preferred method)
-    if (sendgrid && process.env.SENDGRID_API_KEY) {
-      try {
-        console.log('Using SendGrid to send email...');
-        sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-        
-        const adminEmail = process.env.ADMIN_EMAIL || 'support@chorestar.app';
-        
-        const msg = {
-          to: adminEmail,
-          from: 'noreply@chorestar.app', // This should be your verified sender
-          subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
-          text: emailContent,
-          html: htmlEmailContent,
-        };
-        
-        const result = await sendgrid.send(msg);
-        console.log('SendGrid email sent successfully:', result[0].statusCode);
-        
-        return res.status(200).json({ 
-          success: true, 
-          message: 'Email notification sent successfully via SendGrid',
-          messageId: result[0].headers['x-message-id'] || 'sendgrid-message-id',
-          service: 'sendgrid'
-        });
-        
-      } catch (sendgridError) {
-        console.error('SendGrid error:', sendgridError);
-        // Fall back to nodemailer if SendGrid fails
-      }
-    }
-
-    // Check if nodemailer is available as fallback
-    if (!nodemailer) {
-      console.log('Email notification would be sent to admin:');
-      console.log(emailContent);
-      
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Email notification logged (no email service available)',
-        debug: {
-          sendgridAvailable: !!sendgrid,
-          nodemailerAvailable: false,
-          message: 'Dependencies not loaded'
-        }
-      });
-    }
-
-    // Check if email credentials are configured for nodemailer fallback
-    const emailService = process.env.EMAIL_SERVICE;
-    const emailUser = process.env.EMAIL_USER;
-    const emailPass = process.env.EMAIL_PASS;
-    const adminEmail = process.env.ADMIN_EMAIL || 'support@chorestar.app';
-
-    console.log('Email configuration check:');
-    console.log('- EMAIL_SERVICE:', emailService ? 'SET' : 'NOT SET');
-    console.log('- EMAIL_USER:', emailUser ? 'SET' : 'NOT SET');
-    console.log('- EMAIL_PASS:', emailPass ? 'SET' : 'NOT SET');
-    console.log('- ADMIN_EMAIL:', adminEmail);
-
-    if (!emailService || !emailUser || !emailPass) {
-      // Log the email content for now
-      console.log('Email notification would be sent to', adminEmail + ':');
-      console.log(emailContent);
-      
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Email notification logged (configure email credentials to send actual emails)',
-        debug: {
-          emailService: emailService ? 'SET' : 'NOT SET',
-          emailUser: emailUser ? 'SET' : 'NOT SET',
-          emailPass: emailPass ? 'SET' : 'NOT SET',
-          adminEmail
-        }
-      });
-    }
-
-    // Create transporter based on email service (fallback)
-    let transporter;
+    // STEP 2: Try to send email via Resend (optional - won't fail if it doesn't work)
+    let emailSent = false;
+    let emailError = null;
     
-    try {
-      if (emailService === 'gmail') {
-        console.log('Creating Gmail transporter...');
-        console.log('Using email user:', emailUser);
-        console.log('Email pass configured:', emailPass ? 'YES' : 'NO');
-        transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: emailUser,
-            pass: emailPass
-          }
+    const adminEmail = process.env.ADMIN_EMAIL || 'hi@chorestar.app';
+    
+    // Use Resend (easiest modern email service)
+    if (Resend && process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        
+        const result = await resend.emails.send({
+          from: 'ChoreStar <noreply@chorestar.app>',
+          to: adminEmail,
+          reply_to: email,
+          subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
+          html: htmlEmailContent
         });
-      } else {
-        // Fallback to Zoho Mail if configured
-        console.log('Creating Zoho transporter...');
-        transporter = nodemailer.createTransport({
-          host: process.env.ZOHO_HOST || 'smtp.zoho.com',
-          port: process.env.ZOHO_PORT || 587,
-          secure: false,
-          auth: {
-            user: process.env.ZOHO_USER || emailUser,
-            pass: process.env.ZOHO_PASS || emailPass
-          }
-        });
+        
+        emailSent = true;
+        
+      } catch (emailErr) {
+        console.error('Email sending error:', emailErr.message);
+        emailError = emailErr.message;
+        // Continue anyway - we saved to Supabase
       }
-
-      console.log('Sending email to:', adminEmail);
-      
-      // Send the email
-      const result = await transporter.sendMail({
-        from: emailUser,
-        to: adminEmail,
-        subject: `📧 ChoreStar Contact: ${subject} - From ${name}`,
-        text: emailContent,
-        html: htmlEmailContent
-      });
-
-      console.log('Email sent successfully:', result.messageId);
-
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Email notification sent successfully via nodemailer',
-        messageId: result.messageId,
-        service: 'nodemailer'
-      });
-
-    } catch (transporterError) {
-      console.error('Transporter creation or email sending error:', transporterError);
-      return res.status(500).json({ 
-        error: 'Failed to send email notification',
-        details: transporterError.message,
-        fallback: 'Email content logged to console'
-      });
+    } else {
+      emailError = !Resend ? 'Resend module not loaded' : 'RESEND_API_KEY not configured';
     }
+
+    // FINAL RESPONSE: Success if Supabase worked, email is optional
+    const response = {
+      success: supabaseSuccess,
+      savedToDatabase: supabaseSuccess,
+      emailSent: emailSent,
+      message: supabaseSuccess 
+        ? 'Contact form submitted successfully! We\'ll review it in Supabase.' 
+        : 'Contact form received but could not save to database.',
+      details: {
+        supabase: supabaseSuccess ? '✅ Saved' : '❌ Failed',
+        email: emailSent ? '✅ Sent' : emailError ? `❌ ${emailError}` : '⚠️ Not configured'
+      }
+    };
+
+    return res.status(supabaseSuccess ? 200 : 500).json(response);
 
   } catch (error) {
-    console.error('Contact form processing error:', error);
+    console.error('❌ Contact form processing error:', error);
     return res.status(500).json({ 
+      success: false,
       error: 'Failed to process contact form',
       details: error.message
     });

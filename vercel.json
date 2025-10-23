@@ -25,7 +25,10 @@
     },
     {
       "src": "/api/stripe-webhook",
-      "dest": "/frontend/api/stripe-webhook.js"
+      "dest": "/frontend/api/stripe-webhook.js",
+      "config": {
+        "bodyParser": false
+      }
     },
     {
       "src": "/api/test-webhook",

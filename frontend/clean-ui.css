@@ -52,20 +52,16 @@
     border-color: var(--border-hover);
 }
 
-/* Cleaner form labels */
+/* Cleaner form labels - enhanced styles for existing .form-group label */
 .form-group label {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-    display: block;
-    font-size: 0.9rem;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
 }
 
-/* Cleaner buttons */
+/* Cleaner buttons - enhanced styles for existing .btn class */
 .btn {
-    font-weight: 500;
-    transition: all 0.2s ease;
-    border-radius: 6px;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
 }
 
 .btn-primary {
@@ -199,6 +195,8 @@ small {
     width: 20px;
     height: 20px;
     animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 @keyframes spin {
