@@ -14623,6 +14623,57 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     text-decoration: underline;
 }
 
+/* Subscription Management Styles */
+.premium-subscription-section {
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.subscription-info {
+    margin-bottom: var(--space-4);
+}
+
+.subscription-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.status-badge {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.premium {
+    background: var(--success-100);
+    color: var(--success-700);
+    border: 1px solid var(--success-200);
+}
+
+.subscription-details {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.subscription-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.subscription-actions .btn {
+    flex: 1;
+    min-width: 140px;
+}
+
 .footer-separator {
     color: var(--text-secondary);
     opacity: 0.5;

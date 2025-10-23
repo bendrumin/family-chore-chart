@@ -20,20 +20,12 @@
       "dest": "/frontend/api/send-contact-email.js"
     },
     {
-      "src": "/api/create-checkout-session",
-      "dest": "/frontend/api/create-checkout-session.js"
-    },
-    {
       "src": "/api/create-paddle-checkout",
       "dest": "/frontend/api/create-paddle-checkout.js"
     },
     {
       "src": "/api/paddle-webhook",
       "dest": "/frontend/api/paddle-webhook.js"
-    },
-    {
-      "src": "/api/stripe-webhook",
-      "dest": "/frontend/api/stripe-webhook-stream.js"
     },
     {
       "src": "/api/test-webhook",

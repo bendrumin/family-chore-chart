@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pricing - Family Chore Chart</title>
+    <title>Pricing - ChoreStar</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>Family Chore Chart Pricing</h1>
+            <h1>ChoreStar Pricing</h1>
             <p>Choose the perfect plan for your family</p>
         </header>
 
@@ -45,7 +45,7 @@
                     <li>✅ Priority support</li>
                     <li>✅ Advanced analytics</li>
                 </ul>
-                <button class="btn btn-primary" onclick="upgradeToPremium()">Upgrade Now</button>
+                <button class="btn btn-primary" onclick="upgradeToPremium()" data-price-id="pro_01k88sgf2e0gd4maaxq3asx6zy">Upgrade Now</button>
             </div>
 
             <div class="pricing-card annual">
@@ -60,7 +60,7 @@
                     <li>✅ Priority feature requests</li>
                     <li>✅ Family sharing</li>
                 </ul>
-                <button class="btn btn-primary" onclick="upgradeToAnnual()">Choose Annual</button>
+                <button class="btn btn-primary" onclick="upgradeToAnnual()" data-price-id="pro_01k88smgyx84j22jzdycren1yq">Choose Annual</button>
             </div>
         </main>
 
@@ -90,14 +90,68 @@
     </div>
 
     <script>
+        // Paddle Payment Integration
+        class PaddlePayment {
+            constructor() {
+                this.apiUrl = '/api/create-paddle-checkout';
+            }
+
+            async createCheckout(priceId, customerId, email) {
+                try {
+                    const response = await fetch(this.apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            priceId,
+                            customerId,
+                            email
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('❌ Paddle checkout creation failed:', error);
+                    throw error;
+                }
+            }
+
+            async startCheckout(priceId, customerId, email) {
+                try {
+                    const checkout = await this.createCheckout(priceId, customerId, email);
+                    
+                    // Redirect to Paddle checkout
+                    window.location.href = checkout.checkoutUrl;
+                    
+                } catch (error) {
+                    console.error('❌ Failed to start Paddle checkout:', error);
+                    alert('Payment system is currently unavailable. Please try again later or contact support.');
+                }
+            }
+        }
+
+        const paddlePayment = new PaddlePayment();
+
         function upgradeToPremium() {
-            // This will be replaced with Paddle integration
-            alert('Premium upgrade coming soon with Paddle integration!');
+            const priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy'; // Monthly plan
+            const customerId = 'user_' + Date.now(); // You can get this from your user system
+            const email = 'user@example.com'; // You can get this from your user system
+            
+            paddlePayment.startCheckout(priceId, customerId, email);
         }
 
         function upgradeToAnnual() {
-            // This will be replaced with Paddle integration
-            alert('Annual plan coming soon with Paddle integration!');
+            const priceId = 'pro_01k88smgyx84j22jzdycren1yq'; // Annual plan
+            const customerId = 'user_' + Date.now(); // You can get this from your user system
+            const email = 'user@example.com'; // You can get this from your user system
+            
+            paddlePayment.startCheckout(priceId, customerId, email);
         }
     </script>
 </body>
