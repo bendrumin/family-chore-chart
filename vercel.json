@@ -10,6 +10,11 @@
       "use": "@vercel/static"
     }
   ],
+  "functions": {
+    "frontend/api/stripe-webhook.js": {
+      "bodyParser": false
+    }
+  },
   "routes": [
     {
       "src": "/api/health",
@@ -25,10 +30,7 @@
     },
     {
       "src": "/api/stripe-webhook",
-      "dest": "/frontend/api/stripe-webhook.js",
-      "config": {
-        "bodyParser": false
-      }
+      "dest": "/frontend/api/stripe-webhook.js"
     },
     {
       "src": "/api/test-webhook",
