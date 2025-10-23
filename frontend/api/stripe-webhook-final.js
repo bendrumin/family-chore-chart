@@ -1,5 +1,5 @@
-// Stripe Webhook Handler with Raw Body Handling
-// This version handles the raw body properly for signature verification
+// Final Stripe Webhook Handler - Bypass all Vercel body parsing
+// This version uses a completely different approach to get the raw body
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
@@ -34,49 +34,22 @@ try {
     console.error('❌ Failed to initialize Supabase:', error);
 }
 
-// Get raw body from request - try multiple approaches
-async function getRawBody(req) {
-    return new Promise((resolve, reject) => {
-        const chunks = [];
-        
-        req.on('data', (chunk) => {
-            // Keep chunks as buffers to preserve exact bytes
-            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-        });
-        
-        req.on('end', () => {
-            // Concatenate all chunks to preserve exact raw bytes
-            const rawBody = Buffer.concat(chunks);
-            console.log('🔍 Raw body construction:', {
-                chunksCount: chunks.length,
-                totalLength: rawBody.length,
-                firstChunk: chunks[0] ? chunks[0].length : 0,
-                lastChunk: chunks[chunks.length - 1] ? chunks[chunks.length - 1].length : 0
-            });
-            resolve(rawBody);
-        });
-        
-        req.on('error', (err) => {
-            console.error('❌ Error reading request body:', err);
-            reject(err);
-        });
-    });
-}
-
 export default async function handler(req, res) {
-    console.log('🔍 Raw webhook request received:', {
+    console.log('🔍 Final webhook request received:', {
         method: req.method,
         headers: {
             'stripe-signature': req.headers['stripe-signature'] ? 'present' : 'missing',
             'content-type': req.headers['content-type'],
             'user-agent': req.headers['user-agent']
-        }
+        },
+        hasBody: !!req.body,
+        bodyType: typeof req.body
     });
 
     // Test endpoint
     if (req.method === 'GET') {
         return res.status(200).json({ 
-            message: 'Raw Stripe webhook endpoint is working',
+            message: 'Final Stripe webhook endpoint is working',
             timestamp: new Date().toISOString(),
             environment: {
                 hasStripe: !!stripe,
@@ -115,39 +88,64 @@ export default async function handler(req, res) {
     let event;
 
     try {
-        // Get raw body
-        const rawBody = await getRawBody(req);
-        console.log('📊 Raw body details:', {
+        // Try to get raw body using different methods
+        let rawBody;
+        
+        // Method 1: Check if we have a raw body property
+        if (req.rawBody) {
+            rawBody = req.rawBody;
+            console.log('✅ Using req.rawBody');
+        }
+        // Method 2: Check if body is already a buffer
+        else if (Buffer.isBuffer(req.body)) {
+            rawBody = req.body;
+            console.log('✅ Using req.body as Buffer');
+        }
+        // Method 3: If body is a string, convert to buffer
+        else if (typeof req.body === 'string') {
+            rawBody = Buffer.from(req.body, 'utf8');
+            console.log('✅ Converted req.body string to Buffer');
+        }
+        // Method 4: If body is an object, stringify and convert to buffer
+        else if (req.body && typeof req.body === 'object') {
+            const jsonString = JSON.stringify(req.body);
+            rawBody = Buffer.from(jsonString, 'utf8');
+            console.log('⚠️ Reconstructed from parsed JSON object');
+        }
+        // Method 5: Try to read from the request stream manually
+        else {
+            console.log('⚠️ Attempting manual stream reading');
+            const chunks = [];
+            
+            // Set up manual stream reading
+            req.on('data', (chunk) => {
+                chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            });
+            
+            await new Promise((resolve, reject) => {
+                req.on('end', resolve);
+                req.on('error', reject);
+            });
+            
+            rawBody = Buffer.concat(chunks);
+            console.log('✅ Read from manual stream');
+        }
+
+        console.log('📊 Final raw body details:', {
             type: typeof rawBody,
             isBuffer: Buffer.isBuffer(rawBody),
             length: rawBody.length,
-            firstChars: rawBody.toString('utf8').substring(0, 100)
+            firstChars: rawBody.toString('utf8').substring(0, 50),
+            lastChars: rawBody.toString('utf8').substring(rawBody.length - 50)
         });
 
-        // Additional debugging for signature verification
-        console.log('🔍 Signature verification debug:', {
+        // Additional debugging
+        console.log('🔍 Signature debug:', {
             signature: sig,
-            webhookSecret: webhookSecret ? 'present' : 'missing',
-            webhookSecretLength: webhookSecret ? webhookSecret.length : 0,
-            rawBodyLength: rawBody.length,
-            rawBodyStart: rawBody.toString('utf8').substring(0, 20),
-            rawBodyEnd: rawBody.toString('utf8').substring(rawBody.length - 20)
+            webhookSecretLength: webhookSecret.length,
+            webhookSecretStart: webhookSecret.substring(0, 10),
+            rawBodyLength: rawBody.length
         });
-
-        // Try to verify the signature manually first
-        try {
-            // Test if the signature format is correct
-            const timestamp = sig.split(',')[0].split('=')[1];
-            const signature = sig.split(',')[1].split('=')[1];
-            console.log('🔍 Manual signature debug:', {
-                timestamp,
-                signature,
-                signatureLength: signature.length,
-                timestampLength: timestamp.length
-            });
-        } catch (manualErr) {
-            console.log('⚠️ Manual signature parsing failed:', manualErr.message);
-        }
 
         // Verify webhook signature
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
