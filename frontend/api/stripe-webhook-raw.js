@@ -106,8 +106,33 @@ export default async function handler(req, res) {
             type: typeof rawBody,
             isBuffer: Buffer.isBuffer(rawBody),
             length: rawBody.length,
-            firstChars: rawBody.toString('utf8').substring(0, 50)
+            firstChars: rawBody.toString('utf8').substring(0, 100)
         });
+
+        // Additional debugging for signature verification
+        console.log('🔍 Signature verification debug:', {
+            signature: sig,
+            webhookSecret: webhookSecret ? 'present' : 'missing',
+            webhookSecretLength: webhookSecret ? webhookSecret.length : 0,
+            rawBodyLength: rawBody.length,
+            rawBodyStart: rawBody.toString('utf8').substring(0, 20),
+            rawBodyEnd: rawBody.toString('utf8').substring(rawBody.length - 20)
+        });
+
+        // Try to verify the signature manually first
+        try {
+            // Test if the signature format is correct
+            const timestamp = sig.split(',')[0].split('=')[1];
+            const signature = sig.split(',')[1].split('=')[1];
+            console.log('🔍 Manual signature debug:', {
+                timestamp,
+                signature,
+                signatureLength: signature.length,
+                timestampLength: timestamp.length
+            });
+        } catch (manualErr) {
+            console.log('⚠️ Manual signature parsing failed:', manualErr.message);
+        }
 
         // Verify webhook signature
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
