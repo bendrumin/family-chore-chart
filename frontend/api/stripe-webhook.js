@@ -98,21 +98,44 @@ export default async function handler(req, res) {
         // Get raw body for signature verification
         let rawBody;
         
+        console.log('🔍 Body parsing debug:', {
+            hasRawBody: !!req.rawBody,
+            hasBody: !!req.body,
+            bodyType: typeof req.body,
+            bodyIsBuffer: Buffer.isBuffer(req.body),
+            bodyIsString: typeof req.body === 'string',
+            bodyLength: req.body ? req.body.length : 0
+        });
+        
         if (req.rawBody) {
             // Vercel provides rawBody when bodyParser is disabled
             rawBody = req.rawBody;
-            console.log('Using req.rawBody for signature verification');
+            console.log('✅ Using req.rawBody for signature verification');
+        } else if (Buffer.isBuffer(req.body)) {
+            // Body is already a Buffer
+            rawBody = req.body;
+            console.log('✅ Using req.body as Buffer for signature verification');
+        } else if (typeof req.body === 'string') {
+            // Body is a string, convert to Buffer
+            rawBody = Buffer.from(req.body, 'utf8');
+            console.log('✅ Converted req.body string to Buffer for signature verification');
         } else {
-            // Read raw body from request stream
+            // Fallback: try to read from request stream
+            console.log('⚠️ Attempting to read raw body from request stream');
             const chunks = [];
             for await (const chunk of req) {
                 chunks.push(chunk);
             }
             rawBody = Buffer.concat(chunks);
-            console.log('Read raw body from request stream');
+            console.log('✅ Read raw body from request stream');
         }
         
-        console.log('Raw body type:', typeof rawBody, 'Length:', rawBody.length);
+        console.log('📊 Raw body details:', {
+            type: typeof rawBody,
+            isBuffer: Buffer.isBuffer(rawBody),
+            length: rawBody.length,
+            firstChars: rawBody.toString('utf8').substring(0, 50)
+        });
         
         // Verify webhook signature
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
