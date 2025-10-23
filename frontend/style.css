@@ -14612,6 +14612,17 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     color: var(--primary);
 }
 
+.footer-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
 .footer-separator {
     color: var(--text-secondary);
     opacity: 0.5;

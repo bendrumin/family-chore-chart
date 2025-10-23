@@ -9,6 +9,8 @@
     "node": "22.x"
   },
   "dependencies": {
+    "@paddle/paddle-js": "^1.4.2",
+    "@paddle/paddle-node-sdk": "^3.3.0",
     "@supabase/supabase-js": "^2.57.4",
     "dotenv": "^17.2.2",
     "nodemailer": "^7.0.5",
