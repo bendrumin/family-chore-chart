@@ -1,6 +1,9 @@
 // Stripe Webhook Handler for Subscription Events
 // This endpoint handles Stripe webhooks to automatically upgrade/downgrade users
 
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
 // Vercel webhook configuration
 export const config = {
     api: {
@@ -9,40 +12,33 @@ export const config = {
 };
 
 let stripe;
+let supabase;
 
 // Initialize Stripe only if the secret key is available
 try {
     if (process.env.STRIPE_SECRET_KEY) {
-        const Stripe = require('stripe');
         stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        console.log('✅ Stripe initialized successfully');
     } else {
-        console.warn('STRIPE_SECRET_KEY environment variable not set');
+        console.warn('❌ STRIPE_SECRET_KEY environment variable not set');
     }
 } catch (error) {
-    console.error('Failed to initialize Stripe:', error);
+    console.error('❌ Failed to initialize Stripe:', error);
 }
 
 // Initialize Supabase client
-let supabase;
 try {
-    const { createClient } = require('@supabase/supabase-js');
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
     
     if (supabaseUrl && supabaseServiceKey) {
         supabase = createClient(supabaseUrl, supabaseServiceKey);
+        console.log('✅ Supabase initialized successfully');
     } else {
-        console.warn('Supabase credentials not configured');
+        console.warn('❌ Supabase credentials not configured');
     }
 } catch (error) {
-    console.error('Failed to initialize Supabase:', error);
-}
-
-// Disable Vercel's body parser for this endpoint
-export const config = {
-    api: {
-        bodyParser: false,
-    },
+    console.error('❌ Failed to initialize Supabase:', error);
 }
 
 export default async function handler(req, res) {
