@@ -596,7 +596,9 @@ class FamilyChoreChart {
             }
             btn.disabled = true;
             btn.classList.add('loading');
-            btn.innerHTML = '<span class="loading-spinner" aria-hidden="true"></span> Signing in...';
+            // Use fallbackLabel to determine loading text, or default to "Signing in..."
+            const loadingText = fallbackLabel !== 'Sign In' ? `Loading...` : 'Signing in...';
+            btn.innerHTML = `<span class="loading-spinner" aria-hidden="true"></span> ${loadingText}`;
         } else {
             // Restore original state on ANY exit path
             if (btn.dataset.originalContent) {
@@ -604,7 +606,10 @@ class FamilyChoreChart {
                 delete btn.dataset.originalContent;
             } else {
                 // Fallback if original not captured for some reason
-                btn.innerHTML = fallbackLabel;
+                // Use fallbackLabel, but try to preserve button structure if it had emojis/icons
+                const originalBtn = btn.cloneNode(false);
+                originalBtn.innerHTML = fallbackLabel;
+                btn.innerHTML = originalBtn.innerHTML;
             }
             btn.disabled = !!btn.dataset.originalDisabled;
             delete btn.dataset.originalDisabled;
@@ -1076,21 +1081,53 @@ class FamilyChoreChart {
                 if (modal) {
                     this.hideModal(modal.id);
                 }
+                return;
             }
             
             // Close modal with Cancel button (look for data-modal attribute OR closest modal)
-            if (e.target.classList.contains('btn-outline') || e.target.textContent.trim().toLowerCase() === 'cancel') {
-                const modal = e.target.closest('.modal');
-                if (modal) {
-                    this.hideModal(modal.id);
+            // Only close if it's actually a cancel button with data-modal attribute or explicitly marked as cancel
+            const cancelBtn = e.target.closest('[data-modal]');
+            if (cancelBtn && (cancelBtn.classList.contains('btn-outline') || cancelBtn.textContent.trim().toLowerCase() === 'cancel')) {
+                const modalId = cancelBtn.getAttribute('data-modal');
+                if (modalId) {
+                    this.hideModal(modalId);
+                } else {
+                    // Fallback: find closest modal
+                    const modal = e.target.closest('.modal');
+                    if (modal && modal.id !== 'icon-picker-modal') {
+                        // Don't close parent modal if icon picker is open
+                        const iconPickerModal = document.getElementById('icon-picker-modal');
+                        if (!iconPickerModal || iconPickerModal.classList.contains('hidden')) {
+                            this.hideModal(modal.id);
+                        }
+                    }
                 }
+                return;
             }
             
             // Close modal when clicking outside (on backdrop)
             if (e.target.classList.contains('modal')) {
                 // Only close if clicking directly on the modal backdrop, not on content
+                // IMPORTANT: Never close parent modals if icon picker is open
                 if (e.target === e.currentTarget) {
-                    this.hideModal(e.target.id);
+                    const modalId = e.target.id;
+                    const iconPickerModal = document.getElementById('icon-picker-modal');
+                    
+                    // If clicking on icon picker backdrop, just close icon picker
+                    if (modalId === 'icon-picker-modal') {
+                        this.hideModal('icon-picker-modal');
+                        return;
+                    }
+                    
+                    // If icon picker is open and visible, don't close any other modals
+                    // (user might be clicking on parent modal backdrop accidentally)
+                    if (iconPickerModal && !iconPickerModal.classList.contains('hidden')) {
+                        // Don't close the parent modal if icon picker is open
+                        return;
+                    }
+                    
+                    // Only close if icon picker is not open
+                    this.hideModal(modalId);
                 }
             }
         });
@@ -1111,6 +1148,14 @@ class FamilyChoreChart {
             addChildForm.addEventListener('submit', async (e) => {
                 console.log('Add child form submitted!');
                 e.preventDefault();
+                
+                // Check if form is valid before proceeding
+                if (!addChildForm.checkValidity()) {
+                    // Let browser show native validation messages
+                    addChildForm.reportValidity();
+                    return;
+                }
+                
                 await this.handleAddChild();
             });
         } else {
@@ -1119,12 +1164,32 @@ class FamilyChoreChart {
 
         // Use event delegation for submit button since it might not exist yet
         document.addEventListener('click', async (e) => {
-            // Check for both the form attribute and text content
-            if (e.target && (e.target.matches('button[form="add-child-form"]') || 
-                           (e.target.textContent.includes('Add Child') && e.target.type === 'submit'))) {
+            // Check for the submit button - be more specific to avoid false triggers
+            const isAddChildButton = e.target && (
+                e.target.matches('button[form="add-child-form"]') ||
+                (e.target.type === 'submit' && 
+                 e.target.closest('form')?.id === 'add-child-form' &&
+                 e.target.textContent.trim().includes('Add Child'))
+            );
+            
+            if (isAddChildButton) {
                 console.log('Add child submit button clicked!', e.target);
-                e.preventDefault();
-                await this.handleAddChild();
+                
+                // Get the form to check validity
+                const form = document.getElementById('add-child-form');
+                if (form) {
+                    // Check form validity before preventing default
+                    if (!form.checkValidity()) {
+                        // Let browser show native validation messages
+                        form.reportValidity();
+                        return;
+                    }
+                    
+                    // Form is valid, prevent default and handle submission
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await this.handleAddChild();
+                }
             }
         });
 
@@ -1195,6 +1260,8 @@ class FamilyChoreChart {
                 
                 if (iconPicker.id === 'edit-chore-icon-picker') {
                     hiddenInput = document.getElementById('edit-chore-icon');
+                } else if (iconPicker.id === 'bulk-edit-icon-picker') {
+                    hiddenInput = document.getElementById('bulk-edit-icon');
                 } else if (iconPicker.id.includes('chore-icon-picker')) {
                     // For add chore modal - extract the number from the ID
                     const match = iconPicker.id.match(/chore-icon-picker-(\d+)/);
@@ -1206,8 +1273,8 @@ class FamilyChoreChart {
                 
                 // Update hidden input if found
                 if (hiddenInput) {
-                    hiddenInput.value = e.target.dataset.icon;
-                    console.log('Set icon value:', e.target.dataset.icon, 'to input:', hiddenInput.id);
+                    hiddenInput.value = e.target.dataset.icon || '';
+                    console.log('Set icon value:', e.target.dataset.icon || '(empty)', 'to input:', hiddenInput.id);
                 } else {
                     console.warn('Could not find hidden input for icon picker:', iconPicker.id);
                 }
@@ -1216,9 +1283,15 @@ class FamilyChoreChart {
 
         // Remove chore buttons (delegated event handling)
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-chore')) {
+            // Handle clicks on the button or its children (like spans)
+            const removeButton = e.target.closest('.remove-chore');
+            if (removeButton) {
                 e.preventDefault();
-                this.removeChoreEntry(e.target.closest('.chore-entry'));
+                e.stopPropagation();
+                const choreEntry = removeButton.closest('.chore-entry');
+                if (choreEntry) {
+                    this.removeChoreEntry(choreEntry);
+                }
             }
         });
 
@@ -1315,9 +1388,10 @@ class FamilyChoreChart {
     }
 
     closeIconPicker() {
-        this.hideModal('icon-picker-modal');
+        // Simply hide the icon picker - hideModal will check for other open modals
         this.iconPickerCallback = null;
         this.currentSelectedIcon = '';
+        this.hideModal('icon-picker-modal');
     }
 
     populateRobotIcons() {
@@ -1340,7 +1414,10 @@ class FamilyChoreChart {
             const iconOption = document.createElement('button');
             iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
             iconOption.type = 'button';
-            iconOption.onclick = () => this.selectIcon(url, 'robot');
+            iconOption.onclick = (e) => {
+                e.stopPropagation();
+                this.selectIcon(url, 'robot');
+            };
             
             iconOption.innerHTML = `
                 <img src="${url}" alt="Robot ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1371,7 +1448,10 @@ class FamilyChoreChart {
             const iconOption = document.createElement('button');
             iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
             iconOption.type = 'button';
-            iconOption.onclick = () => this.selectIcon(url, 'adventurer');
+            iconOption.onclick = (e) => {
+                e.stopPropagation();
+                this.selectIcon(url, 'adventurer');
+            };
             
             iconOption.innerHTML = `
                 <img src="${url}" alt="Adventurer ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1404,7 +1484,10 @@ class FamilyChoreChart {
             const iconOption = document.createElement('button');
             iconOption.className = `icon-option ${isSelected ? 'selected' : ''}`;
             iconOption.type = 'button';
-            iconOption.onclick = () => this.selectIcon(url, 'emoji');
+            iconOption.onclick = (e) => {
+                e.stopPropagation();
+                this.selectIcon(url, 'emoji');
+            };
             
             iconOption.innerHTML = `
                 <img src="${url}" alt="Fun Emoji ${seed}" loading="lazy" onload="this.nextElementSibling.style.display='none';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1445,7 +1528,8 @@ class FamilyChoreChart {
             this.iconPickerCallback(iconUrl, iconType);
         }
         
-        // Close the picker
+        // Close the icon picker - hideModal will preserve parent modals
+        // since showModal() now keeps parent modals open when icon picker opens
         this.closeIconPicker();
     }
 
@@ -1499,6 +1583,19 @@ class FamilyChoreChart {
         if (avatarUrl && !mainCircle.querySelector('img')) {
             mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         }
+    }
+
+    // DiceBear picker methods (legacy support - now handled by openIconPicker)
+    renderAddDicebearPicker(name) {
+        // This is now handled by openIconPicker in the add child modal
+        // Keeping for backward compatibility
+        console.log('renderAddDicebearPicker called (legacy, use openIconPicker instead)');
+    }
+
+    renderEditDicebearPicker(name) {
+        // This is now handled by openIconPicker in the edit child modal
+        // Keeping for backward compatibility
+        console.log('renderEditDicebearPicker called (legacy, use openIconPicker instead)');
     }
 
     setupAddChildModal() {
@@ -1932,13 +2029,30 @@ class FamilyChoreChart {
         // Prevent body scroll when modal is open
         document.body.classList.add('modal-open');
         
-        // Close all other modals first
-        const allModals = document.querySelectorAll('.modal');
-        allModals.forEach(m => {
-            if (m.id !== modalId) {
-                m.classList.add('hidden');
-            }
-        });
+        // SPECIAL CASE: Icon picker modal can be opened alongside parent modals
+        // Don't close parent modals when opening icon picker
+        const isIconPicker = modalId === 'icon-picker-modal';
+        
+        if (isIconPicker) {
+            // Only close other modals that are NOT parent modals
+            const parentModals = ['add-child-modal', 'edit-child-modal', 'add-chore-modal', 'edit-chore-modal'];
+            const allModals = document.querySelectorAll('.modal');
+            allModals.forEach(m => {
+                if (m.id !== modalId && !parentModals.includes(m.id)) {
+                    m.classList.add('hidden');
+                }
+                // Keep parent modals open - they're behind the icon picker
+            });
+        } else {
+            // Normal modal behavior: close all other modals
+            const allModals = document.querySelectorAll('.modal');
+            allModals.forEach(m => {
+                if (m.id !== modalId) {
+                    m.classList.add('hidden');
+                }
+            });
+        }
+        
         modal.classList.remove('hidden');
         
         // Populate child select for chore form and check premium features
@@ -1963,8 +2077,13 @@ class FamilyChoreChart {
             modal.classList.add('hidden');
         }
         
-        // Re-enable body scroll when modal is closed
-        document.body.classList.remove('modal-open');
+        // Only remove modal-open class if no other modals are open
+        // Check if any other modal is still visible (not hidden)
+        const otherModals = document.querySelectorAll('.modal:not(.hidden)');
+        if (otherModals.length === 0) {
+            // Re-enable body scroll when all modals are closed
+            document.body.classList.remove('modal-open');
+        }
         
         // Reset forms
         if (modalId === 'add-child-modal') {
@@ -2091,8 +2210,15 @@ class FamilyChoreChart {
                 }
             }
 
-            if (!name || !age) {
-                this.showToast('Please fill in all fields', 'error');
+            // Double-check validation (form validation should have caught this, but safety check)
+            if (!name || !age || !name.trim()) {
+                // Only show toast if form validation didn't catch it
+                const form = document.getElementById('add-child-form');
+                if (form && !form.checkValidity()) {
+                    form.reportValidity();
+                } else {
+                    this.showToast('Please fill in all fields', 'error');
+                }
                 this.isAddingChild = false;
                 return;
             }
@@ -2145,6 +2271,15 @@ class FamilyChoreChart {
     }
 
     async handleAddChore() {
+        // Check authentication first
+        const user = await this.apiClient.getCurrentUser();
+        if (!user) {
+            this.showToast('Please sign in to add activities', 'error');
+            // Show auth screen
+            this.showAuth();
+            return;
+        }
+        
         const childId = document.getElementById('chore-child').value;
         
         if (!childId) {
@@ -2155,18 +2290,15 @@ class FamilyChoreChart {
         // Track active child before creating chores
         this.activeChildId = childId;
 
-        // Check subscription limits for chores
+        // Check subscription limits for chores - check AFTER getting current chores
         const limits = await this.apiClient.checkSubscriptionLimits();
-        if (!limits.canAddChores) {
-            this.showUpgradeModal();
-            this.showToast(`Free plan limit: ${limits.maxChores} chores. Upgrade for unlimited chores!`, 'warning');
-            return;
-        }
-
-        // Get all chore entries
+        const currentChores = this.chores.length;
+        
+        // Get all chore entries first to count how many we're adding
         const choreEntries = document.querySelectorAll('.chore-entry');
         const choresToAdd = [];
-
+        
+        // First pass: collect all chores to add
         for (let i = 0; i < choreEntries.length; i++) {
             const entry = choreEntries[i];
             const name = entry.querySelector(`#chore-name-${i + 1}`).value;
@@ -2195,9 +2327,18 @@ class FamilyChoreChart {
                 choresToAdd.push({ name, childId, icon, category, notes, color });
             }
         }
-
+        
         if (choresToAdd.length === 0) {
             this.showToast('Please fill in at least one chore', 'error');
+            return;
+        }
+        
+        // Check limits AFTER collecting chores (allows adding multiple at once)
+        // Only check if we'd exceed the limit with this batch
+        const newTotalChores = currentChores + choresToAdd.length;
+        if (!limits.isPremium && newTotalChores > limits.maxChores) {
+            this.showUpgradeModal();
+            this.showToast(`Free plan limit: ${limits.maxChores} chores. You have ${currentChores} and trying to add ${choresToAdd.length}. Upgrade for unlimited!`, 'warning');
             return;
         }
 
@@ -2335,17 +2476,23 @@ class FamilyChoreChart {
     }
 
     switchSettingsTab(tabName) {
-        // Update tab buttons
+        // Update tab buttons - DO NOT manipulate span visibility
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
         
         // Update tab content
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(`${tabName}-tab`).classList.add('active');
+        const activeTab = document.getElementById(`${tabName}-tab`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
         
         // Load specific tab data
         if (tabName === 'appearance') {
@@ -2718,6 +2865,14 @@ class FamilyChoreChart {
                 this.handleBulkEditChores();
             });
         }
+        
+        // Add cancel button handler for bulk edit modal (removed inline onclick)
+        const bulkEditCancelBtn = document.querySelector('#bulk-edit-chores-modal .btn-outline[data-modal]');
+        if (bulkEditCancelBtn) {
+            bulkEditCancelBtn.addEventListener('click', () => {
+                this.hideModal('bulk-edit-chores-modal');
+            });
+        }
     }
 
     switchChildChoreTab(childId) {
@@ -2864,13 +3019,7 @@ class FamilyChoreChart {
                 console.log('Set child field value to:', child.name);
             }
         }
-        // Set color value if premium color picker exists
-        const colorInput = document.getElementById('edit-chore-color');
-        if (colorInput && chore.color) {
-            colorInput.value = chore.color;
-        } else if (colorInput) {
-            colorInput.value = '#ff6b6b';
-        }
+        // Color picker removed from edit chore modal
     }
 
     populateEditChoreChildSelect(selectedChildId) {
@@ -3470,39 +3619,15 @@ class FamilyChoreChart {
 
     // Manage subscription for premium users
     manageSubscription() {
-        // This will redirect to Paddle's customer portal
-        const customerPortalUrl = this.getPaddleCustomerPortalUrl();
-        if (customerPortalUrl) {
-            window.open(customerPortalUrl, '_blank');
-        } else {
-            // Fallback: redirect to pricing page
-            window.open('/pricing.html', '_blank');
-        }
+        // Redirect to PayPal customer portal or pricing page
+        // PayPal subscriptions can be managed through PayPal's website
+        window.open('https://www.paypal.com/myaccount/autopay/', '_blank');
     }
 
     // View billing history
     viewBillingHistory() {
-        // This will redirect to Paddle's billing history
-        const billingUrl = this.getPaddleBillingUrl();
-        if (billingUrl) {
-            window.open(billingUrl, '_blank');
-        } else {
-            // Fallback: show message
-            alert('Billing history will be available once your subscription is active.');
-        }
-    }
-
-    // Get Paddle customer portal URL
-    getPaddleCustomerPortalUrl() {
-        // This will be implemented when we have Paddle integration
-        // For now, redirect to pricing page
-        return '/pricing.html';
-    }
-
-    // Get Paddle billing URL
-    getPaddleBillingUrl() {
-        // This will be implemented when we have Paddle integration
-        return null;
+        // Redirect to PayPal billing history
+        window.open('https://www.paypal.com/myaccount/autopay/', '_blank');
     }
 
     // Update subscription display based on user status
@@ -3538,19 +3663,19 @@ class FamilyChoreChart {
                 this.setButtonLoading(upgradeButton, true);
             }
 
-            // Use Paddle for checkout
-            const priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy'; // Monthly plan
+            // Use PayPal for checkout
+            const planType = 'monthly'; // Monthly plan
             const customerId = this.apiClient?.currentUser?.id || 'user_' + Date.now();
             const email = this.apiClient?.currentUser?.email || 'user@example.com';
             
-            // Create Paddle checkout
-            const response = await fetch('/api/create-paddle-checkout', {
+            // Create PayPal checkout
+            const response = await fetch('/api/create-paypal-checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    priceId,
+                    planType,
                     customerId,
                     email
                 })
@@ -3562,8 +3687,8 @@ class FamilyChoreChart {
 
             const data = await response.json();
             
-            // Redirect to Paddle checkout
-            window.location.href = data.checkoutUrl;
+            // Redirect to PayPal checkout
+            window.location.href = data.approvalUrl;
             
         } catch (error) {
             console.error('Upgrade failed:', error);
@@ -3584,8 +3709,7 @@ class FamilyChoreChart {
         // Show/hide premium features in add chore modal for all entries
         const premiumFeatures = document.querySelectorAll('[id^="premium-chore-features"]');
         const upgradePrompts = document.querySelectorAll('[id^="premium-upgrade-prompt"]');
-        // Also select edit modal premium features
-        const editPremiumFeatures = document.querySelectorAll('.edit-premium-features');
+        // Color picker removed from edit modal - no longer need to handle edit-premium-features
         premiumFeatures.forEach(feature => {
             if (limits.isPremium) {
                 feature.style.display = 'block';
@@ -3593,13 +3717,7 @@ class FamilyChoreChart {
                 feature.style.display = 'none';
             }
         });
-        editPremiumFeatures.forEach(feature => {
-            if (limits.isPremium) {
-                feature.style.display = 'block';
-            } else {
-                feature.style.display = 'none';
-            }
-        });
+        // Removed editPremiumFeatures handling - color picker removed from edit modal
         upgradePrompts.forEach(prompt => {
             if (limits.isPremium) {
                 prompt.style.display = 'none';
@@ -3884,16 +4002,206 @@ class FamilyChoreChart {
         `;
         container.appendChild(newEntry);
         
+        // Show remove buttons on all entries (since we now have more than one)
+        const allEntries = container.querySelectorAll('.chore-entry');
+        allEntries.forEach(entry => {
+            const removeBtn = entry.querySelector('.remove-chore');
+            if (removeBtn) {
+                removeBtn.style.display = '';
+            }
+        });
+        
         // Call color picker setup after adding the entry
         this.setupChoreColorSwatches();
         
-        // Check premium features for the new entry
-        this.checkPremiumFeatures();
+        // Check premium features for the new entry - ensure all fields are visible
+        this.checkPremiumFeatures().then(() => {
+            // Ensure icon picker is set up for the new entry
+            const iconPicker = document.getElementById(`icon-picker-${entryCount}`);
+            if (iconPicker) {
+                iconPicker.querySelectorAll('.icon-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        iconPicker.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const hiddenInput = document.getElementById(`chore-icon-${entryCount}`);
+                        if (hiddenInput) {
+                            hiddenInput.value = e.target.dataset.icon;
+                        }
+                    });
+                });
+            }
+        });
     }
 
     removeChoreEntry(choreEntry) {
-        // This method is not used in the provided edit, but is kept as it was in the original file.
-        // It would typically involve removing a chore entry from the chore list.
+        if (!choreEntry) return;
+        
+        const container = document.getElementById('chores-container');
+        if (!container) return;
+        
+        // Don't allow removing if there's only one entry
+        const allEntries = container.querySelectorAll('.chore-entry');
+        if (allEntries.length <= 1) {
+            this.showToast('You need at least one activity entry', 'warning');
+            return;
+        }
+        
+        // Remove the entry
+        choreEntry.remove();
+        
+        // Renumber all remaining entries
+        const remainingEntries = container.querySelectorAll('.chore-entry');
+        remainingEntries.forEach((entry, index) => {
+            const entryNumber = index + 1;
+            
+            // Update chore number
+            const numberSpan = entry.querySelector('.chore-number');
+            if (numberSpan) {
+                numberSpan.textContent = entryNumber;
+            }
+            
+            // Update all IDs and labels in this entry
+            const nameInput = entry.querySelector(`input[type="text"]`);
+            const categorySelect = entry.querySelector('select.category-selector');
+            const notesInput = entry.querySelector(`textarea[id*="notes"], input[id*="notes"]`);
+            const colorInput = entry.querySelector(`input[type="color"]`);
+            const iconInput = entry.querySelector(`input[id*="icon"]`);
+            const premiumFeatures = entry.querySelector('.premium-features');
+            
+            // Update name input
+            if (nameInput) {
+                const oldId = nameInput.id;
+                const newId = `chore-name-${entryNumber}`;
+                nameInput.id = newId;
+                const label = entry.querySelector(`label[for="${oldId}"]`);
+                if (label) {
+                    label.setAttribute('for', newId);
+                }
+            }
+            
+            // Update category select
+            if (categorySelect) {
+                const oldId = categorySelect.id;
+                const newId = `chore-category-${entryNumber}`;
+                categorySelect.id = newId;
+                categorySelect.className = 'category-selector';
+                const label = entry.querySelector(`label[for="${oldId}"]`);
+                if (label) {
+                    label.setAttribute('for', newId);
+                }
+            }
+            
+            // Update notes input
+            if (notesInput) {
+                const oldId = notesInput.id;
+                const newId = `chore-notes-${entryNumber}`;
+                notesInput.id = newId;
+                const label = entry.querySelector(`label[for="${oldId}"]`);
+                if (label) {
+                    label.setAttribute('for', newId);
+                }
+            }
+            
+            // Update color input
+            if (colorInput) {
+                colorInput.id = `chore-color-${entryNumber}`;
+            }
+            
+            // Update icon input
+            if (iconInput) {
+                iconInput.id = `chore-icon-${entryNumber}`;
+            }
+            
+            // Update premium features container ID
+            if (premiumFeatures) {
+                premiumFeatures.id = `premium-chore-features-${entryNumber}`;
+            }
+            
+            // Update icon picker ID and label
+            const iconPicker = entry.querySelector('.icon-picker');
+            if (iconPicker) {
+                const oldPickerId = iconPicker.id;
+                const newPickerId = `icon-picker-${entryNumber}`;
+                iconPicker.id = newPickerId;
+                
+                // Update label for attribute
+                const iconLabel = entry.querySelector(`label[for="${oldPickerId}"]`);
+                if (iconLabel) {
+                    iconLabel.setAttribute('for', newPickerId);
+                }
+            }
+            
+            // Show remove button for all entries (since we know there's more than one)
+            const removeBtn = entry.querySelector('.remove-chore');
+            if (removeBtn) {
+                removeBtn.style.display = '';
+            }
+        });
+        
+        // Hide remove button on the first entry if it's the only one left
+        if (remainingEntries.length === 1) {
+            const removeBtn = remainingEntries[0].querySelector('.remove-chore');
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
+            }
+        }
+    }
+
+    async deleteChore(choreId) {
+        if (!choreId) {
+            this.showToast('Invalid chore ID', 'error');
+            return;
+        }
+        
+        // Find the chore to show its name in confirmation
+        const chore = this.chores.find(c => c.id === choreId);
+        const choreName = chore ? chore.name : 'this chore';
+        
+        const confirmed = await this.showConfirmation(
+            `Are you sure you want to delete "${choreName}"? This action cannot be undone.`,
+            'Delete Chore',
+            'danger',
+            'Yes, Delete',
+            'Cancel'
+        );
+        
+        if (!confirmed) {
+            return; // User cancelled - just exit cleanly
+        }
+        
+        // Show loading state
+        this.showLoading();
+        
+        try {
+            const result = await this.apiClient.deleteChore(choreId);
+            
+            if (result.success) {
+                // Remove from local arrays
+                this.chores = this.chores.filter(c => c.id !== choreId);
+                this.completions = this.completions.filter(c => c.chore_id !== choreId);
+                
+                // Reload and re-render
+                await this.loadChores();
+                await this.loadCompletions();
+                this.renderChildren();
+                
+                // Update settings if open
+                const settingsModal = document.getElementById('settings-modal');
+                if (settingsModal && !settingsModal.classList.contains('hidden')) {
+                    await this.loadChoresList();
+                    this.generateChildTabs();
+                }
+                
+                this.showToast(`"${choreName}" deleted successfully`, 'success');
+            } else {
+                throw new Error(result.error || 'Failed to delete chore');
+            }
+        } catch (error) {
+            console.error('Error deleting chore:', error);
+            this.showToast('Failed to delete chore: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
     }
 
     async handleEditChore() {
@@ -3903,12 +4211,8 @@ class FamilyChoreChart {
         const notes = document.getElementById('edit-chore-notes').value;
         const icon = document.getElementById('edit-chore-icon').value;
         const category = document.getElementById('edit-chore-category').value;
+        // Color picker removed from edit chore modal - color is always null
         let color = null;
-        const limits = await this.apiClient.checkSubscriptionLimits();
-        if (limits.isPremium) {
-            const colorInput = document.getElementById('edit-chore-color');
-            if (colorInput) color = colorInput.value;
-        }
         if (!name || !rewardCents) {
             this.showToast('Please fill in all required fields', 'error');
             return;
@@ -3922,16 +4226,38 @@ class FamilyChoreChart {
             name,
             reward_cents: rewardCents,
             notes,
-            icon,
-            category,
+            icon: icon || '📝', // Ensure icon is set
+            category: category || 'household_chores', // Ensure category is set
             color
         });
+        
+        // Update local chore data immediately
+        const choreIndex = this.chores.findIndex(c => c.id === choreId);
+        if (choreIndex !== -1) {
+            this.chores[choreIndex] = {
+                ...this.chores[choreIndex],
+                name,
+                reward_cents: rewardCents,
+                notes,
+                icon: icon || '📝',
+                category: category || 'household_chores',
+                color
+            };
+        }
         this.hideLoading();
         if (result.success) {
             this.showToast('Chore updated successfully!', 'success');
             this.hideModal('edit-chore-modal');
+            
+            // Reload chores from API to ensure we have latest data
             await this.loadChoresList();
+            
+            // Update the settings modal tabs
             this.generateChildTabs();
+            
+            // Update the main dashboard view immediately - this refreshes the chore grid
+            this.renderChildren();
+            
             const returnChildId = document.getElementById('edit-chore-form').dataset.returnChildId;
             if (returnChildId) {
                 this.switchSettingsTab('chores');
@@ -3985,9 +4311,13 @@ class FamilyChoreChart {
             // Generate content
             this.generateChildrenContent(uniqueChildren);
             
-            // Set the first child as active if no child is currently active
-            if (!document.querySelector('.child-tab.active')) {
-                this.switchChildTab(uniqueChildren[0].id);
+            // Set the active child - use activeChildId if set, otherwise first child
+            const childToActivate = this.activeChildId && uniqueChildren.find(c => c.id === this.activeChildId)
+                ? this.activeChildId
+                : uniqueChildren[0]?.id;
+            
+            if (childToActivate) {
+                this.switchChildTab(childToActivate);
             }
             
             // Update category filter count
@@ -4325,35 +4655,83 @@ class FamilyChoreChart {
 
 
     async updateFamilyDashboard() {
-        if (this.children.length === 0) return;
+        try {
+            // If we're on the dashboard, we're already authenticated
+            // Don't make any auth checks - just use the existing user state
+            // The dashboard wouldn't be visible if we weren't authenticated
+            const user = this.currentUser || this.apiClient.currentUser;
+            
+            if (!user || !user.id) {
+                // This should never happen if we're viewing the dashboard
+                // But if it does, just log it and try to continue - don't show auth
+                console.warn('No user in memory during refresh - unusual but continuing anyway');
+                // Try to get user, but don't show auth if it fails - might be temporary
+                try {
+                    const checkedUser = await this.apiClient.getCurrentUser();
+                    if (checkedUser && checkedUser.id) {
+                        this.currentUser = checkedUser;
+                        this.apiClient.currentUser = checkedUser;
+                    }
+                } catch (authError) {
+                    console.warn('Auth check failed during refresh, but continuing:', authError);
+                    // Don't show auth - just continue with refresh attempt
+                }
+            } else {
+                // Ensure apiClient has current user set for API calls
+                if (!this.apiClient.currentUser || this.apiClient.currentUser.id !== user.id) {
+                    this.apiClient.currentUser = user;
+                }
+            }
+            
+            // Reload all data - these methods return empty arrays on error, they don't throw
+            await this.loadChildren();
+            await this.loadChores();
+            await this.loadCompletions();
+            
+            if (this.children.length === 0) {
+                this.showToast('No children found. Please add a child first.', 'info');
+                return;
+            }
 
-        // Calculate family-wide metrics
-        const familyMetrics = this.calculateFamilyMetrics();
-        
-        // Update dashboard stats
-        const totalProgressEl = document.getElementById('family-total-progress');
-        const familyLeaderEl = document.getElementById('family-leader');
-        const familyStreakEl = document.getElementById('family-streak');
-        const familyEarningsEl = document.getElementById('family-earnings');
-        
-        if (totalProgressEl) {
-            totalProgressEl.textContent = `${familyMetrics.averageProgress}%`;
+            // Re-render everything
+            this.renderChildren();
+            
+            // Calculate family-wide metrics
+            const familyMetrics = this.calculateFamilyMetrics();
+            
+            // Update dashboard stats
+            const totalProgressEl = document.getElementById('family-total-progress');
+            const familyLeaderEl = document.getElementById('family-leader');
+            const familyStreakEl = document.getElementById('family-streak');
+            const familyEarningsEl = document.getElementById('family-earnings');
+            
+            if (totalProgressEl) {
+                totalProgressEl.textContent = `${familyMetrics.averageProgress}%`;
+            }
+            
+            if (familyLeaderEl) {
+                familyLeaderEl.textContent = familyMetrics.topPerformer || '-';
+            }
+            
+            if (familyStreakEl) {
+                familyStreakEl.textContent = familyMetrics.familyStreak;
+            }
+            
+            if (familyEarningsEl) {
+                familyEarningsEl.textContent = this.formatCents(familyMetrics.totalEarnings);
+            }
+            
+            // Update achievements
+            await this.updateFamilyAchievements();
+            
+            this.showToast('Dashboard refreshed!', 'success');
+        } catch (error) {
+            console.error('Error refreshing dashboard:', error);
+            
+            // NEVER show auth screen from refresh - user is already on dashboard
+            // Just show error toast and continue
+            this.showToast('Failed to refresh dashboard. Please try again.', 'error');
         }
-        
-        if (familyLeaderEl) {
-            familyLeaderEl.textContent = familyMetrics.topPerformer || '-';
-        }
-        
-        if (familyStreakEl) {
-            familyStreakEl.textContent = familyMetrics.familyStreak;
-        }
-        
-        if (familyEarningsEl) {
-            familyEarningsEl.textContent = this.formatCents(familyMetrics.totalEarnings);
-        }
-        
-        // Update achievements
-        await this.updateFamilyAchievements();
     }
 
     calculateFamilyMetrics() {
@@ -5829,11 +6207,21 @@ class FamilyChoreChart {
     addDashboardHandlers() {
         const refreshBtn = document.getElementById('refresh-dashboard');
         if (refreshBtn) {
+            // Ensure we preserve the original button content (including emoji)
+            const originalContent = refreshBtn.innerHTML;
+            
             refreshBtn.addEventListener('click', async () => {
-                this.setButtonLoading(refreshBtn, true);
-                await this.updateFamilyDashboard();
-                this.setButtonLoading(refreshBtn, false);
-                // "Dashboard refreshed!" toast removed - redundant
+                try {
+                    // Use explicit fallback that matches the button's actual content
+                    this.setButtonLoading(refreshBtn, true, originalContent || '<span aria-hidden="true">🔄</span> Refresh');
+                    await this.updateFamilyDashboard();
+                } catch (error) {
+                    console.error('Error in refresh button handler:', error);
+                    // Error handling is done in updateFamilyDashboard
+                } finally {
+                    // Use the original content as fallback
+                    this.setButtonLoading(refreshBtn, false, originalContent || '<span aria-hidden="true">🔄</span> Refresh');
+                }
             });
         }
 
@@ -6999,18 +7387,17 @@ class FamilyChoreChart {
         
         childChores.forEach(chore => {
             html += `
-                <div class="bulk-edit-chore-item" data-chore-id="${chore.id}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: var(--space-2); background: white; cursor: pointer;">
+                <div class="bulk-edit-chore-item" data-chore-id="${chore.id}">
                     <input type="checkbox" id="bulk-chore-${chore.id}" value="${chore.id}" checked onclick="event.stopPropagation();">
-                    <div class="chore-item-content" style="flex: 1; display: flex; align-items: center; gap: var(--space-2);">
-                        <span style="font-size: 1.2em;">${chore.icon || '📝'}</span>
-                        <strong>${chore.name}</strong>
-                        <span style="color: var(--gray-600); font-size: var(--font-size-sm); margin-left: var(--space-2);">
-                            ${chore.reward_cents}¢ • ${chore.category || 'General'}
-                        </span>
+                    <div class="chore-item-content">
+                        <span class="chore-icon">${chore.icon || '📝'}</span>
+                        <div class="chore-info">
+                            <strong>${chore.name}</strong>
+                            <span class="chore-meta">
+                                ${chore.reward_cents}¢ • ${chore.category || 'General'}
+                            </span>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline edit-single-chore" data-chore-id="${chore.id}" style="margin-left: auto;">
-                        <span>✏️</span> Edit
-                    </button>
                 </div>
             `;
         });
@@ -7032,274 +7419,135 @@ class FamilyChoreChart {
         // Store child ID for the form submission
         document.getElementById('bulk-edit-form').dataset.childId = childId;
         
-        // Add click handlers for individual chore editing
+        // Ensure edit section starts hidden and selection starts visible
+        const fieldsSection = document.getElementById('bulk-edit-fields-section');
+        const selectionSection = document.querySelector('.bulk-edit-selection');
+        
+        if (fieldsSection) {
+            fieldsSection.classList.add('hidden');
+            fieldsSection.style.display = 'none'; // Force hide with inline style
+        }
+        if (selectionSection) {
+            selectionSection.classList.remove('hidden');
+            selectionSection.style.display = 'block'; // Force show with inline style
+        }
+        
+        // Reset to selection view (double-check state)
+        this.showBulkEditSelection();
+        
+        // Add click handlers
         this.addBulkEditChoreHandlers();
+        this.addBulkEditSelectionHandlers();
         
         // Show the modal
         this.showModal('bulk-edit-chores-modal');
     }
+    
+    showBulkEditSelection() {
+        // Show selection section, hide edit section
+        const selectionSection = document.querySelector('.bulk-edit-selection');
+        const fieldsSection = document.getElementById('bulk-edit-fields-section');
+        if (selectionSection) {
+            selectionSection.classList.remove('hidden');
+            selectionSection.style.display = 'block'; // Explicitly set display
+        }
+        if (fieldsSection) {
+            fieldsSection.classList.add('hidden');
+            fieldsSection.style.display = 'none'; // Explicitly set display
+        }
+        
+        // Update button state based on selection count
+        this.updateBulkEditButton();
+    }
+    
+    showBulkEditFields() {
+        // Hide selection section, show edit section
+        const selectionSection = document.querySelector('.bulk-edit-selection');
+        const fieldsSection = document.getElementById('bulk-edit-fields-section');
+        if (selectionSection) {
+            selectionSection.classList.add('hidden');
+            selectionSection.style.display = 'none';
+        }
+        if (fieldsSection) {
+            fieldsSection.classList.remove('hidden');
+            fieldsSection.style.display = 'block';
+        }
+    }
+    
+    updateBulkEditButton() {
+        const checkboxes = document.querySelectorAll('#bulk-edit-chores-list input[type="checkbox"]:checked');
+        const count = checkboxes.length;
+        const startBtn = document.getElementById('bulk-edit-start-btn');
+        const countText = document.getElementById('bulk-edit-count');
+        
+        if (startBtn) {
+            startBtn.disabled = count === 0;
+            if (count === 0) {
+                startBtn.classList.add('disabled');
+            } else {
+                startBtn.classList.remove('disabled');
+            }
+        }
+        
+        if (countText) {
+            countText.textContent = count;
+        }
+    }
+    
+    addBulkEditSelectionHandlers() {
+        // Update count when checkboxes change
+        const choresList = document.getElementById('bulk-edit-chores-list');
+        if (choresList) {
+            choresList.addEventListener('change', (e) => {
+                if (e.target.type === 'checkbox') {
+                    this.updateBulkEditButton();
+                }
+            });
+        }
+        
+        // "Edit Selected Tasks" button
+        const startBtn = document.getElementById('bulk-edit-start-btn');
+        if (startBtn) {
+            startBtn.replaceWith(startBtn.cloneNode(true)); // Remove old listeners
+            const newStartBtn = document.getElementById('bulk-edit-start-btn');
+            newStartBtn.addEventListener('click', () => {
+                const selectedCount = document.querySelectorAll('#bulk-edit-chores-list input[type="checkbox"]:checked').length;
+                if (selectedCount > 0) {
+                    this.showBulkEditFields();
+                } else {
+                    this.showToast('Please select at least one task to edit', 'warning');
+                }
+            });
+        }
+        
+        // "Back to Selection" button
+        const backBtn = document.getElementById('bulk-edit-back-btn');
+        if (backBtn) {
+            backBtn.replaceWith(backBtn.cloneNode(true)); // Remove old listeners
+            const newBackBtn = document.getElementById('bulk-edit-back-btn');
+            newBackBtn.addEventListener('click', () => {
+                this.showBulkEditSelection();
+            });
+        }
+    }
 
     addBulkEditChoreHandlers() {
-        // Individual chore edit buttons
-        document.querySelectorAll('.edit-single-chore').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const choreId = btn.dataset.choreId;
-                this.openSingleChoreEditor(choreId);
-            });
-        });
-        
-        // Click on chore item to edit (but not on checkbox)
+        // Click on chore item to toggle checkbox (but not directly on checkbox)
         document.querySelectorAll('.bulk-edit-chore-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                if (!e.target.closest('input[type="checkbox"]') && !e.target.closest('.edit-single-chore')) {
-                    const choreId = item.dataset.choreId;
-                    this.openSingleChoreEditor(choreId);
+                // Only toggle if clicking on the item itself, not the checkbox
+                if (!e.target.closest('input[type="checkbox"]')) {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        this.updateBulkEditButton();
+                    }
                 }
             });
         });
     }
 
-    openSingleChoreEditor(choreId) {
-        const chore = this.chores.find(c => c.id === choreId);
-        if (!chore) {
-            this.showToast('Chore not found', 'error');
-            return;
-        }
-        
-        // Create a simple inline editor
-        const choreItem = document.querySelector(`[data-chore-id="${choreId}"]`);
-        if (!choreItem) return;
-        
-        const choreContent = choreItem.querySelector('.chore-item-content');
-        const originalContent = choreContent.innerHTML;
-        
-        // Create editor HTML
-        const editorHTML = `
-            <div class="single-chore-editor" style="width: 100%;">
-                <div class="form-group" style="margin-bottom: var(--space-3);">
-                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Chore Name</label>
-                    <input type="text" class="chore-name-input" value="${chore.name}" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
-                </div>
-                
-                <div class="form-group" style="margin-bottom: var(--space-3);">
-                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Icon</label>
-                    <div class="icon-picker-small" style="display: flex; gap: var(--space-1); flex-wrap: wrap; max-height: 120px; overflow-y: auto;">
-                        <button type="button" class="icon-option-small ${chore.icon === '📝' ? 'active' : ''}" data-icon="📝">📝</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🛏️' ? 'active' : ''}" data-icon="🛏️">🛏️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧹' ? 'active' : ''}" data-icon="🧹">🧹</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧺' ? 'active' : ''}" data-icon="🧺">🧺</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🍽️' ? 'active' : ''}" data-icon="🍽️">🍽️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🚿' ? 'active' : ''}" data-icon="🚿">🚿</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧽' ? 'active' : ''}" data-icon="🧽">🧽</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🗑️' ? 'active' : ''}" data-icon="🗑️">🗑️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🚪' ? 'active' : ''}" data-icon="🚪">🚪</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🪟' ? 'active' : ''}" data-icon="🪟">🪟</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🪑' ? 'active' : ''}" data-icon="🪑">🪑</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🛋️' ? 'active' : ''}" data-icon="🛋️">🛋️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🪞' ? 'active' : ''}" data-icon="🪞">🪞</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🖼️' ? 'active' : ''}" data-icon="🖼️">🖼️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '💡' ? 'active' : ''}" data-icon="💡">💡</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🔌' ? 'active' : ''}" data-icon="🔌">🔌</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🔋' ? 'active' : ''}" data-icon="🔋">🔋</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '👕' ? 'active' : ''}" data-icon="👕">👕</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '👖' ? 'active' : ''}" data-icon="👖">👖</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '👟' ? 'active' : ''}" data-icon="👟">👟</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎒' ? 'active' : ''}" data-icon="🎒">🎒</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧸' ? 'active' : ''}" data-icon="🧸">🧸</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '📚' ? 'active' : ''}" data-icon="📚">📚</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '📖' ? 'active' : ''}" data-icon="📖">📖</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '✏️' ? 'active' : ''}" data-icon="✏️">✏️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎨' ? 'active' : ''}" data-icon="🎨">🎨</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧠' ? 'active' : ''}" data-icon="🧠">🧠</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '📱' ? 'active' : ''}" data-icon="📱">📱</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '💻' ? 'active' : ''}" data-icon="💻">💻</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎮' ? 'active' : ''}" data-icon="🎮">🎮</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🐕' ? 'active' : ''}" data-icon="🐕">🐕</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🐱' ? 'active' : ''}" data-icon="🐱">🐱</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🐦' ? 'active' : ''}" data-icon="🐦">🐦</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🐠' ? 'active' : ''}" data-icon="🐠">🐠</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🐹' ? 'active' : ''}" data-icon="🐹">🐹</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌱' ? 'active' : ''}" data-icon="🌱">🌱</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌺' ? 'active' : ''}" data-icon="🌺">🌺</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌳' ? 'active' : ''}" data-icon="🌳">🌳</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌿' ? 'active' : ''}" data-icon="🌿">🌿</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🍃' ? 'active' : ''}" data-icon="🍃">🍃</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌧️' ? 'active' : ''}" data-icon="🌧️">🌧️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '☀️' ? 'active' : ''}" data-icon="☀️">☀️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '❄️' ? 'active' : ''}" data-icon="❄️">❄️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🚗' ? 'active' : ''}" data-icon="🚗">🚗</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🚲' ? 'active' : ''}" data-icon="🚲">🚲</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🛴' ? 'active' : ''}" data-icon="🛴">🛴</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏠' ? 'active' : ''}" data-icon="🏠">🏠</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏡' ? 'active' : ''}" data-icon="🏡">🏡</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '⚽' ? 'active' : ''}" data-icon="⚽">⚽</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏀' ? 'active' : ''}" data-icon="🏀">🏀</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎾' ? 'active' : ''}" data-icon="🎾">🎾</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏊' ? 'active' : ''}" data-icon="🏊">🏊</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🚴' ? 'active' : ''}" data-icon="🚴">🚴</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏃' ? 'active' : ''}" data-icon="🏃">🏃</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🧘' ? 'active' : ''}" data-icon="🧘">🧘</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '💪' ? 'active' : ''}" data-icon="💪">💪</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎯' ? 'active' : ''}" data-icon="🎯">🎯</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎵' ? 'active' : ''}" data-icon="🎵">🎵</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎤' ? 'active' : ''}" data-icon="🎤">🎤</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎧' ? 'active' : ''}" data-icon="🎧">🎧</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎹' ? 'active' : ''}" data-icon="🎹">🎹</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎸' ? 'active' : ''}" data-icon="🎸">🎸</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🥁' ? 'active' : ''}" data-icon="🥁">🥁</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎺' ? 'active' : ''}" data-icon="🎺">🎺</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎻' ? 'active' : ''}" data-icon="🎻">🎻</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎼' ? 'active' : ''}" data-icon="🎼">🎼</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎭' ? 'active' : ''}" data-icon="🎭">🎭</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎬' ? 'active' : ''}" data-icon="🎬">🎬</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎉' ? 'active' : ''}" data-icon="🎉">🎉</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎊' ? 'active' : ''}" data-icon="🎊">🎊</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎈' ? 'active' : ''}" data-icon="🎈">🎈</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎁' ? 'active' : ''}" data-icon="🎁">🎁</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎄' ? 'active' : ''}" data-icon="🎄">🎄</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎃' ? 'active' : ''}" data-icon="🎃">🎃</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎪' ? 'active' : ''}" data-icon="🎪">🎪</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '❤️' ? 'active' : ''}" data-icon="❤️">❤️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌟' ? 'active' : ''}" data-icon="🌟">🌟</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '⭐' ? 'active' : ''}" data-icon="⭐">⭐</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '✨' ? 'active' : ''}" data-icon="✨">✨</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '💎' ? 'active' : ''}" data-icon="💎">💎</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🏆' ? 'active' : ''}" data-icon="🏆">🏆</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🎖️' ? 'active' : ''}" data-icon="🎖️">🎖️</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '👑' ? 'active' : ''}" data-icon="👑">👑</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '💫' ? 'active' : ''}" data-icon="💫">💫</button>
-                        <button type="button" class="icon-option-small ${chore.icon === '🌈' ? 'active' : ''}" data-icon="🌈">🌈</button>
-                    </div>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: var(--space-3);">
-                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Category</label>
-                    <select class="chore-category-input" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
-                        <option value="General" ${chore.category === 'General' ? 'selected' : ''}>General</option>
-                        <option value="Kitchen" ${chore.category === 'Kitchen' ? 'selected' : ''}>Kitchen</option>
-                        <option value="Bedroom" ${chore.category === 'Bedroom' ? 'selected' : ''}>Bedroom</option>
-                        <option value="Bathroom" ${chore.category === 'Bathroom' ? 'selected' : ''}>Bathroom</option>
-                        <option value="Outdoor" ${chore.category === 'Outdoor' ? 'selected' : ''}>Outdoor</option>
-                        <option value="School" ${chore.category === 'School' ? 'selected' : ''}>School</option>
-                        <option value="Personal" ${chore.category === 'Personal' ? 'selected' : ''}>Personal</option>
-                        <option value="Technology" ${chore.category === 'Technology' ? 'selected' : ''}>Technology</option>
-                        <option value="Pets" ${chore.category === 'Pets' ? 'selected' : ''}>Pets</option>
-                        <option value="Plants" ${chore.category === 'Plants' ? 'selected' : ''}>Plants</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: var(--space-3);">
-                    <label style="font-size: var(--font-size-sm); color: var(--gray-600);">Reward (cents)</label>
-                    <input type="number" class="chore-reward-input" value="${chore.reward_cents}" min="1" max="100" style="width: 100%; padding: var(--space-2); border: 1px solid var(--gray-300); border-radius: var(--radius);">
-                </div>
-                
-                <div class="form-actions" style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
-                    <button type="button" class="btn btn-sm btn-outline cancel-single-edit" data-chore-id="${choreId}">Cancel</button>
-                    <button type="button" class="btn btn-sm btn-primary save-single-edit" data-chore-id="${choreId}">Save</button>
-                </div>
-            </div>
-        `;
-        
-        // Replace content with editor
-        choreContent.innerHTML = editorHTML;
-        
-        // Add event handlers for the editor
-        this.addSingleChoreEditorHandlers(choreId, choreItem, originalContent);
-    }
-
-    addSingleChoreEditorHandlers(choreId, choreItem, originalContent) {
-        // Icon picker handlers
-        const iconPicker = choreItem.querySelector('.icon-picker-small');
-        if (iconPicker) {
-            iconPicker.addEventListener('click', (e) => {
-                if (e.target.classList.contains('icon-option-small')) {
-                    iconPicker.querySelectorAll('.icon-option-small').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    e.target.classList.add('active');
-                }
-            });
-        }
-        
-        // Save button handler
-        const saveBtn = choreItem.querySelector('.save-single-edit');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await this.saveSingleChoreEdit(choreId, choreItem, originalContent);
-            });
-        }
-        
-        // Cancel button handler
-        const cancelBtn = choreItem.querySelector('.cancel-single-edit');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.cancelSingleChoreEdit(choreItem, originalContent);
-            });
-        }
-    }
-
-    async saveSingleChoreEdit(choreId, choreItem, originalContent) {
-        const nameInput = choreItem.querySelector('.chore-name-input');
-        const categoryInput = choreItem.querySelector('.chore-category-input');
-        const rewardInput = choreItem.querySelector('.chore-reward-input');
-        const activeIcon = choreItem.querySelector('.icon-option-small.active');
-        
-        const name = nameInput.value.trim();
-        const category = categoryInput.value;
-        const reward = parseInt(rewardInput.value);
-        const icon = activeIcon ? activeIcon.dataset.icon : '📝';
-        
-        if (!name) {
-            this.showToast('Chore name is required', 'error');
-            return;
-        }
-        
-        if (reward < 1 || reward > 100) {
-            this.showToast('Reward must be between 1 and 100 cents', 'error');
-            return;
-        }
-        
-        this.showLoading();
-        
-        try {
-            const result = await this.apiClient.updateChore(choreId, {
-                name,
-                category,
-                reward_cents: reward,
-                icon
-            });
-            
-            this.hideLoading();
-            
-            if (result.success) {
-                this.showToast('Chore updated successfully!', 'success');
-                
-                // Update the chore in our local data
-                const choreIndex = this.chores.findIndex(c => c.id === choreId);
-                if (choreIndex !== -1) {
-                    this.chores[choreIndex] = { ...this.chores[choreIndex], name, category, reward_cents: reward, icon };
-                }
-                
-                // Refresh the bulk edit modal
-                const childId = document.getElementById('bulk-edit-form').dataset.childId;
-                this.openBulkEditModal(childId);
-            } else {
-                this.showToast(result.error || 'Failed to update chore', 'error');
-            }
-        } catch (error) {
-            this.hideLoading();
-            this.showToast('Error updating chore: ' + error.message, 'error');
-        }
-    }
-
-    cancelSingleChoreEdit(choreItem, originalContent) {
-        const choreContent = choreItem.querySelector('.chore-item-content');
-        choreContent.innerHTML = originalContent;
-    }
+    // Removed individual chore edit functionality - bulk edit workflow is clearer
 
     async handleBulkEditChores() {
         const childId = document.getElementById('bulk-edit-form').dataset.childId;
@@ -9458,20 +9706,29 @@ class FamilyChoreChart {
         return firstCell ? firstCell.dataset.choreId : null;
     }
     
-    reorderChoresById(draggedChoreId, targetChoreId, childId) {
+    async reorderChoresById(draggedChoreId, targetChoreId, childId) {
         try {
+            // Save the currently active child ID before re-rendering
+            const currentActiveChildId = this.activeChildId || childId;
+            
             const childChores = this.chores.filter(c => c.child_id === childId);
             
             const draggedChore = childChores.find(c => c.id == draggedChoreId);
             const targetChore = childChores.find(c => c.id == targetChoreId);
             
             if (!draggedChore || !targetChore) {
+                console.warn('Chores not found for reordering:', { draggedChoreId, targetChoreId, childId });
                 return;
             }
             
             // Get current order indices
             const draggedIndex = childChores.findIndex(c => c.id == draggedChoreId);
             const targetIndex = childChores.findIndex(c => c.id == targetChoreId);
+            
+            if (draggedIndex === -1 || targetIndex === -1) {
+                console.warn('Invalid indices for reordering:', { draggedIndex, targetIndex });
+                return;
+            }
             
             // Reorder the chores array
             const reorderedChores = [...childChores];
@@ -9482,15 +9739,44 @@ class FamilyChoreChart {
             const otherChores = this.chores.filter(c => c.child_id !== childId);
             this.chores = [...otherChores, ...reorderedChores];
             
-            // Re-render the chore grid to reflect new order
-            this.renderChildrenContent();
+            // Save the new order to the database
+            const newOrder = reorderedChores.map((chore, index) => ({
+                id: chore.id,
+                sort_order: index
+            }));
             
-            // Show success message
+            const result = await this.apiClient.updateChoreOrder(childId, newOrder);
+            
+            if (!result.success) {
+                throw new Error('Failed to save chore order');
+            }
+            
+            // Re-render the chore grid to reflect new order, preserving the active child
+            this.renderChildren();
+            
+            // Restore the active child tab after rendering
+            // Use setTimeout to ensure renderChildren completes first
+            setTimeout(() => {
+                this.switchChildTab(currentActiveChildId);
+            }, 0);
+            
             this.showToast('Chores reordered!', 'success');
             
         } catch (error) {
             console.error('Error reordering chores:', error);
-            this.showToast('Failed to reorder chores', 'error');
+            this.showToast('Failed to reorder chores: ' + (error.message || 'Unknown error'), 'error');
+            
+            // Save active child before reload
+            const currentActiveChildId = this.activeChildId || childId;
+            
+            // Reload to revert to saved order
+            await this.loadChores();
+            this.renderChildren();
+            
+            // Restore the active child after reload
+            setTimeout(() => {
+                this.switchChildTab(currentActiveChildId);
+            }, 0);
         }
     }
 
@@ -9693,7 +9979,7 @@ class FamilyChoreChart {
             this.chores = [...otherChores, ...reorderedChores];
             
             // Re-render the chore grid to reflect new order
-            this.renderChildrenContent();
+            this.renderChildren();
             
             // Show success message
             this.showToast('Chores reordered!', 'success');
@@ -10783,5 +11069,14 @@ function closeIconPicker() {
 function selectIcon(iconUrl, iconType) {
     if (app) {
         app.selectIcon(iconUrl, iconType);
+    }
+}
+
+// Downloads notification function
+function notifyMeDownloads() {
+    if (app && typeof app.showToast === 'function') {
+        app.showToast('✅ You\'ll be notified when printable downloads are ready!', 'success');
+    } else {
+        alert('✅ You\'ll be notified when printable downloads are ready!');
     }
 }

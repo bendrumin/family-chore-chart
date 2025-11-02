@@ -1,10 +1,10 @@
-// Payment Integration with Paddle
+// Payment Integration with PayPal
 class PaymentManager {
     constructor() {
-        this.apiUrl = '/api/create-paddle-checkout';
+        this.apiUrl = '/api/create-paypal-checkout';
     }
 
-    async createCheckoutSession(priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy') {
+    async createCheckoutSession(planType = 'monthly') {
         try {
             const customerId = window.apiClient?.currentUser?.id || 'user_' + Date.now();
             const email = window.apiClient?.currentUser?.email || 'user@example.com';
@@ -13,7 +13,7 @@ class PaymentManager {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priceId,
+                    planType,
                     customerId,
                     email
                 })
@@ -33,9 +33,9 @@ class PaymentManager {
 
     async handleUpgrade() {
         try {
-            const checkout = await this.createCheckoutSession();
-            // Redirect to Paddle checkout
-            window.location.href = checkout.checkoutUrl;
+            const checkout = await this.createCheckoutSession('monthly');
+            // Redirect to PayPal checkout
+            window.location.href = checkout.approvalUrl;
         } catch (error) {
             console.error('Upgrade failed:', error);
             
