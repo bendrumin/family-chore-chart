@@ -6,6 +6,11 @@ class ApiClient {
         this.supabase = window.supabase;
         this.currentUser = null;
         this.familySettings = null;
+        
+        // Check if Supabase is properly initialized
+        if (!this.supabase) {
+            console.error('❌ Supabase client not initialized. Check supabase-config.js');
+        }
     }
 
     // Authentication Methods
@@ -42,6 +47,12 @@ class ApiClient {
     async signIn(email, password) {
         try {
             console.log('Signing in user:', email);
+            
+            // Check if Supabase is available
+            if (!this.supabase || !this.supabase.auth) {
+                throw new Error('Supabase client not properly initialized. Please refresh the page and try again.');
+            }
+            
             const { data, error } = await this.supabase.auth.signInWithPassword({
                 email,
                 password
@@ -340,7 +351,11 @@ class ApiClient {
                 query = query.eq('child_id', childId);
             }
 
-            const { data, error } = await query.order('name');
+            // Order by sort_order first (ascending), then by name as secondary sort
+            // Supabase supports chained .order() calls for multi-column sorting
+            const { data, error } = await query
+                .order('sort_order', { ascending: true, nullsFirst: false })
+                .order('name', { ascending: true });
             if (error) throw error;
             return data || [];
         } catch (error) {
@@ -954,6 +969,39 @@ class ApiClient {
         };
         
         return currencyMap[country] || 'USD';
+    }
+
+    // Update chore order for a specific child
+    async updateChoreOrder(childId, newOrder) {
+        try {
+            if (!childId || !newOrder || !Array.isArray(newOrder)) {
+                throw new Error('Invalid parameters for updateChoreOrder');
+            }
+
+            // Update each chore's sort_order individually
+            // Using individual updates is more reliable than upsert for updates
+            const updatePromises = newOrder.map(item => {
+                return this.supabase
+                    .from('chores')
+                    .update({ sort_order: item.sort_order })
+                    .eq('id', item.id)
+                    .eq('child_id', childId); // Extra safety check
+            });
+
+            const results = await Promise.all(updatePromises);
+            
+            // Check for errors
+            const errors = results.filter(result => result.error);
+            if (errors.length > 0) {
+                const errorMessages = errors.map(e => e.error?.message || 'Unknown error').join('; ');
+                throw new Error(`Failed to update some chores: ${errorMessages}`);
+            }
+
+            return { success: true, data: results.map(r => r.data).flat() };
+        } catch (error) {
+            console.error('Error updating chore order:', error);
+            return { success: false, error: error.message || 'Unknown error' };
+        }
     }
 }
 

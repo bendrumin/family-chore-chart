@@ -637,7 +637,7 @@
                                         <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;" aria-label="Pink"></button>
                                     </div>
                                 </div>
-                                <small class="help-text" style="margin-top: 4px; color: var(--gray-600); font-size: 0.875rem;">Click the color picker for custom colors or choose from the preset swatches</small>
+                                <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
                             </div>
                         </div>
                         <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
@@ -717,7 +717,7 @@
                                                     <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;" aria-label="Pink"></button>
                                                 </div>
                                             </div>
-                                            <small class="help-text">Click the color picker for custom colors or choose from the preset swatches</small>
+                                            <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
                                         </div>
                                     </div>
                                     <div class="avatar-actions">
@@ -774,7 +774,7 @@
                                     <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;" aria-label="Pink"></button>
                                 </div>
                             </div>
-                            <small class="help-text" style="margin-top: 4px; color: var(--gray-600); font-size: 0.875rem;">Click the color picker for custom colors or choose from the preset swatches</small>
+                            <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
                         </div>
                     </div>
                     <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
@@ -857,8 +857,8 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="chore-icon-1">Chore Icon</label>
-                                <div class="icon-picker" id="icon-picker-1" role="group" aria-label="Select chore icon">
+                                <label for="icon-picker-1">Chore Icon</label>
+                                <div class="icon-picker" id="icon-picker-1" role="group" aria-label="Select chore icon" tabindex="0">
                                     <!-- Household Chores -->
                                     <button type="button" class="icon-option active" data-icon="📝" aria-label="Note pad icon">📝</button>
                                     <button type="button" class="icon-option" data-icon="🛏️" aria-label="Bed icon">🛏️</button>
@@ -970,26 +970,13 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="chore-category-1">Category</label>
-                                <select id="chore-category-1">
-                                    <option value="General">General</option>
-                                    <option value="Kitchen">Kitchen</option>
-                                    <option value="Bedroom">Bedroom</option>
-                                    <option value="Bathroom">Bathroom</option>
-                                    <option value="Outdoor">Outdoor</option>
-                                    <option value="School">School</option>
-                                    <option value="Pets">Pets</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
                                 <label for="chore-notes-1">Notes (Optional)</label>
                                 <input type="text" id="chore-notes-1" placeholder="e.g., Remember to use soap!" />
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <small style="color: var(--gray-600);">Each completed day earns 7¢</small>
+                            <small class="helper-text">Each completed day earns 7¢</small>
                         </div>
                         
                         <div class="premium-upgrade-prompt" id="premium-upgrade-prompt-1" style="display: none;">
@@ -1039,6 +1026,9 @@
                 <button class="tab-btn" data-tab="insights" role="tab" aria-selected="false" aria-controls="insights-tab">
                     <span aria-hidden="true">📊</span> Insights
                 </button>
+                <button class="tab-btn" data-tab="downloads" role="tab" aria-selected="false" aria-controls="downloads-tab">
+                    <span aria-hidden="true">📄</span> Downloads
+                </button>
             </nav>
             
             <!-- Family Tab (Combines Rewards + Manage Children) -->
@@ -1057,12 +1047,12 @@
                                 <div class="form-group">
                                     <label for="daily-reward">Daily Reward (cents)</label>
                                     <input type="number" id="daily-reward" min="1" max="100" value="7" required aria-required="true" aria-describedby="daily-reward-help">
-                                    <small id="daily-reward-help">Amount earned per day when all chores are completed</small>
+                                    <small id="daily-reward-help" class="helper-text">Amount earned per day when all chores are completed</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="weekly-bonus">Weekly Bonus (cents)</label>
                                     <input type="number" id="weekly-bonus" min="0" max="50" value="1" required aria-required="true" aria-describedby="weekly-bonus-help">
-                                    <small id="weekly-bonus-help">Bonus for completing all chores all week</small>
+                                    <small id="weekly-bonus-help" class="helper-text">Bonus for completing all chores all week</small>
                                 </div>
                             </div>
                             
@@ -1091,7 +1081,7 @@
                                     <option value="HKD">🇭🇰 Hong Kong Dollar (HKD)</option>
                                     <option value="NZD">🇳🇿 New Zealand Dollar (NZD)</option>
                                 </select>
-                                <small id="currency-help">Choose your preferred currency for displaying rewards and earnings</small>
+                                <small id="currency-help" class="helper-text">Choose your preferred currency for displaying rewards and earnings</small>
                             </div>
                             
                             <!-- Date Format Settings -->
@@ -1105,7 +1095,7 @@
                                     <option value="DD.MM.YYYY">🇩🇪 German Format (DD.MM.YYYY)</option>
                                     <option value="DD/MM/YYYY">🇫🇷 French Format (DD/MM/YYYY)</option>
                                 </select>
-                                <small id="date-format-help">Choose how dates are displayed throughout the app</small>
+                                <small id="date-format-help" class="helper-text">Choose how dates are displayed throughout the app</small>
                             </div>
                             
                             <!-- Language Settings -->
@@ -1117,7 +1107,7 @@
                                     <option value="fr">🇫🇷 Français</option>
                                     <option value="de">🇩🇪 Deutsch</option>
                                 </select>
-                                <small id="language-help">Choose your preferred language for the app interface</small>
+                                <small id="language-help" class="helper-text">Choose your preferred language for the app interface</small>
                             </div>
                         </form>
                     </section>
@@ -1526,6 +1516,47 @@
                     </section>
                 </div>
             </div>
+            
+            <!-- Downloads Tab -->
+            <div id="downloads-tab" class="tab-content" role="tabpanel" aria-labelledby="downloads-tab-label">
+                <div class="downloads-content">
+                    <h3 id="downloads-tab-label">📄 Printable Chore Charts</h3>
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Download beautiful, printable chore charts for your family.</p>
+                    
+                    <!-- Coming Soon Section -->
+                    <section class="settings-section">
+                        <div class="coming-soon-card">
+                            <div class="coming-soon-icon">📥</div>
+                            <h4>Printable Charts Coming Soon!</h4>
+                            <p>We're working on bringing you beautiful, printable chore charts that you can download and use at home.</p>
+                            
+                            <div class="coming-soon-features">
+                                <h5>What to expect:</h5>
+                                <ul>
+                                    <li>✨ <strong>Custom Designs</strong> - Multiple themes and styles</li>
+                                    <li>📅 <strong>Weekly & Monthly Templates</strong> - Choose your format</li>
+                                    <li>🎨 <strong>Personalized Charts</strong> - Add your family's names and chores</li>
+                                    <li>📱 <strong>Digital & Print Formats</strong> - PDF and PNG downloads</li>
+                                    <li>🏆 <strong>Reward Trackers</strong> - Printable reward systems</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="coming-soon-cta">
+                                <p style="margin-bottom: var(--space-3);">Want to be notified when downloads are ready?</p>
+                                <button class="btn btn-primary" onclick="app.notifyMeDownloads()">
+                                    🔔 Notify Me
+                                </button>
+                            </div>
+                            
+                            <div class="coming-soon-preview">
+                                <p style="color: var(--gray-600); font-size: 0.875rem; margin-top: var(--space-4);">
+                                    <strong>Preview coming soon:</strong> We'll show sample templates here once they're ready!
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1598,29 +1629,51 @@
         <div class="modal-content">
             <header class="modal-header">
                 <h2 id="bulk-edit-modal-title">✏️ Bulk Edit Chores</h2>
-                <button class="modal-close" data-modal="bulk-edit-chores-modal" aria-label="Close modal">&times;</button>
+                <button class="modal-close" data-modal="bulk-edit-chores-modal" aria-label="Close bulk edit modal">&times;</button>
             </header>
             <div class="bulk-edit-content">
-                <section class="bulk-edit-selection">
-                    <h3>Select Chores to Edit</h3>
-                    <div id="bulk-edit-chores-list" role="group" aria-label="Select chores for bulk editing">
+                <section class="bulk-edit-selection" aria-labelledby="bulk-edit-selection-title">
+                    <h3 id="bulk-edit-selection-title">Select Chores to Edit</h3>
+                    <div id="bulk-edit-chores-list" role="group" aria-label="Select chores for bulk editing" aria-live="polite">
                         <!-- Chores will be listed here with checkboxes -->
+                    </div>
+                    <div class="bulk-edit-actions" id="bulk-edit-selection-actions">
+                        <p class="helper-text" id="bulk-edit-selection-help" aria-live="polite">
+                            Select one or more chores, then click below to edit them.
+                        </p>
+                        <button type="button" id="bulk-edit-start-btn" class="btn btn-primary btn-lg" disabled>
+                            <span>✏️</span> Edit Selected Tasks
+                        </button>
+                        <p class="helper-text" id="bulk-edit-count-text" aria-live="polite">
+                            <span id="bulk-edit-count">0</span> task(s) selected
+                        </p>
                     </div>
                 </section>
                 
-                <section class="bulk-edit-fields">
-                    <h3>Edit Selected Chores</h3>
-                    <form id="bulk-edit-form" class="modal-form" role="form">
+                <section class="bulk-edit-fields hidden" id="bulk-edit-fields-section" aria-labelledby="bulk-edit-fields-title">
+                    <h3 id="bulk-edit-fields-title">Edit Selected Chores</h3>
+                    <form id="bulk-edit-form" class="modal-form" role="form" novalidate>
                         <div class="form-group">
-                            <label for="bulk-edit-reward">Reward (cents)</label>
-                            <input type="number" id="bulk-edit-reward" min="1" max="100" placeholder="Leave empty to keep current" aria-describedby="bulk-reward-help">
-                            <small id="bulk-reward-help">Amount earned when these chores are completed</small>
+                            <label for="bulk-edit-reward">💰 Reward Amount <span class="field-optional" aria-label="Optional field">(optional)</span></label>
+                            <input 
+                                type="number" 
+                                id="bulk-edit-reward" 
+                                name="bulk-edit-reward"
+                                min="1" 
+                                max="999" 
+                                step="1"
+                                placeholder="Enter amount in cents (e.g., 10)" 
+                                aria-describedby="bulk-reward-help"
+                                aria-invalid="false">
+                            <small id="bulk-reward-help" class="helper-text">
+                                How much will be earned when these chores are completed? Enter a number between 1-999 cents. Leave blank to keep current reward amounts.
+                            </small>
                         </div>
                         
                         <div class="form-group">
-                            <label for="bulk-edit-icon">Chore Icon</label>
-                            <div class="icon-picker" id="bulk-edit-icon-picker" role="group" aria-label="Select icon for selected chores">
-                                <button type="button" class="icon-option" data-icon="" aria-label="No change">No Change</button>
+                            <label for="bulk-edit-icon-picker">🎨 Task Icon <span class="field-optional" aria-label="Optional field">(optional)</span></label>
+                            <div class="icon-picker" id="bulk-edit-icon-picker" role="radiogroup" aria-label="Select icon for selected chores" tabindex="0" aria-describedby="bulk-icon-help">
+                                <button type="button" class="icon-option" data-icon="" aria-label="No change" role="radio" aria-checked="false">No Change</button>
                                 <button type="button" class="icon-option" data-icon="📝" aria-label="Note pad icon">📝</button>
                                 <button type="button" class="icon-option" data-icon="🛏️" aria-label="Bed icon">🛏️</button>
                                 <button type="button" class="icon-option" data-icon="🧹" aria-label="Broom icon">🧹</button>
@@ -1705,14 +1758,17 @@
                                 <button type="button" class="icon-option" data-icon="🎖️" aria-label="Medal icon">🎖️</button>
                                 <button type="button" class="icon-option" data-icon="👑" aria-label="Crown icon">👑</button>
                                 <button type="button" class="icon-option" data-icon="💫" aria-label="Dizzy star icon">💫</button>
-                                <button type="button" class="icon-option" data-icon="🌈" aria-label="Rainbow icon">🌈</button>
+                                <button type="button" class="icon-option" data-icon="🌈" aria-label="Rainbow icon" role="radio" aria-checked="false">🌈</button>
                             </div>
-                            <input type="hidden" id="bulk-edit-icon" value="">
+                            <input type="hidden" id="bulk-edit-icon" name="bulk-edit-icon" value="">
+                            <small id="bulk-icon-help" class="helper-text">
+                                Choose a visual icon for these tasks, or select "No Change" to keep their current icons.
+                            </small>
                         </div>
                         
                         <div class="form-group">
-                            <label for="bulk-edit-category">Category</label>
-                            <select id="bulk-edit-category">
+                            <label for="bulk-edit-category">📁 Task Category <span class="field-optional" aria-label="Optional field">(optional)</span></label>
+                            <select id="bulk-edit-category" name="bulk-edit-category" aria-describedby="bulk-category-help">
                                 <option value="">No Change</option>
                                 <option value="General">General</option>
                                 <option value="Kitchen">Kitchen</option>
@@ -1725,11 +1781,19 @@
                                 <option value="Pets">Pets</option>
                                 <option value="Plants">Plants</option>
                             </select>
+                            <small id="bulk-category-help" class="helper-text">
+                                Organize these tasks into a category (e.g., Kitchen, School, Personal). Select "No Change" to keep current categories.
+                            </small>
                         </div>
                         
                         <div class="form-actions">
-                            <button type="button" class="btn btn-outline" onclick="app.hideModal('bulk-edit-chores-modal')">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Update Selected Chores</button>
+                            <button type="button" id="bulk-edit-back-btn" class="btn btn-outline" aria-label="Go back to selection">
+                                ← Back to Selection
+                            </button>
+                            <button type="button" class="btn btn-outline" data-modal="bulk-edit-chores-modal" aria-label="Cancel bulk edit">Cancel</button>
+                            <button type="submit" class="btn btn-primary" aria-label="Update selected chores with new values">
+                                Update Selected Chores
+                            </button>
                         </div>
                     </form>
                 </section>
@@ -1744,7 +1808,8 @@
                 <h2 id="edit-chore-modal-title">✏️ Edit Chore</h2>
                 <button class="modal-close" data-modal="edit-chore-modal" aria-label="Close modal">&times;</button>
             </header>
-            <form id="edit-chore-form" class="modal-form" role="form">
+            <div class="modal-body">
+                <form id="edit-chore-form" class="modal-form" role="form">
                 <div class="form-group">
                     <label for="edit-chore-name">Chore Name</label>
                     <input type="text" id="edit-chore-name" required placeholder="e.g., Make bed" aria-required="true">
@@ -1752,16 +1817,16 @@
                 <div class="form-group">
                     <label for="edit-chore-child">For Child</label>
                     <input type="text" id="edit-chore-child" readonly style="background-color: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-300); border-radius: 4px; padding: 8px 12px; width: 100%; box-sizing: border-box;" aria-describedby="edit-chore-child-help">
-                    <small id="edit-chore-child-help">This chore belongs to the selected child</small>
+                    <small id="edit-chore-child-help" class="helper-text">This chore belongs to the selected child</small>
                 </div>
                 <div class="form-group">
                     <label for="edit-chore-reward">Reward (cents)</label>
                     <input type="number" id="edit-chore-reward" min="1" max="100" value="7" required aria-required="true" aria-describedby="edit-chore-reward-help">
-                    <small id="edit-chore-reward-help">Amount earned when this chore is completed</small>
+                    <small id="edit-chore-reward-help" class="helper-text">Amount earned when this chore is completed</small>
                 </div>
                 <div class="form-group">
-                    <label for="edit-chore-icon">Chore Icon</label>
-                    <div class="icon-picker" id="edit-chore-icon-picker" role="group" aria-label="Select chore icon">
+                    <label for="edit-chore-icon-picker">Chore Icon</label>
+                    <div class="icon-picker" id="edit-chore-icon-picker" role="group" aria-label="Select chore icon" tabindex="0">
                         <!-- All icons with proper aria-labels... -->
                         <button type="button" class="icon-option active" data-icon="📝" aria-label="Note pad icon">📝</button>
                         <button type="button" class="icon-option" data-icon="🛏️" aria-label="Bed icon">🛏️</button>
@@ -1868,28 +1933,10 @@
                     </select>
                 </div>
                 
-                <!-- Premium-only color picker for edit chore modal -->
-                <div class="edit-premium-features" id="edit-premium-features" style="display:none;">
-                    <div class="form-group">
-                        <label for="edit-chore-color">Chore Color</label>
-                        <div class="color-picker-row">
-                            <input type="color" id="edit-chore-color" value="#ff6b6b" style="width: 48px; height: 32px; border: none; background: none; cursor: pointer;" aria-label="Select chore color">
-                            <div class="color-presets" style="display: flex; gap: var(--space-1);" role="group" aria-label="Preset chore colors">
-                                <button type="button" class="color-preset" data-color="#ff6b6b" style="width: 24px; height: 24px; background: #ff6b6b; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Red"></button>
-                                <button type="button" class="color-preset" data-color="#4ecdc4" style="width: 24px; height: 24px; background: #4ecdc4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Teal"></button>
-                                <button type="button" class="color-preset" data-color="#45b7d1" style="width: 24px; height: 24px; background: #45b7d1; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Blue"></button>
-                                <button type="button" class="color-preset" data-color="#96ceb4" style="width: 24px; height: 24px; background: #96ceb4; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Green"></button>
-                                <button type="button" class="color-preset" data-color="#feca57" style="width: 24px; height: 24px; background: #feca57; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Yellow"></button>
-                                <button type="button" class="color-preset" data-color="#ff9ff3" style="width: 24px; height: 24px; background: #ff9ff3; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" aria-label="Pink"></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="form-group">
                     <label for="edit-chore-notes">📝 Notes (optional)</label>
                     <input type="text" id="edit-chore-notes" placeholder="Any additional notes about this chore..." />
-                    <small style="color: var(--gray-500); margin-top: 4px;">Add helpful details like specific instructions or reminders</small>
+                    <small class="helper-text">Add helpful details like specific instructions or reminders</small>
                 </div>
                 
                 <!-- Drag and Drop Chore Reordering Section -->
@@ -1898,14 +1945,15 @@
                     <div class="chore-reorder-list" id="edit-chore-reorder-list">
                         <!-- Chores will be populated here -->
                     </div>
-                    <small style="color: var(--gray-500); margin-top: 4px;">Drag and drop chores to reorder them</small>
+                    <small class="helper-text">Drag and drop chores to reorder them</small>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="app.hideModal('edit-chore-modal')">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-modal="edit-chore-modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -2436,7 +2484,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Stripe removed - now using Paddle -->
+    <!-- Payment processing via PayPal -->
     <script src="config.js"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="api-client.js?v=2"></script>
@@ -2519,13 +2567,13 @@
             <span class="footer-separator">•</span>
             <span class="footer-version">v2025.1</span>
             <span class="footer-separator">•</span>
-            <a href="/pricing.html" class="footer-link" target="_blank">Pricing</a>
+            <a href="/pricing.html" class="footer-link">Pricing</a>
             <span class="footer-separator">•</span>
-            <a href="/refund-policy.html" class="footer-link" target="_blank">Refund Policy</a>
+            <a href="/refund-policy.html" class="footer-link">Refund Policy</a>
             <span class="footer-separator">•</span>
-            <a href="/terms-of-service.html" class="footer-link" target="_blank">Terms</a>
+            <a href="/terms-of-service.html" class="footer-link">Terms</a>
             <span class="footer-separator">•</span>
-            <a href="/privacy-policy.html" class="footer-link" target="_blank">Privacy</a>
+            <a href="/privacy-policy.html" class="footer-link">Privacy</a>
         </div>
     </footer>
 </body>

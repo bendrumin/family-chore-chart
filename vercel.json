@@ -20,12 +20,12 @@
       "dest": "/frontend/api/send-contact-email.js"
     },
     {
-      "src": "/api/create-paddle-checkout",
-      "dest": "/frontend/api/create-paddle-checkout.js"
+      "src": "/api/create-paypal-checkout",
+      "dest": "/frontend/api/create-paypal-checkout.js"
     },
     {
-      "src": "/api/paddle-webhook",
-      "dest": "/frontend/api/paddle-webhook.js"
+      "src": "/api/paypal-webhook",
+      "dest": "/frontend/api/paypal-webhook.js"
     },
     {
       "src": "/api/test-webhook",

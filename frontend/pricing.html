@@ -10,8 +10,15 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>ChoreStar Pricing</h1>
-            <p>Choose the perfect plan for your family</p>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🏠 ChoreStar</h1>
+                    <p>Choose the perfect plan for your family</p>
+                </div>
+                <div class="header-right">
+                    <a href="/" class="btn btn-outline">← Back to App</a>
+                </div>
+            </div>
         </header>
 
         <main class="pricing-container">
@@ -90,13 +97,13 @@
     </div>
 
     <script>
-        // Paddle Payment Integration
-        class PaddlePayment {
+        // PayPal Payment Integration
+        class PayPalPayment {
             constructor() {
-                this.apiUrl = '/api/create-paddle-checkout';
+                this.apiUrl = '/api/create-paypal-checkout';
             }
 
-            async createCheckout(priceId, customerId, email) {
+            async createCheckout(planType, customerId, email) {
                 try {
                     const response = await fetch(this.apiUrl, {
                         method: 'POST',
@@ -104,7 +111,7 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            priceId,
+                            planType,
                             customerId,
                             email
                         })
@@ -117,41 +124,41 @@
                     const data = await response.json();
                     return data;
                 } catch (error) {
-                    console.error('❌ Paddle checkout creation failed:', error);
+                    console.error('❌ PayPal checkout creation failed:', error);
                     throw error;
                 }
             }
 
-            async startCheckout(priceId, customerId, email) {
+            async startCheckout(planType, customerId, email) {
                 try {
-                    const checkout = await this.createCheckout(priceId, customerId, email);
+                    const checkout = await this.createCheckout(planType, customerId, email);
                     
-                    // Redirect to Paddle checkout
-                    window.location.href = checkout.checkoutUrl;
+                    // Redirect to PayPal checkout
+                    window.location.href = checkout.approvalUrl;
                     
                 } catch (error) {
-                    console.error('❌ Failed to start Paddle checkout:', error);
+                    console.error('❌ Failed to start PayPal checkout:', error);
                     alert('Payment system is currently unavailable. Please try again later or contact support.');
                 }
             }
         }
 
-        const paddlePayment = new PaddlePayment();
+        const paypalPayment = new PayPalPayment();
 
         function upgradeToPremium() {
-            const priceId = 'pro_01k88sgf2e0gd4maaxq3asx6zy'; // Monthly plan
+            const planType = 'monthly'; // Monthly plan
             const customerId = 'user_' + Date.now(); // You can get this from your user system
             const email = 'user@example.com'; // You can get this from your user system
             
-            paddlePayment.startCheckout(priceId, customerId, email);
+            paypalPayment.startCheckout(planType, customerId, email);
         }
 
         function upgradeToAnnual() {
-            const priceId = 'pro_01k88smgyx84j22jzdycren1yq'; // Annual plan
+            const planType = 'annual'; // Annual plan
             const customerId = 'user_' + Date.now(); // You can get this from your user system
             const email = 'user@example.com'; // You can get this from your user system
             
-            paddlePayment.startCheckout(priceId, customerId, email);
+            paypalPayment.startCheckout(planType, customerId, email);
         }
     </script>
 </body>

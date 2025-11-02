@@ -1358,16 +1358,7 @@ textarea,
     box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
 }
 
-/* Edit Chore Modal */
-.edit-chore-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.edit-chore-form .form-group {
-    margin-bottom: 0;
-}
+/* Note: Edit chore modal now uses .modal-form class - removed old .edit-chore-form styles */
 
 /* Child Chores Section Styles */
 .child-chores-section {
@@ -2339,11 +2330,26 @@ body.modal-open {
     margin-bottom: var(--space-2);
 }
 
-/* Family content styles */
+/* Family content styles - standardize padding for all tab content wrappers */
 .family-content,
 .appearance-content,
-.insights-content {
-    padding: var(--space-4) 0;
+.insights-content,
+.chores-management-content {
+    padding: 0;
+}
+
+/* Standardize h3 heading spacing in all tab contents */
+.family-content h3,
+.appearance-content h3,
+.insights-content h3,
+.chores-management-content h3 {
+    margin: 0 0 var(--space-4) 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 /* Responsive improvements for new structure */
@@ -3367,15 +3373,8 @@ body.modal-open {
         padding: var(--space-2);
     }
     
-    .icon-option {
-        padding: var(--space-1);
-        min-height: 44px;
-    }
-    
-    .icon-option img {
-        width: 24px;
-        height: 24px;
-    }
+    /* Mobile icon picker - smaller sizes (already handled in @media max-width: 768px) */
+    /* This section removed to avoid conflicts - consolidated above */
     
     .icon-label {
         font-size: var(--font-size-xs);
@@ -3698,7 +3697,8 @@ body.modal-open {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
-.tab-btn.active {
+/* Settings tabs active state */
+.settings-tabs .tab-btn.active {
     background: linear-gradient(135deg, var(--primary), #7c3aed);
     color: white;
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
@@ -4015,15 +4015,43 @@ body.modal-open {
 }
 
 .color-picker-row input[type="color"] {
-    width: 30px;
-    height: 30px;
+    width: 40px !important;
+    height: 40px !important;
     border-radius: 50%;
-    border: none;
-    box-shadow: none;
+    border: 2px solid var(--gray-300) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
     padding: 0;
-    background: none;
+    background: white !important;
     cursor: pointer;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Make color picker more visible with hover state */
+.color-picker-row input[type="color"]:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+/* Add label/tooltip area above color picker */
+.color-picker-row::before {
+    content: 'Click to choose custom color';
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    position: absolute;
+    top: -20px;
+    left: 0;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.color-picker-row:hover::before {
+    opacity: 1;
 }
 
 .color-picker-row .color-presets {
@@ -4301,7 +4329,9 @@ body.modal-open {
     color: var(--gray-800);
 }
 
-.tab-btn.active {
+/* Children/Chores management tabs active state */
+.children-tabs .tab-btn.active,
+#chores-management-tabs .tab-btn.active {
     background: white;
     color: var(--primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -4353,15 +4383,7 @@ body.modal-open {
     gap: var(--space-4);
 }
 
-.family-content h3 {
-    margin: 0 0 var(--space-2) 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
+/* Removed - now using standardized rule above */
 
 /* Dark mode improvements for settings */
 [data-theme="dark"] .settings-tabs {
@@ -4377,10 +4399,17 @@ body.modal-open {
     color: var(--gray-200);
 }
 
-[data-theme="dark"] .tab-btn.active {
-    background: var(--gray-600);
-    color: var(--primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+/* Dark mode - Settings tabs active state */
+[data-theme="dark"] .settings-tabs .tab-btn.active {
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+[data-theme="dark"] #chores-management-tabs .tab-btn.active {
+    background: var(--gray-700);
+    color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .settings-section {
@@ -5080,8 +5109,15 @@ body.modal-open {
     transition: width 0.3s ease;
 }
 
-.tab-btn.active::after {
+/* Underline effect only for specific tab types */
+.settings-tabs .tab-btn.active::after,
+.children-tabs .tab-btn.active::after {
     width: 100%;
+}
+
+/* Don't apply underline to all tabs */
+#chores-management-tabs .tab-btn.active::after {
+    display: none;
 }
 
 /* Enhanced modal close button */
@@ -6046,31 +6082,7 @@ body.modal-open {
     margin-right: 4px;
 }
 
-/* Edit Chore Modal Textarea Styling */
-#edit-chore-modal textarea {
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
-    padding: var(--space-3);
-    font-family: inherit;
-    font-size: var(--font-size-sm);
-    line-height: 1.5;
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color var(--transition-fast);
-    background-color: var(--gray-50);
-}
-
-#edit-chore-modal textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-    background-color: white;
-}
-
-#edit-chore-modal textarea::placeholder {
-    color: var(--gray-400);
-    font-style: italic;
-}
+/* Note: Edit chore modal doesn't have textarea - removed unused textarea styles */
 
 /* Fix edit child modal positioning */
 #edit-child-modal {
@@ -6154,20 +6166,18 @@ body.modal-open {
     display: block;
 }
 
-.icon-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: var(--space-3);
-    max-height: 400px;
-    overflow-y: auto;
-    padding: var(--space-4);
-    justify-items: center;
-}
+/* Icon grid styles moved to consolidated section below (line 6658) */
 
+/* ==========================================
+   ICON PICKER - CONSOLIDATED STYLES
+   ========================================== */
+
+/* Base icon option styles (for avatar picker with images) */
 .icon-option {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: var(--space-3);
     border: 2px solid var(--border-color);
     border-radius: var(--radius-xl);
@@ -6180,21 +6190,33 @@ body.modal-open {
     max-width: 80px;
     min-height: 100px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Enhanced emoji rendering */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", emoji, sans-serif;
+    font-feature-settings: "liga", "kern";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-option:hover {
-    border-color: var(--primary);
-    background: var(--bg-hover);
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+/* Text-only icon options (like "No Change" button) */
+.icon-option[data-icon=""] {
+    min-height: auto;
+    height: auto;
+    min-width: auto;
+    width: auto;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm) !important;
+    font-weight: 500;
+    white-space: normal;
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+    line-height: 1.4;
+    word-wrap: break-word;
+    text-align: center;
+    max-width: none;
 }
 
-.icon-option.selected {
-    border-color: var(--primary);
-    background: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(99, 102, 241, 0.1);
-    transform: scale(1.02);
-}
+/* Specific styling for chore icon pickers (emoji buttons) */
+/* Note: General .icon-option hover/active styles are now handled by 
+   .icon-picker .icon-option rules below to avoid conflicts */
 
 .icon-option img {
     width: 48px;
@@ -6203,13 +6225,85 @@ body.modal-open {
     object-fit: cover;
     margin-bottom: var(--space-2);
     border: 2px solid rgba(255, 255, 255, 0.2);
+    transform: scale(1) !important; /* Prevent scaling on avatar images */
 }
 
-.icon-option .icon-emoji {
-    font-size: 36px;
-    margin-bottom: var(--space-2);
+/* ==========================================
+   CHORE ICON PICKER (emoji-only buttons)
+   ========================================== */
+/* These are the emoji icon buttons in add/edit chore modals */
+.icon-picker .icon-option {
+    /* Sizing - tighter spacing */
+    min-width: 48px;  /* Reduced further for better alignment */
+    min-height: 48px; /* Reduced further */
+    padding: 6px;     /* Reduced padding for less empty space */
+    width: 48px;      /* Fixed width for consistent grid */
+    height: 48px;     /* Fixed height for consistent grid */
+    
+    /* Typography */
+    font-size: 2.5rem !important; /* Slightly smaller for better fit */
     line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    
+    /* Layout */
+    display: flex !important; /* Changed from inline-flex for better grid */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    /* Transform scaling for better emoji rendering - reduced */
+    transform: scale(1.05); /* Reduced from 1.15 */
+    
+    /* Enhanced styling */
+    background: white !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 10px; /* Slightly smaller radius */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important; /* Lighter shadow */
+    
+    /* Better alignment */
+    text-align: center;
+    vertical-align: middle;
+    
+    /* Visual depth - reduced */
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+    transition: all 0.15s ease; /* Faster transition */
+    position: relative;
+    flex-shrink: 0; /* Prevent shrinking in flexbox */
+}
+
+.icon-picker .icon-option:hover {
+    background: #f9fafb !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2) !important;
+    /* Removed enlargement - no transform on hover, just visual feedback */
+    transform: scale(1.05); /* Keep same scale, no enlargement */
+}
+
+.icon-picker .icon-option.active {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%) !important;
+    border-color: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25), 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+    transform: scale(1.05) !important; /* Keep consistent size, no enlargement */
+}
+
+/* Settings and Edit Chore modals - slightly larger icons for better visibility */
+#settings-modal .icon-picker .icon-option,
+#edit-chore-modal .icon-picker .icon-option {
+    min-width: 52px;
+    min-height: 52px;
+    width: 52px;
+    height: 52px;
+    padding: 8px;
+    font-size: 2.8rem !important;
+    transform: scale(1.05) !important;
+}
+
+/* Consistent hover/active states - no enlargement */
+#settings-modal .icon-picker .icon-option:hover,
+#edit-chore-modal .icon-picker .icon-option:hover,
+#settings-modal .icon-picker .icon-option.active,
+#edit-chore-modal .icon-picker .icon-option.active {
+    transform: scale(1.05) !important;
 }
 
 .icon-option .icon-label {
@@ -6247,11 +6341,76 @@ body.modal-open {
 /* Responsive design for icon picker */
 @media (max-width: 768px) {
     .icon-grid {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
         gap: var(--space-2);
         padding: var(--space-3);
     }
     
+    /* Mobile - chore icon picker buttons - compact (but not bulk edit) */
+    .icon-picker:not(#bulk-edit-icon-picker) .icon-option {
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
+        padding: 5px;
+        font-size: 2.2rem !important;
+        transform: scale(1.05) !important; /* Consistent scaling */
+    }
+    
+    .icon-picker:not(#bulk-edit-icon-picker) .icon-option:hover {
+        transform: scale(1.05) !important; /* No enlargement on hover */
+    }
+    
+    /* Bulk edit icon picker mobile */
+    #bulk-edit-icon-picker {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: var(--space-2);
+        max-height: 250px;
+    }
+    
+    #bulk-edit-icon-picker .icon-option:not([data-icon=""]) {
+        min-height: 50px;
+        height: 50px;
+        width: 50px;
+        font-size: 2rem !important;
+    }
+    
+    /* Bulk edit modal mobile layout */
+    #bulk-edit-chores-modal .modal-content {
+        max-width: 98%;
+        width: 98%;
+    }
+    
+    .bulk-edit-selection,
+    .bulk-edit-fields {
+        padding: var(--space-3);
+        max-height: 70vh;
+    }
+    
+    #bulk-edit-chores-list {
+        max-height: 40vh;
+    }
+    
+    .bulk-edit-actions {
+        padding: var(--space-4);
+    }
+    
+    #bulk-edit-start-btn {
+        min-width: 100%;
+        font-size: var(--font-size-base);
+    }
+    
+    .bulk-edit-chore-item {
+        padding: var(--space-3);
+        gap: var(--space-3);
+    }
+    
+    .chore-item-content .chore-icon {
+        font-size: 1.5rem;
+        min-width: 40px;
+    }
+    
+    /* Base icon option (for avatar picker) */
     .icon-option {
         max-width: 70px;
         min-height: 90px;
@@ -6261,10 +6420,6 @@ body.modal-open {
     .icon-option img {
         width: 40px;
         height: 40px;
-    }
-    
-    .icon-option .icon-emoji {
-        font-size: 28px;
     }
     
     .icon-tab {
@@ -6524,19 +6679,22 @@ body.modal-open {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
+/* ==========================================
+   ICON PICKER CONTAINER STYLES
+   ========================================== */
+/* Base container styles for chore icon pickers (inline emoji buttons) */
 .icon-picker {
     display: flex;
-    gap: var(--space-2);
     flex-wrap: wrap;
-    margin-top: var(--space-2);
-    max-height: 200px;
-    overflow-y: auto;
-    padding: var(--space-2);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    background: var(--gray-50);
+    gap: var(--space-1); /* Reduced from space-2 for tighter spacing */
+    padding: var(--space-2); /* Reduced from space-3 for less empty space */
+    align-items: center; /* Better vertical alignment */
+    justify-content: flex-start; /* Align items to start for better grid appearance */
+    /* Container doesn't need max-height - buttons handle overflow naturally */
+    /* Background and border removed - handled by individual icon buttons */
 }
 
+/* Custom scrollbar for icon picker (only applies if overflow is needed) */
 .icon-picker::-webkit-scrollbar {
     width: 6px;
 }
@@ -6555,7 +6713,19 @@ body.modal-open {
     background: var(--gray-500);
 }
 
-/* Removed conflicting icon-option styles - using the main icon picker styles instead */
+/* Icon grid (used in avatar picker modal with tabs) */
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: var(--space-3);
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--space-4);
+    justify-items: center;
+    align-items: center;
+}
+
+/* Note: Icon option button styles are defined in the consolidated section above (lines 6193+) */
 
 .upgrade-banner {
     display: flex;
@@ -6739,11 +6909,7 @@ body.modal-open {
 }
 
 /* Chores Management Styles */
-.chores-management-content h3 {
-    margin-bottom: var(--space-4);
-    color: var(--gray-800);
-    font-size: var(--font-size-xl);
-}
+/* Removed duplicate .chores-management-content h3 - now using standardized rule above */
 
 #chores-management-tabs {
     display: flex;
@@ -6824,23 +6990,322 @@ body.modal-open {
     }
 }
 
-/* Bulk Edit Modal Styles */
+/* ==========================================
+   BULK EDIT MODAL - NEW TWO-STEP UX
+   ========================================== */
+/* Increase modal width for better space utilization */
+#bulk-edit-chores-modal .modal-content {
+    max-width: 900px;
+    width: 95%;
+}
+
 .bulk-edit-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
-    max-height: 70vh;
+    max-height: 75vh;
     overflow: hidden;
+    position: relative;
+    display: block !important; /* Force block layout - no grid/flex */
 }
 
+/* Step 1: Selection View - Full width, shown by default */
 .bulk-edit-selection {
-    border-right: 1px solid var(--gray-200);
-    padding-right: var(--space-4);
+    width: 100%;
+    padding: var(--space-4);
     overflow-y: auto;
+    max-height: 75vh;
+    display: block !important; /* Always block when not hidden */
 }
 
-.bulk-edit-fields {
+.bulk-edit-selection.hidden {
+    display: none !important;
+}
+
+/* Selection view specific styles */
+.bulk-edit-selection h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-5);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Chores list container */
+#bulk-edit-chores-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    max-height: 50vh;
     overflow-y: auto;
+    padding-right: var(--space-2);
+}
+
+/* Chore item styling - improved */
+.bulk-edit-chore-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 5px;
+}
+
+.bulk-edit-chore-item:hover {
+    background: var(--gray-50) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.bulk-edit-chore-item input[type="checkbox"] {
+    margin: 0;
+    transform: scale(1.3);
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.chore-item-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.chore-item-content .chore-icon {
+    font-size: 2rem;
+    line-height: 1;
+    min-width: 48px;
+    text-align: center;
+}
+
+.chore-item-content .chore-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.chore-item-content .chore-info strong {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chore-item-content .chore-meta {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+/* Selection actions (button area) */
+.bulk-edit-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--border-color);
+}
+
+.bulk-edit-actions .helper-text {
+    text-align: center;
+    margin: 0;
+    font-size: var(--font-size-base);
+}
+
+#bulk-edit-start-btn {
+    min-width: 280px;
+    padding: var(--space-4) var(--space-6);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+#bulk-edit-start-btn:disabled,
+#bulk-edit-start-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#bulk-edit-start-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 234, 0.3);
+}
+
+#bulk-edit-count-text {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+#bulk-edit-count {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: var(--font-size-lg);
+}
+
+/* Step 2: Edit View - Full width, hidden by default */
+.bulk-edit-fields,
+#bulk-edit-fields-section {
+    width: 100%;
+    padding: var(--space-6);
+    overflow-y: auto;
+    max-height: 75vh;
+    display: none !important; /* Hidden by default */
+}
+
+/* Hidden state */
+.bulk-edit-fields.hidden,
+#bulk-edit-fields-section.hidden {
+    display: none !important;
+}
+
+/* Visible state - when not hidden */
+.bulk-edit-fields:not(.hidden),
+#bulk-edit-fields-section:not(.hidden) {
+    display: block !important;
+}
+
+.bulk-edit-fields h3,
+#bulk-edit-fields-section h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-6);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    padding-bottom: var(--space-4);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Improved form group spacing in bulk edit */
+#bulk-edit-form .form-group {
+    margin-bottom: var(--space-5);
+}
+
+#bulk-edit-form .form-group label {
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+    color: var(--text-primary);
+}
+
+/* CRITICAL: Ensure sections don't display side-by-side */
+.bulk-edit-content {
+    display: block !important; /* Force block, not grid or flex */
+}
+
+.bulk-edit-content > section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Don't set display: block here - let individual section rules handle it */
+.bulk-edit-content > section.hidden {
+    display: none !important;
+}
+
+/* Override any potential grid/flex layouts */
+#bulk-edit-chores-modal .bulk-edit-content {
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    display: block !important;
+}
+
+/* ==========================================
+   BULK EDIT MODAL - ICON PICKER OVERRIDES
+   ========================================== */
+/* Bulk edit icon picker uses grid layout for better organization */
+#bulk-edit-icon-picker {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: var(--space-2);
+    padding: var(--space-3);
+    max-width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-primary);
+}
+
+/* "No Change" button - full width, text-based styling */
+#bulk-edit-icon-picker .icon-option[data-icon=""] {
+    grid-column: 1 / -1; /* Span full width */
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    height: auto;
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-base) !important;
+    font-weight: 500;
+    border: 2px dashed var(--border-color) !important;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    text-align: center;
+    white-space: normal;
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+#bulk-edit-icon-picker .icon-option[data-icon=""]:hover {
+    border-color: var(--primary) !important;
+    background: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+#bulk-edit-icon-picker .icon-option[data-icon=""]:active,
+#bulk-edit-icon-picker .icon-option[data-icon=""].active {
+    border-color: var(--primary) !important;
+    background: var(--primary-light);
+    border-style: solid !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 234, 0.2);
+}
+
+/* Regular icon buttons in bulk edit - proper sizing */
+#bulk-edit-icon-picker .icon-option:not([data-icon=""]) {
+    min-height: 56px;
+    height: 56px;
+    width: 56px;
+    padding: 8px;
+    font-size: 2.4rem !important;
+    border-radius: var(--radius);
+}
+
+#bulk-edit-icon-picker .icon-option:not([data-icon=""]):hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(99, 102, 234, 0.2);
+}
+
+#bulk-edit-icon-picker .icon-option:not([data-icon=""]).active {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(99, 102, 234, 0.2), 0 4px 12px rgba(99, 102, 234, 0.15);
+}
+
+/* Custom scrollbar for bulk edit icon picker */
+#bulk-edit-icon-picker::-webkit-scrollbar {
+    width: 8px;
+}
+
+#bulk-edit-icon-picker::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+
+#bulk-edit-icon-picker::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 4px;
+}
+
+#bulk-edit-icon-picker::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
 }
 
 .bulk-edit-chore-item {
@@ -6882,21 +7347,52 @@ body.modal-open {
     text-align: left;
 }
 
-/* Edit Chore Modal - Left align category field */
+/* Helper text for form fields */
+/* Standardized helper text for all modal forms */
+.helper-text,
+.help-text {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+/* Small elements without explicit class should also use helper text styling */
+.form-group > small:not([class]) {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+/* Optional field indicator */
+.field-optional {
+    font-weight: normal;
+    color: var(--gray-500);
+    font-size: var(--font-size-sm);
+}
+
+/* Screen reader only text */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Edit Chore Modal - Left align fields (if needed for consistency) */
 #edit-chore-modal .form-group {
     text-align: left;
 }
 
 #edit-chore-modal label {
-    text-align: left;
-    display: block;
-    margin-bottom: var(--space-2);
-}
-
-#edit-chore-modal input,
-#edit-chore-modal select,
-#edit-chore-modal textarea {
-    width: 100%;
     text-align: left;
 }
 
@@ -7951,6 +8447,7 @@ body.modal-open {
     border-radius: var(--radius-lg);
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 [data-theme="dark"] .settings-slider::-webkit-slider-thumb {
@@ -8120,7 +8617,9 @@ body.modal-open {
     background: var(--gray-300);
 }
 
-[data-theme="dark"] .tab-btn.active {
+/* Dark mode - Children/Chores tabs active state */
+[data-theme="dark"] .children-tabs .tab-btn.active,
+[data-theme="dark"] #chores-management-tabs .tab-btn.active {
     background: var(--primary);
     color: white;
 }
@@ -8416,6 +8915,7 @@ html[data-color-scheme="lavender"],
     background: var(--gray-200);
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 #sound-volume::-webkit-slider-thumb {
@@ -10315,18 +10815,20 @@ html[data-color-scheme="lavender"],
     border: 2px solid var(--primary);
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
-    
-    .chore-cell.completed:hover,
-    .chore-cell.completed:active {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-    }
-    
-    /* Touch feedback */
-    .chore-cell:active {
-        transform: scale(0.95);
-    }
-    
+
+.chore-cell.completed:hover,
+.chore-cell.completed:active {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+/* Touch feedback */
+.chore-cell:active {
+    transform: scale(0.95);
+}
+
+/* Mobile optimizations for progress and earnings */
+@media (max-width: 768px) {
     /* Progress section mobile improvements */
     .progress-section {
         margin-bottom: var(--space-6);
@@ -12096,24 +12598,24 @@ body.seasonal-mothersday .app-container {
     border-radius: 4px;
 }
 
-/* Seasonal Theme Decorations */
-.seasonal-christmas .app-header {
-    background: var(--seasonal-accent) !important;
-    position: relative;
-    overflow: hidden;
-}
-
-.seasonal-christmas .app-header::before {
-    content: '❄️';
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 1.5rem;
-    animation: snowfall 3s infinite;
-}
-
+/* Seasonal Theme Decorations - Legacy definitions (consolidated below) */
+/* Note: Full contrast fixes are applied in the section below starting at line ~12268 */
 .seasonal-halloween .app-header {
     background: var(--seasonal-accent) !important;
+}
+
+/* Improve text contrast in Halloween header */
+.seasonal-halloween .app-header .header-left h1,
+.seasonal-halloween .app-header h1 {
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
+    font-weight: 800 !important;
+}
+
+.seasonal-halloween .app-header .header-left p,
+.seasonal-halloween .app-header p {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
 .seasonal-halloween .app-header::before {
@@ -12123,6 +12625,7 @@ body.seasonal-mothersday .app-container {
     right: 20px;
     font-size: 1.5rem;
     animation: spooky-bounce 2s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Halloween mode button improvements for better contrast */
@@ -12207,6 +12710,131 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
 }
 
+/* ========================================
+   SEASONAL THEME HEADER CONTRAST FIXES
+   ======================================== */
+/* All seasonal themes: Header text contrast */
+.seasonal-easter .app-header .header-left h1,
+.seasonal-easter .app-header h1,
+.seasonal-summer .app-header .header-left h1,
+.seasonal-summer .app-header h1,
+.seasonal-spring .app-header .header-left h1,
+.seasonal-spring .app-header h1,
+.seasonal-fall .app-header .header-left h1,
+.seasonal-fall .app-header h1,
+.seasonal-winter .app-header .header-left h1,
+.seasonal-winter .app-header h1,
+.seasonal-valentines .app-header .header-left h1,
+.seasonal-valentines .app-header h1,
+.seasonal-christmas .app-header .header-left h1,
+.seasonal-christmas .app-header h1,
+.seasonal-stpatricks .app-header .header-left h1,
+.seasonal-stpatricks .app-header h1,
+.seasonal-thanksgiving .app-header .header-left h1,
+.seasonal-thanksgiving .app-header h1,
+.seasonal-backtoschool .app-header .header-left h1,
+.seasonal-backtoschool .app-header h1,
+.seasonal-newyear .app-header .header-left h1,
+.seasonal-newyear .app-header h1,
+.seasonal-mothersday .app-header .header-left h1,
+.seasonal-mothersday .app-header h1 {
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
+    font-weight: 800 !important;
+}
+
+.seasonal-easter .app-header .header-left p,
+.seasonal-easter .app-header p,
+.seasonal-summer .app-header .header-left p,
+.seasonal-summer .app-header p,
+.seasonal-spring .app-header .header-left p,
+.seasonal-spring .app-header p,
+.seasonal-fall .app-header .header-left p,
+.seasonal-fall .app-header p,
+.seasonal-winter .app-header .header-left p,
+.seasonal-winter .app-header p,
+.seasonal-valentines .app-header .header-left p,
+.seasonal-valentines .app-header p,
+.seasonal-christmas .app-header .header-left p,
+.seasonal-christmas .app-header p,
+.seasonal-stpatricks .app-header .header-left p,
+.seasonal-stpatricks .app-header p,
+.seasonal-thanksgiving .app-header .header-left p,
+.seasonal-thanksgiving .app-header p,
+.seasonal-backtoschool .app-header .header-left p,
+.seasonal-backtoschool .app-header p,
+.seasonal-newyear .app-header .header-left p,
+.seasonal-newyear .app-header p,
+.seasonal-mothersday .app-header .header-left p,
+.seasonal-mothersday .app-header p {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* All seasonal themes: Header button contrast */
+.seasonal-easter .app-header .btn,
+.seasonal-easter .app-header button,
+.seasonal-summer .app-header .btn,
+.seasonal-summer .app-header button,
+.seasonal-spring .app-header .btn,
+.seasonal-spring .app-header button,
+.seasonal-fall .app-header .btn,
+.seasonal-fall .app-header button,
+.seasonal-winter .app-header .btn,
+.seasonal-winter .app-header button,
+.seasonal-valentines .app-header .btn,
+.seasonal-valentines .app-header button,
+.seasonal-christmas .app-header .btn,
+.seasonal-christmas .app-header button,
+.seasonal-stpatricks .app-header .btn,
+.seasonal-stpatricks .app-header button,
+.seasonal-thanksgiving .app-header .btn,
+.seasonal-thanksgiving .app-header button,
+.seasonal-backtoschool .app-header .btn,
+.seasonal-backtoschool .app-header button,
+.seasonal-newyear .app-header .btn,
+.seasonal-newyear .app-header button,
+.seasonal-mothersday .app-header .btn,
+.seasonal-mothersday .app-header button {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1a1a1a !important;
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.seasonal-easter .app-header .btn:hover,
+.seasonal-easter .app-header button:hover,
+.seasonal-summer .app-header .btn:hover,
+.seasonal-summer .app-header button:hover,
+.seasonal-spring .app-header .btn:hover,
+.seasonal-spring .app-header button:hover,
+.seasonal-fall .app-header .btn:hover,
+.seasonal-fall .app-header button:hover,
+.seasonal-winter .app-header .btn:hover,
+.seasonal-winter .app-header button:hover,
+.seasonal-valentines .app-header .btn:hover,
+.seasonal-valentines .app-header button:hover,
+.seasonal-christmas .app-header .btn:hover,
+.seasonal-christmas .app-header button:hover,
+.seasonal-stpatricks .app-header .btn:hover,
+.seasonal-stpatricks .app-header button:hover,
+.seasonal-thanksgiving .app-header .btn:hover,
+.seasonal-thanksgiving .app-header button:hover,
+.seasonal-backtoschool .app-header .btn:hover,
+.seasonal-backtoschool .app-header button:hover,
+.seasonal-newyear .app-header .btn:hover,
+.seasonal-newyear .app-header button:hover,
+.seasonal-mothersday .app-header .btn:hover,
+.seasonal-mothersday .app-header button:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(255, 255, 255, 1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* All seasonal themes: Header background and emoji decorations */
 .seasonal-easter .app-header {
     background: var(--seasonal-accent) !important;
 }
@@ -12218,6 +12846,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: hop 1.5s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-summer .app-header {
@@ -12231,6 +12860,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: rotate 4s infinite linear;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-spring .app-header {
@@ -12244,6 +12874,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: bloom 3s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-fall .app-header {
@@ -12257,6 +12888,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: fall 2s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-winter .app-header {
@@ -12270,6 +12902,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: snowfall 3s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-valentines .app-header {
@@ -12283,6 +12916,21 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: heartbeat 1.5s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.seasonal-christmas .app-header {
+    background: var(--seasonal-accent) !important;
+}
+
+.seasonal-christmas .app-header::before {
+    content: '❄️';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5rem;
+    animation: snowfall 3s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-stpatricks .app-header {
@@ -12296,6 +12944,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: shamrock-spin 2s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .seasonal-thanksgiving .app-header {
@@ -12309,6 +12958,49 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     right: 20px;
     font-size: 1.5rem;
     animation: gobble 1s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.seasonal-backtoschool .app-header {
+    background: var(--seasonal-accent) !important;
+}
+
+.seasonal-backtoschool .app-header::before {
+    content: '📚';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5rem;
+    animation: hop 1.5s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.seasonal-newyear .app-header {
+    background: var(--seasonal-accent) !important;
+}
+
+.seasonal-newyear .app-header::before {
+    content: '🎉';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5rem;
+    animation: rotate 2s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.seasonal-mothersday .app-header {
+    background: var(--seasonal-accent) !important;
+}
+
+.seasonal-mothersday .app-header::before {
+    content: '💐';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.5rem;
+    animation: bloom 3s infinite;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Seasonal Animations */
@@ -14621,6 +15313,81 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
 .footer-link:hover {
     color: var(--primary);
     text-decoration: underline;
+}
+
+/* Downloads Coming Soon Styles */
+.coming-soon-card {
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 100%);
+    border: 2px solid var(--primary-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    text-align: center;
+}
+
+.coming-soon-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.coming-soon-card h4 {
+    color: var(--primary);
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--space-3);
+}
+
+.coming-soon-card > p {
+    color: var(--gray-600);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-4);
+}
+
+.coming-soon-features {
+    background: white;
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+    text-align: left;
+}
+
+.coming-soon-features h5 {
+    color: var(--primary);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-3);
+    text-align: center;
+}
+
+.coming-soon-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.coming-soon-features li {
+    padding: var(--space-2) 0;
+    color: var(--gray-700);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+}
+
+.coming-soon-cta {
+    margin-top: var(--space-4);
+}
+
+.coming-soon-cta p {
+    color: var(--gray-700);
+    font-size: var(--font-size-base);
+}
+
+.coming-soon-preview {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--primary-200);
 }
 
 /* Subscription Management Styles */

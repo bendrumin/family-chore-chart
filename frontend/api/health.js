@@ -1,5 +1,5 @@
 // Health check endpoint for monitoring API status
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -7,9 +7,9 @@ export default async function handler(req, res) {
   try {
     // Check environment variables
     const envCheck = {
-      stripe: {
-        configured: !!process.env.STRIPE_SECRET_KEY,
-        status: process.env.STRIPE_SECRET_KEY ? 'configured' : 'missing'
+      paypal: {
+        configured: !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
+        status: (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) ? 'configured' : 'missing'
       },
       email: {
         service: process.env.EMAIL_SERVICE || 'not_set',
@@ -28,10 +28,10 @@ export default async function handler(req, res) {
     // Check dependencies
     let dependencies = {};
     try {
-      const Stripe = require('stripe');
-      dependencies.stripe = 'available';
+      const { PayPalApi } = require('@paypal/paypal-server-sdk');
+      dependencies.paypal = 'available';
     } catch (error) {
-      dependencies.stripe = 'missing';
+      dependencies.paypal = 'missing';
     }
 
     try {
@@ -63,15 +63,15 @@ export default async function handler(req, res) {
     };
 
     // Determine overall health status
-    const hasCriticalIssues = !envCheck.stripe.configured || 
+    const hasCriticalIssues = !envCheck.paypal.configured || 
                              (!envCheck.email.sendgrid && !envCheck.email.user || !envCheck.email.pass);
 
     if (hasCriticalIssues) {
       healthStatus.status = 'degraded';
       healthStatus.warnings = [];
       
-      if (!envCheck.stripe.configured) {
-        healthStatus.warnings.push('Stripe not configured - payments will fail');
+      if (!envCheck.paypal.configured) {
+        healthStatus.warnings.push('PayPal not configured - payments will fail');
       }
       if (!envCheck.email.sendgrid && (!envCheck.email.user || !envCheck.email.pass)) {
         healthStatus.warnings.push('Email not configured - contact form emails will not be sent');
