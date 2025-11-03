@@ -12,8 +12,23 @@
     <meta name="keywords" content="family activity tracker, kids chores, homework tracker, reading log, family rewards, children responsibility, household tasks, parenting app, activity management, family organization, kids motivation, achievement tracker">
     <meta name="author" content="ChoreStar">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="geo.region" content="US">
+    <meta name="geo.placename" content="United States">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
     <link rel="canonical" href="https://chorestar.app/">
+    <link rel="alternate" hreflang="en" href="https://chorestar.app/">
+    <link rel="alternate" hreflang="es" href="https://chorestar.app/es">
+    <link rel="alternate" hreflang="fr" href="https://chorestar.app/fr">
+    <link rel="alternate" hreflang="de" href="https://chorestar.app/de">
+    <link rel="alternate" hreflang="x-default" href="https://chorestar.app/">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -21,11 +36,19 @@
     <meta property="og:title" content="ChoreStar - Family Activity Tracker & Reward System">
     <meta property="og:description" content="Track chores, homework, reading, and all family activities with progress tracking and rewards. Help your children build responsibility and achieve goals across all their daily activities.">
     <meta property="og:image" content="https://chorestar.app/og-image.jpg">
+    <meta property="og:image:secure_url" content="https://chorestar.app/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="ChoreStar family activity tracker interface showing colorful progress tracking and rewards">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:url" content="https://chorestar.app/">
     <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="es_ES">
+    <meta property="og:locale:alternate" content="fr_FR">
+    <meta property="og:locale:alternate" content="de_DE">
+    <meta property="og:updated_time" content="2025-01-15T00:00:00Z">
+    <meta property="article:author" content="ChoreStar">
+    <meta property="article:publisher" content="https://www.facebook.com/chorestar">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
@@ -35,6 +58,8 @@
     <meta name="twitter:description" content="Transform chores, homework, reading, and activities into achievements. Track progress, earn rewards, and build good habits with our interactive family tracker.">
     <meta name="twitter:image" content="https://chorestar.app/twitter-image.jpg">
     <meta name="twitter:image:alt" content="ChoreStar family activity tracking app interface">
+    <meta name="twitter:domain" content="chorestar.app">
+    <meta name="twitter:url" content="https://chorestar.app/">
     
     <!-- Apple Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -105,40 +130,73 @@
       "alternateName": "ChoreStar Family Activity Tracker",
       "description": "Interactive family activity tracker and reward system that makes chores, homework, reading, and all activities fun for children while building responsibility through gamification.",
       "url": "https://chorestar.app/",
-      "image": "https://chorestar.app/logo.png",
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://chorestar.app/logo.png",
+        "width": 512,
+        "height": 512
+      },
       "applicationCategory": "Family & Parenting",
       "operatingSystem": "Web Browser, iOS, Android",
       "browserRequirements": "HTML5, JavaScript enabled",
       "softwareVersion": "2.0",
       "dateModified": "2025-01-15",
+      "datePublished": "2024-01-01",
+      "inLanguage": ["en", "es", "fr", "de"],
       "author": {
         "@type": "Organization",
         "name": "ChoreStar",
         "url": "https://chorestar.app/"
       },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD",
-        "category": "Free with Premium Options"
-      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "category": "Free Plan",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "price": "9.99",
+          "priceCurrency": "USD",
+          "category": "Premium Plan",
+          "availability": "https://schema.org/InStock"
+        }
+      ],
       "featureList": [
         "Family activity tracking (chores, homework, reading, more)",
-        "Progress visualization",
-        "Reward system",
+        "Progress visualization with animated charts",
+        "Reward system with earnings tracking",
         "Multiple child profiles",
-        "Custom activity icons",
-        "Analytics dashboard",
+        "Custom activity icons and themes",
+        "Analytics dashboard with insights",
         "Mobile responsive design",
-        "Achievement badges"
+        "Achievement badges and streaks",
+        "Export reports (PDF/CSV)",
+        "Seasonal themes and suggestions",
+        "Offline mode support"
       ],
-      "screenshot": "https://chorestar.app/screenshot.jpg",
+      "screenshot": {
+        "@type": "ImageObject",
+        "url": "https://chorestar.app/screenshot.jpg",
+        "width": 1200,
+        "height": 630
+      },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
         "reviewCount": "127",
         "bestRating": "5",
         "worstRating": "1"
+      },
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Families with children",
+        "geographicArea": {
+          "@type": "Country",
+          "name": "Worldwide"
+        }
       }
     }
     </script>
@@ -209,20 +267,86 @@
       "name": "ChoreStar",
       "alternateName": "ChoreStar App",
       "url": "https://chorestar.app/",
-      "logo": "https://chorestar.app/logo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chorestar.app/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://chorestar.app/logo.png",
       "description": "Making family chores fun and rewarding through interactive tracking and gamification.",
       "foundingDate": "2024",
       "sameAs": [
         "https://twitter.com/chorestar",
         "https://facebook.com/chorestar",
-        "https://instagram.com/chorestar"
+        "https://instagram.com/chorestar",
+        "https://www.linkedin.com/company/chorestar"
       ],
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "Customer Service",
         "email": "hi@chorestar.app",
-        "availableLanguage": "English"
+        "availableLanguage": ["English", "Spanish", "French", "German"],
+        "areaServed": "Worldwide"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "US"
       }
+    }
+    </script>
+    
+    <!-- Breadcrumb Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://chorestar.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Family Activity Tracker",
+          "item": "https://chorestar.app/#dashboard"
+        }
+      ]
+    }
+    </script>
+    
+    <!-- HowTo Structured Data for Getting Started -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Get Started with ChoreStar",
+      "description": "Learn how to set up ChoreStar to track your family's activities and rewards",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Create Your Account",
+          "text": "Sign up for a free ChoreStar account at chorestar.app"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Add Your Children",
+          "text": "Add each child in your family with their name and age"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Add Activities",
+          "text": "Create activities like chores, homework, reading, or any tasks you want to track"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Track Progress",
+          "text": "Mark activities as complete and watch your children earn rewards and build good habits"
+        }
+      ]
     }
     </script>
 
@@ -243,10 +367,6 @@
     </script>
     
     <!-- External Resources -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <!-- i18n for internationalization -->
     <script src="i18n-setup.js"></script>
     
@@ -469,7 +589,8 @@
                         <h2 id="family-dashboard-heading">🏠 Family Overview</h2>
                         <p class="dashboard-subtitle">This week's family progress and achievements</p>
                     </div>
-                    <div class="dashboard-actions">
+                    <div class="dashboard-actions flex items-center gap-2">
+                        <span id="connection-status" class="connection-badge" aria-live="polite">🔌 Checking…</span>
                         <button class="btn btn-primary btn-sm" id="refresh-dashboard" aria-label="Refresh dashboard data">
                             <span aria-hidden="true">🔄</span> Refresh
                         </button>
@@ -587,7 +708,7 @@
     <!-- Seasonal Chore Suggestions Modal -->
     <div id="seasonal-chore-modal" class="modal hidden" role="dialog" aria-labelledby="seasonal-chore-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex seasonal-activity-modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="seasonal-chore-modal-title">🌟 Seasonal Activity Suggestions</h2>
                 <button class="modal-close" data-modal="seasonal-chore-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -604,7 +725,7 @@
     <!-- Add Child Modal -->
     <div id="add-child-modal" class="modal hidden" role="dialog" aria-labelledby="add-child-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="add-child-modal-title">👶 Add New Child</h2>
                 <button class="modal-close" data-modal="add-child-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -652,7 +773,7 @@
                     </form>
                 </div>
             </div>
-            <div class="modal-footer-actions">
+            <div class="modal-footer-actions flex justify-end gap-3">
                 <button type="button" class="btn btn-outline" data-modal="add-child-modal">Cancel</button>
                 <button type="submit" form="add-child-form" class="btn btn-primary">Add Child</button>
             </div>
@@ -742,7 +863,7 @@
     <!-- Edit Child Modal -->
     <div id="edit-child-modal" class="modal hidden" role="dialog" aria-labelledby="edit-child-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="edit-child-modal-title">👶 Edit Child</h2>
                 <button class="modal-close" data-modal="edit-child-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -798,7 +919,7 @@
     <!-- Add Chore Modal -->
     <div id="add-chore-modal" class="modal hidden" role="dialog" aria-labelledby="add-chore-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="add-chore-modal-title">✓ Add New Activities</h2>
                 <button class="modal-close" data-modal="add-chore-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -1007,7 +1128,7 @@
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal hidden" role="dialog" aria-labelledby="settings-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex settings-modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="settings-modal-title">⚙ Family Settings</h2>
                 <button class="modal-close" data-modal="settings-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -1229,6 +1350,41 @@
                         </div>
                     </section>
                     
+                    <!-- Custom Themes Section -->
+                    <section class="settings-section">
+                        <h4>🎨 Custom Themes</h4>
+                        <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Create your own custom theme with personalized colors (Premium feature).</p>
+                        
+                        <div class="theme-builder-intro" id="theme-builder-intro" aria-live="polite"></div>
+                        <div id="theme-builder" class="theme-builder hidden" aria-labelledby="theme-builder-title">
+                            <h5 id="theme-builder-title" class="theme-builder-title">Theme Builder (Premium)</h5>
+                            <div class="theme-builder-grid">
+                                <label class="builder-field"><span>Theme Name</span><input type="text" id="tb-name" placeholder="My Theme" /></label>
+                                <label class="builder-field"><span>Primary Color</span><input type="color" id="tb-primary" /></label>
+                                <label class="builder-field"><span>Primary Dark</span><input type="color" id="tb-primary-dark" /></label>
+                                <label class="builder-field"><span>Card Background</span><input type="color" id="tb-card-bg" /></label>
+                            </div>
+                            <div id="theme-preview-section" class="theme-preview-section">
+                                <h4>Preview</h4>
+                                <div class="theme-preview-content">
+                                    <div class="preview-card">
+                                        <div class="preview-card-header">Sample Card</div>
+                                        <div class="preview-card-body">This is how your theme will look</div>
+                                        <div class="preview-buttons">
+                                            <button class="preview-btn-primary">Primary Button</button>
+                                            <button class="preview-btn-outline">Outline Button</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="builder-actions flex justify-end gap-3">
+                                <button type="button" class="btn btn-outline btn-sm" id="tb-reset">Reset</button>
+                                <button type="button" class="btn btn-primary btn-sm" id="tb-apply">Apply</button>
+                                <button type="button" class="btn btn-primary btn-sm" id="tb-save">Save</button>
+                            </div>
+                        </div>
+                    </section>
+                    
                     <!-- Premium Features Section -->
                     <section class="settings-section">
                         <h4>🌟 Premium Features</h4>
@@ -1281,9 +1437,48 @@
                         <section class="export-section">
                             <h5>📊 Export Family Report</h5>
                             <p>Download a comprehensive report of your family's chore progress and achievements.</p>
-                            <button class="export-button" onclick="app.exportFamilyReport()" aria-label="Export family progress report">
-                                📥 Export Report
-                            </button>
+                            
+                            <!-- Export Options -->
+                            <div class="export-options" style="margin-bottom: var(--space-4);">
+                                <div class="form-group" style="margin-bottom: var(--space-3);">
+                                    <label for="export-child-select" style="display: block; margin-bottom: var(--space-2); font-weight: 600;">
+                                        Select Child (or All)
+                                    </label>
+                                    <select id="export-child-select" class="form-control" aria-label="Select child for export">
+                                        <option value="all">👥 All Children</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" style="margin-bottom: var(--space-3);">
+                                    <label for="export-date-range" style="display: block; margin-bottom: var(--space-2); font-weight: 600;">
+                                        Date Range
+                                    </label>
+                                    <select id="export-date-range" class="form-control" aria-label="Select date range for export">
+                                        <option value="this-week">This Week</option>
+                                        <option value="last-week">Last Week</option>
+                                        <option value="this-month">This Month</option>
+                                        <option value="last-month">Last Month</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="export-custom-dates" class="form-group" style="display: none; margin-bottom: var(--space-3);">
+                                    <label for="export-start-date" style="display: block; margin-bottom: var(--space-2); font-weight: 600;">Start Date</label>
+                                    <input type="date" id="export-start-date" class="form-control" aria-label="Export start date">
+                                    
+                                    <label for="export-end-date" style="display: block; margin-top: var(--space-3); margin-bottom: var(--space-2); font-weight: 600;">End Date</label>
+                                    <input type="date" id="export-end-date" class="form-control" aria-label="Export end date">
+                                </div>
+                                
+                                <div class="export-buttons-group" style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+                                    <button class="btn btn-primary btn-sm" onclick="app.exportFamilyReportPDF()" aria-label="Export PDF report">
+                                        📄 Export PDF
+                                    </button>
+                                    <button class="btn btn-outline btn-sm" onclick="app.exportFamilyReportCSV()" aria-label="Export CSV report">
+                                        📊 Export CSV
+                                    </button>
+                                </div>
+                            </div>
                         </section>
                         
                         <section class="features-section">
@@ -1563,7 +1758,7 @@
     <!-- AI Suggestions Modal -->
     <div id="ai-suggestions-modal" class="modal hidden" role="dialog" aria-labelledby="ai-suggestions-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex ai-suggestions-modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="ai-suggestions-modal-title">🤖 Smart Activity Suggestions</h2>
                 <button class="modal-close" data-modal="ai-suggestions-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -1578,7 +1773,7 @@
     <!-- Family Sharing Modal -->
     <div id="family-sharing-modal" class="modal hidden" role="dialog" aria-labelledby="family-sharing-modal-title" aria-hidden="true">
         <div class="modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="family-sharing-modal-title">👨‍👩‍👧‍👦 Family Sharing</h2>
                 <button class="modal-close" data-modal="family-sharing-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -1625,9 +1820,9 @@
     </div>
 
     <!-- Bulk Edit Chores Modal -->
-    <div id="bulk-edit-chores-modal" class="modal hidden" role="dialog" aria-labelledby="bulk-edit-modal-title" aria-hidden="true">
+    <div id="bulk-edit-chores-modal" class="modal modal-lg hidden" role="dialog" aria-labelledby="bulk-edit-modal-title" aria-hidden="true">
         <div class="modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="bulk-edit-modal-title">✏️ Bulk Edit Chores</h2>
                 <button class="modal-close" data-modal="bulk-edit-chores-modal" aria-label="Close bulk edit modal">&times;</button>
             </header>
@@ -1804,7 +1999,7 @@
     <!-- Edit Chore Modal -->
     <div id="edit-chore-modal" class="modal hidden" role="dialog" aria-labelledby="edit-chore-modal-title" aria-hidden="true">
         <div class="modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="edit-chore-modal-title">✏️ Edit Chore</h2>
                 <button class="modal-close" data-modal="edit-chore-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -1974,7 +2169,7 @@
     <!-- FAQ Modal -->
     <div id="faq-modal" class="modal hidden" role="dialog" aria-labelledby="faq-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex faq-modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="faq-modal-title">❓ Frequently Asked Questions</h2>
                 <button class="modal-close" data-modal="faq-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -2090,7 +2285,7 @@
     <!-- Contact Modal -->
     <div id="contact-modal" class="modal hidden" role="dialog" aria-labelledby="contact-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex contact-modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="contact-modal-title">📧 Contact Us</h2>
                 <button class="modal-close" data-modal="contact-modal" aria-label="Close modal">&times;</button>
             </header>
@@ -2193,10 +2388,58 @@
             
             <div class="new-features-content">
                 <div class="features-intro">
-                    <p>🎉 <strong>Major Update!</strong> We've completely redesigned ChoreStar with beautiful new features and a professional polish!</p>
+                    <p>🎉 <strong>Latest Update - January 2025!</strong> We've added powerful new features and polished the entire experience for a smoother, more professional feel!</p>
                 </div>
                 
                 <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h3>Animated Dashboard Stats</h3>
+                            <p>Watch your family's progress come to life! Dashboard counters now animate smoothly when updating, making progress tracking more engaging and fun!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🛡️</div>
+                        <div class="feature-content">
+                            <h3>Smart Error Handling</h3>
+                            <p>Friendly inline error messages with one-click retry buttons. No more confusing error screens - just clear messages and easy fixes when things go wrong!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-content">
+                            <h3>Faster Load Times</h3>
+                            <p>Optimized performance with lazy loading! Heavy libraries only load when needed, making the app start faster and feel more responsive than ever!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">⌨️</div>
+                        <div class="feature-content">
+                            <h3>Enhanced Accessibility</h3>
+                            <p>Full keyboard navigation support! Tab through modals, press Escape to close, and enjoy improved screen reader support. ChoreStar is now accessible to everyone!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📥</div>
+                        <div class="feature-content">
+                            <h3>Advanced Export Options</h3>
+                            <p>Export reports with precision! Choose specific children, select custom date ranges (This Week, Last Month, or custom dates), and export as PDF or CSV. Perfect for tracking progress over time!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🔍</div>
+                        <div class="feature-content">
+                            <h3>SEO Optimized</h3>
+                            <p>Better discoverability! Enhanced meta tags, structured data, and rich snippets help ChoreStar appear better in search results and social media shares!</p>
+                        </div>
+                    </div>
+                    
                     <div class="feature-item">
                         <div class="feature-icon">🎯</div>
                         <div class="feature-content">
@@ -2263,11 +2506,11 @@
                 </div>
                 
                 <div class="features-footer">
-                    <p class="features-note">💡 <strong>Pro Tip:</strong> Check out the category filter above the chore grid to see activities by type! Try the Smart Suggestions button on each child's card for personalized recommendations!</p>
+                    <p class="features-note">💡 <strong>Pro Tip:</strong> Try the new export features in Settings → Export to see detailed reports! Use keyboard shortcuts (Tab, Escape) for faster navigation. Check out the animated dashboard stats when you refresh!</p>
                 </div>
             </div>
             
-            <div class="modal-actions">
+            <div class="modal-actions flex justify-end gap-3">
                 <button class="btn btn-primary" onclick="app.hideModal('new-features-modal')">
                     Awesome! Let's Go! 🚀
                 </button>
@@ -2279,7 +2522,7 @@
     <!-- Confirmation Modal -->
     <div id="confirmation-modal" class="modal hidden" role="dialog" aria-labelledby="confirmation-title" aria-modal="true">
         <div class="modal-content modal-flex confirmation-modal-content">
-            <header class="modal-header confirmation-header">
+            <header class="modal-header confirmation-header flex-between items-center">
                 <div class="confirmation-icon" id="confirmation-icon">⚠️</div>
                 <h2 id="confirmation-title">Confirm Action</h2>
             </header>
@@ -2288,9 +2531,53 @@
                     <p id="confirmation-message">Are you sure you want to proceed?</p>
                 </div>
             </div>
-            <div class="confirmation-actions">
+            <div class="confirmation-actions flex justify-end gap-3">
                 <button class="btn btn-outline" id="confirmation-cancel">Cancel</button>
                 <button class="btn btn-primary" id="confirmation-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Themes Modal -->
+    <div id="themes-modal" class="modal modal-lg hidden" role="dialog" aria-labelledby="themes-modal-title" aria-hidden="true">
+        <div class="modal-content modal-flex">
+            <header class="modal-header flex-between items-center">
+                <h2 id="themes-modal-title">🎨 Themes</h2>
+                <button class="modal-close" data-modal="themes-modal" aria-label="Close themes modal">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div id="themes-grid" class="themes-grid"></div>
+                <div class="theme-builder-intro" id="theme-builder-intro" aria-live="polite"></div>
+                <div id="theme-builder" class="theme-builder hidden" aria-labelledby="theme-builder-title">
+                    <h3 id="theme-builder-title" class="theme-builder-title">Theme Builder (Premium)</h3>
+                    <div class="theme-builder-grid">
+                        <label class="builder-field"><span>Theme Name</span><input type="text" id="tb-name" placeholder="My Theme" /></label>
+                        <label class="builder-field"><span>Primary Color</span><input type="color" id="tb-primary" /></label>
+                        <label class="builder-field"><span>Primary Dark</span><input type="color" id="tb-primary-dark" /></label>
+                        <label class="builder-field"><span>Card Background</span><input type="color" id="tb-card-bg" /></label>
+                    </div>
+                    <div id="theme-preview-section" class="theme-preview-section">
+                        <h4>Preview</h4>
+                        <div class="theme-preview-content">
+                            <div class="preview-card">
+                                <div class="preview-card-header">Sample Card</div>
+                                <div class="preview-card-body">This is how your theme will look</div>
+                                <div class="preview-buttons">
+                                    <button class="preview-btn-primary">Primary Button</button>
+                                    <button class="preview-btn-outline">Outline Button</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="builder-actions flex justify-end gap-3">
+                        <button type="button" class="btn btn-outline btn-sm" id="tb-reset">Reset</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="tb-apply">Apply</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="tb-save">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions flex justify-end gap-3">
+                <button class="btn btn-outline" data-modal="themes-modal">Close</button>
             </div>
         </div>
     </div>
@@ -2448,7 +2735,7 @@
     <!-- Icon Picker Modal -->
     <div id="icon-picker-modal" class="modal hidden" role="dialog" aria-labelledby="icon-picker-modal-title" aria-hidden="true">
         <div class="modal-content">
-            <header class="modal-header">
+            <header class="modal-header flex-between items-center">
                 <h2 id="icon-picker-modal-title">🎨 Choose an Icon</h2>
                 <button class="modal-close" data-modal="icon-picker-modal" onclick="closeIconPicker()" aria-label="Close icon picker">&times;</button>
             </header>
@@ -2481,22 +2768,59 @@
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="undo-snackbar" class="snackbar" role="status" aria-live="polite" aria-atomic="true">
+        <span id="undo-snackbar-text">Action completed</span>
+        <button id="undo-snackbar-btn" type="button" aria-label="Undo last action">Undo</button>
+    </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Payment processing via PayPal -->
+    <!-- Critical Scripts - Load Immediately -->
     <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=2"></script>
     <script src="api-client.js?v=2"></script>
-    <script src="analytics.js?v=1"></script>
-    <script src="notifications.js?v=1"></script>
-    <script src="family-sharing.js?v=1"></script>
-    <script src="payment.js?v=1"></script>
     <script src="script.js?v=19"></script>
-    <script src="safe-optimizations.js?v=1"></script>
-    <script src="demo-data.js?v=5"></script>
-    <script src="toast-cleanup.js?v=2"></script>
-    <script src="ui-enhancements.js?v=1"></script>
+    
+    <!-- Non-Critical Scripts - Defer for Performance -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+    <script src="analytics.js?v=1" defer></script>
+    <script src="notifications.js?v=1" defer></script>
+    <script src="family-sharing.js?v=1" defer></script>
+    <script src="payment.js?v=1" defer></script>
+    <script src="safe-optimizations.js?v=1" defer></script>
+    <script src="demo-data.js?v=5" defer></script>
+    <script src="toast-cleanup.js?v=2" defer></script>
+    <script src="ui-enhancements.js?v=1" defer></script>
+    
+    <!-- Heavy Libraries - Lazy Load When Needed -->
+    <script>
+        // Lazy load Chart.js when analytics/export is accessed
+        window.lazyLoadChartJS = function() {
+            if (!window.Chart) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js';
+                script.async = true;
+                document.head.appendChild(script);
+                return new Promise((resolve) => {
+                    script.onload = () => resolve(window.Chart);
+                });
+            }
+            return Promise.resolve(window.Chart);
+        };
+        
+        // Lazy load jsPDF when export is accessed
+        window.lazyLoadJSPDF = function() {
+            if (!window.jspdf) {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                script.async = true;
+                document.head.appendChild(script);
+                return new Promise((resolve) => {
+                    script.onload = () => resolve(window.jspdf);
+                });
+            }
+            return Promise.resolve(window.jspdf);
+        };
+    </script>
     
     <!-- Smart Footer -->
     <footer class="smart-footer" id="smart-footer">
