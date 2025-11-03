@@ -438,6 +438,9 @@ class FamilyChoreChart {
             // Apply translations
             this.applyTranslations();
             
+            // Load saved theme if any
+            this.loadSavedTheme();
+
             // Listen for language changes
             window.addEventListener('languageChanged', () => {
                 this.applyTranslations();
@@ -472,6 +475,11 @@ class FamilyChoreChart {
             
             // Add dashboard refresh handler
             this.addDashboardHandlers();
+        
+        // Theme builder will be initialized when appearance tab is opened
+
+        // Connection badge setup
+        this.initConnectionBadge();
             
         } catch (error) {
             console.error('Load app error:', error);
@@ -490,6 +498,294 @@ class FamilyChoreChart {
             // Return to auth screen on critical errors
             this.showAuth();
         }
+    }
+    initConnectionBadge() {
+        const badge = document.getElementById('connection-status');
+        const set = (text, cls) => {
+            if (!badge) return;
+            badge.textContent = text;
+            badge.classList.remove('conn-ok','conn-warn','conn-off');
+            if (cls) badge.classList.add(cls);
+        };
+        // Initial state
+        if (navigator.onLine) set('🟢 Online', 'conn-ok'); else set('🔴 Offline', 'conn-off');
+        window.addEventListener('online', () => set('🟢 Online', 'conn-ok'));
+        window.addEventListener('offline', () => set('🔴 Offline', 'conn-off'));
+        // Light heartbeat based on realtime events
+        this.lastRealtimeAt = Date.now();
+        setInterval(() => {
+            const secs = (Date.now() - this.lastRealtimeAt) / 1000;
+            if (!navigator.onLine) return; // offline handled above
+            if (secs < 30) set('🟢 Live', 'conn-ok');
+            else if (secs < 120) set('🟠 Idle', 'conn-warn');
+            else set('🟡 Waiting', 'conn-warn');
+        }, 10000);
+    }
+    async initializeThemeBuilder() {
+        try {
+            // Check subscription and admin email
+            const subscription = await this.apiClient.getSubscriptionType();
+            const { data: { user } } = await this.apiClient.supabase.auth.getUser();
+            const isAdmin = user?.email === 'bsiegel13@gmail.com';
+            const isPremium = subscription === 'premium' || isAdmin;
+            const builderIntro = document.getElementById('theme-builder-intro');
+            
+            // Theme builder note
+            if (builderIntro) {
+                builderIntro.innerHTML = isPremium ? 
+                    '<div class="text-center p-3">✨ Premium Theme Builder available below! Create your custom theme.</div>' :
+                    '<div class="text-center p-3">Upgrade to Premium to unlock Theme Builder and exclusive themes.</div>';
+            }
+            this.wireThemeBuilder(isPremium);
+        } catch (e) {
+            console.error('initializeThemeBuilder error', e);
+        }
+    }
+
+    getAvailableThemes(isPremium) {
+        return [
+            {
+                key: 'classic', name: 'Classic', premium: false,
+                vars: { '--primary': '#6366f1', '--primary-dark': '#4f46e5', '--card-bg': 'rgba(255,255,255,0.95)' }
+            },
+            {
+                key: 'forest', name: 'Forest', premium: true,
+                vars: { '--primary': '#0f766e', '--primary-dark': '#115e59', '--card-bg': 'rgba(236,253,245,0.95)' }
+            },
+            {
+                key: 'sunset', name: 'Sunset', premium: true,
+                vars: { '--primary': '#f97316', '--primary-dark': '#ea580c', '--card-bg': 'rgba(255,247,237,0.95)' }
+            },
+            {
+                key: 'ocean', name: 'Ocean', premium: false,
+                vars: { '--primary': '#0284c7', '--primary-dark': '#0369a1', '--card-bg': 'rgba(240,249,255,0.95)' }
+            }
+        ];
+    }
+
+    renderThemeCard(theme, isPremium) {
+        const lock = theme.premium && !isPremium ? ' 🔒' : '';
+        const disabled = theme.premium && !isPremium ? 'disabled' : '';
+        const swatches = Object.values(theme.vars).slice(0,3).map(c => `<span class="swatch" style="background:${c}"></span>`).join('');
+        return `
+            <div class="theme-card">
+                <div class="flex-between items-center">
+                    <strong>${theme.name}${lock}</strong>
+                </div>
+                <div class="theme-swatches">${swatches}</div>
+                <button class="btn btn-primary btn-sm" data-apply-theme="${theme.key}" ${disabled}>Apply</button>
+            </div>
+        `;
+    }
+
+    applyTheme(theme) {
+        if (!theme || !theme.vars) return;
+        const root = document.documentElement;
+        Object.entries(theme.vars).forEach(([k,v]) => root.style.setProperty(k, v));
+        try { localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme)); } catch {}
+    }
+
+    async loadSavedTheme() {
+        try {
+            // Try database first
+            const dbTheme = await this.apiClient.getCustomTheme();
+            if (dbTheme) {
+                this.applyTheme(dbTheme);
+                return;
+            }
+            
+            // Fallback to localStorage
+            const raw = localStorage.getItem(this.getThemeStorageKey());
+            if (!raw) return;
+            const theme = JSON.parse(raw);
+            this.applyTheme(theme);
+        } catch (e) {
+            console.warn('loadSavedTheme error:', e);
+        }
+    }
+
+    async saveThemeForUser(theme) {
+        try {
+            // Save to database
+            const result = await this.apiClient.saveCustomTheme(theme);
+            if (result.success) {
+                // Also save to localStorage as fallback
+                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+                return true;
+            } else {
+                console.warn('Failed to save theme to database:', result.error);
+                // Fallback to localStorage only
+                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+                return false;
+            }
+        } catch (e) { 
+            console.warn('saveThemeForUser failed', e);
+            // Fallback to localStorage
+            try {
+                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+            } catch {}
+            return false;
+        }
+    }
+
+    getThemeStorageKey() {
+        const userId = this.apiClient?.currentUser?.id;
+        return userId ? `chorestar_theme_${userId}` : 'chorestar_theme';
+    }
+
+    wireThemeBuilder(isPremium) {
+        const builder = document.getElementById('theme-builder');
+        const intro = document.getElementById('theme-builder-intro');
+        if (!builder || !intro) return;
+        builder.classList.toggle('hidden', !isPremium);
+        if (!isPremium) return;
+        const nameInput = document.getElementById('tb-name');
+        const primary = document.getElementById('tb-primary');
+        const primaryDark = document.getElementById('tb-primary-dark');
+        const cardBg = document.getElementById('tb-card-bg');
+        const applyBtn = document.getElementById('tb-apply');
+        const saveBtn = document.getElementById('tb-save');
+        const resetBtn = document.getElementById('tb-reset');
+        const previewSection = document.getElementById('theme-preview-section');
+
+        // Store original values for reset
+        const getVar = (k) => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+        const originalValues = {
+            primary: getVar('--primary') || '#6366f1',
+            primaryDark: getVar('--primary-dark') || '#4f46e5',
+            cardBg: getVar('--card-bg') || '#ffffff'
+        };
+        const toHex = (color) => {
+            if (!color) return '#ffffff';
+            if (color.startsWith('#')) return color;
+            const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+            if (!m) return '#ffffff';
+            const r = (+m[1]).toString(16).padStart(2,'0');
+            const g = (+m[2]).toString(16).padStart(2,'0');
+            const b = (+m[3]).toString(16).padStart(2,'0');
+            return `#${r}${g}${b}`;
+        };
+        
+        // Try to load saved theme from database
+        const loadSavedThemeData = async () => {
+            try {
+                const saved = await this.apiClient.getCustomTheme();
+                if (saved && saved.vars) {
+                    if (nameInput && saved.name) nameInput.value = saved.name;
+                    if (primary && saved.vars['--primary']) primary.value = toHex(saved.vars['--primary']);
+                    if (primaryDark && saved.vars['--primary-dark']) primaryDark.value = toHex(saved.vars['--primary-dark']);
+                    if (cardBg && saved.vars['--card-bg']) cardBg.value = toHex(saved.vars['--card-bg']);
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Failed to load saved theme:', e);
+            }
+            return false;
+        };
+        
+        // Load saved theme or fall back to current CSS vars
+        loadSavedThemeData().then(loaded => {
+            if (!loaded) {
+                // Fallback to current CSS vars
+                try {
+                    primary.value = toHex(getVar('--primary')) || '#6366f1';
+                    primaryDark.value = toHex(getVar('--primary-dark')) || '#4f46e5';
+                    cardBg.value = toHex(getVar('--card-bg')) || '#ffffff';
+                } catch {}
+            }
+            // Update preview after loading
+            setTimeout(() => {
+                const updatePreview = () => {
+                    if (!previewSection) return;
+                    previewSection.style.setProperty('--tb-preview-primary', primary?.value || '#6366f1');
+                    previewSection.style.setProperty('--tb-preview-primary-dark', primaryDark?.value || '#4f46e5');
+                    const card = previewSection?.querySelector('.preview-card');
+                    if (card && cardBg?.value) card.style.backgroundColor = cardBg.value;
+                };
+                updatePreview();
+            }, 100);
+        });
+
+        const readTheme = () => ({ key: (nameInput?.value?.trim() || 'custom').toLowerCase().replace(/\s+/g,'-'), name: nameInput?.value?.trim() || 'Custom', premium: true, vars: {
+            '--primary': primary.value,
+            '--primary-dark': primaryDark.value,
+            '--card-bg': cardBg.value
+        }});
+        
+        // Update preview section with selected colors
+        const updatePreview = () => {
+            if (!previewSection) return;
+            const root = previewSection;
+            root.style.setProperty('--tb-preview-primary', primary?.value || '#6366f1');
+            root.style.setProperty('--tb-preview-primary-dark', primaryDark?.value || '#4f46e5');
+            if (cardBg?.value) {
+                const card = previewSection?.querySelector('.preview-card');
+                if (card) card.style.backgroundColor = cardBg.value;
+            }
+        };
+        
+        // Real-time preview updates
+        [primary, primaryDark, cardBg].forEach(input => {
+            if (input) {
+                input.addEventListener('input', updatePreview);
+                input.addEventListener('change', updatePreview);
+            }
+        });
+        
+        // Initial preview update
+        setTimeout(updatePreview, 100);
+        
+        // Reset button handler
+        if (resetBtn) resetBtn.addEventListener('click', () => {
+            // Restore original CSS variables
+            const root = document.documentElement;
+            root.style.setProperty('--primary', originalValues.primary);
+            root.style.setProperty('--primary-dark', originalValues.primaryDark);
+            root.style.setProperty('--card-bg', originalValues.cardBg);
+            
+            // Reset color inputs to original values
+            const toHex = (color) => {
+                if (!color) return '#ffffff';
+                if (color.startsWith('#')) return color;
+                const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+                if (!m) return '#ffffff';
+                const r = (+m[1]).toString(16).padStart(2,'0');
+                const g = (+m[2]).toString(16).padStart(2,'0');
+                const b = (+m[3]).toString(16).padStart(2,'0');
+                return `#${r}${g}${b}`;
+            };
+            
+            if (primary) primary.value = toHex(originalValues.primary);
+            if (primaryDark) primaryDark.value = toHex(originalValues.primaryDark);
+            if (cardBg) cardBg.value = toHex(originalValues.cardBg);
+            
+            // Update preview
+            updatePreview();
+            
+            // Clear theme name
+            if (nameInput) nameInput.value = '';
+            
+            this.showToast('Theme reset to original', 'success');
+        });
+        
+        if (applyBtn) applyBtn.addEventListener('click', () => {
+            this.applyTheme(readTheme());
+            this.showToast('Custom theme applied', 'success');
+        });
+        if (saveBtn) saveBtn.addEventListener('click', async () => {
+            const theme = readTheme();
+            if (!theme.name || theme.name === 'Custom') {
+                this.showToast('Please enter a theme name', 'warning');
+                nameInput?.focus();
+                return;
+            }
+            const saved = await this.saveThemeForUser(theme);
+            if (saved) {
+                this.showToast(`Theme "${theme.name}" saved to your account`, 'success');
+            } else {
+                this.showToast('Theme saved locally (database save failed)', 'info');
+            }
+        });
     }
 
     async loadChildren() {
@@ -535,15 +831,18 @@ class FamilyChoreChart {
                 
                 // Refresh data based on what changed
                 if (payload.table === 'chore_completions') {
+                    this.lastRealtimeAt = Date.now();
                     this.loadCompletions().then(() => {
                         // Don't re-render children for chore completions - let optimistic updates handle it
                         console.log('Chore completion real-time update - skipping re-render');
                     });
                 } else if (payload.table === 'chores') {
+                    this.lastRealtimeAt = Date.now();
                     this.loadChores().then(() => {
                         this.renderChildren();
                     });
                 } else if (payload.table === 'children') {
+                    this.lastRealtimeAt = Date.now();
                     console.log('Children table changed, reloading...');
                     // Add a small delay to prevent rapid reloads
                     setTimeout(() => {
@@ -2054,6 +2353,10 @@ class FamilyChoreChart {
         }
         
         modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // Accessibility: Focus trap and keyboard navigation
+        this.setupModalFocusTrap(modal);
         
         // Populate child select for chore form and check premium features
         if (modalId === 'add-chore-modal') {
@@ -2069,12 +2372,92 @@ class FamilyChoreChart {
         if (modalId === 'edit-child-modal') {
             this.setupEditChildModal();
         }
+        
+        // Setup export UI when settings modal opens
+        if (modalId === 'settings-modal') {
+            this.setupExportUI();
+        }
+    }
+    
+    // Setup focus trap for modal accessibility
+    setupModalFocusTrap(modal) {
+        // Get all focusable elements in the modal
+        const focusableElements = modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (focusableElements.length === 0) return;
+        
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        
+        // Store previous focus
+        this.previousFocus = document.activeElement;
+        
+        // Focus first element
+        setTimeout(() => firstElement.focus(), 100);
+        
+        // Handle Tab key for focus trap
+        const handleTabKey = (e) => {
+            if (e.key !== 'Tab') return;
+            
+            if (e.shiftKey) {
+                // Shift + Tab: go backwards
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                // Tab: go forwards
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        };
+        
+        // Handle Escape key to close modal
+        const handleEscapeKey = (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                const closeBtn = modal.querySelector('.modal-close');
+                if (closeBtn) {
+                    closeBtn.click();
+                } else {
+                    this.hideModal(modal.id);
+                }
+            }
+        };
+        
+        // Add event listeners
+        modal.addEventListener('keydown', handleTabKey);
+        modal.addEventListener('keydown', handleEscapeKey);
+        
+        // Store handlers for cleanup
+        modal._focusTrapHandlers = { handleTabKey, handleEscapeKey };
+    }
+    
+    // Cleanup focus trap when modal closes
+    cleanupModalFocusTrap(modal) {
+        if (modal._focusTrapHandlers) {
+            modal.removeEventListener('keydown', modal._focusTrapHandlers.handleTabKey);
+            modal.removeEventListener('keydown', modal._focusTrapHandlers.handleEscapeKey);
+            delete modal._focusTrapHandlers;
+        }
+        
+        // Restore previous focus if it still exists
+        if (this.previousFocus && document.body.contains(this.previousFocus)) {
+            this.previousFocus.focus();
+        }
     }
 
     hideModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+            
+            // Cleanup focus trap
+            this.cleanupModalFocusTrap(modal);
         }
         
         // Only remove modal-open class if no other modals are open
@@ -2523,6 +2906,9 @@ class FamilyChoreChart {
         
         // Populate available themes grid
         this.populateThemesGrid();
+        
+        // Initialize theme builder
+        await this.initializeThemeBuilder();
         
         // Load theme settings
         this.loadThemeSettings();
@@ -4628,13 +5014,13 @@ class FamilyChoreChart {
             <div class="quick-actions-section" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
                 <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">⚡ Quick Actions</h4>
                 <div class="quick-actions-grid">
-                    <button class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
                         <span>✅</span> Mark All Today
                     </button>
-                    <button class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
                         <span>📅</span> Mark All Week
                     </button>
-                    <button class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
                         <span>❌</span> Clear All Today
                     </button>
                     <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${childId}">
@@ -4699,26 +5085,27 @@ class FamilyChoreChart {
             // Calculate family-wide metrics
             const familyMetrics = this.calculateFamilyMetrics();
             
-            // Update dashboard stats
+            // Update dashboard stats with animations
             const totalProgressEl = document.getElementById('family-total-progress');
             const familyLeaderEl = document.getElementById('family-leader');
             const familyStreakEl = document.getElementById('family-streak');
             const familyEarningsEl = document.getElementById('family-earnings');
             
             if (totalProgressEl) {
-                totalProgressEl.textContent = `${familyMetrics.averageProgress}%`;
+                this.animateCounter(totalProgressEl, 0, familyMetrics.averageProgress, '%', 800);
             }
             
             if (familyLeaderEl) {
-                familyLeaderEl.textContent = familyMetrics.topPerformer || '-';
+                this.fadeInText(familyLeaderEl, familyMetrics.topPerformer || '-');
             }
             
             if (familyStreakEl) {
-                familyStreakEl.textContent = familyMetrics.familyStreak;
+                this.animateCounter(familyStreakEl, 0, familyMetrics.familyStreak, '', 800);
             }
             
             if (familyEarningsEl) {
-                familyEarningsEl.textContent = this.formatCents(familyMetrics.totalEarnings);
+                const currentValue = this.parseCents(familyEarningsEl.textContent) || 0;
+                this.animateCounter(familyEarningsEl, currentValue, familyMetrics.totalEarnings, '', 800, (val) => this.formatCents(val));
             }
             
             // Update achievements
@@ -4729,9 +5116,161 @@ class FamilyChoreChart {
             console.error('Error refreshing dashboard:', error);
             
             // NEVER show auth screen from refresh - user is already on dashboard
-            // Just show error toast and continue
-            this.showToast('Failed to refresh dashboard. Please try again.', 'error');
+            const dashboardContainer = document.querySelector('.family-dashboard-overview');
+            if (dashboardContainer) {
+                await this.handleErrorWithRetry(
+                    dashboardContainer,
+                    error,
+                    'refresh dashboard',
+                    () => this.updateFamilyDashboard()
+                );
+            } else {
+                this.showToast('Failed to refresh dashboard. Please try again.', 'error');
+            }
         }
+    }
+
+    // Animated counter utility
+    animateCounter(element, start, end, suffix = '', duration = 1000, formatter = null) {
+        if (!element) return;
+        const startTime = performance.now();
+        const range = end - start;
+        
+        const update = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Easing function for smooth animation
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const current = Math.round(start + (range * easeOutQuart));
+            
+            const displayValue = formatter ? formatter(current) : current;
+            element.textContent = `${displayValue}${suffix}`;
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                // Ensure final value
+                const finalValue = formatter ? formatter(end) : end;
+                element.textContent = `${finalValue}${suffix}`;
+            }
+        };
+        
+        requestAnimationFrame(update);
+    }
+    
+    // Fade in text animation
+    fadeInText(element, newText) {
+        if (!element) return;
+        element.style.opacity = '0';
+        element.style.transition = 'opacity 0.3s ease-in-out';
+        setTimeout(() => {
+            element.textContent = newText;
+            element.style.opacity = '1';
+        }, 50);
+    }
+    
+    // Parse cents from formatted string
+    parseCents(formatted) {
+        if (!formatted) return 0;
+        const cleaned = formatted.replace(/[^0-9.]/g, '');
+        const dollars = parseFloat(cleaned) || 0;
+        return Math.round(dollars * 100);
+    }
+    
+    // Show inline error with retry button
+    showInlineError(container, message, retryCallback = null, errorDetails = null) {
+        // Remove any existing error
+        const existingError = container.querySelector('.inline-error');
+        if (existingError) existingError.remove();
+        
+        const errorEl = document.createElement('div');
+        errorEl.className = 'inline-error';
+        errorEl.setAttribute('role', 'alert');
+        errorEl.innerHTML = `
+            <div class="inline-error-content">
+                <div class="inline-error-icon">⚠️</div>
+                <div class="inline-error-text">
+                    <div class="inline-error-message">${this.escapeHtml(message)}</div>
+                    ${errorDetails ? `<div class="inline-error-details">${this.escapeHtml(errorDetails)}</div>` : ''}
+                </div>
+                ${retryCallback ? `<button class="btn btn-sm btn-primary inline-error-retry" type="button">Retry</button>` : ''}
+            </div>
+        `;
+        
+        if (retryCallback) {
+            const retryBtn = errorEl.querySelector('.inline-error-retry');
+            retryBtn.addEventListener('click', async () => {
+                retryBtn.disabled = true;
+                retryBtn.textContent = 'Retrying...';
+                try {
+                    await retryCallback();
+                    errorEl.style.opacity = '0';
+                    setTimeout(() => errorEl.remove(), 300);
+                } catch (err) {
+                    retryBtn.disabled = false;
+                    retryBtn.textContent = 'Retry';
+                    this.showToast('Retry failed. Please try again.', 'error');
+                }
+            });
+        }
+        
+        container.insertBefore(errorEl, container.firstChild);
+        
+        // Auto-remove after 10 seconds if no retry
+        if (!retryCallback) {
+            setTimeout(() => {
+                if (errorEl.parentNode) {
+                    errorEl.style.opacity = '0';
+                    setTimeout(() => errorEl.remove(), 300);
+                }
+            }, 10000);
+        }
+    }
+    
+    // Escape HTML for safe display
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Enhanced error handler with inline display
+    async handleErrorWithRetry(container, error, operation, retryCallback) {
+        console.error(`Error in ${operation}:`, error);
+        
+        const friendlyMessage = this.getFriendlyErrorMessage(error);
+        const errorDetails = error.message && !error.message.includes('Failed') ? error.message : null;
+        
+        // Show inline error if container provided
+        if (container) {
+            this.showInlineError(container, friendlyMessage, retryCallback, errorDetails);
+        }
+        
+        // Also show toast for visibility
+        this.showToast(friendlyMessage, 'error');
+    }
+    
+    // Get friendly error messages
+    getFriendlyErrorMessage(error) {
+        const message = error.message || String(error);
+        
+        if (message.includes('network') || message.includes('fetch') || message.includes('Failed to fetch')) {
+            return 'Connection issue. Please check your internet and try again.';
+        }
+        if (message.includes('permission') || message.includes('unauthorized') || message.includes('401')) {
+            return 'Please sign in again to continue.';
+        }
+        if (message.includes('not found') || message.includes('404')) {
+            return 'Item not found. It may have been deleted.';
+        }
+        if (message.includes('timeout')) {
+            return 'Request timed out. Please try again.';
+        }
+        if (message.includes('family') || message.includes('profile')) {
+            return 'Unable to load family information. Please refresh the page.';
+        }
+        
+        return 'Something went wrong. Please try again.';
     }
 
     calculateFamilyMetrics() {
@@ -6032,9 +6571,9 @@ class FamilyChoreChart {
     createAISuggestionsModal() {
         // Create the modal HTML dynamically
         const modalHTML = `
-            <div id="ai-suggestions-modal" class="modal hidden" role="dialog" aria-labelledby="ai-suggestions-modal-title" aria-hidden="true">
-                <div class="modal-content">
-                    <header class="modal-header">
+            <div id="ai-suggestions-modal" class="modal modal-lg hidden" role="dialog" aria-labelledby="ai-suggestions-modal-title" aria-hidden="true">
+                <div class="modal-content modal-flex">
+                    <header class="modal-header flex-between items-center">
                         <h2 id="ai-suggestions-modal-title">🤖 Smart Activity Suggestions</h2>
                         <button class="modal-close" data-modal="ai-suggestions-modal" aria-label="Close modal">&times;</button>
                     </header>
@@ -6509,24 +7048,36 @@ class FamilyChoreChart {
         // Mark All Today button
         const markAllTodayBtn = card.querySelector('.mark-all-today-btn');
         if (markAllTodayBtn) {
-            markAllTodayBtn.addEventListener('click', async () => {
+            markAllTodayBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const previousScrollY = window.scrollY;
                 await this.markAllChoresForDay(childId, this.getCurrentDayOfWeek());
+                window.scrollTo(0, previousScrollY);
             });
         }
 
         // Mark All Week button
         const markAllWeekBtn = card.querySelector('.mark-all-week-btn');
         if (markAllWeekBtn) {
-            markAllWeekBtn.addEventListener('click', async () => {
+            markAllWeekBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const previousScrollY = window.scrollY;
                 await this.markAllChoresForWeek(childId);
+                window.scrollTo(0, previousScrollY);
             });
         }
 
         // Clear All Today button
         const clearAllTodayBtn = card.querySelector('.clear-all-today-btn');
         if (clearAllTodayBtn) {
-            clearAllTodayBtn.addEventListener('click', async () => {
+            clearAllTodayBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const previousScrollY = window.scrollY;
                 await this.clearAllChoresForDay(childId, this.getCurrentDayOfWeek());
+                window.scrollTo(0, previousScrollY);
             });
         }
 
@@ -6564,57 +7115,40 @@ class FamilyChoreChart {
             childChores.some(chore => chore.id === comp.chore_id)
         );
 
-        // Get the last 4 weeks of data
-        const weeks = [];
-        const today = new Date();
-        for (let i = 0; i < 4; i++) {
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - (today.getDay() + (i * 7)));
-            weeks.push(weekStart);
-        }
-
-        let historyHtml = `
-            <div class="chore-history-modal">
-                <div class="modal-header">
-                    <h3>📊 ${child.name}'s Chore History</h3>
-                    <button type="button" class="close-btn" onclick="app.hideModal('chore-history-modal')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="history-stats">
-                        <div class="stat-card">
-                            <div class="stat-number">${childCompletions.length}</div>
-                            <div class="stat-label">Total Completions</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">${childChores.length}</div>
-                            <div class="stat-label">Active Chores</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">${Math.round((childCompletions.length / (childChores.length * 7)) * 100)}%</div>
-                            <div class="stat-label">This Week</div>
-                        </div>
-                    </div>
-                    <div class="history-timeline">
-                        <h4>Recent Activity</h4>
-        `;
-
         // Group completions by week
         const completionsByWeek = {};
         childCompletions.forEach(comp => {
             const weekKey = comp.week_start;
-            if (!completionsByWeek[weekKey]) {
-                completionsByWeek[weekKey] = [];
-            }
+            if (!completionsByWeek[weekKey]) completionsByWeek[weekKey] = [];
             completionsByWeek[weekKey].push(comp);
         });
 
-        // Show recent weeks
+        // Build inner body
+        let bodyHtml = `
+            <div class="history-stats">
+                <div class="stat-card">
+                    <div class="stat-number">${childCompletions.length}</div>
+                    <div class="stat-label">Total Completions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${childChores.length}</div>
+                    <div class="stat-label">Active Chores</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Math.round((childCompletions.length / Math.max(1, (childChores.length * 7))) * 100)}%</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+            </div>
+            <div class="history-timeline">
+                <h4>Recent Activity</h4>
+        `;
+
         Object.keys(completionsByWeek).sort().reverse().slice(0, 4).forEach(weekStart => {
             const weekCompletions = completionsByWeek[weekStart];
             const weekDate = new Date(weekStart);
             const weekLabel = this.formatWeekLabel(weekDate);
 
-            historyHtml += `
+            bodyHtml += `
                 <div class="week-history">
                     <div class="week-header">
                         <span class="week-label">${weekLabel}</span>
@@ -6623,26 +7157,18 @@ class FamilyChoreChart {
                     <div class="week-completions">
             `;
 
-            // Group by chore
-            const completionsByChore = {};
+            const byChore = {};
             weekCompletions.forEach(comp => {
                 const chore = childChores.find(c => c.id === comp.chore_id);
-                if (chore) {
-                    if (!completionsByChore[chore.name]) {
-                        completionsByChore[chore.name] = [];
-                    }
-                    completionsByChore[chore.name].push(comp);
-                }
+                if (!chore) return;
+                if (!byChore[chore.name]) byChore[chore.name] = [];
+                byChore[chore.name].push(comp);
             });
 
-            Object.keys(completionsByChore).forEach(choreName => {
-                const choreCompletions = completionsByChore[choreName];
-                const days = choreCompletions.map(comp => {
-                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    return dayNames[comp.day_of_week];
-                }).join(', ');
-
-                historyHtml += `
+            Object.keys(byChore).forEach(choreName => {
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const days = byChore[choreName].map(c => dayNames[c.day_of_week]).join(', ');
+                bodyHtml += `
                     <div class="chore-history-item">
                         <span class="chore-name">${choreName}</span>
                         <span class="completion-days">${days}</span>
@@ -6650,26 +7176,45 @@ class FamilyChoreChart {
                 `;
             });
 
-            historyHtml += `
+            bodyHtml += `
                     </div>
                 </div>
             `;
         });
 
-        historyHtml += `
+        bodyHtml += `</div>`;
+
+        // Ensure a single, styled modal exists and reuse it
+        let modalRoot = document.getElementById('chore-history-modal');
+        if (!modalRoot) {
+            modalRoot = document.createElement('div');
+            modalRoot.id = 'chore-history-modal';
+            modalRoot.className = 'modal modal-lg hidden';
+            modalRoot.setAttribute('role', 'dialog');
+            modalRoot.setAttribute('aria-modal', 'true');
+            modalRoot.innerHTML = `
+                <div class="modal-content modal-flex">
+                    <header class="modal-header flex-between items-center">
+                        <h2>📊 ${child.name}'s Chore History</h2>
+                        <button class="modal-close" aria-label="Close">&times;</button>
+                    </header>
+                    <div class="modal-body">
+                        ${bodyHtml}
                     </div>
-                </div>
-            </div>
-        `;
+                </div>`;
+            document.body.appendChild(modalRoot);
+        } else {
+            // Update title/body while preserving structure/styles
+            const titleEl = modalRoot.querySelector('.modal-header h2');
+            if (titleEl) titleEl.textContent = `📊 ${child.name}'s Chore History`;
+            const bodyEl = modalRoot.querySelector('.modal-body');
+            if (bodyEl) bodyEl.innerHTML = bodyHtml;
+        }
 
-        // Create modal content
-        const modalContent = document.createElement('div');
-        modalContent.id = 'chore-history-modal';
-        modalContent.className = 'modal';
-        modalContent.innerHTML = historyHtml;
+        // Wire close button to global close handler
+        const closeBtn = modalRoot.querySelector('.modal-close');
+        if (closeBtn) closeBtn.setAttribute('data-modal', 'chore-history-modal');
 
-        // Add to page and show
-        document.body.appendChild(modalContent);
         this.showModal('chore-history-modal');
     }
 
@@ -6734,24 +7279,18 @@ class FamilyChoreChart {
             }
         ];
 
-        let challengesHtml = `
-            <div class="chore-challenges-modal">
-                <div class="modal-header">
-                    <h3>🎯 ${child.name}'s Challenges</h3>
-                    <button type="button" class="close-btn" onclick="app.hideModal('chore-challenges-modal')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="challenges-intro">
-                        <p>Complete challenges to earn bonus rewards! 🎁</p>
-                    </div>
-                    <div class="challenges-grid">
+        let bodyHtml = `
+            <div class="challenges-intro">
+                <p>Complete challenges to earn bonus rewards! 🎁</p>
+            </div>
+            <div class="challenges-grid">
         `;
 
         challenges.forEach(challenge => {
             const progressPercentage = (challenge.progress / challenge.maxProgress) * 100;
             const isCompleted = challenge.progress >= challenge.maxProgress;
             
-            challengesHtml += `
+            bodyHtml += `
                 <div class="challenge-card ${isCompleted ? 'completed' : ''}">
                     <div class="challenge-header">
                         <div class="challenge-icon">${challenge.icon}</div>
@@ -6777,20 +7316,37 @@ class FamilyChoreChart {
             `;
         });
 
-        challengesHtml += `
+        bodyHtml += `</div>`;
+
+        // Ensure a single, styled modal exists and reuse it
+        let modalRoot = document.getElementById('chore-challenges-modal');
+        if (!modalRoot) {
+            modalRoot = document.createElement('div');
+            modalRoot.id = 'chore-challenges-modal';
+            modalRoot.className = 'modal modal-lg hidden';
+            modalRoot.setAttribute('role', 'dialog');
+            modalRoot.setAttribute('aria-modal', 'true');
+            modalRoot.innerHTML = `
+                <div class="modal-content modal-flex">
+                    <header class="modal-header flex-between items-center">
+                        <h2>🎯 ${child.name}'s Challenges</h2>
+                        <button class="modal-close" aria-label="Close">&times;</button>
+                    </header>
+                    <div class="modal-body">
+                        ${bodyHtml}
                     </div>
-                </div>
-            </div>
-        `;
+                </div>`;
+            document.body.appendChild(modalRoot);
+        } else {
+            const titleEl = modalRoot.querySelector('.modal-header h2');
+            if (titleEl) titleEl.textContent = `🎯 ${child.name}'s Challenges`;
+            const bodyEl = modalRoot.querySelector('.modal-body');
+            if (bodyEl) bodyEl.innerHTML = bodyHtml;
+        }
 
-        // Create modal content
-        const modalContent = document.createElement('div');
-        modalContent.id = 'chore-challenges-modal';
-        modalContent.className = 'modal';
-        modalContent.innerHTML = challengesHtml;
+        const closeBtn = modalRoot.querySelector('.modal-close');
+        if (closeBtn) closeBtn.setAttribute('data-modal', 'chore-challenges-modal');
 
-        // Add to page and show
-        document.body.appendChild(modalContent);
         this.showModal('chore-challenges-modal');
     }
 
@@ -6869,10 +7425,12 @@ class FamilyChoreChart {
         this.updateProgressWithDOMForce(childId);
         // Backend update
         let completedCount = 0;
+        const changed = [];
         for (const chore of uncompletedChores) {
             const result = await this.apiClient.toggleChoreCompletion(chore.id, dayOfWeek);
             if (result.success && result.completed) {
                 completedCount++;
+                changed.push({ choreId: chore.id, day: dayOfWeek, completed: true });
             }
         }
         // Sync with real data and force final update
@@ -6881,6 +7439,7 @@ class FamilyChoreChart {
         if (completedCount > 0) {
             // Removed bulk action toast to reduce noise
             this.playSound('success');
+            this.offerUndo(changed, childId, `Marked ${completedCount} for today`);
         }
     }
 
@@ -6917,6 +7476,7 @@ class FamilyChoreChart {
         this.updateChildProgressOptimistically(childId, addedCompletions);
         // Backend update
         let completedCount = 0;
+        const changed = [];
         for (const chore of childChores) {
             for (let day = 0; day < 7; day++) {
                 const isAlreadyCompleted = childCompletions.some(comp => comp.chore_id === chore.id && comp.day_of_week === day);
@@ -6924,6 +7484,7 @@ class FamilyChoreChart {
                     const result = await this.apiClient.toggleChoreCompletion(chore.id, day);
                     if (result.success && result.completed) {
                         completedCount++;
+                        changed.push({ choreId: chore.id, day, completed: true });
                     }
                 }
             }
@@ -6935,6 +7496,7 @@ class FamilyChoreChart {
         if (completedCount > 0) {
             // Removed bulk action toast to reduce noise
             this.playSound('success');
+            this.offerUndo(changed, childId, `Filled ${completedCount} cells this week`);
         }
     }
 
@@ -6966,10 +7528,12 @@ class FamilyChoreChart {
         this.updateChildProgressOptimistically(childId, -removedCompletions);
         // Backend update
         let clearedCount = 0;
+        const changed = [];
         for (const chore of completedChores) {
             const result = await this.apiClient.toggleChoreCompletion(chore.id, dayOfWeek);
             if (result.success && !result.completed) {
                 clearedCount++;
+                changed.push({ choreId: chore.id, day: dayOfWeek, completed: false });
             }
         }
         // Force refresh to sync all cells (bulk action needs full update)
@@ -6979,7 +7543,34 @@ class FamilyChoreChart {
         if (clearedCount > 0) {
             // Removed bulk action toast to reduce noise
             this.playSound('notification');
+            this.offerUndo(changed, childId, `Cleared ${clearedCount} for today`);
         }
+    }
+
+    offerUndo(changes, childId, message) {
+        try {
+            if (!Array.isArray(changes) || changes.length === 0) return;
+            const bar = document.getElementById('undo-snackbar');
+            const text = document.getElementById('undo-snackbar-text');
+            const btn = document.getElementById('undo-snackbar-btn');
+            if (!bar || !text || !btn) return;
+            text.textContent = `${message}`;
+            bar.classList.add('show');
+            clearTimeout(this._undoTimer);
+            const undoAction = async () => {
+                bar.classList.remove('show');
+                // Reverse changes
+                for (const ch of changes) {
+                    const res = await this.apiClient.toggleChoreCompletion(ch.choreId, ch.day);
+                }
+                await this.loadCompletions();
+                await this.refreshChoreSection(childId, true);
+                this.showToast('Undone', 'success');
+            };
+            const hide = () => bar.classList.remove('show');
+            btn.onclick = undoAction;
+            this._undoTimer = setTimeout(hide, 8000);
+        } catch (e) { console.warn('offerUndo failed', e); }
     }
 
     // Improved chore cell click handler with better error handling:
@@ -8260,11 +8851,58 @@ class FamilyChoreChart {
     }
 
     // SMOOTH: Refresh only the chore section and preserve active tab
+    async refreshChoreSection(childId, forceUpdate = false) {
+        try {
+            const previousScrollY = window.scrollY;
+            const childCard = document.querySelector(`.child-content[data-child-id="${childId}"]`);
+            if (!childCard) {
+                console.warn('refreshChoreSection: child card not found for', childId);
+                return;
+            }
 
+            // Recompute child-scoped data from current in-memory arrays
+            const childChores = this.chores.filter(chore => chore.child_id === childId);
+            const childCompletions = this.completions.filter(comp =>
+                childChores.some(chore => chore.id === comp.chore_id)
+            );
 
+            // Update progress/earnings/stars smoothly
+            this.updateProgressSectionSmooth(childId, childChores, childCompletions, childCard);
 
+            // Sync grid cells with completions without re-rendering the entire card
+            const completionSet = new Set(
+                childCompletions.map(c => `${c.chore_id}:${c.day_of_week}`)
+            );
+            childCard.querySelectorAll('.chore-grid-table .chore-cell').forEach(cell => {
+                const choreId = cell.dataset.choreId;
+                const day = parseInt(cell.dataset.day);
+                const isCompleted = completionSet.has(`${choreId}:${day}`);
+                if (isCompleted) {
+                    cell.classList.add('completed');
+                    cell.textContent = '✓';
+                } else {
+                    cell.classList.remove('completed');
+                    cell.textContent = '';
+                }
+            });
 
+            // Update family-level dashboard numbers (top cards) without re-rendering children
+            const familyMetrics = this.calculateFamilyMetrics();
+            const totalProgressEl = document.getElementById('family-total-progress');
+            const familyLeaderEl = document.getElementById('family-leader');
+            const familyStreakEl = document.getElementById('family-streak');
+            const familyEarningsEl = document.getElementById('family-earnings');
+            if (totalProgressEl) totalProgressEl.textContent = `${familyMetrics.averageProgress}%`;
+            if (familyLeaderEl) familyLeaderEl.textContent = familyMetrics.topPerformer || '-';
+            if (familyStreakEl) familyStreakEl.textContent = familyMetrics.familyStreak;
+            if (familyEarningsEl) familyEarningsEl.textContent = this.formatCents(familyMetrics.totalEarnings);
 
+            // Keep the user exactly where they are
+            window.scrollTo(0, previousScrollY);
+        } catch (err) {
+            console.error('refreshChoreSection failed:', err);
+        }
+    }
 
     // Smooth version of updateProgressSection (just add transitions):
     updateProgressSectionSmooth(childId, childChores, childCompletions, childCard) {
@@ -8979,14 +9617,23 @@ class FamilyChoreChart {
         this.createActivityChart();
     }
 
-    createProgressChart() {
+    async createProgressChart() {
         const ctx = document.getElementById('progress-chart');
         if (!ctx) return;
         
-        // Check if Chart.js is available
+        // Lazy load Chart.js if needed
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not loaded');
-            return;
+            if (window.lazyLoadChartJS) {
+                try {
+                    await window.lazyLoadChartJS();
+                } catch (error) {
+                    console.error('Failed to load Chart.js:', error);
+                    return;
+                }
+            } else {
+                console.error('Chart.js not loaded and lazy loader unavailable');
+                return;
+            }
         }
         
         const labels = this.analyticsMetrics?.map(m => m.childName) || [];
@@ -9033,14 +9680,23 @@ class FamilyChoreChart {
         });
     }
 
-    createComparisonChart() {
+    async createComparisonChart() {
         const ctx = document.getElementById('comparison-chart');
         if (!ctx) return;
         
-        // Check if Chart.js is available
+        // Lazy load Chart.js if needed
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not loaded');
-            return;
+            if (window.lazyLoadChartJS) {
+                try {
+                    await window.lazyLoadChartJS();
+                } catch (error) {
+                    console.error('Failed to load Chart.js:', error);
+                    return;
+                }
+            } else {
+                console.error('Chart.js not loaded and lazy loader unavailable');
+                return;
+            }
         }
         
         const labels = this.analyticsMetrics?.map(m => m.childName) || [];
@@ -9104,14 +9760,23 @@ class FamilyChoreChart {
         });
     }
 
-    createActivityChart() {
+    async createActivityChart() {
         const ctx = document.getElementById('activity-chart');
         if (!ctx) return;
         
-        // Check if Chart.js is available
+        // Lazy load Chart.js if needed
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not loaded');
-            return;
+            if (window.lazyLoadChartJS) {
+                try {
+                    await window.lazyLoadChartJS();
+                } catch (error) {
+                    console.error('Failed to load Chart.js:', error);
+                    return;
+                }
+            } else {
+                console.error('Chart.js not loaded and lazy loader unavailable');
+                return;
+            }
         }
         
         // Generate daily activity data
@@ -9258,7 +9923,7 @@ class FamilyChoreChart {
             dateRangeSelect.addEventListener('change', async () => {
                 await this.loadAnalyticsData();
                 this.updateAnalyticsCards();
-                this.updateCharts();
+                await this.updateCharts();
                 this.generateInsights();
             });
         }
@@ -9280,27 +9945,36 @@ class FamilyChoreChart {
         }
     }
 
-    updateCharts() {
+    async updateCharts() {
         if (this.progressChart) {
             this.progressChart.destroy();
-            this.createProgressChart();
+            await this.createProgressChart();
         }
         if (this.comparisonChart) {
             this.comparisonChart.destroy();
-            this.createComparisonChart();
+            await this.createComparisonChart();
         }
         if (this.activityChart) {
             this.activityChart.destroy();
-            this.createActivityChart();
+            await this.createActivityChart();
         }
     }
 
     async exportPDF() {
         try {
-            // Check if jsPDF is available
+            // Lazy load jsPDF if needed
             if (typeof window.jspdf === 'undefined') {
-                this.showToast('PDF library not loaded. Please refresh the page.', 'error');
-                return;
+                if (window.lazyLoadJSPDF) {
+                    try {
+                        await window.lazyLoadJSPDF();
+                    } catch (error) {
+                        this.showToast('Failed to load PDF library. Please try again.', 'error');
+                        return;
+                    }
+                } else {
+                    this.showToast('PDF library not available. Please refresh the page.', 'error');
+                    return;
+                }
             }
             
             const { jsPDF } = window.jspdf;
@@ -9431,6 +10105,250 @@ class FamilyChoreChart {
         window.URL.revokeObjectURL(url);
         
         this.showToast('CSV exported successfully!', 'success');
+    }
+    
+    // Enhanced export with filters
+    async exportFamilyReportPDF() {
+        try {
+            const { childId, startDate, endDate } = this.getExportFilters();
+            
+            // Lazy load jsPDF if needed
+            if (typeof window.jspdf === 'undefined') {
+                if (window.lazyLoadJSPDF) {
+                    try {
+                        await window.lazyLoadJSPDF();
+                    } catch (error) {
+                        this.showToast('Failed to load PDF library. Please try again.', 'error');
+                        return;
+                    }
+                } else {
+                    this.showToast('PDF library not available. Please refresh the page.', 'error');
+                    return;
+                }
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Get filtered data
+            const children = childId === 'all' ? this.children : this.children.filter(c => c.id === childId);
+            const chores = this.chores;
+            const allCompletions = await this.apiClient.getChoreCompletions();
+            
+            // Filter completions by date range
+            const completions = allCompletions.filter(c => {
+                const compDate = new Date(c.completed_at);
+                return compDate >= startDate && compDate <= endDate;
+            });
+            
+            // Header
+            doc.setFontSize(20);
+            doc.text('ChoreStar Family Report', 20, 30);
+            doc.setFontSize(12);
+            doc.text(`Generated on ${this.formatDate(new Date())}`, 20, 40);
+            doc.text(`Date Range: ${this.formatDate(startDate)} - ${this.formatDate(endDate)}`, 20, 50);
+            
+            let yPosition = 70;
+            
+            // Family Overview
+            doc.setFontSize(16);
+            doc.text('Family Overview', 20, yPosition);
+            yPosition += 15;
+            
+            doc.setFontSize(10);
+            doc.text(`Total Children: ${children.length}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Total Chores: ${chores.length}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Total Completions: ${completions.length}`, 20, yPosition);
+            yPosition += 20;
+            
+            // Individual Child Reports
+            for (const child of children) {
+                // Check if we need a new page
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                const childChores = chores.filter(c => c.child_id === child.id);
+                const childCompletions = completions.filter(c => 
+                    childChores.some(chore => chore.id === c.chore_id)
+                );
+                
+                const totalEarnings = childCompletions.reduce((sum, comp) => {
+                    const chore = childChores.find(c => c.id === comp.chore_id);
+                    return sum + (chore ? chore.reward_cents : 0);
+                }, 0);
+                
+                // Child header
+                doc.setFontSize(14);
+                doc.text(`${child.name} (Age ${child.age})`, 20, yPosition);
+                yPosition += 15;
+                
+                // Child stats
+                doc.setFontSize(10);
+                doc.text(`Total Completions: ${childCompletions.length}`, 20, yPosition);
+                yPosition += 8;
+                doc.text(`Total Earnings: ${this.formatCents(totalEarnings)}`, 20, yPosition);
+                yPosition += 15;
+            }
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.text('Generated by ChoreStar - Making chores fun for the whole family!', 20, 280);
+            
+            // Save the PDF
+            const childName = childId === 'all' ? 'family' : children[0]?.name.toLowerCase() || 'report';
+            const fileName = `chorestar-${childName}-${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            this.showToast('PDF report exported successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            this.showToast('Failed to export PDF report', 'error');
+        }
+    }
+    
+    async exportFamilyReportCSV() {
+        try {
+            const { childId, startDate, endDate } = this.getExportFilters();
+            
+            // Get filtered data
+            const children = childId === 'all' ? this.children : this.children.filter(c => c.id === childId);
+            const chores = this.chores;
+            const allCompletions = await this.apiClient.getChoreCompletions();
+            
+            // Filter completions by date range
+            const completions = allCompletions.filter(c => {
+                const compDate = new Date(c.completed_at);
+                return compDate >= startDate && compDate <= endDate;
+            });
+            
+            // Build CSV content
+            const csvRows = [
+                ['Child Name', 'Chore Name', 'Completed Date', 'Earnings', 'Day of Week']
+            ];
+            
+            for (const child of children) {
+                const childChores = chores.filter(c => c.child_id === child.id);
+                const childCompletions = completions.filter(c => 
+                    childChores.some(chore => chore.id === c.chore_id)
+                );
+                
+                for (const comp of childCompletions) {
+                    const chore = childChores.find(c => c.id === comp.chore_id);
+                    csvRows.push([
+                        child.name,
+                        chore?.name || 'Unknown',
+                        this.formatDate(new Date(comp.completed_at)),
+                        this.formatCents(chore?.reward_cents || 0),
+                        comp.day_of_week || ''
+                    ]);
+                }
+            }
+            
+            const csvContent = csvRows.map(row => 
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const childName = childId === 'all' ? 'family' : children[0]?.name.toLowerCase() || 'report';
+            a.download = `chorestar-${childName}-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            this.showToast('CSV report exported successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error exporting CSV:', error);
+            this.showToast('Failed to export CSV report', 'error');
+        }
+    }
+    
+    // Helper to get export filters
+    getExportFilters() {
+        const childSelect = document.getElementById('export-child-select');
+        const dateRangeSelect = document.getElementById('export-date-range');
+        const startDateInput = document.getElementById('export-start-date');
+        const endDateInput = document.getElementById('export-end-date');
+        
+        const childId = childSelect?.value || 'all';
+        const dateRange = dateRangeSelect?.value || 'this-week';
+        
+        let startDate, endDate;
+        const now = new Date();
+        
+        switch (dateRange) {
+            case 'this-week':
+                startDate = this.apiClient.getWeekStart();
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+                break;
+            case 'last-week':
+                startDate = this.apiClient.getWeekStart();
+                startDate.setDate(startDate.getDate() - 7);
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+                break;
+            case 'this-month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                break;
+            case 'last-month':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                break;
+            case 'custom':
+                startDate = startDateInput?.value ? new Date(startDateInput.value) : this.apiClient.getWeekStart();
+                endDate = endDateInput?.value ? new Date(endDateInput.value) : new Date();
+                break;
+            default:
+                startDate = this.apiClient.getWeekStart();
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+        }
+        
+        return { childId, startDate, endDate };
+    }
+    
+    // Setup export UI
+    setupExportUI() {
+        const childSelect = document.getElementById('export-child-select');
+        const dateRangeSelect = document.getElementById('export-date-range');
+        const customDatesDiv = document.getElementById('export-custom-dates');
+        
+        // Populate child select
+        if (childSelect) {
+            // Clear existing options except "All"
+            while (childSelect.children.length > 1) {
+                childSelect.removeChild(childSelect.lastChild);
+            }
+            
+            // Add children
+            this.children.forEach(child => {
+                const option = document.createElement('option');
+                option.value = child.id;
+                option.textContent = `${child.name} (Age ${child.age})`;
+                childSelect.appendChild(option);
+            });
+        }
+        
+        // Show/hide custom dates (only attach listener once)
+        if (dateRangeSelect && customDatesDiv && !dateRangeSelect.dataset.listenerAttached) {
+            dateRangeSelect.dataset.listenerAttached = 'true';
+            dateRangeSelect.addEventListener('change', () => {
+                if (dateRangeSelect.value === 'custom') {
+                    customDatesDiv.style.display = 'block';
+                } else {
+                    customDatesDiv.style.display = 'none';
+                }
+            });
+        }
     }
 
     async exportWeekly() {
@@ -10046,6 +10964,43 @@ class FamilyChoreChart {
     // Changelog data for future updates
     getChangelogData() {
         return {
+            '2025.1.15': {
+                version: '2025.1.15',
+                date: 'January 2025',
+                title: 'Performance & UX Polish Update',
+                features: [
+                    {
+                        icon: '📊',
+                        title: 'Animated Dashboard Stats',
+                        description: 'Smooth animated counters for progress, streaks, and earnings make tracking more engaging!'
+                    },
+                    {
+                        icon: '🛡️',
+                        title: 'Smart Error Handling',
+                        description: 'Friendly inline error messages with retry buttons for better user experience.'
+                    },
+                    {
+                        icon: '⚡',
+                        title: 'Faster Load Times',
+                        description: 'Lazy loading optimizations reduce initial load time and improve performance.'
+                    },
+                    {
+                        icon: '⌨️',
+                        title: 'Enhanced Accessibility',
+                        description: 'Full keyboard navigation, focus traps, and improved screen reader support.'
+                    },
+                    {
+                        icon: '📥',
+                        title: 'Advanced Export Options',
+                        description: 'Export with per-child filtering and custom date ranges (PDF/CSV).'
+                    },
+                    {
+                        icon: '🔍',
+                        title: 'SEO Optimized',
+                        description: 'Enhanced meta tags, structured data, and rich snippets for better discoverability.'
+                    }
+                ]
+            },
             '2025.1.0': {
                 version: '2025.1.0',
                 date: 'January 2025',

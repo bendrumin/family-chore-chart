@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /supabase-config.js
+Disallow: /config.js
+
+# Sitemap
+Sitemap: https://chorestar.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+

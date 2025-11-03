@@ -3,7 +3,8 @@
 
 class ApiClient {
     constructor() {
-        this.supabase = window.supabase;
+        // Prefer the initialized client; fallback to legacy global if present
+        this.supabase = window.supabaseClient || window.supabase;
         this.currentUser = null;
         this.familySettings = null;
         
@@ -600,6 +601,49 @@ class ApiClient {
         } catch (error) {
             console.error('Update family settings error:', error);
             return { success: false, error: error.message };
+        }
+    }
+
+    // Theme Methods
+    async saveCustomTheme(theme) {
+        try {
+            if (!this.currentUser || !this.currentUser.id) {
+                return { success: false, error: 'User not authenticated' };
+            }
+
+            // Ensure family_settings exists
+            await this.getFamilySettings();
+
+            const { data, error } = await this.supabase
+                .from('family_settings')
+                .update({ custom_theme: theme })
+                .eq('user_id', this.currentUser.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            
+            if (this.familySettings) {
+                this.familySettings.custom_theme = theme;
+            }
+            
+            return { success: true, theme };
+        } catch (error) {
+            console.error('Save custom theme error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getCustomTheme() {
+        try {
+            const settings = await this.getFamilySettings();
+            if (!settings || !settings.custom_theme) {
+                return null;
+            }
+            return settings.custom_theme;
+        } catch (error) {
+            console.error('Get custom theme error:', error);
+            return null;
         }
     }
 

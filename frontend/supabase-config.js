@@ -6,16 +6,24 @@ const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'your_supabase_anon_key_he
 // Check if Supabase is available
 if (typeof window.supabase === 'undefined') {
     console.error('❌ Supabase library not loaded. Make sure to include the Supabase script.');
-    window.supabase = null;
+    window.supabaseClient = null;
 } else {
-    // Initialize Supabase client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Export for use in other files
-    window.supabase = supabase;
-    
-    // Configuration validation
-    console.log('✅ Supabase configuration loaded successfully');
-    console.log('Supabase URL:', SUPABASE_URL);
-    console.log('Supabase Key:', SUPABASE_ANON_KEY ? 'Present' : 'Missing');
-} 
+    // Initialize Supabase client without overwriting the library namespace
+    const { createClient } = window.supabase;
+    try {
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY ||
+            SUPABASE_URL === 'your_supabase_url_here' ||
+            SUPABASE_ANON_KEY === 'your_supabase_anon_key_here') {
+            console.error('❌ Missing SUPABASE_URL or SUPABASE_ANON_KEY. Check frontend/config.js');
+            window.supabaseClient = null;
+        } else {
+            window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase configuration loaded successfully');
+            console.log('Supabase URL:', SUPABASE_URL);
+            console.log('Supabase Key:', SUPABASE_ANON_KEY ? 'Present' : 'Missing');
+        }
+    } catch (e) {
+        console.error('❌ Failed to initialize Supabase client:', e);
+        window.supabaseClient = null;
+    }
+}

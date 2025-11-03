@@ -1,7 +1,7 @@
 // Family Sharing System for ChoreStar
 class FamilySharing {
     constructor() {
-        this.supabase = window.supabase;
+        this.supabase = window.supabaseClient || window.supabase;
     }
 
     // Generate a unique 6-digit family code
