@@ -15,7 +15,6 @@ dist/
 .env.test
 
 # Configuration with secrets
-frontend/config.js
 setup-env.sh
 
 # OS generated files
