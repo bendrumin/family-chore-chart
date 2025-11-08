@@ -47,7 +47,6 @@ class ApiClient {
 
     async signIn(email, password) {
         try {
-            console.log('Signing in user:', email);
             
             // Check if Supabase is available
             if (!this.supabase || !this.supabase.auth) {
@@ -62,7 +61,6 @@ class ApiClient {
             if (error) throw error;
 
             this.currentUser = data.user;
-            console.log('Signed in user:', data.user?.id);
             return { success: true, user: data.user, session: data.session };
         } catch (error) {
             console.error('Sign in error:', error);
@@ -171,7 +169,6 @@ class ApiClient {
 
     async getProfile() {
         try {
-            console.log('Getting profile for user:', this.currentUser?.id);
             
             const { data, error } = await this.supabase
                 .from('profiles')
@@ -182,7 +179,6 @@ class ApiClient {
             if (error) {
                 // If profile doesn't exist, try to create it
                 if (error.code === 'PGRST116') {
-                    console.log('Profile not found, attempting to create...');
                     const createResult = await this.createProfile(
                         this.currentUser.id, 
                         this.currentUser.email, 
@@ -201,7 +197,6 @@ class ApiClient {
                 }
                 throw error;
             }
-            console.log('Found profile:', data);
             return data;
         } catch (error) {
             console.error('Get profile error:', error);
@@ -213,18 +208,15 @@ class ApiClient {
     async getChildren() {
         try {
             if (!this.currentUser || !this.currentUser.id) {
-                console.log('No current user - returning empty children array');
                 return [];
             }
             
-            console.log('Getting children for user:', this.currentUser?.id);
             
             // Check if we're in a PIN session
             const pinSessionStr = localStorage.getItem('chorestar_pin_session');
             if (pinSessionStr) {
                 const pinSession = JSON.parse(pinSessionStr);
                 if (pinSession.userId) {
-                    console.log('Using PIN session user ID:', pinSession.userId);
                     // Use the stored user ID from PIN session
                     const { data, error } = await this.supabase
                         .from('children')
@@ -236,7 +228,6 @@ class ApiClient {
                         console.error('Get children error with PIN session:', error);
                         return [];
                     }
-                    console.log('Found children with PIN session:', data);
                     return data || [];
                 }
             }
@@ -249,7 +240,6 @@ class ApiClient {
                 .order('name');
 
             if (error) throw error;
-            console.log('Found children:', data);
             return data || [];
         } catch (error) {
             console.error('Get children error:', error);
@@ -334,7 +324,6 @@ class ApiClient {
             if (pinSessionStr) {
                 const pinSession = JSON.parse(pinSessionStr);
                 if (pinSession.userId) {
-                    console.log('Using PIN session user ID for chores:', pinSession.userId);
                     userId = pinSession.userId;
                 }
             }
@@ -435,7 +424,6 @@ class ApiClient {
             if (pinSessionStr) {
                 const pinSession = JSON.parse(pinSessionStr);
                 if (pinSession.userId) {
-                    console.log('Using PIN session user ID for completions:', pinSession.userId);
                     userId = pinSession.userId;
                 }
             }
@@ -452,10 +440,29 @@ class ApiClient {
                 .eq('chores.children.user_id', userId)
                 .eq('week_start', weekStart);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase query error:', error);
+                // Check for CORS/network errors
+                if (error.message && (error.message.includes('CORS') || error.message.includes('fetch'))) {
+                    console.error('⚠️ CORS or network error detected. Check Supabase project settings:');
+                    console.error('   1. Go to Supabase Dashboard > Project Settings > API');
+                    console.error('   2. Add "http://localhost:3000" to "Allowed Origins"');
+                    console.error('   3. Also check if Supabase service is operational (502 error suggests service issue)');
+                }
+                throw error;
+            }
             return data || [];
         } catch (error) {
             console.error('Get chore completions error:', error);
+            // Show user-friendly error for network issues
+            if (error.message && error.message.includes('CORS')) {
+                console.error('❌ CORS Error: Your Supabase project needs to allow localhost:3000');
+                console.error('   Fix: Supabase Dashboard > Settings > API > Add "http://localhost:3000" to allowed origins');
+            }
+            if (error.status === 502 || error.message?.includes('502')) {
+                console.error('❌ Supabase service appears to be down (502 Bad Gateway)');
+                console.error('   Check: https://status.supabase.com for service status');
+            }
             return [];
         }
     }
@@ -466,7 +473,6 @@ class ApiClient {
                 weekStart = this.getWeekStart();
             }
 
-            console.log('toggleChoreCompletion params:', { choreId, dayOfWeek, weekStart });
 
             // Check if user is authenticated
             const { data: { user }, error: authError } = await this.supabase.auth.getUser();
@@ -474,7 +480,6 @@ class ApiClient {
                 console.error('Authentication error:', authError);
                 throw new Error('User not authenticated');
             }
-            console.log('User authenticated:', user.id);
 
             // Check if completion exists
             const { data: existing, error: queryError } = await this.supabase
@@ -528,7 +533,6 @@ class ApiClient {
             if (pinSessionStr) {
                 const pinSession = JSON.parse(pinSessionStr);
                 if (pinSession.userId) {
-                    console.log('Using PIN session user ID for family settings:', pinSession.userId);
                     userId = pinSession.userId;
                 }
             }
@@ -705,7 +709,6 @@ class ApiClient {
         const weekStart = new Date(d);
         weekStart.setDate(d.getDate() - day);
         const result = weekStart.toISOString().split('T')[0];
-        console.log('getWeekStart input:', date, 'output:', result, 'current date:', new Date().toISOString().split('T')[0]);
         return result;
     }
 
@@ -772,7 +775,6 @@ class ApiClient {
                 .select();
 
             if (error) throw error;
-            console.log('Subscription status updated:', subscriptionType);
             return data;
         } catch (error) {
             console.error('Error updating subscription status:', error);
@@ -798,7 +800,7 @@ class ApiClient {
             };
         }
 
-        if (subscription === 'premium') {
+        if (subscription === 'premium' || subscription === 'lifetime') {
             return { 
                 canAddChildren: true, 
                 canAddChores: true, 
@@ -930,7 +932,6 @@ class ApiClient {
 
             // Send email notification to admin
             try {
-                console.log('Sending email notification...');
                 const emailResponse = await fetch('/api/send-contact-email', {
                     method: 'POST',
                     headers: {
@@ -946,12 +947,9 @@ class ApiClient {
                 });
 
                 const emailResult = await emailResponse.json();
-                console.log('Email response:', emailResult);
 
                 if (!emailResponse.ok) {
                     console.warn('Email notification failed, but contact form submission was successful');
-                } else {
-                    console.log('Email notification sent successfully');
                 }
             } catch (emailError) {
                 console.warn('Email notification error:', emailError);

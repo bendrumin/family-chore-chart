@@ -18,9 +18,7 @@ if (typeof window.supabase === 'undefined') {
             window.supabaseClient = null;
         } else {
             window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('✅ Supabase configuration loaded successfully');
-            console.log('Supabase URL:', SUPABASE_URL);
-            console.log('Supabase Key:', SUPABASE_ANON_KEY ? 'Present' : 'Missing');
+            // Supabase configuration loaded successfully
         }
     } catch (e) {
         console.error('❌ Failed to initialize Supabase client:', e);

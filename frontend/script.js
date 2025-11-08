@@ -3,10 +3,10 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
-                console.log('SW registered: ', registration);
+                // Service worker registered successfully
             })
             .catch((registrationError) => {
-                console.log('SW registration failed: ', registrationError);
+                // Service worker registration failed (non-critical)
             });
     });
 }
@@ -25,8 +25,19 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }
 });
 
+function analyticsSafeCall(method, ...args) {
+    const analytics = window.analytics;
+    if (analytics && typeof analytics[method] === 'function') {
+        try {
+            analytics[method](...args);
+        } catch (error) {
+            console.warn(`Analytics ${method} failed:`, error);
+        }
+    }
+}
+
 function showInstallPrompt() {
-    window.analytics.trackInstallPrompt();
+    analyticsSafeCall('trackInstallPrompt');
     const toast = document.createElement('div');
     toast.className = 'toast toast-info';
     toast.innerHTML = `
@@ -49,7 +60,7 @@ function showInstallPrompt() {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
+                // User accepted the install prompt
             }
             deferredPrompt = null;
         });
@@ -105,6 +116,32 @@ class FamilyChoreChart {
         this.unlockedBadges = new Set();
         this.aiSuggestions = this.initializeAISuggestions();
         this.currentOnboardingStep = 1;
+        
+        // Mobile-specific helpers
+        this.dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        this.dayNamesLong = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        this.currentMobileDay = new Date().getDay();
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this.mobileDayMediaQuery = window.matchMedia('(max-width: 600px)');
+            this.isMobileCached = this.mobileDayMediaQuery.matches;
+            this.mobileDayMediaQueryListener = (event) => {
+                this.isMobileCached = event.matches;
+                this.updateCategoryFilterVisibility();
+                if (!event.matches) {
+                    this.currentMobileDay = new Date().getDay();
+                }
+                if (this.children && this.children.length > 0) {
+                    this.renderChildren();
+                }
+            };
+            if (this.mobileDayMediaQuery.addEventListener) {
+                this.mobileDayMediaQuery.addEventListener('change', this.mobileDayMediaQueryListener);
+            } else if (this.mobileDayMediaQuery.addListener) {
+                this.mobileDayMediaQuery.addListener(this.mobileDayMediaQueryListener);
+            }
+        } else {
+            this.isMobileCached = false;
+        }
         this.init();
     }
 
@@ -117,6 +154,43 @@ class FamilyChoreChart {
                 element.textContent = translation;
             }
         });
+    }
+
+    isMobileView() {
+        if (typeof this.isMobileCached === 'boolean') {
+            return this.isMobileCached;
+        }
+        if (typeof window === 'undefined') return false;
+        return window.innerWidth <= 600;
+    }
+
+    getMobileWeekStartDate() {
+        let baseDate = null;
+        if (this.currentWeekStart) {
+            baseDate = new Date(this.currentWeekStart + 'T00:00:00');
+        } else if (this.apiClient && typeof this.apiClient.getWeekStart === 'function') {
+            const start = this.apiClient.getWeekStart();
+            baseDate = new Date(start + 'T00:00:00');
+        }
+        if (!baseDate || isNaN(baseDate.getTime())) {
+            baseDate = new Date();
+            const day = baseDate.getDay();
+            baseDate.setHours(0, 0, 0, 0);
+            baseDate.setDate(baseDate.getDate() - day);
+        }
+        return baseDate;
+    }
+
+    getDateForMobileDay(day) {
+        const weekStart = this.getMobileWeekStartDate();
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + day);
+        return date;
+    }
+
+    changeMobileDay(delta) {
+        this.currentMobileDay = (this.currentMobileDay + delta + 7) % 7;
+        this.renderChildren();
     }
     
     // Setup footer functionality
@@ -132,11 +206,8 @@ class FamilyChoreChart {
             return;
         }
         
-        console.log('Setting up footer handlers - footer found!');
-        
         // Check if handlers are already set up to prevent duplicates
         if (footer.dataset.handlersSetup === 'true') {
-            console.log('Footer handlers already set up, skipping...');
             return;
         }
         
@@ -189,7 +260,6 @@ class FamilyChoreChart {
         const footerHelpBtn = document.getElementById('footer-help-btn');
         if (footerHelpBtn) {
             footerHelpBtn.addEventListener('click', () => {
-                console.log('Footer help button clicked - showing FAQ modal');
                 this.showModal('faq-modal');
             });
         }
@@ -198,14 +268,157 @@ class FamilyChoreChart {
         const footerContactBtn = document.getElementById('footer-contact-btn');
         if (footerContactBtn) {
             footerContactBtn.addEventListener('click', () => {
-                console.log('Footer contact button clicked - showing contact modal');
                 this.showModal('contact-modal');
             });
         }
         
         // Mark footer as set up to prevent duplicate handlers
         footer.dataset.handlersSetup = 'true';
-        console.log('Footer handlers setup complete!');
+        
+        // Setup help center search
+        this.setupHelpCenterSearch();
+    }
+    
+    // Setup rating stars for contact form
+    setupContactRating() {
+        const ratingStars = document.querySelectorAll('#contact-form .rating-star');
+        const ratingInput = document.getElementById('contact-rating');
+        const ratingText = document.getElementById('contact-rating-text');
+        if (!ratingStars.length) return;
+        
+        let selectedRating = 0;
+        
+        const ratingTexts = {
+            1: 'Poor - We\'re sorry to hear that. Please tell us how we can improve.',
+            2: 'Fair - We\'d love to make it better. What can we improve?',
+            3: 'Good - Thanks! What would make it even better?',
+            4: 'Very Good - Great to hear! What do you like most?',
+            5: 'Excellent - Awesome! We\'re thrilled you love ChoreStar!'
+        };
+        
+        ratingStars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                selectedRating = index + 1;
+                if (ratingInput) ratingInput.value = selectedRating;
+                if (ratingText) ratingText.textContent = ratingTexts[selectedRating] || '';
+                this.highlightContactStars(selectedRating);
+            });
+            
+            star.addEventListener('mouseenter', () => {
+                this.highlightContactStars(index + 1);
+            });
+        });
+        
+        const ratingContainer = document.querySelector('#contact-form .rating-stars');
+        if (ratingContainer) {
+            ratingContainer.addEventListener('mouseleave', () => {
+                this.highlightContactStars(selectedRating);
+            });
+        }
+    }
+    
+    highlightContactStars(count) {
+        const stars = document.querySelectorAll('#contact-form .rating-star');
+        stars.forEach((star, index) => {
+            if (index < count) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+    
+    
+    // Setup help center search
+    setupHelpCenterSearch() {
+        const helpSearch = document.getElementById('help-search');
+        const helpResults = document.getElementById('help-search-results');
+        const faqContent = document.getElementById('faq-content');
+        const categoryButtons = document.querySelectorAll('.help-category-btn');
+        
+        if (!helpSearch || !faqContent) return;
+        
+        // Search functionality
+        helpSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query.length === 0) {
+                helpResults.style.display = 'none';
+                faqContent.style.display = 'block';
+                return;
+            }
+            
+            // Search through FAQ items
+            const faqItems = faqContent.querySelectorAll('.faq-item');
+            const matchingItems = [];
+            
+            faqItems.forEach(item => {
+                const title = item.querySelector('h4').textContent.toLowerCase();
+                const content = item.querySelector('p').textContent.toLowerCase();
+                const keywords = item.dataset.keywords?.toLowerCase() || '';
+                
+                if (title.includes(query) || content.includes(query) || keywords.includes(query)) {
+                    matchingItems.push(item);
+                }
+            });
+            
+            // Display results
+            if (matchingItems.length > 0) {
+                helpResults.style.display = 'block';
+                faqContent.style.display = 'none';
+                
+                helpResults.innerHTML = `
+                    <div class="help-results-header">
+                        <h3>Found ${matchingItems.length} result${matchingItems.length !== 1 ? 's' : ''}</h3>
+                    </div>
+                    <div class="help-results-list">
+                        ${matchingItems.map(item => {
+                            const section = item.closest('.faq-section');
+                            const sectionTitle = section?.querySelector('h3')?.textContent || 'Help';
+                            return `
+                                <div class="help-result-item">
+                                    <div class="help-result-category">${sectionTitle}</div>
+                                    <h4>${item.querySelector('h4').textContent}</h4>
+                                    <p>${item.querySelector('p').textContent}</p>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } else {
+                helpResults.style.display = 'block';
+                faqContent.style.display = 'none';
+                helpResults.innerHTML = `
+                    <div class="help-results-empty">
+                        <p>No results found for "${query}"</p>
+                        <p>Try different keywords or <a href="#" onclick="app.showModal('contact-modal'); app.hideModal('faq-modal')">contact us</a> for help.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        // Category filtering
+        categoryButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                categoryButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const category = btn.dataset.category;
+                const sections = faqContent.querySelectorAll('.faq-section');
+                
+                sections.forEach(section => {
+                    if (category === 'all' || section.dataset.category === category) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+                
+                // Clear search when switching categories
+                helpSearch.value = '';
+                helpResults.style.display = 'none';
+            });
+        });
     }
     
     // Debug function to check footer elements (call from console)
@@ -315,11 +528,9 @@ class FamilyChoreChart {
                     this.currentUser = user;
                     await this.loadApp();
                 } else {
-                    console.log('No authenticated user found, showing auth screen');
                     this.showAuth();
                 }
             } catch (authError) {
-                console.log('Authentication check failed, showing auth screen:', authError);
                 this.showAuth();
             }
         } catch (error) {
@@ -387,13 +598,14 @@ class FamilyChoreChart {
                 subscriptionType = 'free';
             }
             
-            window.analytics.init(
+            analyticsSafeCall(
+                'init',
                 this.currentUser.id,
                 this.profile?.email === 'bsiegel13@gmail.com' ? 'admin' : 'user',
                 subscriptionType || 'free',
                 this.children.length
             );
-            window.analytics.trackPageView('Dashboard');
+            analyticsSafeCall('trackPageView', 'Dashboard');
             
             // Initialize notifications
             try {
@@ -483,7 +695,7 @@ class FamilyChoreChart {
             
         } catch (error) {
             console.error('Load app error:', error);
-            window.analytics.trackError('load_app', error.message);
+            analyticsSafeCall('trackError', 'load_app', error.message);
             
             // Hide loading screen if it's showing
             this.hideLoading();
@@ -790,16 +1002,12 @@ class FamilyChoreChart {
 
     async loadChildren() {
         if (this.isLoadingChildren) {
-            console.log('Already loading children, skipping...');
             return;
         }
         
         this.isLoadingChildren = true;
-        console.log('Loading children from API...');
-        
         try {
             this.children = await this.apiClient.getChildren();
-            console.log('Children loaded:', this.children);
         } finally {
             this.isLoadingChildren = false;
         }
@@ -817,14 +1025,11 @@ class FamilyChoreChart {
     setupRealtime() {
         try {
             this.subscription = this.apiClient.subscribeToChanges((payload) => {
-                console.log('Real-time update:', payload);
-                
                 // Add debouncing for real-time updates
                 const updateKey = `${payload.table}-${payload.eventType}`;
                 const now = Date.now();
                 const lastUpdate = this.formSubmissions.get(updateKey);
                 if (lastUpdate && (now - lastUpdate) < 2000) { // 2 second debounce for real-time
-                    console.log('Skipping duplicate real-time update:', payload);
                     return;
                 }
                 this.formSubmissions.set(updateKey, now);
@@ -834,7 +1039,6 @@ class FamilyChoreChart {
                     this.lastRealtimeAt = Date.now();
                     this.loadCompletions().then(() => {
                         // Don't re-render children for chore completions - let optimistic updates handle it
-                        console.log('Chore completion real-time update - skipping re-render');
                     });
                 } else if (payload.table === 'chores') {
                     this.lastRealtimeAt = Date.now();
@@ -843,11 +1047,9 @@ class FamilyChoreChart {
                     });
                 } else if (payload.table === 'children') {
                     this.lastRealtimeAt = Date.now();
-                    console.log('Children table changed, reloading...');
                     // Add a small delay to prevent rapid reloads
                     setTimeout(() => {
                         this.loadChildren().then(() => {
-                            console.log('Children reloaded from real-time:', this.children);
                             this.renderChildren();
                         });
                     }, 100);
@@ -863,12 +1065,10 @@ class FamilyChoreChart {
     handleWebSocketIssues() {
         // Listen for WebSocket errors and reconnect
         window.addEventListener('online', () => {
-            console.log('Network connection restored');
             // Optionally reconnect real-time subscriptions
         });
 
         window.addEventListener('offline', () => {
-            console.log('Network connection lost');
             // App will continue to work offline
         });
     }
@@ -885,7 +1085,7 @@ class FamilyChoreChart {
     }
 
     // Bulletproof loading system for individual buttons
-    setButtonLoading(btn, isLoading, fallbackLabel = 'Sign In') {
+    setButtonLoading(btn, isLoading, fallbackLabel = null) {
         if (!btn) return;
         if (isLoading) {
             // Preserve original state once
@@ -895,8 +1095,8 @@ class FamilyChoreChart {
             }
             btn.disabled = true;
             btn.classList.add('loading');
-            // Use fallbackLabel to determine loading text, or default to "Signing in..."
-            const loadingText = fallbackLabel !== 'Sign In' ? `Loading...` : 'Signing in...';
+            // Use fallbackLabel to determine loading text, or default to "Loading..."
+            const loadingText = fallbackLabel ? (fallbackLabel.includes('Sign') ? 'Signing in...' : 'Loading...') : 'Loading...';
             btn.innerHTML = `<span class="loading-spinner" aria-hidden="true"></span> ${loadingText}`;
         } else {
             // Restore original state on ANY exit path
@@ -905,10 +1105,38 @@ class FamilyChoreChart {
                 delete btn.dataset.originalContent;
             } else {
                 // Fallback if original not captured for some reason
-                // Use fallbackLabel, but try to preserve button structure if it had emojis/icons
-                const originalBtn = btn.cloneNode(false);
-                originalBtn.innerHTML = fallbackLabel;
-                btn.innerHTML = originalBtn.innerHTML;
+                // Try to use aria-label or button text, or fallbackLabel if provided
+                let restoreText = fallbackLabel;
+                
+                // If no fallback provided, try to get from aria-label
+                if (!restoreText && btn.getAttribute('aria-label')) {
+                    restoreText = btn.getAttribute('aria-label');
+                }
+                
+                // If still no text, try to extract from current content (remove spinner)
+                if (!restoreText) {
+                    const currentText = btn.textContent.trim();
+                    // If it's not a loading message, try to use it
+                    if (currentText && !currentText.includes('Loading') && !currentText.includes('Signing')) {
+                        restoreText = currentText;
+                    }
+                }
+                
+                // Last resort: only use "Sign In" if this is actually a login form button
+                if (!restoreText) {
+                    if (btn.type === 'submit' && btn.closest('#login-form')) {
+                        restoreText = 'Sign In';
+                    } else if (btn.type === 'submit' && btn.closest('#signup-form')) {
+                        restoreText = 'Create Account';
+                    } else if (btn.type === 'submit' && btn.closest('#forgot-form')) {
+                        restoreText = 'Send Reset Link';
+                    } else {
+                        // For non-form buttons, try to preserve structure or use a generic label
+                        restoreText = btn.textContent.trim() || 'Button';
+                    }
+                }
+                
+                btn.innerHTML = restoreText;
             }
             btn.disabled = !!btn.dataset.originalDisabled;
             delete btn.dataset.originalDisabled;
@@ -947,8 +1175,13 @@ class FamilyChoreChart {
             setTimeout(() => {
                 this.setupAppHandlers();
                 this.setupModalHandlers();
+                // Setup footer handlers (includes feedback widget)
+                this.setupFooterHandlers();
                 this.handlersInitialized = true;
             }, 100);
+        } else {
+            // Still setup footer handlers in case it wasn't done before
+            this.setupFooterHandlers();
         }
     }
 
@@ -1017,7 +1250,7 @@ class FamilyChoreChart {
             
             if (result.success) {
                 this.currentUser = result.user;
-                window.analytics.trackLogin(email);
+                analyticsSafeCall('trackLogin', email);
                 // Store session based on Remember Me
                 if (result.session) {
                     const sessionStr = JSON.stringify(result.session);
@@ -1041,7 +1274,7 @@ class FamilyChoreChart {
                 }
             } else {
                 // ⛔ Error: always inform, never stay loading
-                window.analytics.trackError('login', result.error);
+                analyticsSafeCall('trackError', 'login', result.error);
                 this.showToast(result.error || 'Invalid email or password.', 'error');
             }
         } catch (err) {
@@ -1086,11 +1319,11 @@ class FamilyChoreChart {
             const result = await this.apiClient.signUp(email, password, familyName);
 
             if (result.success) {
-                window.analytics.trackRegistration(email, familyName);
+                analyticsSafeCall('trackRegistration', email, familyName);
                 this.showToast('Account created! Please check your email to verify your account.', 'success');
                 this.switchAuthForm('login');
             } else {
-                window.analytics.trackError('signup', result.error);
+                analyticsSafeCall('trackError', 'signup', result.error);
                 this.showToast(result.error, 'error');
             }
         } catch (err) {
@@ -1154,7 +1387,6 @@ class FamilyChoreChart {
     setupAppHandlers() {
         if (this.appHandlersSetup) return;
         this.appHandlersSetup = true;
-        console.log('Setting up app handlers...');
         
         // FAQ and Contact handlers
         this.setupHelpModals();
@@ -1246,22 +1478,30 @@ class FamilyChoreChart {
         // What's New button (desktop)
         const whatsNewBtn = document.getElementById('whats-new-btn');
         if (whatsNewBtn && !whatsNewBtn.hasListener) {
-            whatsNewBtn.addEventListener('click', () => {
-                this.showModal('new-features-modal');
+            whatsNewBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.showNewFeaturesModal();
                 this.markNewFeaturesAsSeen();
             });
             whatsNewBtn.hasListener = true;
+        } else if (!whatsNewBtn) {
+            console.warn('What\'s New button (desktop) not found');
         }
 
         // What's New button (mobile)
         const mobileWhatsNewBtn = document.getElementById('mobile-whats-new-btn');
         if (mobileWhatsNewBtn && !mobileWhatsNewBtn.hasListener) {
-            mobileWhatsNewBtn.addEventListener('click', () => {
-                this.showModal('new-features-modal');
+            mobileWhatsNewBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.showNewFeaturesModal();
                 this.markNewFeaturesAsSeen();
                 this.closeMobileMenu();
             });
             mobileWhatsNewBtn.hasListener = true;
+        } else if (!mobileWhatsNewBtn) {
+            console.warn('What\'s New button (mobile) not found, will retry');
         }
 
         // Logout button
@@ -1445,7 +1685,6 @@ class FamilyChoreChart {
         const addChildForm = document.getElementById('add-child-form');
         if (addChildForm) {
             addChildForm.addEventListener('submit', async (e) => {
-                console.log('Add child form submitted!');
                 e.preventDefault();
                 
                 // Check if form is valid before proceeding
@@ -1472,7 +1711,6 @@ class FamilyChoreChart {
             );
             
             if (isAddChildButton) {
-                console.log('Add child submit button clicked!', e.target);
                 
                 // Get the form to check validity
                 const form = document.getElementById('add-child-form');
@@ -1539,9 +1777,15 @@ class FamilyChoreChart {
         });
 
         // Add more chore button
-        document.getElementById('add-more-chore').addEventListener('click', () => {
-            this.addChoreEntry();
-        });
+        const addMoreBtn = document.getElementById('add-more-chore');
+        if (addMoreBtn && !addMoreBtn.hasListener) {
+            addMoreBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.addChoreEntry();
+            });
+            addMoreBtn.hasListener = true;
+        }
 
         // IMPROVED: Icon picker functionality with specific ID matching
         document.addEventListener('click', (e) => {
@@ -1557,9 +1801,8 @@ class FamilyChoreChart {
                 // Find the correct hidden input based on specific picker ID
                 let hiddenInput = null;
                 
-                if (iconPicker.id === 'edit-chore-icon-picker') {
-                    hiddenInput = document.getElementById('edit-chore-icon');
-                } else if (iconPicker.id === 'bulk-edit-icon-picker') {
+                // Edit chore modal now uses dropdown, skip it
+                if (iconPicker.id === 'bulk-edit-icon-picker') {
                     hiddenInput = document.getElementById('bulk-edit-icon');
                 } else if (iconPicker.id.includes('chore-icon-picker')) {
                     // For add chore modal - extract the number from the ID
@@ -1573,7 +1816,6 @@ class FamilyChoreChart {
                 // Update hidden input if found
                 if (hiddenInput) {
                     hiddenInput.value = e.target.dataset.icon || '';
-                    console.log('Set icon value:', e.target.dataset.icon || '(empty)', 'to input:', hiddenInput.id);
                 } else {
                     console.warn('Could not find hidden input for icon picker:', iconPicker.id);
                 }
@@ -1617,26 +1859,39 @@ class FamilyChoreChart {
     }
 
     openEditChildModal(child) {
-        // Hide the manage children list
-        document.getElementById('manage-children-list').style.display = 'none';
-        
-        // Show the inline edit form
-        const editForm = document.getElementById('inline-edit-child-form');
-        editForm.style.display = 'block';
+        // Use the proper edit child modal instead of inline form
+        const editChildModal = document.getElementById('edit-child-modal');
+        if (!editChildModal) {
+            this.showToast('Edit modal not available', 'error');
+            return;
+        }
         
         // Populate the edit form with child data
-        document.getElementById('settings-edit-child-name').value = child.name;
-        document.getElementById('settings-edit-child-age').value = child.age;
-        document.getElementById('settings-edit-child-color').value = child.avatar_color || '#6366f1';
+        const nameInput = document.getElementById('edit-child-name');
+        const ageInput = document.getElementById('edit-child-age');
+        const colorInput = document.getElementById('edit-child-color');
+        const editForm = document.getElementById('edit-child-form');
+        
+        if (!nameInput || !ageInput || !colorInput || !editForm) {
+            this.showToast('Edit form not available', 'error');
+            return;
+        }
+        
+        nameInput.value = child.name;
+        ageInput.value = child.age;
+        colorInput.value = child.avatar_color || '#6366f1';
         
         // Set the child ID for the form
-        document.getElementById('settings-edit-child-form').dataset.childId = child.id;
+        editForm.dataset.childId = child.id;
         
         // Update avatar preview
-        this.updateSettingsEditChildAvatarPreview(child);
+        this.updateEditChildAvatarPreview2();
         
-        // Setup color presets
-        this.setupSettingsEditChildColorPresets();
+        // Setup edit child modal (handles color presets and avatar preview)
+        this.setupEditChildModal();
+        
+        // Show the modal
+        this.showModal('edit-child-modal');
     }
 
 
@@ -1670,7 +1925,7 @@ class FamilyChoreChart {
     }
 
     // Icon Picker Methods
-    openIconPicker(currentIcon = '', callback = null) {
+    openIconPicker(currentIcon = '', callback = null, defaultTab = 'robots') {
         this.iconPickerCallback = callback;
         this.currentSelectedIcon = currentIcon;
         
@@ -1678,13 +1933,37 @@ class FamilyChoreChart {
         this.populateRobotIcons();
         this.populateAdventurerIcons();
         this.populateEmojiIcons();
+        this.populateChoreEmojiIcons();
         
         // Set up tab switching
         this.setupIconPickerTabs();
         
+        // Set default tab
+        if (defaultTab) {
+            const tabs = document.querySelectorAll('.icon-tab');
+            const tabContents = document.querySelectorAll('.icon-tab-content');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            const targetTab = document.querySelector(`.icon-tab[data-tab="${defaultTab}"]`);
+            const targetContent = document.getElementById(`${defaultTab}-tab`);
+            if (targetTab) targetTab.classList.add('active');
+            if (targetContent) targetContent.classList.add('active');
+        }
+        
         // Show the modal
-        this.showModal('icon-picker-modal');
+        const modal = document.getElementById('icon-picker-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            this.showModal('icon-picker-modal');
+            // Ensure icons are populated after modal is shown
+            setTimeout(() => {
+                this.ensureIconPickerModalReady();
+            }, 50);
+        }
     }
+
+    // openChoreIconPicker removed - now using dropdown select instead
 
     closeIconPicker() {
         // Simply hide the icon picker - hideModal will check for other open modals
@@ -1797,24 +2076,98 @@ class FamilyChoreChart {
         });
     }
 
+    populateChoreEmojiIcons() {
+        const choreEmojisGrid = document.getElementById('chore-emojis-grid');
+        if (!choreEmojisGrid) return;
+
+        choreEmojisGrid.innerHTML = '';
+        
+        // All chore emojis
+        const choreEmojis = [
+            // Household Chores
+            '📝', '🛏️', '🧹', '🧺', '🍽️', '🚿', '🧽', '🗑️', '🚪', '🪟', '🪑', '🛋️', '🪞', '🖼️', '💡', '🔌', '🔋',
+            // Clothing & Personal Care
+            '👕', '👖', '👟', '🎒', '🧸',
+            // School & Learning
+            '📚', '📖', '✏️', '🎨', '🧠',
+            // Technology
+            '📱', '💻', '🎮',
+            // Pets & Animals
+            '🐕', '🐱', '🐦', '🐠', '🐹',
+            // Plants & Nature
+            '🌱', '🌺', '🌳', '🌿', '🍃', '🌧️', '☀️', '❄️',
+            // Transportation
+            '🚗', '🚲', '🛴', '🏠', '🏡',
+            // Sports & Activities
+            '⚽', '🏀', '🎾', '🏊', '🚴', '🏃', '🧘', '💪', '🎯',
+            // Music & Arts
+            '🎵', '🎤', '🎧', '🎹', '🎸', '🥁', '🎺', '🎻', '🎼', '🎭', '🎬',
+            // Celebrations & Fun
+            '🎉', '🎊', '🎈', '🎁', '🎄', '🎃', '🎪',
+            // Emotions & Symbols
+            '❤️', '🌟', '⭐', '✨', '💎', '🏆', '🎖️', '👑', '💫', '🌈'
+        ];
+
+        choreEmojis.forEach(emoji => {
+            const isSelected = this.currentSelectedIcon === emoji;
+            
+            const iconOption = document.createElement('button');
+            iconOption.className = `icon-option ${isSelected ? 'active' : ''}`;
+            iconOption.type = 'button';
+            iconOption.style.cssText = 'font-size: 2rem; width: 60px; height: 60px; border: 2px solid var(--gray-300); border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;';
+            iconOption.onclick = (e) => {
+                e.stopPropagation();
+                this.selectIcon(emoji, 'chore-emoji');
+            };
+            
+            iconOption.textContent = emoji;
+            iconOption.setAttribute('aria-label', `Select ${emoji} icon`);
+            
+            if (isSelected) {
+                iconOption.style.borderColor = 'var(--primary-color)';
+                iconOption.style.backgroundColor = 'var(--primary-50)';
+            }
+            
+            iconOption.addEventListener('mouseenter', () => {
+                if (!isSelected) {
+                    iconOption.style.borderColor = 'var(--primary-color)';
+                    iconOption.style.transform = 'scale(1.1)';
+                }
+            });
+            
+            iconOption.addEventListener('mouseleave', () => {
+                if (!isSelected) {
+                    iconOption.style.borderColor = 'var(--gray-300)';
+                    iconOption.style.transform = 'scale(1)';
+                }
+            });
+            
+            choreEmojisGrid.appendChild(iconOption);
+        });
+    }
+
     setupIconPickerTabs() {
         const tabs = document.querySelectorAll('.icon-tab');
         const tabContents = document.querySelectorAll('.icon-tab-content');
 
         tabs.forEach(tab => {
-            tab.onclick = () => {
+            // Remove existing listeners by cloning
+            const newTab = tab.cloneNode(true);
+            tab.parentNode.replaceChild(newTab, tab);
+            
+            newTab.addEventListener('click', () => {
                 // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+                document.querySelectorAll('.icon-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.icon-tab-content').forEach(content => content.classList.remove('active'));
                 
                 // Add active class to clicked tab and corresponding content
-                tab.classList.add('active');
-                const tabId = tab.dataset.tab;
+                newTab.classList.add('active');
+                const tabId = newTab.dataset.tab;
                 const content = document.getElementById(`${tabId}-tab`);
                 if (content) {
                     content.classList.add('active');
                 }
-            };
+            });
         });
     }
 
@@ -1830,6 +2183,18 @@ class FamilyChoreChart {
         // Close the icon picker - hideModal will preserve parent modals
         // since showModal() now keeps parent modals open when icon picker opens
         this.closeIconPicker();
+    }
+    
+    // Ensure icon picker modal is properly set up when opened
+    ensureIconPickerModalReady() {
+        // Make sure all icon grids are populated
+        this.populateChoreEmojiIcons();
+        this.populateRobotIcons();
+        this.populateAdventurerIcons();
+        this.populateEmojiIcons();
+        
+        // Ensure tab switching works
+        this.setupIconPickerTabs();
     }
 
     // Icon picker callback handlers
@@ -1888,13 +2253,13 @@ class FamilyChoreChart {
     renderAddDicebearPicker(name) {
         // This is now handled by openIconPicker in the add child modal
         // Keeping for backward compatibility
-        console.log('renderAddDicebearPicker called (legacy, use openIconPicker instead)');
+        // Legacy function - use openIconPicker instead
     }
 
     renderEditDicebearPicker(name) {
         // This is now handled by openIconPicker in the edit child modal
         // Keeping for backward compatibility
-        console.log('renderEditDicebearPicker called (legacy, use openIconPicker instead)');
+        // Legacy function - use openIconPicker instead
     }
 
     setupAddChildModal() {
@@ -2323,14 +2688,19 @@ class FamilyChoreChart {
 
     async showModal(modalId) {
         const modal = document.getElementById(modalId);
-        if (!modal) return;
-        
+        if (!modal) {
+            console.error(`Modal with ID "${modalId}" not found in DOM`);
+            return;
+        }
         // Prevent body scroll when modal is open
         document.body.classList.add('modal-open');
         
         // SPECIAL CASE: Icon picker modal can be opened alongside parent modals
         // Don't close parent modals when opening icon picker
         const isIconPicker = modalId === 'icon-picker-modal';
+        
+        // SPECIAL CASE: Confirmation modal should keep the parent modal open (e.g., settings-modal)
+        const isConfirmation = modalId === 'confirmation-modal';
         
         if (isIconPicker) {
             // Only close other modals that are NOT parent modals
@@ -2341,6 +2711,17 @@ class FamilyChoreChart {
                     m.classList.add('hidden');
                 }
                 // Keep parent modals open - they're behind the icon picker
+            });
+        } else if (isConfirmation) {
+            // Keep the currently open modal (usually settings-modal) open behind the confirmation
+            const allModals = document.querySelectorAll('.modal');
+            allModals.forEach(m => {
+                if (m.id !== modalId && !m.classList.contains('hidden')) {
+                    // Keep this modal open - it's the parent modal
+                } else if (m.id !== modalId && m.classList.contains('hidden')) {
+                    // Keep other hidden modals hidden
+                }
+                // Don't close any modals - confirmation appears on top
             });
         } else {
             // Normal modal behavior: close all other modals
@@ -2361,6 +2742,7 @@ class FamilyChoreChart {
         // Populate child select for chore form and check premium features
         if (modalId === 'add-chore-modal') {
             this.populateChildSelect();
+            await this.checkPremiumFeatures();
         }
         if (modalId === 'edit-chore-modal') {
             await this.checkPremiumFeatures();
@@ -2502,15 +2884,94 @@ class FamilyChoreChart {
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="chore-icon-1">Chore Icon</label>
-                            <div class="icon-picker" id="icon-picker-1">
-                                <button type="button" class="icon-option active" data-icon="📝">📝</button>
-                                <button type="button" class="icon-option" data-icon="🛏">🛏</button>
-                                <button type="button" class="icon-option" data-icon="🧽">🧽</button>
-                                <button type="button" class="icon-option" data-icon="🧺">🧺</button>
-                                <button type="button" class="icon-option" data-icon="🍴">🍴</button>
-                            </div>
-                            <input type="hidden" id="chore-icon-1" value="📝">
+                            <label for="chore-icon-1">Select an Icon</label>
+                            <select id="chore-icon-1" class="chore-icon-select">
+                                <option value="📝">📝 Note pad</option>
+                                <option value="🛏️">🛏️ Bed</option>
+                                <option value="🧹">🧹 Broom</option>
+                                <option value="🧺">🧺 Laundry basket</option>
+                                <option value="🍽️">🍽️ Dishes</option>
+                                <option value="🚿">🚿 Shower</option>
+                                <option value="🧽">🧽 Sponge</option>
+                                <option value="🗑️">🗑️ Trash can</option>
+                                <option value="🚪">🚪 Door</option>
+                                <option value="🪟">🪟 Window</option>
+                                <option value="🪑">🪑 Chair</option>
+                                <option value="🛋️">🛋️ Couch</option>
+                                <option value="🪞">🪞 Mirror</option>
+                                <option value="🖼️">🖼️ Picture frame</option>
+                                <option value="💡">💡 Light bulb</option>
+                                <option value="🔌">🔌 Plug</option>
+                                <option value="🔋">🔋 Battery</option>
+                                <option value="👕">👕 T-shirt</option>
+                                <option value="👖">👖 Pants</option>
+                                <option value="👟">👟 Shoes</option>
+                                <option value="🎒">🎒 Backpack</option>
+                                <option value="🧸">🧸 Teddy bear</option>
+                                <option value="📚">📚 Books</option>
+                                <option value="📖">📖 Open book</option>
+                                <option value="✏️">✏️ Pencil</option>
+                                <option value="🎨">🎨 Art palette</option>
+                                <option value="🧠">🧠 Brain</option>
+                                <option value="📱">📱 Phone</option>
+                                <option value="💻">💻 Laptop</option>
+                                <option value="🎮">🎮 Video game</option>
+                                <option value="🐕">🐕 Dog</option>
+                                <option value="🐱">🐱 Cat</option>
+                                <option value="🐦">🐦 Bird</option>
+                                <option value="🐠">🐠 Fish</option>
+                                <option value="🐹">🐹 Hamster</option>
+                                <option value="🌱">🌱 Seedling</option>
+                                <option value="🌺">🌺 Flower</option>
+                                <option value="🌳">🌳 Tree</option>
+                                <option value="🌿">🌿 Herb</option>
+                                <option value="🍃">🍃 Leaf</option>
+                                <option value="🌧️">🌧️ Rain</option>
+                                <option value="☀️">☀️ Sun</option>
+                                <option value="❄️">❄️ Snowflake</option>
+                                <option value="🚗">🚗 Car</option>
+                                <option value="🚲">🚲 Bicycle</option>
+                                <option value="🛴">🛴 Scooter</option>
+                                <option value="🏠">🏠 House</option>
+                                <option value="🏡">🏡 Home</option>
+                                <option value="⚽">⚽ Soccer ball</option>
+                                <option value="🏀">🏀 Basketball</option>
+                                <option value="🎾">🎾 Tennis ball</option>
+                                <option value="🏊">🏊 Swimming</option>
+                                <option value="🚴">🚴 Cycling</option>
+                                <option value="🏃">🏃 Running</option>
+                                <option value="🧘">🧘 Meditation</option>
+                                <option value="💪">💪 Muscle</option>
+                                <option value="🎯">🎯 Target</option>
+                                <option value="🎵">🎵 Musical note</option>
+                                <option value="🎤">🎤 Microphone</option>
+                                <option value="🎧">🎧 Headphones</option>
+                                <option value="🎹">🎹 Piano</option>
+                                <option value="🎸">🎸 Guitar</option>
+                                <option value="🥁">🥁 Drums</option>
+                                <option value="🎺">🎺 Trumpet</option>
+                                <option value="🎻">🎻 Violin</option>
+                                <option value="🎼">🎼 Sheet music</option>
+                                <option value="🎭">🎭 Theater masks</option>
+                                <option value="🎬">🎬 Movie camera</option>
+                                <option value="🎉">🎉 Party popper</option>
+                                <option value="🎊">🎊 Confetti ball</option>
+                                <option value="🎈">🎈 Balloon</option>
+                                <option value="🎁">🎁 Gift</option>
+                                <option value="🎄">🎄 Christmas tree</option>
+                                <option value="🎃">🎃 Pumpkin</option>
+                                <option value="🎪">🎪 Circus tent</option>
+                                <option value="❤️">❤️ Heart</option>
+                                <option value="🌟">🌟 Star</option>
+                                <option value="⭐">⭐ Star</option>
+                                <option value="✨">✨ Sparkles</option>
+                                <option value="💎">💎 Diamond</option>
+                                <option value="🏆">🏆 Trophy</option>
+                                <option value="🎖️">🎖️ Medal</option>
+                                <option value="👑">👑 Crown</option>
+                                <option value="💫">💫 Dizzy star</option>
+                                <option value="🌈">🌈 Rainbow</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="chore-category-1">Category</label>
@@ -2554,34 +3015,25 @@ class FamilyChoreChart {
     }
 
     async handleAddChild() {
-        console.log('handleAddChild called');
-        
         // Check if modal is visible
         const modal = document.getElementById('add-child-modal');
-        console.log('Modal visibility:', modal ? modal.classList.contains('hidden') : 'modal not found');
         
         // Prevent duplicate submissions immediately
         if (this.isAddingChild) {
-            console.log('Preventing duplicate child submission - already in progress');
             return;
         }
         this.isAddingChild = true;
 
         const addChildButton = document.querySelector('button[form="add-child-form"]');
-        console.log('Add child button found:', addChildButton);
 
         try {
             const nameInput = document.getElementById('child-name');
             const ageInput = document.getElementById('child-age');
             const colorInput = document.getElementById('child-color');
             
-            console.log('Form inputs found:', { nameInput, ageInput, colorInput });
-            
             const name = nameInput ? nameInput.value : '';
             const age = ageInput ? parseInt(ageInput.value) : 0;
             const color = colorInput ? colorInput.value : '';
-            
-            console.log('Form values:', { name, age, color });
             let avatarUrl = '';
             let avatarFile = '';
             const avatarPreview = document.getElementById('add-child-avatar-preview-circle');
@@ -2619,29 +3071,23 @@ class FamilyChoreChart {
             }
 
             // Pass avatar info to createChild
-            console.log('Creating child with:', { name, age, color, avatarUrl, avatarFile });
             const result = await this.apiClient.createChild(name, age, color, avatarUrl, avatarFile);
-            console.log('Create child result:', result);
             
             this.setButtonLoading(addChildButton, false);
             
             if (result.success) {
-                console.log('Child created successfully, loading children...');
-                window.analytics.trackAddChild(name, age);
+                analyticsSafeCall('trackAddChild', name, age);
                 
                 // Load and render children BEFORE closing modal
                 await this.loadChildren();
-                console.log('Children loaded:', this.children);
-                
                 this.renderChildren();
-                console.log('Children rendered');
                 
                 // Now close modal and show success
                 this.hideModal('add-child-modal');
                 this.showToast(`Added ${name} to your family!`, 'success');
             } else {
                 console.error('Failed to create child:', result.error);
-                window.analytics.trackError('add_child', result.error);
+                analyticsSafeCall('trackError', 'add_child', result.error);
                 this.showToast(result.error, 'error');
             }
         } catch (error) {
@@ -2686,16 +3132,13 @@ class FamilyChoreChart {
             const entry = choreEntries[i];
             const name = entry.querySelector(`#chore-name-${i + 1}`).value;
             
-            // Improved icon selection logic
+            // Get icon from select dropdown - use the actual selected value
             let icon = '📝'; // default
-            const iconInput = entry.querySelector(`#chore-icon-${i + 1}`);
-            if (iconInput && iconInput.value) {
-                icon = iconInput.value;
-            } else {
-                // Fallback: check for active icon in picker
-                const activePicker = entry.querySelector('.icon-picker .icon-option.active');
-                if (activePicker) {
-                    icon = activePicker.dataset.icon;
+            const iconSelect = entry.querySelector(`#chore-icon-${i + 1}`);
+            if (iconSelect) {
+                const selectedValue = iconSelect.value;
+                if (selectedValue && selectedValue.trim() !== '') {
+                    icon = selectedValue;
                 }
             }
             
@@ -2734,7 +3177,6 @@ class FamilyChoreChart {
         const now = Date.now();
         const lastSubmission = this.formSubmissions.get(submissionKey);
         if (lastSubmission && (now - lastSubmission) < 2000) { // 2 second debounce
-            console.log('Preventing duplicate chore submission');
             this.setButtonLoading(addChoreButton, false);
             return;
         }
@@ -3161,8 +3603,6 @@ class FamilyChoreChart {
         
         // Update display
         this.updateCurrentThemeDisplay();
-        
-        this.showToast('Seasonal theme disabled', 'info');
     }
 
     async loadChildrenList() {
@@ -3302,6 +3742,38 @@ class FamilyChoreChart {
                 </div>
             `;
         });
+        html += `
+            <div style="text-align: center; margin-top: var(--space-4);" class="desktop-only">
+                <button class="btn btn-secondary add-chore-grid-btn" data-open-modal="add-chore-modal">
+                    <span>📝</span> Add More Chores
+                </button>
+            </div>
+        `;
+        html += `
+            <div class="quick-actions-section desktop-only" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
+                <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">⚡ Quick Actions</h4>
+                <div class="quick-actions-grid">
+                    <button type="button" class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
+                        <span>✅</span> Mark All Today
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
+                        <span>📅</span> Mark All Week
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
+                        <span>❌</span> Clear All Today
+                    </button>
+                    <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${childId}">
+                        <span>📊</span> View History
+                    </button>
+                    <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${childId}">
+                        <span>🎯</span> Challenges
+                    </button>
+                    <button class="btn btn-outline btn-sm bulk-edit-btn" data-child-id="${childId}">
+                        <span>✏️</span> Bulk Edit
+                    </button>
+                </div>
+            </div>
+        `;
         return html;
     }
 
@@ -3331,17 +3803,12 @@ class FamilyChoreChart {
     }
 
     openEditChoreModal(choreId, choreName, choreReward, choreNotes) {
-        console.log('Opening edit modal for chore:', choreId);
-        
         // Find the chore to get the child ID
         const chore = this.chores.find(c => c.id === choreId);
         if (!chore) {
             this.showToast('Chore not found', 'error');
             return;
         }
-        
-        console.log('Found chore:', chore);
-        console.log('Child ID:', chore.child_id);
         
         // Populate the edit form
         document.getElementById('edit-chore-name').value = choreName;
@@ -3350,24 +3817,30 @@ class FamilyChoreChart {
         if (notesInput) notesInput.value = choreNotes || '';
         
         // Set icon and category
-        document.getElementById('edit-chore-icon').value = chore.icon || '📝';
-        document.getElementById('edit-chore-category').value = chore.category || 'General';
-        
-            // Update icon picker active state with timeout for DOM readiness
-    setTimeout(() => {
-        const iconPicker = document.getElementById('edit-chore-icon-picker');
-        if (iconPicker) {
-            iconPicker.querySelectorAll('.icon-option').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.icon === chore.icon) {
-                    btn.classList.add('active');
-                    console.log('Set active icon:', chore.icon, 'for picker:', iconPicker.id);
-                }
-            });
-        } else {
-            console.warn('Icon picker not found for edit modal');
+        const iconSelect = document.getElementById('edit-chore-icon-select');
+        if (iconSelect) {
+            iconSelect.value = chore.icon || '📝';
         }
-    }, 100);
+        const categorySelect = document.getElementById('edit-chore-category');
+        if (categorySelect) {
+            // Map old category names to new ones if needed
+            const categoryMap = {
+                'General': 'household_chores',
+                'Kitchen': 'household_chores',
+                'Bathroom': 'household_chores',
+                'Bedroom': 'household_chores',
+                'Outdoor': 'physical_activity',
+                'School': 'learning_education',
+                'Personal': 'custom',
+                'Technology': 'custom',
+                'Pets': 'custom',
+                'Plants': 'custom'
+            };
+            const mappedCategory = categoryMap[chore.category] || chore.category || 'household_chores';
+            categorySelect.value = mappedCategory;
+        }
+        
+        // Icon picker is now a dropdown, no need to update button states
         
         // Populate child select and set the correct child
         this.populateEditChoreChildSelect(chore.child_id);
@@ -3402,7 +3875,6 @@ class FamilyChoreChart {
             const child = this.children.find(c => c.id === chore.child_id);
             if (child) {
                 childField.value = child.name;
-                console.log('Set child field value to:', child.name);
             }
         }
         // Color picker removed from edit chore modal
@@ -3413,9 +3885,7 @@ class FamilyChoreChart {
         const child = this.children.find(c => c.id === selectedChildId);
         if (child) {
             input.value = child.name;
-            console.log('Populated child field with:', child.name);
-        } else {
-            console.log('Child not found for ID:', selectedChildId);
+            } else {
         }
     }
 
@@ -3554,6 +4024,7 @@ class FamilyChoreChart {
         
         if (confirmed) {
             const result = await this.apiClient.deleteChild(childId);
+            
             if (result.success) {
                 this.showToast(`${childName} has been removed`, 'success');
                 await this.loadChildren();
@@ -3589,7 +4060,6 @@ class FamilyChoreChart {
         
         // 5-second debounce for duplicate prevention
         if (lastShown && (now - lastShown) < 5000) {
-            console.log('Preventing duplicate toast:', message);
             return;
         }
         
@@ -3738,13 +4208,67 @@ class FamilyChoreChart {
     // Confirmation Modal Helper
     async showConfirmation(message, title = 'Confirm Action', type = 'warning', confirmText = 'Confirm', cancelText = 'Cancel') {
         return new Promise((resolve) => {
-            const modal = document.getElementById('confirmation-modal');
+            // First, try to find existing modal
+            let modal = document.getElementById('confirmation-modal');
+            
+            // If modal doesn't exist or is not in body, create it dynamically
+            if (!modal || !document.body.contains(modal)) {
+                // Create modal element
+                modal = document.createElement('div');
+                modal.id = 'confirmation-modal';
+                modal.className = 'modal';
+                modal.setAttribute('role', 'dialog');
+                modal.setAttribute('aria-labelledby', 'confirmation-title');
+                modal.setAttribute('aria-modal', 'true');
+                
+                modal.innerHTML = `
+                    <div class="modal-content modal-flex confirmation-modal-content">
+                        <header class="modal-header confirmation-header flex-between items-center">
+                            <div class="confirmation-icon" id="confirmation-icon">⚠️</div>
+                            <h2 id="confirmation-title">Confirm Action</h2>
+                        </header>
+                        <div class="modal-body-flex">
+                            <div class="confirmation-body">
+                                <p id="confirmation-message">Are you sure you want to proceed?</p>
+                            </div>
+                        </div>
+                        <div class="confirmation-actions flex justify-end gap-3">
+                            <button class="btn btn-outline" id="confirmation-cancel">Cancel</button>
+                            <button class="btn btn-primary" id="confirmation-confirm">Confirm</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Append to end of body to ensure it's on top in DOM order
+                document.body.appendChild(modal);
+            } else {
+                // If modal exists but is hidden or in wrong location, move it to end of body
+                if (modal.parentElement !== document.body) {
+                    document.body.appendChild(modal);
+                }
+            }
+            
+            // Better error handling
+            if (!modal) {
+                // Fallback to browser confirm dialog
+                resolve(confirm(message));
+                return;
+            }
+            
+            // Scope all queries to the modal element to avoid hitting duplicates
             const header = modal.querySelector('.confirmation-header');
-            const icon = document.getElementById('confirmation-icon');
-            const titleEl = document.getElementById('confirmation-title');
-            const messageEl = document.getElementById('confirmation-message');
-            const confirmBtn = document.getElementById('confirmation-confirm');
-            const cancelBtn = document.getElementById('confirmation-cancel');
+            const icon = modal.querySelector('#confirmation-icon');
+            const titleEl = modal.querySelector('#confirmation-title');
+            const messageEl = modal.querySelector('#confirmation-message');
+            const confirmBtn = modal.querySelector('#confirmation-confirm');
+            const cancelBtn = modal.querySelector('#confirmation-cancel');
+            
+            // Check if all elements exist
+            if (!header || !icon || !titleEl || !messageEl || !confirmBtn || !cancelBtn) {
+                // Fallback to browser confirm dialog
+                resolve(confirm(message));
+                return;
+            }
             
             // Set icon and colors based on type
             const iconMap = {
@@ -3758,38 +4282,99 @@ class FamilyChoreChart {
             header.className = `modal-header confirmation-header ${type}`;
             titleEl.textContent = title;
             messageEl.textContent = message;
-            confirmBtn.textContent = confirmText;
-            cancelBtn.textContent = cancelText;
+            
+            // Remove any existing listeners first by cloning the buttons
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            
+            // Set text content on cloned buttons
+            newConfirmBtn.textContent = confirmText;
+            newCancelBtn.textContent = cancelText;
             
             // Add danger class to confirm button for destructive actions
             if (type === 'danger') {
-                confirmBtn.classList.add('danger');
+                newConfirmBtn.classList.add('danger');
             } else {
-                confirmBtn.classList.remove('danger');
+                newConfirmBtn.classList.remove('danger');
             }
+            
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
             
             // Event handlers
             const handleConfirm = () => {
-                this.hideModal('confirmation-modal');
+                // Only hide confirmation modal, keep parent modal (settings) open
+                const confirmationModal = document.getElementById('confirmation-modal');
+                if (confirmationModal) {
+                    confirmationModal.classList.add('hidden');
+                    confirmationModal.setAttribute('aria-hidden', 'true');
+                }
                 cleanup();
                 resolve(true);
             };
             
             const handleCancel = () => {
-                this.hideModal('confirmation-modal');
+                // Only hide confirmation modal, keep parent modal (settings) open
+                const confirmationModal = document.getElementById('confirmation-modal');
+                if (confirmationModal) {
+                    confirmationModal.classList.add('hidden');
+                    confirmationModal.setAttribute('aria-hidden', 'true');
+                }
                 cleanup();
                 resolve(false);
             };
             
             const cleanup = () => {
-                confirmBtn.removeEventListener('click', handleConfirm);
-                cancelBtn.removeEventListener('click', handleCancel);
+                newConfirmBtn.removeEventListener('click', handleConfirm);
+                newCancelBtn.removeEventListener('click', handleCancel);
             };
             
-            confirmBtn.addEventListener('click', handleConfirm);
-            cancelBtn.addEventListener('click', handleCancel);
+            // Add new event listeners to the cloned buttons
+            newConfirmBtn.addEventListener('click', handleConfirm);
+            newCancelBtn.addEventListener('click', handleCancel);
             
-            this.showModal('confirmation-modal');
+            // Ensure modal is at the end of body for proper stacking
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            
+            // Force show the modal directly to ensure it appears
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+            
+            // Apply inline styles to force visibility - use individual style properties for better browser support
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.zIndex = '10003';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.background = 'rgba(0, 0, 0, 0.5)';
+            modal.style.backdropFilter = 'blur(10px)';
+            modal.style.pointerEvents = 'auto';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            
+            // Also ensure the content is visible
+            const content = modal.querySelector('.confirmation-modal-content');
+            if (content) {
+                content.style.display = 'block';
+                content.style.visibility = 'visible';
+                content.style.opacity = '1';
+                content.style.zIndex = '10004';
+                content.style.position = 'relative';
+                content.style.background = 'white';
+            }
+            
+            // Force a reflow to ensure styles are applied
+            void modal.offsetHeight;
+            
+            // Don't call showModal - it might interfere with our inline styles
+            // Just set up focus trap manually
+            this.setupModalFocusTrap(modal);
         });
     }
 
@@ -3819,9 +4404,7 @@ class FamilyChoreChart {
                 this.showToast('🎉 Welcome to ChoreStar Premium! You now have access to all premium features.', 'success');
                 
                 // Track payment success
-                if (window.analytics) {
-                    window.analytics.trackPaymentSuccess();
-                }
+                analyticsSafeCall('trackPaymentSuccess');
                 
                 // Send notification
                 if (window.notificationManager) {
@@ -3848,9 +4431,7 @@ class FamilyChoreChart {
             this.showToast('Payment was canceled. You can try upgrading again anytime.', 'info');
             
             // Track payment cancellation
-            if (window.analytics) {
-                window.analytics.trackPaymentCancel();
-            }
+            analyticsSafeCall('trackPaymentCancel');
             
             // Remove canceled parameter from URL
             const newUrl = window.location.pathname + window.location.hash;
@@ -4098,7 +4679,19 @@ class FamilyChoreChart {
         // Color picker removed from edit modal - no longer need to handle edit-premium-features
         premiumFeatures.forEach(feature => {
             if (limits.isPremium) {
-                feature.style.display = 'block';
+                // Force show - remove inline style and set display
+                if (feature.hasAttribute('style')) {
+                    const currentStyle = feature.getAttribute('style');
+                    // Remove display:none from style attribute
+                    const newStyle = currentStyle.replace(/display\s*:\s*none\s*;?/gi, '').trim();
+                    if (newStyle) {
+                        feature.setAttribute('style', newStyle + '; display: block;');
+                    } else {
+                        feature.setAttribute('style', 'display: block;');
+                    }
+                } else {
+                    feature.style.display = 'block';
+                }
             } else {
                 feature.style.display = 'none';
             }
@@ -4165,7 +4758,7 @@ class FamilyChoreChart {
 
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         const childCompletions = this.completions.filter(comp => 
-            childChores.some(chore => chore.id === comp.chore_id)
+            childChores.some(chore => String(chore.id) === String(comp.chore_id))
         );
 
         // Check for first chore completion badge
@@ -4259,116 +4852,103 @@ class FamilyChoreChart {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="chore-icon-${entryCount}">Chore Icon</label>
-                    <div class="icon-picker" id="icon-picker-${entryCount}">
-                        <!-- Household Chores -->
-                        <button type="button" class="icon-option active" data-icon="📝">📝</button>
-                        <button type="button" class="icon-option" data-icon="🛏️">🛏️</button>
-                        <button type="button" class="icon-option" data-icon="🧹">🧹</button>
-                        <button type="button" class="icon-option" data-icon="🧺">🧺</button>
-                        <button type="button" class="icon-option" data-icon="🍽️">🍽️</button>
-                        <button type="button" class="icon-option" data-icon="🚿">🚿</button>
-                        <button type="button" class="icon-option" data-icon="🧽">🧽</button>
-                        <button type="button" class="icon-option" data-icon="🗑️">🗑️</button>
-                        <button type="button" class="icon-option" data-icon="🚪">🚪</button>
-                        <button type="button" class="icon-option" data-icon="🪟">🪟</button>
-                        <button type="button" class="icon-option" data-icon="🪑">🪑</button>
-                        <button type="button" class="icon-option" data-icon="🛋️">🛋️</button>
-                        <button type="button" class="icon-option" data-icon="🪞">🪞</button>
-                        <button type="button" class="icon-option" data-icon="🖼️">🖼️</button>
-                        <button type="button" class="icon-option" data-icon="💡">💡</button>
-                        <button type="button" class="icon-option" data-icon="🔌">🔌</button>
-                        <button type="button" class="icon-option" data-icon="🔋">🔋</button>
-                        
-                        <!-- Clothing & Personal Care -->
-                        <button type="button" class="icon-option" data-icon="👕">👕</button>
-                        <button type="button" class="icon-option" data-icon="👖">👖</button>
-                        <button type="button" class="icon-option" data-icon="👟">👟</button>
-                        <button type="button" class="icon-option" data-icon="🎒">🎒</button>
-                        <button type="button" class="icon-option" data-icon="🧸">🧸</button>
-                        
-                        <!-- School & Learning -->
-                        <button type="button" class="icon-option" data-icon="📚">📚</button>
-                        <button type="button" class="icon-option" data-icon="📖">📖</button>
-                        <button type="button" class="icon-option" data-icon="✏️">✏️</button>
-                        <button type="button" class="icon-option" data-icon="🎨">🎨</button>
-                        <button type="button" class="icon-option" data-icon="🧠">🧠</button>
-                        
-                        <!-- Technology -->
-                        <button type="button" class="icon-option" data-icon="📱">📱</button>
-                        <button type="button" class="icon-option" data-icon="💻">💻</button>
-                        <button type="button" class="icon-option" data-icon="🎮">🎮</button>
-                        
-                        <!-- Pets & Animals -->
-                        <button type="button" class="icon-option" data-icon="🐕">🐕</button>
-                        <button type="button" class="icon-option" data-icon="🐱">🐱</button>
-                        <button type="button" class="icon-option" data-icon="🐦">🐦</button>
-                        <button type="button" class="icon-option" data-icon="🐠">🐠</button>
-                        <button type="button" class="icon-option" data-icon="🐹">🐹</button>
-                        
-                        <!-- Plants & Nature -->
-                        <button type="button" class="icon-option" data-icon="🌱">🌱</button>
-                        <button type="button" class="icon-option" data-icon="🌺">🌺</button>
-                        <button type="button" class="icon-option" data-icon="🌳">🌳</button>
-                        <button type="button" class="icon-option" data-icon="🌿">🌿</button>
-                        <button type="button" class="icon-option" data-icon="🍃">🍃</button>
-                        <button type="button" class="icon-option" data-icon="🌧️">🌧️</button>
-                        <button type="button" class="icon-option" data-icon="☀️">☀️</button>
-                        <button type="button" class="icon-option" data-icon="❄️">❄️</button>
-                        
-                        <!-- Transportation -->
-                        <button type="button" class="icon-option" data-icon="🚗">🚗</button>
-                        <button type="button" class="icon-option" data-icon="🚲">🚲</button>
-                        <button type="button" class="icon-option" data-icon="🛴">🛴</button>
-                        <button type="button" class="icon-option" data-icon="🏠">🏠</button>
-                        <button type="button" class="icon-option" data-icon="🏡">🏡</button>
-                        
-                        <!-- Sports & Activities -->
-                        <button type="button" class="icon-option" data-icon="⚽">⚽</button>
-                        <button type="button" class="icon-option" data-icon="🏀">🏀</button>
-                        <button type="button" class="icon-option" data-icon="🎾">🎾</button>
-                        <button type="button" class="icon-option" data-icon="🏊">🏊</button>
-                        <button type="button" class="icon-option" data-icon="🚴">🚴</button>
-                        <button type="button" class="icon-option" data-icon="🏃">🏃</button>
-                        <button type="button" class="icon-option" data-icon="🧘">🧘</button>
-                        <button type="button" class="icon-option" data-icon="💪">💪</button>
-                        <button type="button" class="icon-option" data-icon="🎯">🎯</button>
-                        
-                        <!-- Music & Arts -->
-                        <button type="button" class="icon-option" data-icon="🎵">🎵</button>
-                        <button type="button" class="icon-option" data-icon="🎤">🎤</button>
-                        <button type="button" class="icon-option" data-icon="🎧">🎧</button>
-                        <button type="button" class="icon-option" data-icon="🎹">🎹</button>
-                        <button type="button" class="icon-option" data-icon="🎸">🎸</button>
-                        <button type="button" class="icon-option" data-icon="🥁">🥁</button>
-                        <button type="button" class="icon-option" data-icon="🎺">🎺</button>
-                        <button type="button" class="icon-option" data-icon="🎻">🎻</button>
-                        <button type="button" class="icon-option" data-icon="🎼">🎼</button>
-                        <button type="button" class="icon-option" data-icon="🎭">🎭</button>
-                        <button type="button" class="icon-option" data-icon="🎬">🎬</button>
-                        
-                        <!-- Celebrations & Fun -->
-                        <button type="button" class="icon-option" data-icon="🎉">🎉</button>
-                        <button type="button" class="icon-option" data-icon="🎊">🎊</button>
-                        <button type="button" class="icon-option" data-icon="🎈">🎈</button>
-                        <button type="button" class="icon-option" data-icon="🎁">🎁</button>
-                        <button type="button" class="icon-option" data-icon="🎄">🎄</button>
-                        <button type="button" class="icon-option" data-icon="🎃">🎃</button>
-                        <button type="button" class="icon-option" data-icon="🎪">🎪</button>
-                        
-                        <!-- Emotions & Symbols -->
-                        <button type="button" class="icon-option" data-icon="❤️">❤️</button>
-                        <button type="button" class="icon-option" data-icon="🌟">🌟</button>
-                        <button type="button" class="icon-option" data-icon="⭐">⭐</button>
-                        <button type="button" class="icon-option" data-icon="✨">✨</button>
-                        <button type="button" class="icon-option" data-icon="💎">💎</button>
-                        <button type="button" class="icon-option" data-icon="🏆">🏆</button>
-                        <button type="button" class="icon-option" data-icon="🎖️">🎖️</button>
-                        <button type="button" class="icon-option" data-icon="👑">👑</button>
-                        <button type="button" class="icon-option" data-icon="💫">💫</button>
-                        <button type="button" class="icon-option" data-icon="🌈">🌈</button>
-                    </div>
-                    <input type="hidden" id="chore-icon-${entryCount}" value="📝">
+                    <label for="chore-icon-${entryCount}">Select an Icon</label>
+                    <select id="chore-icon-${entryCount}" class="chore-icon-select">
+                        <optgroup label="🌅 Morning">
+                            <option value="🛏️">🛏️ Bed</option>
+                            <option value="🚿">🚿 Shower</option>
+                            <option value="👕">👕 T-shirt</option>
+                            <option value="👖">👖 Pants</option>
+                            <option value="👟">👟 Shoes</option>
+                            <option value="🎒">🎒 Backpack</option>
+                            <option value="🍽️">🍽️ Dishes</option>
+                            <option value="☀️">☀️ Sun</option>
+                            <option value="🪞">🪞 Mirror</option>
+                        </optgroup>
+                        <optgroup label="🌙 Evening">
+                            <option value="🛏️">🛏️ Bed</option>
+                            <option value="🚿">🚿 Shower</option>
+                            <option value="🍽️">🍽️ Dishes</option>
+                            <option value="🧽">🧽 Sponge</option>
+                            <option value="🗑️">🗑️ Trash can</option>
+                            <option value="💡">💡 Light bulb</option>
+                            <option value="🚪">🚪 Door</option>
+                            <option value="🪟">🪟 Window</option>
+                        </optgroup>
+                        <optgroup label="⏰ Anytime">
+                            <option value="📝">📝 Note pad</option>
+                            <option value="🧹">🧹 Broom</option>
+                            <option value="🧺">🧺 Laundry basket</option>
+                            <option value="🪑">🪑 Chair</option>
+                            <option value="🛋️">🛋️ Couch</option>
+                            <option value="🖼️">🖼️ Picture frame</option>
+                            <option value="🔌">🔌 Plug</option>
+                            <option value="🔋">🔋 Battery</option>
+                            <option value="🧸">🧸 Teddy bear</option>
+                            <option value="📚">📚 Books</option>
+                            <option value="📖">📖 Open book</option>
+                            <option value="✏️">✏️ Pencil</option>
+                            <option value="🎨">🎨 Art palette</option>
+                            <option value="🧠">🧠 Brain</option>
+                            <option value="📱">📱 Phone</option>
+                            <option value="💻">💻 Laptop</option>
+                            <option value="🎮">🎮 Video game</option>
+                            <option value="🐕">🐕 Dog</option>
+                            <option value="🐱">🐱 Cat</option>
+                            <option value="🐦">🐦 Bird</option>
+                            <option value="🐠">🐠 Fish</option>
+                            <option value="🐹">🐹 Hamster</option>
+                            <option value="🌱">🌱 Seedling</option>
+                            <option value="🌺">🌺 Flower</option>
+                            <option value="🌳">🌳 Tree</option>
+                            <option value="🌿">🌿 Herb</option>
+                            <option value="🍃">🍃 Leaf</option>
+                            <option value="🌧️">🌧️ Rain</option>
+                            <option value="❄️">❄️ Snowflake</option>
+                            <option value="🚗">🚗 Car</option>
+                            <option value="🚲">🚲 Bicycle</option>
+                            <option value="🛴">🛴 Scooter</option>
+                            <option value="🏠">🏠 House</option>
+                            <option value="🏡">🏡 Home</option>
+                            <option value="⚽">⚽ Soccer ball</option>
+                            <option value="🏀">🏀 Basketball</option>
+                            <option value="🎾">🎾 Tennis ball</option>
+                            <option value="🏊">🏊 Swimming</option>
+                            <option value="🚴">🚴 Cycling</option>
+                            <option value="🏃">🏃 Running</option>
+                            <option value="🧘">🧘 Meditation</option>
+                            <option value="💪">💪 Muscle</option>
+                            <option value="🎯">🎯 Target</option>
+                            <option value="🎵">🎵 Musical note</option>
+                            <option value="🎤">🎤 Microphone</option>
+                            <option value="🎧">🎧 Headphones</option>
+                            <option value="🎹">🎹 Piano</option>
+                            <option value="🎸">🎸 Guitar</option>
+                            <option value="🥁">🥁 Drums</option>
+                            <option value="🎺">🎺 Trumpet</option>
+                            <option value="🎻">🎻 Violin</option>
+                            <option value="🎼">🎼 Sheet music</option>
+                            <option value="🎭">🎭 Theater masks</option>
+                            <option value="🎬">🎬 Movie camera</option>
+                            <option value="🎉">🎉 Party popper</option>
+                            <option value="🎊">🎊 Confetti ball</option>
+                            <option value="🎈">🎈 Balloon</option>
+                            <option value="🎁">🎁 Gift</option>
+                            <option value="🎄">🎄 Christmas tree</option>
+                            <option value="🎃">🎃 Pumpkin</option>
+                            <option value="🎪">🎪 Circus tent</option>
+                            <option value="❤️">❤️ Heart</option>
+                            <option value="🌟">🌟 Star</option>
+                            <option value="⭐">⭐ Star</option>
+                            <option value="✨">✨ Sparkles</option>
+                            <option value="💎">💎 Diamond</option>
+                            <option value="🏆">🏆 Trophy</option>
+                            <option value="🎖️">🎖️ Medal</option>
+                            <option value="👑">👑 Crown</option>
+                            <option value="💫">💫 Dizzy star</option>
+                            <option value="🌈">🌈 Rainbow</option>
+                        </optgroup>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="chore-notes-${entryCount}">Notes (Optional)</label>
@@ -4401,22 +4981,18 @@ class FamilyChoreChart {
         this.setupChoreColorSwatches();
         
         // Check premium features for the new entry - ensure all fields are visible
-        this.checkPremiumFeatures().then(() => {
-            // Ensure icon picker is set up for the new entry
-            const iconPicker = document.getElementById(`icon-picker-${entryCount}`);
-            if (iconPicker) {
-                iconPicker.querySelectorAll('.icon-option').forEach(option => {
-                    option.addEventListener('click', (e) => {
-                        iconPicker.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('active'));
-                        e.target.classList.add('active');
-                        const hiddenInput = document.getElementById(`chore-icon-${entryCount}`);
-                        if (hiddenInput) {
-                            hiddenInput.value = e.target.dataset.icon;
-                        }
-                    });
-                });
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(async () => {
+            await this.checkPremiumFeatures();
+            // Also ensure the new entry's premium features are visible if user is premium
+            const newPremiumFeatures = container.querySelector(`#premium-chore-features-${entryCount}`);
+            if (newPremiumFeatures) {
+                const limits = await this.apiClient.checkSubscriptionLimits();
+                if (limits.isPremium) {
+                    newPremiumFeatures.style.display = 'block';
+                }
             }
-        });
+        }, 50);
     }
 
     removeChoreEntry(choreEntry) {
@@ -4595,7 +5171,8 @@ class FamilyChoreChart {
         const name = document.getElementById('edit-chore-name').value;
         const rewardCents = parseInt(document.getElementById('edit-chore-reward').value);
         const notes = document.getElementById('edit-chore-notes').value;
-        const icon = document.getElementById('edit-chore-icon').value;
+        const iconSelect = document.getElementById('edit-chore-icon-select');
+        const icon = iconSelect ? iconSelect.value : '📝';
         const category = document.getElementById('edit-chore-category').value;
         // Color picker removed from edit chore modal - color is always null
         let color = null;
@@ -4708,6 +5285,9 @@ class FamilyChoreChart {
             
             // Update category filter count
             this.updateCategoryFilterCount();
+
+            // Adjust filter visibility for current viewport
+            this.updateCategoryFilterVisibility();
         }, 0); // Use setTimeout to ensure DOM is ready
     }
 
@@ -4747,6 +5327,16 @@ class FamilyChoreChart {
             
             tabsContainer.appendChild(tab);
         });
+    }
+
+    updateCategoryFilterVisibility() {
+        const filterContainer = document.getElementById('category-filter-container');
+        if (!filterContainer) return;
+        if (this.isMobileView()) {
+            filterContainer.classList.add('hidden-mobile');
+        } else {
+            filterContainer.classList.remove('hidden-mobile');
+        }
     }
 
     generateChildrenContent(children) {
@@ -4817,7 +5407,24 @@ class FamilyChoreChart {
         const streakMilestone = this.getStreakMilestone(currentStreak);
         const streakProgress = this.getStreakProgress(currentStreak);
         
-        card.innerHTML = `
+        const isMobile = this.isMobileView();
+
+        const cardContent = isMobile
+            ? this.renderMobileChildCard(child, avatarHtml, progress, childChores, childCompletions)
+            : this.renderDesktopChildCard(child, avatarHtml, progress, stars, currentStreak, streakMilestone, streakProgress, childChores, childCompletions);
+        
+        card.innerHTML = cardContent;
+        
+        if (isMobile) {
+            this.addMobileChoreCardHandlers(card, childChores, child.id);
+        } else {
+            this.addChoreCellHandlers(card, childChores, child.id);
+        }
+        return card;
+    }
+
+    renderDesktopChildCard(child, avatarHtml, progress, stars, currentStreak, streakMilestone, streakProgress, childChores, childCompletions) {
+        return `
             <div class="child-header">
                 ${avatarHtml}
                 <div class="child-info">
@@ -4874,7 +5481,6 @@ class FamilyChoreChart {
                 </div>
             ` : ''}
             
-
             <div class="chore-grid">
                 ${this.renderChoreGrid(child.id, childChores, childCompletions)}
             </div>
@@ -4883,17 +5489,43 @@ class FamilyChoreChart {
                 <div class="earnings-label">💰 Earnings (${this.formatCents(this.familySettings?.daily_reward_cents || 7)} per completed day${this.familySettings?.weekly_bonus_cents ? ` + ${this.formatCents(this.familySettings.weekly_bonus_cents)} weekly bonus` : ''})</div>
             </div>
         `;
-        // Add click handlers for chore cells
-        this.addChoreCellHandlers(card, childChores, child.id);
-        return card;
+    }
+
+    renderMobileChildCard(child, avatarHtml, progress, childChores, childCompletions) {
+        const perfectDayText = `${progress.completedDays}/${progress.totalDays} perfect days`;
+        const earningsText = this.formatCents(progress.totalEarnings);
+        return `
+            <div class="mobile-child-header">
+                <div class="mobile-child-avatar">${avatarHtml}</div>
+                <div class="mobile-child-meta">
+                    <h3 style="margin: 0; font-size: 1.2rem;">${child.name}</h3>
+                    <p style="margin: 0; color: var(--gray-600); font-size: var(--font-size-sm);">Age ${child.age}</p>
+                </div>
+                <button class="mobile-settings-btn" data-open-modal="settings-modal" type="button" aria-label="Family settings">
+                    ⚙️
+                </button>
+            </div>
+            <div class="mobile-child-summary">
+                <span class="mobile-summary-chip">
+                    <span class="mobile-summary-icon">🔥</span>
+                    <span class="mobile-summary-text">${perfectDayText}</span>
+                </span>
+                <span class="mobile-summary-chip">
+                    <span class="mobile-summary-icon">💰</span>
+                    <span class="mobile-summary-text">${earningsText}</span>
+                </span>
+            </div>
+            <div class="mobile-child-chores">
+                ${this.renderMobileChoreCards(child.id, childChores, childCompletions)}
+            </div>
+        `;
     }
 
     renderChoreGrid(childId, chores, completions) {
-        // Filter chores by category
-        const filteredChores = this.categoryFilter === 'all' 
-            ? chores 
+        const filteredChores = this.categoryFilter === 'all'
+            ? chores
             : chores.filter(chore => chore.category === this.categoryFilter);
-        
+
         if (chores.length === 0) {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
@@ -4904,7 +5536,7 @@ class FamilyChoreChart {
                 </div>
             `;
         }
-        
+
         if (filteredChores.length === 0) {
             return `
                 <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
@@ -4915,7 +5547,15 @@ class FamilyChoreChart {
                 </div>
             `;
         }
-        
+
+        if (this.isMobileView()) {
+            return this.renderMobileChoreCards(childId, filteredChores, completions);
+        }
+
+        return this.renderDesktopChoreGrid(childId, filteredChores, completions);
+    }
+
+    renderDesktopChoreGrid(childId, chores, completions) {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         let html = `
             <table class="chore-grid-table">
@@ -4927,8 +5567,9 @@ class FamilyChoreChart {
                 </thead>
                 <tbody>
         `;
-        filteredChores.forEach(chore => {
-            const choreCompletions = completions.filter(comp => comp.chore_id === chore.id);
+        chores.forEach(chore => {
+            const choreId = String(chore.id);
+            const choreCompletions = completions.filter(comp => String(comp.chore_id) === choreId);
             const icon = chore.icon || '📝';
             const category = chore.category || 'household_chores';
             const categoryInfo = this.getCategoryInfo(category);
@@ -4968,7 +5609,6 @@ class FamilyChoreChart {
             }
             html += '</tr>';
             
-            // Add mobile days container
             html += `
                 <tr class="mobile-days-row">
                     <td colspan="8" style="width: 100%; padding: 0;">
@@ -5000,45 +5640,211 @@ class FamilyChoreChart {
                 </tbody>
             </table>
         `;
-        // Add "Add Chore" button below the table
-        html += `
-            <div style="text-align: center; margin-top: var(--space-4);">
-                <button class="btn btn-secondary add-chore-grid-btn" data-open-modal="add-chore-modal">
-                    <span>📝</span> Add More Chores
-                </button>
-            </div>
-        `;
-        
-        // Add Quick Actions section
-        html += `
-            <div class="quick-actions-section" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
-                <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">⚡ Quick Actions</h4>
-                <div class="quick-actions-grid">
-                    <button type="button" class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
-                        <span>✅</span> Mark All Today
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
-                        <span>📅</span> Mark All Week
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
-                        <span>❌</span> Clear All Today
-                    </button>
-                    <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${childId}">
-                        <span>📊</span> View History
-                    </button>
-                    <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${childId}">
-                        <span>🎯</span> Challenges
-                    </button>
-                    <button class="btn btn-outline btn-sm bulk-edit-btn" data-child-id="${childId}">
-                        <span>✏️</span> Bulk Edit
-                    </button>
-                </div>
-            </div>
-        `;
         return html;
     }
 
+    renderMobileChoreCards(childId, chores, completions) {
+        const day = typeof this.currentMobileDay === 'number' ? this.currentMobileDay : new Date().getDay();
+        const date = this.getDateForMobileDay(day);
+        const dayName = this.dayNamesLong[day];
+        const formattedDate = date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 
+        const cards = chores.map(chore => {
+            const choreId = String(chore.id);
+            const isCompleted = completions.some(comp => String(comp.chore_id) === choreId && comp.day_of_week === day);
+            const icon = chore.icon || '📝';
+            const categoryInfo = this.getCategoryInfo(chore.category || 'household_chores');
+            const notes = chore.notes || '';
+            return `
+                <div class="mobile-chore-card ${isCompleted ? 'completed' : ''}" data-chore-id="${chore.id}" data-day="${day}">
+                    <div class="mobile-chore-status"></div>
+                    <div class="mobile-chore-icon">${icon}</div>
+                    <div class="mobile-chore-title">${chore.name}</div>
+                    <div class="mobile-chore-category">${categoryInfo.icon} ${categoryInfo.label}</div>
+                    ${notes ? `<div class="mobile-chore-notes">📝 ${notes}</div>` : ''}
+                    <div class="mobile-chore-footer" style="display: flex; justify-content: flex-end; margin-top: auto;">
+                        <button type="button" class="btn btn-outline btn-sm mobile-chore-edit-btn" data-chore-id="${chore.id}" aria-label="Edit ${chore.name}">
+                            ✏️ Edit
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="mobile-day-header">
+                <button class="mobile-day-button mobile-day-prev" type="button" aria-label="Previous day">
+                    ‹
+                </button>
+                <div class="mobile-day-label">
+                    <div class="mobile-day-name">${dayName}</div>
+                    <div class="mobile-day-date">${formattedDate}</div>
+                </div>
+                <button class="mobile-day-button mobile-day-next" type="button" aria-label="Next day">
+                    ›
+                </button>
+            </div>
+            <div class="mobile-day-subtitle">Tap to check off today&rsquo;s activities.</div>
+            <div class="mobile-chore-card-grid">
+                ${cards}
+            </div>
+            <div class="mobile-add-chore-wrapper">
+                <button class="btn btn-primary mobile-add-chore-btn" data-open-modal="add-chore-modal">
+                    <span aria-hidden="true">+</span> Add New Chore
+                </button>
+            </div>
+        `;
+    }
+
+    isChoreCompletedForDay(choreId, day) {
+        const choreIdStr = String(choreId);
+        return this.completions.some(comp => String(comp.chore_id) === choreIdStr && comp.day_of_week === day);
+    }
+
+    addMobileChoreCardHandlers(card, childChores, _childId) {
+        const prevBtn = card.querySelector('.mobile-day-prev');
+        const nextBtn = card.querySelector('.mobile-day-next');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.changeMobileDay(-1);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.changeMobileDay(1);
+            });
+        }
+
+        card.querySelectorAll('.mobile-chore-card').forEach(cardEl => {
+            cardEl.addEventListener('click', () => {
+                const choreId = cardEl.dataset.choreId;
+                const day = parseInt(cardEl.dataset.day, 10);
+                const chore = childChores.find(c => String(c.id) === choreId);
+                if (!chore) {
+                    console.warn('Chore not found for card click:', choreId);
+                    return;
+                }
+                this.handleMobileChoreCardClick(cardEl, chore, day);
+            });
+        });
+
+        card.querySelectorAll('.mobile-chore-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const choreId = btn.dataset.choreId;
+                const chore = childChores.find(c => String(c.id) === String(choreId));
+                if (!chore) return;
+                this.openEditChoreModal(chore.id, chore.name, chore.reward_cents, chore.notes || '');
+            });
+        });
+    }
+
+    async handleMobileChoreCardClick(cardEl, chore, day) {
+        const actualChildId = chore.child_id;
+        if (cardEl.dataset.processing === 'true') {
+            return;
+        }
+        cardEl.dataset.processing = 'true';
+
+        const wasCompleted = cardEl.classList.contains('completed');
+
+        const choreId = String(chore.id);
+
+        if (wasCompleted) {
+            cardEl.classList.remove('completed');
+            this.completions = this.completions.filter(comp => 
+                !(String(comp.chore_id) === choreId && comp.day_of_week === day)
+            );
+        } else {
+            cardEl.classList.add('completed');
+            this.completions.push({
+                chore_id: choreId,
+                day_of_week: day,
+                week_start: this.currentWeekStart
+            });
+        }
+
+        this.updateProgressWithDOMForce(actualChildId);
+
+        try {
+            const weekStart = this.currentWeekStart || this.apiClient.getWeekStart();
+            const result = await this.apiClient.toggleChoreCompletion(choreId, day, weekStart);
+
+            if (result.success) {
+                if (result.completed !== !wasCompleted) {
+                    if (result.completed) {
+                        cardEl.classList.add('completed');
+                        if (!this.isChoreCompletedForDay(choreId, day)) {
+                            this.completions.push({
+                                chore_id: choreId,
+                                day_of_week: day,
+                                week_start: weekStart
+                            });
+                        }
+                    } else {
+                        cardEl.classList.remove('completed');
+                        this.completions = this.completions.filter(comp =>
+                            !(String(comp.chore_id) === choreId && comp.day_of_week === day)
+                        );
+                    }
+                }
+
+                this.playSound(result.completed ? 'success' : 'notification');
+
+                if (result.completed) {
+                    const streak = this.updateStreak(actualChildId, chore.id);
+                    if (streak >= 5) {
+                        this.showToast(`${this.getChildName(actualChildId)} is on a ${streak}-day streak! 🔥`, 'success');
+                    }
+                    this.checkAchievements(actualChildId);
+                    const newStreak = this.getCurrentStreak(actualChildId);
+                    this.checkStreakMilestone(actualChildId, newStreak);
+                }
+
+                const updatedCompletions = await this.apiClient.getChoreCompletions(weekStart);
+                this.completions = updatedCompletions;
+                this.updateProgressWithDOMForce(actualChildId);
+            } else {
+                this.revertMobileCardUpdate(cardEl, chore.id, day, wasCompleted);
+                this.updateProgressWithDOMForce(actualChildId);
+                this.playSound('error');
+                this.showToast('Failed to update chore. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Mobile toggle error:', error);
+            this.revertMobileCardUpdate(cardEl, chore.id, day, wasCompleted);
+            this.updateProgressWithDOMForce(actualChildId);
+            this.playSound('error');
+            this.showToast('Connection error. Please try again.', 'error');
+        } finally {
+            cardEl.dataset.processing = 'false';
+        }
+    }
+
+    revertMobileCardUpdate(cardEl, choreId, dayOfWeek, wasCompleted) {
+        if (wasCompleted) {
+            cardEl.classList.add('completed');
+            if (!this.isChoreCompletedForDay(choreId, dayOfWeek)) {
+                this.completions.push({
+                    chore_id: choreId,
+                    day_of_week: dayOfWeek,
+                    week_start: this.currentWeekStart
+                });
+            }
+        } else {
+            cardEl.classList.remove('completed');
+            this.completions = this.completions.filter(comp => 
+                !(String(comp.chore_id) === String(choreId) && comp.day_of_week === dayOfWeek)
+            );
+        }
+    }
 
     async updateFamilyDashboard() {
         try {
@@ -5110,8 +5916,6 @@ class FamilyChoreChart {
             
             // Update achievements
             await this.updateFamilyAchievements();
-            
-            this.showToast('Dashboard refreshed!', 'success');
         } catch (error) {
             console.error('Error refreshing dashboard:', error);
             
@@ -5854,8 +6658,7 @@ class FamilyChoreChart {
             return;
         }
         
-        const message = `🎉 ${theme.name} theme activated! Check out seasonal activity suggestions!`;
-        this.showToast(message, 'success');
+        // Theme activated - no toast needed
         
         // Show a more detailed notification after a delay
         setTimeout(() => {
@@ -6715,8 +7518,14 @@ class FamilyChoreChart {
             const result = await this.apiClient.createChore(name, 7, childId, icon, category);
             if (result.success) {
                 this.showToast(`Added "${name}" to ${this.getChildName(childId)}'s activities!`, 'success');
+                // Reload chores and render immediately to show on home screen
+                await this.loadChores();
                 await this.loadData();
                 this.renderChildren();
+                // Force a re-render after a short delay to ensure UI updates
+                setTimeout(() => {
+                    this.renderChildren();
+                }, 100);
             } else {
                 this.showToast('Failed to add activity', 'error');
             }
@@ -6764,13 +7573,28 @@ class FamilyChoreChart {
             });
         }
 
-        // Demo loading button is now handled by demo-data.js
-        
         // Add notification handlers
         this.addNotificationHandlers();
     }
 
     addNotificationHandlers() {
+        if (!this.isNotificationSupported()) {
+            const statusText = document.getElementById('notification-status-text');
+            const requestBtn = document.getElementById('request-notifications-btn');
+            
+            if (statusText) {
+                statusText.textContent = 'Notifications are not supported on this device.';
+            }
+            
+            if (requestBtn) {
+                requestBtn.textContent = 'Notifications Unavailable';
+                requestBtn.disabled = true;
+                requestBtn.classList.add('btn-error');
+            }
+            
+            return;
+        }
+
         const requestBtn = document.getElementById('request-notifications-btn');
         if (requestBtn) {
             requestBtn.addEventListener('click', () => {
@@ -6800,6 +7624,11 @@ class FamilyChoreChart {
     }
 
     async requestNotificationPermission() {
+        if (!this.isNotificationSupported()) {
+            this.showToast('Notifications are not supported on this device.', 'warning');
+            return;
+        }
+
         try {
             // Find and set loading state on notification button
             const requestBtn = document.getElementById('request-notifications-btn');
@@ -6824,6 +7653,21 @@ class FamilyChoreChart {
     }
 
     updateNotificationStatus() {
+        if (!this.isNotificationSupported()) {
+            // This check is for cases where status is refreshed after initial handlers ran
+            const statusText = document.getElementById('notification-status-text');
+            const requestBtn = document.getElementById('request-notifications-btn');
+            if (statusText) {
+                statusText.textContent = 'Notifications are not supported on this device.';
+            }
+            if (requestBtn) {
+                requestBtn.textContent = 'Notifications Unavailable';
+                requestBtn.disabled = true;
+                requestBtn.classList.add('btn-error');
+            }
+            return;
+        }
+
         const statusText = document.getElementById('notification-status-text');
         const requestBtn = document.getElementById('request-notifications-btn');
         
@@ -6845,6 +7689,10 @@ class FamilyChoreChart {
             requestBtn.disabled = false;
             requestBtn.classList.remove('btn-success', 'btn-error');
         }
+    }
+
+    isNotificationSupported() {
+        return typeof window !== 'undefined' && 'Notification' in window;
     }
 
     saveNotificationPreference(preferenceId, enabled) {
@@ -7357,7 +8205,7 @@ class FamilyChoreChart {
             return chore && chore.child_id === childId;
         });
         
-        // For now, return a random streak for demo purposes
+        // For now, return a random streak placeholder
         return Math.floor(Math.random() * 5) + 1;
     }
 
@@ -7586,7 +8434,6 @@ class FamilyChoreChart {
         cell.dataset.processing = 'true';
         
         try {
-            console.log('Chore cell clicked:', { choreId: chore.id, day, actualChildId });
             const isCurrentlyCompleted = cell.classList.contains('completed');
             
             // Optimistic UI update - ONLY the cell
@@ -7743,11 +8590,6 @@ class FamilyChoreChart {
         
         // Count from data
         const dataCount = childCompletions.length;
-        
-        console.log(`Progress consistency check for child ${childId}:`);
-        console.log(`- DOM shows: ${domCount} completed cells`);
-        console.log(`- Data shows: ${dataCount} completions`);
-        console.log(`- Total possible: ${childChores.length * 7}`);
         
         if (domCount !== dataCount) {
             console.warn(`Inconsistency detected! DOM=${domCount}, Data=${dataCount}`);
@@ -7924,10 +8766,21 @@ class FamilyChoreChart {
         // Edit child buttons
         document.querySelectorAll('.edit-child-manage').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const childId = e.target.dataset.childId;
+                e.preventDefault();
+                e.stopPropagation();
+                // Use currentTarget to get the button, not the emoji/text inside
+                const button = e.currentTarget || e.target.closest('.edit-child-manage');
+                const childId = button?.dataset.childId;
+                if (!childId) {
+                    console.error('No childId found on edit button');
+                    return;
+                }
                 const child = this.children.find(c => c.id === childId);
                 if (child) {
                     this.openEditChildModal(child);
+                } else {
+                    console.error('Child not found:', childId);
+                    this.showToast('Child not found', 'error');
                 }
             });
         });
@@ -7935,18 +8788,45 @@ class FamilyChoreChart {
         // Remove child buttons
         document.querySelectorAll('.remove-child-manage').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const childId = e.target.dataset.childId;
+                console.log('🗑️ Remove child button clicked');
+                e.preventDefault();
+                e.stopPropagation();
+                // Use currentTarget to get the button, not the emoji/text inside
+                const button = e.currentTarget || e.target.closest('.remove-child-manage');
+                const childId = button?.dataset.childId;
+                console.log('🔍 Extracted childId from button:', childId);
+                
+                if (!childId) {
+                    console.error('❌ No childId found on remove button');
+                    console.error('Button element:', button);
+                    console.error('Button dataset:', button?.dataset);
+                    this.showToast('Unable to identify child to remove', 'error');
+                    return;
+                }
+                
                 const child = this.children.find(c => c.id === childId);
+                console.log('🔍 Found child:', child);
+                
                 if (child) {
+                    console.log('✅ Calling deleteChild with ID:', childId);
                     const result = await this.deleteChild(childId);
+                    console.log('📊 deleteChild result:', result);
+                    
                     if (result.success) {
+                        console.log('✅ Child deleted successfully, refreshing UI');
                         // Refresh the manage children list
                         this.populateManageChildrenList();
                         // Also refresh the child tabs
                         this.generateChildTabs();
                         // Refresh the main view
                         this.renderChildren();
+                    } else {
+                        console.error('❌ Failed to delete child:', result.error);
                     }
+                } else {
+                    console.error('❌ Child not found:', childId);
+                    console.error('Available children:', this.children.map(c => ({ id: c.id, name: c.name })));
+                    this.showToast('Child not found', 'error');
                 }
             });
         });
@@ -7968,7 +8848,6 @@ class FamilyChoreChart {
         const childChores = this.chores.filter(chore => chore.child_id === childId);
         
         if (childChores.length === 0) {
-            this.showToast('No chores to edit for this child', 'info');
             return;
         }
         
@@ -8245,21 +9124,15 @@ class FamilyChoreChart {
 
     // Theme and Sound Management
     initializeToggles() {
-        console.log('Initializing toggles...');
-        
         // Prevent duplicate initialization
         if (this.togglesInitialized) {
-            console.log('Toggles already initialized, skipping...');
             return;
         }
         this.togglesInitialized = true;
         
         // Initialize theme toggle
         const themeToggle = document.getElementById('theme-toggle');
-        console.log('Theme toggle element:', themeToggle);
         if (themeToggle) {
-            console.log('Found theme toggle, setting up event listener');
-            
             // Remove any existing listeners by cloning the element
             const newThemeToggle = themeToggle.cloneNode(true);
             themeToggle.parentNode.replaceChild(newThemeToggle, themeToggle);
@@ -8267,7 +9140,6 @@ class FamilyChoreChart {
             newThemeToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Theme toggle clicked');
                 this.toggleTheme();
             });
             
@@ -8275,7 +9147,6 @@ class FamilyChoreChart {
             const iconSpan = newThemeToggle.querySelector('.toggle-icon');
             if (iconSpan) {
                 iconSpan.textContent = this.settings.theme === 'dark' ? '☀️' : '🌙';
-                console.log('Set theme icon to:', iconSpan.textContent);
             }
         } else {
             console.warn('Theme toggle button not found');
@@ -8283,10 +9154,7 @@ class FamilyChoreChart {
         
         // Initialize sound toggle
         const soundToggle = document.getElementById('sound-toggle');
-        console.log('Sound toggle element:', soundToggle);
         if (soundToggle) {
-            console.log('Found sound toggle, setting up event listener');
-            
             // Remove any existing listeners by cloning the element
             const newSoundToggle = soundToggle.cloneNode(true);
             soundToggle.parentNode.replaceChild(newSoundToggle, soundToggle);
@@ -8294,7 +9162,6 @@ class FamilyChoreChart {
             newSoundToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Sound toggle clicked');
                 this.toggleSound();
             });
             
@@ -8306,10 +9173,8 @@ class FamilyChoreChart {
     }
 
     toggleTheme() {
-        console.log('toggleTheme called');
         const currentTheme = this.settings.theme;
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        console.log('Switching from', currentTheme, 'to', newTheme);
         this.setTheme(newTheme);
         
         // Removed theme switching toast to reduce noise
@@ -8640,7 +9505,6 @@ class FamilyChoreChart {
             this.streaks = {};
             this.saveStreaks();
             this.updateStreakDisplay();
-            this.showToast('All streaks have been reset', 'success');
         }
     }
 
@@ -8653,7 +9517,6 @@ class FamilyChoreChart {
         a.download = 'streak-data.json';
         a.click();
         URL.revokeObjectURL(url);
-        this.showToast('Streak data exported successfully!', 'success');
     }
 
     showStreakHistory() {
@@ -9097,6 +9960,9 @@ class FamilyChoreChart {
             });
             messageTextarea.hasListener = true;
         }
+        
+        // Setup contact rating stars
+        this.setupContactRating();
     }
 
     async handleContactForm() {
@@ -9107,6 +9973,7 @@ class FamilyChoreChart {
             const subject = document.getElementById('contact-subject').value;
             const message = document.getElementById('contact-message').value.trim();
             const verification = document.getElementById('contact-verification').value;
+            const rating = parseInt(document.getElementById('contact-rating')?.value || '0');
             
             // Anti-spam checks
             const honeypotWebsite = document.getElementById('contact-website').value;
@@ -9159,8 +10026,14 @@ class FamilyChoreChart {
             btnLoading.style.display = 'inline';
             submitBtn.disabled = true;
             
+            // Include rating in message if provided
+            let messageWithRating = message;
+            if (rating > 0) {
+                messageWithRating = `Rating: ${rating}/5 stars\n\n${message}`;
+            }
+            
             // Store in Supabase only (no email sending)
-            const result = await this.apiClient.submitContactForm(name, email, subject, message);
+            const result = await this.apiClient.submitContactForm(name, email, subject, messageWithRating);
             
             if (result.success) {
                 // Store submission time for rate limiting
@@ -9169,6 +10042,11 @@ class FamilyChoreChart {
                 // Reset form
                 document.getElementById('contact-form').reset();
                 document.querySelector('.char-count').textContent = '0/1000 characters';
+                const ratingInput = document.getElementById('contact-rating');
+                const ratingText = document.getElementById('contact-rating-text');
+                if (ratingInput) ratingInput.value = '0';
+                if (ratingText) ratingText.textContent = '';
+                this.highlightContactStars(0);
                 
                 // Hide modal and show success
                 this.hideModal('contact-modal');
@@ -10103,8 +10981,6 @@ class FamilyChoreChart {
         a.download = `chorestar-analytics-${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         window.URL.revokeObjectURL(url);
-        
-        this.showToast('CSV exported successfully!', 'success');
     }
     
     // Enhanced export with filters
@@ -10704,14 +11580,21 @@ class FamilyChoreChart {
         cell.addEventListener('dragstart', (e) => {
             cell.classList.add('dragging');
             
-            // Create drag image
+            // Create drag image - position off-screen to prevent spreading across monitors
             const dragImage = cell.cloneNode(true);
             dragImage.style.opacity = '0.5';
+            dragImage.style.position = 'absolute';
+            dragImage.style.top = '-9999px';
+            dragImage.style.left = '-9999px';
+            dragImage.style.width = cell.offsetWidth + 'px';
+            dragImage.style.height = cell.offsetHeight + 'px';
             document.body.appendChild(dragImage);
             e.dataTransfer.setDragImage(dragImage, 0, 0);
             
             setTimeout(() => {
-                document.body.removeChild(dragImage);
+                if (document.body.contains(dragImage)) {
+                    document.body.removeChild(dragImage);
+                }
             }, 0);
         });
         
@@ -10954,6 +11837,84 @@ class FamilyChoreChart {
     showNewFeatures() {
         this.showModal('new-features-modal');
     }
+    
+    // Show new features modal with changelog data
+    showNewFeaturesModal() {
+        const modal = document.getElementById('new-features-modal');
+        if (!modal) {
+            console.error('New features modal not found');
+            return;
+        }
+        
+        const changelogData = this.getChangelogData();
+        if (!changelogData) {
+            console.error('Changelog data not available');
+            return;
+        }
+        
+        const versions = Object.keys(changelogData).sort((a, b) => {
+            const aParts = a.split('.').map(Number);
+            const bParts = b.split('.').map(Number);
+            for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                const aVal = aParts[i] || 0;
+                const bVal = bParts[i] || 0;
+                if (aVal !== bVal) return bVal - aVal;
+            }
+            return 0;
+        });
+        
+        if (versions.length === 0) {
+            console.error('No versions found in changelog data');
+            return;
+        }
+        
+        // Get the latest version
+        const latestVersion = versions[0];
+        const latestData = changelogData[latestVersion];
+        
+        if (!latestData) {
+            console.error('Latest version data not found');
+            return;
+        }
+        
+        // Update modal content
+        const modalContent = modal.querySelector('.new-features-content');
+        if (modalContent && latestData) {
+            modalContent.innerHTML = `
+                <div class="features-intro">
+                    <div class="features-intro-badge">🎉 New in ${latestData.date}</div>
+                    <h3 class="features-intro-title">${latestData.title}</h3>
+                    <p class="features-intro-subtitle">Version ${latestData.version}</p>
+                </div>
+                
+                <div class="features-list">
+                    ${latestData.features
+                        .filter(feature => {
+                            // Filter out SEO and technical/internal features, focus on user-facing features
+                            const lowerTitle = feature.title.toLowerCase();
+                            const lowerDesc = feature.description.toLowerCase();
+                            return !lowerTitle.includes('seo') && 
+                                   !lowerDesc.includes('seo') &&
+                                   !lowerTitle.includes('meta tag') &&
+                                   !lowerDesc.includes('search engine');
+                        })
+                        .map(feature => `
+                        <div class="feature-item">
+                            <div class="feature-icon">${feature.icon}</div>
+                            <div class="feature-content">
+                                <h4 class="feature-title">${feature.title}</h4>
+                                <p class="feature-description">${feature.description}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            console.error('Modal content element not found or latest data missing');
+        }
+        
+        this.showModal('new-features-modal');
+    }
 
     // Method to reset version tracking (for testing)
     resetVersionTracking() {
@@ -11152,7 +12113,6 @@ class FamilyChoreChart {
             
             const result = await this.apiClient.addChore(newChore);
             if (result.success) {
-                this.showToast('Chore duplicated successfully!', 'success');
                 await this.loadChores();
                 this.renderChildren();
             } else {
@@ -11792,8 +12752,6 @@ class FamilyChoreChart {
             
             // Force DOM reflow
             starsContainer.offsetHeight;
-        } else {
-            console.error('❌ Stars container not found!');
         }
         
         if (earningsAmount) {
@@ -11872,22 +12830,41 @@ function forceResetStuckButtons() {
     const stuckButtons = document.querySelectorAll('button[data-original-content], .btn[data-original-content]');
     stuckButtons.forEach(button => {
         console.log('Force resetting stuck button:', button);
+        
+        // Restore original content if it exists
+        const originalContent = button.dataset.originalContent;
+        if (originalContent) {
+            button.innerHTML = originalContent;
+        } else {
+            // If no original content, try to restore based on button type/context
+            if (button.type === 'submit') {
+                if (button.closest('#login-form')) {
+                    button.innerHTML = 'Sign In';
+                } else if (button.closest('#signup-form')) {
+                    button.innerHTML = 'Create Account';
+                } else if (button.closest('#forgot-form')) {
+                    button.innerHTML = 'Send Reset Link';
+                } else {
+                    // For other submit buttons, try aria-label or preserve current text
+                    const ariaLabel = button.getAttribute('aria-label');
+                    if (ariaLabel && !button.innerHTML.includes('Loading') && !button.innerHTML.includes('Signing')) {
+                        button.innerHTML = ariaLabel;
+                    }
+                }
+            } else {
+                // For non-submit buttons, try to preserve aria-label or current text
+                const ariaLabel = button.getAttribute('aria-label');
+                if (ariaLabel && !button.innerHTML.includes('Loading') && !button.innerHTML.includes('Signing')) {
+                    button.innerHTML = ariaLabel;
+                }
+            }
+        }
+        
         // Clear all loading state data
         delete button.dataset.originalContent;
         delete button.dataset.originalDisabled;
         button.disabled = false;
         button.classList.remove('loading');
-        
-        // Reset button content based on form type
-        if (button.type === 'submit') {
-            if (button.closest('#login-form')) {
-                button.innerHTML = 'Sign In';
-            } else if (button.closest('#signup-form')) {
-                button.innerHTML = 'Create Account';
-            } else if (button.closest('#forgot-form')) {
-                button.innerHTML = 'Send Reset Link';
-            }
-        }
     });
     
     if (stuckButtons.length > 0) {

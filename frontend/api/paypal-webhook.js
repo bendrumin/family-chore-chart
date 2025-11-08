@@ -109,16 +109,21 @@ async function handlePaymentCompleted(payment) {
   console.log('💰 Processing payment completed:', payment.id);
   
   try {
-    // Extract customer info from custom_id (format: chorestar_monthly_userId or chorestar_annual_userId)
+    // Extract customer info from custom_id (format: chorestar_monthly_userId, chorestar_annual_userId, or chorestar_lifetime_userId)
     const customId = payment.custom_id;
-    const customerId = customId ? customId.split('_')[2] : null;
+    const parts = customId ? customId.split('_') : [];
+    const planType = parts[1]; // monthly, annual, or lifetime
+    const customerId = parts[2];
     
     if (customerId) {
-      // Upgrade user to premium - use subscription_type field
+      // For lifetime plans, set subscription_type to 'lifetime', otherwise 'premium'
+      const subscriptionType = planType === 'lifetime' ? 'lifetime' : 'premium';
+      
+      // Upgrade user to premium/lifetime - use subscription_type field
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_type: 'premium',
+          subscription_type: subscriptionType,
           updated_at: new Date().toISOString()
         })
         .eq('id', customerId);
@@ -126,7 +131,7 @@ async function handlePaymentCompleted(payment) {
       if (error) {
         console.error('❌ Failed to upgrade user:', error);
       } else {
-        console.log('✅ User upgraded to premium successfully');
+        console.log(`✅ User upgraded to ${subscriptionType} successfully`);
       }
     } else {
       console.warn('⚠️ No customer ID found in payment custom_id:', customId);

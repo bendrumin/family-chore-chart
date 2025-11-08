@@ -5,22 +5,22 @@
  * Sends only to bsiegel13@gmail.com for preview
  */
 
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
-// Load your SendGrid API key
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+// Load your Resend API key
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-if (!SENDGRID_API_KEY) {
-    console.error('❌ Error: SENDGRID_API_KEY environment variable not set');
-    console.log('Make sure .env.local file exists with SENDGRID_API_KEY');
+if (!RESEND_API_KEY) {
+    console.error('❌ Error: RESEND_API_KEY environment variable not set');
+    console.log('Make sure .env.local file exists with RESEND_API_KEY');
     process.exit(1);
 }
 
-// Initialize SendGrid
-sgMail.setApiKey(SENDGRID_API_KEY);
+// Initialize Resend
+const resend = new Resend(RESEND_API_KEY);
 
 // Load the iOS announcement template
 function loadNewsletterTemplate() {
@@ -43,26 +43,18 @@ function loadNewsletterTemplate() {
 async function sendTestEmail() {
     console.log('📱 Sending iOS Announcement Test Email...\n');
     
-    const msg = {
-        to: 'bsiegel13@gmail.com',
-        from: {
-            email: 'hi@chorestar.app',
-            name: 'ChoreStar Team'
-        },
-        replyTo: 'hi@chorestar.app',
-        subject: '🎉 ChoreStar is Coming to iOS! Your Chore Chart, Now in Your Pocket 📱',
-        html: loadNewsletterTemplate(),
-        trackingSettings: {
-            clickTracking: { enable: true, enableText: true },
-            openTracking: { enable: true }
-        }
-    };
-
     try {
-        const result = await sgMail.send(msg);
+        const result = await resend.emails.send({
+            from: 'ChoreStar <hi@chorestar.app>',
+            to: 'bsiegel13@gmail.com',
+            reply_to: 'hi@chorestar.app',
+            subject: '🎉 ChoreStar is Coming to iOS! Your Chore Chart, Now in Your Pocket 📱',
+            html: loadNewsletterTemplate()
+        });
+        
         console.log('✅ Test email sent successfully!');
         console.log(`   To: bsiegel13@gmail.com`);
-        console.log(`   Status: ${result[0].statusCode}`);
+        console.log(`   ID: ${result.data?.id || 'N/A'}`);
         console.log('\n📬 Check your inbox!');
     } catch (error) {
         console.error('❌ Failed to send test email:', error.message);

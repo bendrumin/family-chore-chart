@@ -3,36 +3,35 @@
 /**
  * ChoreStar Newsletter Sender
  * 
- * This script sends the newsletter to your active users via SendGrid.
+ * This script sends the newsletter to your active users via Resend.
  * 
  * Usage:
- * 1. Install dependencies: npm install @sendgrid/mail
- * 2. Set your SendGrid API key: export SENDGRID_API_KEY="your_api_key"
+ * 1. Install dependencies: npm install resend
+ * 2. Set your Resend API key: export RESEND_API_KEY="your_api_key"
  * 3. Update the users array with your actual user emails
  * 4. Run: node send-newsletter.js
  */
 
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
 
-// Load your SendGrid API key
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+// Load your Resend API key
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-if (!SENDGRID_API_KEY) {
-    console.error('❌ Error: SENDGRID_API_KEY environment variable not set');
-    console.log('Please set it with: export SENDGRID_API_KEY="your_api_key"');
+if (!RESEND_API_KEY) {
+    console.error('❌ Error: RESEND_API_KEY environment variable not set');
+    console.log('Please set it with: export RESEND_API_KEY="your_api_key"');
     process.exit(1);
 }
 
-// Initialize SendGrid
-sgMail.setApiKey(SENDGRID_API_KEY);
+// Initialize Resend
+const resend = new Resend(RESEND_API_KEY);
 
 // Newsletter configuration
 const NEWSLETTER_CONFIG = {
     subject: 'ChoreStar: New Icon Picker, Demo System & Major Fixes! 🎨✨',
-    from: 'hi@chorestar.app', // Your actual Zoho email address
-    fromName: 'ChoreStar Team',
+    from: 'ChoreStar <hi@chorestar.app>',
     replyTo: 'hi@chorestar.app'
 };
 
@@ -75,31 +74,16 @@ function loadNewsletterTemplate() {
 // Send newsletter to a single user
 async function sendNewsletterToUser(userEmail, userName = 'Valued User') {
     try {
-        const msg = {
+        const result = await resend.emails.send({
+            from: NEWSLETTER_CONFIG.from,
             to: userEmail,
-            from: {
-                email: NEWSLETTER_CONFIG.from,
-                name: NEWSLETTER_CONFIG.fromName
-            },
-            replyTo: NEWSLETTER_CONFIG.replyTo,
+            reply_to: NEWSLETTER_CONFIG.replyTo,
             subject: NEWSLETTER_CONFIG.subject,
-            html: loadNewsletterTemplate(),
-            // You can add personalization here
-            // text: `Hi ${userName}, ${NEWSLETTER_CONFIG.subject}`,
-            trackingSettings: {
-                clickTracking: {
-                    enable: true,
-                    enableText: true
-                },
-                openTracking: {
-                    enable: true
-                }
-            }
-        };
+            html: loadNewsletterTemplate()
+        });
 
-        const result = await sgMail.send(msg);
-        console.log(`✅ Newsletter sent to ${userEmail} (Status: ${result[0].statusCode})`);
-        return { success: true, email: userEmail, statusCode: result[0].statusCode };
+        console.log(`✅ Newsletter sent to ${userEmail} (ID: ${result.data?.id || 'N/A'})`);
+        return { success: true, email: userEmail, id: result.data?.id };
     } catch (error) {
         console.error(`❌ Failed to send to ${userEmail}:`, error.message);
         return { success: false, email: userEmail, error: error.message };
@@ -129,9 +113,9 @@ async function sendNewsletterToAllUsers() {
             failureCount++;
         }
         
-        // Add a small delay between sends (SendGrid allows 100 emails/second)
+        // Add a small delay between sends (Resend rate limit: ~10 emails/second)
         if (i < ACTIVE_USERS.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
         
         console.log(''); // Empty line for readability
@@ -163,15 +147,15 @@ async function main() {
             process.exit(1);
         }
         
-        // Test SendGrid connection
-        console.log('🔍 Testing SendGrid connection...');
-        await sgMail.send({
-            to: 'test@example.com',
+        // Test Resend connection
+        console.log('🔍 Testing Resend connection...');
+        await resend.emails.send({
             from: NEWSLETTER_CONFIG.from,
+            to: 'test@example.com',
             subject: 'Test Connection',
-            text: 'This is a test email to verify SendGrid is working.'
+            html: '<p>This is a test email to verify Resend is working.</p>'
         });
-        console.log('✅ SendGrid connection successful!\n');
+        console.log('✅ Resend connection successful!\n');
         
         // Send newsletters
         await sendNewsletterToAllUsers();
