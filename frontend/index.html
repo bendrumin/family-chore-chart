@@ -81,11 +81,13 @@
             const stuckButtons = document.querySelectorAll('button[data-original-content], .btn[data-original-content]');
             stuckButtons.forEach(button => {
                 console.log('Early reset of stuck button:', button);
-                delete button.dataset.originalContent;
-                delete button.dataset.originalDisabled;
-                button.disabled = false;
-                button.classList.remove('loading');
                 
+                // Restore original content if it exists
+                const originalContent = button.dataset.originalContent;
+                if (originalContent) {
+                    button.innerHTML = originalContent;
+                } else {
+                    // If no original content, try to restore based on button type/context
                 if (button.type === 'submit') {
                     if (button.closest('#login-form')) {
                         button.innerHTML = 'Sign In';
@@ -93,8 +95,26 @@
                         button.innerHTML = 'Create Account';
                     } else if (button.closest('#forgot-form')) {
                         button.innerHTML = 'Send Reset Link';
+                        } else {
+                            // For other submit buttons, try aria-label or preserve current text
+                            const ariaLabel = button.getAttribute('aria-label');
+                            if (ariaLabel && !button.innerHTML.includes('Loading') && !button.innerHTML.includes('Signing')) {
+                                button.innerHTML = ariaLabel;
+                            }
+                        }
+                    } else {
+                        // For non-submit buttons, try to preserve aria-label or current text
+                        const ariaLabel = button.getAttribute('aria-label');
+                        if (ariaLabel && !button.innerHTML.includes('Loading') && !button.innerHTML.includes('Signing')) {
+                            button.innerHTML = ariaLabel;
+                        }
                     }
                 }
+                
+                delete button.dataset.originalContent;
+                delete button.dataset.originalDisabled;
+                button.disabled = false;
+                button.classList.remove('loading');
             });
             
             if (stuckButtons.length > 0) {
@@ -374,6 +394,7 @@
     <link rel="stylesheet" href="style.css?v=20250109-22">
     <link rel="stylesheet" href="clean-ui.css?v=20250109-23">
     <link rel="stylesheet" href="ui-enhancements.css?v=20250115-1">
+    <link rel="stylesheet" href="mobile-chore-modal-integrated.css?v=20250209-1">
 </head>
 <body>
     <!-- Skip Navigation for Accessibility -->
@@ -429,14 +450,6 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
                 
-                <div class="demo-section">
-                    <p>Want to see what it's like first?</p>
-                    <button type="button" class="btn btn-outline" id="login-demo-btn">
-                        <span aria-hidden="true">🎮</span> Test it out
-                    </button>
-                    <p class="demo-subtext">If you like what you see, come back and sign up!</p>
-                </div>
-                
                 <p class="auth-switch">
                     Don't have an account? 
                     <a href="#" id="show-signup">Create one here</a>
@@ -467,14 +480,6 @@
                     <input type="password" id="signup-confirm-password" required minlength="6" autocomplete="new-password" aria-required="true">
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
-                
-                <div class="demo-section">
-                    <p>Want to see what it's like first?</p>
-                    <button type="button" class="btn btn-outline" id="signup-demo-btn">
-                        <span aria-hidden="true">🎮</span> Try Demo
-                    </button>
-                    <p class="demo-subtext">If you like what you see, come back and sign up!</p>
-                </div>
                 
                 <p class="auth-switch">
                     Already have an account? 
@@ -645,7 +650,7 @@
             </nav>
             
             <!-- Category Filter -->
-            <div class="category-filter-container" style="padding: var(--space-3); background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+            <div class="category-filter-container" id="category-filter-container" style="padding: var(--space-3); background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
                 <div style="max-width: 1200px; margin: 0 auto;">
                     <!-- Category Header -->
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
@@ -703,6 +708,109 @@
                 </div>
             </section>
         </main>
+        
+        <!-- Smart Footer -->
+        <footer class="smart-footer" id="smart-footer">
+            <div class="footer-content">
+                <!-- Language & Currency Settings -->
+                <div class="footer-settings">
+                    <div class="footer-setting-group">
+                        <label for="footer-language-select" class="footer-label">🌐</label>
+                        <select id="footer-language-select" class="footer-select" aria-label="Select language" title="🌐 Change App Language">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                        </select>
+                    </div>
+                    
+                    <div class="footer-setting-group">
+                        <label for="footer-currency-select" class="footer-label">$</label>
+                        <select id="footer-currency-select" class="footer-select" aria-label="Select currency" title="$ Change Currency">
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="GBP">🇬🇧 GBP</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="CAD">🇨🇦 CAD</option>
+                            <option value="AUD">🇦🇺 AUD</option>
+                            <option value="JPY">🇯🇵 JPY</option>
+                            <option value="CHF">🇨🇭 CHF</option>
+                            <option value="SEK">🇸🇪 SEK</option>
+                            <option value="NOK">🇳🇴 NOK</option>
+                            <option value="DKK">🇩🇰 DKK</option>
+                            <option value="PLN">🇵🇱 PLN</option>
+                            <option value="CZK">🇨🇿 CZK</option>
+                            <option value="HUF">🇭🇺 HUF</option>
+                            <option value="INR">🇮🇳 INR</option>
+                            <option value="BRL">🇧🇷 BRL</option>
+                            <option value="MXN">🇲🇽 MXN</option>
+                            <option value="KRW">🇰🇷 KRW</option>
+                            <option value="SGD">🇸🇬 SGD</option>
+                            <option value="HKD">🇭🇰 HKD</option>
+                            <option value="NZD">🇳🇿 NZD</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="footer-actions">
+                    <button class="footer-action-btn" id="footer-theme-toggle" title="🌙 Toggle Dark/Light Mode" aria-label="Toggle dark mode">
+                        <span class="footer-icon">🌙</span>
+                        <span class="footer-label-text">Theme</span>
+                    </button>
+                    <button class="footer-action-btn" id="footer-sound-toggle" title="♪ Toggle Sound Effects On/Off" aria-label="Toggle sound effects">
+                        <span class="footer-icon">♪</span>
+                        <span class="footer-label-text">Sound</span>
+                    </button>
+                    <button class="footer-action-btn" id="footer-help-btn" title="❓ View Help & FAQ" aria-label="Help and support">
+                        <span class="footer-icon">❓</span>
+                        <span class="footer-label-text">Help</span>
+                    </button>
+                    <button class="footer-action-btn" id="footer-contact-btn" title="✉ Contact Support" aria-label="Contact support">
+                        <span class="footer-icon">✉</span>
+                        <span class="footer-label-text">Contact</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Footer Info -->
+            <div class="footer-info">
+                <span class="footer-brand">ChoreStar</span>
+                <span class="footer-separator">•</span>
+                <a href="/changelog.html" class="footer-link">v2025.1 Changelog</a>
+                <span class="footer-separator">•</span>
+                <a href="/pricing.html" class="footer-link">Pricing</a>
+                <span class="footer-separator">•</span>
+                <a href="/refund-policy.html" class="footer-link">Refund Policy</a>
+                <span class="footer-separator">•</span>
+                <a href="/terms-of-service.html" class="footer-link">Terms</a>
+                <span class="footer-separator">•</span>
+                <a href="/privacy-policy.html" class="footer-link">Privacy</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- New Features Modal -->
+    <div id="new-features-modal" class="modal hidden modal-lg" role="dialog" aria-labelledby="new-features-modal-title" aria-hidden="true" style="pointer-events: auto !important;">
+        <div class="modal-content modal-flex">
+            <header class="modal-header flex-between items-center">
+                <h2 id="new-features-modal-title">🎉 What's New in ChoreStar!</h2>
+                <button class="modal-close" data-modal="new-features-modal" aria-label="Close modal">&times;</button>
+            </header>
+            <div class="modal-body-flex">
+                <div class="new-features-content">
+                    <!-- Content will be populated dynamically by showNewFeaturesModal() -->
+                    <div class="features-intro">
+                        <p>🎉 <strong>Loading changelog...</strong></p>
+                    </div>
+                </div>
+                <div class="modal-actions flex justify-end gap-3">
+                    <button class="btn btn-primary" onclick="app.hideModal('new-features-modal')">
+                        Awesome! Let's Go! 🚀
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Seasonal Chore Suggestions Modal -->
@@ -978,116 +1086,103 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="icon-picker-1">Chore Icon</label>
-                                <div class="icon-picker" id="icon-picker-1" role="group" aria-label="Select chore icon" tabindex="0">
-                                    <!-- Household Chores -->
-                                    <button type="button" class="icon-option active" data-icon="📝" aria-label="Note pad icon">📝</button>
-                                    <button type="button" class="icon-option" data-icon="🛏️" aria-label="Bed icon">🛏️</button>
-                                    <button type="button" class="icon-option" data-icon="🧹" aria-label="Broom icon">🧹</button>
-                                    <button type="button" class="icon-option" data-icon="🧺" aria-label="Laundry basket icon">🧺</button>
-                                    <button type="button" class="icon-option" data-icon="🍽️" aria-label="Dishes icon">🍽️</button>
-                                    <button type="button" class="icon-option" data-icon="🚿" aria-label="Shower icon">🚿</button>
-                                    <button type="button" class="icon-option" data-icon="🧽" aria-label="Sponge icon">🧽</button>
-                                    <button type="button" class="icon-option" data-icon="🗑️" aria-label="Trash can icon">🗑️</button>
-                                    <button type="button" class="icon-option" data-icon="🚪" aria-label="Door icon">🚪</button>
-                                    <button type="button" class="icon-option" data-icon="🪟" aria-label="Window icon">🪟</button>
-                                    <button type="button" class="icon-option" data-icon="🪑" aria-label="Chair icon">🪑</button>
-                                    <button type="button" class="icon-option" data-icon="🛋️" aria-label="Couch icon">🛋️</button>
-                                    <button type="button" class="icon-option" data-icon="🪞" aria-label="Mirror icon">🪞</button>
-                                    <button type="button" class="icon-option" data-icon="🖼️" aria-label="Picture frame icon">🖼️</button>
-                                    <button type="button" class="icon-option" data-icon="💡" aria-label="Light bulb icon">💡</button>
-                                    <button type="button" class="icon-option" data-icon="🔌" aria-label="Plug icon">🔌</button>
-                                    <button type="button" class="icon-option" data-icon="🔋" aria-label="Battery icon">🔋</button>
-                                    
-                                    <!-- Clothing & Personal Care -->
-                                    <button type="button" class="icon-option" data-icon="👕" aria-label="T-shirt icon">👕</button>
-                                    <button type="button" class="icon-option" data-icon="👖" aria-label="Pants icon">👖</button>
-                                    <button type="button" class="icon-option" data-icon="👟" aria-label="Shoes icon">👟</button>
-                                    <button type="button" class="icon-option" data-icon="🎒" aria-label="Backpack icon">🎒</button>
-                                    <button type="button" class="icon-option" data-icon="🧸" aria-label="Teddy bear icon">🧸</button>
-                                    
-                                    <!-- School & Learning -->
-                                    <button type="button" class="icon-option" data-icon="📚" aria-label="Books icon">📚</button>
-                                    <button type="button" class="icon-option" data-icon="📖" aria-label="Open book icon">📖</button>
-                                    <button type="button" class="icon-option" data-icon="✏️" aria-label="Pencil icon">✏️</button>
-                                    <button type="button" class="icon-option" data-icon="🎨" aria-label="Art palette icon">🎨</button>
-                                    <button type="button" class="icon-option" data-icon="🧠" aria-label="Brain icon">🧠</button>
-                                    
-                                    <!-- Technology -->
-                                    <button type="button" class="icon-option" data-icon="📱" aria-label="Phone icon">📱</button>
-                                    <button type="button" class="icon-option" data-icon="💻" aria-label="Laptop icon">💻</button>
-                                    <button type="button" class="icon-option" data-icon="🎮" aria-label="Video game icon">🎮</button>
-                                    
-                                    <!-- Pets & Animals -->
-                                    <button type="button" class="icon-option" data-icon="🐕" aria-label="Dog icon">🐕</button>
-                                    <button type="button" class="icon-option" data-icon="🐱" aria-label="Cat icon">🐱</button>
-                                    <button type="button" class="icon-option" data-icon="🐦" aria-label="Bird icon">🐦</button>
-                                    <button type="button" class="icon-option" data-icon="🐠" aria-label="Fish icon">🐠</button>
-                                    <button type="button" class="icon-option" data-icon="🐹" aria-label="Hamster icon">🐹</button>
-                                    
-                                    <!-- Plants & Nature -->
-                                    <button type="button" class="icon-option" data-icon="🌱" aria-label="Seedling icon">🌱</button>
-                                    <button type="button" class="icon-option" data-icon="🌺" aria-label="Flower icon">🌺</button>
-                                    <button type="button" class="icon-option" data-icon="🌳" aria-label="Tree icon">🌳</button>
-                                    <button type="button" class="icon-option" data-icon="🌿" aria-label="Herb icon">🌿</button>
-                                    <button type="button" class="icon-option" data-icon="🍃" aria-label="Leaf icon">🍃</button>
-                                    <button type="button" class="icon-option" data-icon="🌧️" aria-label="Rain icon">🌧️</button>
-                                    <button type="button" class="icon-option" data-icon="☀️" aria-label="Sun icon">☀️</button>
-                                    <button type="button" class="icon-option" data-icon="❄️" aria-label="Snowflake icon">❄️</button>
-                                    
-                                    <!-- Transportation -->
-                                    <button type="button" class="icon-option" data-icon="🚗" aria-label="Car icon">🚗</button>
-                                    <button type="button" class="icon-option" data-icon="🚲" aria-label="Bicycle icon">🚲</button>
-                                    <button type="button" class="icon-option" data-icon="🛴" aria-label="Scooter icon">🛴</button>
-                                    <button type="button" class="icon-option" data-icon="🏠" aria-label="House icon">🏠</button>
-                                    <button type="button" class="icon-option" data-icon="🏡" aria-label="Home icon">🏡</button>
-                                    
-                                    <!-- Sports & Activities -->
-                                    <button type="button" class="icon-option" data-icon="⚽" aria-label="Soccer ball icon">⚽</button>
-                                    <button type="button" class="icon-option" data-icon="🏀" aria-label="Basketball icon">🏀</button>
-                                    <button type="button" class="icon-option" data-icon="🎾" aria-label="Tennis ball icon">🎾</button>
-                                    <button type="button" class="icon-option" data-icon="🏊" aria-label="Swimming icon">🏊</button>
-                                    <button type="button" class="icon-option" data-icon="🚴" aria-label="Cycling icon">🚴</button>
-                                    <button type="button" class="icon-option" data-icon="🏃" aria-label="Running icon">🏃</button>
-                                    <button type="button" class="icon-option" data-icon="🧘" aria-label="Meditation icon">🧘</button>
-                                    <button type="button" class="icon-option" data-icon="💪" aria-label="Muscle icon">💪</button>
-                                    <button type="button" class="icon-option" data-icon="🎯" aria-label="Target icon">🎯</button>
-                                    
-                                    <!-- Music & Arts -->
-                                    <button type="button" class="icon-option" data-icon="🎵" aria-label="Musical note icon">🎵</button>
-                                    <button type="button" class="icon-option" data-icon="🎤" aria-label="Microphone icon">🎤</button>
-                                    <button type="button" class="icon-option" data-icon="🎧" aria-label="Headphones icon">🎧</button>
-                                    <button type="button" class="icon-option" data-icon="🎹" aria-label="Piano icon">🎹</button>
-                                    <button type="button" class="icon-option" data-icon="🎸" aria-label="Guitar icon">🎸</button>
-                                    <button type="button" class="icon-option" data-icon="🥁" aria-label="Drums icon">🥁</button>
-                                    <button type="button" class="icon-option" data-icon="🎺" aria-label="Trumpet icon">🎺</button>
-                                    <button type="button" class="icon-option" data-icon="🎻" aria-label="Violin icon">🎻</button>
-                                    <button type="button" class="icon-option" data-icon="🎼" aria-label="Sheet music icon">🎼</button>
-                                    <button type="button" class="icon-option" data-icon="🎭" aria-label="Theater masks icon">🎭</button>
-                                    <button type="button" class="icon-option" data-icon="🎬" aria-label="Movie camera icon">🎬</button>
-                                    
-                                    <!-- Celebrations & Fun -->
-                                    <button type="button" class="icon-option" data-icon="🎉" aria-label="Party popper icon">🎉</button>
-                                    <button type="button" class="icon-option" data-icon="🎊" aria-label="Confetti ball icon">🎊</button>
-                                    <button type="button" class="icon-option" data-icon="🎈" aria-label="Balloon icon">🎈</button>
-                                    <button type="button" class="icon-option" data-icon="🎁" aria-label="Gift icon">🎁</button>
-                                    <button type="button" class="icon-option" data-icon="🎄" aria-label="Christmas tree icon">🎄</button>
-                                    <button type="button" class="icon-option" data-icon="🎃" aria-label="Pumpkin icon">🎃</button>
-                                    <button type="button" class="icon-option" data-icon="🎪" aria-label="Circus tent icon">🎪</button>
-                                    
-                                    <!-- Emotions & Symbols -->
-                                    <button type="button" class="icon-option" data-icon="❤️" aria-label="Heart icon">❤️</button>
-                                    <button type="button" class="icon-option" data-icon="🌟" aria-label="Star icon">🌟</button>
-                                    <button type="button" class="icon-option" data-icon="⭐" aria-label="Star icon">⭐</button>
-                                    <button type="button" class="icon-option" data-icon="✨" aria-label="Sparkles icon">✨</button>
-                                    <button type="button" class="icon-option" data-icon="💎" aria-label="Diamond icon">💎</button>
-                                    <button type="button" class="icon-option" data-icon="🏆" aria-label="Trophy icon">🏆</button>
-                                    <button type="button" class="icon-option" data-icon="🎖️" aria-label="Medal icon">🎖️</button>
-                                    <button type="button" class="icon-option" data-icon="👑" aria-label="Crown icon">👑</button>
-                                    <button type="button" class="icon-option" data-icon="💫" aria-label="Dizzy star icon">💫</button>
-                                    <button type="button" class="icon-option" data-icon="🌈" aria-label="Rainbow icon">🌈</button>
-                                </div>
-                                <input type="hidden" id="chore-icon-1" value="📝">
+                                <label for="chore-icon-1">Select an Icon</label>
+                                <select id="chore-icon-1" class="chore-icon-select">
+                                    <optgroup label="🌅 Morning">
+                                        <option value="🛏️">🛏️ Bed</option>
+                                        <option value="🚿">🚿 Shower</option>
+                                        <option value="👕">👕 T-shirt</option>
+                                        <option value="👖">👖 Pants</option>
+                                        <option value="👟">👟 Shoes</option>
+                                        <option value="🎒">🎒 Backpack</option>
+                                        <option value="🍽️">🍽️ Dishes</option>
+                                        <option value="☀️">☀️ Sun</option>
+                                        <option value="🪞">🪞 Mirror</option>
+                                    </optgroup>
+                                    <optgroup label="🌙 Evening">
+                                        <option value="🛏️">🛏️ Bed</option>
+                                        <option value="🚿">🚿 Shower</option>
+                                        <option value="🍽️">🍽️ Dishes</option>
+                                        <option value="🧽">🧽 Sponge</option>
+                                        <option value="🗑️">🗑️ Trash can</option>
+                                        <option value="💡">💡 Light bulb</option>
+                                        <option value="🚪">🚪 Door</option>
+                                        <option value="🪟">🪟 Window</option>
+                                    </optgroup>
+                                    <optgroup label="⏰ Anytime">
+                                        <option value="📝">📝 Note pad</option>
+                                        <option value="🧹">🧹 Broom</option>
+                                        <option value="🧺">🧺 Laundry basket</option>
+                                        <option value="🪑">🪑 Chair</option>
+                                        <option value="🛋️">🛋️ Couch</option>
+                                        <option value="🖼️">🖼️ Picture frame</option>
+                                        <option value="🔌">🔌 Plug</option>
+                                        <option value="🔋">🔋 Battery</option>
+                                        <option value="🧸">🧸 Teddy bear</option>
+                                        <option value="📚">📚 Books</option>
+                                        <option value="📖">📖 Open book</option>
+                                        <option value="✏️">✏️ Pencil</option>
+                                        <option value="🎨">🎨 Art palette</option>
+                                        <option value="🧠">🧠 Brain</option>
+                                        <option value="📱">📱 Phone</option>
+                                        <option value="💻">💻 Laptop</option>
+                                        <option value="🎮">🎮 Video game</option>
+                                        <option value="🐕">🐕 Dog</option>
+                                        <option value="🐱">🐱 Cat</option>
+                                        <option value="🐦">🐦 Bird</option>
+                                        <option value="🐠">🐠 Fish</option>
+                                        <option value="🐹">🐹 Hamster</option>
+                                        <option value="🌱">🌱 Seedling</option>
+                                        <option value="🌺">🌺 Flower</option>
+                                        <option value="🌳">🌳 Tree</option>
+                                        <option value="🌿">🌿 Herb</option>
+                                        <option value="🍃">🍃 Leaf</option>
+                                        <option value="🌧️">🌧️ Rain</option>
+                                        <option value="❄️">❄️ Snowflake</option>
+                                        <option value="🚗">🚗 Car</option>
+                                        <option value="🚲">🚲 Bicycle</option>
+                                        <option value="🛴">🛴 Scooter</option>
+                                        <option value="🏠">🏠 House</option>
+                                        <option value="🏡">🏡 Home</option>
+                                        <option value="⚽">⚽ Soccer ball</option>
+                                        <option value="🏀">🏀 Basketball</option>
+                                        <option value="🎾">🎾 Tennis ball</option>
+                                        <option value="🏊">🏊 Swimming</option>
+                                        <option value="🚴">🚴 Cycling</option>
+                                        <option value="🏃">🏃 Running</option>
+                                        <option value="🧘">🧘 Meditation</option>
+                                        <option value="💪">💪 Muscle</option>
+                                        <option value="🎯">🎯 Target</option>
+                                        <option value="🎵">🎵 Musical note</option>
+                                        <option value="🎤">🎤 Microphone</option>
+                                        <option value="🎧">🎧 Headphones</option>
+                                        <option value="🎹">🎹 Piano</option>
+                                        <option value="🎸">🎸 Guitar</option>
+                                        <option value="🥁">🥁 Drums</option>
+                                        <option value="🎺">🎺 Trumpet</option>
+                                        <option value="🎻">🎻 Violin</option>
+                                        <option value="🎼">🎼 Sheet music</option>
+                                        <option value="🎭">🎭 Theater masks</option>
+                                        <option value="🎬">🎬 Movie camera</option>
+                                        <option value="🎉">🎉 Party popper</option>
+                                        <option value="🎊">🎊 Confetti ball</option>
+                                        <option value="🎈">🎈 Balloon</option>
+                                        <option value="🎁">🎁 Gift</option>
+                                        <option value="🎄">🎄 Christmas tree</option>
+                                        <option value="🎃">🎃 Pumpkin</option>
+                                        <option value="🎪">🎪 Circus tent</option>
+                                        <option value="❤️">❤️ Heart</option>
+                                        <option value="🌟">🌟 Star</option>
+                                        <option value="⭐">⭐ Star</option>
+                                        <option value="✨">✨ Sparkles</option>
+                                        <option value="💎">💎 Diamond</option>
+                                        <option value="🏆">🏆 Trophy</option>
+                                        <option value="🎖️">🎖️ Medal</option>
+                                        <option value="👑">👑 Crown</option>
+                                        <option value="💫">💫 Dizzy star</option>
+                                        <option value="🌈">🌈 Rainbow</option>
+                                    </optgroup>
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -2020,111 +2115,116 @@
                     <small id="edit-chore-reward-help" class="helper-text">Amount earned when this chore is completed</small>
                 </div>
                 <div class="form-group">
-                    <label for="edit-chore-icon-picker">Chore Icon</label>
-                    <div class="icon-picker" id="edit-chore-icon-picker" role="group" aria-label="Select chore icon" tabindex="0">
-                        <!-- All icons with proper aria-labels... -->
-                        <button type="button" class="icon-option active" data-icon="📝" aria-label="Note pad icon">📝</button>
-                        <button type="button" class="icon-option" data-icon="🛏️" aria-label="Bed icon">🛏️</button>
-                        <button type="button" class="icon-option" data-icon="🧹" aria-label="Broom icon">🧹</button>
-                        <button type="button" class="icon-option" data-icon="🧺" aria-label="Laundry basket icon">🧺</button>
-                        <button type="button" class="icon-option" data-icon="🍽️" aria-label="Dishes icon">🍽️</button>
-                        <button type="button" class="icon-option" data-icon="🚿" aria-label="Shower icon">🚿</button>
-                        <button type="button" class="icon-option" data-icon="🧽" aria-label="Sponge icon">🧽</button>
-                        <button type="button" class="icon-option" data-icon="🗑️" aria-label="Trash can icon">🗑️</button>
-                        <button type="button" class="icon-option" data-icon="🚪" aria-label="Door icon">🚪</button>
-                        <button type="button" class="icon-option" data-icon="🪟" aria-label="Window icon">🪟</button>
-                        <button type="button" class="icon-option" data-icon="🪑" aria-label="Chair icon">🪑</button>
-                        <button type="button" class="icon-option" data-icon="🛋️" aria-label="Couch icon">🛋️</button>
-                        <button type="button" class="icon-option" data-icon="🪞" aria-label="Mirror icon">🪞</button>
-                        <button type="button" class="icon-option" data-icon="🖼️" aria-label="Picture frame icon">🖼️</button>
-                        <button type="button" class="icon-option" data-icon="💡" aria-label="Light bulb icon">💡</button>
-                        <button type="button" class="icon-option" data-icon="🔌" aria-label="Plug icon">🔌</button>
-                        <button type="button" class="icon-option" data-icon="🔋" aria-label="Battery icon">🔋</button>
-                        <button type="button" class="icon-option" data-icon="👕" aria-label="T-shirt icon">👕</button>
-                        <button type="button" class="icon-option" data-icon="👖" aria-label="Pants icon">👖</button>
-                        <button type="button" class="icon-option" data-icon="👟" aria-label="Shoes icon">👟</button>
-                        <button type="button" class="icon-option" data-icon="🎒" aria-label="Backpack icon">🎒</button>
-                        <button type="button" class="icon-option" data-icon="🧸" aria-label="Teddy bear icon">🧸</button>
-                        <button type="button" class="icon-option" data-icon="📚" aria-label="Books icon">📚</button>
-                        <button type="button" class="icon-option" data-icon="📖" aria-label="Open book icon">📖</button>
-                        <button type="button" class="icon-option" data-icon="✏️" aria-label="Pencil icon">✏️</button>
-                        <button type="button" class="icon-option" data-icon="🎨" aria-label="Art palette icon">🎨</button>
-                        <button type="button" class="icon-option" data-icon="🧠" aria-label="Brain icon">🧠</button>
-                        <button type="button" class="icon-option" data-icon="📱" aria-label="Phone icon">📱</button>
-                        <button type="button" class="icon-option" data-icon="💻" aria-label="Laptop icon">💻</button>
-                        <button type="button" class="icon-option" data-icon="🎮" aria-label="Video game icon">🎮</button>
-                        <button type="button" class="icon-option" data-icon="🐕" aria-label="Dog icon">🐕</button>
-                        <button type="button" class="icon-option" data-icon="🐱" aria-label="Cat icon">🐱</button>
-                        <button type="button" class="icon-option" data-icon="🐦" aria-label="Bird icon">🐦</button>
-                        <button type="button" class="icon-option" data-icon="🐠" aria-label="Fish icon">🐠</button>
-                        <button type="button" class="icon-option" data-icon="🐹" aria-label="Hamster icon">🐹</button>
-                        <button type="button" class="icon-option" data-icon="🌱" aria-label="Seedling icon">🌱</button>
-                        <button type="button" class="icon-option" data-icon="🌺" aria-label="Flower icon">🌺</button>
-                        <button type="button" class="icon-option" data-icon="🌳" aria-label="Tree icon">🌳</button>
-                        <button type="button" class="icon-option" data-icon="🌿" aria-label="Herb icon">🌿</button>
-                        <button type="button" class="icon-option" data-icon="🍃" aria-label="Leaf icon">🍃</button>
-                        <button type="button" class="icon-option" data-icon="🌧️" aria-label="Rain icon">🌧️</button>
-                        <button type="button" class="icon-option" data-icon="☀️" aria-label="Sun icon">☀️</button>
-                        <button type="button" class="icon-option" data-icon="❄️" aria-label="Snowflake icon">❄️</button>
-                        <button type="button" class="icon-option" data-icon="🚗" aria-label="Car icon">🚗</button>
-                        <button type="button" class="icon-option" data-icon="🚲" aria-label="Bicycle icon">🚲</button>
-                        <button type="button" class="icon-option" data-icon="🛴" aria-label="Scooter icon">🛴</button>
-                        <button type="button" class="icon-option" data-icon="🏠" aria-label="House icon">🏠</button>
-                        <button type="button" class="icon-option" data-icon="🏡" aria-label="Home icon">🏡</button>
-                        <button type="button" class="icon-option" data-icon="⚽" aria-label="Soccer ball icon">⚽</button>
-                        <button type="button" class="icon-option" data-icon="🏀" aria-label="Basketball icon">🏀</button>
-                        <button type="button" class="icon-option" data-icon="🎾" aria-label="Tennis ball icon">🎾</button>
-                        <button type="button" class="icon-option" data-icon="🏊" aria-label="Swimming icon">🏊</button>
-                        <button type="button" class="icon-option" data-icon="🚴" aria-label="Cycling icon">🚴</button>
-                        <button type="button" class="icon-option" data-icon="🏃" aria-label="Running icon">🏃</button>
-                        <button type="button" class="icon-option" data-icon="🧘" aria-label="Meditation icon">🧘</button>
-                        <button type="button" class="icon-option" data-icon="💪" aria-label="Muscle icon">💪</button>
-                        <button type="button" class="icon-option" data-icon="🎯" aria-label="Target icon">🎯</button>
-                        <button type="button" class="icon-option" data-icon="🎵" aria-label="Musical note icon">🎵</button>
-                        <button type="button" class="icon-option" data-icon="🎤" aria-label="Microphone icon">🎤</button>
-                        <button type="button" class="icon-option" data-icon="🎧" aria-label="Headphones icon">🎧</button>
-                        <button type="button" class="icon-option" data-icon="🎹" aria-label="Piano icon">🎹</button>
-                        <button type="button" class="icon-option" data-icon="🎸" aria-label="Guitar icon">🎸</button>
-                        <button type="button" class="icon-option" data-icon="🥁" aria-label="Drums icon">🥁</button>
-                        <button type="button" class="icon-option" data-icon="🎺" aria-label="Trumpet icon">🎺</button>
-                        <button type="button" class="icon-option" data-icon="🎻" aria-label="Violin icon">🎻</button>
-                        <button type="button" class="icon-option" data-icon="🎼" aria-label="Sheet music icon">🎼</button>
-                        <button type="button" class="icon-option" data-icon="🎭" aria-label="Theater masks icon">🎭</button>
-                        <button type="button" class="icon-option" data-icon="🎬" aria-label="Movie camera icon">🎬</button>
-                        <button type="button" class="icon-option" data-icon="🎉" aria-label="Party popper icon">🎉</button>
-                        <button type="button" class="icon-option" data-icon="🎊" aria-label="Confetti ball icon">🎊</button>
-                        <button type="button" class="icon-option" data-icon="🎈" aria-label="Balloon icon">🎈</button>
-                        <button type="button" class="icon-option" data-icon="🎁" aria-label="Gift icon">🎁</button>
-                        <button type="button" class="icon-option" data-icon="🎄" aria-label="Christmas tree icon">🎄</button>
-                        <button type="button" class="icon-option" data-icon="🎃" aria-label="Pumpkin icon">🎃</button>
-                        <button type="button" class="icon-option" data-icon="🎪" aria-label="Circus tent icon">🎪</button>
-                        <button type="button" class="icon-option" data-icon="❤️" aria-label="Heart icon">❤️</button>
-                        <button type="button" class="icon-option" data-icon="🌟" aria-label="Star icon">🌟</button>
-                        <button type="button" class="icon-option" data-icon="⭐" aria-label="Star icon">⭐</button>
-                        <button type="button" class="icon-option" data-icon="✨" aria-label="Sparkles icon">✨</button>
-                        <button type="button" class="icon-option" data-icon="💎" aria-label="Diamond icon">💎</button>
-                        <button type="button" class="icon-option" data-icon="🏆" aria-label="Trophy icon">🏆</button>
-                        <button type="button" class="icon-option" data-icon="🎖️" aria-label="Medal icon">🎖️</button>
-                        <button type="button" class="icon-option" data-icon="👑" aria-label="Crown icon">👑</button>
-                        <button type="button" class="icon-option" data-icon="💫" aria-label="Dizzy star icon">💫</button>
-                        <button type="button" class="icon-option" data-icon="🌈" aria-label="Rainbow icon">🌈</button>
-                    </div>
-                    <input type="hidden" id="edit-chore-icon" value="📝">
+                    <label for="edit-chore-icon-select">Select an Icon</label>
+                    <select id="edit-chore-icon-select" class="chore-icon-select">
+                        <optgroup label="🌅 Morning">
+                            <option value="🛏️">🛏️ Bed</option>
+                            <option value="🚿">🚿 Shower</option>
+                            <option value="👕">👕 T-shirt</option>
+                            <option value="👖">👖 Pants</option>
+                            <option value="👟">👟 Shoes</option>
+                            <option value="🎒">🎒 Backpack</option>
+                            <option value="🍽️">🍽️ Dishes</option>
+                            <option value="☀️">☀️ Sun</option>
+                            <option value="🪞">🪞 Mirror</option>
+                        </optgroup>
+                        <optgroup label="🌙 Evening">
+                            <option value="🛏️">🛏️ Bed</option>
+                            <option value="🚿">🚿 Shower</option>
+                            <option value="🍽️">🍽️ Dishes</option>
+                            <option value="🧽">🧽 Sponge</option>
+                            <option value="🗑️">🗑️ Trash can</option>
+                            <option value="💡">💡 Light bulb</option>
+                            <option value="🚪">🚪 Door</option>
+                            <option value="🪟">🪟 Window</option>
+                        </optgroup>
+                        <optgroup label="⏰ Anytime">
+                            <option value="📝">📝 Note pad</option>
+                            <option value="🧹">🧹 Broom</option>
+                            <option value="🧺">🧺 Laundry basket</option>
+                            <option value="🪑">🪑 Chair</option>
+                            <option value="🛋️">🛋️ Couch</option>
+                            <option value="🖼️">🖼️ Picture frame</option>
+                            <option value="🔌">🔌 Plug</option>
+                            <option value="🔋">🔋 Battery</option>
+                            <option value="🧸">🧸 Teddy bear</option>
+                        <option value="📚">📚 Books</option>
+                        <option value="📖">📖 Open book</option>
+                        <option value="✏️">✏️ Pencil</option>
+                        <option value="🎨">🎨 Art palette</option>
+                        <option value="🧠">🧠 Brain</option>
+                        <option value="📱">📱 Phone</option>
+                        <option value="💻">💻 Laptop</option>
+                        <option value="🎮">🎮 Video game</option>
+                        <option value="🐕">🐕 Dog</option>
+                        <option value="🐱">🐱 Cat</option>
+                        <option value="🐦">🐦 Bird</option>
+                        <option value="🐠">🐠 Fish</option>
+                        <option value="🐹">🐹 Hamster</option>
+                        <option value="🌱">🌱 Seedling</option>
+                        <option value="🌺">🌺 Flower</option>
+                        <option value="🌳">🌳 Tree</option>
+                        <option value="🌿">🌿 Herb</option>
+                        <option value="🍃">🍃 Leaf</option>
+                        <option value="🌧️">🌧️ Rain</option>
+                        <option value="☀️">☀️ Sun</option>
+                        <option value="❄️">❄️ Snowflake</option>
+                        <option value="🚗">🚗 Car</option>
+                        <option value="🚲">🚲 Bicycle</option>
+                        <option value="🛴">🛴 Scooter</option>
+                        <option value="🏠">🏠 House</option>
+                        <option value="🏡">🏡 Home</option>
+                        <option value="⚽">⚽ Soccer ball</option>
+                        <option value="🏀">🏀 Basketball</option>
+                        <option value="🎾">🎾 Tennis ball</option>
+                        <option value="🏊">🏊 Swimming</option>
+                        <option value="🚴">🚴 Cycling</option>
+                        <option value="🏃">🏃 Running</option>
+                        <option value="🧘">🧘 Meditation</option>
+                        <option value="💪">💪 Muscle</option>
+                        <option value="🎯">🎯 Target</option>
+                        <option value="🎵">🎵 Musical note</option>
+                        <option value="🎤">🎤 Microphone</option>
+                        <option value="🎧">🎧 Headphones</option>
+                        <option value="🎹">🎹 Piano</option>
+                        <option value="🎸">🎸 Guitar</option>
+                        <option value="🥁">🥁 Drums</option>
+                        <option value="🎺">🎺 Trumpet</option>
+                        <option value="🎻">🎻 Violin</option>
+                        <option value="🎼">🎼 Sheet music</option>
+                        <option value="🎭">🎭 Theater masks</option>
+                        <option value="🎬">🎬 Movie camera</option>
+                        <option value="🎉">🎉 Party popper</option>
+                        <option value="🎊">🎊 Confetti ball</option>
+                        <option value="🎈">🎈 Balloon</option>
+                        <option value="🎁">🎁 Gift</option>
+                        <option value="🎄">🎄 Christmas tree</option>
+                        <option value="🎃">🎃 Pumpkin</option>
+                        <option value="🎪">🎪 Circus tent</option>
+                        <option value="❤️">❤️ Heart</option>
+                        <option value="🌟">🌟 Star</option>
+                        <option value="⭐">⭐ Star</option>
+                        <option value="✨">✨ Sparkles</option>
+                        <option value="💎">💎 Diamond</option>
+                        <option value="🏆">🏆 Trophy</option>
+                        <option value="🎖️">🎖️ Medal</option>
+                        <option value="👑">👑 Crown</option>
+                        <option value="💫">💫 Dizzy star</option>
+                        <option value="🌈">🌈 Rainbow</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="edit-chore-category">Category</label>
-                    <select id="edit-chore-category">
-                        <option value="General">General</option>
-                        <option value="Kitchen">Kitchen</option>
-                        <option value="Bathroom">Bathroom</option>
-                        <option value="Bedroom">Bedroom</option>
-                        <option value="Outdoor">Outdoor</option>
-                        <option value="School">School</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Pets">Pets</option>
-                        <option value="Plants">Plants</option>
+                    <select id="edit-chore-category" class="category-selector">
+                        <option value="household_chores">🏠 Household Chores</option>
+                        <option value="learning_education">📚 Learning & Education</option>
+                        <option value="physical_activity">🏃 Physical Activity</option>
+                        <option value="creative_time">🎨 Creative Time</option>
+                        <option value="games_play">🎮 Games & Play</option>
+                        <option value="reading">📖 Reading</option>
+                        <option value="family_time">❤️ Family Time</option>
+                        <option value="custom">⚙️ Custom</option>
                     </select>
                 </div>
                 
@@ -2166,110 +2266,128 @@
         </div>
     </template>
 
-    <!-- FAQ Modal -->
-    <div id="faq-modal" class="modal hidden" role="dialog" aria-labelledby="faq-modal-title" aria-hidden="true">
+    <!-- FAQ Modal / Help Center -->
+    <div id="faq-modal" class="modal hidden modal-lg" role="dialog" aria-labelledby="faq-modal-title" aria-hidden="true">
         <div class="modal-content modal-flex faq-modal-content">
             <header class="modal-header flex-between items-center">
-                <h2 id="faq-modal-title">❓ Frequently Asked Questions</h2>
+                <h2 id="faq-modal-title">📚 Help Center</h2>
                 <button class="modal-close" data-modal="faq-modal" aria-label="Close modal">&times;</button>
             </header>
             
-            <div class="faq-content">
-                <section class="faq-section">
+            <div class="help-center-content">
+                <div class="help-search-section">
+                    <div class="form-group">
+                        <label for="help-search" class="sr-only">Search help articles</label>
+                        <input type="text" id="help-search" class="form-control help-search-input" placeholder="🔍 Search help articles..." aria-label="Search help articles" autocomplete="off">
+                    </div>
+                    <div class="help-search-results" id="help-search-results" style="display: none;"></div>
+                </div>
+
+                <div class="help-categories" id="help-categories">
+                    <button type="button" class="help-category-btn active" data-category="all">All Topics</button>
+                    <button type="button" class="help-category-btn" data-category="getting-started">Getting Started</button>
+                    <button type="button" class="help-category-btn" data-category="using-app">Using the App</button>
+                    <button type="button" class="help-category-btn" data-category="premium">Premium</button>
+                    <button type="button" class="help-category-btn" data-category="family">Family Features</button>
+                    <button type="button" class="help-category-btn" data-category="technical">Technical</button>
+                </div>
+            
+            <div class="faq-content" id="faq-content">
+                <section class="faq-section" data-category="getting-started">
                     <h3>🏠 Getting Started</h3>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="add child first child create profile">
                         <h4>How do I add my first child?</h4>
                         <p>Click the "Add Your Child" button on the main screen. You'll need to provide their name, age, and choose a color for their profile.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="create chores add chore create activity">
                         <h4>How do I create chores?</h4>
                         <p>After adding a child, click the "Add Chore" button. You can create multiple chores at once and assign them to specific children.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="reward system earnings money cents coins">
                         <h4>How does the reward system work?</h4>
                         <p>Each completed chore earns 7¢ by default. Complete all chores for a day to earn the daily reward. Complete all chores for the week to earn a bonus!</p>
                     </article>
                 </section>
                 
-                <section class="faq-section">
+                <section class="faq-section" data-category="premium">
                     <h3>💰 Premium Features</h3>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="premium features included what comes with premium">
                         <h4>What's included in Premium?</h4>
                         <p>Premium includes custom chore colors, expanded icon sets, chore categories, unlimited chores, and priority support.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="premium cost price subscription">
                         <h4>How much does Premium cost?</h4>
                         <p>Premium is $4.99/month or $49.99/year, giving you access to all advanced features for your entire family.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="cancel premium subscription cancel anytime">
                         <h4>Can I cancel Premium anytime?</h4>
                         <p>Yes! You can cancel your Premium subscription at any time through your account settings. You'll keep access until the end of your billing period.</p>
                     </article>
                 </section>
                 
-                <section class="faq-section">
+                <section class="faq-section" data-category="using-app">
                     <h3>📱 Using the App</h3>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="mark complete check off chore grid click day">
                         <h4>How do I mark chores as complete?</h4>
                         <p>Simply click on any day in the chore grid to mark it as complete (✓) or incomplete. The progress bar updates instantly!</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="quick actions mark all today week">
                         <h4>What are the Quick Actions?</h4>
                         <p>Quick Actions let you mark all chores for today, mark all chores for the week, or clear all chores for today with one click.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="view history statistics progress chart">
                         <h4>How do I view chore history?</h4>
                         <p>Click the "📊 History" button on any child's card to see their completion history and statistics.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="challenges achievements streaks perfect days">
                         <h4>What are Chore Challenges?</h4>
                         <p>Challenges track special achievements like streaks, perfect days, and weekly goals. Click "🏆 Challenges" to see progress!</p>
                     </article>
                 </section>
                 
-                <section class="faq-section">
+                <section class="faq-section" data-category="technical">
                     <h3>🔧 Technical Support</h3>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="progress bar not updating refresh page connection">
                         <h4>My progress bar isn't updating</h4>
                         <p>Try refreshing the page. If the issue persists, check your internet connection and try again. Progress updates should be instant!</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="login sign in password forgot password">
                         <h4>I can't log in to my account</h4>
                         <p>Make sure you're using the correct email and password. If you forgot your password, use the "Forgot password?" link on the login screen.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="mobile phone tablet responsive design">
                         <h4>The app looks different on my phone</h4>
                         <p>The app is designed to work on all devices! Try rotating your phone or refreshing the page for the best experience.</p>
                     </article>
                 </section>
                 
-                <section class="faq-section">
+                <section class="faq-section" data-category="family">
                     <h3>👨‍👩‍👧‍👦 Family Features</h3>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="invite family members family code sharing">
                         <h4>How do I invite family members?</h4>
                         <p>Go to Settings → Family Sharing to get your family code. Share this code with family members to let them join your family account.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="multiple parents share account access">
                         <h4>Can multiple parents use the app?</h4>
                         <p>Yes! Multiple family members can access the same account using the family code. Everyone sees the same chore data and progress.</p>
                     </article>
                     
-                    <article class="faq-item">
+                    <article class="faq-item" data-keywords="change settings family settings rewards">
                         <h4>How do I change family settings?</h4>
                         <p>Click the gear icon (⚙️) in the top right to access family settings, including reward amounts and child management.</p>
                     </article>
@@ -2340,6 +2458,29 @@
                     </div>
                     
                     <div class="form-group">
+                        <label>How would you rate your experience? <span style="color: var(--text-secondary); font-weight: normal;">(Optional)</span></label>
+                        <div class="rating-stars" role="radiogroup" aria-label="Rating">
+                            <button type="button" class="rating-star" data-rating="1" aria-label="1 star" title="Poor">
+                                <span>⭐</span>
+                            </button>
+                            <button type="button" class="rating-star" data-rating="2" aria-label="2 stars" title="Fair">
+                                <span>⭐</span>
+                            </button>
+                            <button type="button" class="rating-star" data-rating="3" aria-label="3 stars" title="Good">
+                                <span>⭐</span>
+                            </button>
+                            <button type="button" class="rating-star" data-rating="4" aria-label="4 stars" title="Very Good">
+                                <span>⭐</span>
+                            </button>
+                            <button type="button" class="rating-star" data-rating="5" aria-label="5 stars" title="Excellent">
+                                <span>⭐</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="contact-rating" name="rating" value="0">
+                        <p class="rating-text" id="contact-rating-text" style="margin-top: var(--space-2); margin-bottom: 0; color: var(--text-secondary); font-size: var(--font-size-sm);"></p>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="contact-subject">Subject</label>
                         <select id="contact-subject" required aria-required="true">
                             <option value="">Select a topic</option>
@@ -2354,7 +2495,7 @@
                     
                     <div class="form-group">
                         <label for="contact-message">Message</label>
-                        <textarea id="contact-message" rows="5" required placeholder="Tell us how we can help you..." maxlength="1000" aria-required="true" aria-describedby="contact-message-count"></textarea>
+                        <textarea id="contact-message" rows="6" required placeholder="Tell us how we can help you..." maxlength="1000" aria-required="true" aria-describedby="contact-message-count"></textarea>
                         <small class="char-count" id="contact-message-count">0/1000 characters</small>
                     </div>
                     
@@ -2373,148 +2514,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- New Features Modal -->
-    <div id="new-features-modal" class="modal hidden" role="dialog" aria-labelledby="new-features-modal-title" aria-hidden="true">
-        <div class="modal-content modal-flex new-features-modal-content">
-            <header class="modal-header">
-                <h2 id="new-features-modal-title">🎉 What's New in ChoreStar!</h2>
-                <button class="modal-close" data-modal="new-features-modal" aria-label="Close modal">&times;</button>
-            </header>
-            <div class="modal-body-flex">
-            
-            <div class="new-features-content">
-                <div class="features-intro">
-                    <p>🎉 <strong>Latest Update - January 2025!</strong> We've added powerful new features and polished the entire experience for a smoother, more professional feel!</p>
-                </div>
-                
-                <div class="features-list">
-                    <div class="feature-item">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-content">
-                            <h3>Animated Dashboard Stats</h3>
-                            <p>Watch your family's progress come to life! Dashboard counters now animate smoothly when updating, making progress tracking more engaging and fun!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🛡️</div>
-                        <div class="feature-content">
-                            <h3>Smart Error Handling</h3>
-                            <p>Friendly inline error messages with one-click retry buttons. No more confusing error screens - just clear messages and easy fixes when things go wrong!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-content">
-                            <h3>Faster Load Times</h3>
-                            <p>Optimized performance with lazy loading! Heavy libraries only load when needed, making the app start faster and feel more responsive than ever!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">⌨️</div>
-                        <div class="feature-content">
-                            <h3>Enhanced Accessibility</h3>
-                            <p>Full keyboard navigation support! Tab through modals, press Escape to close, and enjoy improved screen reader support. ChoreStar is now accessible to everyone!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">📥</div>
-                        <div class="feature-content">
-                            <h3>Advanced Export Options</h3>
-                            <p>Export reports with precision! Choose specific children, select custom date ranges (This Week, Last Month, or custom dates), and export as PDF or CSV. Perfect for tracking progress over time!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🔍</div>
-                        <div class="feature-content">
-                            <h3>SEO Optimized</h3>
-                            <p>Better discoverability! Enhanced meta tags, structured data, and rich snippets help ChoreStar appear better in search results and social media shares!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🎯</div>
-                        <div class="feature-content">
-                            <h3>Activity Categories</h3>
-                            <p>Go beyond chores! Categorize tasks as Learning, Physical Activity, Creative Time, Reading, Family Time, and more. Track a well-rounded lifestyle for your kids!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">✨</div>
-                        <div class="feature-content">
-                            <h3>Beautiful Modal System</h3>
-                            <p>All modals have been redesigned with smooth animations, professional layouts, and delightful micro-interactions. Everything feels premium!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🤖</div>
-                        <div class="feature-content">
-                            <h3>Smart AI Suggestions</h3>
-                            <p>Get personalized activity recommendations based on your child's patterns, preferences, and completion history. AI-powered for each child!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🏆</div>
-                        <div class="feature-content">
-                            <h3>Achievement Badges & Streaks</h3>
-                            <p>Kids can earn special badges for milestones like 7-day streaks, perfect weeks, and category mastery. Track daily and weekly streaks with visual progress!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🎃</div>
-                        <div class="feature-content">
-                            <h3>Seasonal Themes & Activities</h3>
-                            <p>Celebrate holidays with themed interfaces and seasonal activity suggestions! Halloween, Christmas, Easter, and more - all customizable!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🌙</div>
-                        <div class="feature-content">
-                            <h3>Enhanced Dark Mode</h3>
-                            <p>Improved dark mode with better contrast, readability, and beautiful styling throughout the entire app. Easy on the eyes!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">📱</div>
-                        <div class="feature-content">
-                            <h3>Mobile Optimized</h3>
-                            <p>Every modal and interaction has been optimized for mobile devices. Responsive design that works perfectly on any screen size!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🎨</div>
-                        <div class="feature-content">
-                            <h3>Professional Typography</h3>
-                            <p>Refined fonts, spacing, and visual hierarchy throughout the app. Everything is easier to read and looks more polished!</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="features-footer">
-                    <p class="features-note">💡 <strong>Pro Tip:</strong> Try the new export features in Settings → Export to see detailed reports! Use keyboard shortcuts (Tab, Escape) for faster navigation. Check out the animated dashboard stats when you refresh!</p>
-                </div>
-            </div>
-            
-            <div class="modal-actions flex justify-end gap-3">
-                <button class="btn btn-primary" onclick="app.hideModal('new-features-modal')">
-                    Awesome! Let's Go! 🚀
-                </button>
-            </div>
             </div>
         </div>
     </div>
@@ -2741,12 +2740,13 @@
             </header>
             <div class="modal-body">
                 <div class="icon-picker-tabs">
-                    <button type="button" class="icon-tab active" data-tab="robots">🤖 Robots</button>
+                    <button type="button" class="icon-tab" data-tab="robots">🤖 Robots</button>
                     <button type="button" class="icon-tab" data-tab="adventurers">🧑‍🚀 Adventurers</button>
                     <button type="button" class="icon-tab" data-tab="emojis">😄 Fun Emojis</button>
+                    <button type="button" class="icon-tab active" data-tab="chore-emojis">⭐ Chore Emojis</button>
                 </div>
                 <div class="icon-picker-content">
-                    <div id="robots-tab" class="icon-tab-content active">
+                    <div id="robots-tab" class="icon-tab-content">
                         <div class="icon-grid" id="robots-grid">
                             <!-- Robot icons will be populated here -->
                         </div>
@@ -2759,6 +2759,11 @@
                     <div id="emojis-tab" class="icon-tab-content">
                         <div class="icon-grid" id="emojis-grid">
                             <!-- Fun emoji icons will be populated here -->
+                        </div>
+                    </div>
+                    <div id="chore-emojis-tab" class="icon-tab-content active">
+                        <div class="icon-grid" id="chore-emojis-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: var(--space-2); padding: var(--space-3); max-height: 400px; overflow-y: auto;">
+                            <!-- Chore emoji icons will be populated here -->
                         </div>
                     </div>
                 </div>
@@ -2787,8 +2792,6 @@
     <script src="family-sharing.js?v=1" defer></script>
     <script src="payment.js?v=1" defer></script>
     <script src="safe-optimizations.js?v=1" defer></script>
-    <script src="demo-data.js?v=5" defer></script>
-    <script src="toast-cleanup.js?v=2" defer></script>
     <script src="ui-enhancements.js?v=1" defer></script>
     
     <!-- Heavy Libraries - Lazy Load When Needed -->
@@ -2821,84 +2824,5 @@
             return Promise.resolve(window.jspdf);
         };
     </script>
-    
-    <!-- Smart Footer -->
-    <footer class="smart-footer" id="smart-footer">
-        <div class="footer-content">
-            <!-- Language & Currency Settings -->
-            <div class="footer-settings">
-                <div class="footer-setting-group">
-                    <label for="footer-language-select" class="footer-label">🌐</label>
-                    <select id="footer-language-select" class="footer-select" aria-label="Select language" title="🌐 Change App Language">
-                        <option value="en">🇺🇸 English</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="de">🇩🇪 Deutsch</option>
-                    </select>
-                </div>
-                
-                <div class="footer-setting-group">
-                    <label for="footer-currency-select" class="footer-label">$</label>
-                    <select id="footer-currency-select" class="footer-select" aria-label="Select currency" title="$ Change Currency">
-                        <option value="USD">🇺🇸 USD</option>
-                        <option value="GBP">🇬🇧 GBP</option>
-                        <option value="EUR">🇪🇺 EUR</option>
-                        <option value="CAD">🇨🇦 CAD</option>
-                        <option value="AUD">🇦🇺 AUD</option>
-                        <option value="JPY">🇯🇵 JPY</option>
-                        <option value="CHF">🇨🇭 CHF</option>
-                        <option value="SEK">🇸🇪 SEK</option>
-                        <option value="NOK">🇳🇴 NOK</option>
-                        <option value="DKK">🇩🇰 DKK</option>
-                        <option value="PLN">🇵🇱 PLN</option>
-                        <option value="CZK">🇨🇿 CZK</option>
-                        <option value="HUF">🇭🇺 HUF</option>
-                        <option value="INR">🇮🇳 INR</option>
-                        <option value="BRL">🇧🇷 BRL</option>
-                        <option value="MXN">🇲🇽 MXN</option>
-                        <option value="KRW">🇰🇷 KRW</option>
-                        <option value="SGD">🇸🇬 SGD</option>
-                        <option value="HKD">🇭🇰 HKD</option>
-                        <option value="NZD">🇳🇿 NZD</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="footer-actions">
-                <button class="footer-action-btn" id="footer-theme-toggle" title="🌙 Toggle Dark/Light Mode" aria-label="Toggle dark mode">
-                    <span class="footer-icon">🌙</span>
-                    <span class="footer-label-text">Theme</span>
-                </button>
-                <button class="footer-action-btn" id="footer-sound-toggle" title="♪ Toggle Sound Effects On/Off" aria-label="Toggle sound effects">
-                    <span class="footer-icon">♪</span>
-                    <span class="footer-label-text">Sound</span>
-                </button>
-                <button class="footer-action-btn" id="footer-help-btn" title="❓ View Help & FAQ" aria-label="Help and support">
-                    <span class="footer-icon">❓</span>
-                    <span class="footer-label-text">Help</span>
-                </button>
-                <button class="footer-action-btn" id="footer-contact-btn" title="✉ Contact Support" aria-label="Contact support">
-                    <span class="footer-icon">✉</span>
-                    <span class="footer-label-text">Contact</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Footer Info -->
-        <div class="footer-info">
-            <span class="footer-brand">ChoreStar</span>
-            <span class="footer-separator">•</span>
-            <span class="footer-version">v2025.1</span>
-            <span class="footer-separator">•</span>
-            <a href="/pricing.html" class="footer-link">Pricing</a>
-            <span class="footer-separator">•</span>
-            <a href="/refund-policy.html" class="footer-link">Refund Policy</a>
-            <span class="footer-separator">•</span>
-            <a href="/terms-of-service.html" class="footer-link">Terms</a>
-            <span class="footer-separator">•</span>
-            <a href="/privacy-policy.html" class="footer-link">Privacy</a>
-        </div>
-    </footer>
 </body>
 </html>

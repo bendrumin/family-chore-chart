@@ -223,7 +223,7 @@ body {
     border-top: 4px solid var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto var(--space-6);
+    margin: 0 0 var(--space-6);
 }
 
 @keyframes spin {
@@ -649,56 +649,6 @@ textarea,
 }
 
 /* Demo section styling */
-.demo-section {
-    margin: var(--space-6) 0;
-    padding: var(--space-6);
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 12px;
-    text-align: center;
-    border: 2px solid var(--gray-200);
-    position: relative;
-    overflow: hidden;
-    transition: all var(--transition);
-}
-
-.demo-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.demo-section:hover {
-    border-color: var(--primary);
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
-    transform: translateY(-2px);
-}
-
-.demo-section:hover::before {
-    transform: scaleX(1);
-}
-
-.demo-section p {
-    margin: 0 0 var(--space-3) 0;
-    color: var(--gray-600);
-    font-size: var(--font-size-sm);
-}
-
-.demo-section .btn {
-    margin-bottom: var(--space-3);
-}
-
-.demo-subtext {
-    margin: 0;
-    font-size: var(--font-size-xs);
-    color: var(--gray-500);
-}
-
 .form-group {
     display: flex;
     flex-direction: column;
@@ -995,8 +945,27 @@ textarea,
     transform: translateY(-1px);
 }
 
+.hidden-mobile {
+    display: none !important;
+}
+
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
+    #category-filter-container {
+        display: none !important;
+        height: 0;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .smart-footer {
+        display: none !important;
+    }
+
     .children-list {
         max-height: none;
         gap: var(--space-3);
@@ -1489,6 +1458,8 @@ textarea,
     display: flex;
     flex-direction: column;
     background: var(--gradient-primary);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .app-header {
@@ -1532,6 +1503,7 @@ textarea,
 .app-main {
     flex: 1;
     padding: var(--space-8) var(--space-6);
+    padding-bottom: calc(var(--space-8) + 120px); /* Add space for fixed footer */
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -1624,7 +1596,6 @@ textarea,
 .children-content {
     position: relative;
     min-height: 400px;
-    padding: var(--space-6);
 }
 
 .child-content {
@@ -2212,6 +2183,7 @@ body.modal-open {
 }
 
 .modal:not(.hidden) {
+    display: flex !important;
     opacity: 1;
     visibility: visible;
 }
@@ -3172,7 +3144,7 @@ body.modal-open {
     }
     
     .child-card {
-        padding: var(--space-4);
+        padding: var(--space-3);
     }
     
     .child-header {
@@ -5141,10 +5113,13 @@ body.modal-open {
 }
 
 .modal:not(.hidden) {
+    display: flex !important;
     animation: modal-fade-in 0.3s ease-out;
+    visibility: visible !important;
 }
 
 .modal.hidden {
+    display: none !important;
     animation: modal-fade-out 0.2s ease-in;
 }
 
@@ -5315,9 +5290,11 @@ body.modal-open {
 @keyframes modal-fade-in {
     from {
         opacity: 0;
+        visibility: visible !important;
     }
     to {
         opacity: 1;
+        visibility: visible !important;
     }
 }
 
@@ -5427,24 +5404,61 @@ body.modal-open {
 }
 
 .new-features-content {
-    padding: 0 var(--space-6) var(--space-6);
-    max-height: 60vh;
+    padding: var(--space-6);
+    max-height: 70vh;
     overflow-y: auto;
 }
 
 .features-intro {
     text-align: center;
-    padding: var(--space-4);
+    padding: var(--space-6);
     background: linear-gradient(135deg, var(--primary), #8b5cf6);
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     color: white;
     margin-bottom: var(--space-6);
+    position: relative;
+    overflow: hidden;
 }
 
-.features-intro p {
+.features-intro::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-10%, -10%) rotate(180deg); }
+}
+
+.features-intro-badge {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+    backdrop-filter: blur(10px);
+}
+
+.features-intro-title {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.features-intro-subtitle {
     margin: 0;
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+    font-weight: 500;
 }
 
 .features-list {
@@ -5456,14 +5470,20 @@ body.modal-open {
 
 .feature-item {
     display: flex;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    gap: var(--space-4);
+    padding: var(--space-5);
     background: var(--bg-primary);
     border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    transition: all var(--transition);
+    border-radius: var(--radius-xl);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+}
+
+.feature-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-light);
 }
 
 .feature-item::before {
@@ -5488,24 +5508,39 @@ body.modal-open {
     transform: scaleX(1);
 }
 
-.feature-icon {
+.feature-icon,
+.feature-item .feature-icon {
     font-size: 2.5rem;
     flex-shrink: 0;
     animation: bounce-in 0.6s ease-out;
 }
 
-.feature-content h3 {
+.feature-content h3,
+.feature-content .feature-title {
     margin: 0 0 var(--space-2) 0;
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
 }
 
-.feature-content p {
+.feature-content h4.feature-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+}
+
+.feature-content p,
+.feature-content .feature-description {
     margin: 0;
     color: var(--gray-600);
     line-height: 1.6;
     font-size: 14px;
+}
+
+.feature-content .feature-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
 .features-footer {
@@ -5699,7 +5734,8 @@ body.modal-open {
     transform: translateX(4px);
 }
 
-.feature-icon {
+.feature-icon,
+.feature-item .feature-icon {
     font-size: 24px;
     flex-shrink: 0;
 }
@@ -5907,9 +5943,41 @@ body.modal-open {
 }
 
 /* Confirmation Modal Styles */
+#confirmation-modal {
+    z-index: 10003 !important; /* Always above other modals (new-features-modal is 10001, its content is 10002) */
+}
+
+#confirmation-modal:not(.hidden) {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure confirmation modal appears above settings modal */
+#confirmation-modal.modal:not(.hidden) {
+    z-index: 10003 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
 .confirmation-modal-content {
     max-width: 500px;
     width: 90vw;
+    position: relative !important;
+    z-index: 10004 !important;
+    background: white !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .confirmation-header {
@@ -6292,10 +6360,53 @@ body.modal-open {
     min-height: 100px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     /* Enhanced emoji rendering */
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", emoji, sans-serif;
-    font-feature-settings: "liga", "kern";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Chore icon select dropdown - ensure emojis render properly and prevent word breaking */
+.chore-icon-select {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', emoji, sans-serif;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
+
+.chore-icon-select option {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', emoji, sans-serif !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
+
+/* Style optgroups to make categories visually distinct */
+.chore-icon-select optgroup {
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: var(--primary) !important;
+    background-color: var(--gray-50) !important;
+    padding: var(--space-2) !important;
+    border-bottom: 1px solid var(--gray-200) !important;
+}
+
+.chore-icon-select optgroup[label*="Morning"] {
+    background-color: #fff9e6 !important;
+    color: #f59e0b !important;
+}
+
+.chore-icon-select optgroup[label*="Evening"] {
+    background-color: #f3e8ff !important;
+    color: #7c3aed !important;
+}
+
+.chore-icon-select optgroup[label*="Anytime"] {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+}
+
+/* Style options within optgroups */
+.chore-icon-select optgroup option {
+    padding-left: var(--space-4) !important;
+    background-color: white !important;
+    color: var(--gray-900) !important;
 }
 
 /* Text-only icon options (like "No Change" button) */
@@ -6332,7 +6443,7 @@ body.modal-open {
 /* ==========================================
    CHORE ICON PICKER (emoji-only buttons)
    ========================================== */
-/* These are the emoji icon buttons in add/edit chore modals */
+/* These are the emoji icon buttons in edit chore modal and bulk edit (add chore now uses dropdown) */
 .icon-picker .icon-option {
     /* Sizing - tighter spacing */
     min-width: 48px;  /* Reduced further for better alignment */
@@ -6351,8 +6462,7 @@ body.modal-open {
     align-items: center;
     justify-content: center;
     
-    /* Transform scaling for better emoji rendering - reduced */
-    transform: scale(1.05); /* Reduced from 1.15 */
+    /* Transform removed - no longer needed for dropdown */
     
     /* Enhanced styling */
     background: white !important;
@@ -6375,8 +6485,7 @@ body.modal-open {
     background: #f9fafb !important;
     border-color: var(--primary) !important;
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2) !important;
-    /* Removed enlargement - no transform on hover, just visual feedback */
-    transform: scale(1.05); /* Keep same scale, no enlargement */
+    /* Transform removed - no longer needed */
 }
 
 .icon-picker .icon-option.active {
@@ -6384,7 +6493,7 @@ body.modal-open {
     border-color: var(--primary) !important;
     color: white !important;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25), 0 2px 8px rgba(99, 102, 241, 0.25) !important;
-    transform: scale(1.05) !important; /* Keep consistent size, no enlargement */
+    /* Transform removed - no longer needed */
 }
 
 /* Settings and Edit Chore modals - slightly larger icons for better visibility */
@@ -6396,16 +6505,10 @@ body.modal-open {
     height: 52px;
     padding: 8px;
     font-size: 2.8rem !important;
-    transform: scale(1.05) !important;
+    /* Transform removed - no longer needed */
 }
 
-/* Consistent hover/active states - no enlargement */
-#settings-modal .icon-picker .icon-option:hover,
-#edit-chore-modal .icon-picker .icon-option:hover,
-#settings-modal .icon-picker .icon-option.active,
-#edit-chore-modal .icon-picker .icon-option.active {
-    transform: scale(1.05) !important;
-}
+/* Consistent hover/active states - transforms removed, using box-shadow for feedback */
 
 .icon-option .icon-label {
     font-size: 10px;
@@ -6455,12 +6558,10 @@ body.modal-open {
         height: 44px;
         padding: 5px;
         font-size: 2.2rem !important;
-        transform: scale(1.05) !important; /* Consistent scaling */
+        /* Transform removed - no longer needed for dropdown */
     }
     
-    .icon-picker:not(#bulk-edit-icon-picker) .icon-option:hover {
-        transform: scale(1.05) !important; /* No enlargement on hover */
-    }
+    /* Hover state handled by base .icon-picker .icon-option:hover rule */
     
     /* Bulk edit icon picker mobile */
     #bulk-edit-icon-picker {
@@ -6976,7 +7077,8 @@ body.modal-open {
     transform: translateY(-2px);
 }
 
-.feature-icon {
+.feature-icon,
+.feature-item .feature-icon {
     font-size: 2.5rem;
     margin-bottom: var(--space-3);
 }
@@ -10876,12 +10978,6 @@ html[data-color-scheme="lavender"],
         font-weight: 600;
     }
     
-    .demo-badge {
-        font-size: var(--font-size-xs);
-        padding: 2px 6px;
-        margin-left: var(--space-1);
-    }
-    
     /* Desktop navigation improvements for small screens */
     .desktop-nav {
         gap: var(--space-1);
@@ -12004,6 +12100,48 @@ html[data-color-scheme="lavender"],
         height: 60px;
         font-size: 2rem;
     }
+    
+    .family-dashboard-overview {
+        padding: var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+    
+    .dashboard-stats-grid {
+        gap: var(--space-2);
+    }
+    
+    .dashboard-stat-card {
+        padding: var(--space-2);
+        gap: var(--space-2);
+    }
+    
+    .dashboard-header {
+        gap: var(--space-2);
+    }
+    
+    .dashboard-actions {
+        gap: var(--space-2);
+    }
+    
+    .chore-card {
+        padding: var(--space-3);
+        border-radius: var(--radius-lg);
+    }
+    
+    .chore-days-container {
+        padding: var(--space-2);
+        gap: var(--space-2);
+    }
+    
+    .chore-day-label {
+        font-size: 0.7rem;
+    }
+    
+    .chore-day-mobile .chore-cell {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
 }
 
 /* Notifications Dashboard */
@@ -12263,6 +12401,276 @@ html[data-color-scheme="lavender"],
 
 .swipe-feedback.undo {
     color: var(--gray-600);
+}
+
+/* Mobile-first dashboard chore cards */
+@media (max-width: 600px) {
+    .mobile-child-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        background: linear-gradient(120deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.05));
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .mobile-child-avatar {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-child-avatar img,
+    .mobile-child-avatar .child-avatar {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 1.6rem !important;
+    }
+
+    .mobile-child-meta h3 {
+        font-size: 1.25rem !important;
+        margin: 0 0 4px 0;
+    }
+
+    .mobile-child-meta p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--gray-500);
+    }
+
+    .mobile-settings-btn {
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        background: #ffffff;
+        color: var(--primary);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 1rem;
+        box-shadow: 0 6px 14px rgba(99, 102, 241, 0.15);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mobile-settings-btn:active {
+        transform: scale(0.96);
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.12);
+    }
+
+    .mobile-child-summary {
+        display: flex;
+        gap: var(--space-2);
+        padding: 0 var(--space-3) var(--space-3);
+        margin-top: -6px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .mobile-child-summary::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mobile-summary-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: 10px 18px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.18));
+        color: var(--gray-900);
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+        scroll-snap-align: start;
+        white-space: nowrap;
+        backdrop-filter: blur(8px);
+    }
+
+    .mobile-summary-chip:nth-of-type(2) {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(249, 115, 22, 0.18));
+    }
+
+    .mobile-summary-icon {
+        font-size: 1.2rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .mobile-summary-text {
+        letter-spacing: 0.01em;
+    }
+
+    .child-card {
+        padding: var(--space-3);
+    }
+
+    .child-card .progress-section,
+    .child-card .streak-progress-section,
+    .child-card .earnings-section {
+        display: none !important;
+    }
+
+    .child-card .chore-grid {
+        margin-top: var(--space-3);
+    }
+
+    .mobile-day-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        margin: var(--space-3) 0 var(--space-2);
+    }
+
+    .mobile-day-button {
+        background: #fff;
+        border: 1px solid var(--gray-200);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: var(--primary, #6366f1);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mobile-day-button:active {
+        transform: scale(0.95);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .mobile-day-label {
+        flex: 1;
+        text-align: center;
+    }
+
+    .mobile-day-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--gray-900);
+    }
+
+    .mobile-day-date {
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+
+    .mobile-day-subtitle {
+        margin: 4px 0 12px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--gray-500);
+    }
+
+    .mobile-chore-card-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .mobile-chore-card {
+        position: relative;
+        background: linear-gradient(145deg, #ffffff, rgba(99, 102, 241, 0.08));
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        border-left: 4px solid var(--primary, #6366f1);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 110px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        touch-action: manipulation;
+    }
+
+    .mobile-chore-card:active {
+        transform: scale(0.98);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .mobile-chore-card.completed {
+        border-left-color: var(--success-500, #22c55e);
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .mobile-chore-status {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--gray-200);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .mobile-chore-card.completed .mobile-chore-status {
+        background: var(--success-500, #22c55e);
+        border-color: var(--success-500, #22c55e);
+        color: #fff;
+    }
+
+    .mobile-chore-card.completed .mobile-chore-status::after {
+        content: '✓';
+        font-weight: 700;
+    }
+
+    .mobile-chore-icon {
+        font-size: 38px;
+    }
+
+    .mobile-chore-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: var(--gray-900);
+    }
+
+    .mobile-chore-card.completed .mobile-chore-title {
+        text-decoration: line-through;
+        color: var(--gray-500);
+    }
+
+    .mobile-chore-category {
+        font-size: 1rem;
+        color: var(--gray-700);
+        font-weight: 600;
+    }
+
+    .mobile-chore-notes {
+        font-size: 0.9rem;
+        color: var(--gray-600);
+    }
+
+    .mobile-add-chore-wrapper {
+        margin-top: 16px;
+    }
+
+    .mobile-add-chore-btn {
+        width: 100%;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 420px) {
+    .mobile-chore-card-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Drag and drop styles */
@@ -15165,7 +15573,8 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     border-color: var(--primary);
 }
 
-.feature-icon {
+.feature-icon,
+.feature-item .feature-icon {
     font-size: 2rem;
     flex-shrink: 0;
     width: 60px;
@@ -15236,7 +15645,8 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     background: var(--gray-750);
 }
 
-[data-theme="dark"] .feature-icon {
+[data-theme="dark"] .feature-icon,
+.feature-item .feature-icon {
     background: var(--gray-700);
 }
 
@@ -15359,6 +15769,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
 @media (max-width: 768px) {
     .category-filter-container {
         padding: var(--space-2);
+        display: none !important;
     }
     
     .category-filter-container > div {
@@ -15681,6 +16092,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     padding: var(--space-3) var(--space-4);
     z-index: 1000;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    height: 100px
 }
 
 .footer-content {
@@ -15719,6 +16131,23 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     min-width: 80px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Remove browser default styling */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+.footer-select option {
+    color: var(--text-primary);
+    background: var(--bg-primary);
+}
+
+.footer-select:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-color: var(--primary);
 }
 
 .footer-actions {
@@ -15942,10 +16371,27 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Force light text color in dark mode */
 [data-theme="dark"] .footer-select {
-    background: var(--bg-primary);
-    border-color: var(--border-color);
-    color: var(--text-primary);
+    color: #e5e7eb !important;
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+    /* Webkit-specific fix for text color - more specific than color property */
+    -webkit-text-fill-color: #e5e7eb !important;
+}
+
+/* Fix option elements too */
+[data-theme="dark"] .footer-select option {
+    color: #e5e7eb !important;
+    background: var(--bg-primary) !important;
+    -webkit-text-fill-color: #e5e7eb !important;
+}
+
+/* Also fix focused state */
+[data-theme="dark"] .footer-select:focus {
+    color: #e5e7eb !important;
+    border-color: var(--primary) !important;
+    -webkit-text-fill-color: #e5e7eb !important;
 }
 
 [data-theme="dark"] .footer-action-btn {
@@ -16023,4 +16469,215 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
         justify-content: center;
         margin-top: var(--space-2);
     }
+}
+
+/* ==========================================
+   CONTACT FORM RATING
+   ========================================== */
+#contact-form .rating-stars {
+    display: flex;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    margin: var(--space-2) 0;
+}
+
+#contact-form .rating-star {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-1);
+    font-size: 28px;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(100%) opacity(0.4);
+    transform: scale(0.9);
+}
+
+#contact-form .rating-star:hover {
+    transform: scale(1.1);
+    filter: grayscale(0%) opacity(1);
+}
+
+#contact-form .rating-star.active {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.05);
+}
+
+/* What's New Modal - Ensure it appears above all other elements */
+#new-features-modal {
+    z-index: 10001 !important;
+}
+
+#new-features-modal .modal-content {
+    z-index: 10002 !important;
+}
+
+
+/* ==========================================
+   HELP CENTER / FAQ SEARCH
+   ========================================== */
+.help-center-content {
+    padding: var(--space-4);
+}
+
+.help-search-section {
+    margin-bottom: var(--space-4);
+}
+
+.help-search-input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s;
+}
+
+.help-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.help-categories {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.help-category-btn {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: all 0.2s;
+}
+
+.help-category-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.help-category-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.help-search-results {
+    margin-top: var(--space-4);
+}
+
+.help-results-header {
+    margin-bottom: var(--space-4);
+}
+
+.help-results-header h3 {
+    font-size: var(--font-size-lg);
+    margin: 0;
+}
+
+.help-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.help-result-item {
+    padding: var(--space-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.help-result-category {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+}
+
+.help-result-item h4 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: var(--font-size-base);
+}
+
+.help-result-item p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.help-results-empty {
+    text-align: center;
+    padding: var(--space-8);
+    color: var(--text-secondary);
+}
+
+.help-results-empty a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.help-results-empty a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+   SKELETON LOADERS (Enhanced)
+   ========================================== */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--gray-200) 0%, var(--gray-100) 50%, var(--gray-200) 100%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: var(--radius);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Use skeleton instead of spinner for content loading */
+.skeleton-content {
+    display: none;
+}
+
+.loading .skeleton-content {
+    display: block;
+}
+
+.loading .content-loaded {
+    display: none;
+}
+
+/* Dark mode skeletons */
+[data-theme="dark"] .loading-skeleton {
+    background: linear-gradient(90deg, var(--gray-800) 0%, var(--gray-700) 50%, var(--gray-800) 100%);
+    background-size: 200% 100%;
+}
+
+/* ==========================================
+   MODAL VISIBILITY FIX
+   ========================================== */
+/* Force modals to be visible when .hidden class is removed */
+.modal:not(.hidden) {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+/* Make sure new-features modal specifically works */
+#new-features-modal:not(.hidden) {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
 }

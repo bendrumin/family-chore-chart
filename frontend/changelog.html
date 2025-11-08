@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - ChoreStar</title>
+    <meta name="description" content="See what's new in ChoreStar! View our complete changelog and release history.">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ui-enhancements.css">
+    
+    <style>
+        body {
+            background: var(--bg-primary);
+            padding: var(--space-6);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .changelog-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+            padding: var(--space-6);
+        }
+        
+        .changelog-header h1 {
+            font-size: var(--font-size-4xl);
+            margin-bottom: var(--space-2);
+        }
+        
+        .changelog-header p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+        }
+        
+        .changelog-nav {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-6);
+            flex-wrap: wrap;
+        }
+        
+        .changelog-nav-btn {
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .changelog-nav-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .changelog-nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .changelog-entry {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+        
+        .changelog-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+            gap: var(--space-2);
+        }
+        
+        .changelog-entry-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .changelog-entry-meta {
+            display: flex;
+            gap: var(--space-4);
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+        
+        .changelog-features {
+            display: grid;
+            gap: var(--space-4);
+        }
+        
+        .changelog-feature {
+            display: flex;
+            gap: var(--space-3);
+            align-items: flex-start;
+        }
+        
+        .changelog-feature-icon {
+            font-size: var(--font-size-2xl);
+            flex-shrink: 0;
+        }
+        
+        .changelog-feature-content h4 {
+            margin: 0 0 var(--space-1) 0;
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+        
+        .changelog-feature-content p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-6);
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: var(--space-4);
+            }
+            
+            .changelog-entry-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to ChoreStar</a>
+    
+    <div class="changelog-header">
+        <h1>📋 Changelog</h1>
+        <p>See what's new and what we've improved!</p>
+    </div>
+    
+    <div class="changelog-nav" id="changelog-nav"></div>
+    
+    <div id="changelog-content"></div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Wait for app to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.app && window.app.getChangelogData) {
+                const changelogData = window.app.getChangelogData();
+                const versions = Object.keys(changelogData).sort((a, b) => {
+                    // Sort by version number (newest first)
+                    const aParts = a.split('.').map(Number);
+                    const bParts = b.split('.').map(Number);
+                    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                        const aVal = aParts[i] || 0;
+                        const bVal = bParts[i] || 0;
+                        if (aVal !== bVal) return bVal - aVal;
+                    }
+                    return 0;
+                });
+                
+                const nav = document.getElementById('changelog-nav');
+                const content = document.getElementById('changelog-content');
+                
+                // Create nav buttons
+                nav.innerHTML = '<button class="changelog-nav-btn active" data-version="all">All Versions</button>';
+                versions.forEach(version => {
+                    const btn = document.createElement('button');
+                    btn.className = 'changelog-nav-btn';
+                    btn.textContent = changelogData[version].version;
+                    btn.dataset.version = version;
+                    nav.appendChild(btn);
+                });
+                
+                // Render all entries
+                function renderEntries(filterVersion = 'all') {
+                    content.innerHTML = '';
+                    
+                    versions.forEach(version => {
+                        if (filterVersion !== 'all' && version !== filterVersion) return;
+                        
+                        const entry = changelogData[version];
+                        const entryEl = document.createElement('div');
+                        entryEl.className = 'changelog-entry';
+                        entryEl.innerHTML = `
+                            <div class="changelog-entry-header">
+                                <h2 class="changelog-entry-title">${entry.title}</h2>
+                                <div class="changelog-entry-meta">
+                                    <span>${entry.version}</span>
+                                    <span>•</span>
+                                    <span>${entry.date}</span>
+                                </div>
+                            </div>
+                            <div class="changelog-features">
+                                ${entry.features.map(feature => `
+                                    <div class="changelog-feature">
+                                        <div class="changelog-feature-icon">${feature.icon}</div>
+                                        <div class="changelog-feature-content">
+                                            <h4>${feature.title}</h4>
+                                            <p>${feature.description}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        content.appendChild(entryEl);
+                    });
+                }
+                
+                // Initial render
+                renderEntries();
+                
+                // Handle nav clicks
+                nav.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('changelog-nav-btn')) {
+                        nav.querySelectorAll('.changelog-nav-btn').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const version = e.target.dataset.version;
+                        renderEntries(version);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

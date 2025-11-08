@@ -24,7 +24,7 @@ class UIEnhancementsManager {
         this.initializeFloatingActionButton();
         this.initializeProgressIndicators();
         this.initializePageTransitions();
-        console.log('✨ Professional UI Enhancements loaded');
+        // Professional UI Enhancements loaded
     }
 
     // ==========================================
@@ -78,6 +78,13 @@ class UIEnhancementsManager {
             'mod+/': () => this.showShortcutsOverlay(),
             'mod+n': () => this.quickAddChild(),
             'mod+shift+n': () => this.quickAddChore(),
+            'mod+s': () => this.quickSettings(),
+            'mod+h': () => this.quickHelp(),
+            'mod+f': () => this.quickFeedback(),
+            'mod+p': () => this.quickPrint(),
+            'mod+,': () => this.quickSettings(),
+            'mod+shift+c': () => this.quickChangelog(),
+            'mod+?': () => this.showShortcutsOverlay(),
         };
 
         document.addEventListener('keydown', (e) => {
@@ -306,6 +313,26 @@ class UIEnhancementsManager {
                         <kbd>⌘</kbd> <kbd>/</kbd>
                         <span>Toggle Shortcuts</span>
                     </div>
+                    <div class="shortcut-item">
+                        <kbd>⌘</kbd> <kbd>S</kbd>
+                        <span>Settings</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>⌘</kbd> <kbd>H</kbd>
+                        <span>Help Center</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>⌘</kbd> <kbd>F</kbd>
+                        <span>Send Feedback</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>⌘</kbd> <kbd>P</kbd>
+                        <span>Print</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>C</kbd>
+                        <span>Changelog</span>
+                    </div>
                 </div>
                 <p class="shortcuts-note">💡 Tip: These shortcuts work anywhere in the app</p>
             </div>
@@ -337,6 +364,32 @@ class UIEnhancementsManager {
         if (window.app) {
             window.app.showModal('add-chore-modal');
         }
+    }
+    
+    quickSettings() {
+        if (window.app) {
+            window.app.showModal('settings-modal');
+        }
+    }
+    
+    quickHelp() {
+        if (window.app) {
+            window.app.showModal('faq-modal');
+        }
+    }
+    
+    quickFeedback() {
+        if (window.app) {
+            window.app.showModal('feedback-modal');
+        }
+    }
+    
+    quickPrint() {
+        window.print();
+    }
+    
+    quickChangelog() {
+        window.location.href = '/changelog.html';
     }
 
     handleEscape() {
@@ -619,15 +672,21 @@ class UIEnhancementsManager {
         const tooltipRect = tooltip.getBoundingClientRect();
         
         let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-        let top = rect.top - tooltipRect.height - 8;
+        // Position tooltip BELOW the button by default (for header buttons)
+        let top = rect.bottom + 8;
         
         // Keep tooltip on screen
         if (left < 10) left = 10;
         if (left + tooltipRect.width > window.innerWidth - 10) {
             left = window.innerWidth - tooltipRect.width - 10;
         }
-        if (top < 10) {
-            top = rect.bottom + 8;
+        // If tooltip would go off bottom of screen, position above instead
+        if (top + tooltipRect.height > window.innerHeight - 10) {
+            top = rect.top - tooltipRect.height - 8;
+            // If positioned above, change arrow to point down
+            tooltip.classList.add('tooltip-above');
+        } else {
+            tooltip.classList.remove('tooltip-above');
         }
         
         tooltip.style.left = `${left}px`;

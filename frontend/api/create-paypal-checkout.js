@@ -53,6 +53,9 @@ module.exports = async function handler(req, res) {
     } else if (planType === 'annual') {
       amount = '49.99';
       description = 'ChoreStar Premium - Annual Subscription';
+    } else if (planType === 'lifetime') {
+      amount = '149.99';
+      description = 'ChoreStar Premium - Lifetime Access';
     } else {
       return res.status(400).json({ error: 'Invalid plan type' });
     }

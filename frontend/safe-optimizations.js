@@ -3,7 +3,6 @@
 
 console.log('🔧 Loading safe ChoreStar optimizations...');
 
-// 1. Demo button is handled by demo-data.js
 
 // 2. Improve Error Handling
 function improveErrorHandling() {
@@ -27,22 +26,7 @@ function improveErrorHandling() {
     console.log('✅ Error recovery system added');
 }
 
-// 3. Fix Console Warnings
-function fixConsoleIssues() {
-    // Suppress non-critical console warnings
-    const originalWarn = console.warn;
-    console.warn = function(...args) {
-        const message = args.join(' ');
-        // Only show warnings that are actually important
-        if (!message.includes('Auth session missing') && 
-            !message.includes('Nodemailer not available') &&
-            !message.includes('SendGrid not available')) {
-            originalWarn.apply(console, args);
-        }
-    };
-    
-    console.log('✅ Console warnings optimized');
-}
+// 3. Fix Console Warnings (removed - warnings handled at source)
 
 // 4. Improve Loading States
 function improveLoadingStates() {
@@ -108,7 +92,7 @@ function fixAccessibility() {
 function runSafeOptimizations() {
     try {
         improveErrorHandling();
-        fixConsoleIssues();
+        // fixConsoleIssues() removed - warnings handled at source
         improveLoadingStates();
         optimizeImageLoading();
         fixAccessibility();

@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
         user: process.env.EMAIL_USER ? 'configured' : 'missing',
         pass: process.env.EMAIL_PASS ? 'configured' : 'missing',
         admin: process.env.ADMIN_EMAIL || 'not_set',
-        sendgrid: process.env.SENDGRID_API_KEY ? 'configured' : 'missing'
+        resend: process.env.RESEND_API_KEY ? 'configured' : 'missing'
       },
       node: {
         version: process.version,
@@ -42,10 +42,10 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-      const sendgrid = require('@sendgrid/mail');
-      dependencies.sendgrid = 'available';
+      const { Resend } = require('resend');
+      dependencies.resend = 'available';
     } catch (error) {
-      dependencies.sendgrid = 'missing';
+      dependencies.resend = 'missing';
     }
 
     const healthStatus = {
@@ -64,7 +64,7 @@ module.exports = async function handler(req, res) {
 
     // Determine overall health status
     const hasCriticalIssues = !envCheck.paypal.configured || 
-                             (!envCheck.email.sendgrid && !envCheck.email.user || !envCheck.email.pass);
+                             (!envCheck.email.resend && !envCheck.email.user || !envCheck.email.pass);
 
     if (hasCriticalIssues) {
       healthStatus.status = 'degraded';
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
       if (!envCheck.paypal.configured) {
         healthStatus.warnings.push('PayPal not configured - payments will fail');
       }
-      if (!envCheck.email.sendgrid && (!envCheck.email.user || !envCheck.email.pass)) {
+      if (!envCheck.email.resend && (!envCheck.email.user || !envCheck.email.pass)) {
         healthStatus.warnings.push('Email not configured - contact form emails will not be sent');
       }
     }

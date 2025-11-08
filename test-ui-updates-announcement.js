@@ -5,19 +5,19 @@
  * Sends the newsletter to just your email address for testing
  */
 
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-if (!SENDGRID_API_KEY) {
-    console.error('❌ Error: SENDGRID_API_KEY environment variable not set');
+if (!RESEND_API_KEY) {
+    console.error('❌ Error: RESEND_API_KEY environment variable not set');
     process.exit(1);
 }
 
-sgMail.setApiKey(SENDGRID_API_KEY);
+const resend = new Resend(RESEND_API_KEY);
 
 // Load template
 function loadTemplate() {
@@ -33,19 +33,15 @@ async function sendTestEmail() {
     console.log(`📧 Sending test email to: ${testEmail}\n`);
     
     try {
-        const msg = {
+        const result = await resend.emails.send({
+            from: 'ChoreStar <hi@chorestar.app>',
             to: testEmail,
-            from: {
-                email: 'hi@chorestar.app',
-                name: 'ChoreStar Team'
-            },
-            replyTo: 'hi@chorestar.app',
+            reply_to: 'hi@chorestar.app',
             subject: '🎨 [TEST] ChoreStar\'s Massive UI Upgrade is Here! ✨',
-            html: loadTemplate(),
-        };
-
-        const result = await sgMail.send(msg);
-        console.log(`✅ Test email sent successfully! (Status: ${result[0].statusCode})`);
+            html: loadTemplate()
+        });
+        
+        console.log(`✅ Test email sent successfully! (ID: ${result.data?.id || 'N/A'})`);
         console.log(`\n📬 Check your inbox at ${testEmail}`);
         console.log(`\n💡 If it looks good, run: node send-ui-updates-announcement.js`);
     } catch (error) {
