@@ -1,0 +1,639 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ChoreStar Brand Colors */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --success: #2ed573;
+    --warning: #ffa502;
+    --error: #ff4757;
+    --info: #17c0eb;
+
+    /* Background & Surfaces */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --surface-border: rgba(15, 23, 42, 0.08);
+
+    /* Text */
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-inverse: #ffffff;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(99, 102, 241, 0.15);
+    --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+    /* Border Radius */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1.25rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --gradient-success: linear-gradient(135deg, #2ed573 0%, #17c0eb 100%);
+    --gradient-warning: linear-gradient(135deg, #ffa502 0%, #ffd700 100%);
+    --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+
+    /* Tailwind Compatibility */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode Colors */
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+    --card-bg: rgba(31, 41, 55, 0.95);
+    --surface-border: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+    --gradient-bg: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(55, 65, 81, 0.9));
+
+    /* Tailwind Dark */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+    background-color: hsl(var(--background));
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    background-color: hsl(var(--background));
+  }
+
+  /* Glassmorphism utilities */
+  .glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glass-border {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Fun animations */
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes bounce-in {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Hover glow effect */
+  .hover-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hover-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .hover-glow:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+  /* Dialog Content Styles */
+  .dialog-content-settings {
+    max-height: calc(100vh - 2rem);
+    height: auto;
+    min-height: 500px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+  }
+
+  /* Dialog Header Styles */
+  .dialog-header-settings {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    border-bottom: 1px solid rgba(229, 231, 235, 1);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .dialog-title-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dialog-title-icon {
+    color: var(--primary);
+  }
+
+  /* Settings Tab Styles */
+  .settings-tab-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .settings-tab-button:hover {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .settings-tab-button.active {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+  }
+
+/* Dialog/Modal z-index - outside @layer for higher specificity */
+/* Using data attributes - these are unique selectors, so no !important needed */
+[data-dialog-overlay] {
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+[data-dialog-backdrop] {
+  z-index: 9999;
+}
+
+[data-dialog-content] {
+  z-index: 10001;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Seasonal Themes - Outside @layer for proper specificity */
+html.seasonal-christmas,
+body.seasonal-christmas {
+  --seasonal-bg: #fef2f2;
+  --seasonal-accent: #dc2626;
+  --seasonal-gradient: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+html.seasonal-halloween,
+body.seasonal-halloween {
+  --seasonal-bg: #fffbeb;
+  --seasonal-accent: #d97706;
+  --seasonal-gradient: linear-gradient(135deg, #ea580c, #f97316);
+}
+
+html.seasonal-easter,
+body.seasonal-easter {
+  --seasonal-bg: #fdf2f8;
+  --seasonal-accent: #ec4899;
+  --seasonal-gradient: linear-gradient(135deg, #ec4899, #f472b6);
+}
+
+html.seasonal-summer,
+body.seasonal-summer {
+  --seasonal-bg: #fffbeb;
+  --seasonal-accent: #f59e0b;
+  --seasonal-gradient: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+html.seasonal-spring,
+body.seasonal-spring {
+  --seasonal-bg: #f0fdf4;
+  --seasonal-accent: #22c55e;
+  --seasonal-gradient: linear-gradient(135deg, #22c55e, #4ade80);
+}
+
+html.seasonal-fall,
+body.seasonal-fall {
+  --seasonal-bg: #fffbeb;
+  --seasonal-accent: #ea580c;
+  --seasonal-gradient: linear-gradient(135deg, #ea580c, #fb923c);
+}
+
+html.seasonal-winter,
+body.seasonal-winter {
+  --seasonal-bg: #eff6ff;
+  --seasonal-accent: #3b82f6;
+  --seasonal-gradient: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+html.seasonal-valentine,
+body.seasonal-valentine {
+  --seasonal-bg: #fdf2f8;
+  --seasonal-accent: #ec4899;
+  --seasonal-gradient: linear-gradient(135deg, #ec4899, #f472b6);
+}
+
+html.seasonal-stPatricks,
+body.seasonal-stPatricks {
+  --seasonal-bg: #f0fdf4;
+  --seasonal-accent: #059669;
+  --seasonal-gradient: linear-gradient(135deg, #059669, #10b981);
+}
+
+html.seasonal-thanksgiving,
+body.seasonal-thanksgiving {
+  --seasonal-bg: #fffbeb;
+  --seasonal-accent: #ea580c;
+  --seasonal-gradient: linear-gradient(135deg, #ea580c, #fb923c);
+}
+
+html.seasonal-newYear,
+body.seasonal-newYear {
+  --seasonal-bg: #faf5ff;
+  --seasonal-accent: #8b5cf6;
+  --seasonal-gradient: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+
+html.seasonal-ocean,
+body.seasonal-ocean {
+  --seasonal-bg: #ecfeff;
+  --seasonal-accent: #0891b2;
+  --seasonal-gradient: linear-gradient(135deg, #0891b2, #06b6d4);
+}
+
+html.seasonal-sunset,
+body.seasonal-sunset {
+  --seasonal-bg: #fff7ed;
+  --seasonal-accent: #f97316;
+  --seasonal-gradient: linear-gradient(135deg, #f97316, #fb923c);
+}
+
+/* Apply seasonal backgrounds - using both body and html for maximum compatibility */
+html.seasonal-christmas,
+body.seasonal-christmas,
+html body.seasonal-christmas {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-halloween,
+body.seasonal-halloween,
+html body.seasonal-halloween {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-easter,
+body.seasonal-easter,
+html body.seasonal-easter {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-summer,
+body.seasonal-summer,
+html body.seasonal-summer {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-spring,
+body.seasonal-spring,
+html body.seasonal-spring {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-fall,
+body.seasonal-fall,
+html body.seasonal-fall {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-winter,
+body.seasonal-winter,
+html body.seasonal-winter {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-valentine,
+body.seasonal-valentine,
+html body.seasonal-valentine {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-stPatricks,
+body.seasonal-stPatricks,
+html body.seasonal-stPatricks {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-thanksgiving,
+body.seasonal-thanksgiving,
+html body.seasonal-thanksgiving {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-newYear,
+body.seasonal-newYear,
+html body.seasonal-newYear {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-ocean,
+body.seasonal-ocean,
+html body.seasonal-ocean {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-sunset,
+body.seasonal-sunset,
+html body.seasonal-sunset {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+/* Dark mode seasonal backgrounds */
+html[data-theme="dark"].seasonal-christmas,
+body[data-theme="dark"].seasonal-christmas,
+html body[data-theme="dark"].seasonal-christmas,
+body.seasonal-christmas[data-theme="dark"] {
+  background: #1a0f0f !important;
+  background-color: #1a0f0f !important;
+}
+
+html[data-theme="dark"].seasonal-halloween,
+body[data-theme="dark"].seasonal-halloween,
+html body[data-theme="dark"].seasonal-halloween,
+body.seasonal-halloween[data-theme="dark"] {
+  background: #2d1b0f !important;
+  background-color: #2d1b0f !important;
+}
+
+html[data-theme="dark"].seasonal-easter,
+body[data-theme="dark"].seasonal-easter,
+html body[data-theme="dark"].seasonal-easter,
+body.seasonal-easter[data-theme="dark"] {
+  background: #1f0f1a !important;
+  background-color: #1f0f1a !important;
+}
+
+html[data-theme="dark"].seasonal-summer,
+body[data-theme="dark"].seasonal-summer,
+html body[data-theme="dark"].seasonal-summer,
+body.seasonal-summer[data-theme="dark"] {
+  background: #1f1a0f !important;
+  background-color: #1f1a0f !important;
+}
+
+html[data-theme="dark"].seasonal-spring,
+body[data-theme="dark"].seasonal-spring,
+html body[data-theme="dark"].seasonal-spring,
+body.seasonal-spring[data-theme="dark"] {
+  background: #0f1f0f !important;
+  background-color: #0f1f0f !important;
+}
+
+html[data-theme="dark"].seasonal-fall,
+body[data-theme="dark"].seasonal-fall,
+html body[data-theme="dark"].seasonal-fall,
+body.seasonal-fall[data-theme="dark"] {
+  background: #1f1a0f !important;
+  background-color: #1f1a0f !important;
+}
+
+html[data-theme="dark"].seasonal-winter,
+body[data-theme="dark"].seasonal-winter,
+html body[data-theme="dark"].seasonal-winter,
+body.seasonal-winter[data-theme="dark"] {
+  background: #0f141f !important;
+  background-color: #0f141f !important;
+}
+
+html[data-theme="dark"].seasonal-valentine,
+body[data-theme="dark"].seasonal-valentine,
+html body[data-theme="dark"].seasonal-valentine,
+body.seasonal-valentine[data-theme="dark"] {
+  background: #1f0f1a !important;
+  background-color: #1f0f1a !important;
+}
+
+html[data-theme="dark"].seasonal-stPatricks,
+body[data-theme="dark"].seasonal-stPatricks,
+html body[data-theme="dark"].seasonal-stPatricks,
+body.seasonal-stPatricks[data-theme="dark"] {
+  background: #0f1f0f !important;
+  background-color: #0f1f0f !important;
+}
+
+html[data-theme="dark"].seasonal-thanksgiving,
+body[data-theme="dark"].seasonal-thanksgiving,
+html body[data-theme="dark"].seasonal-thanksgiving,
+body.seasonal-thanksgiving[data-theme="dark"] {
+  background: #1f1a0f !important;
+  background-color: #1f1a0f !important;
+}
+
+html[data-theme="dark"].seasonal-newYear,
+body[data-theme="dark"].seasonal-newYear,
+html body[data-theme="dark"].seasonal-newYear,
+body.seasonal-newYear[data-theme="dark"] {
+  background: #1a0f1f !important;
+  background-color: #1a0f1f !important;
+}
+
+html[data-theme="dark"].seasonal-ocean,
+body[data-theme="dark"].seasonal-ocean,
+html body[data-theme="dark"].seasonal-ocean,
+body.seasonal-ocean[data-theme="dark"] {
+  background: #0f1a1f !important;
+  background-color: #0f1a1f !important;
+}
+
+html[data-theme="dark"].seasonal-sunset,
+body[data-theme="dark"].seasonal-sunset,
+html body[data-theme="dark"].seasonal-sunset,
+body.seasonal-sunset[data-theme="dark"] {
+  background: #1f150f !important;
+  background-color: #1f150f !important;
+}
+
+/* Apply seasonal accents to buttons and interactive elements */
+.seasonal-christmas .hover-glow:hover::before,
+.seasonal-halloween .hover-glow:hover::before,
+.seasonal-easter .hover-glow:hover::before,
+.seasonal-summer .hover-glow:hover::before,
+.seasonal-spring .hover-glow:hover::before,
+.seasonal-fall .hover-glow:hover::before,
+.seasonal-winter .hover-glow:hover::before,
+.seasonal-valentine .hover-glow:hover::before,
+.seasonal-stPatricks .hover-glow:hover::before,
+.seasonal-thanksgiving .hover-glow:hover::before,
+.seasonal-newYear .hover-glow:hover::before,
+.seasonal-ocean .hover-glow:hover::before,
+.seasonal-sunset .hover-glow:hover::before {
+  background: var(--seasonal-accent) !important;
+  opacity: 0.2;
+}
+
+/* Make cards and panels pick up seasonal colors */
+.seasonal-christmas .glass,
+.seasonal-halloween .glass,
+.seasonal-easter .glass,
+.seasonal-summer .glass,
+.seasonal-spring .glass,
+.seasonal-fall .glass,
+.seasonal-winter .glass,
+.seasonal-valentine .glass,
+.seasonal-stPatricks .glass,
+.seasonal-thanksgiving .glass,
+.seasonal-newYear .glass,
+.seasonal-ocean .glass,
+.seasonal-sunset .glass {
+  border-color: var(--seasonal-accent) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--seasonal-accent) !important;
+}
+
+/* Add subtle seasonal tint to card backgrounds */
+.seasonal-christmas .glass:not(header),
+.seasonal-halloween .glass:not(header),
+.seasonal-easter .glass:not(header),
+.seasonal-summer .glass:not(header),
+.seasonal-spring .glass:not(header),
+.seasonal-fall .glass:not(header),
+.seasonal-winter .glass:not(header),
+.seasonal-valentine .glass:not(header),
+.seasonal-stPatricks .glass:not(header),
+.seasonal-thanksgiving .glass:not(header),
+.seasonal-newYear .glass:not(header),
+.seasonal-ocean .glass:not(header),
+.seasonal-sunset .glass:not(header) {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)) !important;
+  background-blend-mode: overlay;
+}
+
+/* Style primary buttons with seasonal colors */
+.seasonal-christmas button[class*="gradient"],
+.seasonal-halloween button[class*="gradient"],
+.seasonal-easter button[class*="gradient"],
+.seasonal-summer button[class*="gradient"],
+.seasonal-spring button[class*="gradient"],
+.seasonal-fall button[class*="gradient"],
+.seasonal-winter button[class*="gradient"],
+.seasonal-valentine button[class*="gradient"],
+.seasonal-stPatricks button[class*="gradient"],
+.seasonal-thanksgiving button[class*="gradient"],
+.seasonal-newYear button[class*="gradient"],
+.seasonal-ocean button[class*="gradient"],
+.seasonal-sunset button[class*="gradient"] {
+  background: var(--seasonal-gradient) !important;
+}
+
+/* Add seasonal accent to borders and highlights */
+.seasonal-christmas [data-selected="true"],
+.seasonal-halloween [data-selected="true"],
+.seasonal-easter [data-selected="true"],
+.seasonal-summer [data-selected="true"],
+.seasonal-spring [data-selected="true"],
+.seasonal-fall [data-selected="true"],
+.seasonal-winter [data-selected="true"],
+.seasonal-valentine [data-selected="true"],
+.seasonal-stPatricks [data-selected="true"],
+.seasonal-thanksgiving [data-selected="true"],
+.seasonal-newYear [data-selected="true"],
+.seasonal-ocean [data-selected="true"],
+.seasonal-sunset [data-selected="true"] {
+  border-color: var(--seasonal-accent) !important;
+  box-shadow: 0 0 0 2px var(--seasonal-accent) !important;
+}
