@@ -3,20 +3,102 @@
 
 class ApiClient {
     constructor() {
-        // Prefer the initialized client; fallback to legacy global if present
-        this.supabase = window.supabaseClient || window.supabase;
         this.currentUser = null;
         this.familySettings = null;
+        this._initRetries = 0;
+        this._maxRetries = 50; // 5 seconds max wait (50 * 100ms)
         
+        // Try to get Supabase client, with retry logic
+        this._initializeSupabase();
+    }
+    
+    _initializeSupabase() {
+        // Check if user had rememberMe preference from previous session
+        const rememberMe = localStorage.getItem('chorestar_remember_me') === 'true' ||
+                          sessionStorage.getItem('chorestar_remember_me') === 'true';
+
+        // If we have a rememberMe preference and the helper function exists, recreate with correct storage
+        if (rememberMe && window.createSupabaseClient) {
+            const storageType = rememberMe ? 'local' : 'session';
+            this.supabase = window.createSupabaseClient(storageType);
+            window.supabaseClient = this.supabase;
+        } else {
+            // Prefer the initialized client; fallback to legacy global if present
+            this.supabase = window.supabaseClient || window.supabase;
+        }
+
+        // If not available, retry a few times
+        if (!this.supabase && this._initRetries < this._maxRetries) {
+            this._initRetries++;
+            setTimeout(() => this._initializeSupabase(), 100);
+            return;
+        }
+
         // Check if Supabase is properly initialized
         if (!this.supabase) {
-            console.error('❌ Supabase client not initialized. Check supabase-config.js');
+            console.error('❌ Supabase client not initialized after retries. Check supabase-config.js');
+        } else if (this._initRetries > 0) {
+            console.log('✅ Supabase client initialized after retry');
         }
+    }
+    
+    // Get Supabase client, ensuring it's initialized
+    _getSupabase() {
+        // Re-check if client is now available
+        if (!this.supabase) {
+            this.supabase = window.supabaseClient || window.supabase;
+        }
+        return this.supabase;
+    }
+    
+    // Helper to get session data from sessionStorage (preferred) or localStorage (backward compatibility)
+    getSessionStorage(key) {
+        // Try sessionStorage first (more secure)
+        const sessionValue = sessionStorage.getItem(key);
+        if (sessionValue) return sessionValue;
+        
+        // Fallback to localStorage for backward compatibility
+        const localValue = localStorage.getItem(key);
+        if (localValue) {
+            // Migrate to sessionStorage
+            sessionStorage.setItem(key, localValue);
+            localStorage.removeItem(key);
+            return localValue;
+        }
+        
+        return null;
+    }
+    
+    // Helper to set session data in sessionStorage
+    setSessionStorage(key, value) {
+        sessionStorage.setItem(key, value);
+        // Remove from localStorage if it exists (migration)
+        if (localStorage.getItem(key)) {
+            localStorage.removeItem(key);
+        }
+    }
+    
+    // Helper to remove session data from both storages
+    removeSessionStorage(key) {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
     }
 
     // Authentication Methods
     async signUp(email, password, familyName) {
         try {
+            // Ensure Supabase client is available
+            const supabase = this._getSupabase();
+            if (!supabase || !supabase.auth) {
+                // Try one more time to initialize
+                this._initializeSupabase();
+                const retrySupabase = this._getSupabase();
+                if (!retrySupabase || !retrySupabase.auth) {
+                    throw new Error('Supabase client not properly initialized. Please refresh the page and try again.');
+                }
+                this.supabase = retrySupabase;
+            }
+            
             const { data, error } = await this.supabase.auth.signUp({
                 email,
                 password,
@@ -45,14 +127,28 @@ class ApiClient {
         }
     }
 
-    async signIn(email, password) {
+    async signIn(email, password, rememberMe = false) {
         try {
-            
-            // Check if Supabase is available
-            if (!this.supabase || !this.supabase.auth) {
-                throw new Error('Supabase client not properly initialized. Please refresh the page and try again.');
+            // Recreate Supabase client with appropriate storage based on rememberMe
+            const storageType = rememberMe ? 'local' : 'session';
+
+            if (window.createSupabaseClient) {
+                this.supabase = window.createSupabaseClient(storageType);
+                // Also update global reference
+                window.supabaseClient = this.supabase;
+            } else {
+                // Fallback to existing client
+                const supabase = this._getSupabase();
+                if (!supabase || !supabase.auth) {
+                    this._initializeSupabase();
+                    const retrySupabase = this._getSupabase();
+                    if (!retrySupabase || !retrySupabase.auth) {
+                        throw new Error('Supabase client not properly initialized. Please refresh the page and try again.');
+                    }
+                    this.supabase = retrySupabase;
+                }
             }
-            
+
             const { data, error } = await this.supabase.auth.signInWithPassword({
                 email,
                 password
@@ -61,7 +157,12 @@ class ApiClient {
             if (error) throw error;
 
             this.currentUser = data.user;
-            return { success: true, user: data.user, session: data.session };
+
+            // Store the rememberMe preference for future reference
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem('chorestar_remember_me', rememberMe.toString());
+
+            return { success: true, user: data.user, session: data.session, rememberMe };
         } catch (error) {
             console.error('Sign in error:', error);
             return { success: false, error: error.message };
@@ -72,10 +173,14 @@ class ApiClient {
         try {
             const { error } = await this.supabase.auth.signOut();
             if (error) throw error;
-            
-            // Clear PIN session as well
-            localStorage.removeItem('chorestar_pin_session');
-            
+
+            // Clear PIN session from both storages
+            this.removeSessionStorage('chorestar_pin_session');
+
+            // Clear rememberMe preference from both storages
+            localStorage.removeItem('chorestar_remember_me');
+            sessionStorage.removeItem('chorestar_remember_me');
+
             this.currentUser = null;
             this.familySettings = null;
             return { success: true };
@@ -213,7 +318,7 @@ class ApiClient {
             
             
             // Check if we're in a PIN session
-            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            const pinSessionStr = this.getSessionStorage('chorestar_pin_session');
             if (pinSessionStr) {
                 const pinSession = JSON.parse(pinSessionStr);
                 if (pinSession.userId) {
@@ -318,7 +423,7 @@ class ApiClient {
             }
             
             // Check if we're in a PIN session
-            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            const pinSessionStr = this.getSessionStorage('chorestar_pin_session');
             let userId = this.currentUser.id;
             
             if (pinSessionStr) {
@@ -418,7 +523,7 @@ class ApiClient {
             }
 
             // Check if we're in a PIN session
-            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            const pinSessionStr = this.getSessionStorage('chorestar_pin_session');
             let userId = this.currentUser.id;
             
             if (pinSessionStr) {
@@ -527,7 +632,7 @@ class ApiClient {
     async getFamilySettings() {
         try {
             // Check if we're in a PIN session
-            const pinSessionStr = localStorage.getItem('chorestar_pin_session');
+            const pinSessionStr = this.getSessionStorage('chorestar_pin_session');
             let userId = this.currentUser.id;
             
             if (pinSessionStr) {

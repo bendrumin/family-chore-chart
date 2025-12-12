@@ -10,34 +10,65 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/health",
-      "dest": "/frontend/api/health.js"
+      "source": "/api/health",
+      "destination": "/frontend/api/health.js"
     },
     {
-      "src": "/api/send-contact-email",
-      "dest": "/frontend/api/send-contact-email.js"
+      "source": "/api/send-contact-email",
+      "destination": "/frontend/api/send-contact-email.js"
     },
     {
-      "src": "/api/create-paypal-checkout",
-      "dest": "/frontend/api/create-paypal-checkout.js"
+      "source": "/api/create-paypal-checkout",
+      "destination": "/frontend/api/create-paypal-checkout.js"
     },
     {
-      "src": "/api/paypal-webhook",
-      "dest": "/frontend/api/paypal-webhook.js"
+      "source": "/api/paypal-webhook",
+      "destination": "/frontend/api/paypal-webhook.js"
     },
     {
-      "src": "/api/test-webhook",
-      "dest": "/frontend/api/test-webhook.js"
+      "source": "/api/test-webhook",
+      "destination": "/frontend/api/test-webhook.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/frontend/api/$1.js"
+      "source": "/api/(.*)",
+      "destination": "/frontend/api/$1.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://api.dicebear.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.dicebear.com https://www.googletagmanager.com https://www.google-analytics.com; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none';"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=()"
+        }
+      ]
     }
   ]
 } 

@@ -115,6 +115,19 @@ class FamilyChoreChart {
         this.achievementBadges = this.initializeAchievementBadges();
         this.unlockedBadges = new Set();
         this.aiSuggestions = this.initializeAISuggestions();
+        this.avatarSeedPool = [
+            'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan',
+            'Isabella', 'William', 'Charlotte', 'James', 'Amelia', 'Benjamin', 'Harper', 'Evelyn', 'Henry',
+            'Abigail', 'Alexander', 'Emily', 'Michael', 'Elizabeth', 'Daniel', 'Sofia', 'Matthew', 'Avery', 'Jackson',
+            'Aurora', 'Finn', 'Sky', 'River', 'Phoenix', 'Nova', 'Atlas', 'Willow', 'Zara', 'Kai',
+            'Luna', 'Orion', 'Jasper', 'Hazel', 'Milo', 'Sienna', 'Aria', 'Leo', 'Ivy', 'Rowan',
+            'Ember', 'Sage', 'Poppy', 'Zane', 'Iris', 'Theo'
+        ];
+        this.avatarPickerConfigs = [
+            { type: 'robot', label: 'Robot', baseUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=' },
+            { type: 'adventurer', label: 'Adventurer', baseUrl: 'https://api.dicebear.com/9.x/adventurer/svg?seed=' },
+            { type: 'emoji', label: 'Fun Emoji', baseUrl: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=' }
+        ];
         this.currentOnboardingStep = 1;
         
         // Mobile-specific helpers
@@ -1233,11 +1246,17 @@ class FamilyChoreChart {
         const btn = document.querySelector('#login-form button[type="submit"]');
         const email = document.getElementById('login-email')?.value?.trim() || '';
         const password = document.getElementById('login-password')?.value || '';
-        const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : true;
+        const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : false;
 
         // Basic front-end validation to fail fast (also prevents a stuck spinner)
         if (!email || !password) {
             this.showToast('Please enter your email and password.', 'error');
+            return;
+        }
+
+        // Validate email format
+        if (!this.validateEmail(email)) {
+            this.showToast('Please enter a valid email address', 'error');
             return;
         }
 
@@ -1246,23 +1265,17 @@ class FamilyChoreChart {
 
         this.setButtonLoading(btn, true);
         try {
-            const result = await this.apiClient.signIn(email, password);
-            
+            // Pass rememberMe preference to signIn
+            const result = await this.apiClient.signIn(email, password, rememberMe);
+
             if (result.success) {
                 this.currentUser = result.user;
                 analyticsSafeCall('trackLogin', email);
-                // Store session based on Remember Me
-                if (result.session) {
-                    const sessionStr = JSON.stringify(result.session);
-                    if (rememberMe) {
-                        localStorage.setItem('chorestar_session', sessionStr);
-                        sessionStorage.removeItem('chorestar_session');
-                    } else {
-                        sessionStorage.setItem('chorestar_session', sessionStr);
-                        localStorage.removeItem('chorestar_session');
-                    }
-                }
-                
+
+                // Session is now stored by Supabase in the appropriate storage
+                // (localStorage if rememberMe is true, sessionStorage if false)
+                console.log(`✅ Logged in with rememberMe: ${rememberMe}`);
+
                 // Load the app, but ensure we handle any errors
                 try {
                     await this.loadApp();
@@ -1291,7 +1304,7 @@ class FamilyChoreChart {
     async handleSignup() {
         const btn = document.querySelector('#signup-form button[type="submit"]');
         const email = document.getElementById('signup-email')?.value?.trim() || '';
-        const familyName = document.getElementById('signup-family-name')?.value?.trim() || '';
+        const familyName = this.sanitizeInput(document.getElementById('signup-family-name')?.value || '', 100);
         const password = document.getElementById('signup-password')?.value || '';
         const confirmPassword = document.getElementById('signup-confirm-password')?.value || '';
 
@@ -1300,14 +1313,22 @@ class FamilyChoreChart {
             this.showToast('Please fill in all required fields', 'error');
             return;
         }
+        
+        // Validate email format
+        if (!this.validateEmail(email)) {
+            this.showToast('Please enter a valid email address', 'error');
+            return;
+        }
 
         if (password !== confirmPassword) {
             this.showToast('Passwords do not match', 'error');
             return;
         }
 
-        if (password.length < 6) {
-            this.showToast('Password must be at least 6 characters', 'error');
+        // Enhanced password validation
+        const passwordValidation = this.validatePassword(password);
+        if (!passwordValidation.valid) {
+            this.showToast(passwordValidation.error, 'error');
             return;
         }
 
@@ -1463,6 +1484,22 @@ class FamilyChoreChart {
                 if (childId) {
                     this.showAISuggestionsModal(childId);
                 }
+                return;
+            }
+
+            const mobileSettingsBtn = e.target.closest('.mobile-settings-btn');
+            if (mobileSettingsBtn) {
+                e.preventDefault();
+                const childId = mobileSettingsBtn.getAttribute('data-child-id');
+                if (childId) {
+                    const child = this.children.find(c => String(c.id) === String(childId));
+                    if (child) {
+                        this.openEditChildModal(child);
+                    } else {
+                        this.showToast('Child not found', 'error');
+                    }
+                }
+                return;
             }
         });
         
@@ -1884,6 +1921,24 @@ class FamilyChoreChart {
         // Set the child ID for the form
         editForm.dataset.childId = child.id;
         
+        const previewCircle = document.getElementById('edit-child-avatar-preview-circle');
+        if (previewCircle) {
+            previewCircle.innerHTML = '';
+            previewCircle.style.backgroundColor = colorInput.value || '#6366f1';
+            delete previewCircle.dataset.avatarUrl;
+            delete previewCircle.dataset.avatarFile;
+
+            if (child.avatar_url) {
+                previewCircle.innerHTML = `<img src="${child.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                previewCircle.dataset.avatarUrl = child.avatar_url;
+            } else if (child.avatar_file) {
+                previewCircle.innerHTML = `<img src="${child.avatar_file}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                previewCircle.dataset.avatarFile = child.avatar_file;
+            } else {
+                previewCircle.textContent = this.getAvatarInitial(child.name, 'A');
+            }
+        }
+        
         // Update avatar preview
         this.updateEditChildAvatarPreview2();
         
@@ -1895,6 +1950,310 @@ class FamilyChoreChart {
     }
 
 
+
+    // Inline avatar picker helpers
+    getAvatarInitial(name, fallback = 'A') {
+        if (!name) return fallback;
+        const trimmed = name.trim();
+        return trimmed ? trimmed.charAt(0).toUpperCase() : fallback;
+    }
+
+    shuffleArray(items = []) {
+        const array = Array.isArray(items) ? [...items] : [];
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    getRandomAvatarSeeds(count = 6) {
+        if (!Array.isArray(this.avatarSeedPool) || this.avatarSeedPool.length === 0) {
+            return [];
+        }
+        return this.shuffleArray(this.avatarSeedPool).slice(0, count);
+    }
+
+    generateInlineAvatarOptions(countPerType = 4) {
+        if (!Array.isArray(this.avatarPickerConfigs) || this.avatarPickerConfigs.length === 0) {
+            return [];
+        }
+
+        const options = [];
+
+        this.avatarPickerConfigs.forEach(config => {
+            const seeds = this.getRandomAvatarSeeds(countPerType);
+            seeds.forEach(seed => {
+                const url = `${config.baseUrl}${encodeURIComponent(seed)}`;
+                options.push({
+                    type: config.type,
+                    seed,
+                    label: `${config.label} ${seed}`,
+                    url
+                });
+            });
+        });
+
+        return this.shuffleArray(options);
+    }
+
+    detectAvatarTypeFromUrl(url = '') {
+        if (!url) return 'avatar';
+        const lower = url.toLowerCase();
+        if (lower.includes('bottts')) return 'robot';
+        if (lower.includes('adventurer')) return 'adventurer';
+        if (lower.includes('fun-emoji')) return 'emoji';
+        if (lower.includes('avataaars')) return 'avatar';
+        return 'avatar';
+    }
+
+    getCurrentAvatarSelection(context) {
+        const nullSelection = null;
+        try {
+            if (context === 'add') {
+                const preview = document.getElementById('add-child-avatar-preview-circle');
+                if (!preview) return nullSelection;
+                if (preview.dataset.avatarUrl) {
+                    return {
+                        url: preview.dataset.avatarUrl,
+                        type: this.detectAvatarTypeFromUrl(preview.dataset.avatarUrl),
+                        label: 'Current Avatar',
+                        seed: 'Current',
+                        isCurrent: true
+                    };
+                }
+                if (preview.dataset.avatarFile) {
+                    return {
+                        url: preview.dataset.avatarFile,
+                        type: 'custom-file',
+                        label: 'Uploaded Avatar',
+                        seed: 'Upload',
+                        isCurrent: true
+                    };
+                }
+                return nullSelection;
+            }
+
+            if (context === 'edit') {
+                const preview = document.getElementById('edit-child-avatar-preview-circle');
+                if (!preview) return nullSelection;
+                if (preview.dataset.avatarUrl) {
+                    return {
+                        url: preview.dataset.avatarUrl,
+                        type: this.detectAvatarTypeFromUrl(preview.dataset.avatarUrl),
+                        label: 'Current Avatar',
+                        seed: 'Current',
+                        isCurrent: true
+                    };
+                }
+                if (preview.dataset.avatarFile) {
+                    return {
+                        url: preview.dataset.avatarFile,
+                        type: 'custom-file',
+                        label: 'Uploaded Avatar',
+                        seed: 'Upload',
+                        isCurrent: true
+                    };
+                }
+                return nullSelection;
+            }
+
+            if (context === 'page-edit') {
+                const form = document.getElementById('page-edit-child-form');
+                const preview = document.getElementById('page-edit-child-avatar-preview-circle');
+                const avatarUrl = (form && form.dataset.avatarUrl) || (preview && preview.dataset.avatarUrl);
+                const avatarFile = (form && form.dataset.avatarFile) || (preview && preview.dataset.avatarFile);
+                if (avatarUrl) {
+                    return {
+                        url: avatarUrl,
+                        type: this.detectAvatarTypeFromUrl(avatarUrl),
+                        label: 'Current Avatar',
+                        seed: 'Current',
+                        isCurrent: true
+                    };
+                }
+                if (avatarFile) {
+                    return {
+                        url: avatarFile,
+                        type: 'custom-file',
+                        label: 'Uploaded Avatar',
+                        seed: 'Upload',
+                        isCurrent: true
+                    };
+                }
+                return nullSelection;
+            }
+        } catch (error) {
+            console.warn('Error getting current avatar selection', error);
+        }
+        return nullSelection;
+    }
+
+    renderInlineAvatarOptions(gridId, context) {
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
+
+        const currentSelection = this.getCurrentAvatarSelection(context);
+        const options = this.generateInlineAvatarOptions();
+
+        if (currentSelection && currentSelection.url) {
+            const alreadyIncluded = options.some(option => option.url === currentSelection.url);
+            if (!alreadyIncluded) {
+                options.unshift(currentSelection);
+            }
+        }
+
+        grid.innerHTML = '';
+
+        options.forEach(option => {
+            if (!option || !option.url) return;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.avatarUrl = option.url;
+            button.dataset.avatarType = option.type || 'avatar';
+            button.dataset.avatarSeed = option.seed || '';
+            button.setAttribute('aria-label', `Select ${option.label || 'avatar'}`);
+            if (option.isCurrent) {
+                button.dataset.current = 'true';
+            }
+
+            if (currentSelection && currentSelection.url === option.url) {
+                button.classList.add('selected');
+            }
+
+            button.innerHTML = `<img src="${option.url}" alt="${option.label || 'Avatar'}" loading="lazy">`;
+
+            button.addEventListener('click', () => {
+                grid.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                this.handleInlineAvatarSelection(context, option);
+            });
+
+            grid.appendChild(button);
+        });
+    }
+
+    handleInlineAvatarSelection(context, option) {
+        if (!option) return;
+        const iconUrl = option.url;
+        const iconType = option.type || this.detectAvatarTypeFromUrl(iconUrl);
+
+        if (context === 'add') {
+            this.handleAddChildIconSelect(iconUrl, iconType);
+        } else if (context === 'edit') {
+            this.handleEditChildIconSelect(iconUrl, iconType);
+        } else if (context === 'page-edit') {
+            this.handlePageEditChildIconSelect(iconUrl, iconType);
+        }
+    }
+
+    configureInlineAvatarPicker({ context, gridId, refreshBtnId, removeBtnId, onRemove }) {
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
+
+        if (!grid.dataset.inlinePickerReady) {
+            grid.dataset.inlinePickerReady = 'true';
+        }
+
+        if (refreshBtnId) {
+            const refreshBtn = document.getElementById(refreshBtnId);
+            if (refreshBtn && !refreshBtn.dataset.inlinePickerReady) {
+                refreshBtn.addEventListener('click', () => {
+                    this.renderInlineAvatarOptions(gridId, context);
+                });
+                refreshBtn.dataset.inlinePickerReady = 'true';
+            }
+        }
+
+        if (removeBtnId) {
+            const removeBtn = document.getElementById(removeBtnId);
+            if (removeBtn && !removeBtn.dataset.inlinePickerReady) {
+                removeBtn.addEventListener('click', () => {
+                    if (typeof onRemove === 'function') {
+                        onRemove();
+                    }
+                    grid.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                });
+                removeBtn.dataset.inlinePickerReady = 'true';
+            }
+        }
+
+        this.renderInlineAvatarOptions(gridId, context);
+    }
+
+    setupAddChildAvatarPicker() {
+        this.configureInlineAvatarPicker({
+            context: 'add',
+            gridId: 'add-child-avatar-picker',
+            refreshBtnId: 'add-avatar-refresh-btn',
+            removeBtnId: 'add-avatar-remove-btn',
+            onRemove: () => {
+                const preview = document.getElementById('add-child-avatar-preview-circle');
+                if (preview) {
+                    const nameInput = document.getElementById('child-name');
+                    const colorInput = document.getElementById('child-color');
+                    preview.innerHTML = '';
+                    preview.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
+                    if (colorInput) {
+                        preview.style.backgroundColor = colorInput.value;
+                    }
+                    delete preview.dataset.avatarUrl;
+                    delete preview.dataset.avatarFile;
+                }
+            }
+        });
+    }
+
+    setupEditChildAvatarPicker() {
+        this.configureInlineAvatarPicker({
+            context: 'edit',
+            gridId: 'edit-child-avatar-picker',
+            refreshBtnId: 'edit-avatar-refresh-btn',
+            removeBtnId: 'edit-avatar-remove-btn',
+            onRemove: () => {
+                const preview = document.getElementById('edit-child-avatar-preview-circle');
+                if (preview) {
+                    const nameInput = document.getElementById('edit-child-name');
+                    const colorInput = document.getElementById('edit-child-color');
+                    preview.innerHTML = '';
+                    preview.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
+                    if (colorInput) {
+                        preview.style.backgroundColor = colorInput.value;
+                    }
+                    delete preview.dataset.avatarUrl;
+                    delete preview.dataset.avatarFile;
+                }
+            }
+        });
+    }
+
+    setupPageEditAvatarPicker() {
+        this.configureInlineAvatarPicker({
+            context: 'page-edit',
+            gridId: 'page-edit-avatar-picker',
+            refreshBtnId: 'page-edit-avatar-refresh-btn',
+            removeBtnId: 'page-edit-avatar-remove-btn',
+            onRemove: () => {
+                const preview = document.getElementById('page-edit-child-avatar-preview-circle');
+                const form = document.getElementById('page-edit-child-form');
+                const nameInput = document.getElementById('page-edit-child-name');
+                const colorInput = document.getElementById('page-edit-child-color');
+                if (preview) {
+                    preview.innerHTML = '';
+                    preview.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
+                    if (colorInput) {
+                        preview.style.background = colorInput.value;
+                    }
+                    delete preview.dataset.avatarUrl;
+                    delete preview.dataset.avatarFile;
+                }
+                if (form) {
+                    form.dataset.avatarUrl = '';
+                    form.dataset.avatarFile = '';
+                }
+            }
+        });
+    }
 
     // Edit Children Page functionality
     openEditChildrenPage() {
@@ -1926,14 +2285,17 @@ class FamilyChoreChart {
 
     // Icon Picker Methods
     openIconPicker(currentIcon = '', callback = null, defaultTab = 'robots') {
+        console.groupCollapsed('%c[IconPicker] openIconPicker called', 'color:#6366f1;font-weight:bold;', { currentIcon, defaultTab, hasCallback: !!callback });
         this.iconPickerCallback = callback;
         this.currentSelectedIcon = currentIcon;
+        console.log('[IconPicker] Stored callback?', !!this.iconPickerCallback, 'currentSelectedIcon:', this.currentSelectedIcon);
         
         // Populate all icon types
         this.populateRobotIcons();
         this.populateAdventurerIcons();
         this.populateEmojiIcons();
         this.populateChoreEmojiIcons();
+        console.log('[IconPicker] Populated icon grids');
         
         // Set up tab switching
         this.setupIconPickerTabs();
@@ -1949,6 +2311,7 @@ class FamilyChoreChart {
             const targetContent = document.getElementById(`${defaultTab}-tab`);
             if (targetTab) targetTab.classList.add('active');
             if (targetContent) targetContent.classList.add('active');
+            console.log('[IconPicker] Default tab activated', defaultTab);
         }
         
         // Show the modal
@@ -1959,13 +2322,20 @@ class FamilyChoreChart {
             // Ensure icons are populated after modal is shown
             setTimeout(() => {
                 this.ensureIconPickerModalReady();
+                console.log('[IconPicker] Modal ready');
+                console.groupEnd();
             }, 50);
+        } else {
+            console.warn('[IconPicker] icon-picker-modal not found in DOM');
+            this.showToast('Icon picker not available. Please refresh the page.', 'error');
+            console.groupEnd();
         }
     }
 
     // openChoreIconPicker removed - now using dropdown select instead
 
     closeIconPicker() {
+        console.debug('[IconPicker] Closing picker');
         // Simply hide the icon picker - hideModal will check for other open modals
         this.iconPickerCallback = null;
         this.currentSelectedIcon = '';
@@ -2172,6 +2542,7 @@ class FamilyChoreChart {
     }
 
     selectIcon(iconUrl, iconType) {
+        console.info('[IconPicker] Icon selected', { iconUrl, iconType });
         // Store the selection
         this.currentSelectedIcon = iconUrl;
         
@@ -2199,6 +2570,7 @@ class FamilyChoreChart {
 
     // Icon picker callback handlers
     handleAddChildIconSelect(iconUrl, iconType) {
+        console.info('[IconPicker] handleAddChildIconSelect', { iconUrl, iconType });
         const mainCircle = document.getElementById('add-child-avatar-preview-circle');
         
         if (!mainCircle) return;
@@ -2211,6 +2583,7 @@ class FamilyChoreChart {
             // Put the icon directly in the main avatar circle
             mainCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             mainCircle.dataset.avatarUrl = iconUrl;
+            delete mainCircle.dataset.avatarFile;
         }
 
         // Update the preview circle
@@ -2226,11 +2599,17 @@ class FamilyChoreChart {
         // Update the background color of the preview circle
         const selectedColor = colorInput.value;
         mainCircle.style.backgroundColor = selectedColor;
-        
-        // If there's an avatar image, make sure it's displayed
+
         const avatarUrl = mainCircle.dataset.avatarUrl;
-        if (avatarUrl && !mainCircle.querySelector('img')) {
-            mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        const avatarFile = mainCircle.dataset.avatarFile;
+        const imageSrc = avatarUrl || avatarFile || '';
+
+        if (imageSrc) {
+            mainCircle.innerHTML = `<img src="${imageSrc}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        } else {
+            mainCircle.innerHTML = '';
+            const nameInput = document.getElementById('child-name');
+            mainCircle.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
         }
     }
 
@@ -2242,10 +2621,17 @@ class FamilyChoreChart {
 
         const selectedColor = colorInput.value;
         mainCircle.style.backgroundColor = selectedColor;
-        
+
         const avatarUrl = mainCircle.dataset.avatarUrl;
-        if (avatarUrl && !mainCircle.querySelector('img')) {
-            mainCircle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        const avatarFile = mainCircle.dataset.avatarFile;
+        const imageSrc = avatarUrl || avatarFile || '';
+
+        if (imageSrc) {
+            mainCircle.innerHTML = `<img src="${imageSrc}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        } else {
+            mainCircle.innerHTML = '';
+            const nameInput = document.getElementById('edit-child-name');
+            mainCircle.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
         }
     }
 
@@ -2279,9 +2665,21 @@ class FamilyChoreChart {
                 matchingPreset.classList.add('active');
             }
             
+            const avatarPreview = document.getElementById('add-child-avatar-preview-circle');
+            if (avatarPreview) {
+                const nameInput = document.getElementById('child-name');
+                avatarPreview.innerHTML = '';
+                avatarPreview.textContent = this.getAvatarInitial(nameInput ? nameInput.value : '', 'A');
+                avatarPreview.style.backgroundColor = currentColor;
+                delete avatarPreview.dataset.avatarUrl;
+                delete avatarPreview.dataset.avatarFile;
+            }
+            
             // Update avatar preview
             this.updateAddChildAvatarPreview();
         }
+        
+        this.setupAddChildAvatarPicker();
     }
 
     setupEditChildModal() {
@@ -2298,6 +2696,8 @@ class FamilyChoreChart {
             }
             this.updateEditChildAvatarPreview2();
         }
+        
+        this.setupEditChildAvatarPicker();
     }
 
     handleEditChildIconSelect(iconUrl, iconType) {
@@ -2313,6 +2713,7 @@ class FamilyChoreChart {
             // Put the icon directly in the main avatar circle
             mainCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             mainCircle.dataset.avatarUrl = iconUrl;
+            delete mainCircle.dataset.avatarFile;
         }
 
         // Update the preview circle
@@ -2320,6 +2721,7 @@ class FamilyChoreChart {
     }
 
     handlePageEditChildIconSelect(iconUrl, iconType) {
+        console.info('[IconPicker] handlePageEditChildIconSelect', { iconUrl, iconType });
         const previewCircle = document.getElementById('page-edit-child-avatar-preview-circle');
         const form = document.getElementById('page-edit-child-form');
         
@@ -2332,9 +2734,11 @@ class FamilyChoreChart {
         if (iconType === 'robot' || iconType === 'adventurer' || iconType === 'emoji') {
             // Put the icon directly in the main avatar circle
             previewCircle.innerHTML = `<img src="${iconUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-            
+            previewCircle.dataset.avatarUrl = iconUrl;
+            delete previewCircle.dataset.avatarFile;
             // Store the icon URL in the form for submission
             form.dataset.avatarUrl = iconUrl;
+            form.dataset.avatarFile = '';
         }
     }
 
@@ -2347,7 +2751,7 @@ class FamilyChoreChart {
             return;
         }
 
-        const name = document.getElementById('page-edit-child-name').value.trim();
+        const name = this.sanitizeInput(document.getElementById('page-edit-child-name').value, 100);
         const age = parseInt(document.getElementById('page-edit-child-age').value);
         const avatarColor = document.getElementById('page-edit-child-color').value;
         const avatarUrl = form.dataset.avatarUrl || null;
@@ -2427,6 +2831,9 @@ class FamilyChoreChart {
         
         // Setup color presets
         this.setupPageEditChildColorPresets();
+
+        // Ensure inline avatar picker is available
+        this.setupPageEditAvatarPicker();
     }
 
     updatePageEditNavigation() {
@@ -2493,18 +2900,25 @@ class FamilyChoreChart {
             avatarPreviewCircle.innerHTML = `<img src="${child.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             form.dataset.avatarUrl = child.avatar_url;
             form.dataset.avatarFile = '';
+            avatarPreviewCircle.dataset.avatarUrl = child.avatar_url;
+            delete avatarPreviewCircle.dataset.avatarFile;
         } else if (child.avatar_file) {
             // Show the current avatar file in the main circle
             avatarPreviewCircle.innerHTML = `<img src="${child.avatar_file}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
             form.dataset.avatarUrl = '';
             form.dataset.avatarFile = child.avatar_file;
+            avatarPreviewCircle.dataset.avatarFile = child.avatar_file;
+            delete avatarPreviewCircle.dataset.avatarUrl;
         } else {
             // Show initial letter in circle
-            avatarPreviewCircle.textContent = child.name.charAt(0).toUpperCase();
-            avatarPreviewCircle.style.background = child.avatar_color || '#6366f1';
+            avatarPreviewCircle.textContent = this.getAvatarInitial(child.name, 'A');
             form.dataset.avatarUrl = '';
             form.dataset.avatarFile = '';
+            delete avatarPreviewCircle.dataset.avatarUrl;
+            delete avatarPreviewCircle.dataset.avatarFile;
         }
+        
+        avatarPreviewCircle.style.background = child.avatar_color || '#6366f1';
     }
 
     setupPageEditChildColorPresets() {
@@ -2842,12 +3256,28 @@ class FamilyChoreChart {
             this.cleanupModalFocusTrap(modal);
         }
         
-        // Only remove modal-open class if no other modals are open
-        // Check if any other modal is still visible (not hidden)
-        const otherModals = document.querySelectorAll('.modal:not(.hidden)');
-        if (otherModals.length === 0) {
-            // Re-enable body scroll when all modals are closed
-            document.body.classList.remove('modal-open');
+        const remainingOpenModals = Array.from(document.querySelectorAll('.modal:not(.hidden)'));
+        if (remainingOpenModals.length === 0) {
+            document.body.classList.remove('modal-open', 'page-modal-open');
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.documentElement.style.overflow = '';
+            
+            // Force reflow to apply style changes immediately
+            void document.body.offsetHeight;
+            
+            // Double-check after a short delay (iOS Safari quirks)
+            setTimeout(() => {
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
+            }, 50);
+        } else {
+            // Ensure modal-open class remains if another modal is still visible
+            document.body.classList.add('modal-open');
         }
         
         // Reset forms
@@ -3031,7 +3461,7 @@ class FamilyChoreChart {
             const ageInput = document.getElementById('child-age');
             const colorInput = document.getElementById('child-color');
             
-            const name = nameInput ? nameInput.value : '';
+            const name = nameInput ? this.sanitizeInput(nameInput.value, 100) : '';
             const age = ageInput ? parseInt(ageInput.value) : 0;
             const color = colorInput ? colorInput.value : '';
             let avatarUrl = '';
@@ -3084,6 +3514,19 @@ class FamilyChoreChart {
                 
                 // Now close modal and show success
                 this.hideModal('add-child-modal');
+                document.body.classList.remove('modal-open', 'page-modal-open');
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.documentElement.style.overflow = '';
+                void document.body.offsetHeight;
+                setTimeout(() => {
+                    document.body.style.overflow = '';
+                    document.documentElement.style.overflow = '';
+                    const newChildCard = document.querySelector(`.child-card[data-child-id="${result.child.id}"], .child-content[data-child-id="${result.child.id}"]`);
+                    if (newChildCard) {
+                        newChildCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 150);
                 this.showToast(`Added ${name} to your family!`, 'success');
             } else {
                 console.error('Failed to create child:', result.error);
@@ -3130,7 +3573,7 @@ class FamilyChoreChart {
         // First pass: collect all chores to add
         for (let i = 0; i < choreEntries.length; i++) {
             const entry = choreEntries[i];
-            const name = entry.querySelector(`#chore-name-${i + 1}`).value;
+            const name = this.sanitizeInput(entry.querySelector(`#chore-name-${i + 1}`).value, 100);
             
             // Get icon from select dropdown - use the actual selected value
             let icon = '📝'; // default
@@ -3143,7 +3586,7 @@ class FamilyChoreChart {
             }
             
             const category = entry.querySelector(`#chore-category-${i + 1}`)?.value || 'household_chores';
-            const notes = entry.querySelector(`#chore-notes-${i + 1}`)?.value || '';
+            const notes = this.sanitizeInput(entry.querySelector(`#chore-notes-${i + 1}`)?.value || '', 1000);
             let color = null;
             if (limits.isPremium) {
                 color = entry.querySelector(`#chore-color-${i + 1}`)?.value || null;
@@ -3636,15 +4079,15 @@ class FamilyChoreChart {
         
         // Generate tabs and content for each child
         this.children.forEach((child, index) => {
-            const childId = child.id;
-            const childChores = this.chores.filter(chore => chore.child_id === childId);
+            const childId = String(child.id);
+            const childChores = this.chores.filter(chore => String(chore.child_id) === childId);
             const tabIcon = child.avatar_color ? `🎨` : `👤`;
             
             // Create tab button
             const tabButton = document.createElement('button');
             tabButton.className = 'child-chore-tab';
             tabButton.dataset.childId = childId;
-            tabButton.innerHTML = `<span>${tabIcon}</span> ${child.name} (${childChores.length})`;
+            tabButton.innerHTML = `<span>${tabIcon}</span> ${this.escapeHtml(child.name)} (${childChores.length})`;
             choresTabsContainer.appendChild(tabButton);
             
             // Create tab content
@@ -3654,13 +4097,13 @@ class FamilyChoreChart {
             tabContent.innerHTML = `
                 <div class="chore-management">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-                        <h3>${child.name}'s Chores</h3>
+                        <h3>${this.escapeHtml(child.name)}'s Chores</h3>
                         <button class="btn btn-outline btn-sm bulk-edit-chores" data-child-id="${childId}">
                             <span>✏</span> Bulk Edit
                         </button>
                     </div>
-                    <div class="child-chores-list" id="child-${childId}-chores">
-                        ${this.generateChildChoresList(child, childChores)}
+                        <div class="child-chores-list" id="child-${childId}-chores">
+                        ${this.generateChildChoresList(child, childChores, childId)}
                     </div>
                 </div>
             `;
@@ -3674,7 +4117,7 @@ class FamilyChoreChart {
         
         // Set first child as active
         if (this.children.length > 0) {
-            this.switchChildChoreTab(this.children[0].id);
+            this.switchChildChoreTab(String(this.children[0].id));
         }
         
         // Add delete button handlers for the new content
@@ -3706,23 +4149,31 @@ class FamilyChoreChart {
         document.querySelectorAll('.child-chore-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector(`[data-child-id="${childId}"]`).classList.add('active');
+        const activeButton = document.querySelector(`[data-child-id="${childId}"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
         
         // Update content
         document.querySelectorAll('.child-chores-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(`child-${childId}-chores-content`).classList.add('active');
+        const activeContent = document.getElementById(`child-${childId}-chores-content`);
+        if (activeContent) {
+            activeContent.classList.add('active');
+        }
     }
 
-    generateChildChoresList(child, childChores) {
+    generateChildChoresList(child, childChores, childId) {
+        const safeChildId = String(childId);
         if (childChores.length === 0) {
+            const childNameEscaped = this.escapeHtml(child.name);
             return `
                 <div style="text-align:center;color:var(--gray-500);padding:2rem;">
                     <div class="empty-state-icon">🎯</div>
                     <h4 class="empty-state-title">No Activities Yet</h4>
-                    <p class="empty-state-description">${child.name} doesn't have any activities yet. Let's add some to get started!</p>
-                    <button class="btn btn-primary btn-lg" onclick="app.showModal('add-chore-modal'); document.getElementById('chore-child').value='${child.id}';">
+                    <p class="empty-state-description">${childNameEscaped} doesn't have any activities yet. Let's add some to get started!</p>
+                    <button class="btn btn-primary btn-lg add-first-activity-btn" data-child-id="${child.id}">
                         <span>✨</span> Add First Activity
                     </button>
                     <p class="empty-state-hint">💡 Try the Smart Suggestions button for personalized ideas!</p>
@@ -3732,11 +4183,13 @@ class FamilyChoreChart {
         
         let html = '';
         childChores.forEach(chore => {
+            const choreNameEscaped = this.escapeHtml(chore.name);
+            const choreNotesEscaped = this.escapeHtml(chore.notes || '');
             html += `
                 <div class="chore-item" data-chore-id="${chore.id}" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #f0f0f0;">
-                    <span>${chore.name}</span>
+                    <span>${choreNameEscaped}</span>
                     <div style="display:flex;gap:8px;">
-                        <button class="btn btn-outline btn-sm edit-chore-settings" data-chore-id="${chore.id}" data-chore-name="${chore.name}" data-chore-reward="${chore.reward_cents}" data-chore-frequency="${chore.frequency_days}" data-chore-notes="${chore.notes || ''}">✏️ Edit</button>
+                        <button class="btn btn-outline btn-sm edit-chore-settings" data-chore-id="${chore.id}" data-chore-name="${choreNameEscaped}" data-chore-reward="${chore.reward_cents}" data-chore-frequency="${chore.frequency_days}" data-chore-notes="${choreNotesEscaped}">✏️ Edit</button>
                         <button class="btn btn-danger btn-sm delete-chore" data-chore-id="${chore.id}">🗑️ Delete</button>
                     </div>
                 </div>
@@ -3753,22 +4206,22 @@ class FamilyChoreChart {
             <div class="quick-actions-section desktop-only" style="margin-top: var(--space-4); padding: var(--space-3); background: var(--gray-50); border-radius: var(--radius); border: 1px solid var(--gray-200);">
                 <h4 style="margin: 0 0 var(--space-2) 0; font-size: var(--font-size-sm); color: var(--gray-700);">⚡ Quick Actions</h4>
                 <div class="quick-actions-grid">
-                    <button type="button" class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-primary btn-sm mark-all-today-btn" data-child-id="${safeChildId}">
                         <span>✅</span> Mark All Today
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-outline btn-sm mark-all-week-btn" data-child-id="${safeChildId}">
                         <span>📅</span> Mark All Week
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${childId}">
+                    <button type="button" class="btn btn-outline btn-sm clear-all-today-btn" data-child-id="${safeChildId}">
                         <span>❌</span> Clear All Today
                     </button>
-                    <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${childId}">
+                    <button class="btn btn-outline btn-sm view-history-btn" data-child-id="${safeChildId}">
                         <span>📊</span> View History
                     </button>
-                    <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${childId}">
+                    <button class="btn btn-outline btn-sm challenges-btn" data-child-id="${safeChildId}">
                         <span>🎯</span> Challenges
                     </button>
-                    <button class="btn btn-outline btn-sm bulk-edit-btn" data-child-id="${childId}">
+                    <button class="btn btn-outline btn-sm bulk-edit-btn" data-child-id="${safeChildId}">
                         <span>✏️</span> Bulk Edit
                     </button>
                 </div>
@@ -3780,7 +4233,9 @@ class FamilyChoreChart {
     addDeleteChoreHandlers() {
         document.querySelectorAll('.delete-chore').forEach(btn => {
             btn.addEventListener('click', e => {
-                const choreId = e.target.dataset.choreId;
+                const targetBtn = e.currentTarget || e.target;
+                const choreId = targetBtn?.dataset?.choreId;
+                if (!choreId) return;
                 this.deleteChore(choreId);
                 setTimeout(() => {
                     this.loadChoresList();
@@ -3792,19 +4247,38 @@ class FamilyChoreChart {
         // Add edit chore handlers
         document.querySelectorAll('.edit-chore-settings').forEach(btn => {
             btn.addEventListener('click', e => {
-                const choreId = e.target.dataset.choreId;
-                const choreName = e.target.dataset.choreName;
-                const choreReward = e.target.dataset.choreReward;
-                const choreNotes = e.target.dataset.choreNotes;
+                const targetBtn = e.currentTarget || e.target;
+                const choreId = targetBtn?.dataset?.choreId;
+                if (!choreId) {
+                    this.showToast('Chore not found', 'error');
+                    return;
+                }
+                const choreName = targetBtn.dataset.choreName;
+                const choreReward = targetBtn.dataset.choreReward;
+                const choreNotes = targetBtn.dataset.choreNotes;
                 
                 this.openEditChoreModal(choreId, choreName, choreReward, choreNotes);
+            });
+        });
+
+        // Add handler for "Add First Activity" button
+        document.querySelectorAll('.add-first-activity-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const childId = btn.dataset.childId;
+                if (childId) {
+                    this.showModal('add-chore-modal');
+                    const childSelect = document.getElementById('chore-child');
+                    if (childSelect) {
+                        childSelect.value = childId;
+                    }
+                }
             });
         });
     }
 
     openEditChoreModal(choreId, choreName, choreReward, choreNotes) {
         // Find the chore to get the child ID
-        const chore = this.chores.find(c => c.id === choreId);
+        const chore = this.chores.find(c => String(c.id) === String(choreId));
         if (!chore) {
             this.showToast('Chore not found', 'error');
             return;
@@ -3846,13 +4320,13 @@ class FamilyChoreChart {
         this.populateEditChoreChildSelect(chore.child_id);
         
         // Store the chore ID for the save handler
-        document.getElementById('edit-chore-form').dataset.choreId = choreId;
+        document.getElementById('edit-chore-form').dataset.choreId = String(choreId);
         
         // Store the child ID to return to after save
-        document.getElementById('edit-chore-form').dataset.childId = chore.child_id;
+        document.getElementById('edit-chore-form').dataset.childId = String(chore.child_id);
         
         // Show and populate the chore reorder section
-        this.populateEditChoreReorderSection(chore.child_id);
+        this.populateEditChoreReorderSection(String(chore.child_id));
         
         // Show the modal
         this.showModal('edit-chore-modal');
@@ -3882,7 +4356,7 @@ class FamilyChoreChart {
 
     populateEditChoreChildSelect(selectedChildId) {
         const input = document.getElementById('edit-chore-child');
-        const child = this.children.find(c => c.id === selectedChildId);
+        const child = this.children.find(c => String(c.id) === String(selectedChildId));
         if (child) {
             input.value = child.name;
             } else {
@@ -4081,7 +4555,7 @@ class FamilyChoreChart {
             <div class="toast-content">
                 <div class="toast-message">
                     <div class="toast-title">${this.getToastTitle(type)}</div>
-                    <div class="toast-description">${message}</div>
+                    <div class="toast-description">${this.escapeHtml(message)}</div>
                 </div>
             </div>
             <button class="toast-close" aria-label="Close notification">
@@ -5168,9 +5642,9 @@ class FamilyChoreChart {
 
     async handleEditChore() {
         const choreId = document.getElementById('edit-chore-form').dataset.choreId;
-        const name = document.getElementById('edit-chore-name').value;
+        const name = this.sanitizeInput(document.getElementById('edit-chore-name').value, 100);
         const rewardCents = parseInt(document.getElementById('edit-chore-reward').value);
-        const notes = document.getElementById('edit-chore-notes').value;
+        const notes = this.sanitizeInput(document.getElementById('edit-chore-notes').value || '', 1000);
         const iconSelect = document.getElementById('edit-chore-icon-select');
         const icon = iconSelect ? iconSelect.value : '📝';
         const category = document.getElementById('edit-chore-category').value;
@@ -5428,7 +5902,7 @@ class FamilyChoreChart {
             <div class="child-header">
                 ${avatarHtml}
                 <div class="child-info">
-                    <h3>${child.name}</h3>
+                    <h3>${this.escapeHtml(child.name)}</h3>
                     <p>Age ${child.age}</p>
                     ${currentStreak > 0 ? `
                         <div class="streak-display">
@@ -5501,7 +5975,7 @@ class FamilyChoreChart {
                     <h3 style="margin: 0; font-size: 1.2rem;">${child.name}</h3>
                     <p style="margin: 0; color: var(--gray-600); font-size: var(--font-size-sm);">Age ${child.age}</p>
                 </div>
-                <button class="mobile-settings-btn" data-open-modal="settings-modal" type="button" aria-label="Family settings">
+                <button class="mobile-settings-btn" data-child-id="${child.id}" type="button" aria-label="Edit ${child.name}">
                     ⚙️
                 </button>
             </div>
@@ -5811,11 +6285,13 @@ class FamilyChoreChart {
                 const updatedCompletions = await this.apiClient.getChoreCompletions(weekStart);
                 this.completions = updatedCompletions;
                 this.updateProgressWithDOMForce(actualChildId);
+                await this.updateDashboardStats();
             } else {
                 this.revertMobileCardUpdate(cardEl, chore.id, day, wasCompleted);
                 this.updateProgressWithDOMForce(actualChildId);
                 this.playSound('error');
                 this.showToast('Failed to update chore. Please try again.', 'error');
+                await this.updateDashboardStats();
             }
         } catch (error) {
             console.error('Mobile toggle error:', error);
@@ -5823,6 +6299,7 @@ class FamilyChoreChart {
             this.updateProgressWithDOMForce(actualChildId);
             this.playSound('error');
             this.showToast('Connection error. Please try again.', 'error');
+            await this.updateDashboardStats();
         } finally {
             cardEl.dataset.processing = 'false';
         }
@@ -5934,6 +6411,58 @@ class FamilyChoreChart {
         }
     }
 
+    async updateDashboardStats() {
+        try {
+            if (!this.children || this.children.length === 0) {
+                return;
+            }
+
+            const familyMetrics = this.calculateFamilyMetrics();
+
+            const totalProgressEl = document.getElementById('family-total-progress');
+            const familyLeaderEl = document.getElementById('family-leader');
+            const familyStreakEl = document.getElementById('family-streak');
+            const familyEarningsEl = document.getElementById('family-earnings');
+
+            if (totalProgressEl) {
+                const currentValue = parseInt(totalProgressEl.textContent, 10) || 0;
+                this.animateCounter(totalProgressEl, currentValue, familyMetrics.averageProgress, '%', 400);
+            }
+
+            if (familyLeaderEl) {
+                const newLeader = familyMetrics.topPerformer || '-';
+                if (familyLeaderEl.textContent !== newLeader) {
+                    this.fadeInText(familyLeaderEl, newLeader);
+                }
+            }
+
+            if (familyStreakEl) {
+                const currentStreak = parseInt(familyStreakEl.textContent, 10) || 0;
+                if (currentStreak !== familyMetrics.familyStreak) {
+                    this.animateCounter(familyStreakEl, currentStreak, familyMetrics.familyStreak, '', 400);
+                }
+            }
+
+            if (familyEarningsEl) {
+                const currentValue = this.parseCents(familyEarningsEl.textContent) || 0;
+                if (currentValue !== familyMetrics.totalEarnings) {
+                    this.animateCounter(
+                        familyEarningsEl,
+                        currentValue,
+                        familyMetrics.totalEarnings,
+                        '',
+                        400,
+                        (val) => this.formatCents(val)
+                    );
+                }
+            }
+
+            await this.updateFamilyAchievements();
+        } catch (error) {
+            console.error('Error updating dashboard stats:', error);
+        }
+    }
+
     // Animated counter utility
     animateCounter(element, start, end, suffix = '', duration = 1000, formatter = null) {
         if (!element) return;
@@ -6036,6 +6565,50 @@ class FamilyChoreChart {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    // Validate password strength
+    validatePassword(password) {
+        if (!password || typeof password !== 'string') {
+            return { valid: false, error: 'Password is required' };
+        }
+        
+        if (password.length < 8) {
+            return { valid: false, error: 'Password must be at least 8 characters' };
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one uppercase letter' };
+        }
+        
+        if (!/[a-z]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one lowercase letter' };
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            return { valid: false, error: 'Password must contain at least one number' };
+        }
+        
+        return { valid: true };
+    }
+    
+    // Sanitize user input
+    sanitizeInput(input, maxLength = 255) {
+        if (typeof input !== 'string') return '';
+        return input
+            .trim()
+            .replace(/[<>]/g, '') // Remove HTML brackets
+            .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+            .substring(0, maxLength);
+    }
+    
+    // Validate email address
+    validateEmail(email) {
+        if (!email || typeof email !== 'string') return false;
+        if (email.length > 254) return false; // RFC 5321 limit
+        // More robust email regex
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        return emailRegex.test(email);
     }
     
     // Enhanced error handler with inline display
@@ -6158,10 +6731,10 @@ class FamilyChoreChart {
             
             const achievementsHtml = recentAchievements.map(achievement => `
                 <div class="achievement-item">
-                    <div class="achievement-icon">${achievement.badge_icon}</div>
+                    <div class="achievement-icon">${this.escapeHtml(achievement.badge_icon)}</div>
                     <div class="achievement-info">
-                        <div class="achievement-name">${achievement.badge_name}</div>
-                        <div class="achievement-description">${achievement.badge_description}</div>
+                        <div class="achievement-name">${this.escapeHtml(achievement.badge_name)}</div>
+                        <div class="achievement-description">${this.escapeHtml(achievement.badge_description)}</div>
                     </div>
                 </div>
             `).join('');
@@ -6682,7 +7255,7 @@ class FamilyChoreChart {
         if (dashboardActions) {
             const seasonalBtn = document.createElement('button');
             seasonalBtn.className = 'btn btn-outline btn-sm seasonal-suggestions-btn';
-            seasonalBtn.innerHTML = `${theme.icon} ${theme.name} Activities`;
+            seasonalBtn.innerHTML = `${theme.icon} ${this.escapeHtml(theme.name)} Activities`;
             seasonalBtn.onclick = () => this.showSeasonalActivityModal(theme);
             dashboardActions.appendChild(seasonalBtn);
         }
@@ -6696,18 +7269,21 @@ class FamilyChoreChart {
         modalContent.innerHTML = `
             <div class="seasonal-chore-modal">
                 <div class="seasonal-header">
-                    <h2>${theme.icon} ${theme.name} Activity Suggestions</h2>
-                    <p>Add these seasonal activities to make ${theme.name} special!</p>
+                    <h2>${theme.icon} ${this.escapeHtml(theme.name)} Activity Suggestions</h2>
+                    <p>Add these seasonal activities to make ${this.escapeHtml(theme.name)} special!</p>
                 </div>
                 <div class="seasonal-activities-grid">
-                    ${theme.seasonalActivities.map(activity => `
+                    ${theme.seasonalActivities.map((activity, index) => `
                         <div class="seasonal-activity-item">
                             <div class="activity-icon">${activity.icon}</div>
                             <div class="activity-details">
-                                <h4>${activity.name}</h4>
-                                <span class="activity-category">${activity.category}</span>
+                                <h4>${this.escapeHtml(activity.name)}</h4>
+                                <span class="activity-category">${this.escapeHtml(activity.category)}</span>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="app.addSeasonalActivity('${activity.name}', '${activity.icon}', '${activity.category}')">
+                            <button class="btn btn-primary btn-sm add-seasonal-activity-btn" 
+                                    data-activity-name="${this.escapeHtml(activity.name)}" 
+                                    data-activity-icon="${this.escapeHtml(activity.icon)}" 
+                                    data-activity-category="${this.escapeHtml(activity.category)}">
                                 Add Activity
                             </button>
                         </div>
@@ -6715,6 +7291,16 @@ class FamilyChoreChart {
                 </div>
             </div>
         `;
+        
+        // Attach event listeners to seasonal activity buttons
+        modalContent.querySelectorAll('.add-seasonal-activity-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const name = btn.dataset.activityName;
+                const icon = btn.dataset.activityIcon;
+                const category = btn.dataset.activityCategory;
+                this.addSeasonalActivity(name, icon, category);
+            });
+        });
         
         // Show the modal
         this.showModal('seasonal-chore-modal');
@@ -6814,7 +7400,7 @@ class FamilyChoreChart {
 
     checkPerfectWeek(childId, completions) {
         const childCompletions = completions.filter(c => c.child_id === childId);
-        const childChores = this.chores.filter(c => c.child_id === childId);
+        const childChores = this.chores.filter(c => String(c.child_id) === String(childId));
         const today = new Date();
         
         for (let i = 0; i < 7; i++) {
@@ -7835,9 +8421,9 @@ class FamilyChoreChart {
         notificationItem.innerHTML = `
             <div class="notification-icon">${icon}</div>
             <div class="notification-content">
-                <div class="notification-title">${title}</div>
-                <div class="notification-message">${message}</div>
-                <div class="notification-time">${time}</div>
+                <div class="notification-title">${this.escapeHtml(title)}</div>
+                <div class="notification-message">${this.escapeHtml(message)}</div>
+                <div class="notification-time">${this.escapeHtml(time)}</div>
             </div>
         `;
         
@@ -8284,6 +8870,7 @@ class FamilyChoreChart {
         // Sync with real data and force final update
         await this.loadCompletions();
         this.updateProgressWithDOMForce(childId);
+        await this.updateDashboardStats();
         if (completedCount > 0) {
             // Removed bulk action toast to reduce noise
             this.playSound('success');
@@ -8340,6 +8927,7 @@ class FamilyChoreChart {
         // Force refresh to sync all cells (bulk action needs full update)
         await this.loadCompletions();
         await this.refreshChoreSection(childId, true); // forceUpdate = true
+        await this.updateDashboardStats();
         
         if (completedCount > 0) {
             // Removed bulk action toast to reduce noise
@@ -8387,6 +8975,7 @@ class FamilyChoreChart {
         // Force refresh to sync all cells (bulk action needs full update)
         await this.loadCompletions();
         await this.refreshChoreSection(childId, true); // forceUpdate = true
+        await this.updateDashboardStats();
         
         if (clearedCount > 0) {
             // Removed bulk action toast to reduce noise
@@ -8489,6 +9078,7 @@ class FamilyChoreChart {
                     
                     // Final update with real data and forced repaint
                     this.updateProgressWithDOMForce(actualChildId);
+                    await this.updateDashboardStats();
                     
                     // Achievements (but don't re-render)
                     this.checkAchievements(actualChildId, chore.id);
@@ -8499,6 +9089,7 @@ class FamilyChoreChart {
                     this.updateProgressWithDOMForce(actualChildId);
                     this.playSound('error');
                     this.showToast('Failed to update chore. Please try again.', 'error');
+                    await this.updateDashboardStats();
                 }
             } catch (apiError) {
                 console.error('API error:', apiError);
@@ -8506,6 +9097,7 @@ class FamilyChoreChart {
                 this.updateProgressWithDOMForce(actualChildId);
                 this.playSound('error');
                 this.showToast('Connection error. Please try again.', 'error');
+                await this.updateDashboardStats();
             }
             
         } finally {
@@ -8730,25 +9322,27 @@ class FamilyChoreChart {
             } else if (child.avatar_file) {
                 avatarHtml = `<img src="${child.avatar_file}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
             } else {
-                avatarHtml = `<div style="width:40px;height:40px;border-radius:50%;background:${child.avatar_color || '#6366f1'};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2em;">${child.name.charAt(0).toUpperCase()}</div>`;
+                const firstLetter = child.name ? this.escapeHtml(child.name.charAt(0).toUpperCase()) : '?';
+                avatarHtml = `<div style="width:40px;height:40px;border-radius:50%;background:${child.avatar_color || '#6366f1'};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2em;">${firstLetter}</div>`;
             }
 
+            const childNameEscaped = this.escapeHtml(child.name);
             html += `
                 <div class="manage-child-item" data-child-id="${child.id}" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: var(--space-3); background: white;">
                     <div style="flex-shrink: 0;">
                         ${avatarHtml}
                     </div>
                     <div style="flex: 1; min-width: 0;">
-                        <h5 style="margin: 0 0 var(--space-1) 0; font-size: 1.1em;">${child.name}</h5>
+                        <h5 style="margin: 0 0 var(--space-1) 0; font-size: 1.1em;">${childNameEscaped}</h5>
                         <p style="margin: 0; color: var(--gray-600); font-size: var(--font-size-sm);">
                             Age ${child.age} • ${choresCount} chore${choresCount !== 1 ? 's' : ''}
                         </p>
                     </div>
                     <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
-                        <button class="btn btn-sm btn-outline edit-child-manage" data-child-id="${child.id}" aria-label="Edit ${child.name}">
+                        <button class="btn btn-sm btn-outline edit-child-manage" data-child-id="${child.id}" aria-label="Edit ${childNameEscaped}">
                             ✏️ Edit
                         </button>
-                        <button class="btn btn-sm btn-danger remove-child-manage" data-child-id="${child.id}" aria-label="Remove ${child.name}">
+                        <button class="btn btn-sm btn-danger remove-child-manage" data-child-id="${child.id}" aria-label="Remove ${childNameEscaped}">
                             🗑️ Remove
                         </button>
                     </div>
@@ -8860,11 +9454,11 @@ class FamilyChoreChart {
                 <div class="bulk-edit-chore-item" data-chore-id="${chore.id}">
                     <input type="checkbox" id="bulk-chore-${chore.id}" value="${chore.id}" checked onclick="event.stopPropagation();">
                     <div class="chore-item-content">
-                        <span class="chore-icon">${chore.icon || '📝'}</span>
+                        <span class="chore-icon">${this.escapeHtml(chore.icon || '📝')}</span>
                         <div class="chore-info">
-                            <strong>${chore.name}</strong>
+                            <strong>${this.escapeHtml(chore.name)}</strong>
                             <span class="chore-meta">
-                                ${chore.reward_cents}¢ • ${chore.category || 'General'}
+                                ${chore.reward_cents}¢ • ${this.escapeHtml(chore.category || 'General')}
                             </span>
                         </div>
                     </div>
@@ -9208,6 +9802,19 @@ class FamilyChoreChart {
             root.style.setProperty('--border-color', '#2d2d44');
             root.style.setProperty('--card-bg', '#1e1e3a');
             root.style.setProperty('--modal-bg', '#1e1e3a');
+            root.style.setProperty('--surface-base', '#0f0f23');
+            root.style.setProperty('--surface-muted', '#161632');
+            root.style.setProperty('--surface-raised', '#1a1a2e');
+            root.style.setProperty('--surface-overlay', '#1e1e3a');
+            root.style.setProperty('--surface-border', 'rgba(148, 163, 184, 0.18)');
+            root.style.setProperty('--surface-border-strong', 'rgba(99, 102, 241, 0.35)');
+            root.style.setProperty('--text-base', '#f8fafc');
+            root.style.setProperty('--text-muted', '#a5b4fc');
+            root.style.setProperty('--text-inverse', '#0f172a');
+            root.style.setProperty('--accent-success', '#34d399');
+            root.style.setProperty('--accent-warning', '#fbbf24');
+            root.style.setProperty('--accent-error', '#f87171');
+            root.style.setProperty('--accent-info', '#60a5fa');
             
             // Extended dark mode variables
             root.style.setProperty('--header-bg', '#16162a');
@@ -9229,6 +9836,9 @@ class FamilyChoreChart {
             root.style.setProperty('--shadow-md', '0 4px 6px -1px rgba(0, 0, 0, 0.4)');
             root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgba(0, 0, 0, 0.5)');
             root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgba(0, 0, 0, 0.6)');
+            root.style.setProperty('--shadow-raised', '0 20px 45px rgba(2, 6, 23, 0.6)');
+            root.style.setProperty('--shadow-raised-hover', '0 28px 60px rgba(2, 6, 23, 0.65)');
+            root.style.setProperty('--shadow-overlay', '0 40px 65px rgba(2, 6, 23, 0.7)');
         } else {
             // Light mode variables
             root.style.setProperty('--bg-primary', '#ffffff');
@@ -9238,6 +9848,19 @@ class FamilyChoreChart {
             root.style.setProperty('--border-color', '#e5e7eb');
             root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.95)');
             root.style.setProperty('--modal-bg', '#ffffff');
+            root.style.setProperty('--surface-base', '#ffffff');
+            root.style.setProperty('--surface-muted', '#f9fafb');
+            root.style.setProperty('--surface-raised', 'rgba(255, 255, 255, 0.95)');
+            root.style.setProperty('--surface-overlay', '#ffffff');
+            root.style.setProperty('--surface-border', 'rgba(15, 23, 42, 0.08)');
+            root.style.setProperty('--surface-border-strong', 'rgba(15, 23, 42, 0.16)');
+            root.style.setProperty('--text-base', '#111827');
+            root.style.setProperty('--text-muted', '#6b7280');
+            root.style.setProperty('--text-inverse', '#ffffff');
+            root.style.setProperty('--accent-success', '#2ed573');
+            root.style.setProperty('--accent-warning', '#ffa502');
+            root.style.setProperty('--accent-error', '#ff4757');
+            root.style.setProperty('--accent-info', '#17c0eb');
             
             // Reset extended variables to defaults
             root.style.setProperty('--header-bg', '');
@@ -9259,6 +9882,9 @@ class FamilyChoreChart {
             root.style.setProperty('--shadow-md', '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)');
             root.style.setProperty('--shadow-lg', '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)');
             root.style.setProperty('--shadow-xl', '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)');
+            root.style.setProperty('--shadow-raised', '0 8px 24px rgba(15, 23, 42, 0.08)');
+            root.style.setProperty('--shadow-raised-hover', '0 16px 32px rgba(15, 23, 42, 0.12)');
+            root.style.setProperty('--shadow-overlay', '0 25px 50px -12px rgba(15, 23, 42, 0.25)');
         }
         
         console.log('Theme applied:', {
@@ -9476,10 +10102,11 @@ class FamilyChoreChart {
             }, 0);
             
             if (totalStreak > 0) {
+                const childNameEscaped = this.escapeHtml(child.name);
                 html += `
                     <div class="streak-card">
                         <div class="streak-count">${totalStreak}</div>
-                        <div class="streak-label">${child.name}'s Total Streak</div>
+                        <div class="streak-label">${childNameEscaped}'s Total Streak</div>
                     </div>
                 `;
             }
@@ -10124,13 +10751,37 @@ class FamilyChoreChart {
         
         Object.entries(mobileButtons).forEach(([mobileId, desktopId]) => {
             const mobileBtn = document.getElementById(mobileId);
-            const desktopBtn = document.getElementById(desktopId);
+            if (!mobileBtn) return;
             
-            if (mobileBtn && desktopBtn) {
+            const desktopBtn = desktopId ? document.getElementById(desktopId) : null;
+            
+            if (mobileId === 'mobile-theme-toggle') {
                 mobileBtn.addEventListener('click', () => {
-                    // Trigger the desktop button's click event
+                    if (desktopBtn) {
+                        desktopBtn.click();
+                    } else {
+                        this.toggleTheme();
+                    }
+                    closeMobileMenu();
+                });
+                return;
+            }
+            
+            if (mobileId === 'mobile-sound-toggle') {
+                mobileBtn.addEventListener('click', () => {
+                    if (desktopBtn) {
+                        desktopBtn.click();
+                    } else {
+                        this.toggleSound();
+                    }
+                    closeMobileMenu();
+                });
+                return;
+            }
+            
+            if (desktopBtn) {
+                mobileBtn.addEventListener('click', () => {
                     desktopBtn.click();
-                    // Close the mobile menu
                     closeMobileMenu();
                 });
             }
@@ -10142,12 +10793,17 @@ class FamilyChoreChart {
     
     updateMobileMenuStates() {
         // Update theme toggle state
-        const themeToggle = document.getElementById('theme-toggle');
         const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-        if (themeToggle && mobileThemeToggle) {
+        if (mobileThemeToggle) {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            mobileThemeToggle.querySelector('.mobile-menu-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
-            mobileThemeToggle.querySelector('.mobile-menu-icon').textContent = isDark ? '☀️' : '🌙';
+            const textEl = mobileThemeToggle.querySelector('.mobile-menu-text');
+            const iconEl = mobileThemeToggle.querySelector('.mobile-menu-icon');
+            if (textEl) {
+                textEl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            }
+            if (iconEl) {
+                iconEl.textContent = isDark ? '☀️' : '🌙';
+            }
         }
         
         // Update footer theme toggle state
@@ -10161,12 +10817,17 @@ class FamilyChoreChart {
         }
         
         // Update sound toggle state
-        const soundToggle = document.getElementById('sound-toggle');
         const mobileSoundToggle = document.getElementById('mobile-sound-toggle');
-        if (soundToggle && mobileSoundToggle) {
-            const isMuted = soundToggle.classList.contains('muted');
-            mobileSoundToggle.querySelector('.mobile-menu-text').textContent = isMuted ? 'Unmute' : 'Mute';
-            mobileSoundToggle.querySelector('.mobile-menu-icon').textContent = isMuted ? '🔇' : '🔊';
+        if (mobileSoundToggle) {
+            const isMuted = !this.settings.soundEnabled;
+            const textEl = mobileSoundToggle.querySelector('.mobile-menu-text');
+            const iconEl = mobileSoundToggle.querySelector('.mobile-menu-icon');
+            if (textEl) {
+                textEl.textContent = isMuted ? 'Turn Sound On' : 'Mute Sound';
+            }
+            if (iconEl) {
+                iconEl.textContent = isMuted ? '🔇' : '🔊';
+            }
         }
         
         // Update footer sound toggle state
@@ -10787,9 +11448,9 @@ class FamilyChoreChart {
         // Render insights
         insightsGrid.innerHTML = insights.map(insight => `
             <div class="insight-card ${insight.type}">
-                <div class="insight-icon">${insight.icon}</div>
-                <div class="insight-title">${insight.title}</div>
-                <div class="insight-description">${insight.description}</div>
+                <div class="insight-icon">${this.escapeHtml(insight.icon)}</div>
+                <div class="insight-title">${this.escapeHtml(insight.title)}</div>
+                <div class="insight-description">${this.escapeHtml(insight.description)}</div>
             </div>
         `).join('');
     }
@@ -11505,7 +12166,7 @@ class FamilyChoreChart {
             // Save the currently active child ID before re-rendering
             const currentActiveChildId = this.activeChildId || childId;
             
-            const childChores = this.chores.filter(c => c.child_id === childId);
+            const childChores = this.chores.filter(c => String(c.child_id) === String(childId));
             
             const draggedChore = childChores.find(c => c.id == draggedChoreId);
             const targetChore = childChores.find(c => c.id == targetChoreId);
@@ -11530,7 +12191,7 @@ class FamilyChoreChart {
             reorderedChores.splice(targetIndex, 0, movedChore);
             
             // Update the chores array with new order
-            const otherChores = this.chores.filter(c => c.child_id !== childId);
+            const otherChores = this.chores.filter(c => String(c.child_id) !== String(childId));
             this.chores = [...otherChores, ...reorderedChores];
             
             // Save the new order to the database
@@ -11757,7 +12418,7 @@ class FamilyChoreChart {
             
             // Find the chores in the current child's chore list
             const currentChildId = this.activeChildId;
-            const childChores = this.chores.filter(c => c.child_id === currentChildId);
+        const childChores = this.chores.filter(c => String(c.child_id) === String(currentChildId));
             
             const draggedChore = childChores.find(c => c.id === draggedChoreId);
             const targetChore = childChores.find(c => c.id === targetChoreId);
@@ -11776,7 +12437,7 @@ class FamilyChoreChart {
             reorderedChores.splice(targetIndex, 0, movedChore);
             
             // Update the chores array with new order
-            const otherChores = this.chores.filter(c => c.child_id !== currentChildId);
+            const otherChores = this.chores.filter(c => String(c.child_id) !== String(currentChildId));
             this.chores = [...otherChores, ...reorderedChores];
             
             // Re-render the chore grid to reflect new order
@@ -12986,9 +13647,10 @@ function previousChild() {
 }
 
 // Icon Picker Functions
-function openIconPicker(currentIcon = '', callback = null) {
+function openIconPicker(currentIcon = '', callback = null, defaultTab = 'robots') {
+    console.log('[IconPicker] global openIconPicker invoked', { currentIcon, hasCallback: !!callback, defaultTab });
     if (app) {
-        app.openIconPicker(currentIcon, callback);
+        app.openIconPicker(currentIcon, callback, defaultTab);
     }
 }
 

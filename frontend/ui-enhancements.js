@@ -640,9 +640,18 @@ class UIEnhancementsManager {
                 const text = target.getAttribute('data-tooltip');
                 const shortcut = target.getAttribute('data-shortcut');
                 
-                let content = text;
+                // Escape tooltip content to prevent XSS
+                const escapeHtml = (str) => {
+                    if (!str) return '';
+                    const div = document.createElement('div');
+                    div.textContent = str;
+                    return div.innerHTML;
+                };
+                
+                let content = escapeHtml(text);
                 if (shortcut) {
-                    content += ` <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">${shortcut}</kbd>`;
+                    const escapedShortcut = escapeHtml(shortcut);
+                    content += ` <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">${escapedShortcut}</kbd>`;
                 }
                 
                 tooltip.innerHTML = content;

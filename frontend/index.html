@@ -391,10 +391,11 @@
     <script src="i18n-setup.js"></script>
     
     <!-- Styles -->
+    <link rel="stylesheet" href="mobile-chore-modal-integrated.css?v=20250209-1">
+
     <link rel="stylesheet" href="style.css?v=20250109-22">
     <link rel="stylesheet" href="clean-ui.css?v=20250109-23">
     <link rel="stylesheet" href="ui-enhancements.css?v=20250115-1">
-    <link rel="stylesheet" href="mobile-chore-modal-integrated.css?v=20250209-1">
 </head>
 <body>
     <!-- Skip Navigation for Accessibility -->
@@ -441,21 +442,19 @@
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" required autocomplete="current-password" aria-required="true">
                 </div>
-                <div class="form-group checkbox-group">
+                <div class="form-group checkbox-group flex-layout">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="remember-me" checked>
+                        <input type="checkbox" id="remember-me">
                         <span class="checkmark" aria-hidden="true"></span>
                         Remember me
                     </label>
+                    <a href="#" id="forgot-password">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn btn-primary">Sign In</button>
-                
+
                 <p class="auth-switch">
-                    Don't have an account? 
+                    Don't have an account?
                     <a href="#" id="show-signup">Create one here</a>
-                </p>
-                <p class="auth-switch">
-                    <a href="#" id="forgot-password">Forgot password?</a>
                 </p>
             </form>
             
@@ -472,12 +471,12 @@
                 </div>
                 <div class="form-group">
                     <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" required minlength="6" autocomplete="new-password" aria-required="true" aria-describedby="password-help">
-                    <small id="password-help">Minimum 6 characters</small>
+                    <input type="password" id="signup-password" required minlength="8" autocomplete="new-password" aria-required="true" aria-describedby="password-help">
+                    <small id="password-help">Minimum 8 characters with uppercase, lowercase, and number</small>
                 </div>
                 <div class="form-group">
                     <label for="signup-confirm-password">Confirm Password</label>
-                    <input type="password" id="signup-confirm-password" required minlength="6" autocomplete="new-password" aria-required="true">
+                    <input type="password" id="signup-confirm-password" required minlength="8" autocomplete="new-password" aria-required="true">
                 </div>
                 <button type="submit" class="btn btn-primary">Create Account</button>
                 
@@ -571,6 +570,18 @@
                         <button class="mobile-menu-btn" id="mobile-settings-btn" aria-label="Open settings">
                             <span class="mobile-menu-icon" aria-hidden="true">⚙</span>
                             <span class="mobile-menu-text" data-i18n="settings">Settings</span>
+                        </button>
+                    </section>
+                    
+                    <section class="mobile-menu-section">
+                        <h4>Preferences</h4>
+                        <button class="mobile-menu-btn" id="mobile-theme-toggle" aria-label="Toggle dark mode">
+                            <span class="mobile-menu-icon" aria-hidden="true">🌙</span>
+                            <span class="mobile-menu-text">Dark Mode</span>
+                        </button>
+                        <button class="mobile-menu-btn" id="mobile-sound-toggle" aria-label="Toggle sound effects">
+                            <span class="mobile-menu-icon" aria-hidden="true">🔊</span>
+                            <span class="mobile-menu-text">Sound On</span>
                         </button>
                     </section>
                     
@@ -869,15 +880,14 @@
                                 <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
                             </div>
                         </div>
-                        <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
-                            <!-- Avatar preview removed - now handled by main avatar circle -->
+                    <div class="avatar-picker-section">
+                        <label class="avatar-picker-label">Choose an Avatar</label>
+                        <div id="add-child-avatar-picker" class="avatar-picker-grid" role="group" aria-label="Choose avatar"></div>
+                        <div class="avatar-picker-actions">
+                            <button type="button" id="add-avatar-refresh-btn" class="btn btn-outline btn-sm" aria-label="Shuffle avatars">🔄 Shuffle</button>
+                            <button type="button" id="add-avatar-remove-btn" class="btn btn-outline btn-sm" aria-label="Remove selected avatar">Remove Avatar</button>
                         </div>
-                        <div class="dicebear-row">
-                            <button type="button" id="add-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handleAddChildIconSelect(iconUrl, iconType); })">
-                                🎨 Choose Icon
-                            </button>
-                            <button type="button" id="add-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
-                        </div>
+                    </div>
                     </form>
                 </div>
             </div>
@@ -949,11 +959,13 @@
                                             <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
                                         </div>
                                     </div>
-                                    <div class="avatar-actions">
-                                        <button type="button" id="page-edit-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handlePageEditChildIconSelect(iconUrl, iconType); })">
-                                            🎨 Choose Icon
-                                        </button>
-                                        <button type="button" id="page-edit-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
+                                    <div class="avatar-picker-section">
+                                        <label class="avatar-picker-label">Choose an Avatar</label>
+                                        <div id="page-edit-avatar-picker" class="avatar-picker-grid" role="group" aria-label="Choose avatar"></div>
+                                        <div class="avatar-picker-actions">
+                                            <button type="button" id="page-edit-avatar-refresh-btn" class="btn btn-outline btn-sm" aria-label="Shuffle avatars">🔄 Shuffle</button>
+                                            <button type="button" id="page-edit-avatar-remove-btn" class="btn btn-outline btn-sm" aria-label="Remove selected avatar">Remove Avatar</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1009,11 +1021,13 @@
                     <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
                         <!-- Avatar preview removed - now handled by main avatar circle -->
                     </div>
-                    <div class="dicebear-row">
-                        <button type="button" id="edit-icon-picker-btn" class="btn btn-outline" onclick="openIconPicker('', function(iconUrl, iconType) { app.handleEditChildIconSelect(iconUrl, iconType); })">
-                            🎨 Choose Icon
-                        </button>
-                        <button type="button" id="edit-avatar-remove-btn" class="btn btn-outline" aria-label="Remove selected avatar">Remove Avatar</button>
+                    <div class="avatar-picker-section">
+                        <label class="avatar-picker-label">Choose an Avatar</label>
+                        <div id="edit-child-avatar-picker" class="avatar-picker-grid" role="group" aria-label="Choose avatar"></div>
+                        <div class="avatar-picker-actions">
+                            <button type="button" id="edit-avatar-refresh-btn" class="btn btn-outline btn-sm" aria-label="Shuffle avatars">🔄 Shuffle</button>
+                            <button type="button" id="edit-avatar-remove-btn" class="btn btn-outline btn-sm" aria-label="Remove selected avatar">Remove Avatar</button>
+                        </div>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-outline" data-modal="edit-child-modal">Cancel</button>
@@ -2731,46 +2745,6 @@
         </div>
     </div>
 
-    <!-- Icon Picker Modal -->
-    <div id="icon-picker-modal" class="modal hidden" role="dialog" aria-labelledby="icon-picker-modal-title" aria-hidden="true">
-        <div class="modal-content">
-            <header class="modal-header flex-between items-center">
-                <h2 id="icon-picker-modal-title">🎨 Choose an Icon</h2>
-                <button class="modal-close" data-modal="icon-picker-modal" onclick="closeIconPicker()" aria-label="Close icon picker">&times;</button>
-            </header>
-            <div class="modal-body">
-                <div class="icon-picker-tabs">
-                    <button type="button" class="icon-tab" data-tab="robots">🤖 Robots</button>
-                    <button type="button" class="icon-tab" data-tab="adventurers">🧑‍🚀 Adventurers</button>
-                    <button type="button" class="icon-tab" data-tab="emojis">😄 Fun Emojis</button>
-                    <button type="button" class="icon-tab active" data-tab="chore-emojis">⭐ Chore Emojis</button>
-                </div>
-                <div class="icon-picker-content">
-                    <div id="robots-tab" class="icon-tab-content">
-                        <div class="icon-grid" id="robots-grid">
-                            <!-- Robot icons will be populated here -->
-                        </div>
-                    </div>
-                    <div id="adventurers-tab" class="icon-tab-content">
-                        <div class="icon-grid" id="adventurers-grid">
-                            <!-- Adventurer icons will be populated here -->
-                        </div>
-                    </div>
-                    <div id="emojis-tab" class="icon-tab-content">
-                        <div class="icon-grid" id="emojis-grid">
-                            <!-- Fun emoji icons will be populated here -->
-                        </div>
-                    </div>
-                    <div id="chore-emojis-tab" class="icon-tab-content active">
-                        <div class="icon-grid" id="chore-emojis-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: var(--space-2); padding: var(--space-3); max-height: 400px; overflow-y: auto;">
-                            <!-- Chore emoji icons will be populated here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="undo-snackbar" class="snackbar" role="status" aria-live="polite" aria-atomic="true">
@@ -2780,9 +2754,9 @@
 
     <!-- Critical Scripts - Load Immediately -->
     <script src="config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js?v=2"></script>
-    <script src="api-client.js?v=2"></script>
+    <script id="supabase-script" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onload="console.log('✅ Supabase library loaded'); window.supabaseScriptLoaded = true;" onerror="console.error('❌ Failed to load Supabase library'); window.supabaseScriptLoaded = false;"></script>
+    <script src="supabase-config.js?v=4"></script>
+    <script src="api-client.js?v=3"></script>
     <script src="script.js?v=19"></script>
     
     <!-- Non-Critical Scripts - Defer for Performance -->
