@@ -29,8 +29,8 @@ const server = http.createServer((req, res) => {
   }
   // Route /app/* to Next.js (React version)
   else if (url.startsWith('/app')) {
-    // Remove /app prefix before proxying to Next.js
-    req.url = url.replace('/app', '');
+    // Remove /app prefix before proxying to Next.js (only match at start of string)
+    req.url = url.replace(/^\/app/, '');
     if (req.url === '') req.url = '/dashboard'; // Default to dashboard for /app
 
     console.log(`  → Proxying to Next.js: ${req.url}`);
