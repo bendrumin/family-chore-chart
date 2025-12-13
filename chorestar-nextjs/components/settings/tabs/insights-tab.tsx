@@ -69,7 +69,10 @@ export function InsightsTab() {
         const completionsPerDay = new Map<number, number>()
         childCompletions.forEach(comp => {
           const day = comp.day_of_week
-          completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+          // Skip completions with null/undefined day_of_week
+          if (day != null) {
+            completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+          }
         })
 
         // Count perfect days (all chores completed)
@@ -127,8 +130,12 @@ export function InsightsTab() {
   const calculateStreak = (completions: ChoreCompletion[]): number => {
     if (completions.length === 0) return 0
 
-    // Get unique days with completions, sorted
-    const daysWithCompletions = new Set(completions.map(c => c.day_of_week))
+    // Get unique days with completions, sorted (filter out null/undefined)
+    const daysWithCompletions = new Set(
+      completions
+        .map(c => c.day_of_week)
+        .filter((day): day is number => day != null)
+    )
     const sortedDays = Array.from(daysWithCompletions).sort((a, b) => b - a)
 
     // Simple streak: count consecutive days from most recent
