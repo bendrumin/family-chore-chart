@@ -21,6 +21,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     totalCompletions: 0,
     totalEarnings: 0,
     completionRate: 0,
+    perfectDays: 0,
     streak: 0,
     isLoading: true,
   })
@@ -41,7 +42,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         .eq('is_active', true)
 
       if (!chores || chores.length === 0) {
-        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, streak: 0, isLoading: false })
+        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, perfectDays: 0, streak: 0, isLoading: false })
         return
       }
 
@@ -56,17 +57,42 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
 
       const totalCompletions = completions?.length || 0
 
-      // Calculate total earnings
-      const totalEarnings = completions?.reduce((sum, completion) => {
-        const chore = chores.find(c => c.id === completion.chore_id)
-        return sum + (chore?.reward_cents || 0)
-      }, 0) || 0
+      // Get family settings for reward calculation
+      const { data: user } = await supabase.auth.getUser()
+      const { data: familySettings } = await supabase
+        .from('family_settings')
+        .select('daily_reward_cents, weekly_bonus_cents')
+        .eq('user_id', user?.user?.id)
+        .single()
 
-      // Calculate completion rate (percentage of possible completions)
-      const possibleCompletions = chores.length * 7 // 7 days
-      const completionRate = possibleCompletions > 0
-        ? Math.round((totalCompletions / possibleCompletions) * 100)
-        : 0
+      // Calculate total earnings using family settings (matching Vanilla JS logic)
+      // Count days with any completions
+      const completionsPerDay = new Map<number, number>()
+      completions?.forEach(comp => {
+        const day = comp.day_of_week
+        if (day !== null) {
+          completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+        }
+      })
+
+      // Count perfect days (days where ALL chores are completed)
+      let perfectDays = 0
+      for (let day = 0; day < 7; day++) {
+        const completionsForDay = completionsPerDay.get(day) || 0
+        if (completionsForDay >= chores.length) {
+          perfectDays++
+        }
+      }
+
+      // Calculate earnings: (days with any completions × daily_reward_cents) + weekly bonus if perfect week
+      const dailyRewardCents = familySettings?.daily_reward_cents || 7
+      const weeklyBonusCents = familySettings?.weekly_bonus_cents || 0
+      const daysWithAnyCompletions = completionsPerDay.size
+      const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
+        (perfectDays === 7 ? weeklyBonusCents : 0)
+
+      // Calculate completion rate based on perfect days (matching Vanilla JS logic)
+      const completionRate = Math.round((perfectDays / 7) * 100)
 
       // Calculate current streak (simplified - days with at least one completion)
       const streak = await calculateStreak(child.id, choreIds)
@@ -75,6 +101,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         totalCompletions,
         totalEarnings: totalEarnings / 100, // Convert cents to dollars
         completionRate,
+        perfectDays,
         streak,
         isLoading: false,
       })
@@ -180,6 +207,45 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
               Day Streak
             </div>
           </div>
+        </div>
+
+        {/* Perfect Days Stars - NEW! */}
+        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+            <span>Perfect Days This Week</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{stats.perfectDays}/7 days</span>
+          </div>
+          <div className="flex justify-center gap-1.5">
+            {Array.from({ length: 7 }).map((_, index) => {
+              const isPerfect = index < stats.perfectDays
+              return (
+                <div
+                  key={index}
+                  className={`text-3xl transition-all duration-300 ${
+                    isPerfect
+                      ? 'scale-110 animate-pulse-subtle'
+                      : 'opacity-30 grayscale'
+                  }`}
+                  title={`Day ${index + 1}: ${isPerfect ? 'All chores completed!' : 'Not yet complete'}`}
+                >
+                  {isPerfect ? '⭐' : '☆'}
+                </div>
+              )
+            })}
+          </div>
+          {stats.perfectDays > 0 && (
+            <div className="mt-2 text-center">
+              <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                {stats.perfectDays === 7
+                  ? '🎉 Perfect week! All chores done every day!'
+                  : stats.perfectDays >= 5
+                  ? '🌟 Awesome progress! Keep it up!'
+                  : stats.perfectDays >= 3
+                  ? '✨ Great start! You\'re doing well!'
+                  : '💪 Good job! Keep going!'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Achievement Milestones - Fixed Height */}

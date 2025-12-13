@@ -18,13 +18,15 @@ interface ExportOptions {
   childId?: string | 'all'
   startDate?: Date
   endDate?: Date
+  dailyRewardCents?: number
+  weeklyBonusCents?: number
 }
 
 /**
  * Export family report as CSV
  */
 export function exportFamilyReportCSV(options: ExportOptions) {
-  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate } = options
+  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
 
   // Filter children if specific child selected
   const filteredChildren = childId === 'all' ? children : children.filter(c => c.id === childId)
@@ -55,6 +57,8 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       childChores.some(chore => chore.id === c.chore_id)
     )
 
+    // Note: Individual chore earnings shown here are for reference only
+    // Actual earnings are calculated based on daily_reward_cents per day worked
     for (const comp of childCompletions) {
       const chore = childChores.find(c => c.id === comp.chore_id)
       // Calculate date from week_start and day_of_week
@@ -62,7 +66,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       weekDate.setDate(weekDate.getDate() + comp.day_of_week)
       const compDate = comp.created_at ? new Date(comp.created_at) : weekDate
       const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-      
+
       csvRows.push([
         child.name,
         chore?.name || 'Unknown',
@@ -73,21 +77,49 @@ export function exportFamilyReportCSV(options: ExportOptions) {
     }
   }
 
-  // Convert to CSV string
-  const csvContent = csvRows.map(row => 
-    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-  ).join('\n')
+  // Convert to CSV string with size limit protection
+  // Limit to prevent "Invalid string length" errors (JavaScript max string ~1GB)
+  const MAX_ROWS = 50000 // Safety limit (50k rows should be plenty)
+  const rowsToExport = csvRows.slice(0, MAX_ROWS)
+  
+  if (csvRows.length > MAX_ROWS) {
+    console.warn(`CSV export limited to ${MAX_ROWS} rows (had ${csvRows.length} total)`)
+    // Show user notification if available
+    if (typeof window !== 'undefined' && (window as any).toast) {
+      (window as any).toast.warning(`Export limited to ${MAX_ROWS} rows due to size constraints`)
+    }
+  }
+  
+  try {
+    const csvContent = rowsToExport.map(row => 
+      row.map(cell => {
+        const cellStr = String(cell || '')
+        // Limit individual cell size to prevent issues
+        const maxCellLength = 10000
+        const truncated = cellStr.length > maxCellLength 
+          ? cellStr.substring(0, maxCellLength) + '...'
+          : cellStr
+        return `"${truncated.replace(/"/g, '""')}"`
+      }).join(',')
+    ).join('\n')
 
-  // Download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  const childName = childId === 'all' ? 'family' : filteredChildren[0]?.name.toLowerCase() || 'report'
-  const dateStr = new Date().toISOString().split('T')[0]
-  a.download = `chorestar-${childName}-${dateStr}.csv`
-  a.click()
-  window.URL.revokeObjectURL(url)
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const childName = childId === 'all' ? 'family' : filteredChildren[0]?.name.toLowerCase() || 'report'
+    const dateStr = new Date().toISOString().split('T')[0]
+    a.download = `chorestar-${childName}-${dateStr}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('CSV export failed:', error)
+    if (error instanceof Error && error.message.includes('Invalid string length')) {
+      throw new Error('Export data too large. Please reduce the date range or select a specific child.')
+    }
+    throw error
+  }
 }
 
 /**
@@ -95,7 +127,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
  * Note: Requires jsPDF library to be loaded
  */
 export async function exportFamilyReportPDF(options: ExportOptions) {
-  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate } = options
+  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
 
   // Dynamically import jsPDF
   let jsPDF: any
@@ -170,19 +202,33 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
     }
 
     const childChores = chores.filter(c => c.child_id === child.id)
-    const childCompletions = filteredCompletions.filter(c => 
+    const childCompletions = filteredCompletions.filter(c =>
       childChores.some(chore => chore.id === c.chore_id)
     )
 
-    const totalEarnings = childCompletions.reduce((sum, comp) => {
-      const chore = childChores.find(c => c.id === comp.chore_id)
-      return sum + (chore ? chore.reward_cents : 0)
-    }, 0)
+    // Calculate earnings using family settings (matching Vanilla JS logic)
+    const completionsPerDay = new Map<number, number>()
+    childCompletions.forEach(comp => {
+      const day = comp.day_of_week
+      completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+    })
 
-    const totalPossibleCompletions = childChores.length * 7
-    const completionRate = totalPossibleCompletions > 0 
-      ? Math.round((childCompletions.length / totalPossibleCompletions) * 100)
-      : 0
+    // Count perfect days (days where ALL chores are completed)
+    let perfectDays = 0
+    for (let day = 0; day < 7; day++) {
+      const completionsForDay = completionsPerDay.get(day) || 0
+      if (completionsForDay >= childChores.length) {
+        perfectDays++
+      }
+    }
+
+    // Calculate earnings: (days with any completions × daily_reward_cents) + weekly bonus if perfect week
+    const daysWithAnyCompletions = completionsPerDay.size
+    const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
+      (perfectDays === 7 ? weeklyBonusCents : 0)
+
+    // Calculate completion rate based on perfect days (matching Vanilla JS logic)
+    const completionRate = Math.round((perfectDays / 7) * 100)
 
     // Child header
     doc.setFontSize(14)

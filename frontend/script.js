@@ -807,7 +807,16 @@ class FamilyChoreChart {
         if (!theme || !theme.vars) return;
         const root = document.documentElement;
         Object.entries(theme.vars).forEach(([k,v]) => root.style.setProperty(k, v));
-        try { localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme)); } catch {}
+        try { 
+            const themeStr = JSON.stringify(theme);
+            if (themeStr.length > 1024 * 1024) { // 1MB limit for themes
+                console.warn('Theme too large for localStorage');
+                return;
+            }
+            localStorage.setItem(this.getThemeStorageKey(), themeStr);
+        } catch (e) {
+            console.warn('Failed to save theme to localStorage:', e);
+        }
     }
 
     async loadSavedTheme() {
@@ -835,19 +844,46 @@ class FamilyChoreChart {
             const result = await this.apiClient.saveCustomTheme(theme);
             if (result.success) {
                 // Also save to localStorage as fallback
-                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+                try {
+                    const themeStr = JSON.stringify(theme);
+                    if (themeStr.length > 1024 * 1024) { // 1MB limit
+                        console.warn('Theme too large for localStorage');
+                    } else {
+                        localStorage.setItem(this.getThemeStorageKey(), themeStr);
+                    }
+                } catch (e) {
+                    console.warn('Failed to save theme to localStorage:', e);
+                }
                 return true;
             } else {
                 console.warn('Failed to save theme to database:', result.error);
                 // Fallback to localStorage only
-                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+                try {
+                    const themeStr = JSON.stringify(theme);
+                    if (themeStr.length > 1024 * 1024) { // 1MB limit
+                        console.warn('Theme too large for localStorage');
+                    } else {
+                        localStorage.setItem(this.getThemeStorageKey(), themeStr);
+                    }
+                } catch (e) {
+                    console.warn('Failed to save theme to localStorage:', e);
+                }
                 return false;
             }
         } catch (e) { 
             console.warn('saveThemeForUser failed', e);
             // Fallback to localStorage
             try {
-                localStorage.setItem(this.getThemeStorageKey(), JSON.stringify(theme));
+                try {
+                    const themeStr = JSON.stringify(theme);
+                    if (themeStr.length > 1024 * 1024) { // 1MB limit
+                        console.warn('Theme too large for localStorage');
+                    } else {
+                        localStorage.setItem(this.getThemeStorageKey(), themeStr);
+                    }
+                } catch (e) {
+                    console.warn('Failed to save theme to localStorage:', e);
+                }
             } catch {}
             return false;
         }
@@ -5210,17 +5246,49 @@ class FamilyChoreChart {
         this.setButtonLoading(exportButton, false);
 
         if (result.success) {
-            // Create and download PDF report
-            const report = result.report;
-            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `chorestar-report-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            this.showToast('Report exported successfully!', 'success');
+            try {
+                // Create and download PDF report
+                const report = result.report;
+                
+                // Limit report size to prevent "Invalid string length" errors
+                const MAX_REPORT_SIZE = 50 * 1024 * 1024; // 50MB limit
+                let reportString;
+                
+                try {
+                    reportString = JSON.stringify(report, null, 2);
+                    
+                    // Check if string is too large
+                    if (reportString.length > MAX_REPORT_SIZE) {
+                        // Truncate report if too large
+                        console.warn('Report too large, truncating...');
+                        const truncatedReport = {
+                            ...report,
+                            completions: report.completions?.slice(0, 10000) || [],
+                            message: 'Report truncated due to size. Please reduce date range.'
+                        };
+                        reportString = JSON.stringify(truncatedReport, null, 2);
+                        this.showToast('Report was large and has been truncated', 'warning');
+                    }
+                } catch (stringifyError) {
+                    if (stringifyError.message && stringifyError.message.includes('Invalid string length')) {
+                        throw new Error('Report data too large. Please reduce the date range or select a specific child.');
+                    }
+                    throw stringifyError;
+                }
+                
+                const blob = new Blob([reportString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chorestar-report-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showToast('Report exported successfully!', 'success');
+            } catch (error) {
+                console.error('Export failed:', error);
+                this.showToast(error.message || 'Failed to export report. Data may be too large.', 'error');
+            }
         } else {
             this.showToast('Failed to export report', 'error');
         }
@@ -7139,7 +7207,16 @@ class FamilyChoreChart {
     
     // Check if a specific seasonal theme is enabled
     isSeasonalThemeEnabled(themeName) {
-        const enabledThemes = JSON.parse(localStorage.getItem('enabled_seasonal_themes') || '{}');
+        let enabledThemes = {};
+        try {
+            const saved = localStorage.getItem('enabled_seasonal_themes');
+            if (saved && saved.length < 1024 * 1024) { // 1MB limit
+                enabledThemes = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('Failed to parse seasonal themes:', e);
+            enabledThemes = {};
+        }
         // Default to true for all themes except christmas, which should be opt-in
         if (enabledThemes[themeName] === undefined) {
             // Christmas is opt-in, all others are default enabled
@@ -7152,7 +7229,16 @@ class FamilyChoreChart {
     setSeasonalThemeEnabled(themeName, enabled) {
         const enabledThemes = JSON.parse(localStorage.getItem('enabled_seasonal_themes') || '{}');
         enabledThemes[themeName] = enabled;
-        localStorage.setItem('enabled_seasonal_themes', JSON.stringify(enabledThemes));
+        try {
+            const themesStr = JSON.stringify(enabledThemes);
+            if (themesStr.length > 1024 * 1024) { // 1MB limit
+                console.warn('Seasonal themes too large for localStorage');
+            } else {
+                localStorage.setItem('enabled_seasonal_themes', themesStr);
+            }
+        } catch (e) {
+            console.warn('Failed to save seasonal themes to localStorage:', e);
+        }
     }
     
     // Toggle a seasonal theme on/off
@@ -10136,14 +10222,45 @@ class FamilyChoreChart {
     }
 
     exportStreakData() {
-        const data = JSON.stringify(this.streaks, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'streak-data.json';
-        a.click();
-        URL.revokeObjectURL(url);
+        try {
+            // Limit streak data size to prevent "Invalid string length" errors
+            const MAX_STREAK_SIZE = 10 * 1024 * 1024; // 10MB limit
+            let data;
+            
+            try {
+                data = JSON.stringify(this.streaks, null, 2);
+                
+                // Check if string is too large
+                if (data.length > MAX_STREAK_SIZE) {
+                    console.warn('Streak data too large, truncating...');
+                    // Truncate streaks if too large
+                    const truncatedStreaks = {};
+                    let count = 0;
+                    for (const [key, value] of Object.entries(this.streaks)) {
+                        if (count++ > 1000) break; // Limit to 1000 entries
+                        truncatedStreaks[key] = value;
+                    }
+                    data = JSON.stringify(truncatedStreaks, null, 2);
+                    this.showToast('Streak data was large and has been truncated', 'warning');
+                }
+            } catch (stringifyError) {
+                if (stringifyError.message && stringifyError.message.includes('Invalid string length')) {
+                    throw new Error('Streak data too large to export.');
+                }
+                throw stringifyError;
+            }
+            
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'streak-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Streak export failed:', error);
+            this.showToast(error.message || 'Failed to export streak data.', 'error');
+        }
     }
 
     showStreakHistory() {
@@ -10175,15 +10292,25 @@ class FamilyChoreChart {
     // Settings Management
     loadSettings() {
         console.log('Loading settings...');
-        const saved = localStorage.getItem('familyChoreChartSettings');
-        if (saved) {
-            try {
-                const parsedSettings = JSON.parse(saved);
-                this.settings = { ...this.settings, ...parsedSettings };
-                console.log('Loaded settings:', this.settings);
-            } catch (error) {
-                console.error('Error parsing saved settings:', error);
+        try {
+            const saved = localStorage.getItem('familyChoreChartSettings');
+            if (saved) {
+                // Check size before parsing
+                if (saved.length > 5 * 1024 * 1024) { // 5MB limit
+                    console.warn('Settings data too large, clearing...');
+                    localStorage.removeItem('familyChoreChartSettings');
+                    return;
+                }
+                try {
+                    const parsedSettings = JSON.parse(saved);
+                    this.settings = { ...this.settings, ...parsedSettings };
+                    console.log('Loaded settings:', this.settings);
+                } catch (error) {
+                    console.error('Error parsing saved settings:', error);
+                }
             }
+        } catch (error) {
+            console.error('Error loading settings:', error);
         }
         
         // Apply settings immediately
@@ -10207,7 +10334,27 @@ class FamilyChoreChart {
     saveSettings() {
         console.log('Saving settings:', this.settings);
         try {
-            localStorage.setItem('familyChoreChartSettings', JSON.stringify(this.settings));
+            try {
+                const settingsStr = JSON.stringify(this.settings);
+                // Limit localStorage size (browsers typically limit to 5-10MB)
+                if (settingsStr.length > 5 * 1024 * 1024) {
+                    console.warn('Settings too large for localStorage, truncating...');
+                    // Only save essential settings
+                    const essentialSettings = {
+                        dailyReward: this.settings.dailyReward,
+                        weeklyBonus: this.settings.weeklyBonus,
+                        soundEnabled: this.settings.soundEnabled,
+                        soundVolume: this.settings.soundVolume,
+                        theme: this.settings.theme,
+                        colorScheme: this.settings.colorScheme
+                    };
+                    localStorage.setItem('familyChoreChartSettings', JSON.stringify(essentialSettings));
+                } else {
+                    localStorage.setItem('familyChoreChartSettings', settingsStr);
+                }
+            } catch (e) {
+                console.warn('Failed to save settings to localStorage:', e);
+            }
             console.log('Settings saved successfully');
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -10312,13 +10459,64 @@ class FamilyChoreChart {
     }
 
     saveStreaks() {
-        localStorage.setItem('familyChoreChartStreaks', JSON.stringify(this.streaks));
+        try {
+            const streaksStr = JSON.stringify(this.streaks);
+            // Limit localStorage size (browsers typically limit to 5-10MB)
+            if (streaksStr.length > 5 * 1024 * 1024) {
+                console.warn('Streaks too large for localStorage, truncating...');
+                // Only save recent streaks (limit to 1000 entries)
+                const truncatedStreaks = {};
+                let count = 0;
+                for (const [key, value] of Object.entries(this.streaks)) {
+                    if (count++ > 1000) break;
+                    truncatedStreaks[key] = value;
+                }
+                localStorage.setItem('familyChoreChartStreaks', JSON.stringify(truncatedStreaks));
+            } else {
+                localStorage.setItem('familyChoreChartStreaks', streaksStr);
+            }
+        } catch (e) {
+            console.warn('Failed to save streaks to localStorage:', e);
+            // If it's a string length error, try truncating
+            if (e.message && e.message.includes('Invalid string length')) {
+                const truncatedStreaks = {};
+                let count = 0;
+                for (const [key, value] of Object.entries(this.streaks)) {
+                    if (count++ > 500) break; // More aggressive truncation
+                    truncatedStreaks[key] = value;
+                }
+                try {
+                    localStorage.setItem('familyChoreChartStreaks', JSON.stringify(truncatedStreaks));
+                } catch (e2) {
+                    console.error('Failed to save even truncated streaks:', e2);
+                }
+            }
+        }
     }
 
     loadStreaks() {
-        const saved = localStorage.getItem('familyChoreChartStreaks');
-        if (saved) {
-            this.streaks = JSON.parse(saved);
+        try {
+            const saved = localStorage.getItem('familyChoreChartStreaks');
+            if (saved) {
+                // Check size before parsing
+                if (saved.length > 10 * 1024 * 1024) { // 10MB limit
+                    console.warn('Streaks data too large, clearing...');
+                    localStorage.removeItem('familyChoreChartStreaks');
+                    this.streaks = {};
+                    return;
+                }
+                try {
+                    this.streaks = JSON.parse(saved);
+                } catch (parseError) {
+                    console.error('Failed to parse streaks from localStorage:', parseError);
+                    // Clear corrupted data
+                    localStorage.removeItem('familyChoreChartStreaks');
+                    this.streaks = {};
+                }
+            }
+        } catch (error) {
+            console.error('Error loading streaks:', error);
+            this.streaks = {};
         }
     }
 
@@ -11623,7 +11821,7 @@ class FamilyChoreChart {
     exportCSV() {
         if (!this.analyticsMetrics) return;
         
-        const csvContent = [
+        const csvRows = [
             ['Child Name', 'Completion Rate (%)', 'Total Completions', 'Total Earnings ($)', 'Streak (days)', 'Perfect Days'],
             ...this.analyticsMetrics.map(m => [
                 m.childName,
@@ -11633,7 +11831,22 @@ class FamilyChoreChart {
                 m.streak,
                 m.perfectDays
             ])
-        ].map(row => row.join(',')).join('\n');
+        ];
+        
+        // Limit rows to prevent "Invalid string length" errors
+        const MAX_ROWS = 50000;
+        const rowsToExport = csvRows.slice(0, MAX_ROWS);
+        if (csvRows.length > MAX_ROWS) {
+            console.warn(`CSV export limited to ${MAX_ROWS} rows (had ${csvRows.length} total)`);
+        }
+        
+        const csvContent = rowsToExport.map(row => 
+            row.map(cell => {
+                const cellStr = String(cell || '');
+                const maxCellLength = 10000;
+                return cellStr.length > maxCellLength ? cellStr.substring(0, maxCellLength) + '...' : cellStr;
+            }).join(',')
+        ).join('\n');
         
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -11786,8 +11999,20 @@ class FamilyChoreChart {
                 }
             }
             
-            const csvContent = csvRows.map(row => 
-                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            // Limit rows to prevent "Invalid string length" errors
+            const MAX_ROWS = 50000;
+            const rowsToExport = csvRows.slice(0, MAX_ROWS);
+            if (csvRows.length > MAX_ROWS) {
+                console.warn(`CSV export limited to ${MAX_ROWS} rows (had ${csvRows.length} total)`);
+            }
+            
+            const csvContent = rowsToExport.map(row => 
+                row.map(cell => {
+                    const cellStr = String(cell || '');
+                    const maxCellLength = 10000;
+                    const truncated = cellStr.length > maxCellLength ? cellStr.substring(0, maxCellLength) + '...' : cellStr;
+                    return `"${truncated.replace(/"/g, '""')}"`;
+                }).join(',')
             ).join('\n');
             
             const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -11942,7 +12167,7 @@ class FamilyChoreChart {
             });
             
             // Create CSV content
-            const csvContent = [
+            const csvRowsWeekly = [
                 ['Weekly Summary Report', `Week of ${this.formatDate(weekStart)}`],
                 [''],
                 ['Child Name', 'Age', 'Completion Rate (%)', 'Total Completions', 'Total Earnings ($)', 'Perfect Days'],
@@ -11965,10 +12190,25 @@ class FamilyChoreChart {
                         chore.earnings
                     ])
                 )
-            ].map(row => row.join(',')).join('\n');
+            ];
+            
+            // Limit rows to prevent "Invalid string length" errors
+            const MAX_ROWS_WEEKLY = 50000;
+            const rowsToExportWeekly = csvRowsWeekly.slice(0, MAX_ROWS_WEEKLY);
+            if (csvRowsWeekly.length > MAX_ROWS_WEEKLY) {
+                console.warn(`CSV export limited to ${MAX_ROWS_WEEKLY} rows (had ${csvRowsWeekly.length} total)`);
+            }
+            
+            const csvContentWeekly = rowsToExportWeekly.map(row => 
+                row.map(cell => {
+                    const cellStr = String(cell || '');
+                    const maxCellLength = 10000;
+                    return cellStr.length > maxCellLength ? cellStr.substring(0, maxCellLength) + '...' : cellStr;
+                }).join(',')
+            ).join('\n');
             
             // Download CSV
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csvContentWeekly], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

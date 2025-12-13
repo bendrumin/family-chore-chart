@@ -85,7 +85,6 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
   }
 
   const choreCompletions = completions.filter(c => c.chore_id === chore.id && c.week_start === weekStart)
-  const totalEarned = (choreCompletions.length * chore.reward_cents) / 100
 
   return (
     <>
@@ -115,12 +114,6 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
-                <div
-                  className="px-2 py-0.5 rounded-lg text-white font-bold text-sm"
-                  style={{ background: 'var(--gradient-success)' }}
-                >
-                  💰 ${(chore.reward_cents / 100).toFixed(2)}
-                </div>
               </div>
             </div>
           </div>
@@ -157,7 +150,7 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
           </div>
 
           {/* Stats */}
-          <div className="pt-1.5 border-t flex items-center justify-between" style={{
+          <div className="pt-1.5 border-t flex items-center justify-center" style={{
             borderColor: 'rgba(99, 102, 241, 0.1)'
           }}>
             <div className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
@@ -165,15 +158,6 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
                 {choreCompletions.length}
               </span>
               this week {choreCompletions.length >= 5 && '🔥'}
-            </div>
-            <div
-              className="text-xl font-black px-2.5 py-1 rounded-lg"
-              style={{
-                background: totalEarned > 0 ? 'var(--gradient-success)' : 'rgba(99, 102, 241, 0.1)',
-                color: totalEarned > 0 ? 'white' : 'var(--text-secondary)'
-              }}
-            >
-              ${totalEarned.toFixed(2)}
             </div>
           </div>
         </div>

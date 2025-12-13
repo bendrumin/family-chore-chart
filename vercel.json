@@ -52,6 +52,10 @@
       "destination": "/frontend/api/$1.js"
     },
     {
+      "source": "/sw.js",
+      "destination": "/frontend/sw.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/frontend/$1"
     }

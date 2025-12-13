@@ -21,6 +21,7 @@
     "vercel": "^48.9.1"
   },
   "devDependencies": {
+    "http-proxy": "^1.18.1",
     "serve": "^14.2.1"
   }
 }
