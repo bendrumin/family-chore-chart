@@ -9,16 +9,16 @@ const buttonVariants = cva(
       variant: {
         default: 'text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95',
         destructive: 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:from-red-600 hover:to-pink-600 active:scale-95',
-        outline: 'border-2 bg-white/80 backdrop-blur-md hover:bg-white/90 hover:scale-105 hover:shadow-md active:scale-95',
+        outline: 'border-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md hover:bg-white/90 dark:hover:bg-gray-800/90 hover:scale-105 hover:shadow-md active:scale-95 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600',
         secondary: 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-900 dark:text-white shadow-md hover:shadow-lg hover:scale-105 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 active:scale-95',
-        ghost: 'hover:bg-white/50 dark:hover:bg-gray-800/50 backdrop-blur-md hover:scale-105 active:scale-95',
-        link: 'text-blue-600 underline-offset-4 hover:underline hover:scale-105',
+        ghost: 'hover:bg-white/50 dark:hover:bg-gray-800/50 backdrop-blur-md hover:scale-105 active:scale-95 text-gray-900 dark:text-gray-100',
+        link: 'text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline hover:scale-105',
         gradient: 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white shadow-lg hover:shadow-2xl hover:scale-110 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 active:scale-95 animate-gradient',
         success: 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:from-green-500 hover:to-emerald-600 active:scale-95',
       },
       size: {
         default: 'h-11 px-6 py-2.5',
-        sm: 'h-9 rounded-lg px-4 text-xs',
+        sm: 'h-11 rounded-lg px-4 text-xs', // Increased from h-9 to h-11 for 44px minimum touch target
         lg: 'h-14 rounded-2xl px-10 text-base',
         icon: 'h-11 w-11',
       },

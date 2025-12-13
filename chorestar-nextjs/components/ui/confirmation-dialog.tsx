@@ -49,24 +49,20 @@ export function ConfirmationDialog({
   const getGradient = () => {
     switch (variant) {
       case 'danger':
-        return 'from-red-50 to-rose-50'
+        return 'from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30'
       case 'warning':
-        return 'from-yellow-50 to-amber-50'
+        return 'from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30'
       case 'success':
-        return 'from-green-50 to-emerald-50'
+        return 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30'
       default:
-        return 'from-blue-50 to-cyan-50'
+        return 'from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30'
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-hidden bg-white/98 dark:bg-gray-800/98 dialog-content-bg"
       >
         <DialogHeader>
           <div className={`flex flex-col items-center text-center space-y-4 p-6 rounded-xl bg-gradient-to-br ${getGradient()}`}>

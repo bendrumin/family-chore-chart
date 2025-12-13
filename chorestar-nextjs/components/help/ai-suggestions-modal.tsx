@@ -14,11 +14,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="max-w-2xl"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="max-w-2xl dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -34,7 +30,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
 
         <div className="space-y-6 mt-6">
           {/* Coming Soon Message */}
-          <div className="p-8 rounded-xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 text-center">
+          <div className="p-8 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 text-center">
             <div className="text-6xl mb-4">🤖</div>
             <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
               Coming Soon!

@@ -19,21 +19,21 @@ const STEPS = [
     image: '🎉',
     content: (
       <div className="space-y-4 text-center">
-        <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-lg text-gray-600 dark:text-gray-400">
           ChoreStar makes chores fun by turning them into a rewarding game for your family.
         </p>
         <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="p-4 bg-blue-50 rounded-xl">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
             <div className="text-3xl mb-2">⭐</div>
-            <div className="text-sm font-bold">Track Progress</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Track Progress</div>
           </div>
-          <div className="p-4 bg-green-50 rounded-xl">
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-xl">
             <div className="text-3xl mb-2">💰</div>
-            <div className="text-sm font-bold">Earn Rewards</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Earn Rewards</div>
           </div>
-          <div className="p-4 bg-purple-50 rounded-xl">
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
             <div className="text-3xl mb-2">🏆</div>
-            <div className="text-sm font-bold">Win Badges</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Win Badges</div>
           </div>
         </div>
       </div>
@@ -46,30 +46,30 @@ const STEPS = [
     image: '👨‍👩‍👧‍👦',
     content: (
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
-          <h4 className="font-bold mb-2 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 rounded-xl border-2 border-purple-200 dark:border-purple-700">
+          <h4 className="font-bold mb-2 flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <span className="text-2xl">1️⃣</span>
             Click "Add Child" on the dashboard
           </h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Add each child's name and age
           </p>
         </div>
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl border-2 border-blue-200">
-          <h4 className="font-bold mb-2 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700">
+          <h4 className="font-bold mb-2 flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <span className="text-2xl">2️⃣</span>
             Choose a fun avatar
           </h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Pick from robots, adventurers, or emojis with custom colors
           </p>
         </div>
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
-          <h4 className="font-bold mb-2 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-6 rounded-xl border-2 border-green-200 dark:border-green-700">
+          <h4 className="font-bold mb-2 flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <span className="text-2xl">3️⃣</span>
             Repeat for all children
           </h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Add as many children as you need!
           </p>
         </div>
@@ -83,21 +83,21 @@ const STEPS = [
     image: '✓',
     content: (
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border-2 border-orange-200">
-          <h4 className="font-bold mb-2">Select a child</h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-700">
+          <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Select a child</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Click on any child from the sidebar to view their chores
           </p>
         </div>
-        <div className="bg-gradient-to-r from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-pink-200">
-          <h4 className="font-bold mb-2">Click "Add Chore"</h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <div className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30 p-6 rounded-xl border-2 border-pink-200 dark:border-pink-700">
+          <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Click "Add Chore"</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Give it a name like "Make bed" or "Do homework"
           </p>
         </div>
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200">
-          <h4 className="font-bold mb-2">Set category & reward</h4>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-6 rounded-xl border-2 border-indigo-200 dark:border-indigo-700">
+          <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Set category & reward</h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Choose from categories like Household, Reading, or Creative Time, then set how many cents they earn
           </p>
         </div>
@@ -112,34 +112,34 @@ const STEPS = [
     content: (
       <div className="space-y-4">
         <div className="text-center mb-6">
-          <p className="text-lg mb-4" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-lg mb-4 text-gray-600 dark:text-gray-400">
             Children can mark chores as complete each day and watch their progress!
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-700">
             <div className="text-2xl mb-2">📊</div>
-            <div className="text-sm font-bold">Weekly Stats</div>
-            <div className="text-xs text-gray-600">Track completions & earnings</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Weekly Stats</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Track completions & earnings</div>
           </div>
-          <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-xl border border-green-200 dark:border-green-700">
             <div className="text-2xl mb-2">🔥</div>
-            <div className="text-sm font-bold">Streaks</div>
-            <div className="text-xs text-gray-600">Build consecutive day streaks</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Streaks</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Build consecutive day streaks</div>
           </div>
-          <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl border border-purple-200 dark:border-purple-700">
             <div className="text-2xl mb-2">🏆</div>
-            <div className="text-sm font-bold">Achievements</div>
-            <div className="text-xs text-gray-600">Unlock special badges</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Achievements</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Unlock special badges</div>
           </div>
-          <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-xl border border-yellow-200 dark:border-yellow-700">
             <div className="text-2xl mb-2">💰</div>
-            <div className="text-sm font-bold">Rewards</div>
-            <div className="text-xs text-gray-600">Earn daily & weekly bonuses</div>
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100">Rewards</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Earn daily & weekly bonuses</div>
           </div>
         </div>
-        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl">
-          <p className="text-center font-bold text-green-900">
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-300 dark:border-green-700 rounded-xl">
+          <p className="text-center font-bold text-green-900 dark:text-green-100">
             ✨ Ready to get started? Click "Let's Go!" below!
           </p>
         </div>
@@ -177,14 +177,13 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col"
+        className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900"
         style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
           backdropFilter: 'blur(20px)'
         }}
       >
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gray-200">
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gray-200 dark:bg-gray-700">
           <div
             className="h-full transition-all duration-300"
             style={{
@@ -201,10 +200,10 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
               key={index}
               className={`w-2 h-2 rounded-full transition-all ${
                 index === currentStep
-                  ? 'w-8 bg-blue-600'
+                  ? 'w-8 bg-blue-600 dark:bg-blue-500'
                   : index < currentStep
-                  ? 'bg-green-500'
-                  : 'bg-gray-300'
+                  ? 'bg-green-500 dark:bg-green-400'
+                  : 'bg-gray-300 dark:bg-gray-600'
               }`}
             />
           ))}
@@ -233,7 +232,7 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
               <StepIcon className="w-8 h-8" style={{ color: 'var(--primary)' }} />
               {step.title}
             </h2>
-            <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-base text-gray-600 dark:text-gray-400">
               {step.description}
             </p>
           </div>
@@ -245,7 +244,7 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
         </div>
 
         {/* Navigation - Fixed at bottom */}
-        <div className="flex-shrink-0 flex items-center justify-between gap-4 px-6 pb-6 border-t border-gray-200 pt-6">
+        <div className="flex-shrink-0 flex items-center justify-between gap-4 px-6 pb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
           <div className="flex gap-2">
             <Button
               type="button"

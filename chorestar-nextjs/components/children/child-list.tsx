@@ -67,16 +67,12 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
             children.map((child, index) => (
               <div
                 key={child.id}
-                className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 group hover-glow relative ${
+                className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 group hover-glow relative backdrop-blur-sm ${
                   selectedChildId === child.id
-                    ? 'border-transparent shadow-2xl scale-105'
-                    : 'border-white/30 hover:border-white/50 hover:shadow-xl hover:scale-102'
+                    ? 'border-transparent shadow-2xl scale-105 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20'
+                    : 'border-white/30 dark:border-gray-700/30 hover:border-white/50 dark:hover:border-gray-600/50 hover:shadow-xl hover:scale-102 bg-white/50 dark:bg-gray-800/50'
                 }`}
                 style={{
-                  background: selectedChildId === child.id
-                    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)'
-                    : 'rgba(255, 255, 255, 0.5)',
-                  backdropFilter: 'blur(10px)',
                   animationDelay: `${index * 0.1}s`
                 }}
               >
@@ -96,8 +92,8 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                   }}
                   className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-lg transition-all ${
                     selectedChildId === child.id
-                      ? 'bg-white/90 hover:bg-white shadow-sm'
-                      : 'opacity-0 group-hover:opacity-100 bg-white/70 hover:bg-white/90'
+                      ? 'bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 shadow-sm'
+                      : 'opacity-0 group-hover:opacity-100 bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90'
                   }`}
                   title="Edit child"
                 >

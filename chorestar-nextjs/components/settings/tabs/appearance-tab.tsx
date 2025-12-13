@@ -3,27 +3,132 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Sparkles, Star, Calendar } from 'lucide-react'
+import { Moon, Sun, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { notificationManager } from '@/lib/utils/notifications'
 
 const SEASONAL_THEMES = [
-  { id: 'christmas', name: 'Christmas', emoji: '🎄', colors: { primary: '#c41e3a', secondary: '#165b33' } },
-  { id: 'halloween', name: 'Halloween', emoji: '🎃', colors: { primary: '#ff6600', secondary: '#1a1a1a' } },
-  { id: 'spring', name: 'Spring', emoji: '🌸', colors: { primary: '#ff69b4', secondary: '#90ee90' } },
-  { id: 'summer', name: 'Summer', emoji: '☀️', colors: { primary: '#ffd700', secondary: '#87ceeb' } },
-  { id: 'fall', name: 'Fall', emoji: '🍂', colors: { primary: '#d2691e', secondary: '#8b4513' } },
-  { id: 'winter', name: 'Winter', emoji: '❄️', colors: { primary: '#4682b4', secondary: '#b0c4de' } },
-  { id: 'valentine', name: 'Valentine', emoji: '💕', colors: { primary: '#ff1493', secondary: '#ff69b4' } },
-  { id: 'easter', name: 'Easter', emoji: '🐰', colors: { primary: '#9370db', secondary: '#ffb6c1' } },
-  { id: 'thanksgiving', name: 'Thanksgiving', emoji: '🦃', colors: { primary: '#d2691e', secondary: '#cd853f' } },
-  { id: 'newYear', name: 'New Year', emoji: '🎉', colors: { primary: '#ffd700', secondary: '#4169e1' } },
-  { id: 'stPatricks', name: "St. Patrick's", emoji: '☘️', colors: { primary: '#228b22', secondary: '#90ee90' } },
-  { id: 'ocean', name: 'Ocean', emoji: '🌊', colors: { primary: '#006994', secondary: '#17c0eb' } },
-  { id: 'sunset', name: 'Sunset', emoji: '🌅', colors: { primary: '#ff6b35', secondary: '#f7931e' } },
+  {
+    id: 'christmas',
+    name: 'Christmas',
+    emoji: '🎄',
+    colors: {
+      light: { primary: '#c41e3a', secondary: '#165b33' },
+      dark: { primary: '#ff4757', secondary: '#2ed573' }
+    }
+  },
+  {
+    id: 'halloween',
+    name: 'Halloween',
+    emoji: '🎃',
+    colors: {
+      light: { primary: '#ff6600', secondary: '#1a1a1a' },
+      dark: { primary: '#ff8c42', secondary: '#7b68ee' }
+    }
+  },
+  {
+    id: 'spring',
+    name: 'Spring',
+    emoji: '🌸',
+    colors: {
+      light: { primary: '#ff69b4', secondary: '#90ee90' },
+      dark: { primary: '#ff85c1', secondary: '#98fb98' }
+    }
+  },
+  {
+    id: 'summer',
+    name: 'Summer',
+    emoji: '☀️',
+    colors: {
+      light: { primary: '#ffd700', secondary: '#87ceeb' },
+      dark: { primary: '#ffe135', secondary: '#4fc3f7' }
+    }
+  },
+  {
+    id: 'fall',
+    name: 'Fall',
+    emoji: '🍂',
+    colors: {
+      light: { primary: '#d2691e', secondary: '#8b4513' },
+      dark: { primary: '#ff8c42', secondary: '#cd853f' }
+    }
+  },
+  {
+    id: 'winter',
+    name: 'Winter',
+    emoji: '❄️',
+    colors: {
+      light: { primary: '#4682b4', secondary: '#b0c4de' },
+      dark: { primary: '#64b5f6', secondary: '#90caf9' }
+    }
+  },
+  {
+    id: 'valentine',
+    name: 'Valentine',
+    emoji: '💕',
+    colors: {
+      light: { primary: '#ff1493', secondary: '#ff69b4' },
+      dark: { primary: '#ff4081', secondary: '#f48fb1' }
+    }
+  },
+  {
+    id: 'easter',
+    name: 'Easter',
+    emoji: '🐰',
+    colors: {
+      light: { primary: '#9370db', secondary: '#ffb6c1' },
+      dark: { primary: '#ba68c8', secondary: '#f8bbd0' }
+    }
+  },
+  {
+    id: 'thanksgiving',
+    name: 'Thanksgiving',
+    emoji: '🦃',
+    colors: {
+      light: { primary: '#d2691e', secondary: '#cd853f' },
+      dark: { primary: '#ff8c42', secondary: '#daa520' }
+    }
+  },
+  {
+    id: 'newYear',
+    name: 'New Year',
+    emoji: '🎉',
+    colors: {
+      light: { primary: '#ffd700', secondary: '#4169e1' },
+      dark: { primary: '#ffe135', secondary: '#5e92f3' }
+    }
+  },
+  {
+    id: 'stPatricks',
+    name: "St. Patrick's",
+    emoji: '☘️',
+    colors: {
+      light: { primary: '#228b22', secondary: '#90ee90' },
+      dark: { primary: '#4caf50', secondary: '#81c784' }
+    }
+  },
+  {
+    id: 'ocean',
+    name: 'Ocean',
+    emoji: '🌊',
+    colors: {
+      light: { primary: '#006994', secondary: '#17c0eb' },
+      dark: { primary: '#0288d1', secondary: '#29b6f6' }
+    }
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    emoji: '🌅',
+    colors: {
+      light: { primary: '#ff6b35', secondary: '#f7931e' },
+      dark: { primary: '#ff8a65', secondary: '#ffab40' }
+    }
+  },
 ]
 
 export function AppearanceTab() {
@@ -34,6 +139,7 @@ export function AppearanceTab() {
   const [autoSeasonalEnabled, setAutoSeasonalEnabled] = useState(false)
   const [isPremiumThemesOpen, setIsPremiumThemesOpen] = useState(false)
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
   useEffect(() => {
     if (settings) {
@@ -42,7 +148,28 @@ export function AppearanceTab() {
       setSeasonalTheme(customTheme.seasonalTheme || null)
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
     }
+    
+    // Check notification permission
+    if (typeof window !== 'undefined') {
+      setNotificationsEnabled(notificationManager.isEnabled())
+    }
   }, [settings])
+  
+  const handleNotificationToggle = async () => {
+    if (notificationsEnabled) {
+      // Can't revoke permission, but we can note it's disabled
+      setNotificationsEnabled(false)
+      toast.info('Notifications disabled. Enable in browser settings to re-enable.')
+    } else {
+      const granted = await notificationManager.requestPermission()
+      if (granted) {
+        setNotificationsEnabled(true)
+        toast.success('🔔 Notifications enabled!')
+      } else {
+        toast.error('Notification permission denied')
+      }
+    }
+  }
 
   const handleThemeChange = async (theme: 'light' | 'dark') => {
     try {
@@ -145,19 +272,19 @@ export function AppearanceTab() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-80 overflow-y-auto p-2 bg-gray-50/50 rounded-xl">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-80 overflow-y-auto p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-xl">
           {/* None option */}
           <button
             onClick={() => handleSeasonalThemeChange(null)}
             className={`p-3 rounded-lg border-2 text-center transition-all duration-200 hover:scale-105 ${
               seasonalTheme === null
                 ? 'border-transparent shadow-lg scale-105'
-                : 'border-gray-200 hover:border-gray-300'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'
             }`}
             style={{
               background: seasonalTheme === null
                 ? 'rgba(99, 102, 241, 0.1)'
-                : 'rgba(255, 255, 255, 0.8)',
+                : undefined,
               borderColor: seasonalTheme === null ? '#6366f1' : undefined
             }}
           >
@@ -177,18 +304,18 @@ export function AppearanceTab() {
               className={`p-3 rounded-lg border-2 text-center transition-all duration-200 hover:scale-105 ${
                 seasonalTheme === theme.id
                   ? 'border-transparent shadow-lg scale-105'
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'
               }`}
               style={{
                 background: seasonalTheme === theme.id
-                  ? `linear-gradient(135deg, ${theme.colors.primary}15, ${theme.colors.secondary}15)`
-                  : 'rgba(255, 255, 255, 0.8)',
-                borderColor: seasonalTheme === theme.id ? theme.colors.primary : undefined
+                  ? `linear-gradient(135deg, ${localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary}15, ${localTheme === 'dark' ? theme.colors.dark.secondary : theme.colors.light.secondary}15)`
+                  : undefined,
+                borderColor: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : undefined
               }}
             >
               <div className="text-2xl mb-1">{theme.emoji}</div>
               <div className="text-xs font-bold" style={{
-                color: seasonalTheme === theme.id ? theme.colors.primary : 'var(--text-primary)'
+                color: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : 'var(--text-primary)'
               }}>
                 {theme.name}
               </div>
@@ -214,6 +341,41 @@ export function AppearanceTab() {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Notifications Section */}
+      <div className="space-y-3">
+        <Label className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          {notificationsEnabled ? (
+            <Bell className="w-5 h-5" />
+          ) : (
+            <BellOff className="w-5 h-5" />
+          )}
+          Push Notifications
+        </Label>
+        <div className="p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            Get reminders for daily chores and weekly progress reports
+          </p>
+          <Button
+            variant={notificationsEnabled ? 'outline' : 'gradient'}
+            size="lg"
+            onClick={handleNotificationToggle}
+            className="font-bold hover-glow w-full"
+          >
+            {notificationsEnabled ? (
+              <>
+                <BellOff className="w-5 h-5 mr-2" />
+                Disable Notifications
+              </>
+            ) : (
+              <>
+                <Bell className="w-5 h-5 mr-2" />
+                Enable Notifications
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Premium Themes Section */}

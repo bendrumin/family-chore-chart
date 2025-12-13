@@ -17,18 +17,18 @@ export function ChoresTab() {
       <div className="space-y-6">
         <div className="text-center py-8">
           <div className="text-6xl mb-4">✓</div>
-          <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
             Chore Management
           </h3>
-          <p className="text-base mb-6" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-base mb-6 text-gray-600 dark:text-gray-400">
             Manage chores for each child from the main dashboard
           </p>
 
           <div className="max-w-md mx-auto space-y-4">
-            <div className="p-6 bg-white rounded-2xl border-2 border-purple-200 hover:border-purple-300 transition-all">
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-purple-200 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700 transition-all">
               <Edit2 className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
-              <h4 className="font-bold mb-2">Bulk Edit Chores</h4>
-              <p className="text-sm text-gray-600 mb-4">
+              <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Bulk Edit Chores</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Edit multiple chores at once - change categories, rewards, or delete in bulk
               </p>
               <Button
@@ -41,10 +41,10 @@ export function ChoresTab() {
               </Button>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl border-2 border-purple-200 hover:border-purple-300 transition-all">
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-purple-200 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700 transition-all">
               <Sparkles className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
-              <h4 className="font-bold mb-2">AI Suggestions</h4>
-              <p className="text-sm text-gray-600 mb-4">
+              <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">AI Suggestions</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Get AI-powered chore recommendations based on your family's habits (Coming Soon)
               </p>
               <Button

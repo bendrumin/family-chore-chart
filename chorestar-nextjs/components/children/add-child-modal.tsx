@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { UserPlus, Sparkles } from 'lucide-react'
+import { playSound } from '@/lib/utils/sound'
 
 interface AddChildModalProps {
   open: boolean
@@ -52,6 +53,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
 
       if (error) throw error
 
+      playSound('celebration')
       toast.success(`🎉 ${formData.name} added successfully!`)
       setFormData({
         name: '',
@@ -62,6 +64,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
       onSuccess()
     } catch (error: any) {
       console.error('Error adding child:', error)
+      playSound('error')
       toast.error(error.message || 'Failed to add child')
     } finally {
       setIsLoading(false)
@@ -72,11 +75,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-y-auto dialog-content-bg"
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -103,11 +102,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Emma"
                 required
-                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
               />
             </div>
 
@@ -124,11 +119,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
                 value={formData.age}
                 onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                 placeholder="e.g., 8"
-                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
               />
             </div>
 
@@ -139,7 +130,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
                 Avatar
               </Label>
               <div
-                className="flex items-center justify-between p-4 rounded-2xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 transition-all duration-300 hover:shadow-lg"
+                className="flex items-center justify-between p-4 rounded-2xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 transition-all duration-300 hover:shadow-lg"
               >
                 <div className="flex items-center gap-4">
                   <div

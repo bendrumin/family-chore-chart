@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2 } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
@@ -51,6 +51,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [localLanguage, setLocalLanguage] = useState('en')
   const [localDailyReward, setLocalDailyReward] = useState('7')
   const [localWeeklyBonus, setLocalWeeklyBonus] = useState('1')
+  const [localSoundEnabled, setLocalSoundEnabled] = useState(true)
+  const [localSoundVolume, setLocalSoundVolume] = useState(50)
   const [isEditChildrenPageOpen, setIsEditChildrenPageOpen] = useState(false)
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
 
@@ -61,6 +63,20 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       setLocalLanguage(settings.language || 'en')
       setLocalDailyReward((settings.daily_reward_cents || 7).toString())
       setLocalWeeklyBonus((settings.weekly_bonus_cents || 1).toString())
+      
+      // Load sound settings from localStorage (sound settings are client-side only)
+      if (typeof window !== 'undefined') {
+        const soundSettings = localStorage.getItem('chorestar_sound_settings')
+        if (soundSettings) {
+          try {
+            const parsed = JSON.parse(soundSettings)
+            setLocalSoundEnabled(parsed.enabled !== false)
+            setLocalSoundVolume(parsed.volume || 50)
+          } catch (e) {
+            // Use defaults
+          }
+        }
+      }
     }
   }, [settings])
 
@@ -73,6 +89,15 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         daily_reward_cents: parseInt(localDailyReward),
         weekly_bonus_cents: parseInt(localWeeklyBonus),
       })
+      
+      // Save sound settings to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('chorestar_sound_settings', JSON.stringify({
+          enabled: localSoundEnabled,
+          volume: localSoundVolume,
+        }))
+      }
+      
       toast.success('✨ Settings saved!')
       onClose()
     } catch (error) {
@@ -89,7 +114,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
     <>
       <div className="space-y-5">
         {/* Reward Settings Section */}
-        <div className="space-y-4 p-4 rounded-xl border-2 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+        <div className="space-y-4 p-4 rounded-xl border-2 border-green-200 dark:border-green-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -112,11 +137,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 max="100"
                 value={localDailyReward}
                 onChange={(e) => setLocalDailyReward(e.target.value)}
-                className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
               />
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 Amount earned per day when all chores are completed
@@ -134,11 +155,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 max="50"
                 value={localWeeklyBonus}
                 onChange={(e) => setLocalWeeklyBonus(e.target.value)}
-                className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
               />
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 Bonus for completing all chores all week
@@ -148,7 +165,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Edit All Children Section */}
-        <div className="p-4 rounded-xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -173,7 +190,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Family Sharing Section */}
-        <div className="p-4 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+        <div className="p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -206,11 +223,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         <select
           value={localCurrencyCode}
           onChange={(e) => setLocalCurrencyCode(e.target.value)}
-          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 rounded-xl bg-white hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all duration-200"
-          style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)'
-          }}
+          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"
         >
           {CURRENCIES.map((currency) => (
             <option key={currency.code} value={currency.code}>
@@ -229,11 +242,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         <select
           value={localDateFormat}
           onChange={(e) => setLocalDateFormat(e.target.value)}
-          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 rounded-xl bg-white hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all duration-200"
-          style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)'
-          }}
+          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"
         >
           {DATE_FORMATS.map((format) => (
             <option key={format.id} value={format.id}>
@@ -252,11 +261,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         <select
           value={localLanguage}
           onChange={(e) => setLocalLanguage(e.target.value)}
-          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 rounded-xl bg-white hover:border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all duration-200"
-          style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)'
-          }}
+          className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"
         >
           {LANGUAGES.map((lang) => (
             <option key={lang.code} value={lang.code}>
@@ -266,8 +271,54 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </select>
       </div>
 
+      {/* Sound Settings */}
+      <div className="space-y-4 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
+        <div className="flex items-center gap-2 mb-3">
+          {localSoundEnabled ? (
+            <Volume2 className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+          ) : (
+            <VolumeX className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
+          )}
+          <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+            Sound Effects
+          </h5>
+        </div>
+        
+        <div className="space-y-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={localSoundEnabled}
+              onChange={(e) => setLocalSoundEnabled(e.target.checked)}
+              className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Enable sound effects
+            </span>
+          </label>
+          
+          {localSoundEnabled && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Volume: {localSoundVolume}%
+                </Label>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={localSoundVolume}
+                onChange={(e) => setLocalSoundVolume(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
         {/* Save Button */}
-        <div className="pt-4 mt-2 border-t border-gray-200">
+        <div className="pt-4 mt-2 border-t border-gray-200 dark:border-gray-700">
           <Button
             variant="gradient"
             size="lg"

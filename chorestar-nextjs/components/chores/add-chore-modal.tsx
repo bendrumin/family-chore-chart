@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Sparkles, DollarSign } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
+import { playSound } from '@/lib/utils/sound'
 
 interface AddChoreModalProps {
   open: boolean
@@ -47,11 +48,13 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
       if (error) throw error
 
+      playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
       setFormData({ name: '', rewardAmount: '1.00', icon: '📝', category: 'household_chores' })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)
+      playSound('error')
       toast.error(error.message || 'Failed to add chore')
     } finally {
       setIsLoading(false)
@@ -62,11 +65,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-y-auto dialog-content-bg"
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -93,11 +92,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Make bed, Do homework, Clean room"
                 required
-                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(10px)'
-                }}
+                className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
               />
             </div>
 
@@ -127,12 +122,12 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                     className={`p-3 rounded-xl border-2 text-left transition-all duration-200 hover:scale-105 ${
                       formData.category === category.id
                         ? 'border-transparent shadow-lg scale-105'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'
                     }`}
                     style={{
                       background: formData.category === category.id
                         ? category.bgColor
-                        : 'rgba(255, 255, 255, 0.8)',
+                        : undefined,
                       borderColor: formData.category === category.id
                         ? category.color
                         : undefined
@@ -163,7 +158,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 Reward Amount
               </Label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-500 dark:text-gray-400">$</span>
                 <Input
                   id="reward"
                   type="number"
@@ -173,11 +168,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                   value={formData.rewardAmount}
                   onChange={(e) => setFormData({ ...formData, rewardAmount: e.target.value })}
                   required
-                  className="h-14 pl-10 text-xl font-bold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(10px)'
-                  }}
+                  className="h-14 pl-10 text-xl font-bold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
                 />
               </div>
               <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
+import { playSound } from '@/lib/utils/sound'
 import { ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -116,6 +117,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
           .in('id', choreIds)
 
         if (error) throw error
+        playSound('success')
         toast.success(`✨ Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} category`)
       } else if (bulkAction === 'reward') {
         const { error } = await supabase
@@ -124,6 +126,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
           .in('id', choreIds)
 
         if (error) throw error
+        playSound('success')
         toast.success(`💰 Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} reward`)
       } else if (bulkAction === 'delete') {
         const { error } = await supabase
@@ -132,6 +135,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
           .in('id', choreIds)
 
         if (error) throw error
+        playSound('notification')
         toast.success(`🗑️ Deleted ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''}`)
       }
 
@@ -141,6 +145,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
       onSuccess()
     } catch (error: any) {
       console.error('Error bulk updating chores:', error)
+      playSound('error')
       toast.error(error.message || 'Failed to update chores')
     } finally {
       setIsLoading(false)
@@ -155,11 +160,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="overflow-y-auto max-w-4xl"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-y-auto max-w-4xl dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -215,8 +216,8 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
                   key={chore.id}
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
                     selectedChoreIds.has(chore.id)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800'
                   }`}
                   onClick={() => toggleChoreSelection(chore.id)}
                 >
@@ -310,7 +311,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
                     id="bulk-category"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 rounded-xl bg-white"
+                    className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   >
                     <option value="household_chores">🏠 Household Chores</option>
                     <option value="learning_education">📚 Learning & Education</option>
