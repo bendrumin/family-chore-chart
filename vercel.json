@@ -14,7 +14,38 @@
       "use": "@vercel/static"
     }
   ],
+  "redirects": [
+    {
+      "source": "/login",
+      "destination": "/app/login",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "destination": "/app/signup",
+      "permanent": false
+    },
+    {
+      "source": "/forgot-password",
+      "destination": "/app/forgot-password",
+      "permanent": false
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/app/reset-password",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/app/dashboard",
+      "permanent": false
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/_next/:path*",
+      "destination": "/chorestar-nextjs/_next/:path*"
+    },
     {
       "source": "/app",
       "destination": "/chorestar-nextjs/dashboard"
@@ -66,7 +97,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://api.dicebear.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.dicebear.com https://www.googletagmanager.com https://www.google-analytics.com; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://api.dicebear.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.dicebear.com https://www.googletagmanager.com https://www.google-analytics.com; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none';"
         },
         {
           "key": "X-Content-Type-Options",

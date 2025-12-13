@@ -36,9 +36,16 @@ export function VersionSwitcher() {
 
   const switchToOldVersion = () => {
     // Get current path and redirect to old version
-    let currentPath = window.location.pathname.replace('/app', '')
+    let currentPath = window.location.pathname.replace(/^\/app/, '')
     // Map common routes - dashboard goes to home in old version
-    if (currentPath === '/dashboard' || currentPath === '') {
+    if (
+      currentPath === '/dashboard' ||
+      currentPath === '' ||
+      currentPath === '/login' ||
+      currentPath === '/signup' ||
+      currentPath === '/forgot-password' ||
+      currentPath === '/reset-password'
+    ) {
       window.location.href = '/'
     } else {
       window.location.href = currentPath || '/'
