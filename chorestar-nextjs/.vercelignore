@@ -1,0 +1,3 @@
+# Vercel ignore file for Next.js app
+# This ensures Vercel doesn't try to build from wrong location
+
