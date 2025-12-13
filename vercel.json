@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "chorestar-nextjs/package.json",
-      "use": "@vercel/next"
+      "use": "@vercel/next",
+      "config": {
+        "outputDirectory": "chorestar-nextjs/.next"
+      }
     },
     {
       "src": "frontend/api/**/*.js",
@@ -15,6 +18,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/app/_next/:path*",
+      "destination": "/chorestar-nextjs/_next/:path*"
+    },
     {
       "source": "/app/:path*",
       "destination": "/chorestar-nextjs/:path*"
