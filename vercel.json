@@ -2,6 +2,10 @@
   "version": 2,
   "builds": [
     {
+      "src": "chorestar-nextjs/package.json",
+      "use": "@vercel/next"
+    },
+    {
       "src": "frontend/api/**/*.js",
       "use": "@vercel/node"
     },
@@ -11,6 +15,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/app/:path*",
+      "destination": "/chorestar-nextjs/:path*"
+    },
     {
       "source": "/api/health",
       "destination": "/frontend/api/health.js"
@@ -71,4 +79,4 @@
       ]
     }
   ]
-} 
+}

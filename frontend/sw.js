@@ -21,15 +21,28 @@ self.addEventListener('install', event => {
 });
 
 // Fetch event - serve from cache when offline
+// IMPORTANT: Only intercept same-origin requests, allow external resources through
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      }
-    )
-  );
+  const url = new URL(event.request.url)
+  
+  // Only intercept same-origin requests (our app files)
+  // Allow ALL external resources (CDNs, fonts, APIs) to pass through
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          // Return cached version or fetch from network
+          return response || fetch(event.request);
+        })
+        .catch(() => {
+          // If cache fails, just fetch normally
+          return fetch(event.request);
+        })
+    );
+  } else {
+    // External resource - don't intercept, let it fetch normally
+    return;
+  }
 });
 
 // Push notification event
