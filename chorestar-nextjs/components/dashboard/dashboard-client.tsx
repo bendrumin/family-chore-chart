@@ -19,7 +19,7 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { Plus, HelpCircle, Sparkles, Mail } from 'lucide-react'
+import { Plus, HelpCircle, Sparkles, Mail, ArrowLeft } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Profile = {
@@ -314,6 +314,20 @@ function DashboardContent({
                 </Button>
               </div>
               {/* Always visible: Settings and Sign Out */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.location.href = '/'
+                }}
+                className="font-semibold hover-glow text-xs sm:text-sm"
+                title="Switch to Original Version"
+                style={{
+                  borderColor: buttonColor === 'white' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(99, 102, 241, 0.3)',
+                }}
+              >
+                <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Use Original</span>
+              </Button>
               <SettingsMenu buttonColor={buttonColor} />
               <Button
                 variant="outline"

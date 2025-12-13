@@ -1,7 +1,7 @@
 // Supabase Configuration
 // Replace these values with your actual Supabase project credentials
-const SUPABASE_URL = window.SUPABASE_URL || 'your_supabase_url_here';
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'your_supabase_anon_key_here';
+const SUPABASE_URL = (window.SUPABASE_URL || 'your_supabase_url_here').trim();
+const SUPABASE_ANON_KEY = (window.SUPABASE_ANON_KEY || 'your_supabase_anon_key_here').trim();
 
 // Debug: Log what's available
 console.log('🔍 Supabase Config Debug:', {

@@ -96,7 +96,7 @@ export function LoginForm() {
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button type="submit" variant="gradient" className="w-full text-white" disabled={isLoading}>
         {isLoading ? 'Signing in...' : 'Sign In'}
       </Button>
 
