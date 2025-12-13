@@ -1,14 +1,14 @@
-// Service Worker for ChoreStar PWA
-const CACHE_NAME = 'chorestar-v1'
+// Service Worker for ChoreStar Next.js App (only for /app paths)
+const CACHE_NAME = 'chorestar-nextjs-v1'
 const urlsToCache = [
-  '/',
-  '/login',
-  '/dashboard',
-  '/manifest.json',
+  '/app/',
+  '/app/dashboard',
+  '/app/login',
+  '/app/manifest.json',
 ]
 
 // Install event - cache resources
-self.addEventListener('install', (event: any) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -23,7 +23,7 @@ self.addEventListener('install', (event: any) => {
 })
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event: any) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -40,41 +40,38 @@ self.addEventListener('activate', (event: any) => {
 })
 
 // Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event: any) => {
+// IMPORTANT: Only intercept requests for /app paths, allow external resources through
+self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
   
-  // Only intercept requests for our app, not external resources
-  // Allow external CDNs, fonts, and APIs to pass through
-  if (
-    url.origin !== self.location.origin ||
-    url.pathname.startsWith('/app') ||
-    url.pathname === '/' ||
-    url.pathname.startsWith('/api')
-  ) {
-    // Only intercept same-origin requests for our app
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          // Return cached version or fetch from network
-          return response || fetch(event.request)
-        })
-        .catch(() => {
-          // If both fail, return offline page for document requests
-          if (event.request.destination === 'document') {
-            return caches.match('/app/dashboard').catch(() => fetch(event.request))
-          }
-          // For other requests, just fetch normally
-          return fetch(event.request)
-        })
-    )
+  // Only intercept requests for our app paths
+  // Allow ALL external resources (CDNs, fonts, APIs) to pass through without interception
+  if (url.pathname.startsWith('/app/') || url.pathname === '/app') {
+    // Only intercept same-origin requests for /app paths
+    if (url.origin === self.location.origin) {
+      event.respondWith(
+        caches.match(event.request)
+          .then((response) => {
+            // Return cached version or fetch from network
+            return response || fetch(event.request)
+          })
+          .catch(() => {
+            // If both fail, try to fetch normally
+            return fetch(event.request)
+          })
+      )
+    } else {
+      // External resource for /app - let it through
+      return
+    }
   } else {
-    // For external resources, don't intercept - let them fetch normally
+    // Not an /app path - don't intercept at all
     return
   }
 })
 
 // Push notification event
-self.addEventListener('push', (event: any) => {
+self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {}
   const title = data.title || 'ChoreStar'
   const options = {
@@ -83,7 +80,7 @@ self.addEventListener('push', (event: any) => {
     badge: '/icon-192x192.png',
     vibrate: [100, 50, 100],
     data: {
-      url: data.url || '/',
+      url: data.url || '/app/dashboard',
       ...data
     },
     actions: [
@@ -106,13 +103,12 @@ self.addEventListener('push', (event: any) => {
 })
 
 // Notification click event
-self.addEventListener('notificationclick', (event: any) => {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   if (event.action === 'open' || !event.action) {
     event.waitUntil(
-      clients.openWindow(event.notification.data?.url || '/')
+      clients.openWindow(event.notification.data?.url || '/app/dashboard')
     )
   }
 })
-
