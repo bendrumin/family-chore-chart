@@ -48,12 +48,13 @@ export function DownloadsTab() {
     setIsExporting(true)
     try {
       const supabase = createClient()
-      
-      // Load all data
-      const [childrenRes, choresRes, completionsRes] = await Promise.all([
+
+      // Load all data including family settings
+      const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user.id),
         supabase.from('chores').select('*').eq('user_id', user.id),
-        supabase.from('chore_completions').select('*').eq('user_id', user.id)
+        supabase.from('chore_completions').select('*').eq('user_id', user.id),
+        supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -66,6 +67,8 @@ export function DownloadsTab() {
         completions: completionsRes.data || [],
         weekStart: getWeekStart(),
         currencySymbol: getCurrencySymbol(),
+        dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
+        weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
       })
 
       toast.success('PDF exported successfully!')
@@ -86,12 +89,13 @@ export function DownloadsTab() {
     setIsExporting(true)
     try {
       const supabase = createClient()
-      
-      // Load all data
-      const [childrenRes, choresRes, completionsRes] = await Promise.all([
+
+      // Load all data including family settings
+      const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user.id),
         supabase.from('chores').select('*').eq('user_id', user.id),
-        supabase.from('chore_completions').select('*').eq('user_id', user.id)
+        supabase.from('chore_completions').select('*').eq('user_id', user.id),
+        supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -104,6 +108,8 @@ export function DownloadsTab() {
         completions: completionsRes.data || [],
         weekStart: getWeekStart(),
         currencySymbol: getCurrencySymbol(),
+        dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
+        weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
       })
 
       toast.success('CSV exported successfully!')

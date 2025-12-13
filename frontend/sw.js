@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chorestar-v1';
+const CACHE_NAME = 'chorestar-v2-fixed';
 const urlsToCache = [
   '/',
   '/style.css',
@@ -17,7 +17,30 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .catch(err => {
+        console.warn('Cache addAll failed (non-critical):', err);
+      })
   );
+  // Force activation of new service worker
+  self.skipWaiting();
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  // Take control of all pages immediately
+  return self.clients.claim();
 });
 
 // Fetch event - serve from cache when offline
@@ -25,24 +48,33 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url)
   
-  // Only intercept same-origin requests (our app files)
-  // Allow ALL external resources (CDNs, fonts, APIs) to pass through
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request)
-        .then(response => {
-          // Return cached version or fetch from network
-          return response || fetch(event.request);
-        })
-        .catch(() => {
-          // If cache fails, just fetch normally
-          return fetch(event.request);
-        })
-    );
-  } else {
-    // External resource - don't intercept, let it fetch normally
+  // NEVER intercept external resources (CDNs, fonts, APIs)
+  // Only intercept same-origin requests for our app files
+  if (url.origin !== self.location.origin) {
+    // External resource - don't intercept at all, let it fetch normally
     return;
   }
+  
+  // Only intercept same-origin requests (our app files)
+  // Skip service worker files themselves
+  if (url.pathname.includes('/sw.js') || url.pathname.includes('/app-sw.js')) {
+    return;
+  }
+  
+  // Handle same-origin requests with caching
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached version or fetch from network
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).catch(() => {
+          // If fetch fails and no cache, return a basic error response
+          return new Response('Network error', { status: 408 });
+        });
+      })
+  );
 });
 
 // Push notification event

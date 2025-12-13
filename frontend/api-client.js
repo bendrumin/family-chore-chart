@@ -984,6 +984,14 @@ class ApiClient {
             const chores = await this.getChores();
             const completions = await this.getChoreCompletions();
             
+            // Limit completions to prevent "Invalid string length" errors
+            const MAX_COMPLETIONS = 50000; // Safety limit
+            const limitedCompletions = completions.slice(0, MAX_COMPLETIONS);
+            
+            if (completions.length > MAX_COMPLETIONS) {
+                console.warn(`Export limited to ${MAX_COMPLETIONS} completions (had ${completions.length} total)`);
+            }
+            
             const report = {
                 generatedAt: new Date().toISOString(),
                 children: children.map(child => ({
@@ -997,7 +1005,15 @@ class ApiClient {
                     }))
                 })),
                 totalChores: chores.length,
-                totalCompletions: completions.length
+                totalCompletions: completions.length,
+                exportedCompletions: limitedCompletions.length,
+                truncated: completions.length > MAX_COMPLETIONS,
+                completions: limitedCompletions.map(comp => ({
+                    chore_id: comp.chore_id,
+                    week_start: comp.week_start,
+                    day_of_week: comp.day_of_week,
+                    created_at: comp.created_at
+                }))
             };
 
             return { success: true, report };

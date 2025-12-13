@@ -140,7 +140,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
               />
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                Amount earned per day when all chores are completed
+                Amount earned per day when any chore is completed
               </p>
             </div>
 
@@ -158,7 +158,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
               />
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                Bonus for completing all chores all week
+                Bonus for completing all chores every day for the whole week
               </p>
             </div>
           </div>
