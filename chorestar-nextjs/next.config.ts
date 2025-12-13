@@ -2,10 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Set base path for deployment at /app
-  basePath: process.env.NODE_ENV === 'production' ? '/app' : '',
-  // Ensure asset paths work correctly
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/app' : '',
+  // Note: basePath is handled by Vercel routing, not here
   images: {
     domains: ['api.dicebear.com'],
     remotePatterns: [
