@@ -35,6 +35,8 @@ export function exportFamilyReportCSV(options: ExportOptions) {
   let filteredCompletions = completions
   if (startDate && endDate) {
     filteredCompletions = completions.filter(c => {
+      // Skip completions with null day_of_week
+      if (c.day_of_week == null) return false
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
@@ -60,6 +62,9 @@ export function exportFamilyReportCSV(options: ExportOptions) {
     // Note: Individual chore earnings shown here are for reference only
     // Actual earnings are calculated based on daily_reward_cents per day worked
     for (const comp of childCompletions) {
+      // Skip completions with null day_of_week
+      if (comp.day_of_week == null) continue
+      
       const chore = childChores.find(c => c.id === comp.chore_id)
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(comp.week_start)
@@ -153,6 +158,8 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
   let filteredCompletions = completions
   if (startDate && endDate) {
     filteredCompletions = completions.filter(c => {
+      // Skip completions with null day_of_week
+      if (c.day_of_week == null) return false
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
@@ -210,7 +217,10 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
     const completionsPerDay = new Map<number, number>()
     childCompletions.forEach(comp => {
       const day = comp.day_of_week
-      completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+      // Skip completions with null/undefined day_of_week
+      if (day != null) {
+        completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
+      }
     })
 
     // Count perfect days (days where ALL chores are completed)
