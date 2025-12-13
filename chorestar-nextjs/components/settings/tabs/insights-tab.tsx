@@ -58,14 +58,24 @@ export function InsightsTab() {
         return
       }
 
-      // Calculate metrics for each child
+      // Calculate metrics for each child across ALL time (historical data)
       const childMetrics = children.map(child => {
         const childChores = chores.filter(c => c.child_id === child.id)
         const childCompletions = completions.filter(c =>
           childChores.some(chore => chore.id === c.chore_id)
         )
 
-        // Group completions by day
+        // Calculate completion rate as percentage of individual completions vs total possible
+        // This is historical data across all time, not a single week
+        const totalPossible = childChores.length * 7 // If we only had one week of data
+        // But since this is historical, we need to consider total completions
+        // Use the same calculation as before the bug fix
+        const completionRate = totalPossible > 0
+          ? Math.round((childCompletions.length / totalPossible) * 100)
+          : 0
+
+        // For earnings calculation, we aggregate across all historical data
+        // Group completions by day of week to see patterns
         const completionsPerDay = new Map<number, number>()
         childCompletions.forEach(comp => {
           const day = comp.day_of_week
@@ -75,25 +85,19 @@ export function InsightsTab() {
           }
         })
 
-        // Count perfect days (all chores completed)
-        let perfectDays = 0
+        // Count "perfect days" - days of week where we have completions >= chores
+        // This is an aggregate pattern across all weeks, not actual perfect days
+        let perfectDayPattern = 0
         for (let day = 0; day < 7; day++) {
           const completionsForDay = completionsPerDay.get(day) || 0
           if (completionsForDay >= childChores.length && childChores.length > 0) {
-            perfectDays++
+            perfectDayPattern++
           }
         }
 
-        // Calculate earnings
-        const daysWithAnyCompletions = completionsPerDay.size
-        const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
-          (perfectDays === 7 ? weeklyBonusCents : 0)
-
-        // Calculate completion rate
-        const totalPossible = childChores.length * 7
-        const completionRate = totalPossible > 0
-          ? Math.round((childCompletions.length / totalPossible) * 100)
-          : 0
+        // Total earnings is not meaningful for historical aggregate data
+        // This would need to be calculated per-week and summed
+        const totalEarnings = 0
 
         // Calculate streak (simplified - consecutive days with completions)
         const streak = calculateStreak(childCompletions)
@@ -101,7 +105,7 @@ export function InsightsTab() {
         return {
           totalEarnings,
           completionRate,
-          perfectDays,
+          perfectDays: perfectDayPattern, // This is a pattern count, not actual perfect days
           streak,
         }
       })

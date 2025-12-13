@@ -3,8 +3,8 @@ import path from 'path'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Note: basePath is handled by Vercel routing via vercel.json rewrites
-  // distDir is set to .next (default) - Vercel will find it in chorestar-nextjs/.next
+  // Note: basePath is NOT used - routing is handled via vercel.json rewrites
+  // DO NOT add basePath when using builds configuration in vercel.json
   distDir: '.next',
   // Set output file tracing root to parent directory (resolves lockfile warning)
   outputFileTracingRoot: path.join(__dirname, '..'),
