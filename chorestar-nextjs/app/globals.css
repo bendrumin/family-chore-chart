@@ -56,6 +56,10 @@
 
   .dark {
     /* Dark Mode Colors */
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --primary-light: #a5b4fc;
+
     --bg-primary: #1f2937;
     --bg-secondary: #111827;
     --card-bg: rgba(31, 41, 55, 0.95);
@@ -177,6 +181,32 @@
     width: 300px;
     height: 300px;
   }
+
+  /* Touch device optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+  }
+
+  /* Ensure minimum touch target sizes */
+  @media (pointer: coarse) {
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Respect user's motion preferences for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
   /* Dialog Content Styles */
@@ -185,6 +215,51 @@
     height: auto;
     min-height: 500px;
     background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+  }
+
+  .dark .dialog-content-settings {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+  }
+
+  /* Dialog Content Background - Common modal background */
+  .dialog-content-bg {
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .dark .dialog-content-bg {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+  }
+
+  /* Card Background - Glass effect */
+  .card-bg-glass {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%);
+  }
+
+  .dark .card-bg-glass {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%);
+  }
+
+  /* Input Background - Glass effect */
+  .input-bg-glass {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .dark .input-bg-glass {
+    background: rgba(31, 41, 55, 0.9);
+  }
+
+  /* Transparent pattern background */
+  .transparent-pattern {
+    background: linear-gradient(45deg, #f0f0f0 25%, #fff 25%, #fff 50%, #f0f0f0 50%, #f0f0f0 75%, #fff 75%, #fff);
+    background-size: 8px 8px;
+  }
+
+  .dark .transparent-pattern {
+    background: linear-gradient(45deg, #374151 25%, #4b5563 25%, #4b5563 50%, #374151 50%, #374151 75%, #4b5563 75%, #4b5563);
   }
 
   /* Dialog Header Styles */
@@ -198,6 +273,11 @@
     position: sticky;
     top: 0;
     z-index: 20;
+  }
+
+  .dark .dialog-header-settings {
+    border-bottom: 1px solid rgba(55, 65, 81, 1);
+    background: rgba(31, 41, 55, 0.8);
   }
 
   .dialog-title-gradient {
@@ -224,11 +304,22 @@
     transition: all 0.2s;
     background: transparent;
     color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+  }
+
+  .dark .settings-tab-button {
+    color: var(--text-secondary);
   }
 
   .settings-tab-button:hover {
     background: rgba(255, 255, 255, 0.5);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .dark .settings-tab-button:hover {
+    background: rgba(55, 65, 81, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 
   .settings-tab-button.active {

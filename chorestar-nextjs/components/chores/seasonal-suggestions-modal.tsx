@@ -99,11 +99,7 @@ export function SeasonalSuggestionsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="max-w-3xl max-h-[90vh] overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="max-w-3xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -137,7 +133,7 @@ export function SeasonalSuggestionsModal({
             {currentTheme.seasonalActivities.map((activity, index) => (
               <div
                 key={index}
-                className="p-4 rounded-xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm flex items-center gap-4 hover:border-orange-400 transition-all hover:shadow-lg relative overflow-hidden group"
+                className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm flex items-center gap-4 hover:border-orange-400 transition-all hover:shadow-lg relative overflow-hidden group"
               >
                 {/* Top border animation on hover */}
                 <div 
@@ -149,7 +145,7 @@ export function SeasonalSuggestionsModal({
                   <h4 className="font-bold mb-1 group-hover:text-orange-600 transition-colors" style={{ color: 'var(--text-primary)' }}>
                     {activity.name}
                   </h4>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 font-medium" style={{ color: 'var(--text-secondary)' }}>
                     {activity.category.replace('_', ' ')}
                   </span>
                 </div>
@@ -167,8 +163,8 @@ export function SeasonalSuggestionsModal({
           </div>
 
           {!childId && (
-            <div className="p-4 rounded-xl bg-yellow-50 border-2 border-yellow-200 text-center">
-              <p className="text-sm font-bold" style={{ color: '#b8860b' }}>
+            <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-200 dark:border-yellow-700 text-center">
+              <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300">
                 ⚠️ Please select a child first to add activities
               </p>
             </div>

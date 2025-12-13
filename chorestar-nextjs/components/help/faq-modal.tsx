@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronDown, ChevronUp, Search, HelpCircle } from 'lucide-react'
@@ -112,13 +112,10 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="overflow-hidden max-w-4xl max-h-[90vh]"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        onClose={() => onOpenChange(false)}
+        className="max-w-4xl max-h-[90vh] dialog-content-bg flex flex-col"
       >
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
             background: 'var(--gradient-primary)',
             WebkitBackgroundClip: 'text',
@@ -130,21 +127,21 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 my-6">
+        <div className="space-y-6 my-6 flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
               type="text"
               placeholder="Search for help..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-14 pl-12 text-base font-semibold border-2 rounded-xl"
+              className="h-14 pl-12 text-base font-semibold border-2 rounded-xl input-bg-glass"
             />
           </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 flex-shrink-0">
             {categories.map((category) => (
               <Button
                 key={category}
@@ -159,8 +156,8 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
             ))}
           </div>
 
-          {/* FAQ Items */}
-          <div className="space-y-3 overflow-y-auto max-h-96">
+          {/* FAQ Items - Scrollable */}
+          <div className="space-y-3 overflow-y-auto flex-1 min-h-0">
             {filteredFAQ.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔍</div>
@@ -172,15 +169,15 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
               filteredFAQ.map((item, index) => (
                 <div
                   key={index}
-                  className="border-2 border-gray-200 rounded-xl overflow-hidden transition-all hover:border-purple-300"
+                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all hover:border-purple-300 dark:hover:border-purple-600"
                 >
                   <button
                     type="button"
                     onClick={() => toggleItem(index)}
-                    className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-all"
+                    className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                   >
                     <div className="flex-1">
-                      <div className="text-xs font-bold text-purple-600 mb-1">
+                      <div className="text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">
                         {item.category}
                       </div>
                       <div className="font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -194,7 +191,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
                     )}
                   </button>
                   {expandedItems.has(index) && (
-                    <div className="p-4 pt-0 border-t border-gray-200 bg-gray-50">
+                    <div className="p-4 pt-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                       <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                         {item.answer}
                       </p>
@@ -204,26 +201,38 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
               ))
             )}
           </div>
-
-          {/* Contact Support */}
-          <div className="p-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 text-center">
-            <div className="text-4xl mb-3">💬</div>
-            <h4 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-              Still need help?
-            </h4>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Can't find what you're looking for? We're here to help!
-            </p>
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={() => window.open('mailto:support@chorestar.app', '_blank')}
-              className="font-bold hover-glow"
-            >
-              Contact Support
-            </Button>
-          </div>
         </div>
+
+        {/* Contact Support */}
+        <div className="p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 text-center flex-shrink-0">
+          <div className="text-4xl mb-3">💬</div>
+          <h4 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+            Still need help?
+          </h4>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            Can't find what you're looking for? We're here to help!
+          </p>
+          <Button
+            variant="gradient"
+            size="lg"
+            onClick={() => window.open('mailto:support@chorestar.app', '_blank')}
+            className="font-bold hover-glow"
+          >
+            Contact Support
+          </Button>
+        </div>
+
+        <DialogFooter className="gap-3 flex-shrink-0 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            size="lg"
+            className="flex-1 font-bold"
+          >
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

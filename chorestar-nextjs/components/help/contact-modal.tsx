@@ -143,11 +143,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -163,7 +159,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           {/* Contact Info */}
-          <div className="p-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+          <div className="p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
             <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
               Get in Touch
             </h3>
@@ -171,7 +167,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               We're here to help! Send us a message and we'll get back to you within 24 hours.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all hover:shadow-md">
+              <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
                 <span className="text-2xl flex-shrink-0">📧</span>
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
@@ -180,7 +176,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                   <p className="text-sm m-0" style={{ color: 'var(--text-secondary)' }}>hi@chorestar.app</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all hover:shadow-md">
+              <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
                 <span className="text-2xl flex-shrink-0">⏰</span>
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
@@ -189,7 +185,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                   <p className="text-sm m-0" style={{ color: 'var(--text-secondary)' }}>Within 24 hours</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all hover:shadow-md">
+              <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
                 <span className="text-2xl flex-shrink-0">🌍</span>
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
@@ -253,7 +249,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               required
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-              className="w-full h-14 px-4 rounded-xl border-2 border-gray-200 bg-white focus:border-primary focus:outline-none transition-colors"
+              className="w-full h-14 px-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary focus:outline-none transition-colors"
             >
               <option value="">Select a topic</option>
               <option value="general">General Question</option>
@@ -279,7 +275,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 setCharCount(e.target.value.length)
               }}
               placeholder="Tell us how we can help you..."
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white focus:border-primary focus:outline-none transition-colors resize-none"
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary focus:outline-none transition-colors resize-none"
             />
             <small className={`text-xs mt-1 ${charCount > 900 ? 'text-red-500' : ''}`} style={{ color: charCount > 900 ? '#ef4444' : 'var(--text-secondary)' }}>
               {charCount}/1000 characters

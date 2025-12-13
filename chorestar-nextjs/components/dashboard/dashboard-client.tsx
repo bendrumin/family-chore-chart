@@ -273,54 +273,58 @@ function DashboardContent({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsNewFeaturesOpen(true)}
-                className="hover-glow"
-                title="What's New"
-                style={{
-                  color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                }}
-              >
-                <Sparkles className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsFAQOpen(true)}
-                className="hover-glow"
-                title="Help & FAQ"
-                style={{
-                  color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                }}
-              >
-                <HelpCircle className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsContactOpen(true)}
-                className="hover-glow"
-                title="Contact Us"
-                style={{
-                  color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                }}
-              >
-                <Mail className="w-5 h-5" />
-              </Button>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Secondary actions - hidden on very small screens */}
+              <div className="hidden sm:flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsNewFeaturesOpen(true)}
+                  className="hover-glow"
+                  title="What's New"
+                  style={{
+                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
+                  }}
+                >
+                  <Sparkles className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFAQOpen(true)}
+                  className="hover-glow"
+                  title="Help & FAQ"
+                  style={{
+                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
+                  }}
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsContactOpen(true)}
+                  className="hover-glow"
+                  title="Contact Us"
+                  style={{
+                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
+                  }}
+                >
+                  <Mail className="w-5 h-5" />
+                </Button>
+              </div>
+              {/* Always visible: Settings and Sign Out */}
               <SettingsMenu buttonColor={buttonColor} />
               <Button
                 variant="outline"
                 onClick={handleLogout}
-                className="font-semibold hover-glow"
+                className="font-semibold hover-glow text-xs sm:text-sm"
                 style={{
-                  borderColor: buttonColor === 'white' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(99, 102, 241, 0.3)',
-                  color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
+                  borderColor: buttonColor === 'white' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(99, 102, 241, 0.3)'
                 }}
               >
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
+                <span className="sm:hidden">Out</span>
               </Button>
             </div>
           </div>
@@ -330,9 +334,7 @@ function DashboardContent({
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {children.length === 0 ? (
-          <Card className="text-center animate-bounce-in" style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%)'
-          }}>
+          <Card className="text-center animate-bounce-in card-bg-glass">
             <CardHeader className="pb-2">
               <div className="text-7xl mb-4 animate-float">🎉</div>
               <CardTitle

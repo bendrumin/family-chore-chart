@@ -47,11 +47,12 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
       />
       {/* Content */}
       <div
-        className="relative w-full max-w-full flex items-center justify-center"
+        className="relative w-full max-w-full flex items-center justify-center pointer-events-none"
         data-dialog-content="true"
-        onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        <div onClick={(e) => e.stopPropagation()} className="pointer-events-auto">
+          {children}
+        </div>
       </div>
     </div>
   )
@@ -77,9 +78,10 @@ const DialogContent = React.forwardRef<
     {onClose && (
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-[10002] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-white/80 dark:bg-gray-800/80 p-1"
+        className="absolute right-4 top-4 z-[10002] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-white/80 dark:bg-gray-800/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+        aria-label="Close"
       >
-        <X className="h-4 w-4" />
+        <X className="h-5 w-5" />
         <span className="sr-only">Close</span>
       </button>
     )}

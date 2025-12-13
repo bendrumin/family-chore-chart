@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Check, Edit } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
 import { CategoryBadge } from '@/components/ui/category-badge'
+import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -68,10 +69,18 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
         if (error) throw error
       }
 
+      // Play sound effect
+      if (completed) {
+        playSound('notification')
+      } else {
+        playSound('success')
+      }
+
       onRefresh()
     } catch (error: any) {
       console.error('Error toggling completion:', error)
       toast.error('Failed to update completion')
+      playSound('error')
     }
   }
 
@@ -84,17 +93,15 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
         {/* Edit Button - Top Right */}
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-2 right-2 z-10 p-1.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-white/70 hover:bg-white/90 rounded-lg"
+          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 rounded-lg touch-manipulation"
           title="Edit chore"
         >
-          <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+          <Edit className="w-5 h-5" style={{ color: 'var(--primary)' }} />
         </Button>
 
-        <div className="p-2" style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(249,250,251,0.95) 100%)'
-        }}>
+        <div className="p-2 bg-white/95 dark:bg-gray-800/95">
           {/* Header */}
           <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b" style={{
             borderColor: 'rgba(99, 102, 241, 0.1)'
@@ -127,24 +134,20 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
                 <button
                   key={day.dayOfWeek}
                   onClick={() => toggleCompletion(day.dayOfWeek)}
-                  className={`aspect-square rounded-lg border transition-all duration-200 flex flex-col items-center justify-center font-bold ${
+                  className={`aspect-square min-h-[44px] min-w-[44px] rounded-lg border transition-all duration-200 flex flex-col items-center justify-center font-bold touch-manipulation ${
                     completed
-                      ? 'border-transparent text-white hover:scale-110'
-                      : 'hover:scale-105 hover:border-purple-300'
+                      ? 'border-transparent text-white hover:scale-110 active:scale-95'
+                      : 'bg-white/80 dark:bg-gray-700/80 hover:scale-105 hover:border-purple-300 active:scale-95 border-gray-200 dark:border-gray-600'
                   }`}
                   style={{
                     ...(completed ? {
                       background: 'var(--gradient-success)',
                       boxShadow: '0 2px 8px rgba(46, 213, 115, 0.4)'
-                    } : {
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      borderColor: 'rgba(99, 102, 241, 0.2)',
-                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                    })
+                    } : {})
                   }}
                   title={`${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`}
                 >
-                  <div className={`text-xs font-black ${completed ? 'text-white' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-black ${completed ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
                     {day.dayName}
                   </div>
                   {completed && <Check className="w-3.5 h-3.5 stroke-[3] mt-0.5" />}

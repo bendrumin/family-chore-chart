@@ -45,11 +45,7 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="max-w-4xl max-h-[90vh] overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="max-w-4xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -65,12 +61,12 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
 
         <div className="space-y-6 mt-6">
           {/* Premium Notice */}
-          <div className="p-6 rounded-xl border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 text-center">
+          <div className="p-6 rounded-xl border-2 border-yellow-200 dark:border-yellow-700 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-center">
             <div className="text-4xl mb-3">🌟</div>
-            <h3 className="font-bold mb-2" style={{ color: '#b8860b' }}>
+            <h3 className="font-bold mb-2 text-yellow-800 dark:text-yellow-300">
               Unlock Premium Themes
             </h3>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">
               Upgrade to Premium to access exclusive themes and customize your ChoreStar experience!
             </p>
             <Button
@@ -98,12 +94,12 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative ${
                     isActive
                       ? 'border-transparent shadow-lg scale-105'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
                   }`}
                   style={{
                     background: isActive
                       ? `linear-gradient(135deg, ${theme.colors.primary}15, ${theme.colors.secondary}15)`
-                      : 'rgba(255, 255, 255, 0.8)',
+                      : undefined,
                     borderColor: isActive ? theme.colors.primary : undefined
                   }}
                   onClick={() => handleThemeSelect(theme.id)}
@@ -131,11 +127,11 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
                   {/* Color Preview */}
                   <div className="flex gap-1 justify-center">
                     <div
-                      className="w-6 h-6 rounded-full border border-gray-200"
+                      className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-700"
                       style={{ backgroundColor: theme.colors.primary }}
                     />
                     <div
-                      className="w-6 h-6 rounded-full border border-gray-200"
+                      className="w-6 h-6 rounded-full border border-gray-200 dark:border-gray-700"
                       style={{ backgroundColor: theme.colors.secondary }}
                     />
                   </div>
@@ -151,7 +147,7 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
           </div>
 
           {/* Info */}
-          <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center">
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               💡 Premium themes unlock exclusive color schemes and customization options
             </p>

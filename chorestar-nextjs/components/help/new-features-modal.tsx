@@ -36,11 +36,7 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="max-w-4xl max-h-[90vh] overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="max-w-4xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
@@ -87,7 +83,7 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
               return (
                 <div
                   key={version}
-                  className="p-6 rounded-xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm"
+                  className="p-6 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                 >
                   {/* Version Header with Gradient Intro */}
                   <div className="mb-6 pb-6">
@@ -125,7 +121,7 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
                       .map((feature, index) => (
                         <div
                           key={index}
-                          className="flex gap-4 p-5 rounded-xl bg-white border-2 border-gray-200 hover:border-primary transition-all relative overflow-hidden group"
+                          className="flex gap-4 p-5 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-all relative overflow-hidden group"
                           style={{
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                           }}

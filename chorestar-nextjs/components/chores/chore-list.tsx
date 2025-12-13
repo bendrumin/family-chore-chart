@@ -213,12 +213,12 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                       className={`px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-105 flex items-center gap-2 ${
                         selectedCategory === category.id
                           ? 'shadow-lg scale-105'
-                          : 'hover:shadow-md'
+                          : 'hover:shadow-md bg-white/50 dark:bg-gray-800/50'
                       }`}
                       style={{
                         background: selectedCategory === category.id
                           ? category.bgColor
-                          : 'rgba(255, 255, 255, 0.5)',
+                          : undefined,
                         color: selectedCategory === category.id ? category.color : 'var(--text-secondary)',
                         border: `1px solid ${selectedCategory === category.id ? category.color : 'rgba(107, 114, 128, 0.2)'}`
                       }}

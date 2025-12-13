@@ -75,15 +75,11 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
           <button
             type="button"
             onClick={() => setSelectedColor('transparent')}
-            className={`w-10 h-10 rounded-full border-4 transition-all relative ${
+            className={`w-10 h-10 rounded-full border-4 transition-all relative transparent-pattern ${
               selectedColor === 'transparent'
                 ? 'border-blue-500 scale-110'
                 : 'border-gray-300 dark:border-gray-600 hover:scale-105'
             }`}
-            style={{
-              background: 'linear-gradient(45deg, #f0f0f0 25%, #fff 25%, #fff 50%, #f0f0f0 50%, #f0f0f0 75%, #fff 75%, #fff)',
-              backgroundSize: '8px 8px'
-            }}
             title="No background color"
           >
             <span className="absolute inset-0 flex items-center justify-center text-xl">🚫</span>

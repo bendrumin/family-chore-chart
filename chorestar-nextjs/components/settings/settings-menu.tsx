@@ -67,7 +67,7 @@ export function SettingsMenu({ buttonColor = 'black' }: SettingsMenuProps) {
           {/* Body - Scrollable */}
           <div className="flex flex-1 overflow-hidden min-h-0">
             {/* Tab Navigation - Left Sidebar */}
-            <div className="w-48 border-r border-gray-200 bg-gray-50/50 p-4 space-y-1 flex-shrink-0 overflow-y-auto">
+            <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4 space-y-1 flex-shrink-0 overflow-y-auto">
               {TABS.map((tab) => {
                 const Icon = tab.icon
                 return (

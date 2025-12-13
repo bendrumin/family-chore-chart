@@ -139,11 +139,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="overflow-y-auto"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%)',
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-y-auto dialog-content-bg"
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -192,7 +188,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full transition-all duration-300"
                     style={{
@@ -214,11 +210,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.9)',
-                      backdropFilter: 'blur(10px)'
-                    }}
+                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
                   />
                 </div>
 
@@ -234,11 +226,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                     value={formData.age}
                     onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                     placeholder="e.g., 8"
-                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.9)',
-                      backdropFilter: 'blur(10px)'
-                    }}
+                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-purple-200 transition-all input-bg-glass"
                   />
                 </div>
 
