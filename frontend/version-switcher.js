@@ -33,6 +33,8 @@
     const createPermanentButton = () => {
         const button = document.createElement('button');
         button.id = 'version-switch-button';
+        button.type = 'button';
+        button.setAttribute('aria-label', 'Try the new ChoreStar experience');
         button.innerHTML = '✨ Try New Version';
         button.style.cssText = `
             position: fixed;
@@ -79,6 +81,9 @@
 
         const switcher = document.createElement('div');
         switcher.id = 'version-switcher';
+        // Landmark for a11y scanners: region landmarks must have an accessible name
+        switcher.setAttribute('role', 'region');
+        switcher.setAttribute('aria-label', 'New version promotion');
         switcher.style.cssText = `
             position: fixed;
             bottom: 80px;
@@ -105,9 +110,9 @@
                         Experience improved performance and new features in our beta version.
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button id="switch-to-new" style="
+                        <button id="switch-to-new" type="button" style="
                             background: white;
-                            color: #667eea;
+                            color: #1d4ed8;
                             border: none;
                             padding: 8px 16px;
                             border-radius: 6px;
@@ -116,7 +121,7 @@
                             cursor: pointer;
                             flex: 1;
                         ">Try New Version</button>
-                        <button id="dismiss-switcher" style="
+                        <button id="dismiss-switcher" type="button" aria-label="Dismiss new version promotion" style="
                             background: rgba(255,255,255,0.2);
                             color: white;
                             border: none;

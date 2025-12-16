@@ -113,6 +113,9 @@ class UIEnhancementsManager {
     addKeyboardHint() {
         const hint = document.createElement('div');
         hint.className = 'keyboard-hint';
+        // Landmark for a11y scanners: region landmarks must have an accessible name
+        hint.setAttribute('role', 'region');
+        hint.setAttribute('aria-label', 'Keyboard shortcuts hint');
         hint.innerHTML = `
             <kbd>⌘</kbd> <kbd>K</kbd> Quick Actions • 
             <kbd>⌘</kbd> <kbd>/</kbd> Shortcuts
@@ -429,6 +432,12 @@ class UIEnhancementsManager {
 
         const pullIndicator = document.createElement('div');
         pullIndicator.className = 'pull-to-refresh-indicator';
+        // Landmark for a11y scanners: region landmarks must have an accessible name
+        pullIndicator.setAttribute('role', 'region');
+        pullIndicator.setAttribute('aria-label', 'Pull to refresh');
+        // Helpful announcement when the status text changes
+        pullIndicator.setAttribute('aria-live', 'polite');
+        pullIndicator.setAttribute('aria-atomic', 'true');
         pullIndicator.innerHTML = `
             <div class="pull-spinner"></div>
             <span class="pull-text">Pull to refresh</span>

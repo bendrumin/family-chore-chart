@@ -126,13 +126,18 @@
             align-items: center;
             gap: var(--space-2);
             margin-bottom: var(--space-6);
-            color: var(--primary);
+            /* Ensure AA contrast on light backgrounds */
+            color: #1d4ed8;
             text-decoration: none;
             font-weight: 500;
         }
         
         .back-link:hover {
             text-decoration: underline;
+        }
+
+        [data-theme="dark"] .back-link {
+            color: #93c5fd;
         }
         
         @media (max-width: 768px) {
@@ -147,16 +152,18 @@
     </style>
 </head>
 <body>
-    <a href="/" class="back-link">← Back to ChoreStar</a>
-    
-    <div class="changelog-header">
+    <header class="changelog-header">
+        <nav aria-label="Changelog">
+            <a href="/" class="back-link">← Back to ChoreStar</a>
+        </nav>
         <h1>📋 Changelog</h1>
         <p>See what's new and what we've improved!</p>
-    </div>
+    </header>
     
-    <div class="changelog-nav" id="changelog-nav"></div>
-    
-    <div id="changelog-content"></div>
+    <main id="main">
+        <nav class="changelog-nav" id="changelog-nav" aria-label="Versions"></nav>
+        <div id="changelog-content"></div>
+    </main>
     
     <script src="script.js"></script>
     <script>
