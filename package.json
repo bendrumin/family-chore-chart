@@ -5,6 +5,7 @@
   "scripts": {
     "start": "vercel dev",
     "dev": "vercel dev",
+    "build": "cd chorestar-nextjs && npm install && npm run build",
     "serve": "cd frontend && npx serve -p 3000",
     "serve:static": "cd frontend && npx serve -p 3000"
   },
