@@ -30,31 +30,72 @@ const resend = new Resend(RESEND_API_KEY);
 
 // Newsletter configuration
 const NEWSLETTER_CONFIG = {
-    subject: 'ChoreStar: New Icon Picker, Demo System & Major Fixes! 🎨✨',
+    subject: 'ChoreStar Just Got a Major Upgrade! 🚀✨',
     from: 'ChoreStar <hi@chorestar.app>',
-    replyTo: 'hi@chorestar.app'
+    replyTo: 'hi@chorestar.app',
+    template: 'newsletter-react-launch.html' // NEW: Updated version launch
 };
 
 // Your active users (replace with your actual user list)
 const ACTIVE_USERS = [
-// Active ChoreStar users (auto-updated)
-    'korinnayazaryan@gmail.com',
-    'castrocorrea@yahoo.com',
+// Active ChoreStar users (auto-updated - 57 users as of Dec 2025)
+    'yvettemz1985@gmail.com',
     'laurenashleyrussell@gmail.com',
-    'bushongecko@gmail.com',
-    'breannaacy@gmail.com',
-    'bmorales_24@outlook.com',
-    'schafferdaisha@gmail.com',
-    'jreger0627@gmail.com',
-    'Kaylabrianne28@gmail.com',
-    'cierrapenwell@ymail.com',
-    'noreenc1986@gmail.com',
+    'kacylaneselby@gmail.com',
     'mmeganmarie21@gmail.com',
-    'dejusainz@gmail.com',
-    'rgaillard6@gmail.com',
-    'tejurockz@gmail.com',
+    'bushongecko@gmail.com',
+    'jemmarae87@googlemail.com',
+    'castrocorrea@yahoo.com',
+    'jimeneza.mayra25@icloud.com',
+    'kayla.lapan04@gmail.com',
+    'latoyargreen@hotmail.com',
+    'vlphotography93@gmail.com',
+    'sathish.jeyam@gmail.com',
+    'fleurlou@free.fr',
+    'm.ashley7914@gmail.com',
+    'thewashingt0nhouse1@gmail.com',
+    'darrenmfstuart@gmail.com',
+    'catherinejones4513@gmail.com',
+    'korinnayazaryan@gmail.com',
+    'nicole_stowe@yahoo.com',
     'courtney.mcnallan@gmail.com',
+    'cierrapenwell@ymail.com',
+    'candaceriddell@yahoo.com',
+    'lewis4business@gmail.com',
+    'jayce@jintra.io',
+    'tejurockz@gmail.com',
+    'breannaacy@gmail.com',
+    'salefis224@dawhe.com',
+    'tone.macneil@gmail.com',
+    'dejusainz@gmail.com',
+    'Kaylabrianne28@gmail.com',
+    'rgaillard6@gmail.com',
+    'bjt7@att.net',
+    'lyndsiesal@yahoo.com',
+    'caitlinbeers104@gmail.com',
+    'whitneyjeanewilson@outlook.com',
+    'noreenc1986@gmail.com',
+    'greer.abigail@gmail.com',
+    'leannetroutmanjane39t@gmail.com',
+    'breweramandajonathon@yahoo.com',
+    'scanner@probe.ly',
+    'bmorales_24@outlook.com',
+    'kenli.brown@icloud.com',
+    'jreger0627@gmail.com',
+    'keithkassandra094@gmail.com',
+    'yaliretamar@gmail.com',
+    'brandy.williams54@yahoo.com',
     'bsiegel13@gmail.com',
+    'schafferdaisha@gmail.com',
+    'mrivas112@hotmail.com',
+    'clarahauptmeier0@gmail.com',
+    'sunshne52105@aol.com',
+    'kimiwaro1@gmail.com',
+    'manderson130@gmail.com',
+    'michelle.e430@mail.com',
+    'shannah.lynn.home@gmail.com',
+    'ashpuga@gmail.com',
+    'gallantbrooke99@yahoo.com',
 
     // Add any additional users manually below:
     // 'additional@example.com',
@@ -63,7 +104,8 @@ const ACTIVE_USERS = [
 // Load the newsletter HTML template
 function loadNewsletterTemplate() {
     try {
-        const templatePath = path.join(__dirname, 'email-templates', 'newsletter-update.html');
+        const templateName = NEWSLETTER_CONFIG.template || 'newsletter-update.html';
+        const templatePath = path.join(__dirname, 'email-templates', templateName);
         return fs.readFileSync(templatePath, 'utf8');
     } catch (error) {
         console.error('❌ Error loading newsletter template:', error.message);

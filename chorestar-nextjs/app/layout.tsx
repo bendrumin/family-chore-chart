@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from 'sonner'
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
 import { VersionSwitcher } from '@/components/version-switcher'
+import { QueryProvider } from '@/components/providers/query-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -94,10 +95,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ServiceWorkerRegister />
-        <VersionSwitcher />
-        {children}
-        <Toaster position="top-center" richColors />
+        <QueryProvider>
+          <ServiceWorkerRegister />
+          <VersionSwitcher />
+          {children}
+          <Toaster position="top-center" richColors />
+        </QueryProvider>
       </body>
     </html>
   )

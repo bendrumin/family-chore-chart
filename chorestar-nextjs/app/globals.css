@@ -6,43 +6,45 @@
 
 @layer base {
   :root {
-    /* ChoreStar Brand Colors */
+    /* Professional Color System */
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --primary-light: #818cf8;
-    --success: #2ed573;
-    --warning: #ffa502;
-    --error: #ff4757;
-    --info: #17c0eb;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
 
-    /* Background & Surfaces */
+    /* Neutral Palette */
     --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
-    --card-bg: rgba(255, 255, 255, 0.95);
-    --surface-border: rgba(15, 23, 42, 0.08);
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --card-bg: rgba(255, 255, 255, 0.98);
+    --surface-border: rgba(148, 163, 184, 0.2);
 
-    /* Text */
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
+    /* Text Hierarchy */
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-tertiary: #94a3b8;
     --text-inverse: #ffffff;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(99, 102, 241, 0.15);
-    --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
-    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.2);
+    /* Professional Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-    /* Border Radius */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1.25rem;
+    /* Consistent Border Radius */
+    --radius-sm: 0.5rem;      /* 8px */
+    --radius-md: 0.75rem;     /* 12px */
+    --radius-lg: 1rem;        /* 16px */
+    --radius-xl: 1.5rem;      /* 24px */
 
-    /* Gradients */
+    /* Professional Gradients */
     --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    --gradient-success: linear-gradient(135deg, #2ed573 0%, #17c0eb 100%);
-    --gradient-warning: linear-gradient(135deg, #ffa502 0%, #ffd700 100%);
-    --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    --gradient-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 
     /* Tailwind Compatibility */
     --background: 0 0% 100%;
@@ -51,7 +53,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --border: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
@@ -195,6 +197,42 @@
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Modern scrollbar styling */
+  .scrollbar-modern {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
   }
 
   /* Ensure minimum touch target sizes */
@@ -736,4 +774,169 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-sunset [data-selected="true"] {
   border-color: var(--seasonal-accent) !important;
   box-shadow: 0 0 0 2px var(--seasonal-accent) !important;
+}
+
+/* ========================================
+   KID MODE STYLES
+   Visual Routines - Kid-Friendly UI
+   ======================================== */
+
+/* Kid Mode Background */
+.kid-mode-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+/* Kid Mode Buttons - Large Touch Targets */
+.kid-button {
+  min-height: 80px;
+  min-width: 80px;
+  font-size: 1.5rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.kid-button:active {
+  transform: scale(0.95);
+}
+
+@media (hover: hover) {
+  .kid-button:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Touch Optimizations for Kid Mode */
+@media (pointer: coarse) {
+  .kid-button {
+    min-height: 88px;
+    min-width: 88px;
+  }
+}
+
+/* Kid Mode Typography */
+.kid-mode h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.2;
+}
+
+.kid-mode h2 {
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.3;
+}
+
+.kid-mode p {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  line-height: 1.5;
+}
+
+/* Confetti Container */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Progress Pulse Animation */
+@keyframes progress-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.progress-pulse {
+  animation: progress-pulse 1s ease-in-out infinite;
+}
+
+/* Step Icon Bounce */
+@keyframes step-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+  }
+}
+
+.step-icon-bounce {
+  animation: step-bounce 2s ease-in-out infinite;
+}
+
+/* Celebration Sparkle */
+@keyframes celebration-sparkle {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.celebration-sparkle {
+  animation: celebration-sparkle 1s ease-out;
+}
+
+/* Timer Glow Effect */
+@keyframes timer-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+}
+
+.timer-glow {
+  animation: timer-glow 2s ease-in-out infinite;
+}
+
+/* Accessible Focus Styles for Kid Mode */
+.kid-button:focus-visible,
+.kid-mode button:focus-visible {
+  outline: 4px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 4px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .kid-mode-bg,
+  .step-icon-bounce,
+  .progress-pulse,
+  .celebration-sparkle,
+  .timer-glow {
+    animation: none !important;
+  }
+
+  .kid-button {
+    transition: none !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .kid-button {
+    border: 3px solid currentColor;
+  }
+
+  .kid-mode-bg {
+    background: #4a148c;
+  }
 }

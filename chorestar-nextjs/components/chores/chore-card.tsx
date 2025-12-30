@@ -88,38 +88,36 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
 
   return (
     <>
-      <Card className="overflow-hidden transition-all duration-200 hover:shadow-lg group relative">
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl group relative border border-gray-200 dark:border-gray-700">
         {/* Edit Button - Top Right */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 rounded-lg touch-manipulation"
+          className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm"
           title="Edit chore"
         >
-          <Edit className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+          <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
         </Button>
 
-        <div className="p-2 bg-white/95 dark:bg-gray-800/95">
+        <div className="p-4 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50">
           {/* Header */}
-          <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b" style={{
-            borderColor: 'rgba(99, 102, 241, 0.1)'
-          }}>
-            <div className="flex-1 pr-8">
-              <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex-1 pr-10">
+              <div className="flex items-center gap-2.5 mb-1.5">
                 {chore.icon && <span className="text-2xl">{chore.icon}</span>}
-                <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
                   {chore.name}
                 </h3>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
               </div>
             </div>
           </div>
 
-          {/* 7-Day Grid */}
-          <div className="grid grid-cols-7 gap-1 mb-1.5">
+          {/* 7-Day Grid - Professional */}
+          <div className="grid grid-cols-7 gap-1.5 mb-3">
             {days.map((day, index) => {
               const completed = isCompleted(day.dayOfWeek)
 
@@ -127,34 +125,32 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
                 <button
                   key={day.dayOfWeek}
                   onClick={() => toggleCompletion(day.dayOfWeek)}
-                  className={`aspect-square min-h-[44px] min-w-[44px] rounded-lg border transition-all duration-200 flex flex-col items-center justify-center font-bold touch-manipulation ${
+                  className={`aspect-square min-h-[52px] rounded-lg transition-all duration-300 flex flex-col items-center justify-center font-bold touch-manipulation ${
                     completed
-                      ? 'border-transparent text-white hover:scale-110 active:scale-95'
-                      : 'bg-white/80 dark:bg-gray-700/80 hover:scale-105 hover:border-purple-300 active:scale-95 border-gray-200 dark:border-gray-600'
+                      ? 'text-white hover:scale-110 active:scale-95 shadow-md'
+                      : 'bg-white dark:bg-gray-700 hover:scale-105 hover:shadow-md active:scale-95 border border-gray-200 dark:border-gray-600'
                   }`}
                   style={{
                     ...(completed ? {
                       background: 'var(--gradient-success)',
-                      boxShadow: '0 2px 8px rgba(46, 213, 115, 0.4)'
+                      boxShadow: 'var(--shadow-md)'
                     } : {})
                   }}
                   title={`${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`}
                 >
-                  <div className={`text-xs font-black ${completed ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+                  <div className={`text-xs font-bold ${completed ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`}>
                     {day.dayName}
                   </div>
-                  {completed && <Check className="w-3.5 h-3.5 stroke-[3] mt-0.5" />}
+                  {completed && <Check className="w-4 h-4 stroke-[2.5]" />}
                 </button>
               )
             })}
           </div>
 
           {/* Stats */}
-          <div className="pt-1.5 border-t flex items-center justify-center" style={{
-            borderColor: 'rgba(99, 102, 241, 0.1)'
-          }}>
-            <div className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-              <span className="font-black text-base mr-1" style={{ color: 'var(--text-primary)' }}>
+          <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center">
+            <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+              <span className="font-bold text-lg mr-1 text-gray-900 dark:text-gray-100">
                 {choreCompletions.length}
               </span>
               this week {choreCompletions.length >= 5 && '🔥'}
