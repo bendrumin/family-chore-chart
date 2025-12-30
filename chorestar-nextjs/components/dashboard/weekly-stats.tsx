@@ -155,73 +155,73 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-pink-900/20 border-2">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
+    <Card className="bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-900/10 dark:via-purple-900/10 dark:to-pink-900/10 border border-gray-200 dark:border-gray-700 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
+          <Trophy className="w-4 h-4 text-yellow-500" />
           {child.name}'s Weekly Stats
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Total Completions */}
-          <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               {stats.totalCompletions}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
               <Star className="w-3 h-3" />
               Completions
             </div>
           </div>
 
           {/* Total Earnings */}
-          <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               ${stats.totalEarnings.toFixed(2)}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
               <DollarSign className="w-3 h-3" />
               Earned
             </div>
           </div>
 
           {/* Completion Rate */}
-          <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               {stats.completionRate}%
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
               <TrendingUp className="w-3 h-3" />
               Complete
             </div>
           </div>
 
           {/* Streak */}
-          <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               {stats.streak}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center justify-center gap-1">
+            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
               <Flame className="w-3 h-3" />
               Day Streak
             </div>
           </div>
         </div>
 
-        {/* Perfect Days Stars - NEW! */}
-        <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
+        {/* Perfect Days Stars - Compact */}
+        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
             <span>Perfect Days This Week</span>
             <span className="text-xs text-gray-500 dark:text-gray-400">{stats.perfectDays}/7 days</span>
           </div>
-          <div className="flex justify-center gap-1.5">
+          <div className="flex justify-center gap-1">
             {Array.from({ length: 7 }).map((_, index) => {
               const isPerfect = index < stats.perfectDays
               return (
                 <div
                   key={index}
-                  className={`text-3xl transition-all duration-300 ${
+                  className={`text-xl transition-all duration-300 ${
                     isPerfect
                       ? 'scale-110 animate-pulse-subtle'
                       : 'opacity-30 grayscale'
@@ -234,7 +234,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             })}
           </div>
           {stats.perfectDays > 0 && (
-            <div className="mt-2 text-center">
+            <div className="mt-1.5 text-center">
               <span className="text-xs font-medium text-green-600 dark:text-green-400">
                 {stats.perfectDays === 7
                   ? '🎉 Perfect week! All chores done every day!'
@@ -245,29 +245,6 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
                   : '💪 Good job! Keep going!'}
               </span>
             </div>
-          )}
-        </div>
-
-        {/* Achievement Milestones - Fixed Height */}
-        <div className="mt-4 min-h-[32px] flex flex-wrap gap-2">
-          {stats.totalCompletions > 0 && (
-            <>
-              {stats.streak >= 5 && (
-                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                  🔥 {stats.streak} Day Streak!
-                </Badge>
-              )}
-              {stats.completionRate === 100 && (
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                  ⭐ Perfect Week!
-                </Badge>
-              )}
-              {stats.totalCompletions >= 10 && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                  🏆 Super Productive!
-                </Badge>
-              )}
-            </>
           )}
         </div>
       </CardContent>

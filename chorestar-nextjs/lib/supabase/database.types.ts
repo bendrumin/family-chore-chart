@@ -224,15 +224,173 @@ export interface Database {
           created_at?: string
         }
       }
+      routines: {
+        Row: {
+          id: string
+          child_id: string
+          name: string
+          type: 'morning' | 'bedtime' | 'afterschool' | 'custom'
+          icon: string
+          color: string
+          reward_cents: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          name: string
+          type?: 'morning' | 'bedtime' | 'afterschool' | 'custom'
+          icon?: string
+          color?: string
+          reward_cents?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          name?: string
+          type?: 'morning' | 'bedtime' | 'afterschool' | 'custom'
+          icon?: string
+          color?: string
+          reward_cents?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      routine_steps: {
+        Row: {
+          id: string
+          routine_id: string
+          title: string
+          description: string | null
+          icon: string
+          order_index: number
+          duration_seconds: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          routine_id: string
+          title: string
+          description?: string | null
+          icon?: string
+          order_index: number
+          duration_seconds?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          routine_id?: string
+          title?: string
+          description?: string | null
+          icon?: string
+          order_index?: number
+          duration_seconds?: number | null
+          created_at?: string
+        }
+      }
+      routine_completions: {
+        Row: {
+          id: string
+          routine_id: string
+          child_id: string
+          completed_at: string
+          duration_seconds: number | null
+          steps_completed: number
+          steps_total: number
+          points_earned: number
+          date: string
+        }
+        Insert: {
+          id?: string
+          routine_id: string
+          child_id: string
+          completed_at?: string
+          duration_seconds?: number | null
+          steps_completed: number
+          steps_total: number
+          points_earned: number
+          date?: string
+        }
+        Update: {
+          id?: string
+          routine_id?: string
+          child_id?: string
+          completed_at?: string
+          duration_seconds?: number | null
+          steps_completed?: number
+          steps_total?: number
+          points_earned?: number
+          date?: string
+        }
+      }
+      child_pins: {
+        Row: {
+          id: string
+          child_id: string
+          pin_hash: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          pin_hash: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          pin_hash?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_child_routine_stats: {
+        Args: {
+          p_child_id: string
+          p_start_date?: string
+          p_end_date?: string
+        }
+        Returns: {
+          total_completions: number
+          total_steps_completed: number
+          total_points_earned: number
+          average_duration_seconds: number
+          completion_rate: number
+        }[]
+      }
+      get_todays_completed_routine_ids: {
+        Args: {
+          p_child_id: string
+        }
+        Returns: {
+          routine_id: string
+        }[]
+      }
+      verify_child_pin: {
+        Args: {
+          p_pin: string
+        }
+        Returns: {
+          child_id: string
+          child_name: string
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      routine_type: 'morning' | 'bedtime' | 'afterschool' | 'custom'
     }
   }
 }

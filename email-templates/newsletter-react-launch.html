@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoreStar Just Got a Major Upgrade! 🚀</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #0f172a;
+            background-color: #f8fafc;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 0;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section p {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        /* Feature comparison */
+        .comparison-box {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            border-left: 4px solid #6366f1;
+        }
+
+        .comparison-box h3 {
+            color: #6366f1;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .comparison-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .comparison-text {
+            flex: 1;
+        }
+
+        .comparison-text strong {
+            display: block;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .comparison-text span {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: start;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: #6366f1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Screenshot section */
+        .screenshot-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin: 24px 0;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .screenshot-box img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin: 16px 0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .cta-section h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            margin-bottom: 24px;
+            opacity: 0.95;
+            color: white;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #6366f1;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Badge */
+        .new-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 32px 30px;
+            text-align: center;
+        }
+
+        .footer h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .footer p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .footer a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #8b5cf6;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header, .content {
+                padding: 24px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <span class="logo">⭐</span>
+            <h1>ChoreStar Just Got a Major Upgrade!</h1>
+            <p>A completely redesigned, professional experience</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Introduction -->
+            <div class="section">
+                <h2>🎉 We've Completely Rebuilt ChoreStar</h2>
+                <p>After listening to your feedback and analyzing how families use ChoreStar, we've built a brand new updated version from the ground up with modern technology.</p>
+                <p>This isn't just an update—it's a complete transformation with a professional, polished design that makes managing your family's chores easier and more enjoyable than ever.</p>
+            </div>
+
+            <!-- What's New Section -->
+            <div class="section">
+                <h2>✨ What's New in the Updated ChoreStar</h2>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🎨</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Professional Modern Design</div>
+                            <div class="feature-description">Clean, refined interface with subtle gradients, consistent spacing, and professional typography throughout</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">🔄</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Visual Routines System <span class="new-badge">New</span></div>
+                            <div class="feature-description">Create step-by-step morning, bedtime, and custom routines with 80+ icons. Kids follow along in an engaging player mode!</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Lightning Fast Performance</div>
+                            <div class="feature-description">Rebuilt with modern technology for instant page loads and smooth, responsive interactions</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">🎯</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Compact, Space-Efficient Layout</div>
+                            <div class="feature-description">Refined components show more information without feeling cluttered—perfect for managing multiple children</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">📱</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Flawless Mobile Experience</div>
+                            <div class="feature-description">Fully responsive design that works beautifully on phones, tablets, and desktops</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">🌙</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Perfect Dark Mode</div>
+                            <div class="feature-description">Professionally implemented dark theme with carefully chosen colors for comfortable viewing any time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Design Improvements -->
+            <div class="section">
+                <h2>🎨 Professional Design System</h2>
+                <p>Every component has been refined with attention to detail:</p>
+
+                <div class="comparison-box">
+                    <h3>What We Improved</h3>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">📏</span>
+                        <div class="comparison-text">
+                            <strong>Consistent Spacing & Borders</strong>
+                            <span>Clean 8px/12px/16px border radius system with professional multi-layer shadows</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🎨</span>
+                        <div class="comparison-text">
+                            <strong>Refined Color Palette</strong>
+                            <span>Subtle gradients, better contrast, and defined borders throughout the entire app</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">✍️</span>
+                        <div class="comparison-text">
+                            <strong>Typography Hierarchy</strong>
+                            <span>Clear font sizes and weights (semibold/medium instead of black/bold) for better readability</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🖱️</span>
+                        <div class="comparison-text">
+                            <strong>Gentle Hover Effects</strong>
+                            <span>Subtle transitions that feel smooth without being distracting</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Routines Feature Spotlight -->
+            <div class="section">
+                <h2>🔄 Visual Routines - Our Biggest Feature Yet</h2>
+                <p>We've added a complete Visual Routines system that helps kids build great habits:</p>
+
+                <div class="comparison-box">
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🌅</span>
+                        <div class="comparison-text">
+                            <strong>Pre-Built Templates</strong>
+                            <span>Morning, Bedtime, After School, and Custom routines ready to use</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🎮</span>
+                        <div class="comparison-text">
+                            <strong>Kid-Friendly Player Mode</strong>
+                            <span>Full-screen experience with confetti celebrations and sound effects</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🎨</span>
+                        <div class="comparison-text">
+                            <strong>80+ Beautiful Icons</strong>
+                            <span>Choose from Lucide icons to customize each step of every routine</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">🔐</span>
+                        <div class="comparison-text">
+                            <strong>PIN Protection</strong>
+                            <span>Kids can access their routines independently with a secure PIN system</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Both Versions Available -->
+            <div class="section">
+                <h2>🎯 Choose Your Experience</h2>
+                <p>We know change can be hard, so we're keeping both versions available:</p>
+
+                <div class="comparison-box">
+                    <div class="comparison-item">
+                        <span class="comparison-icon">✨</span>
+                        <div class="comparison-text">
+                            <strong>Updated Version (Recommended)</strong>
+                            <span>Modern design, Visual Routines, faster performance, and all new features</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-item">
+                        <span class="comparison-icon">📌</span>
+                        <div class="comparison-text">
+                            <strong>Classic Version (Still Available)</strong>
+                            <span>The original ChoreStar you know and love—accessible via the "Use Original" button</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 20px;">Both versions share the same data, so you can switch between them anytime and your chores, children, and settings will stay in sync!</p>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h3>Ready to Try the Updated ChoreStar?</h3>
+                <p>Experience the professional, modern design and explore the new Visual Routines feature!</p>
+                <a href="https://chorestar.app/dashboard" class="cta-button">Try Updated ChoreStar →</a>
+            </div>
+
+            <!-- What's Next -->
+            <div class="section">
+                <h2>🔮 Coming Soon</h2>
+                <p>We're already working on the next set of improvements:</p>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span>📊</span> <span>Advanced analytics dashboard showing progress trends</span>
+                    </li>
+                    <li style="padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span>🏆</span> <span>Enhanced achievement system with more badges and rewards</span>
+                    </li>
+                    <li style="padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span>🎨</span> <span>More customization options for themes and colors</span>
+                    </li>
+                    <li style="padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span>📱</span> <span>Native mobile app development</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Thank You -->
+            <div class="section">
+                <h2>🙏 Thank You</h2>
+                <p>Your feedback has been invaluable in shaping this updated version of ChoreStar. We've read every suggestion, analyzed how you use the app, and designed this new experience specifically for families like yours.</p>
+                <p>We can't wait to hear what you think about the updated ChoreStar. Keep the feedback coming—we're always listening!</p>
+                <p style="margin-top: 24px; font-weight: 600; color: #1e293b;">Happy choremaking!</p>
+                <p style="color: #64748b; font-size: 14px;">— The ChoreStar Team</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h4>Stay Connected</h4>
+            <p>Questions or feedback? We'd love to hear from you!</p>
+            <p>Email: <a href="mailto:hi@chorestar.app">hi@chorestar.app</a></p>
+            <p>Website: <a href="https://chorestar.app">chorestar.app</a></p>
+
+            <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">
+                You're receiving this email because you're a valued ChoreStar user.
+                <br>Thank you for being part of our family!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -24,31 +24,19 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
 
   return (
     <>
-      <Card className="overflow-hidden animate-bounce-in">
-        <CardHeader style={{
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-          borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
-        }}>
+      <Card className="overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+        <CardHeader className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-b border-gray-200 dark:border-gray-700 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle
-              className="text-2xl font-bold"
-              style={{
-                background: 'var(--gradient-primary)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               👨‍👩‍👧‍👦 Children
             </CardTitle>
             <Button
               size="sm"
               onClick={() => setIsAddModalOpen(true)}
-              variant="gradient"
-              className="hover-glow"
+              className="gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-sm hover:shadow-md transition-all font-medium px-3 py-2 rounded-lg text-xs"
             >
-              <Plus className="w-4 h-4 mr-1" />
-              Add Child
+              <Plus className="w-3.5 h-3.5" />
+              Add
             </Button>
           </div>
         </CardHeader>
@@ -67,10 +55,10 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
             children.map((child, index) => (
               <div
                 key={child.id}
-                className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 group hover-glow relative backdrop-blur-sm ${
+                className={`w-full p-4 rounded-lg border transition-all duration-300 group relative ${
                   selectedChildId === child.id
-                    ? 'border-transparent shadow-2xl scale-105 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20'
-                    : 'border-white/30 dark:border-gray-700/30 hover:border-white/50 dark:hover:border-gray-600/50 hover:shadow-xl hover:scale-102 bg-white/50 dark:bg-gray-800/50'
+                    ? 'border-blue-200 dark:border-blue-700 shadow-md bg-gradient-to-br from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm bg-white dark:bg-gray-800'
                 }`}
                 style={{
                   animationDelay: `${index * 0.1}s`
@@ -90,27 +78,25 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                     e.stopPropagation()
                     setEditingChild(child)
                   }}
-                  className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-lg transition-all ${
+                  className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-md transition-all ${
                     selectedChildId === child.id
-                      ? 'bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 shadow-sm'
-                      : 'opacity-0 group-hover:opacity-100 bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90'
+                      ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-700'
+                      : 'opacity-0 group-hover:opacity-100 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                   }`}
                   title="Edit child"
                 >
-                  <Edit3 className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                  <Edit3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 </Button>
 
-                <div className="flex items-center gap-4 relative z-10 pointer-events-none">
+                <div className="flex items-center gap-3.5 relative z-10 pointer-events-none">
                   {/* Avatar */}
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold overflow-hidden shadow-lg ring-4 ring-white/50 transition-all duration-300 ${
-                      selectedChildId === child.id ? 'scale-110 animate-float' : 'group-hover:scale-110'
-                    }`}
+                    className="w-14 h-14 rounded-lg flex items-center justify-center text-white text-xl font-bold overflow-hidden shadow-sm transition-all duration-300"
                     style={{
                       backgroundColor: child.avatar_color || '#6366f1',
                       background: child.avatar_color
                         ? `linear-gradient(135deg, ${child.avatar_color} 0%, ${child.avatar_color}dd 100%)`
-                        : 'var(--gradient-primary)'
+                        : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
                     }}
                   >
                     {child.avatar_url ? (
@@ -127,35 +113,24 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                   {/* Info */}
                   <div className="flex-1 min-w-0 pr-8">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+                      <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100">
                         {child.name}
                       </h3>
                       {child.age && (
-                        <span
-                          className="text-xs font-semibold px-2 py-0.5 rounded-lg whitespace-nowrap"
-                          style={{
-                            background: 'var(--gradient-success)',
-                            color: 'white'
-                          }}
-                        >
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 whitespace-nowrap">
                           {child.age} yrs
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-                      {selectedChildId === child.id ? '✨ Currently viewing' : '👆 Click to view chores'}
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {selectedChildId === child.id ? 'Currently viewing' : 'Click to view'}
                     </p>
                   </div>
 
                   {/* Active Badge */}
                   {selectedChildId === child.id && (
                     <div className="flex items-center flex-shrink-0">
-                      <Badge
-                        className="text-white font-bold shadow-lg whitespace-nowrap"
-                        style={{
-                          background: 'var(--gradient-success)',
-                        }}
-                      >
+                      <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium shadow-sm whitespace-nowrap border border-blue-200 dark:border-blue-800">
                         Active
                       </Badge>
                     </div>

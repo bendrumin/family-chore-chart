@@ -19,8 +19,9 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { Plus, HelpCircle, Sparkles, Mail, ArrowLeft } from 'lucide-react'
+import { Plus, HelpCircle, Sparkles, Mail, ArrowLeft, ListTodo, Repeat } from 'lucide-react'
 import type { Database } from '@/lib/supabase/database.types'
+import { RoutineList } from '@/components/routines/routine-list'
 
 type Profile = {
   id: string
@@ -189,6 +190,7 @@ function DashboardContent({
   const { settings } = useSettings()
   const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>('gradient')
   const [buttonColor, setButtonColor] = useState<'white' | 'black'>('black')
+  const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
 
   useEffect(() => {
     const checkTheme = () => {
@@ -239,37 +241,32 @@ function DashboardContent({
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--gradient-bg)' }}>
-      {/* Header */}
-      <header className="glass glass-border sticky top-0 z-50 backdrop-blur-2xl" style={{
-        boxShadow: '0 4px 24px rgba(99, 102, 241, 0.15)',
-        borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
+      {/* Header - Professional */}
+      <header className="glass glass-border sticky top-0 z-50 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700" style={{
+        boxShadow: 'var(--shadow-sm)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)'
       }}>
-        <div className="container mx-auto px-4 py-5">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="text-4xl animate-float">⭐</div>
+              <div className="text-3xl">⭐</div>
               <div>
                 <h1
-                  className="text-4xl font-black tracking-tight"
+                  className="text-2xl font-bold tracking-tight"
                   style={headerTextColor === 'white' ? {
                     color: 'white',
                     WebkitTextFillColor: 'white'
                   } : {
-                    background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 25%, #ec4899 50%, #8b5cf6 75%, #6366f1 100%)',
-                    backgroundSize: '200% auto',
+                    background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    animation: 'gradient-shift 3s ease infinite'
+                    backgroundClip: 'text'
                   }}
                 >
                   ChoreStar
                 </h1>
-                <p className="text-sm mt-0.5 font-bold" style={{
-                  color: headerTextColor === 'white' ? 'rgba(255, 255, 255, 0.9)' : 'var(--text-secondary)',
-                  letterSpacing: '0.05em'
-                }}>
-                  ✨ {initialProfile?.family_name || 'Welcome!'} Family
+                <p className="text-xs mt-0.5 font-medium text-gray-600 dark:text-gray-400">
+                  {initialProfile?.family_name || 'Welcome!'} Family
                 </p>
               </div>
             </div>
@@ -399,13 +396,50 @@ function DashboardContent({
                 />
               </div>
 
-              {/* Main - Chores List */}
+              {/* Main - Tabbed Content */}
               <div>
                 {selectedChildId && (
-                  <ChoreList
-                    childId={selectedChildId}
-                    userId={initialUser.id}
-                  />
+                  <div className="space-y-6">
+                    {/* Professional Tab Switcher */}
+                    <div className="flex items-center gap-1 p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm w-fit">
+                      <button
+                        onClick={() => setActiveTab('chores')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                          activeTab === 'chores'
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        }`}
+                      >
+                        <ListTodo className="w-4 h-4" />
+                        Chores
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('routines')}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                          activeTab === 'routines'
+                            ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        }`}
+                      >
+                        <Repeat className="w-4 h-4" />
+                        Routines
+                      </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    {activeTab === 'chores' ? (
+                      <ChoreList
+                        childId={selectedChildId}
+                        userId={initialUser.id}
+                      />
+                    ) : (
+                      <RoutineList
+                        childId={selectedChildId}
+                        childName={children.find((c: Child) => c.id === selectedChildId)?.name}
+                        defaultRewardCents={settings?.daily_reward_cents || 7}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             </div>
