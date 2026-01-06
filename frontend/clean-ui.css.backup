@@ -40,14 +40,15 @@
 
 /* Cleaner form labels - enhanced styles for existing .form-group label */
 .form-group label {
-    font-weight: 500 !important;
-    color: var(--text-primary) !important;
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 /* Cleaner buttons - enhanced styles for existing .btn class */
+/* Note: Removed !important to respect main style.css definitions */
 .btn {
-    font-weight: 500 !important;
-    transition: all 0.2s ease !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .btn-primary {
@@ -130,7 +131,7 @@
 
 /* Reduce emoji size in specific contexts */
 .nav-icon, .mobile-menu-icon, .tab-btn span {
-    font-size: 1em !important;
+    font-size: 1em;
     line-height: 1;
 }
 
