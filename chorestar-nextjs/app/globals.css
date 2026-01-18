@@ -4,6 +4,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Celebration Styles */
+.rainbow-theme {
+  animation: rainbowBackground 3s linear infinite;
+}
+
+@keyframes rainbowBackground {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.achievement-unlock {
+  animation: achievementPulse 0.6s ease;
+}
+
+@keyframes achievementPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.streak-flame {
+  display: inline-block;
+  animation: flameFlicker 0.5s ease-in-out infinite;
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1) rotate(-2deg); }
+  50% { transform: scaleY(1.1) rotate(2deg); }
+}
+
+.perfect-week-glow {
+  animation: perfectGlow 2s ease-in-out infinite;
+}
+
+@keyframes perfectGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+  }
+}
+
 @layer base {
   :root {
     /* Professional Color System */
@@ -258,6 +301,7 @@
 
   /* Dialog Content Styles */
   .dialog-content-settings {
+    max-width: 900px !important; /* Consistent width for all settings tabs */
     max-height: calc(100vh - 2rem);
     height: auto;
     min-height: 500px;

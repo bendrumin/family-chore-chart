@@ -35,6 +35,14 @@ export function VersionSwitcher() {
   }
 
   const switchToOldVersion = () => {
+    // Track version switch
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      ;(window as any).gtag('event', 'version_usage', {
+        version: 'vanilla_js',
+        action: 'switch_to_old',
+      })
+    }
+    
     // Get current path and redirect to old version
     let currentPath = window.location.pathname.replace(/^\/app/, '')
     // Map common routes - dashboard goes to home in old version
@@ -53,6 +61,14 @@ export function VersionSwitcher() {
   }
 
   const switchToNewVersion = () => {
+    // Track version switch
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      ;(window as any).gtag('event', 'version_usage', {
+        version: 'react_nextjs',
+        action: 'switch_to_new',
+      })
+    }
+    
     // Get current path and redirect to new version
     const currentPath = window.location.pathname
     // If already on /app, stay there

@@ -74,6 +74,11 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
         playSound('notification')
       } else {
         playSound('success')
+        // Celebrate chore completion
+        import('@/lib/utils/celebrations').then(({ getCelebrationManager }) => {
+          const celebrationManager = getCelebrationManager()
+          celebrationManager.celebrateChoreCompletion('', chore.name)
+        })
       }
 
       onRefresh()
