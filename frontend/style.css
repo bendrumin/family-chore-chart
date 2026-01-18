@@ -11932,7 +11932,8 @@ html[data-color-scheme="lavender"],
 }
 
 .dashboard-subtitle {
-    color: var(--text-muted);
+    color: var(--text-primary);
+    opacity: 0.7;
     font-size: var(--font-size-base);
 }
 
@@ -11950,7 +11951,8 @@ html[data-color-scheme="lavender"],
 .seasonal-backtoschool .dashboard-subtitle,
 .seasonal-newyear .dashboard-subtitle,
 .seasonal-mothersday .dashboard-subtitle {
-    color: var(--text-secondary);
+    color: var(--seasonal-accent) !important;
+    opacity: 1;
 }
 
 .dashboard-actions {
