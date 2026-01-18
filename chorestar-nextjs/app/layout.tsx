@@ -5,6 +5,8 @@ import { Toaster } from 'sonner'
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
 import { VersionSwitcher } from '@/components/version-switcher'
 import { QueryProvider } from '@/components/providers/query-provider'
+import { GoogleAnalytics } from '@/components/analytics/google-analytics'
+import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -95,10 +97,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <GoogleAnalytics />
         <QueryProvider>
           <ServiceWorkerRegister />
           <VersionSwitcher />
-          {children}
+          <KeyboardShortcutsProvider>
+            {children}
+          </KeyboardShortcutsProvider>
           <Toaster position="top-center" richColors />
         </QueryProvider>
       </body>
