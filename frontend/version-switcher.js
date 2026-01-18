@@ -52,6 +52,11 @@
                 });
 
                 button.addEventListener('click', () => {
+                    // Track version switch
+                    if (window.analytics) {
+                        window.analytics.trackVersionUsage('react_nextjs', 'switch_to_new');
+                    }
+                    
                     const currentPath = window.location.pathname;
                     const newPath = currentPath === '/' ? '/app/dashboard' : `/app${currentPath}`;
                     window.location.href = newPath;

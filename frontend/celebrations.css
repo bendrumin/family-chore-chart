@@ -1,0 +1,114 @@
+/* Celebration Styles */
+
+/* Easter Egg Message */
+.easter-egg-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease;
+}
+
+.easter-egg-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 400px;
+    margin: 1rem;
+}
+
+.easter-egg-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s infinite;
+}
+
+.easter-egg-content h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.easter-egg-content p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+/* Rainbow Theme */
+.rainbow-theme {
+    animation: rainbowBackground 3s linear infinite;
+}
+
+@keyframes rainbowBackground {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { 
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Celebration animations for achievements */
+.achievement-unlock {
+    animation: achievementPulse 0.6s ease;
+}
+
+@keyframes achievementPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Streak flame animation */
+.streak-flame {
+    display: inline-block;
+    animation: flameFlicker 0.5s ease-in-out infinite;
+}
+
+@keyframes flameFlicker {
+    0%, 100% { transform: scaleY(1) rotate(-2deg); }
+    50% { transform: scaleY(1.1) rotate(2deg); }
+}
+
+/* Perfect week glow */
+.perfect-week-glow {
+    animation: perfectGlow 2s ease-in-out infinite;
+}
+
+@keyframes perfectGlow {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+    }
+}

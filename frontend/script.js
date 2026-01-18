@@ -619,6 +619,8 @@ class FamilyChoreChart {
                 this.children.length
             );
             analyticsSafeCall('trackPageView', 'Dashboard');
+            // Track that user is on vanilla JS version
+            analyticsSafeCall('trackVersionUsage', 'vanilla_js', 'page_view');
             
             // Initialize notifications
             try {
@@ -6341,9 +6343,19 @@ class FamilyChoreChart {
                 this.playSound(result.completed ? 'success' : 'notification');
 
                 if (result.completed) {
+                    // Celebrate chore completion
+                    if (window.celebrationManager) {
+                        const childName = this.getChildName(actualChildId);
+                        window.celebrationManager.celebrateChoreCompletion(childName, chore.name);
+                    }
+                    
                     const streak = this.updateStreak(actualChildId, chore.id);
                     if (streak >= 5) {
                         this.showToast(`${this.getChildName(actualChildId)} is on a ${streak}-day streak! 🔥`, 'success');
+                        // Celebrate streak
+                        if (window.celebrationManager) {
+                            window.celebrationManager.celebrateStreak(streak);
+                        }
                     }
                     this.checkAchievements(actualChildId);
                     const newStreak = this.getCurrentStreak(actualChildId);
@@ -7561,6 +7573,12 @@ class FamilyChoreChart {
         
         if (newBadges.length > 0) {
             this.showBadgeUnlockAnimation(newBadges);
+            // Celebrate achievement unlock
+            if (window.celebrationManager) {
+                newBadges.forEach(badge => {
+                    window.celebrationManager.celebrateAchievement(badge.name);
+                });
+            }
         }
         
         return newBadges;
@@ -9884,7 +9902,11 @@ class FamilyChoreChart {
             root.style.setProperty('--bg-primary', '#0f0f23');
             root.style.setProperty('--bg-secondary', '#1a1a2e');
             root.style.setProperty('--text-primary', '#ffffff');
-            root.style.setProperty('--text-secondary', '#b8b8d1');
+            // Don't override text-secondary/text-muted if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                root.style.setProperty('--text-secondary', '#b8b8d1');
+                root.style.setProperty('--text-muted', '#a5b4fc');
+            }
             root.style.setProperty('--border-color', '#2d2d44');
             root.style.setProperty('--card-bg', '#1e1e3a');
             root.style.setProperty('--modal-bg', '#1e1e3a');
@@ -9895,7 +9917,6 @@ class FamilyChoreChart {
             root.style.setProperty('--surface-border', 'rgba(148, 163, 184, 0.18)');
             root.style.setProperty('--surface-border-strong', 'rgba(99, 102, 241, 0.35)');
             root.style.setProperty('--text-base', '#f8fafc');
-            root.style.setProperty('--text-muted', '#a5b4fc');
             root.style.setProperty('--text-inverse', '#0f172a');
             root.style.setProperty('--accent-success', '#34d399');
             root.style.setProperty('--accent-warning', '#fbbf24');
@@ -9930,7 +9951,11 @@ class FamilyChoreChart {
             root.style.setProperty('--bg-primary', '#ffffff');
             root.style.setProperty('--bg-secondary', '#f9fafb');
             root.style.setProperty('--text-primary', '#111827');
-            root.style.setProperty('--text-secondary', '#6b7280');
+            // Don't override text-secondary/text-muted if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                root.style.setProperty('--text-secondary', '#6b7280');
+                root.style.setProperty('--text-muted', '#6b7280');
+            }
             root.style.setProperty('--border-color', '#e5e7eb');
             root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.95)');
             root.style.setProperty('--modal-bg', '#ffffff');
@@ -9941,7 +9966,6 @@ class FamilyChoreChart {
             root.style.setProperty('--surface-border', 'rgba(15, 23, 42, 0.08)');
             root.style.setProperty('--surface-border-strong', 'rgba(15, 23, 42, 0.16)');
             root.style.setProperty('--text-base', '#111827');
-            root.style.setProperty('--text-muted', '#6b7280');
             root.style.setProperty('--text-inverse', '#ffffff');
             root.style.setProperty('--accent-success', '#2ed573');
             root.style.setProperty('--accent-warning', '#ffa502');
@@ -10378,7 +10402,11 @@ class FamilyChoreChart {
             root.style.setProperty('--bg-primary', '#0f0f23');
             root.style.setProperty('--bg-secondary', '#1a1a2e');
             root.style.setProperty('--text-primary', '#ffffff');
-            root.style.setProperty('--text-secondary', '#b8b8d1');
+            // Don't override text-secondary/text-muted if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                root.style.setProperty('--text-secondary', '#b8b8d1');
+                root.style.setProperty('--text-muted', '#a5b4fc');
+            }
             root.style.setProperty('--border-color', '#2d2d44');
             root.style.setProperty('--card-bg', '#1e1e3a');
             root.style.setProperty('--modal-bg', '#1e1e3a');
@@ -10414,7 +10442,11 @@ class FamilyChoreChart {
             root.style.setProperty('--bg-primary', '#ffffff');
             root.style.setProperty('--bg-secondary', '#f9fafb');
             root.style.setProperty('--text-primary', '#111827');
-            root.style.setProperty('--text-secondary', '#6b7280');
+            // Don't override text-secondary/text-muted if seasonal theme is active - let CSS handle it
+            if (!this.hasActiveSeasonalTheme()) {
+                root.style.setProperty('--text-secondary', '#6b7280');
+                root.style.setProperty('--text-muted', '#6b7280');
+            }
             root.style.setProperty('--border-color', '#e5e7eb');
             root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.95)');
             root.style.setProperty('--modal-bg', '#ffffff');

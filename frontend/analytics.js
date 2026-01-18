@@ -198,6 +198,26 @@ class Analytics {
             });
         }
     }
+
+    // Track version usage
+    trackVersionUsage(version, action = 'page_view') {
+        if (window.gtag) {
+            gtag('event', 'version_usage', {
+                version: version, // 'vanilla_js' or 'react_nextjs'
+                action: action, // 'page_view', 'switch_to_new', 'switch_to_old'
+                user_type: this.userType,
+                subscription_status: this.subscriptionStatus
+            });
+
+            // Also set as a custom dimension for better filtering in GA
+            gtag('config', 'G-746ST4RH2E', {
+                custom_map: {
+                    'dimension1': 'app_version'
+                },
+                app_version: version
+            });
+        }
+    }
 }
 
 // Global analytics instance
