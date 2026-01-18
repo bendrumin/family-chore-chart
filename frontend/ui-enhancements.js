@@ -88,6 +88,17 @@ class UIEnhancementsManager {
         };
 
         document.addEventListener('keydown', (e) => {
+            // Handle standalone ? key (without mod) for shortcuts
+            if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+                // Only trigger if not typing in an input/textarea
+                const activeElement = document.activeElement;
+                if (!activeElement || (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA')) {
+                    e.preventDefault();
+                    this.showShortcutsOverlay();
+                    return;
+                }
+            }
+            
             const mod = e.metaKey || e.ctrlKey;
             const key = e.key.toLowerCase();
             let shortcutKey = '';
