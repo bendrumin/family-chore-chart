@@ -147,14 +147,14 @@ let celebrationManagerInstance: CelebrationManager | null = null
 
 export function getCelebrationManager(): CelebrationManager {
   if (typeof window === 'undefined') {
-    // Server-side: return a mock
+    // Server-side: return a mock that satisfies the public interface
     return {
       celebrateWithConfetti: () => {},
       celebrateAchievement: () => {},
       celebrateStreak: () => {},
       celebratePerfectWeek: () => {},
       celebrateChoreCompletion: () => {},
-    } as CelebrationManager
+    } as unknown as CelebrationManager
   }
 
   if (!celebrationManagerInstance) {
