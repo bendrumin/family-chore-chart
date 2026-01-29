@@ -698,7 +698,7 @@ textarea,
     animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-.auth-header h1 {
+.auth-header h2 {
     font-size: 2.5rem;
     font-weight: 800;
     background: var(--gradient-primary);
