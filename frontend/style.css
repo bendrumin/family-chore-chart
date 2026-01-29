@@ -11611,7 +11611,7 @@ html[data-color-scheme="lavender"],
 .dashboard-stat-card .stat-value {
     transition: all 0.3s ease;
     font-variant-numeric: tabular-nums;
-    will-change: contents;
+    /* will-change: contents removed - only applies when stats are actively updating */
 }
 
 .dashboard-stat-card .stat-icon {
@@ -16472,8 +16472,7 @@ html {
     contain: layout paint;
 }
 
-/* Will-change for frequently animated elements */
-.btn:hover,
+/* Will-change for frequently animated elements - only when animation is certain */
 .modal.opening,
 .loading-spinner {
     will-change: transform;
