@@ -458,17 +458,17 @@ button,
 input,
 select,
 textarea,
-.card {
+.card,
+.child-card {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Professional hover states */
-.card:hover {
+.card:hover,
+.child-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
-
-/* Note: .child-card transition and hover defined in main component section (line ~1860) */
 
 /* Utility Classes */
 .hidden {
@@ -824,28 +824,26 @@ textarea,
     line-height: var(--line-height-tight);
 }
 
-.form-group input {
-    width: 100%;
-    padding: var(--space-3) var(--space-4);
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
+.form-group input,
+.form-group select {
+    padding: 12px 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    transition: all var(--transition);
+    font-size: 16px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     background: white;
     color: var(--gray-900);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* .form-group select moved to consolidated section (line ~919) */
-
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
     transform: translateY(-1px);
 }
-
-/* .form-group select:focus also at line ~931 */
 
 .form-group input::placeholder {
     color: var(--gray-400);
@@ -946,7 +944,13 @@ textarea,
 }
 
 /* Chore Entry Styles */
-/* .chore-entry moved to consolidated section (line ~4543) */
+.chore-entry {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
 
 .chore-entry-header {
     display: flex;
@@ -962,7 +966,10 @@ textarea,
     margin: 0;
 }
 
-/* .btn-sm base styles at line ~1482 */
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+}
 
 #chores-container {
     margin-bottom: var(--space-4);
@@ -2259,7 +2266,13 @@ textarea,
     opacity: 0.9;
 }
 
-/* Empty State - consolidated at line ~16015 */
+/* Empty State */
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
 
 .empty-content {
     display: flex;
@@ -2374,16 +2387,16 @@ body.modal-open {
 }
 
 .modal-content {
-    background: linear-gradient(to bottom right, #ffffff 0%, #f8fafc 100%);
-    border-radius: var(--radius-md);
+    background: var(--surface-overlay);
+    border-radius: 16px;
     padding: 0;
     max-width: var(--modal-width-sm);
     width: 90vw;
     min-width: 0;
     max-height: 85vh;
     overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: var(--shadow-overlay);
+    border: 1px solid var(--surface-border);
     color: var(--text-base);
     transform: scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2505,7 +2518,13 @@ body.modal-open {
     user-select: text;
 }
 
-/* Special handling for settings modal - see consolidated definition at line ~4205 */
+/* Special handling for settings modal which can be taller */
+#settings-modal .modal-content {
+    max-height: 90vh;
+    /* Better scrolling for settings modal */
+    display: flex;
+    flex-direction: column;
+}
 
 /* Special handling for FAQ and Contact modals to ensure proper display */
 #faq-modal .modal-content,
@@ -2527,7 +2546,14 @@ body.modal-open {
     -webkit-overflow-scrolling: touch;
 }
 
-/* Settings modal specific improvements - see consolidated definition at line ~4205 */
+/* Settings modal specific improvements */
+#settings-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    max-height: 90vh;
+    padding: 0;
+}
 
 #settings-modal .modal-header {
     flex-shrink: 0;
@@ -2549,7 +2575,11 @@ body.modal-open {
 }
 
 /* Settings sections within tabs */
-/* .settings-section base styles defined at line ~4579 */
+.settings-section {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+}
 
 .settings-section:last-child {
     border-bottom: none;
@@ -2705,15 +2735,11 @@ body.modal-open {
 }
 
 .modal-close:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    transform: scale(1.1) rotate(90deg);
-    border-color: #ef4444;
+    background: var(--surface-base);
+    color: var(--text-base);
+    transform: scale(1.05);
+    border-color: var(--surface-border-strong);
     box-shadow: var(--shadow-md);
-}
-
-.modal-close:active {
-    transform: scale(0.95) rotate(90deg);
 }
 
 .modal-form {
@@ -2724,7 +2750,25 @@ body.modal-open {
     max-height: calc(85vh - 80px);
 }
 
-/* Chore Entry Styling - consolidated in main section (line ~4543) */
+/* Chore Entry Styling */
+.chore-entry {
+    background: var(--surface-muted);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.chore-entry:hover {
+    border-color: var(--gray-300);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chore-entry:last-child {
+    margin-bottom: 0;
+}
 
 .chore-entry h4 {
     margin: 0 0 16px 0;
@@ -4198,12 +4242,8 @@ body.modal-open {
   border-radius: 1.5rem;
   box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15), 0 8px 32px rgba(0,0,0,0.12);
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  padding: 0;
+  padding: 2.5rem 2rem;
   border: 1px solid rgba(102, 126, 234, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 90vh;
-  max-height: 90vh;
 }
 @media (max-width: 800px) {
   #settings-modal .modal-content {
@@ -4537,7 +4577,23 @@ body.modal-open {
     border: 1px solid var(--surface-border);
 }
 
-/* .tab-btn base styles at line ~3933 */
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+}
 
 .tab-btn:hover {
     background: var(--surface-base);
@@ -5211,7 +5267,9 @@ body.modal-open {
 }
 
 /* Enhanced Modal Animations and Micro-interactions */
-/* .modal base styles defined at line ~2314 */
+.modal {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 .modal:not(.hidden) {
     display: flex !important;
@@ -5234,7 +5292,11 @@ body.modal-open {
 }
 
 /* Enhanced button interactions */
-/* .btn base styles defined at line ~503 */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* Enhanced form interactions */
 .form-group input:focus,
@@ -5266,7 +5328,10 @@ body.modal-open {
 }
 
 /* Enhanced tab interactions */
-/* .tab-btn base styles at line ~3933 */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
 
 .tab-btn::after {
     content: '';
@@ -5290,7 +5355,22 @@ body.modal-open {
     display: none;
 }
 
-/* .modal-close base styles and hover states defined at line ~2700 */
+/* Enhanced modal close button */
+.modal-close {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.modal-close:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.modal-close:active {
+    transform: scale(0.95) rotate(90deg);
+}
 
 /* Enhanced color preset interactions */
 .color-preset {
@@ -5587,7 +5667,12 @@ body.modal-open {
     transform: scaleX(1);
 }
 
-/* .feature-icon and .feature-item .feature-icon base styles at line ~15735 */
+.feature-icon,
+.feature-item .feature-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    animation: bounce-in 0.6s ease-out;
+}
 
 .feature-content h3,
 .feature-content .feature-title {
@@ -5808,7 +5893,11 @@ body.modal-open {
     transform: translateX(4px);
 }
 
-/* .feature-icon and .feature-item .feature-icon base styles at line ~15735 */
+.feature-icon,
+.feature-item .feature-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
 
 .onboarding-tip {
     display: flex;
@@ -6150,7 +6239,13 @@ body.modal-open {
     }
 }
 
-/* Beautiful Empty States - consolidated at line ~16015 */
+/* Beautiful Empty States */
+.empty-state {
+    text-align: center;
+    padding: var(--space-10);
+    max-width: 500px;
+    margin: 0 auto;
+}
 
 .empty-state-icon {
     font-size: 5rem;
@@ -7161,7 +7256,11 @@ body.modal-open {
     transform: translateY(-2px);
 }
 
-/* .feature-icon and .feature-item .feature-icon base styles at line ~15735 */
+.feature-icon,
+.feature-item .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+}
 
 .premium-feature-card h4 {
     margin-bottom: var(--space-2);
@@ -7762,7 +7861,13 @@ body.modal-open {
     padding: var(--space-4);
 }
 
-/* .settings-section base styles defined at line ~4579 */
+.settings-section {
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+}
 
 .settings-section h4 {
     margin: 0 0 var(--space-3) 0;
@@ -9404,7 +9509,7 @@ html[data-color-scheme="lavender"],
   justify-content: center;
 }
 
-/* .empty-state base styles at line ~16015 - this enhancement moved there */
+.empty-state { position: relative; z-index: 1; }
 .empty-bg {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -11874,7 +11979,13 @@ html[data-color-scheme="lavender"],
     flex-wrap: wrap;
 }
 
-/* .btn-sm base styles at line ~1482 */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius);
+    min-height: 36px;
+    white-space: nowrap;
+}
 
 .dashboard-stats-grid {
     display: grid;
@@ -15770,7 +15881,7 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
 }
 
 [data-theme="dark"] .feature-icon,
-[data-theme="dark"] .feature-item .feature-icon {
+.feature-item .feature-icon {
     background: var(--gray-700);
 }
 
@@ -15996,8 +16107,6 @@ body[data-theme="dark"].seasonal-newyear .app-header button:hover {
     padding: var(--space-12) var(--space-6);
     max-width: 500px;
     margin: 0 auto;
-    position: relative;
-    z-index: 1;
 }
 
 .empty-state-icon {
@@ -16818,7 +16927,13 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
 }
 
-/* Refined Modal Styling - merged into base .modal-content at line ~2385 */
+/* Refined Modal Styling */
+.modal-content {
+    background: linear-gradient(to bottom right, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
 
 /* Professional Input Fields */
 input[type="text"],
@@ -17151,7 +17266,12 @@ html {
    MICRO-INTERACTIONS & POLISH
    ========================================== */
 
-/* Button ripple effect - base .btn styles at line ~503 */
+/* Button ripple effect */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
 .btn::after {
     content: '';
     position: absolute;
