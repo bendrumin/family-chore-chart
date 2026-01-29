@@ -65,6 +65,7 @@ export function SignupForm() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             family_name: formData.familyName,
           },

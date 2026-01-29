@@ -9,10 +9,14 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
+  // Get the origin from the request headers for the redirect URL
+  const origin = new URL(request.url).origin
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${origin}/auth/callback`,
       data: {
         family_name: familyName,
       },
