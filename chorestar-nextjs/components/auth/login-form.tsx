@@ -30,7 +30,19 @@ export function LoginForm() {
       })
 
       if (error) {
-        toast.error(error.message)
+        // Check if it's an email confirmation error
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Please confirm your email address before logging in. Check your inbox for the confirmation link.')
+        } else {
+          toast.error(error.message)
+        }
+        return
+      }
+
+      // Check if user has confirmed email
+      if (data.user && !data.user.email_confirmed_at) {
+        toast.error('Please confirm your email address before logging in. Check your inbox for the confirmation link.')
+        await supabase.auth.signOut()
         return
       }
 
@@ -105,6 +117,14 @@ export function LoginForm() {
         Don't have an account?{' '}
         <Link href="/signup" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold">
           Create one here
+        </Link>
+      </p>
+
+      {/* Resend Confirmation Link */}
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+        Didn't receive your confirmation email?{' '}
+        <Link href="/resend-confirmation" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold">
+          Resend it
         </Link>
       </p>
     </form>
