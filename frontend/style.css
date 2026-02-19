@@ -17745,19 +17745,23 @@ small {
 }
 
 /* ============================================
-   LANDING PAGE (Desktop only) - same page as login/signup
+   LANDING PAGE (Desktop only) - no Tailwind CDN; all styles here for production
    ============================================ */
 html { scroll-behavior: smooth; }
 .landing-page {
     display: none;
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #eef2ff, #f3e8ff);
 }
 
-/* Desktop: one long page = landing + auth (no separate "login page") */
+/* Desktop: show landing; hide auth container (we use landing inline form) */
 @media (min-width: 769px) {
     .landing-page {
         display: block;
     }
-    /* When dashboard is active (logged in), hide landing and auth, show app */
+    #auth-container {
+        display: none !important;
+    }
     body.dashboard-active .landing-page,
     body.dashboard-active #auth-container {
         display: none !important;
@@ -17771,4 +17775,367 @@ html { scroll-behavior: smooth; }
     .landing-page {
         display: none !important;
     }
+}
+
+/* Landing structure */
+.landing-top-bar {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 24px;
+}
+.landing-wrap {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+.landing-body {
+    padding: 32px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.landing-brand {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+@media (min-width: 769px) {
+    .landing-body {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+.landing-card-col {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+@media (min-width: 769px) {
+    .landing-card-col {
+        width: 20rem;
+        flex-shrink: 0;
+        margin-bottom: 0;
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+.landing-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e5e7eb;
+    padding: 24px;
+}
+.landing-card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 16px;
+}
+.landing-auth-form.hidden {
+    display: none !important;
+}
+.landing-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    font-size: 0.875rem;
+    color: #111827;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+.landing-input::placeholder {
+    color: #6b7280;
+}
+.landing-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+.landing-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-bottom: 12px;
+}
+.landing-checkbox input {
+    width: 1rem;
+    height: 1rem;
+}
+.landing-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+.landing-btn-primary {
+    background: #4f46e5;
+    color: #fff;
+}
+.landing-btn-primary:hover {
+    background: #4338ca;
+}
+.landing-btn-outline {
+    background: transparent;
+    color: #374151;
+    border: 2px solid #d1d5db;
+}
+.landing-btn-outline:hover {
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+.landing-btn-lg {
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+.landing-link-block {
+    display: block;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #4f46e5;
+    margin-top: 8px;
+    text-decoration: none;
+}
+.landing-link-block:hover {
+    text-decoration: underline;
+}
+.landing-switch {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 12px;
+}
+.landing-link {
+    color: #4f46e5;
+    font-weight: 500;
+    text-decoration: none;
+}
+.landing-link:hover {
+    text-decoration: underline;
+}
+.landing-note {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 12px;
+}
+
+/* Main content */
+.landing-main {
+    flex: 1;
+    min-width: 0;
+}
+.landing-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+.landing-hero-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 8px;
+}
+@media (min-width: 769px) {
+    .landing-hero-title { font-size: 3rem; }
+}
+.landing-tagline {
+    font-size: 1.25rem;
+    color: #4b5563;
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+.landing-social {
+    font-size: 0.875rem;
+    color: #4f46e5;
+    font-weight: 600;
+    margin: 0;
+}
+.landing-hero-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 32px;
+    margin-bottom: 48px;
+}
+@media (min-width: 769px) {
+    .landing-hero-card { padding: 40px; }
+}
+.landing-hero-h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 16px;
+    line-height: 1.25;
+}
+@media (min-width: 769px) {
+    .landing-hero-h2 { font-size: 1.875rem; }
+}
+.landing-hero-highlight {
+    color: #4f46e5;
+}
+.landing-hero-p {
+    font-size: 1.125rem;
+    color: #4b5563;
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+.landing-features {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    font-size: 1rem;
+    color: #374151;
+    line-height: 1.6;
+}
+.landing-features li {
+    margin-bottom: 8px;
+}
+.landing-trust {
+    margin: 0 0 24px;
+    font-size: 1rem;
+    color: #4b5563;
+}
+.landing-cta-wrap {
+    margin-bottom: 8px;
+}
+.landing-cta-wrap .landing-btn {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.landing-subtext {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Pricing */
+.landing-pricing {
+    margin-bottom: 48px;
+}
+.landing-pricing-h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px;
+}
+.landing-pricing-p {
+    color: #4b5563;
+    margin: 0 0 32px;
+}
+.landing-pricing-grid {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+@media (min-width: 769px) {
+    .landing-pricing-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.landing-plan-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+.landing-plan-featured {
+    border: 2px solid #4f46e5;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.landing-plan-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4f46e5;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 9999px;
+}
+.landing-plan-h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px;
+}
+.landing-plan-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 8px;
+}
+.landing-plan-price span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+.landing-plan-note,
+.landing-plan-upgrade {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 16px;
+}
+.landing-plan-list {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    font-size: 0.9375rem;
+    color: #4b5563;
+    line-height: 1.6;
+}
+.landing-plan-list li {
+    margin-bottom: 8px;
+}
+.landing-lifetime {
+    background: linear-gradient(to right, #e0e7ff, #ede9fe);
+    border-radius: 0.75rem;
+    padding: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+.landing-lifetime .landing-btn {
+    width: auto;
+    margin-left: auto;
+}
+.landing-lifetime-emoji {
+    font-size: 1.5rem;
+}
+.landing-lifetime-title {
+    font-weight: 700;
+    color: #111827;
+}
+.landing-lifetime-price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+}
+.landing-lifetime-note {
+    width: 100%;
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin: 8px 0 0;
+}
+.landing-footer {
+    text-align: center;
+    padding-top: 32px;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+.landing-footer-made {
+    margin: 8px 0 0;
+    font-size: 0.8125rem;
 }
