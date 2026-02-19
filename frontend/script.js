@@ -14067,6 +14067,33 @@ async function isPremiumUser() {
     return app ? await app.isPremiumUser() : false;
 }
 
+// Show auth page (for landing page CTAs)
+function showAuth(mode = 'signup') {
+    // Hide landing page
+    document.body.classList.add('show-auth');
+
+    // Show auth container
+    const authContainer = document.getElementById('auth-container');
+    if (authContainer) {
+        authContainer.classList.remove('hidden');
+    }
+
+    // Switch to the right form
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+
+    if (mode === 'login') {
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (signupForm) signupForm.classList.add('hidden');
+    } else {
+        if (signupForm) signupForm.classList.remove('hidden');
+        if (loginForm) loginForm.classList.add('hidden');
+    }
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function renderAddDicebearPicker(name) {
     if (app) {
         app.renderAddDicebearPicker(name);

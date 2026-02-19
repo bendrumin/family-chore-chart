@@ -17743,3 +17743,371 @@ small {
 #inline-edit-avatar-picker::-webkit-scrollbar-thumb:hover {
     background: var(--gray-500);
 }
+
+/* ============================================
+   LANDING PAGE STYLES
+   ============================================ */
+
+/* Landing Page Container */
+.landing-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0;
+    display: none; /* Hidden by default, shown on desktop */
+}
+
+/* Top Sign In Bar */
+.landing-top-bar {
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 0;
+    text-align: right;
+}
+
+.sign-in-link {
+    color: #555;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sign-in-link:hover {
+    color: #667eea;
+}
+
+.sign-in-link .underline {
+    text-decoration: underline;
+}
+
+/* Landing Container */
+.landing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Header */
+.landing-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.landing-logo {
+    font-size: 60px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.landing-tagline {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 12px;
+}
+
+.landing-social-proof {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+/* Hero Section */
+.landing-hero {
+    background: white;
+    border-radius: 24px;
+    padding: 60px;
+    margin-bottom: 60px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.landing-hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 24px;
+    line-height: 1.2;
+}
+
+.landing-hero-title .text-primary {
+    color: #667eea;
+}
+
+.landing-hero-text {
+    font-size: 20px;
+    color: #4a5568;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.landing-hero-features {
+    font-size: 16px;
+    color: #4a5568;
+    margin-bottom: 32px;
+    line-height: 1.8;
+}
+
+.landing-trust-signal {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    font-size: 14px;
+    color: #78350f;
+    margin-bottom: 32px;
+}
+
+.landing-cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.btn-large {
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-large:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.landing-cta-subtext {
+    text-align: center;
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Pricing Section */
+.landing-pricing {
+    margin-bottom: 60px;
+}
+
+.landing-section-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.landing-section-subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.pricing-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.pricing-card-featured {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6edff 100%);
+    border: 3px solid #667eea;
+    transform: scale(1.05);
+}
+
+.pricing-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #667eea;
+    color: white;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.pricing-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.pricing-price {
+    font-size: 48px;
+    font-weight: 900;
+    color: #667eea;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.pricing-period {
+    font-size: 18px;
+    font-weight: 500;
+    color: #718096;
+}
+
+.pricing-save {
+    text-align: center;
+    font-size: 12px;
+    color: #718096;
+    margin-bottom: 24px;
+}
+
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px 0;
+}
+
+.pricing-features li {
+    padding: 8px 0;
+    color: #4a5568;
+    font-size: 15px;
+}
+
+.pricing-upgrade-note {
+    text-align: center;
+    font-size: 11px;
+    color: #718096;
+    margin-top: 12px;
+}
+
+/* Lifetime Pricing */
+.pricing-lifetime {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.pricing-lifetime-emoji {
+    font-size: 36px;
+}
+
+.pricing-lifetime-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #78350f;
+}
+
+.pricing-lifetime-price {
+    font-size: 32px;
+    font-weight: 900;
+    color: #92400e;
+}
+
+.btn-accent {
+    background: #92400e;
+    color: white;
+    padding: 12px 32px;
+    font-weight: 700;
+}
+
+.btn-accent:hover {
+    background: #78350f;
+}
+
+.pricing-lifetime-note {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #92400e;
+    margin-top: 8px;
+}
+
+/* Footer */
+.landing-footer {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 40px 0;
+}
+
+.landing-footer p {
+    margin-bottom: 8px;
+}
+
+.landing-footer-small {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* ============================================
+   RESPONSIVE: Desktop vs Mobile
+   ============================================ */
+
+/* Desktop: Show landing page, hide auth */
+@media (min-width: 769px) {
+    .landing-page {
+        display: block !important;
+    }
+    
+    #auth-container {
+        display: none;
+    }
+    
+    /* When showAuth() is called, hide landing and show auth */
+    body.show-auth .landing-page {
+        display: none !important;
+    }
+    
+    body.show-auth #auth-container {
+        display: flex !important;
+    }
+}
+
+/* Mobile: Hide landing page, show auth */
+@media (max-width: 768px) {
+    .landing-page {
+        display: none !important;
+    }
+    
+    #auth-container {
+        display: flex;
+    }
+    
+    /* Mobile responsive adjustments for landing (if ever shown) */
+    .landing-hero {
+        padding: 30px 20px;
+    }
+    
+    .landing-hero-title {
+        font-size: 28px;
+    }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .pricing-card-featured {
+        transform: none;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .landing-hero {
+        padding: 40px;
+    }
+    
+    .landing-hero-title {
+        font-size: 36px;
+    }
+}
