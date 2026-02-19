@@ -46,7 +46,7 @@ export default async function HomePage() {
           {/* Trust Signals */}
           <div className="bg-blue-50 dark:bg-gray-700 rounded-lg p-4 mb-8">
             <p className="text-center text-sm text-gray-700 dark:text-gray-300">
-              🔒 <strong>100% Free Forever</strong> • No Credit Card Required • Set Up in 2 Minutes
+              🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime
             </p>
           </div>
 
@@ -66,7 +66,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-            ✓ No credit card • ✓ Cancel anytime • ✓ Privacy protected
+            ✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime
           </p>
         </div>
 
@@ -200,10 +200,10 @@ export default async function HomePage() {
             href="/signup"
             className="inline-block px-12 py-5 bg-white text-blue-600 rounded-lg font-bold text-xl hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
           >
-            Start Free Now - No Credit Card Required
+            Start Free Today →
           </Link>
           <p className="mt-6 text-sm opacity-75">
-            ✓ Set up in 2 minutes  •  ✓ Free forever  •  ✓ 87+ happy families
+            ✓ Set up in 2 minutes  •  ✓ Free plan available  •  ✓ 87+ happy families
           </p>
         </div>
 
