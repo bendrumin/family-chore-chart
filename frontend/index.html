@@ -1472,6 +1472,43 @@
                                             </div>
                                         </div>
 
+                                        <!-- PIN Management Section -->
+                                        <div id="inline-edit-pin-section" class="pin-management-section" style="margin-top: var(--space-4); padding: var(--space-3); border: 2px solid #c084fc; border-radius: var(--radius); background: linear-gradient(135deg, rgba(192, 132, 252, 0.1), rgba(168, 85, 247, 0.1));">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2);">
+                                                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                                    <span id="inline-edit-pin-icon" style="font-size: 1.2em;">🔓</span>
+                                                    <strong style="font-size: 1em;">Kid Login PIN</strong>
+                                                </div>
+                                                <span id="inline-edit-pin-status" style="display: none; color: #10b981; font-weight: 600; font-size: 0.875em;">✓ Set</span>
+                                            </div>
+
+                                            <p id="inline-edit-pin-description" style="font-size: 0.875em; color: var(--gray-600); margin-bottom: var(--space-3);">
+                                                Set a 4-6 digit PIN so this child can log in independently.
+                                            </p>
+
+                                            <!-- PIN Buttons (shown when not editing PIN) -->
+                                            <div id="inline-edit-pin-buttons" style="display: flex; gap: var(--space-2);">
+                                                <button type="button" id="inline-edit-set-pin-btn" class="btn btn-outline btn-sm" onclick="app.showPinInput()">Set PIN</button>
+                                                <button type="button" id="inline-edit-remove-pin-btn" class="btn btn-outline btn-sm" onclick="app.removeChildPin()" style="display: none; color: #ef4444;">Remove PIN</button>
+                                            </div>
+
+                                            <!-- PIN Input Form (hidden by default) -->
+                                            <div id="inline-edit-pin-form" style="display: none;">
+                                                <div class="form-group" style="margin-bottom: var(--space-2);">
+                                                    <label for="inline-edit-pin-input">Enter PIN (4-6 digits)</label>
+                                                    <input type="number" id="inline-edit-pin-input" inputmode="numeric" maxlength="6" placeholder="1234" style="font-family: monospace; font-size: 1.1em;">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: var(--space-3);">
+                                                    <label for="inline-edit-pin-confirm">Confirm PIN</label>
+                                                    <input type="number" id="inline-edit-pin-confirm" inputmode="numeric" maxlength="6" placeholder="1234" style="font-family: monospace; font-size: 1.1em;">
+                                                </div>
+                                                <div style="display: flex; gap: var(--space-2);">
+                                                    <button type="button" class="btn btn-primary btn-sm" onclick="app.saveChildPin()">Save PIN</button>
+                                                    <button type="button" class="btn btn-outline btn-sm" onclick="app.hidePinInput()">Cancel</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="form-actions" style="margin-top: var(--space-4); display: flex; gap: var(--space-2); justify-content: flex-end;">
                                             <button type="button" class="btn btn-outline" onclick="app.cancelInlineEdit()">Cancel</button>
                                             <button type="submit" class="btn btn-primary">Save Changes</button>
