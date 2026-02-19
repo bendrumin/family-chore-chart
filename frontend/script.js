@@ -525,15 +525,15 @@ class FamilyChoreChart {
     async init() {
         try {
             this.showLoading();
-
-
+            
+            
             // Add anti-jump CSS early
             this.addAntiJumpCSS();
-
+            
             // Load settings and streaks
             this.loadSettings();
             this.loadStreaks();
-
+            
             // Check authentication
             try {
                 const user = await this.apiClient.getCurrentUser();
@@ -541,35 +541,16 @@ class FamilyChoreChart {
                     this.currentUser = user;
                     await this.loadApp();
                 } else {
-                    // Not logged in - on desktop, show landing page. On mobile, show auth.
-                    if (window.innerWidth > 768) {
-                        // Desktop: Landing page already shows via CSS, just hide loading
-                        const landingPage = document.getElementById('landing-page');
-                        if (landingPage) landingPage.style.display = 'block';
-                    } else {
-                        // Mobile: Show auth directly
-                        this.showAuth();
-                    }
-                }
-            } catch (authError) {
-                // Auth error - show landing on desktop, auth on mobile
-                if (window.innerWidth > 768) {
-                    const landingPage = document.getElementById('landing-page');
-                    if (landingPage) landingPage.style.display = 'block';
-                } else {
                     this.showAuth();
                 }
+            } catch (authError) {
+                this.showAuth();
             }
         } catch (error) {
             console.error('Initialization error:', error);
             this.showToast('Failed to initialize app. Please refresh the page.', 'error');
-            // Fallback - show landing on desktop, auth on mobile
-            if (window.innerWidth > 768) {
-                const landingPage = document.getElementById('landing-page');
-                if (landingPage) landingPage.style.display = 'block';
-            } else {
-                this.showAuth();
-            }
+            // Fallback to auth screen on any error
+            this.showAuth();
         } finally {
             this.hideLoading();
         }
@@ -1226,63 +1207,22 @@ class FamilyChoreChart {
     }
 
     showAuth() {
-        console.log('🔐 showAuth() called - showing auth form');
+        document.body.classList.remove('dashboard-active');
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
-        const landingPage = document.getElementById('landing-page');
-
-        // Always show auth form (used for errors, logout, or when user clicks login)
-        // Landing page visibility is handled separately in init()
-        if (authContainer) {
-            authContainer.classList.remove('hidden');
-            console.log('✅ Auth container shown');
-        }
-        if (appContainer) {
-            appContainer.classList.add('hidden');
-            console.log('✅ App container hidden');
-        }
-
-        // On mobile, hide landing page explicitly
-        if (window.innerWidth <= 768 && landingPage) {
-            landingPage.style.display = 'none';
-            console.log('✅ Landing page hidden (mobile)');
-        }
-
+        if (authContainer) authContainer.classList.remove('hidden');
+        if (appContainer) appContainer.classList.add('hidden');
         document.querySelector('.floating-action-button')?.remove();
         this.setupAuthHandlers();
     }
 
     showApp() {
-        console.log('🎯 showApp() called - attempting to show dashboard');
+        document.body.classList.add('dashboard-active');
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
+        if (authContainer) authContainer.classList.add('hidden');
+        if (appContainer) appContainer.classList.remove('hidden');
 
-        console.log('Elements found:', {
-            authContainer: !!authContainer,
-            appContainer: !!appContainer
-        });
-
-        // Add dashboard-active class to body (this hides landing page via CSS with !important)
-        document.body.classList.add('dashboard-active');
-        document.body.classList.remove('show-auth');
-        console.log('✅ Added dashboard-active class to body (hides landing page via CSS)');
-
-        // Hide auth container
-        if (authContainer) {
-            authContainer.classList.add('hidden');
-            console.log('✅ Auth container hidden');
-        }
-
-        // Show dashboard
-        if (appContainer) {
-            appContainer.classList.remove('hidden');
-            console.log('✅ App container shown (removed hidden class)');
-        } else {
-            console.error('❌ App container not found!');
-        }
-
-        console.log('✅ Dashboard is now visible - landing page hidden by dashboard-active class');
-        
         // Add flag to prevent duplicate initialization
         if (!this.handlersInitialized) {
             // Ensure DOM is ready before setting up handlers
@@ -1301,53 +1241,71 @@ class FamilyChoreChart {
 
     // Authentication Handlers
     setupAuthHandlers() {
-        // Login form
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleLogin();
+        // Mobile: main auth container forms
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleLogin(); });
+        }
+        const signupForm = document.getElementById('signup-form');
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleSignup(); });
+        }
+        const forgotForm = document.getElementById('forgot-form');
+        if (forgotForm) {
+            forgotForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleForgotPassword(); });
+        }
+
+        // Form switching (mobile)
+        const showSignup = document.getElementById('show-signup');
+        if (showSignup) showSignup.addEventListener('click', (e) => { e.preventDefault(); this.switchAuthForm('signup'); });
+        const showLogin = document.getElementById('show-login');
+        if (showLogin) showLogin.addEventListener('click', (e) => { e.preventDefault(); this.switchAuthForm('login'); });
+        const forgotPassword = document.getElementById('forgot-password');
+        if (forgotPassword) forgotPassword.addEventListener('click', (e) => { e.preventDefault(); this.switchAuthForm('forgot'); });
+        const backToLogin = document.getElementById('back-to-login');
+        if (backToLogin) backToLogin.addEventListener('click', (e) => { e.preventDefault(); this.switchAuthForm('login'); });
+
+        // Desktop landing: inline login/signup (no scroll)
+        const landingLoginForm = document.getElementById('landing-login-form');
+        if (landingLoginForm) {
+            landingLoginForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleLogin(e.target); });
+        }
+        const landingSignupForm = document.getElementById('landing-signup-form');
+        if (landingSignupForm) {
+            landingSignupForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleSignup(e.target); });
+        }
+        const landingForgotForm = document.getElementById('landing-forgot-form');
+        if (landingForgotForm) {
+            landingForgotForm.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleForgotPassword(e.target); });
+        }
+        const landingShowLogin = document.getElementById('landing-show-login');
+        if (landingShowLogin) landingShowLogin.addEventListener('click', (e) => { e.preventDefault(); this.switchLandingAuthForm('login'); });
+        const landingShowSignup = document.getElementById('landing-show-signup');
+        if (landingShowSignup) landingShowSignup.addEventListener('click', (e) => { e.preventDefault(); this.switchLandingAuthForm('signup'); });
+        const landingForgotPassword = document.getElementById('landing-forgot-password');
+        if (landingForgotPassword) landingForgotPassword.addEventListener('click', (e) => { e.preventDefault(); this.switchLandingAuthForm('forgot'); });
+        const landingBackToLogin = document.getElementById('landing-back-to-login');
+        if (landingBackToLogin) landingBackToLogin.addEventListener('click', (e) => { e.preventDefault(); this.switchLandingAuthForm('login'); });
+        document.querySelectorAll('.landing-cta-signup').forEach(btn => {
+            btn.addEventListener('click', () => this.switchLandingAuthForm('signup'));
         });
-
-        // Signup form
-        document.getElementById('signup-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleSignup();
-        });
-
-        // Forgot password form
-        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleForgotPassword();
-        });
-
-        // Form switching
-        document.getElementById('show-signup').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('signup');
-        });
-
-        document.getElementById('show-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('login');
-        });
-
-        document.getElementById('forgot-password').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('forgot');
-        });
-
-        document.getElementById('back-to-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchAuthForm('login');
-        });
-
-
     }
 
-    async handleLogin() {
-        const btn = document.querySelector('#login-form button[type="submit"]');
-        const email = document.getElementById('login-email')?.value?.trim() || '';
-        const password = document.getElementById('login-password')?.value || '';
-        const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : false;
+    switchLandingAuthForm(mode) {
+        const loginF = document.getElementById('landing-login-form');
+        const signupF = document.getElementById('landing-signup-form');
+        const forgotF = document.getElementById('landing-forgot-form');
+        [loginF, signupF, forgotF].filter(Boolean).forEach(el => el.classList.add('hidden'));
+        if (mode === 'signup' && signupF) signupF.classList.remove('hidden');
+        else if (mode === 'forgot' && forgotF) forgotF.classList.remove('hidden');
+        else if (loginF) loginF.classList.remove('hidden');
+    }
+
+    async handleLogin(formEl) {
+        const btn = formEl ? formEl.querySelector('button[type="submit"]') : document.querySelector('#login-form button[type="submit"]');
+        const email = formEl ? (formEl.querySelector('[name=email]')?.value?.trim() || '') : (document.getElementById('login-email')?.value?.trim() || '');
+        const password = formEl ? (formEl.querySelector('[name=password]')?.value || '') : (document.getElementById('login-password')?.value || '');
+        const rememberMe = formEl ? (!!formEl.querySelector('[name=remember]')?.checked) : (document.getElementById('remember-me') ? document.getElementById('remember-me').checked : false);
 
         // Basic front-end validation to fail fast (also prevents a stuck spinner)
         if (!email || !password) {
@@ -1408,12 +1366,12 @@ class FamilyChoreChart {
         }
     }
 
-    async handleSignup() {
-        const btn = document.querySelector('#signup-form button[type="submit"]');
-        const email = document.getElementById('signup-email')?.value?.trim() || '';
-        const familyName = this.sanitizeInput(document.getElementById('signup-family-name')?.value || '', 100);
-        const password = document.getElementById('signup-password')?.value || '';
-        const confirmPassword = document.getElementById('signup-confirm-password')?.value || '';
+    async handleSignup(formEl) {
+        const btn = formEl ? formEl.querySelector('button[type="submit"]') : document.querySelector('#signup-form button[type="submit"]');
+        const email = formEl ? (formEl.querySelector('[name=email]')?.value?.trim() || '') : (document.getElementById('signup-email')?.value?.trim() || '');
+        const familyName = formEl ? this.sanitizeInput(formEl.querySelector('[name=family_name]')?.value || '', 100) : this.sanitizeInput(document.getElementById('signup-family-name')?.value || '', 100);
+        const password = formEl ? (formEl.querySelector('[name=password]')?.value || '') : (document.getElementById('signup-password')?.value || '');
+        const confirmPassword = formEl ? (formEl.querySelector('[name=confirm_password]')?.value || '') : (document.getElementById('signup-confirm-password')?.value || '');
 
         // Basic front-end validation to fail fast
         if (!email || !familyName || !password || !confirmPassword) {
@@ -1449,7 +1407,7 @@ class FamilyChoreChart {
             if (result.success) {
                 analyticsSafeCall('trackRegistration', email, familyName);
                 this.showToast('Account created! Please check your email to verify your account.', 'success');
-                this.switchAuthForm('login');
+                if (formEl) this.switchLandingAuthForm('login'); else this.switchAuthForm('login');
             } else {
                 analyticsSafeCall('trackError', 'signup', result.error);
                 this.showToast(result.error, 'error');
@@ -1463,9 +1421,9 @@ class FamilyChoreChart {
         }
     }
 
-    async handleForgotPassword() {
-        const btn = document.querySelector('#forgot-form button[type="submit"]');
-        const email = document.getElementById('forgot-email')?.value?.trim() || '';
+    async handleForgotPassword(formEl) {
+        const btn = formEl ? formEl.querySelector('button[type="submit"]') : document.querySelector('#forgot-form button[type="submit"]');
+        const email = formEl ? (formEl.querySelector('[name=email]')?.value?.trim() || '') : (document.getElementById('forgot-email')?.value?.trim() || '');
 
         if (!email) {
             this.showToast('Please enter your email', 'error');
@@ -1481,7 +1439,7 @@ class FamilyChoreChart {
 
             if (result.success) {
                 this.showToast('Password reset email sent!', 'success');
-                this.switchAuthForm('login');
+                if (formEl) this.switchLandingAuthForm('login'); else this.switchAuthForm('login');
             } else {
                 this.showToast(result.error, 'error');
             }
@@ -1735,24 +1693,12 @@ class FamilyChoreChart {
                 this.chores = [];
                 this.completions = [];
                 this.familySettings = null;
-
+                
                 if (this.subscription) {
                     this.subscription.unsubscribe();
                 }
-
-                // On desktop, show landing page. On mobile, show auth
-                if (window.innerWidth > 768) {
-                    // Desktop: Go back to landing page
-                    document.body.classList.remove('show-auth');
-                    const authContainer = document.getElementById('auth-container');
-                    if (authContainer) {
-                        authContainer.classList.add('hidden');
-                    }
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    // Mobile: Show auth (login/signup)
-                    this.showAuth();
-                }
+                
+                this.showAuth();
             } else {
                 this.showToast('Error logging out', 'error');
             }
@@ -14140,35 +14086,6 @@ if (!window.location.pathname.endsWith('settings.html')) {
 // Global functions for external access
 async function isPremiumUser() {
     return app ? await app.isPremiumUser() : false;
-}
-
-// Show auth page (for landing page CTAs)
-function showAuth(mode = 'signup') {
-    // Hide landing page
-    document.body.classList.add('show-auth');
-
-    document.querySelector('.floating-action-button')?.remove();
-
-    // Show auth container
-    const authContainer = document.getElementById('auth-container');
-    if (authContainer) {
-        authContainer.classList.remove('hidden');
-    }
-
-    // Switch to the right form
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-
-    if (mode === 'login') {
-        if (loginForm) loginForm.classList.remove('hidden');
-        if (signupForm) signupForm.classList.add('hidden');
-    } else {
-        if (signupForm) signupForm.classList.remove('hidden');
-        if (loginForm) loginForm.classList.add('hidden');
-    }
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderAddDicebearPicker(name) {
