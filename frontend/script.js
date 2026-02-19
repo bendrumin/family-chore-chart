@@ -1924,48 +1924,44 @@ class FamilyChoreChart {
         });
 
         // Edit child form
-        document.getElementById('edit-child-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleEditChildModal();
-        });
-
-        // Page edit child form
-        document.getElementById('page-edit-child-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handlePageEditChildSave();
-        });
-
         // Setup color picker functionality
         this.setupChoreColorSwatches();
     }
 
     openEditChildModal(child) {
-        // Use the proper edit child modal instead of inline form
-        const editChildModal = document.getElementById('edit-child-modal');
-        if (!editChildModal) {
-            this.showToast('Edit modal not available', 'error');
-            return;
-        }
-        
-        // Populate the edit form with child data
-        const nameInput = document.getElementById('edit-child-name');
-        const ageInput = document.getElementById('edit-child-age');
-        const colorInput = document.getElementById('edit-child-color');
-        const editForm = document.getElementById('edit-child-form');
-        
-        if (!nameInput || !ageInput || !colorInput || !editForm) {
+        // Show inline edit form within settings instead of opening a separate modal
+        const inlineForm = document.getElementById('inline-edit-child-form');
+        const childrenList = document.getElementById('manage-children-list');
+
+        if (!inlineForm || !childrenList) {
             this.showToast('Edit form not available', 'error');
             return;
         }
-        
+
+        // Hide the children list and show the edit form
+        childrenList.style.display = 'none';
+        inlineForm.style.display = 'block';
+
+        // Populate the form with child data
+        const nameInput = document.getElementById('inline-edit-name');
+        const ageInput = document.getElementById('inline-edit-age');
+        const colorInput = document.getElementById('inline-edit-color');
+        const form = document.getElementById('inline-edit-form');
+
+        if (!nameInput || !ageInput || !colorInput || !form) {
+            this.showToast('Form fields not available', 'error');
+            return;
+        }
+
         nameInput.value = child.name;
         ageInput.value = child.age;
         colorInput.value = child.avatar_color || '#6366f1';
-        
-        // Set the child ID for the form
-        editForm.dataset.childId = child.id;
-        
-        const previewCircle = document.getElementById('edit-child-avatar-preview-circle');
+
+        // Store the child ID for saving
+        form.dataset.childId = child.id;
+
+        // Update the avatar preview
+        const previewCircle = document.getElementById('inline-edit-avatar-preview');
         if (previewCircle) {
             previewCircle.innerHTML = '';
             previewCircle.style.backgroundColor = colorInput.value || '#6366f1';
@@ -1973,27 +1969,222 @@ class FamilyChoreChart {
             delete previewCircle.dataset.avatarFile;
 
             if (child.avatar_url) {
-                previewCircle.innerHTML = `<img src="${child.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                const img = document.createElement('img');
+                img.src = window.sanitizeURL ? window.sanitizeURL(child.avatar_url) : child.avatar_url;
+                img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                img.alt = child.name || 'Avatar';
+                previewCircle.appendChild(img);
                 previewCircle.dataset.avatarUrl = child.avatar_url;
             } else if (child.avatar_file) {
-                previewCircle.innerHTML = `<img src="${child.avatar_file}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                const img = document.createElement('img');
+                img.src = window.sanitizeURL ? window.sanitizeURL(child.avatar_file) : child.avatar_file;
+                img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                img.alt = child.name || 'Avatar';
+                previewCircle.appendChild(img);
                 previewCircle.dataset.avatarFile = child.avatar_file;
             } else {
                 previewCircle.textContent = this.getAvatarInitial(child.name, 'A');
             }
         }
-        
-        // Update avatar preview
-        this.updateEditChildAvatarPreview2();
-        
-        // Setup edit child modal (handles color presets and avatar preview)
-        this.setupEditChildModal();
-        
-        // Show the modal
-        this.showModal('edit-child-modal');
+
+        // Store original values for unsaved changes detection
+        this.inlineEditOriginalValues = {
+            name: child.name,
+            age: child.age,
+            color: child.avatar_color || '#6366f1',
+            avatarUrl: child.avatar_url || null
+        };
+
+        // Initialize avatar picker and color presets for inline form
+        this.setupInlineEditForm();
     }
 
+    cancelInlineEdit() {
+        // Check if there are unsaved changes
+        if (this.hasUnsavedInlineChanges()) {
+            if (!confirm('You have unsaved changes. Are you sure you want to go back without saving?')) {
+                return; // User cancelled, stay in edit mode
+            }
+        }
 
+        // Hide the inline edit form and show the children list
+        const inlineForm = document.getElementById('inline-edit-child-form');
+        const childrenList = document.getElementById('manage-children-list');
+
+        if (inlineForm) {
+            inlineForm.style.display = 'none';
+        }
+        if (childrenList) {
+            childrenList.style.display = 'block';
+        }
+
+        // Clear original values
+        delete this.inlineEditOriginalValues;
+    }
+
+    hasUnsavedInlineChanges() {
+        if (!this.inlineEditOriginalValues) return false;
+
+        const currentName = document.getElementById('inline-edit-name')?.value.trim() || '';
+        const currentAge = document.getElementById('inline-edit-age')?.value || '';
+        const currentColor = document.getElementById('inline-edit-color')?.value || '';
+        const previewCircle = document.getElementById('inline-edit-avatar-preview');
+        const currentAvatarUrl = previewCircle?.dataset.avatarUrl || null;
+
+        return (
+            currentName !== this.inlineEditOriginalValues.name ||
+            currentAge !== String(this.inlineEditOriginalValues.age) ||
+            currentColor !== this.inlineEditOriginalValues.color ||
+            currentAvatarUrl !== this.inlineEditOriginalValues.avatarUrl
+        );
+    }
+
+    async saveInlineEditChild(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('inline-edit-form');
+        const childId = form.dataset.childId;
+
+        if (!childId) {
+            this.showToast('No child selected for editing', 'error');
+            return;
+        }
+
+        const name = document.getElementById('inline-edit-name').value.trim();
+        const age = parseInt(document.getElementById('inline-edit-age').value);
+        const avatarColor = document.getElementById('inline-edit-color').value;
+        const previewCircle = document.getElementById('inline-edit-avatar-preview');
+        const avatarUrl = previewCircle?.dataset.avatarUrl || null;
+        const avatarFile = previewCircle?.dataset.avatarFile || null;
+
+        if (!name || !age) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const result = await this.apiClient.updateChild(childId, {
+                name,
+                age,
+                avatar_color: avatarColor,
+                avatar_url: avatarUrl,
+                avatar_file: avatarFile
+            });
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to update child');
+            }
+
+            // Update the child in the local array
+            const childIndex = this.children.findIndex(c => c.id === childId);
+            if (childIndex !== -1) {
+                this.children[childIndex] = { ...this.children[childIndex], ...result.child };
+            }
+
+            // Refresh the children list and UI
+            this.populateManageChildrenList();
+            this.renderChildren();
+
+            this.showToast(`${name} has been updated successfully!`, 'success');
+
+            // Clear original values (no prompt needed after save)
+            delete this.inlineEditOriginalValues;
+
+            // Hide the inline form and show the list
+            this.cancelInlineEdit();
+
+        } catch (error) {
+            console.error('Error updating child:', error);
+            this.showToast('Failed to update child. Please try again.', 'error');
+        }
+    }
+
+    setupInlineEditForm() {
+        // Setup color presets for inline form
+        const colorInput = document.getElementById('inline-edit-color');
+        const previewCircle = document.getElementById('inline-edit-avatar-preview');
+
+        if (colorInput && previewCircle) {
+            // Update preview when color changes
+            colorInput.addEventListener('input', () => {
+                if (!previewCircle.querySelector('img')) {
+                    previewCircle.style.backgroundColor = colorInput.value;
+                }
+            });
+
+            // Handle color preset buttons
+            document.querySelectorAll('.color-preset-inline').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const color = btn.dataset.color;
+                    if (color && colorInput) {
+                        colorInput.value = color;
+                        if (!previewCircle.querySelector('img')) {
+                            previewCircle.style.backgroundColor = color;
+                        }
+                    }
+                });
+            });
+        }
+
+        // Initialize avatar picker
+        const avatarPicker = document.getElementById('inline-edit-avatar-picker');
+        if (avatarPicker) {
+            const avatarOptions = this.generateInlineAvatarOptions(3); // 3 per type
+            avatarPicker.innerHTML = '';
+
+            avatarOptions.forEach(option => {
+                const img = document.createElement('img');
+                img.src = option.url;
+                img.alt = option.type;
+                img.style.cssText = 'width:48px;height:48px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:border 0.2s;';
+                img.addEventListener('mouseenter', () => {
+                    img.style.borderColor = 'var(--primary)';
+                });
+                img.addEventListener('mouseleave', () => {
+                    img.style.borderColor = 'transparent';
+                });
+                img.addEventListener('click', () => {
+                    if (previewCircle) {
+                        previewCircle.innerHTML = '';
+                        const previewImg = document.createElement('img');
+                        previewImg.src = option.url;
+                        previewImg.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+                        previewCircle.appendChild(previewImg);
+                        previewCircle.dataset.avatarUrl = option.url;
+                        delete previewCircle.dataset.avatarFile;
+                    }
+                });
+                avatarPicker.appendChild(img);
+            });
+        }
+
+        // Shuffle button
+        const shuffleBtn = document.getElementById('inline-avatar-refresh-btn');
+        if (shuffleBtn) {
+            shuffleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setupInlineEditForm(); // Regenerate avatars
+            });
+        }
+
+        // Remove avatar button
+        const removeBtn = document.getElementById('inline-avatar-remove-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (previewCircle) {
+                    const nameInput = document.getElementById('inline-edit-name');
+                    const colorInput = document.getElementById('inline-edit-color');
+                    const initial = this.getAvatarInitial(nameInput?.value || '', 'A');
+                    previewCircle.innerHTML = initial;
+                    previewCircle.style.backgroundColor = colorInput?.value || '#6366f1';
+                    delete previewCircle.dataset.avatarUrl;
+                    delete previewCircle.dataset.avatarFile;
+                }
+            });
+        }
+    }
 
     // Inline avatar picker helpers
     getAvatarInitial(name, fallback = 'A') {
@@ -2301,21 +2492,25 @@ class FamilyChoreChart {
 
     // Edit Children Page functionality
     openEditChildrenPage() {
-        if (this.children.length === 0) {
-            this.showToast('No children to edit', 'error');
+        console.log(`🔍 Opening edit children page. Children count: ${this.children.length}`);
+
+        if (!this.children || this.children.length === 0) {
+            console.warn('⚠️ No children available to edit');
+            this.showToast('No children to edit. Please add a child first!', 'error');
             return;
         }
 
         // Initialize edit page mode
         this.editPageMode = true;
         this.currentEditIndex = 0;
-        
+
         // Load the first child
         this.loadChildForPageEdit(this.currentEditIndex);
         this.updatePageEditNavigation();
-        
+
         // Show the page modal
         this.showPageModal('edit-children-page');
+        console.log('✅ Edit children page opened');
     }
 
     closeEditChildrenPage() {
@@ -2941,14 +3136,22 @@ class FamilyChoreChart {
         
         if (child.avatar_url) {
             // Show the current avatar image in the main circle
-            avatarPreviewCircle.innerHTML = `<img src="${child.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            const img = document.createElement('img');
+            img.src = window.sanitizeURL ? window.sanitizeURL(child.avatar_url) : child.avatar_url;
+            img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+            img.alt = child.name || 'Avatar';
+            avatarPreviewCircle.appendChild(img);
             form.dataset.avatarUrl = child.avatar_url;
             form.dataset.avatarFile = '';
             avatarPreviewCircle.dataset.avatarUrl = child.avatar_url;
             delete avatarPreviewCircle.dataset.avatarFile;
         } else if (child.avatar_file) {
             // Show the current avatar file in the main circle
-            avatarPreviewCircle.innerHTML = `<img src="${child.avatar_file}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            const img = document.createElement('img');
+            img.src = window.sanitizeURL ? window.sanitizeURL(child.avatar_file) : child.avatar_file;
+            img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+            img.alt = child.name || 'Avatar';
+            avatarPreviewCircle.appendChild(img);
             form.dataset.avatarUrl = '';
             form.dataset.avatarFile = child.avatar_file;
             avatarPreviewCircle.dataset.avatarFile = child.avatar_file;
@@ -3088,62 +3291,6 @@ class FamilyChoreChart {
         }
     }
 
-    async handleEditChildModal() {
-        const form = document.getElementById('edit-child-form');
-        const childId = form.dataset.childId;
-        
-        if (!childId) {
-            this.showToast('No child selected for editing', 'error');
-            return;
-        }
-
-        const name = document.getElementById('edit-child-name').value.trim();
-        const age = parseInt(document.getElementById('edit-child-age').value);
-        const avatarColor = document.getElementById('edit-child-color').value;
-        const avatarUrl = document.getElementById('edit-child-avatar-preview-circle').dataset.avatarUrl || null;
-        const avatarFile = document.getElementById('edit-child-avatar-preview-circle').dataset.avatarFile || null;
-
-        if (!name || !age) {
-            this.showToast('Please fill in all required fields', 'error');
-            return;
-        }
-
-        try {
-            const result = await this.apiClient.updateChild(childId, {
-                name,
-                age,
-                avatar_color: avatarColor,
-                avatar_url: avatarUrl,
-                avatar_file: avatarFile
-            });
-
-            if (!result.success) {
-                throw new Error(result.error || 'Failed to update child');
-            }
-
-            // Update the child in the local array
-            const childIndex = this.children.findIndex(c => c.id === childId);
-            if (childIndex !== -1) {
-                this.children[childIndex] = { ...this.children[childIndex], ...result.child };
-            }
-
-            // Refresh the manage children list
-            this.populateManageChildrenList();
-            
-            // Also refresh the children list in the main app
-            this.renderChildren();
-
-            this.showToast(`${name} has been updated successfully!`, 'success');
-            
-            // Close the modal
-            this.hideModal('edit-child-modal');
-            
-        } catch (error) {
-            console.error('Error updating child:', error);
-            this.showToast('Failed to update child. Please try again.', 'error');
-        }
-    }
-
     async showModal(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) {
@@ -3156,13 +3303,16 @@ class FamilyChoreChart {
         // SPECIAL CASE: Icon picker modal can be opened alongside parent modals
         // Don't close parent modals when opening icon picker
         const isIconPicker = modalId === 'icon-picker-modal';
-        
+
         // SPECIAL CASE: Confirmation modal should keep the parent modal open (e.g., settings-modal)
         const isConfirmation = modalId === 'confirmation-modal';
-        
+
+        // SPECIAL CASE: Edit child modal should keep settings modal open
+        const isEditChildFromSettings = modalId === 'edit-child-modal';
+
         if (isIconPicker) {
             // Only close other modals that are NOT parent modals
-            const parentModals = ['add-child-modal', 'edit-child-modal', 'add-chore-modal', 'edit-chore-modal'];
+            const parentModals = ['add-child-modal', 'edit-child-modal', 'add-chore-modal', 'edit-chore-modal', 'settings-modal'];
             const allModals = document.querySelectorAll('.modal');
             allModals.forEach(m => {
                 if (m.id !== modalId && !parentModals.includes(m.id)) {
@@ -3180,6 +3330,16 @@ class FamilyChoreChart {
                     // Keep other hidden modals hidden
                 }
                 // Don't close any modals - confirmation appears on top
+            });
+        } else if (isEditChildFromSettings) {
+            // Keep settings modal open when editing a child from settings
+            const allModals = document.querySelectorAll('.modal');
+            allModals.forEach(m => {
+                // Only close modals that are not settings-modal or the new modal
+                if (m.id !== modalId && m.id !== 'settings-modal') {
+                    m.classList.add('hidden');
+                }
+                // Keep settings-modal open - it's the parent modal
             });
         } else {
             // Normal modal behavior: close all other modals
@@ -4095,10 +4255,18 @@ class FamilyChoreChart {
     async loadChildrenList() {
         try {
             const children = await this.apiClient.getChildren();
+            if (!children) {
+                console.warn('⚠️ No children returned from API');
+                this.children = [];
+                return;
+            }
             this.children = children; // update the class property
-            this.renderEditChildrenList(); // or this.populateChildrenList(this.children) if you use that
+            console.log(`✅ Loaded ${this.children.length} children for settings`);
+            this.renderEditChildrenList();
         } catch (error) {
-            console.error('Error loading children list:', error);
+            console.error('❌ Error loading children list:', error);
+            this.children = [];
+            this.showToast('Failed to load children. Please refresh the page.', 'error');
         }
     }
 
@@ -9425,15 +9593,18 @@ class FamilyChoreChart {
             const childChores = this.chores.filter(chore => chore.child_id === child.id);
             const choresCount = childChores.length;
             
-            // Avatar logic
+            // Avatar logic (XSS-safe)
             let avatarHtml = '';
             if (child.avatar_url) {
-                avatarHtml = `<img src="${child.avatar_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
+                const safeUrl = window.sanitizeURL ? window.sanitizeURL(child.avatar_url) : child.avatar_url;
+                avatarHtml = `<img src="${this.escapeHtml(safeUrl)}" alt="${this.escapeHtml(child.name)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
             } else if (child.avatar_file) {
-                avatarHtml = `<img src="${child.avatar_file}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
+                const safeUrl = window.sanitizeURL ? window.sanitizeURL(child.avatar_file) : child.avatar_file;
+                avatarHtml = `<img src="${this.escapeHtml(safeUrl)}" alt="${this.escapeHtml(child.name)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">`;
             } else {
                 const firstLetter = child.name ? this.escapeHtml(child.name.charAt(0).toUpperCase()) : '?';
-                avatarHtml = `<div style="width:40px;height:40px;border-radius:50%;background:${child.avatar_color || '#6366f1'};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2em;">${firstLetter}</div>`;
+                const safeColor = this.escapeHtml(child.avatar_color || '#6366f1');
+                avatarHtml = `<div style="width:40px;height:40px;border-radius:50%;background:${safeColor};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:1.2em;">${firstLetter}</div>`;
             }
 
             const childNameEscaped = this.escapeHtml(child.name);
@@ -13936,30 +14107,6 @@ function debugFooter() {
 }
 
 
-
-function openEditChildrenPage() {
-    if (app) {
-        app.openEditChildrenPage();
-    }
-}
-
-function closeEditChildrenPage() {
-    if (app) {
-        app.closeEditChildrenPage();
-    }
-}
-
-function nextChild() {
-    if (app) {
-        app.nextChild();
-    }
-}
-
-function previousChild() {
-    if (app) {
-        app.previousChild();
-    }
-}
 
 // Icon Picker Functions
 function openIconPicker(currentIcon = '', callback = null, defaultTab = 'robots') {

@@ -997,63 +997,6 @@
         </div>
     </div>
 
-    <!-- Edit Child Modal -->
-    <div id="edit-child-modal" class="modal hidden" role="dialog" aria-labelledby="edit-child-modal-title" aria-hidden="true">
-        <div class="modal-content modal-flex">
-            <header class="modal-header flex-between items-center">
-                <h2 id="edit-child-modal-title">👶 Edit Child</h2>
-                <button class="modal-close" data-modal="edit-child-modal" aria-label="Close modal">&times;</button>
-            </header>
-            <div class="modal-body-flex">
-                <div class="avatar-col">
-                    <div id="edit-child-avatar-preview-circle" class="avatar-circle" aria-hidden="true">A</div>
-                </div>
-                <form id="edit-child-form" class="modal-form form-col" role="form">
-                    <div class="fields-row">
-                        <div class="form-group">
-                            <label for="edit-child-name">Child's Name</label>
-                            <input type="text" id="edit-child-name" required placeholder="e.g., Emma" autocomplete="given-name" aria-required="true">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-child-age">Age</label>
-                            <input type="number" id="edit-child-age" min="1" max="18" required aria-required="true">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-child-color">Avatar Color</label>
-                            <div class="color-picker-row">
-                                <span id="edit-selected-color" class="color-preset selected-color-circle" style="background: #6366f1;" aria-hidden="true"></span>
-                                <input type="color" id="edit-child-color" value="#6366f1" aria-label="Select custom avatar color">
-                                <div class="color-presets" role="group" aria-label="Preset colors">
-                                    <button type="button" class="color-preset" data-color="#6366f1" style="background: #6366f1;" aria-label="Blue"></button>
-                                    <button type="button" class="color-preset" data-color="#10b981" style="background: #10b981;" aria-label="Green"></button>
-                                    <button type="button" class="color-preset" data-color="#f59e0b" style="background: #f59e0b;" aria-label="Orange"></button>
-                                    <button type="button" class="color-preset" data-color="#ef4444" style="background: #ef4444;" aria-label="Red"></button>
-                                    <button type="button" class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;" aria-label="Purple"></button>
-                                    <button type="button" class="color-preset" data-color="#ec4899" style="background: #ec4899;" aria-label="Pink"></button>
-                                </div>
-                            </div>
-                            <small class="helper-text">Click the color picker for custom colors or choose from the preset swatches</small>
-                        </div>
-                    </div>
-                    <div class="actions-row" style="display: flex; align-items: center; gap: 16px;">
-                        <!-- Avatar preview removed - now handled by main avatar circle -->
-                    </div>
-                    <div class="avatar-picker-section">
-                        <label class="avatar-picker-label">Choose an Avatar</label>
-                        <div id="edit-child-avatar-picker" class="avatar-picker-grid" role="group" aria-label="Choose avatar"></div>
-                        <div class="avatar-picker-actions">
-                            <button type="button" id="edit-avatar-refresh-btn" class="btn btn-outline btn-sm" aria-label="Shuffle avatars">🔄 Shuffle</button>
-                            <button type="button" id="edit-avatar-remove-btn" class="btn btn-outline btn-sm" aria-label="Remove selected avatar">Remove Avatar</button>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" data-modal="edit-child-modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- Add Chore Modal -->
     <div id="add-chore-modal" class="modal hidden" role="dialog" aria-labelledby="add-chore-modal-title" aria-hidden="true">
@@ -1367,20 +1310,70 @@
                         <div id="manage-children-list" role="list">
                             <!-- Children will be listed here -->
                         </div>
-                        
-                        <!-- Edit All Children Controls -->
-                        <div class="edit-all-children-controls" style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--gray-200);">
-                            <div class="edit-all-header">
-                                <h5>Edit All Children</h5>
-                                <p style="color: var(--gray-600); font-size: 0.875rem; margin: var(--space-2) 0;">Edit each child one by one in a dedicated page.</p>
-                            </div>
-                            <div class="edit-all-actions">
-                                <button type="button" class="btn btn-primary" onclick="app.openEditChildrenPage()">
-                                    Open Edit Children Page
+
+                        <!-- Inline Edit Child Form (hidden by default) -->
+                        <div id="inline-edit-child-form" class="inline-edit-form" style="display: none; margin-top: var(--space-4); padding: var(--space-4); border: 2px solid var(--primary); border-radius: var(--radius); background: var(--gray-50); transition: opacity 0.3s ease, transform 0.3s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                                <h5 style="margin: 0;">✏️ Edit Child</h5>
+                                <button type="button" class="btn btn-sm btn-outline" onclick="app.cancelInlineEdit()">
+                                    ← Back to List
                                 </button>
                             </div>
+
+                            <form id="inline-edit-form" onsubmit="app.saveInlineEditChild(event)">
+                                <div class="inline-edit-layout" style="display: flex; gap: var(--space-4); align-items: start;">
+                                    <!-- Avatar Preview Column -->
+                                    <div class="inline-edit-avatar-col" style="flex-shrink: 0;">
+                                        <div id="inline-edit-avatar-preview" class="avatar-circle" style="width: 80px; height: 80px; font-size: 2em;"></div>
+                                    </div>
+
+                                    <!-- Form Fields Column -->
+                                    <div class="inline-edit-fields-col" style="flex: 1;">
+                                        <div class="form-group">
+                                            <label for="inline-edit-name">Child's Name</label>
+                                            <input type="text" id="inline-edit-name" required placeholder="e.g., Emma">
+                                        </div>
+
+                                        <div class="inline-edit-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                                            <div class="form-group">
+                                                <label for="inline-edit-age">Age</label>
+                                                <input type="number" id="inline-edit-age" min="1" max="18" required>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="inline-edit-color">Avatar Color</label>
+                                                <div style="display: flex; gap: var(--space-2); align-items: center;">
+                                                    <input type="color" id="inline-edit-color" value="#6366f1" style="width: 48px; height: 32px; border: none; cursor: pointer;">
+                                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                                        <button type="button" class="color-preset-inline" data-color="#6366f1" style="width: 24px; height: 24px; background: #6366f1; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Blue"></button>
+                                                        <button type="button" class="color-preset-inline" data-color="#10b981" style="width: 24px; height: 24px; background: #10b981; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Green"></button>
+                                                        <button type="button" class="color-preset-inline" data-color="#f59e0b" style="width: 24px; height: 24px; background: #f59e0b; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Orange"></button>
+                                                        <button type="button" class="color-preset-inline" data-color="#ef4444" style="width: 24px; height: 24px; background: #ef4444; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Red"></button>
+                                                        <button type="button" class="color-preset-inline" data-color="#8b5cf6" style="width: 24px; height: 24px; background: #8b5cf6; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Purple"></button>
+                                                        <button type="button" class="color-preset-inline" data-color="#ec4899" style="width: 24px; height: 24px; background: #ec4899; border: 2px solid #fff; border-radius: 50%; cursor: pointer;" aria-label="Pink"></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="avatar-picker-section" style="margin-top: var(--space-3);">
+                                            <label class="avatar-picker-label">Choose an Avatar</label>
+                                            <div id="inline-edit-avatar-picker" class="avatar-picker-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: var(--space-2); max-height: 250px; overflow-y: auto; border: 1px solid var(--gray-300); border-radius: var(--radius); padding: var(--space-2);"></div>
+                                            <div style="display: flex; gap: var(--space-2); margin-top: var(--space-2);">
+                                                <button type="button" id="inline-avatar-refresh-btn" class="btn btn-outline btn-sm">🔄 Shuffle</button>
+                                                <button type="button" id="inline-avatar-remove-btn" class="btn btn-outline btn-sm">Remove Avatar</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-actions" style="margin-top: var(--space-4); display: flex; gap: var(--space-2); justify-content: flex-end;">
+                                            <button type="button" class="btn btn-outline" onclick="app.cancelInlineEdit()">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        
+
                         <div style="text-align: center; margin-top: var(--space-6);">
                             <button class="btn btn-primary" onclick="app.showModal('add-child-modal')" aria-label="Add a new child to your family">
                                 <span aria-hidden="true">➕</span> Add New Child
@@ -2774,9 +2767,12 @@
     <script id="supabase-script" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onload="console.log('✅ Supabase library loaded'); window.supabaseScriptLoaded = true;" onerror="console.error('❌ Failed to load Supabase library'); window.supabaseScriptLoaded = false;"></script>
     <script src="supabase-config.js?v=4"></script>
     <script src="api-client.js?v=3"></script>
+    <script src="sanitize.js?v=1"></script>
     <script src="script.js?v=19"></script>
     
     <!-- Non-Critical Scripts - Defer for Performance -->
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
     <script src="analytics.js?v=1" defer></script>
     <script src="notifications.js?v=1" defer></script>

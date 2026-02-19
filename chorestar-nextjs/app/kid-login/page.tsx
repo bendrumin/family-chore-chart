@@ -37,23 +37,19 @@ export default function KidLoginPage() {
     setError(null);
   };
 
-  // Auto-submit when PIN is complete
-  useEffect(() => {
-    if (pin.length >= 4 && pin.length <= 6) {
-      const timer = setTimeout(() => {
-        verifyPin();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [pin]);
-
-  const verifyPin = async () => {
+  const verifyPin = async (pinToVerify: string) => {
     try {
-      const result = await verifyMutation.mutateAsync(pin);
+      const result = await verifyMutation.mutateAsync(pinToVerify);
       if (result.success && result.child) {
         playRoutineComplete();
-        // Store child info in sessionStorage for kid mode
-        sessionStorage.setItem('kidMode', JSON.stringify(result.child));
+        // Store child info in localStorage for persistent kid mode
+        // Add timestamp for session expiry (8 hours)
+        const sessionData = {
+          child: result.child,
+          timestamp: Date.now(),
+          expiresIn: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
+        };
+        localStorage.setItem('kidMode', JSON.stringify(sessionData));
         router.push(`/kid/${result.child.id}`);
       }
     } catch (err: any) {
@@ -64,6 +60,17 @@ export default function KidLoginPage() {
       setPin('');
     }
   };
+
+  // Auto-submit when PIN is complete (capture pin to avoid stale closure)
+  useEffect(() => {
+    if (pin.length >= 4 && pin.length <= 6) {
+      const pinToVerify = pin;
+      const timer = setTimeout(() => {
+        verifyPin(pinToVerify);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [pin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 kid-mode-bg">

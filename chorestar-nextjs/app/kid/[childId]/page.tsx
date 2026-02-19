@@ -23,23 +23,45 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
 
   const { data: routines, isLoading } = useRoutines(childId);
 
-  // Load child data from session
+  // Load child data from localStorage with expiry check
   useEffect(() => {
-    const kidMode = sessionStorage.getItem('kidMode');
-    if (!kidMode) {
+    const kidModeData = localStorage.getItem('kidMode');
+    if (!kidModeData) {
       router.push('/kid-login');
       return;
     }
-    const childData = JSON.parse(kidMode);
-    if (childData.id !== childId) {
+
+    try {
+      const sessionData = JSON.parse(kidModeData);
+
+      // Check if session has expired (8 hours)
+      if (sessionData.timestamp && sessionData.expiresIn) {
+        const now = Date.now();
+        const sessionAge = now - sessionData.timestamp;
+
+        if (sessionAge > sessionData.expiresIn) {
+          // Session expired, clear and redirect
+          localStorage.removeItem('kidMode');
+          router.push('/kid-login?message=Session expired');
+          return;
+        }
+      }
+
+      const childData = sessionData.child || sessionData; // Support both new and old format
+      if (childData.id !== childId) {
+        router.push('/kid-login');
+        return;
+      }
+      setChild(childData);
+    } catch (error) {
+      // Invalid session data, clear and redirect
+      localStorage.removeItem('kidMode');
       router.push('/kid-login');
-      return;
     }
-    setChild(childData);
   }, [childId, router]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('kidMode');
+    localStorage.removeItem('kidMode');
     router.push('/kid-login');
   };
 

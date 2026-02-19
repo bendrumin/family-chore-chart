@@ -10,8 +10,6 @@ export async function POST(
     const supabase = await createClient();
     const { routineId } = await params;
 
-    // For kid mode, we might not have an authenticated user session
-    // Instead, we'll verify the child via request body
     const body = await request.json();
     const { childId, stepsCompleted, stepsTotal, durationSeconds } = body;
 
@@ -22,7 +20,23 @@ export async function POST(
       );
     }
 
-    // Get routine with child verification
+    // AUTHORIZATION: Get authenticated user
+    // For kid mode, they should have a session after PIN verification
+    // For parent mode, they should be logged in
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    // If no authenticated user, check if this is a valid kid mode request
+    // by verifying the childId matches a kid session stored in cookies/headers
+    if (authError || !user) {
+      // For now, we require authentication for all routine completions
+      // TODO: Implement kid-specific session tokens after PIN verification
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Get routine with child verification AND verify child belongs to authenticated user
     const { data: routine, error: routineError } = await supabase
       .from('routines')
       .select(`
@@ -39,6 +53,15 @@ export async function POST(
 
     if (routineError || !routine) {
       return NextResponse.json({ error: 'Routine not found' }, { status: 404 });
+    }
+
+    // CRITICAL: Verify the child belongs to the authenticated user
+    // This prevents users from completing other families' routines
+    if ((routine.children as any).user_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - this routine belongs to another family' },
+        { status: 403 }
+      );
     }
 
     // Check if routine was already completed today
@@ -78,8 +101,8 @@ export async function POST(
       .single();
 
     if (completionError) {
-      console.error('Error creating routine completion:', completionError);
-      return NextResponse.json({ error: completionError.message }, { status: 500 });
+      // Don't expose database error details to client
+      return NextResponse.json({ error: 'Failed to record completion' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -109,6 +132,24 @@ export async function GET(
       return NextResponse.json({ error: 'childId is required' }, { status: 400 });
     }
 
+    // AUTHORIZATION: Verify user has access to this child
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Verify child belongs to authenticated user
+    const { data: child, error: childError } = await supabase
+      .from('children')
+      .select('id, user_id')
+      .eq('id', childId)
+      .single();
+
+    if (childError || !child || child.user_id !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
     const { data, error } = await supabase
@@ -120,8 +161,7 @@ export async function GET(
       .maybeSingle();
 
     if (error) {
-      console.error('Error checking routine completion:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to check completion status' }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -129,7 +169,6 @@ export async function GET(
       completion: data || null,
     });
   } catch (error) {
-    console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

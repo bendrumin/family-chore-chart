@@ -39,6 +39,6 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.redirect(
-    new URL('/login?message=Check your email to confirm your account', request.url)
+    new URL(`/signup-success?email=${encodeURIComponent(email)}`, request.url)
   )
 }

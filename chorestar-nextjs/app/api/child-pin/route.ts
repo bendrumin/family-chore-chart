@@ -2,9 +2,14 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// Hash a PIN using SHA-256
-function hashPin(pin: string): string {
-  return crypto.createHash('sha256').update(pin).digest('hex');
+// Generate a random salt
+function generateSalt(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Hash a PIN using SHA-256 with salt
+function hashPin(pin: string, salt: string): string {
+  return crypto.createHash('sha256').update(`${pin}${salt}`).digest('hex');
 }
 
 // POST /api/child-pin - Set or update a child's PIN
@@ -42,27 +47,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    // Hash the PIN
-    const pinHash = hashPin(pin);
+    // Generate new salt for this PIN
+    const salt = generateSalt();
+
+    // Hash the PIN with salt
+    const pinHash = hashPin(pin, salt);
 
     // Upsert PIN (update if exists, insert if not)
+    // Reset failed attempts and lock when setting a new PIN
     const { error: upsertError } = await supabase
       .from('child_pins')
       .upsert({
         child_id: childId,
         pin_hash: pinHash,
+        pin_salt: salt,
+        failed_attempts: 0,
+        locked_until: null,
       }, {
         onConflict: 'child_id',
       });
 
     if (upsertError) {
-      console.error('Error setting child PIN:', upsertError);
-      return NextResponse.json({ error: upsertError.message }, { status: 500 });
+      // Don't expose detailed error messages to client
+      return NextResponse.json({ error: 'Failed to set PIN' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

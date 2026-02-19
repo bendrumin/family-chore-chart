@@ -6546,13 +6546,23 @@ body.modal-open {
     background: white;
     border-radius: var(--radius-xl);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    width: 90%;
-    max-width: 800px;
+    width: 95%;
+    max-width: 900px;
     max-height: calc(100vh - 4rem);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    margin: 0 auto;
+    margin: 2rem auto;
+}
+
+@media (max-width: 768px) {
+    .page-modal-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+    }
 }
 
 .page-modal-header {
@@ -6610,6 +6620,12 @@ body.modal-open {
     justify-content: center;
     gap: var(--space-4);
     margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.nav-controls .btn {
+    min-width: 110px;
+    font-weight: 600;
 }
 
 .child-counter {
@@ -6618,6 +6634,23 @@ body.modal-open {
     min-width: 80px;
     text-align: center;
     font-size: 1.1rem;
+}
+
+@media (max-width: 480px) {
+    .nav-controls {
+        gap: var(--space-2);
+    }
+
+    .nav-controls .btn {
+        min-width: 90px;
+        padding: var(--space-2) var(--space-3);
+        font-size: 0.9rem;
+    }
+
+    .child-counter {
+        font-size: 1rem;
+        min-width: 60px;
+    }
 }
 
 .child-progress {
@@ -6673,10 +6706,18 @@ body.modal-open {
     color: white;
     margin: 0 auto var(--space-4) auto;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.avatar-section .avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .form-section {
     flex: 1;
+    min-width: 0; /* Fix flex overflow */
 }
 
 .form-fields {
@@ -6684,6 +6725,24 @@ body.modal-open {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-4);
     margin-bottom: var(--space-4);
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 768px) {
+    .edit-form-row {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .avatar-section .avatar-circle {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+
+    .form-fields {
+        grid-template-columns: 1fr;
+    }
 }
 
 .avatar-actions {
@@ -6694,6 +6753,30 @@ body.modal-open {
 
 .dicebear-picker {
     margin-bottom: var(--space-3);
+}
+
+/* Form actions for edit children page */
+.edit-form .form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--gray-200);
+    margin-top: var(--space-6);
+}
+
+.edit-form .form-actions .btn {
+    min-width: 120px;
+}
+
+@media (max-width: 480px) {
+    .edit-form .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .edit-form .form-actions .btn {
+        width: 100%;
+    }
 }
 
 /* Remove duplicate - consolidated above */
@@ -17563,3 +17646,100 @@ small {
     }
 }
 
+
+/* =================================================================
+   Inline Edit Child Form - Mobile Responsive & Transitions
+   ================================================================= */
+
+/* Smooth transitions for list <-> form switching */
+#manage-children-list,
+#inline-edit-child-form {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Mobile responsive layout for inline edit form */
+@media (max-width: 768px) {
+    .inline-edit-layout {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    .inline-edit-avatar-col {
+        margin-bottom: var(--space-3);
+    }
+    
+    .inline-edit-fields-col {
+        width: 100%;
+    }
+    
+    .inline-edit-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #inline-edit-avatar-picker {
+        max-height: 200px !important;
+    }
+    
+    .form-actions {
+        flex-direction: column !important;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #inline-edit-child-form {
+        padding: var(--space-3) !important;
+    }
+    
+    #inline-edit-avatar-preview {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 1.5em !important;
+    }
+    
+    .color-preset-inline {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    
+    #inline-edit-avatar-picker {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)) !important;
+        max-height: 150px !important;
+    }
+}
+
+/* Color preset hover effects */
+.color-preset-inline {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-preset-inline:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-preset-inline:active {
+    transform: scale(0.95);
+}
+
+/* Avatar picker scrollbar styling */
+#inline-edit-avatar-picker::-webkit-scrollbar {
+    width: 8px;
+}
+
+#inline-edit-avatar-picker::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+
+#inline-edit-avatar-picker::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 4px;
+}
+
+#inline-edit-avatar-picker::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
