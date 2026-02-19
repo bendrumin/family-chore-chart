@@ -18171,20 +18171,49 @@ small {
     margin-top: 4px;
 }
 
-/* Footer */
-.landing-page footer {
+/* Landing Footer */
+.landing-page footer.landing-footer {
     text-align: center;
     color: #4B5563;
     padding: 28px 0;
 }
 
-.landing-page footer p {
-    margin-bottom: 8px;
+.landing-footer-trust {
+    font-size: 14px;
+    margin-bottom: 12px;
 }
 
-.landing-page footer .small {
+.landing-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 4px 2px;
+    margin-bottom: 10px;
+}
+
+.landing-footer-links a {
+    color: #4B5563;
+    text-decoration: none;
     font-size: 14px;
-    opacity: 0.8;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.landing-footer-links a:hover {
+    color: #2563EB;
+}
+
+.landing-footer-sep {
+    color: #9CA3AF;
+    font-weight: 300;
+    padding: 0 4px;
+}
+
+.landing-footer-made {
+    font-size: 13px;
+    opacity: 0.85;
+    margin: 0;
 }
 
 /* Responsive Behavior */
