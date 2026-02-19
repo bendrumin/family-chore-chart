@@ -19,8 +19,10 @@ function improveErrorHandling() {
             }
         }
         
-        // Prevent the error from showing in console
-        event.preventDefault();
+        // Only suppress default (e.g. console) when we're recovering, so other errors still surface
+        if (event.reason?.message?.includes('family') || event.reason?.message?.includes('profile')) {
+            event.preventDefault();
+        }
     });
     
     console.log('✅ Error recovery system added');

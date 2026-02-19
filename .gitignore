@@ -16,6 +16,7 @@ dist/
 
 # Configuration with secrets
 setup-env.sh
+.claude/
 
 # OS generated files
 .DS_Store

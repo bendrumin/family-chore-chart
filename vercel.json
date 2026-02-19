@@ -39,12 +39,21 @@
       "source": "/dashboard",
       "destination": "/app/dashboard",
       "permanent": false
+    },
+    {
+      "source": "/resend-confirmation",
+      "destination": "/app/resend-confirmation",
+      "permanent": false
     }
   ],
   "rewrites": [
     {
       "source": "/_next/:path*",
       "destination": "/chorestar-nextjs/_next/:path*"
+    },
+    {
+      "source": "/auth/callback",
+      "destination": "/chorestar-nextjs/auth/callback"
     },
     {
       "source": "/app",

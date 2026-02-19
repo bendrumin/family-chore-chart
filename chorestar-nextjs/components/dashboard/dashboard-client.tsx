@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { clientLogger } from '@/lib/utils/logger'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingScreen } from '@/components/ui/loading-spinner'
@@ -71,10 +72,10 @@ export function DashboardClient({ initialUser, initialProfile }: {
 
   const loadChildren = async () => {
     try {
-      console.log('🔍 Loading children for user:', initialUser?.id)
+      clientLogger.log('🔍 Loading children for user:', initialUser?.id)
 
       if (!initialUser?.id) {
-        console.error('❌ No user ID available')
+        clientLogger.error('❌ No user ID available')
         setIsLoading(false)
         return
       }
@@ -87,7 +88,7 @@ export function DashboardClient({ initialUser, initialProfile }: {
         .eq('user_id', initialUser.id)
         .order('created_at', { ascending: true })
 
-      console.log('📊 Query result:', {
+      clientLogger.log('📊 Query result:', {
         dataCount: data?.length || 0,
         error: error ? {
           message: error.message,
@@ -97,7 +98,7 @@ export function DashboardClient({ initialUser, initialProfile }: {
       })
 
       if (error) {
-        console.error('❌ Supabase error:', error)
+        clientLogger.error('❌ Supabase error:', error)
         if (error.code !== 'PGRST116') {
           toast.error(error.message || 'Failed to load children')
         }
@@ -109,7 +110,7 @@ export function DashboardClient({ initialUser, initialProfile }: {
         }
       }
     } catch (error: any) {
-      console.error('💥 Error loading children:', error)
+      clientLogger.error('💥 Error loading children:', error)
       toast.error(error.message || 'Failed to load children')
     } finally {
       setIsLoading(false)

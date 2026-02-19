@@ -172,7 +172,16 @@ class ApiClient {
 
     async signOut() {
         try {
-            const { error } = await this.supabase.auth.signOut();
+            const supabase = this._getSupabase();
+            if (!supabase?.auth) {
+                this.currentUser = null;
+                this.familySettings = null;
+                this.removeSessionStorage('chorestar_pin_session');
+                localStorage.removeItem('chorestar_remember_me');
+                sessionStorage.removeItem('chorestar_remember_me');
+                return { success: true };
+            }
+            const { error } = await supabase.auth.signOut();
             if (error) throw error;
 
             // Clear PIN session from both storages
@@ -195,7 +204,11 @@ class ApiClient {
 
     async resetPassword(email) {
         try {
-            const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+            const supabase = this._getSupabase();
+            if (!supabase?.auth) {
+                return { success: false, error: 'App is not ready. Please refresh the page and try again.' };
+            }
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/app/reset-password`
             });
 
@@ -209,8 +222,10 @@ class ApiClient {
 
     async getCurrentUser() {
         try {
+            const supabase = this._getSupabase();
+            if (!supabase?.auth) return null;
             // Check for regular Supabase session
-            const { data: { user }, error } = await this.supabase.auth.getUser();
+            const { data: { user }, error } = await supabase.auth.getUser();
             if (error) {
                 // Don't log AuthSessionMissingError as it's expected for new users
                 if (error.message !== 'Auth session missing!') {
