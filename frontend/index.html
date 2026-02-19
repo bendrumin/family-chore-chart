@@ -73,7 +73,7 @@
     
     <!-- Favicon and Icons -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
-    
+
     <!-- Immediate stuck button reset script -->
     <script>
         // Fix stuck loading buttons immediately when DOM is parsed
@@ -424,147 +424,140 @@
         </div>
     </div>
 
-    <!-- Landing Page (Desktop Only) - Custom Styled -->
-    <div id="landing-page" class="landing-page">
-        <!-- Top Sign In Bar -->
-        <div class="landing-top-bar">
-            <div class="container">
-                <a href="#" onclick="showAuth('login'); return false;">
-                    Already a member? <span class="underline">Sign In →</span>
-                </a>
+    <!-- Landing Page (Desktop Only) - Tailwind styled; inline login/signup, no scroll. Visibility controlled by style.css media query (no Tailwind hidden). -->
+    <div id="landing-page" class="landing-page bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
+        <!-- Top bar: minimal (inline form below is the main sign-in / create account) -->
+        <div class="bg-white/90 border-b border-gray-200 py-3 px-6">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
+                <span class="text-gray-500 text-sm font-medium">ChoreStar</span>
             </div>
         </div>
-
-        <div class="container">
-            <!-- Header -->
-            <header>
-                <h1>🌟 ChoreStar</h1>
-                <p class="tagline">Turn Household Chores Into Family Wins</p>
-                <p class="social-proof">⭐ Join 87+ families already using ChoreStar</p>
+        <div class="max-w-5xl mx-auto px-6 py-8 pb-20 flex flex-col md:flex-row md:items-start md:gap-8">
+            <!-- Inline login/signup card (desktop only - no scroll to separate page) -->
+            <div class="w-full md:w-80 flex-shrink-0 mb-8 md:mb-0 md:sticky md:top-6">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
+                    <p class="text-sm font-semibold text-gray-700 mb-4">Member sign in</p>
+                    <form id="landing-login-form" class="landing-auth-form" role="form">
+                        <input type="email" id="landing-login-email" name="email" placeholder="Email" required autocomplete="email" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-3 text-sm">
+                        <input type="password" id="landing-login-password" name="password" placeholder="Password" required autocomplete="current-password" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-2 text-sm">
+                        <label class="flex items-center gap-2 mb-3 text-sm text-gray-600">
+                            <input type="checkbox" id="landing-remember-me" name="remember" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            Remember me
+                        </label>
+                        <button type="submit" class="w-full py-2.5 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">Sign In</button>
+                        <a href="#" id="landing-forgot-password" class="block text-center text-sm text-indigo-600 hover:underline mt-2">Forgot password?</a>
+                        <p class="text-center text-sm text-gray-500 mt-3">New here? <a href="#" id="landing-show-signup" class="text-indigo-600 font-medium hover:underline">Create an account</a></p>
+                    </form>
+                    <form id="landing-forgot-form" class="landing-auth-form hidden" role="form">
+                        <input type="email" id="landing-forgot-email" name="email" placeholder="Email for reset link" required class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 mb-3 text-sm">
+                        <button type="submit" class="w-full py-2.5 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">Send Reset Link</button>
+                        <a href="#" id="landing-back-to-login" class="block text-center text-sm text-indigo-600 hover:underline mt-2">Back to sign in</a>
+                    </form>
+                    <form id="landing-signup-form" class="landing-auth-form hidden" role="form">
+                        <input type="email" id="landing-signup-email" name="email" placeholder="Email" required autocomplete="email" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-3 text-sm">
+                        <input type="text" id="landing-signup-family-name" name="family_name" placeholder="Family name" required autocomplete="organization" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-3 text-sm">
+                        <input type="password" id="landing-signup-password" name="password" placeholder="Password" required autocomplete="new-password" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-3 text-sm">
+                        <input type="password" id="landing-signup-confirm-password" name="confirm_password" placeholder="Confirm password" required autocomplete="new-password" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-3 text-sm">
+                        <button type="submit" class="w-full py-2.5 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm">Create Account</button>
+                        <p class="text-center text-sm text-gray-500 mt-3">Already have an account? <a href="#" id="landing-show-login" class="text-indigo-600 font-medium hover:underline">Sign in</a></p>
+                    </form>
+                    <p class="text-xs text-gray-500 mt-3">No scroll — sign in or sign up right here.</p>
+                </div>
+            </div>
+            <!-- Main content -->
+            <div class="flex-1 min-w-0">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-2">🌟 ChoreStar</h1>
+                <p class="text-xl text-gray-600 font-semibold mb-1">Turn Household Chores Into Family Wins</p>
+                <p class="text-sm text-indigo-600 font-semibold">⭐ Join 87+ families already using ChoreStar</p>
             </header>
-
-            <!-- Hero Section -->
-            <section class="landing-hero-card">
-                <h2>
+            <section class="bg-white rounded-2xl shadow-xl p-8 md:p-10 mb-12">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 leading-tight">
                     Stop Nagging. Start Rewarding.<br/>
-                    <span class="highlight">Finally Get Help Around the House</span>
+                    <span class="text-indigo-600">Finally Get Help Around the House</span>
                 </h2>
-                <p class="lead-text">
+                <p class="text-gray-600 text-lg mb-6">
                     Tired of reminding your kids to clean their rooms? ChoreStar turns chores into a game that kids actually want to play.
                 </p>
-                <p class="features">
-                    ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
-                    🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-                    📱 Works on any device - no app download required<br/>
-                    🆓 Start with our free plan - track up to 3 kids and 20 chores
-                </p>
-
-                <div class="trust-signal">
-                    🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime
+                <ul class="space-y-2 text-gray-700 mb-6">
+                    <li>✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility</li>
+                    <li>🎯 Parents track progress, manage allowances, and finally get the help they need</li>
+                    <li>📱 Works on any device — no app download required</li>
+                    <li>🆓 Start with our free plan — track up to 3 kids and 20 chores</li>
+                </ul>
+                <p class="text-gray-600 mb-6">🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime</p>
+                <div class="flex flex-wrap gap-3 mb-2">
+                    <button type="button" class="landing-cta-signup inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-md">Create an account</button>
                 </div>
-
-                <div class="cta-buttons">
-                    <button onclick="showAuth('signup')" class="btn-primary">
-                        Start Free Today →
-                    </button>
-                    <button onclick="showAuth('login')" class="btn-secondary">
-                        Sign In
-                    </button>
-                </div>
-                <p class="cta-subtext">
-                    ✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime
-                </p>
+                <p class="text-sm text-gray-500">✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime</p>
             </section>
-
-            <!-- Pricing Comparison -->
-            <section class="pricing-section">
-                <h3>Choose Your Plan</h3>
-                <p class="subtitle">Start free and upgrade anytime. No credit card required to try.</p>
-
-                <div class="pricing-grid">
-                    <!-- Free Plan -->
-                    <div class="pricing-card">
-                        <h4>Free Plan</h4>
-                        <div class="price free">$0<span class="period">/forever</span></div>
-
-                        <ul>
-                            <li><span class="checkmark">✓</span> <span>Up to <strong>3 children</strong></span></li>
-                            <li><span class="checkmark">✓</span> <span>Up to <strong>20 total chores</strong></span></li>
-                            <li><span class="checkmark">✓</span> <span>Kid login with PIN</span></li>
-                            <li><span class="checkmark">✓</span> <span>Points & earnings tracking</span></li>
-                            <li><span class="checkmark">✓</span> <span>Achievement badges</span></li>
-                            <li><span class="checkmark">✓</span> <span>Weekly progress reports</span></li>
-                            <li><span class="checkmark">✓</span> <span>Basic themes</span></li>
+            <section class="mb-12">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Choose Your Plan</h3>
+                <p class="text-gray-600 mb-8">Start free and upgrade anytime. No credit card required to try.</p>
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Free Plan</h4>
+                        <div class="text-2xl font-extrabold text-gray-900 mb-1">$0<span class="text-base font-normal text-gray-500">/forever</span></div>
+                        <ul class="space-y-2 text-gray-600 my-6">
+                            <li>Up to <strong>3 children</strong></li>
+                            <li>Up to <strong>20 total chores</strong></li>
+                            <li>Kid login with PIN</li>
+                            <li>Points &amp; earnings tracking</li>
+                            <li>Achievement badges</li>
+                            <li>Weekly progress reports</li>
+                            <li>Basic themes</li>
                         </ul>
-
-                        <button onclick="showAuth('signup')" class="btn-secondary">Start Free</button>
+                        <button type="button" class="landing-cta-signup w-full py-2.5 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 transition">Start Free</button>
                     </div>
-
-                    <!-- Premium Plan -->
-                    <div class="pricing-card featured">
-                        <div class="pricing-badge">BEST VALUE</div>
-                        <h4>Premium</h4>
-                        <div class="price premium">$4.99<span class="period">/month</span></div>
-                        <p class="save-text">or $49.99/year (save 17%)</p>
-
-                        <ul>
-                            <li><span class="checkmark">✓</span> <span><strong>Everything in Free</strong></span></li>
-                            <li><span class="checkmark">✓</span> <span><strong>Unlimited</strong> children</span></li>
-                            <li><span class="checkmark">✓</span> <span><strong>Unlimited</strong> chores</span></li>
-                            <li><span class="checkmark">✓</span> <span>Custom chore icons & categories</span></li>
-                            <li><span class="checkmark">✓</span> <span>Premium themes & customization</span></li>
-                            <li><span class="checkmark">✓</span> <span>Export reports (PDF/CSV)</span></li>
-                            <li><span class="checkmark">✓</span> <span>Family sharing (multiple parents)</span></li>
-                            <li><span class="checkmark">✓</span> <span>Priority email support</span></li>
+                    <div class="bg-white rounded-xl border-2 border-indigo-500 p-6 shadow-lg relative">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</span>
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Premium</h4>
+                        <div class="text-2xl font-extrabold text-gray-900 mb-1">$4.99<span class="text-base font-normal text-gray-500">/month</span></div>
+                        <p class="text-sm text-gray-500 mb-4">or $49.99/year (save 17%)</p>
+                        <ul class="space-y-2 text-gray-600 my-6">
+                            <li><strong>Everything in Free</strong></li>
+                            <li><strong>Unlimited</strong> children &amp; chores</li>
+                            <li>Custom chore icons &amp; categories</li>
+                            <li>Premium themes &amp; customization</li>
+                            <li>Export reports (PDF/CSV)</li>
+                            <li>Family sharing • Priority support</li>
                         </ul>
-
-                        <button onclick="showAuth('signup')" class="btn-primary">Start Free Trial</button>
-                        <p class="pricing-note">💳 Upgrade to Premium anytime from your dashboard</p>
+                        <button type="button" class="landing-cta-signup w-full py-2.5 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition">Start Free Trial</button>
+                        <p class="text-xs text-gray-500 mt-3">💳 Upgrade anytime from your dashboard</p>
                     </div>
                 </div>
-
-                <!-- Lifetime Option -->
-                <div class="lifetime-banner">
-                    <span class="emoji">🎉</span>
-                    <span class="title">Lifetime Access</span>
-                    <span class="price">$149.99</span>
-                    <button onclick="showAuth('signup')">Get Lifetime</button>
-                    <p class="note">One-time payment • All premium features forever • Best for large families</p>
+                <div class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl p-6 flex flex-wrap items-center gap-4">
+                    <span class="text-2xl">🎉</span>
+                    <span class="font-bold text-gray-900">Lifetime Access</span>
+                    <span class="text-xl font-extrabold text-gray-900">$149.99</span>
+                    <button type="button" class="landing-cta-signup ml-auto px-4 py-2 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition">Get Lifetime</button>
+                    <p class="w-full text-sm text-gray-600 mt-1">One-time payment • All premium features forever</p>
                 </div>
             </section>
-
-            <!-- Footer -->
-            <footer class="landing-footer">
-                <p class="landing-footer-trust">🔒 Your privacy matters. We never sell your data.</p>
-                <nav class="landing-footer-links" aria-label="Legal and support">
-                    <a href="/terms-of-service.html">Terms</a>
-                    <span class="landing-footer-sep" aria-hidden="true">·</span>
-                    <a href="/privacy-policy.html">Privacy</a>
-                    <span class="landing-footer-sep" aria-hidden="true">·</span>
-                    <a href="/refund-policy.html">Refund Policy</a>
-                    <span class="landing-footer-sep" aria-hidden="true">·</span>
-                    <a href="/changelog.html">Changelog</a>
-                </nav>
-                <p class="landing-footer-made">Made with ❤️ by a parent who gets it</p>
+            <footer class="text-center pt-8 border-t border-gray-200 text-gray-500 text-sm">
+                <p>🔒 Your privacy matters. We never sell your data.</p>
+                <p class="mt-1">Made with ❤️ by a parent who gets it</p>
             </footer>
+            </div>
         </div>
     </div>
 
-    <!-- Auth Container -->
-    <div id="auth-container" class="auth-container hidden">
-        <div class="auth-background-shapes">
+    <!-- Auth: mobile only (purple background, getting started card); desktop uses landing inline form -->
+    <div id="auth-container" class="auth-container hidden md:hidden">
+        <div class="auth-background-shapes md:hidden">
             <div class="auth-shape shape-1"></div>
             <div class="auth-shape shape-2"></div>
             <div class="auth-shape shape-3"></div>
         </div>
-        <div class="auth-card">
-            <header class="auth-header">
-                <div class="auth-logo">
+        <!-- Desktop: Tailwind-styled section (different from mobile card) -->
+        <div class="auth-card md:max-w-xl md:mx-auto md:shadow-xl md:rounded-2xl md:border md:border-gray-200 md:bg-white md:px-8 md:py-10 md:min-h-0">
+            <header class="auth-header md:text-center md:mb-8">
+                <div class="auth-logo md:flex md:flex-col md:items-center">
                     <span class="logo-icon">🏠</span>
-                    <h2><span itemprop="name">ChoreStar</span></h2>
+                    <h2 class="md:text-2xl md:font-bold md:text-gray-900" itemprop="name">ChoreStar</h2>
                 </div>
-                <p itemprop="description">Transform activities into achievements, together!</p>
-                <div class="auth-features">
+                <p class="md:text-gray-600 md:mt-1" itemprop="description">Get started — sign in or create your family account</p>
+                <div class="auth-features md:hidden">
                     <span class="auth-feature-badge">🏆 Achievement Badges</span>
                     <span class="auth-feature-badge">🤖 AI Suggestions</span>
                     <span class="auth-feature-badge">🎃 Seasonal Themes</span>
@@ -2938,6 +2931,12 @@
             }
             return Promise.resolve(window.jspdf);
         };
+    </script>
+
+    <!-- Tailwind: load after DOM is parsed so it can scan landing page classes (preflight off to avoid breaking app) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { corePlugins: { preflight: false } };
     </script>
 </body>
 </html>
