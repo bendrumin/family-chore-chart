@@ -5254,27 +5254,28 @@ class FamilyChoreChart {
                         <div class="plan free">
                             <h4>Free Plan</h4>
                             <ul>
-                                <li>✅ Up to 2 children</li>
-                                <li>✅ Up to 5 chores</li>
-                                <li>✅ Basic chore tracking</li>
-                                <li>❌ Custom icons</li>
-                                <li>❌ Chore categories</li>
-                                <li>❌ Achievement badges</li>
-                                <li>❌ Points system</li>
+                                <li>✅ Up to 3 children</li>
+                                <li>✅ Up to 20 chores</li>
+                                <li>✅ Kid login with PIN</li>
+                                <li>✅ Points & earnings tracking</li>
+                                <li>✅ Achievement badges</li>
+                                <li>✅ Weekly progress reports</li>
+                                <li>✅ Basic themes</li>
+                                <li>❌ Custom icons & categories</li>
+                                <li>❌ Premium themes</li>
                                 <li>❌ Export reports</li>
                             </ul>
                         </div>
                         <div class="plan premium">
-                            <h4>Premium Plan</h4>
+                            <h4>Premium Plan - $4.99/month</h4>
                             <ul>
-                                <li>✅ Unlimited children</li>
-                                <li>✅ Unlimited chores</li>
-                                <li>✅ Advanced chore tracking</li>
-                                <li>✅ Custom chore icons</li>
-                                <li>✅ Chore categories</li>
-                                <li>✅ Achievement badges</li>
-                                <li>✅ Points system</li>
-                                <li>✅ Export reports</li>
+                                <li>✅ <strong>Everything in Free</strong></li>
+                                <li>✅ <strong>Unlimited</strong> children & chores</li>
+                                <li>✅ Custom chore icons & categories</li>
+                                <li>✅ Premium themes & customization</li>
+                                <li>✅ Export reports (PDF/CSV)</li>
+                                <li>✅ Family sharing (multiple parents)</li>
+                                <li>✅ Priority support (24hr response)</li>
                             </ul>
                         </div>
                     </div>
