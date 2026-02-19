@@ -1209,8 +1209,23 @@ class FamilyChoreChart {
     showAuth() {
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
-        if (authContainer) authContainer.classList.remove('hidden');
+        const landingPage = document.getElementById('landing-page');
+
+        // On desktop, use landing page. On mobile, show auth directly.
+        if (window.innerWidth > 768) {
+            // Desktop: Show landing page, hide auth container
+            if (landingPage) landingPage.style.display = 'block';
+            if (authContainer) authContainer.classList.add('hidden');
+            document.body.classList.remove('show-auth');
+        } else {
+            // Mobile: Hide landing page, show auth container
+            if (landingPage) landingPage.style.display = 'none';
+            if (authContainer) authContainer.classList.remove('hidden');
+        }
+
+        // Always hide app container
         if (appContainer) appContainer.classList.add('hidden');
+
         document.querySelector('.floating-action-button')?.remove();
         this.setupAuthHandlers();
     }
