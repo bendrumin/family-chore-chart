@@ -40,8 +40,8 @@ export function SignupForm() {
     setIsLoading(true)
 
     // Validation
-    if (!formData.email || !formData.familyName || !formData.password || !formData.confirmPassword) {
-      toast.error('Please fill in all fields')
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
+      toast.error('Please fill in all required fields')
       setIsLoading(false)
       return
     }
@@ -61,13 +61,16 @@ export function SignupForm() {
 
     try {
       const supabase = createClient()
+      // Use provided family name or default to "My Family"
+      const familyName = formData.familyName.trim() || 'My Family'
+
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            family_name: formData.familyName,
+            family_name: familyName,
           },
         },
       })
@@ -82,12 +85,12 @@ export function SignupForm() {
         await supabase.from('profiles').insert({
           id: data.user.id,
           email: data.user.email!,
-          family_name: formData.familyName,
+          family_name: familyName,
         })
       }
 
-      toast.success('Account created! Please check your email to verify your account.')
-      router.push('/login')
+      // Redirect to signup success page with email
+      router.push(`/signup-success?email=${encodeURIComponent(formData.email)}`)
     } catch (error) {
       toast.error('An error occurred during signup')
     } finally {
@@ -113,16 +116,18 @@ export function SignupForm() {
 
       {/* Family Name */}
       <div className="space-y-2">
-        <Label htmlFor="familyName">Family Name</Label>
+        <Label htmlFor="familyName">
+          Family Name <span className="text-gray-400 text-xs font-normal">(optional)</span>
+        </Label>
         <Input
           id="familyName"
           type="text"
           autoComplete="organization"
-          required
           value={formData.familyName}
           onChange={(e) => setFormData({ ...formData, familyName: e.target.value })}
-          placeholder="e.g., The Smith Family"
+          placeholder="e.g., The Smiths"
         />
+        <p className="text-xs text-gray-500">This helps personalize your experience</p>
       </div>
 
       {/* Password */}
