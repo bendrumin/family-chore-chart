@@ -1211,6 +1211,7 @@ class FamilyChoreChart {
         const appContainer = document.getElementById('app-container');
         if (authContainer) authContainer.classList.remove('hidden');
         if (appContainer) appContainer.classList.add('hidden');
+        document.querySelector('.floating-action-button')?.remove();
         this.setupAuthHandlers();
     }
 
@@ -14083,6 +14084,8 @@ async function isPremiumUser() {
 function showAuth(mode = 'signup') {
     // Hide landing page
     document.body.classList.add('show-auth');
+
+    document.querySelector('.floating-action-button')?.remove();
 
     // Show auth container
     const authContainer = document.getElementById('auth-container');

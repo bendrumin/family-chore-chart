@@ -161,7 +161,14 @@ class UIEnhancementsManager {
         }
     }
 
+    isLoggedIn() {
+        const appContainer = document.getElementById('app-container');
+        return appContainer && !appContainer.classList.contains('hidden');
+    }
+
     showQuickActions() {
+        if (!this.isLoggedIn()) return;
+
         const existingQuickActions = document.getElementById('quick-actions-modal');
         if (existingQuickActions) {
             existingQuickActions.remove();
@@ -751,21 +758,17 @@ class UIEnhancementsManager {
             </div>
         `;
 
-        // Only add FAB after user is logged in
+        // Only add FAB when user is logged in (app container visible)
+        const tryAddFab = () => {
+            if (!this.isLoggedIn()) return false;
+            if (document.querySelector('.floating-action-button')) return true; // already added
+            document.body.appendChild(fab);
+            return true;
+        };
         setTimeout(() => {
-            const appContainer = document.getElementById('app-container');
-            const authContainer = document.getElementById('auth-container');
-            
-            if (appContainer && !appContainer.classList.contains('hidden')) {
-                document.body.appendChild(fab);
-            } else {
-                // Wait for auth to complete
+            if (!tryAddFab()) {
                 const checkAuth = setInterval(() => {
-                    const appContainer = document.getElementById('app-container');
-                    if (appContainer && !appContainer.classList.contains('hidden')) {
-                        document.body.appendChild(fab);
-                        clearInterval(checkAuth);
-                    }
+                    if (tryAddFab()) clearInterval(checkAuth);
                 }, 500);
             }
         }, 1000);
