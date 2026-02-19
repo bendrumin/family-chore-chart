@@ -18111,3 +18111,43 @@ small {
         font-size: 36px;
     }
 }
+
+/* ============================================
+   TAILWIND LANDING PAGE - RESPONSIVE BEHAVIOR
+   ============================================ */
+
+/* Override previous landing page styles with Tailwind */
+.landing-page {
+    display: none; /* Hidden by default */
+}
+
+/* Desktop: Show landing page, hide auth */
+@media (min-width: 769px) {
+    .landing-page {
+        display: block !important;
+    }
+
+    #auth-container {
+        display: none;
+    }
+
+    /* When showAuth() is called, hide landing and show auth */
+    body.show-auth .landing-page {
+        display: none !important;
+    }
+
+    body.show-auth #auth-container {
+        display: flex !important;
+    }
+}
+
+/* Mobile: Hide landing page, show auth */
+@media (max-width: 768px) {
+    .landing-page {
+        display: none !important;
+    }
+
+    #auth-container {
+        display: flex;
+    }
+}

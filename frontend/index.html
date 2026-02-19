@@ -399,6 +399,22 @@
     <!-- i18n for internationalization -->
     <script src="i18n-setup.js"></script>
     
+    <!-- Tailwind CSS for Landing Page -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- Styles - Consolidated for performance (2 files instead of 4) -->
     <!-- Main styles deferred for performance - critical CSS inlined above -->
     <link rel="preload" href="style.css?v=20250105-consolidated" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -424,115 +440,197 @@
         </div>
     </div>
 
-    <!-- Landing Page (Desktop Only) -->
-    <div id="landing-page" class="landing-page">
-        <!-- Top Sign In Link -->
-        <div class="landing-top-bar">
-            <div class="container">
-                <a href="#" class="sign-in-link" onclick="showAuth('login'); return false;">
+    <!-- Landing Page (Desktop Only) - Tailwind Styled -->
+    <div id="landing-page" class="landing-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <!-- Top Sign In Bar -->
+        <div class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200">
+            <div class="container mx-auto px-4 py-3 text-right">
+                <a href="#" class="text-sm text-gray-600 hover:text-blue-600 font-medium" onclick="showAuth('login'); return false;">
                     Already a member? <span class="underline">Sign In →</span>
                 </a>
             </div>
         </div>
 
-        <div class="container landing-container">
+        <div class="container mx-auto px-4 py-16">
             <!-- Header -->
-            <header class="landing-header">
-                <h1 class="landing-logo">🌟 ChoreStar</h1>
-                <p class="landing-tagline">Turn Household Chores Into Family Wins</p>
-                <p class="landing-social-proof">⭐ Join 87+ families already using ChoreStar</p>
+            <header class="text-center mb-12">
+                <h1 class="text-6xl font-bold text-gray-900 mb-4">
+                    🌟 ChoreStar
+                </h1>
+                <p class="text-2xl text-gray-600 mb-4">
+                    Turn Household Chores Into Family Wins
+                </p>
+                <p class="text-sm text-blue-600 font-semibold">
+                    ⭐ Join 87+ families already using ChoreStar
+                </p>
             </header>
 
             <!-- Hero Section -->
-            <section class="landing-hero">
-                <h2 class="landing-hero-title">
+            <section class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-12 mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-6">
                     Stop Nagging. Start Rewarding.<br/>
-                    <span class="text-primary">Finally Get Help Around the House</span>
+                    <span class="text-blue-600">Finally Get Help Around the House</span>
                 </h2>
-                <p class="landing-hero-text">
+                <p class="text-xl text-gray-600 mb-4">
                     Tired of reminding your kids to clean their rooms? ChoreStar turns chores into a game that kids actually want to play.
                 </p>
-                <p class="landing-hero-features">
+                <p class="text-lg text-gray-600 mb-8">
                     ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
                     🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
                     📱 Works on any device - no app download required<br/>
                     🆓 Start with our free plan - track up to 3 kids and 20 chores
                 </p>
 
-                <div class="landing-trust-signal">
-                    🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime
+                <div class="bg-blue-50 rounded-lg p-4 mb-8">
+                    <p class="text-center text-sm text-gray-700">
+                        🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime
+                    </p>
                 </div>
 
-                <div class="landing-cta-buttons">
-                    <button class="btn btn-primary btn-large" onclick="showAuth('signup')">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                    <button onclick="showAuth('signup')" class="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
                         Start Free Today →
                     </button>
-                    <button class="btn btn-secondary btn-large" onclick="showAuth('login')">
+                    <button onclick="showAuth('login')" class="px-8 py-4 bg-white text-gray-900 border-2 border-gray-300 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors">
                         Sign In
                     </button>
                 </div>
-                <p class="landing-cta-subtext">
+                <p class="text-center text-xs text-gray-500">
                     ✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime
                 </p>
             </section>
 
             <!-- Pricing Comparison -->
-            <section class="landing-pricing">
-                <h3 class="landing-section-title">Choose Your Plan</h3>
-                <p class="landing-section-subtitle">Start free and upgrade anytime. No credit card required to try.</p>
+            <section class="max-w-6xl mx-auto mb-16">
+                <h3 class="text-3xl font-bold text-center text-gray-900 mb-4">
+                    Choose Your Plan
+                </h3>
+                <p class="text-center text-gray-600 mb-12">
+                    Start free and upgrade anytime. No credit card required to try.
+                </p>
 
-                <div class="pricing-grid">
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
                     <!-- Free Plan -->
-                    <div class="pricing-card">
-                        <h4 class="pricing-title">Free Plan</h4>
-                        <div class="pricing-price">$0<span class="pricing-period">/forever</span></div>
-                        <ul class="pricing-features">
-                            <li>✓ Up to <strong>3 children</strong></li>
-                            <li>✓ Up to <strong>20 total chores</strong></li>
-                            <li>✓ Kid login with PIN</li>
-                            <li>✓ Points & earnings tracking</li>
-                            <li>✓ Achievement badges</li>
-                            <li>✓ Weekly progress reports</li>
-                            <li>✓ Basic themes</li>
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200">
+                        <div class="text-center mb-6">
+                            <h4 class="text-2xl font-bold text-gray-900 mb-2">Free Plan</h4>
+                            <div class="text-4xl font-black text-gray-900 mb-2">$0<span class="text-sm text-gray-500">/forever</span></div>
+                        </div>
+
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Up to <strong>3 children</strong></span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Up to <strong>20 total chores</strong></span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Kid login with PIN</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Points & earnings tracking</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Achievement badges</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Weekly progress reports</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-green-500 text-xl">✓</span>
+                                <span class="text-gray-700">Basic themes</span>
+                            </li>
                         </ul>
-                        <button class="btn btn-secondary" onclick="showAuth('signup')">Start Free</button>
+
+                        <button onclick="showAuth('signup')" class="w-full px-6 py-3 bg-gray-200 text-gray-900 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                            Start Free
+                        </button>
                     </div>
 
                     <!-- Premium Plan -->
-                    <div class="pricing-card pricing-card-featured">
-                        <div class="pricing-badge">BEST VALUE</div>
-                        <h4 class="pricing-title">Premium</h4>
-                        <div class="pricing-price">$4.99<span class="pricing-period">/month</span></div>
-                        <p class="pricing-save">or $49.99/year (save 17%)</p>
-                        <ul class="pricing-features">
-                            <li>✓ <strong>Everything in Free</strong></li>
-                            <li>✓ <strong>Unlimited</strong> children</li>
-                            <li>✓ <strong>Unlimited</strong> chores</li>
-                            <li>✓ Custom chore icons & categories</li>
-                            <li>✓ Premium themes & customization</li>
-                            <li>✓ Export reports (PDF/CSV)</li>
-                            <li>✓ Family sharing (multiple parents)</li>
-                            <li>✓ Priority email support</li>
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-2xl border-2 border-blue-500 relative transform md:scale-105">
+                        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+                            BEST VALUE
+                        </div>
+
+                        <div class="text-center mb-6">
+                            <h4 class="text-2xl font-bold text-gray-900 mb-2">Premium</h4>
+                            <div class="text-4xl font-black text-blue-600 mb-2">$4.99<span class="text-sm text-gray-600">/month</span></div>
+                            <p class="text-xs text-gray-600">or $49.99/year (save 17%)</p>
+                        </div>
+
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700"><strong>Everything in Free</strong></span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700"><strong>Unlimited</strong> children</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700"><strong>Unlimited</strong> chores</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700">Custom chore icons & categories</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700">Premium themes & customization</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700">Export reports (PDF/CSV)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700">Family sharing (multiple parents)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="text-blue-500 text-xl">✓</span>
+                                <span class="text-gray-700">Priority email support</span>
+                            </li>
                         </ul>
-                        <button class="btn btn-primary" onclick="showAuth('signup')">Start Free Trial</button>
-                        <p class="pricing-upgrade-note">💳 Upgrade to Premium anytime from your dashboard</p>
+
+                        <button onclick="showAuth('signup')" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
+                            Start Free Trial
+                        </button>
+                        <p class="text-center text-xs text-gray-600 mt-3">
+                            💳 Upgrade to Premium anytime from your dashboard
+                        </p>
                     </div>
                 </div>
 
                 <!-- Lifetime Option -->
-                <div class="pricing-lifetime">
-                    <span class="pricing-lifetime-emoji">🎉</span>
-                    <span class="pricing-lifetime-title">Lifetime Access</span>
-                    <span class="pricing-lifetime-price">$149.99</span>
-                    <button class="btn btn-accent" onclick="showAuth('signup')">Get Lifetime</button>
-                    <p class="pricing-lifetime-note">One-time payment • All premium features forever • Best for large families</p>
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-300 text-center">
+                    <div class="flex items-center justify-center gap-4 flex-wrap">
+                        <div>
+                            <span class="text-2xl">🎉</span>
+                            <span class="text-xl font-bold text-gray-900 ml-2">Lifetime Access</span>
+                        </div>
+                        <div class="text-3xl font-black text-purple-600">$149.99</div>
+                        <button onclick="showAuth('signup')" class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors">
+                            Get Lifetime
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3">
+                        One-time payment • All premium features forever • Best for large families
+                    </p>
                 </div>
             </section>
 
             <!-- Footer -->
-            <footer class="landing-footer">
-                <p>🔒 Your privacy matters. We never sell your data.</p>
-                <p class="landing-footer-small">Made with ❤️ by a parent who gets it</p>
+            <footer class="text-center mt-16 text-gray-600">
+                <p class="mb-2">🔒 Your privacy matters. We never sell your data.</p>
+                <p class="text-sm">Made with ❤️ by a parent who gets it</p>
             </footer>
         </div>
     </div>
