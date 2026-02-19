@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown } from 'lucide-react'
+import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
@@ -16,8 +16,9 @@ import { ChoresTab } from '@/components/settings/tabs/chores-tab'
 import { AppearanceTab } from '@/components/settings/tabs/appearance-tab'
 import { InsightsTab } from '@/components/settings/tabs/insights-tab'
 import { DownloadsTab } from '@/components/settings/tabs/downloads-tab'
+import { BillingTab } from '@/components/settings/tabs/billing-tab'
 
-type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads'
+type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads' | 'billing'
 
 const TABS = [
   { id: 'family' as SettingsTab, label: 'Family', icon: Users },
@@ -25,6 +26,7 @@ const TABS = [
   { id: 'appearance' as SettingsTab, label: 'Appearance', icon: Palette },
   { id: 'insights' as SettingsTab, label: 'Insights', icon: BarChart3 },
   { id: 'downloads' as SettingsTab, label: 'Downloads', icon: FileDown },
+  { id: 'billing' as SettingsTab, label: 'Billing', icon: CreditCard },
 ]
 
 interface SettingsMenuProps {
@@ -90,6 +92,7 @@ export function SettingsMenu({ buttonColor = 'black' }: SettingsMenuProps) {
               {activeTab === 'appearance' && <AppearanceTab />}
               {activeTab === 'insights' && <InsightsTab />}
               {activeTab === 'downloads' && <DownloadsTab />}
+              {activeTab === 'billing' && <BillingTab />}
             </div>
           </div>
         </DialogContent>

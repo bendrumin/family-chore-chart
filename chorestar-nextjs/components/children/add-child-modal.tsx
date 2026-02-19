@@ -1,32 +1,71 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { UserPlus, Sparkles } from 'lucide-react'
+import { UserPlus, Sparkles, Crown, AlertCircle } from 'lucide-react'
 import { playSound } from '@/lib/utils/sound'
+import type { Database } from '@/lib/supabase/database.types'
+
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface AddChildModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
+  currentChildCount?: number
 }
 
 const AVATAR_SEEDS = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan']
 const AVATAR_COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444', '#14b8a6']
 
-export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalProps) {
+export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount = 0 }: AddChildModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     age: '',
     avatarSeed: AVATAR_SEEDS[Math.floor(Math.random() * AVATAR_SEEDS.length)],
     avatarColor: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
   })
+
+  useEffect(() => {
+    if (open) {
+      loadProfile()
+    }
+  }, [open])
+
+  const loadProfile = async () => {
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      setProfile(data)
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    }
+  }
+
+  const canAddChild = () => {
+    const tier = profile?.subscription_tier || 'free'
+    if (tier === 'free') {
+      return currentChildCount < 3
+    }
+    return true // Premium and lifetime have unlimited
+  }
+
+  const isAtLimit = !canAddChild()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,6 +128,37 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
               Add Child
             </DialogTitle>
           </DialogHeader>
+
+          {/* Upgrade Prompt for Free Users at Limit */}
+          {isAtLimit && (
+            <div className="my-6 p-5 rounded-2xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 dark:border-purple-700 dark:from-purple-900/30 dark:to-pink-900/30">
+              <div className="flex items-start gap-3 mb-4">
+                <Crown className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                    Upgrade to Premium
+                  </h4>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    Free plan is limited to 3 children. Upgrade to add unlimited children and unlock all premium features!
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="gradient"
+                size="lg"
+                className="w-full font-bold hover-glow"
+                onClick={() => {
+                  onOpenChange(false)
+                  // User can upgrade via Settings > Billing tab
+                  toast.info('💡 Go to Settings → Billing to upgrade to Premium')
+                }}
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                See Upgrade Options
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-5 my-6">
             {/* Name */}
@@ -180,12 +250,12 @@ export function AddChildModal({ open, onOpenChange, onSuccess }: AddChildModalPr
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isAtLimit}
               variant="gradient"
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Adding...' : '✨ Add Child'}
+              {isLoading ? '⏳ Adding...' : isAtLimit ? '🔒 Upgrade Required' : '✨ Add Child'}
             </Button>
           </DialogFooter>
         </form>
