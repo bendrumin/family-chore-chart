@@ -1307,6 +1307,12 @@ class FamilyChoreChart {
             const result = await this.apiClient.signIn(email, password, rememberMe);
 
             if (result.success) {
+                // Require email confirmation (same as React app)
+                if (result.user && !result.user.email_confirmed_at) {
+                    await this.apiClient.signOut();
+                    this.showToast('Please confirm your email before signing in. Use "Resend confirmation" below if needed.', 'error');
+                    return;
+                }
                 this.currentUser = result.user;
                 analyticsSafeCall('trackLogin', email);
 

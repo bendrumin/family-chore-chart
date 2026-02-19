@@ -103,6 +103,7 @@ class ApiClient {
                 email,
                 password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
                     data: {
                         family_name: familyName
                     }
@@ -195,7 +196,7 @@ class ApiClient {
     async resetPassword(email) {
         try {
             const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin
+                redirectTo: `${window.location.origin}/app/reset-password`
             });
 
             if (error) throw error;
