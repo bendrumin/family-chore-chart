@@ -2018,6 +2018,9 @@ class FamilyChoreChart {
 
         // Initialize avatar picker and color presets for inline form
         this.setupInlineEditForm();
+
+        // Check PIN status for this child
+        this.checkChildPinStatus(child.id);
     }
 
     cancelInlineEdit() {
@@ -2204,6 +2207,183 @@ class FamilyChoreChart {
                     delete previewCircle.dataset.avatarFile;
                 }
             });
+        }
+
+        // Setup PIN input length limiting
+        const pinInput = document.getElementById('inline-edit-pin-input');
+        const pinConfirm = document.getElementById('inline-edit-pin-confirm');
+
+        if (pinInput) {
+            pinInput.addEventListener('input', (e) => {
+                if (e.target.value.length > 6) {
+                    e.target.value = e.target.value.slice(0, 6);
+                }
+            });
+        }
+
+        if (pinConfirm) {
+            pinConfirm.addEventListener('input', (e) => {
+                if (e.target.value.length > 6) {
+                    e.target.value = e.target.value.slice(0, 6);
+                }
+            });
+        }
+    }
+
+    // PIN Management Functions
+    async checkChildPinStatus(childId) {
+        try {
+            const { data, error } = await this.supabaseClient
+                .from('child_pins')
+                .select('id')
+                .eq('child_id', childId)
+                .maybeSingle();
+
+            const hasPinSet = !!data;
+
+            // Update UI elements
+            const pinIcon = document.getElementById('inline-edit-pin-icon');
+            const pinStatus = document.getElementById('inline-edit-pin-status');
+            const pinDescription = document.getElementById('inline-edit-pin-description');
+            const setPinBtn = document.getElementById('inline-edit-set-pin-btn');
+            const removePinBtn = document.getElementById('inline-edit-remove-pin-btn');
+
+            if (pinIcon) {
+                pinIcon.textContent = hasPinSet ? '🔐' : '🔓';
+            }
+
+            if (pinStatus) {
+                pinStatus.style.display = hasPinSet ? 'inline' : 'none';
+            }
+
+            const childName = document.getElementById('inline-edit-name')?.value || 'this child';
+            if (pinDescription) {
+                pinDescription.textContent = hasPinSet
+                    ? `${childName} can log in with their PIN on the kid login page.`
+                    : `Set a 4-6 digit PIN so ${childName} can log in independently.`;
+            }
+
+            if (setPinBtn) {
+                setPinBtn.textContent = hasPinSet ? 'Change PIN' : 'Set PIN';
+            }
+
+            if (removePinBtn) {
+                removePinBtn.style.display = hasPinSet ? 'inline-block' : 'none';
+            }
+
+            return hasPinSet;
+        } catch (error) {
+            console.error('Error checking PIN status:', error);
+            return false;
+        }
+    }
+
+    showPinInput() {
+        const pinButtons = document.getElementById('inline-edit-pin-buttons');
+        const pinForm = document.getElementById('inline-edit-pin-form');
+        const pinInput = document.getElementById('inline-edit-pin-input');
+        const pinConfirm = document.getElementById('inline-edit-pin-confirm');
+
+        if (pinButtons) pinButtons.style.display = 'none';
+        if (pinForm) pinForm.style.display = 'block';
+        if (pinInput) {
+            pinInput.value = '';
+            pinInput.focus();
+        }
+        if (pinConfirm) pinConfirm.value = '';
+    }
+
+    hidePinInput() {
+        const pinButtons = document.getElementById('inline-edit-pin-buttons');
+        const pinForm = document.getElementById('inline-edit-pin-form');
+        const pinInput = document.getElementById('inline-edit-pin-input');
+        const pinConfirm = document.getElementById('inline-edit-pin-confirm');
+
+        if (pinButtons) pinButtons.style.display = 'flex';
+        if (pinForm) pinForm.style.display = 'none';
+        if (pinInput) pinInput.value = '';
+        if (pinConfirm) pinConfirm.value = '';
+    }
+
+    async saveChildPin() {
+        const form = document.getElementById('inline-edit-form');
+        const childId = form?.dataset.childId;
+
+        if (!childId) {
+            this.showToast('No child selected', 'error');
+            return;
+        }
+
+        const pinInput = document.getElementById('inline-edit-pin-input');
+        const pinConfirm = document.getElementById('inline-edit-pin-confirm');
+        const pin = pinInput?.value.trim();
+        const confirmPin = pinConfirm?.value.trim();
+
+        // Validation
+        if (!pin || pin.length < 4 || pin.length > 6) {
+            this.showToast('PIN must be 4-6 digits', 'error');
+            return;
+        }
+
+        if (pin !== confirmPin) {
+            this.showToast('PINs do not match', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/child-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ childId, pin })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to set PIN');
+            }
+
+            const childName = document.getElementById('inline-edit-name')?.value || 'Child';
+            this.showToast(`🔐 PIN set for ${childName}!`, 'success');
+
+            // Hide PIN input form and refresh status
+            this.hidePinInput();
+            await this.checkChildPinStatus(childId);
+
+        } catch (error) {
+            console.error('Error setting PIN:', error);
+            this.showToast(error.message || 'Failed to set PIN', 'error');
+        }
+    }
+
+    async removeChildPin() {
+        const form = document.getElementById('inline-edit-form');
+        const childId = form?.dataset.childId;
+
+        if (!childId) {
+            this.showToast('No child selected', 'error');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to remove this PIN?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/child-pin?childId=${childId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to remove PIN');
+            }
+
+            this.showToast('PIN removed successfully', 'success');
+            await this.checkChildPinStatus(childId);
+
+        } catch (error) {
+            console.error('Error removing PIN:', error);
+            this.showToast(error.message || 'Failed to remove PIN', 'error');
         }
     }
 
