@@ -1226,18 +1226,26 @@ class FamilyChoreChart {
     }
 
     showAuth() {
+        console.log('🔐 showAuth() called - showing auth form');
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const landingPage = document.getElementById('landing-page');
 
         // Always show auth form (used for errors, logout, or when user clicks login)
         // Landing page visibility is handled separately in init()
-        if (authContainer) authContainer.classList.remove('hidden');
-        if (appContainer) appContainer.classList.add('hidden');
+        if (authContainer) {
+            authContainer.classList.remove('hidden');
+            console.log('✅ Auth container shown');
+        }
+        if (appContainer) {
+            appContainer.classList.add('hidden');
+            console.log('✅ App container hidden');
+        }
 
         // On mobile, hide landing page explicitly
         if (window.innerWidth <= 768 && landingPage) {
             landingPage.style.display = 'none';
+            console.log('✅ Landing page hidden (mobile)');
         }
 
         document.querySelector('.floating-action-button')?.remove();
@@ -1245,19 +1253,38 @@ class FamilyChoreChart {
     }
 
     showApp() {
+        console.log('🎯 showApp() called - attempting to show dashboard');
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
         const landingPage = document.getElementById('landing-page');
 
+        console.log('Elements found:', {
+            authContainer: !!authContainer,
+            appContainer: !!appContainer,
+            landingPage: !!landingPage
+        });
+
         // Hide auth container and landing page
-        if (authContainer) authContainer.classList.add('hidden');
-        if (landingPage) landingPage.style.display = 'none';
+        if (authContainer) {
+            authContainer.classList.add('hidden');
+            console.log('✅ Auth container hidden');
+        }
+        if (landingPage) {
+            landingPage.style.display = 'none';
+            console.log('✅ Landing page hidden (display: none)');
+        }
 
         // Show dashboard
-        if (appContainer) appContainer.classList.remove('hidden');
+        if (appContainer) {
+            appContainer.classList.remove('hidden');
+            console.log('✅ App container shown (removed hidden class)');
+        } else {
+            console.error('❌ App container not found!');
+        }
 
         // Remove show-auth class if present
         document.body.classList.remove('show-auth');
+        console.log('✅ Dashboard should now be visible');
         
         // Add flag to prevent duplicate initialization
         if (!this.handlersInitialized) {
