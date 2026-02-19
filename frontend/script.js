@@ -525,15 +525,15 @@ class FamilyChoreChart {
     async init() {
         try {
             this.showLoading();
-            
-            
+
+
             // Add anti-jump CSS early
             this.addAntiJumpCSS();
-            
+
             // Load settings and streaks
             this.loadSettings();
             this.loadStreaks();
-            
+
             // Check authentication
             try {
                 const user = await this.apiClient.getCurrentUser();
@@ -541,16 +541,35 @@ class FamilyChoreChart {
                     this.currentUser = user;
                     await this.loadApp();
                 } else {
-                    this.showAuth();
+                    // Not logged in - on desktop, show landing page. On mobile, show auth.
+                    if (window.innerWidth > 768) {
+                        // Desktop: Landing page already shows via CSS, just hide loading
+                        const landingPage = document.getElementById('landing-page');
+                        if (landingPage) landingPage.style.display = 'block';
+                    } else {
+                        // Mobile: Show auth directly
+                        this.showAuth();
+                    }
                 }
             } catch (authError) {
-                this.showAuth();
+                // Auth error - show landing on desktop, auth on mobile
+                if (window.innerWidth > 768) {
+                    const landingPage = document.getElementById('landing-page');
+                    if (landingPage) landingPage.style.display = 'block';
+                } else {
+                    this.showAuth();
+                }
             }
         } catch (error) {
             console.error('Initialization error:', error);
             this.showToast('Failed to initialize app. Please refresh the page.', 'error');
-            // Fallback to auth screen on any error
-            this.showAuth();
+            // Fallback - show landing on desktop, auth on mobile
+            if (window.innerWidth > 768) {
+                const landingPage = document.getElementById('landing-page');
+                if (landingPage) landingPage.style.display = 'block';
+            } else {
+                this.showAuth();
+            }
         } finally {
             this.hideLoading();
         }
@@ -1211,20 +1230,15 @@ class FamilyChoreChart {
         const appContainer = document.getElementById('app-container');
         const landingPage = document.getElementById('landing-page');
 
-        // On desktop, use landing page. On mobile, show auth directly.
-        if (window.innerWidth > 768) {
-            // Desktop: Show landing page, hide auth container
-            if (landingPage) landingPage.style.display = 'block';
-            if (authContainer) authContainer.classList.add('hidden');
-            document.body.classList.remove('show-auth');
-        } else {
-            // Mobile: Hide landing page, show auth container
-            if (landingPage) landingPage.style.display = 'none';
-            if (authContainer) authContainer.classList.remove('hidden');
-        }
-
-        // Always hide app container
+        // Always show auth form (used for errors, logout, or when user clicks login)
+        // Landing page visibility is handled separately in init()
+        if (authContainer) authContainer.classList.remove('hidden');
         if (appContainer) appContainer.classList.add('hidden');
+
+        // On mobile, hide landing page explicitly
+        if (window.innerWidth <= 768 && landingPage) {
+            landingPage.style.display = 'none';
+        }
 
         document.querySelector('.floating-action-button')?.remove();
         this.setupAuthHandlers();
