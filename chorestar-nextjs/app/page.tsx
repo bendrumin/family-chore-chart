@@ -38,9 +38,10 @@ export default async function HomePage() {
             Tired of reminding your kids to clean their rooms? ChoreStar turns chores into a game that kids actually want to play.
           </p>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            ✨ Kids complete chores, earn real rewards, and build lifelong responsibility habits<br/>
+            ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device - no app download required
+            📱 Works on any device - no app download required<br/>
+            🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
           {/* Trust Signals */}
@@ -184,6 +185,146 @@ export default async function HomePage() {
                 </p>
                 <div className="text-yellow-400 text-lg">⭐⭐⭐⭐⭐</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Comparison */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+            Choose Your Plan
+          </h3>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
+            Start free and upgrade anytime. No credit card required to try.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Free Plan */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-2 border-gray-200 dark:border-gray-700">
+              <div className="text-center mb-6">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free Plan</h4>
+                <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">$0</div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Forever free</p>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Up to <strong>3 children</strong></span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Up to <strong>20 total chores</strong></span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Kid login with PIN</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Points & earnings tracking</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Achievement badges</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Weekly progress reports</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Basic themes</span>
+                </li>
+              </ul>
+
+              <Link
+                href="/signup"
+                className="block w-full px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold text-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Start Free
+              </Link>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 shadow-2xl border-2 border-blue-500 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+                BEST VALUE
+              </div>
+
+              <div className="text-center mb-6">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium</h4>
+                <div className="text-4xl font-black text-blue-600 dark:text-blue-400 mb-2">$4.99</div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">per month</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">or $49.99/year (save 17%)</p>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300"><strong>Everything in Free</strong></span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300"><strong>Unlimited</strong> children</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300"><strong>Unlimited</strong> chores</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Custom chore icons & categories</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Premium themes & customization</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Export reports (PDF/CSV)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Family sharing (multiple parents)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-500 text-xl">✓</span>
+                  <span className="text-gray-700 dark:text-gray-300">Priority email support</span>
+                </li>
+              </ul>
+
+              <Link
+                href="/signup"
+                className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-bold text-center hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+              >
+                Start Free Trial
+              </Link>
+              <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-3">
+                💳 Upgrade to Premium anytime from your dashboard
+              </p>
+            </div>
+          </div>
+
+          {/* Lifetime Option */}
+          <div className="mt-8 max-w-3xl mx-auto">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border-2 border-purple-300 dark:border-purple-700 text-center">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <div>
+                  <span className="text-2xl">🎉</span>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white ml-2">Lifetime Access</span>
+                </div>
+                <div className="text-3xl font-black text-purple-600 dark:text-purple-400">$149.99</div>
+                <Link
+                  href="/signup"
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                >
+                  Get Lifetime
+                </Link>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                One-time payment • All premium features forever • Best for large families
+              </p>
             </div>
           </div>
         </div>

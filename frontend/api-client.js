@@ -937,8 +937,8 @@ class ApiClient {
         // Free tier limits
         const children = await this.getChildren();
         const chores = await this.getChores();
-        const maxChildren = 2;
-        const maxChores = 5;
+        const maxChildren = 3;
+        const maxChores = 20;
         return {
             canAddChildren: children.length < maxChildren,
             canAddChores: chores.length < maxChores,
@@ -949,8 +949,8 @@ class ApiClient {
             maxChores,
             canUseCustomIcons: false,
             canUseCategories: false,
-            canUsePointsSystem: false,
-            canEarnBadges: false,
+            canUsePointsSystem: true, // Basic points/earnings available to free tier
+            canEarnBadges: true, // Basic achievement badges available to free tier
             canExportReports: false
         };
     }
