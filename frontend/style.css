@@ -18282,3 +18282,13 @@ small {
         width: 100%;
     }
 }
+
+/* Force hide landing page when dashboard is active */
+body.dashboard-active .landing-page {
+    display: none !important;
+}
+
+/* Force hide landing page when showing auth */
+body.show-auth .landing-page {
+    display: none !important;
+}

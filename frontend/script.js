@@ -1256,22 +1256,21 @@ class FamilyChoreChart {
         console.log('🎯 showApp() called - attempting to show dashboard');
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
-        const landingPage = document.getElementById('landing-page');
 
         console.log('Elements found:', {
             authContainer: !!authContainer,
-            appContainer: !!appContainer,
-            landingPage: !!landingPage
+            appContainer: !!appContainer
         });
 
-        // Hide auth container and landing page
+        // Add dashboard-active class to body (this hides landing page via CSS with !important)
+        document.body.classList.add('dashboard-active');
+        document.body.classList.remove('show-auth');
+        console.log('✅ Added dashboard-active class to body (hides landing page via CSS)');
+
+        // Hide auth container
         if (authContainer) {
             authContainer.classList.add('hidden');
             console.log('✅ Auth container hidden');
-        }
-        if (landingPage) {
-            landingPage.style.display = 'none';
-            console.log('✅ Landing page hidden (display: none)');
         }
 
         // Show dashboard
@@ -1282,9 +1281,7 @@ class FamilyChoreChart {
             console.error('❌ App container not found!');
         }
 
-        // Remove show-auth class if present
-        document.body.classList.remove('show-auth');
-        console.log('✅ Dashboard should now be visible');
+        console.log('✅ Dashboard is now visible - landing page hidden by dashboard-active class');
         
         // Add flag to prevent duplicate initialization
         if (!this.handlersInitialized) {
