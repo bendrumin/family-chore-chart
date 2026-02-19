@@ -1218,8 +1218,17 @@ class FamilyChoreChart {
     showApp() {
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
+        const landingPage = document.getElementById('landing-page');
+
+        // Hide auth container and landing page
         if (authContainer) authContainer.classList.add('hidden');
+        if (landingPage) landingPage.style.display = 'none';
+
+        // Show dashboard
         if (appContainer) appContainer.classList.remove('hidden');
+
+        // Remove show-auth class if present
+        document.body.classList.remove('show-auth');
         
         // Add flag to prevent duplicate initialization
         if (!this.handlersInitialized) {
