@@ -13,6 +13,18 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Top Sign In Link - Always visible for returning users */}
+      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="container mx-auto px-4 py-3 text-right">
+          <Link
+            href="/login"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+          >
+            Already a member? <span className="underline">Sign In →</span>
+          </Link>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <header className="text-center mb-12">
