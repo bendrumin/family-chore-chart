@@ -1672,12 +1672,24 @@ class FamilyChoreChart {
                 this.chores = [];
                 this.completions = [];
                 this.familySettings = null;
-                
+
                 if (this.subscription) {
                     this.subscription.unsubscribe();
                 }
-                
-                this.showAuth();
+
+                // On desktop, show landing page. On mobile, show auth
+                if (window.innerWidth > 768) {
+                    // Desktop: Go back to landing page
+                    document.body.classList.remove('show-auth');
+                    const authContainer = document.getElementById('auth-container');
+                    if (authContainer) {
+                        authContainer.classList.add('hidden');
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Mobile: Show auth (login/signup)
+                    this.showAuth();
+                }
             } else {
                 this.showToast('Error logging out', 'error');
             }
