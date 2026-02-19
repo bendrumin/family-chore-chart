@@ -18226,12 +18226,20 @@ small {
         display: none;
     }
 
+    #app-container {
+        display: none;
+    }
+
     body.show-auth .landing-page {
         display: none !important;
     }
 
     body.show-auth #auth-container {
         display: flex !important;
+    }
+
+    body.dashboard-active #app-container {
+        display: block !important;
     }
 }
 
