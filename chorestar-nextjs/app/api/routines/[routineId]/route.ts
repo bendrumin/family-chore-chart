@@ -1,7 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-// GET /api/routines/[routineId] - Get a specific routine
+// GET /api/routines/[routineId] - Get a specific routine.
+// Kid mode (no session): fetches via service role (read-only, no ownership check).
+// Parent mode (authenticated): fetches with user ownership check.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ routineId: string }> }
@@ -10,12 +12,39 @@ export async function GET(
     const supabase = await createClient();
     const { routineId } = await params;
 
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Kid mode: no auth session → service role read-only
+    if (!user) {
+      const serviceClient = createServiceRoleClient();
+      const { data, error } = await serviceClient
+        .from('routines')
+        .select(`
+          *,
+          routine_steps (
+            id,
+            title,
+            description,
+            icon,
+            order_index,
+            duration_seconds,
+            created_at
+          )
+        `)
+        .eq('id', routineId)
+        .single();
+
+      if (error || !data) {
+        return NextResponse.json({ error: 'Routine not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        ...data,
+        routine_steps: data.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
+      });
     }
 
+    // Parent mode: authenticated user with ownership check
     const { data, error } = await supabase
       .from('routines')
       .select(`
@@ -44,13 +73,10 @@ export async function GET(
       return NextResponse.json({ error: 'Routine not found' }, { status: 404 });
     }
 
-    // Sort steps by order_index
-    const routineWithSortedSteps = {
+    return NextResponse.json({
       ...data,
       routine_steps: data.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
-    };
-
-    return NextResponse.json(routineWithSortedSteps);
+    });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

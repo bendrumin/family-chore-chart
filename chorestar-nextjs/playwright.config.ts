@@ -44,9 +44,26 @@ export default defineConfig({
       testMatch: /kid-login\.spec\.ts/,
     },
     {
+      name: 'kid-dashboard',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /kid-dashboard\.spec\.ts/,
+    },
+    {
       name: 'run-routine',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /run-routine\.spec\.ts/,
+    },
+    {
+      name: 'add-edit-child',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /add-edit-child\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
+      name: 'add-edit-chore',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /add-edit-chore\.spec\.ts/,
+      dependencies: ['setup'],
     },
     {
       name: 'chromium',

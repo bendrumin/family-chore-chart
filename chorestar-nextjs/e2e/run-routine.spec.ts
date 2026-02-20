@@ -12,7 +12,7 @@ test.describe('Run Routine (recording flow)', () => {
 
     // Step 1: Kid login
     await page.goto(`/kid-login/${familyCode}`);
-    await expect(page.getByText(/welcome|enter your.*pin/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /welcome/i })).toBeVisible({ timeout: 5000 });
 
     for (const digit of pin) {
       await page.getByRole('button', { name: digit }).click();
@@ -20,13 +20,15 @@ test.describe('Run Routine (recording flow)', () => {
     }
 
     await page.waitForURL(/\/kid\/[a-f0-9-]+$/, { timeout: 15_000 });
-    await expect(page.getByText(/hi,|ready for your routines/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /hi,/i })).toBeVisible({ timeout: 5000 });
 
-    // Step 2: Click first routine card (Start button)
+    // Step 2: Wait for routine cards to load, then click Start
     const startBtn = page.getByRole('button', { name: /start/i }).first();
-    if (!(await startBtn.isVisible())) {
-      test.skip();
-      return; // No routines - run create-routine first
+    try {
+      await startBtn.waitFor({ state: 'visible', timeout: 8_000 });
+    } catch {
+      test.skip(); // No routines set up yet
+      return;
     }
     await startBtn.click();
 
