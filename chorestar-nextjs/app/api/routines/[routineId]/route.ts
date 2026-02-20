@@ -38,9 +38,10 @@ export async function GET(
         return NextResponse.json({ error: 'Routine not found' }, { status: 404 });
       }
 
+      const row = data as any;
       return NextResponse.json({
-        ...data,
-        routine_steps: data.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
+        ...row,
+        routine_steps: row.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
       });
     }
 

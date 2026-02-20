@@ -45,7 +45,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
-      const sorted = (data || []).map(routine => ({
+      const sorted = ((data || []) as any[]).map((routine: any) => ({
         ...routine,
         routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
       }));
