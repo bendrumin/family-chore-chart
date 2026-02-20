@@ -3,10 +3,14 @@ import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig({ path: '.env.test' });
 
+// Timestamp for this run so videos don't overwrite each other
+const runId = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+
 /**
  * Playwright config for ChoreStar recording scripts.
  * Run: npx playwright test --project=chromium
- * Record video: videos are saved to chorestar-nextjs/test-results/
+ * Videos saved to: test-results/<timestamp>/<test-name>/
+ * After each run, webm files are auto-converted to mp4 via globalTeardown.
  *
  * Env vars (create .env.test or set in shell):
  *   PLAYWRIGHT_BASE_URL - default http://localhost:3000
@@ -22,6 +26,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'html',
+  globalTeardown: './e2e/convert-videos.ts',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -71,5 +76,5 @@ export default defineConfig({
       testIgnore: [/auth\.setup\.ts/],
     },
   ],
-  outputDir: 'test-results/',
+  outputDir: `test-results/${runId}`,
 });

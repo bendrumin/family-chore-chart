@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Kid Dashboard (recording flow)', () => {
-  test('kid logs in and browses routines', async ({ page }) => {
+  test('kid logs in and sees routine with Start button', async ({ page }) => {
     const familyCode = process.env.TEST_FAMILY_CODE;
     const pin = process.env.TEST_CHILD_PIN;
 
@@ -23,25 +23,19 @@ test.describe('Kid Dashboard (recording flow)', () => {
     await page.waitForURL(/\/kid\/[a-f0-9-]+$/, { timeout: 15_000 });
     await expect(page.getByRole('heading', { name: /hi,/i })).toBeVisible({ timeout: 5000 });
 
-    // Pause to show the full dashboard
+    // Wait for routine cards to load and show the Start button
+    const startBtn = page.getByRole('button', { name: /start/i }).first();
+    await startBtn.waitFor({ state: 'visible', timeout: 8_000 });
+
+    // Pause to let the viewer read the screen
     await page.waitForTimeout(2000);
 
-    // Scroll down to reveal routines list
-    await page.evaluate(() => window.scrollBy({ top: 300, behavior: 'smooth' }));
-    await page.waitForTimeout(1500);
-
-    // Scroll back up
-    await page.evaluate(() => window.scrollBy({ top: -300, behavior: 'smooth' }));
+    // Scroll the routine card into clear view
+    await startBtn.scrollIntoViewIfNeeded();
     await page.waitForTimeout(1000);
 
-    // If a routine card is visible, hover over it to show details
-    const routineCard = page.locator('[data-testid="routine-card"], .routine-card').first();
-    if (await routineCard.isVisible()) {
-      await routineCard.hover();
-      await page.waitForTimeout(800);
-    }
-
-    // Final pause before recording ends
-    await page.waitForTimeout(1000);
+    // Hover over the Start button to highlight it
+    await startBtn.hover();
+    await page.waitForTimeout(2000);
   });
 });

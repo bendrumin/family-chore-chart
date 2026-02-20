@@ -11,7 +11,7 @@ test.describe('Add & Edit Chore (recording flow)', () => {
 
     // Wait for dashboard and children to load
     await page.waitForSelector('button', { timeout: 10_000 });
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(800);
 
     // Select the first child so the chore list is visible
     const firstChildBtn = page.getByRole('button', { name: /^select /i }).first();
@@ -48,12 +48,12 @@ test.describe('Add & Edit Chore (recording flow)', () => {
       await page.waitForTimeout(300);
     }
 
-    await page.getByRole('button', { name: /add chore/i }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 });
+    // Use the submit button inside the modal ("✨ Add Chore"), not the opener button ("Add Chore")
+    await page.locator('button[type="submit"]').filter({ hasText: /add chore/i }).click();
+    await expect(page.getByRole('heading', { name: /add new chore/i })).not.toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1200); // Let success toast + list refresh
 
     // === EDIT THE NEW CHORE ===
-    // Hover the chore to reveal the edit button, then click it
     const choreCard = page.getByText(CHORE_NAME).first();
     await choreCard.hover();
     await page.waitForTimeout(400);
@@ -68,7 +68,7 @@ test.describe('Add & Edit Chore (recording flow)', () => {
     await page.waitForTimeout(500);
 
     await page.getByRole('button', { name: /save changes/i }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: /edit chore/i })).not.toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(800);
   });
 });
