@@ -57,6 +57,34 @@
       "destination": "/frontend/api/test-webhook.js"
     },
     {
+      "source": "/api/contact",
+      "destination": "/chorestar-nextjs/api/contact"
+    },
+    {
+      "source": "/api/kid-login-code",
+      "destination": "/chorestar-nextjs/api/kid-login-code"
+    },
+    {
+      "source": "/api/routines",
+      "destination": "/chorestar-nextjs/api/routines"
+    },
+    {
+      "source": "/api/routines/:path*",
+      "destination": "/chorestar-nextjs/api/routines/:path*"
+    },
+    {
+      "source": "/api/child-pin",
+      "destination": "/chorestar-nextjs/api/child-pin"
+    },
+    {
+      "source": "/api/child-pin/:path*",
+      "destination": "/chorestar-nextjs/api/child-pin/:path*"
+    },
+    {
+      "source": "/api/push-subscriptions",
+      "destination": "/chorestar-nextjs/api/push-subscriptions"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/frontend/api/:path*.js"
     },
