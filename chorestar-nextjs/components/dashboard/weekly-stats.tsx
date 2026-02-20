@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Star, TrendingUp, DollarSign, Flame } from 'lucide-react'
+import { getCelebrationManager } from '@/lib/utils/celebrations'
+import { playSound } from '@/lib/utils/sound'
+import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Child = Database['public']['Tables']['children']['Row']
@@ -25,10 +28,68 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     streak: 0,
     isLoading: true,
   })
+  const previousPerfectDays = useRef(0)
+  const hasShownPerfectWeek = useRef(false)
 
   useEffect(() => {
     loadStats()
   }, [child.id, weekStart])
+
+  useEffect(() => {
+    // Set up real-time subscription for live updates
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`weekly-stats-${child.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chore_completions'
+      }, (payload) => {
+        console.log('📊 Stats update detected:', payload)
+        loadStats()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [child.id])
+
+  useEffect(() => {
+    // Trigger celebrations when perfect days increase
+    if (!stats.isLoading && stats.perfectDays > previousPerfectDays.current) {
+      const newPerfectDays = stats.perfectDays - previousPerfectDays.current
+
+      // Celebrate the new perfect day(s)
+      if (newPerfectDays > 0) {
+        const celebrationManager = getCelebrationManager()
+        celebrationManager.celebrateWithConfetti('achievement')
+        playSound('success')
+
+        if (stats.perfectDays === 7 && !hasShownPerfectWeek.current) {
+          // PERFECT WEEK CELEBRATION! 🎉
+          setTimeout(() => {
+            celebrationManager.celebratePerfectWeek()
+            playSound('celebration')
+            toast.success(`🎉 ${child.name} completed a PERFECT WEEK! All 7 days! 🎉`, {
+              duration: 5000,
+            })
+          }, 500)
+          hasShownPerfectWeek.current = true
+        } else {
+          toast.success(`⭐ ${child.name} earned a perfect day! All chores complete!`)
+        }
+      }
+    }
+
+    previousPerfectDays.current = stats.perfectDays
+  }, [stats.perfectDays, stats.isLoading, child.name])
+
+  useEffect(() => {
+    // Reset perfect week flag when week changes
+    hasShownPerfectWeek.current = false
+    previousPerfectDays.current = 0
+  }, [weekStart])
 
   const loadStats = async () => {
     try {
