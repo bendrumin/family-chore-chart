@@ -10,7 +10,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
 
     // Wait for dashboard to be ready
     await page.waitForSelector('button', { timeout: 10_000 });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(800);
 
     // === ADD CHILD ===
     // Prefer the "Add Your First Child" CTA if no children yet, else the header "Add" button
@@ -33,16 +33,17 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.waitForTimeout(400);
 
     await page.getByRole('button', { name: /add child/i }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: /add child/i })).not.toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1200); // Let success toast show + list refresh
 
     // === EDIT THE NEW CHILD ===
-    // Select the new child card to make the edit button always visible
-    await page.getByRole('button', { name: `Select ${CHILD_NAME}` }).click();
+    // Use .first() in case previous test runs left duplicate Demo Child entries
+    await page.getByRole('button', { name: `Select ${CHILD_NAME}` }).first().click();
     await page.waitForTimeout(500);
 
     await page.locator('[title="Edit child"]').last().click();
-    await expect(page.getByRole('heading', { name: new RegExp(CHILD_NAME, 'i') })).toBeVisible({ timeout: 5000 });
+    // Check modal opened via Save Changes button (avoids strict mode from multiple child name headings)
+    await expect(page.getByRole('button', { name: /save changes/i })).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(500);
 
     // Change the age
@@ -52,7 +53,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.waitForTimeout(500);
 
     await page.getByRole('button', { name: /save changes/i }).click();
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /save changes/i })).not.toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(800);
   });
 });

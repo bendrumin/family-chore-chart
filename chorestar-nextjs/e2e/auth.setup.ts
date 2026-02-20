@@ -17,5 +17,8 @@ setup('authenticate as parent', async ({ page }) => {
 
   await page.waitForURL('/dashboard', { timeout: 15_000 });
 
+  // Suppress the welcome modal in all parent tests by marking it as already seen
+  await page.evaluate(() => localStorage.setItem('chorestar_welcome_v2_seen', 'true'));
+
   await page.context().storageState({ path: parentAuthFile });
 });
