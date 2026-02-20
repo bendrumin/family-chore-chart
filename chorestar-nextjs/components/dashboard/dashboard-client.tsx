@@ -35,9 +35,11 @@ type Profile = {
 
 type Child = Database['public']['Tables']['children']['Row']
 
-export function DashboardClient({ initialUser, initialProfile }: {
+export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember }: {
   initialUser: any
   initialProfile: Profile | null
+  effectiveUserId?: string
+  isSharedMember?: boolean
 }) {
   const router = useRouter()
   const [children, setChildren] = useState<Child[]>([])
@@ -84,10 +86,11 @@ export function DashboardClient({ initialUser, initialProfile }: {
 
       const supabase = createClient()
 
+      const queryUserId = effectiveUserId ?? initialUser.id
       const { data, error } = await supabase
         .from('children')
         .select('*')
-        .eq('user_id', initialUser.id)
+        .eq('user_id', queryUserId)
         .order('created_at', { ascending: true })
 
       clientLogger.log('📊 Query result:', {
@@ -132,9 +135,11 @@ export function DashboardClient({ initialUser, initialProfile }: {
 
   return (
     <SettingsProvider userId={initialUser.id}>
-      <DashboardContent 
+      <DashboardContent
         initialUser={initialUser}
         initialProfile={initialProfile}
+        effectiveUserId={effectiveUserId ?? initialUser.id}
+        isSharedMember={isSharedMember ?? false}
         children={children}
         setChildren={setChildren}
         selectedChildId={selectedChildId}
@@ -166,6 +171,8 @@ export function DashboardClient({ initialUser, initialProfile }: {
 function DashboardContent({
   initialUser,
   initialProfile,
+  effectiveUserId,
+  isSharedMember,
   children,
   setChildren,
   selectedChildId,
@@ -276,8 +283,13 @@ function DashboardContent({
                 >
                   ChoreStar
                 </h1>
-                <p className="text-xs mt-0.5 font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-xs mt-0.5 font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                   {initialProfile?.family_name || 'Welcome!'} Family
+                  {isSharedMember && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                      Shared
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -341,7 +353,8 @@ function DashboardContent({
                 className="font-semibold hover-glow text-xs sm:text-sm"
                 style={buttonColor === 'white' ? {
                   borderColor: 'rgba(255, 255, 255, 0.5)',
-                  color: 'white'
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
                 } : undefined}
               >
                 <span className="hidden sm:inline">Sign Out</span>
@@ -451,7 +464,7 @@ function DashboardContent({
                     {activeTab === 'chores' ? (
                       <ChoreList
                         childId={selectedChildId}
-                        userId={initialUser.id}
+                        userId={effectiveUserId}
                       />
                     ) : (
                       <RoutineList
@@ -506,7 +519,7 @@ function DashboardContent({
         open={isSeasonalSuggestionsOpen}
         onOpenChange={setIsSeasonalSuggestionsOpen}
         childId={selectedChildId}
-        userId={initialUser.id}
+        userId={effectiveUserId}
         onSuccess={loadChildren}
       />
 

@@ -260,16 +260,16 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 </h5>
               </div>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Share your family account with other parents or guardians (Coming Soon).
+                Invite co-parents or guardians to manage your family's chores and routines together.
               </p>
             </div>
             <Button
-              variant="outline"
+              variant="gradient"
               size="lg"
               onClick={() => setIsFamilySharingOpen(true)}
-              className="font-bold whitespace-nowrap"
+              className="font-bold hover-glow whitespace-nowrap"
             >
-              Learn More
+              Manage Sharing
             </Button>
           </div>
         </div>
