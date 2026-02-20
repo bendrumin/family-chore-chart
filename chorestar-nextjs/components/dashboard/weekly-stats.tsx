@@ -30,41 +30,46 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   })
   const previousPerfectDays = useRef(0)
   const hasShownPerfectWeek = useRef(false)
+  const hasInitiallyLoaded = useRef(false)
   const loadStatsRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   useEffect(() => {
-    // Trigger celebrations when perfect days increase
-    if (!stats.isLoading && stats.perfectDays > previousPerfectDays.current) {
-      const newPerfectDays = stats.perfectDays - previousPerfectDays.current
+    if (!stats.isLoading) {
+      // Don't celebrate on initial load—only when perfect days increase during this session
+      if (!hasInitiallyLoaded.current) {
+        hasInitiallyLoaded.current = true
+        previousPerfectDays.current = stats.perfectDays
+        return
+      }
+      if (stats.perfectDays > previousPerfectDays.current) {
+        const newPerfectDays = stats.perfectDays - previousPerfectDays.current
+        if (newPerfectDays > 0) {
+          const celebrationManager = getCelebrationManager()
+          celebrationManager.celebrateWithConfetti('achievement')
+          playSound('success')
 
-      // Celebrate the new perfect day(s)
-      if (newPerfectDays > 0) {
-        const celebrationManager = getCelebrationManager()
-        celebrationManager.celebrateWithConfetti('achievement')
-        playSound('success')
-
-        if (stats.perfectDays === 7 && !hasShownPerfectWeek.current) {
-          // PERFECT WEEK CELEBRATION! 🎉
-          setTimeout(() => {
-            celebrationManager.celebratePerfectWeek()
-            playSound('celebration')
-            toast.success(`🎉 ${child.name} completed a PERFECT WEEK! All 7 days! 🎉`, {
-              duration: 5000,
-            })
-          }, 500)
-          hasShownPerfectWeek.current = true
-        } else {
-          toast.success(`⭐ ${child.name} earned a perfect day! All chores complete!`)
+          if (stats.perfectDays === 7 && !hasShownPerfectWeek.current) {
+            setTimeout(() => {
+              celebrationManager.celebratePerfectWeek()
+              playSound('celebration')
+              toast.success(`🎉 ${child.name} completed a PERFECT WEEK! All 7 days! 🎉`, {
+                duration: 5000,
+              })
+            }, 500)
+            hasShownPerfectWeek.current = true
+          } else {
+            toast.success(`⭐ ${child.name} earned a perfect day! All chores complete!`)
+          }
         }
       }
+      previousPerfectDays.current = stats.perfectDays
     }
-
-    previousPerfectDays.current = stats.perfectDays
   }, [stats.perfectDays, stats.isLoading, child.name])
 
   useEffect(() => {
-    // Reset perfect week flag when week changes
+    // Reset flags when week changes
     hasShownPerfectWeek.current = false
+    hasInitiallyLoaded.current = false
     previousPerfectDays.current = 0
   }, [weekStart])
 

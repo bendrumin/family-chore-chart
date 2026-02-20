@@ -1,6 +1,10 @@
 # ChoreStar Recording Guide
 
-Place screen recordings (GIFs or short videos) here. Use Kap, Cmd+Shift+5, or Loom.
+Place screen recordings (GIFs or short videos) here.
+
+**Automated:** Use Playwright scripts in `chorestar-nextjs/e2e/` — run `npm run test:e2e:create-routine` etc. Videos go to `test-results/`. See `chorestar-nextjs/e2e/README.md`.
+
+**Manual:** Use Kap, Cmd+Shift+5, or Loom.
 
 ---
 
