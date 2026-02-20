@@ -56,7 +56,7 @@ export function SettingsMenu({ buttonColor = 'black' }: SettingsMenuProps) {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent
           onClose={() => setIsOpen(false)}
-          className="p-0 overflow-hidden flex flex-col dialog-content-settings max-w-6xl"
+          className="p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] min-w-[720px] max-w-6xl"
         >
           {/* Header - Fixed */}
           <DialogHeader className="dialog-header-settings">
