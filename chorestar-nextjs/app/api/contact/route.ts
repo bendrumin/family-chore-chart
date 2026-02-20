@@ -44,6 +44,7 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase types incomplete for contact_submissions schema
     const { error } = await admin.from('contact_submissions').insert({
       name: String(name).slice(0, 200),
       email: String(email).slice(0, 200),
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       family_name: familyName,
       user_agent: request.headers.get('user-agent') || null,
       url: request.headers.get('referer') || null,
-    });
+    } as any);
 
     if (error) {
       console.error('Contact form error:', error);
