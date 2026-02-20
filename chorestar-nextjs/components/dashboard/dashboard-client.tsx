@@ -204,21 +204,23 @@ function DashboardContent({
     const checkTheme = () => {
       const customTheme = (settings?.custom_theme as any) || {}
       const seasonalTheme = customTheme.seasonalTheme
-      
-      if (seasonalTheme) {
-        // Check if header has a colored background (not white/transparent)
+      const isDarkMode = document.documentElement.classList.contains('dark') ||
+                         document.documentElement.getAttribute('data-theme') === 'dark'
+
+      if (seasonalTheme && !isDarkMode) {
+        // Check if header has a colored background (not white/transparent) — light mode only
         const header = document.querySelector('header.glass') as HTMLElement
         if (header) {
           const bg = window.getComputedStyle(header).background
           const bgColor = window.getComputedStyle(header).backgroundColor
-          
+
           // Check if background is a gradient or a colored background (not white/transparent)
-          const hasColoredBg = bg.includes('gradient') || 
-                              (bgColor && !bgColor.includes('rgba(255, 255, 255') && 
+          const hasColoredBg = bg.includes('gradient') ||
+                              (bgColor && !bgColor.includes('rgba(255, 255, 255') &&
                               !bgColor.includes('rgb(255, 255, 255') &&
                               bgColor !== 'rgba(0, 0, 0, 0)' &&
                               bgColor !== 'transparent')
-          
+
           if (hasColoredBg) {
             setHeaderTextColor('white')
             setButtonColor('white')
@@ -252,7 +254,7 @@ function DashboardContent({
       {/* Header - Professional */}
       <header className="glass glass-border sticky top-0 z-50 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700" style={{
         boxShadow: 'var(--shadow-sm)',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)'
+        backgroundColor: 'var(--card-bg)'
       }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -324,9 +326,10 @@ function DashboardContent({
                 variant="outline"
                 onClick={handleLogout}
                 className="font-semibold hover-glow text-xs sm:text-sm"
-                style={{
-                  borderColor: buttonColor === 'white' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(99, 102, 241, 0.3)'
-                }}
+                style={buttonColor === 'white' ? {
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  color: 'white'
+                } : undefined}
               >
                 <span className="hidden sm:inline">Sign Out</span>
                 <span className="sm:hidden">Out</span>
