@@ -50,8 +50,8 @@ test.describe('Family Sharing — Owner Flow', () => {
 
     await dialog.locator('button').filter({ hasText: /^Send Invite$/ }).click();
 
-    // Expect a success toast
-    await expect(page.getByText(/invite sent/i)).toBeVisible({ timeout: 8000 });
+    // Expect a success toast (give extra time for production API latency)
+    await expect(page.getByText(/invite sent/i)).toBeVisible({ timeout: 15000 });
     await page.waitForTimeout(1000);
 
     // ── Pending invite should now appear in the list ──────────────────────
