@@ -1,0 +1,16 @@
+{
+  "name": "ChoreStar",
+  "short_name": "ChoreStar",
+  "description": "Family chore tracker & reward system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
