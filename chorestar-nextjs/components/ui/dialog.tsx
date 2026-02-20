@@ -68,7 +68,7 @@ const DialogContent = React.forwardRef<
     ref={ref}
     className={cn(
       'relative w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl mx-auto',
-      'max-w-2xl max-h-[85vh]',
+      'max-w-2xl max-h-[85vh] p-5 sm:p-6',
       // Allow className to override max-w (e.g., for settings modal)
       className
     )}

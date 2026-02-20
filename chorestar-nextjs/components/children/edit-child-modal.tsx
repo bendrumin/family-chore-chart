@@ -162,7 +162,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
           onClose={() => onOpenChange(false)}
           className="overflow-y-auto dialog-content-bg max-w-2xl"
         >
-        <form onSubmit={handleSubmit} className="px-2">
+        <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
             <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
               background: 'var(--gradient-primary)',

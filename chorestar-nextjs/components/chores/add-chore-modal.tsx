@@ -67,7 +67,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
         onClose={() => onOpenChange(false)}
         className="overflow-y-auto dialog-content-bg"
       >
-        <form onSubmit={handleSubmit} className="px-2">
+        <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
             <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
               background: 'var(--gradient-primary)',
