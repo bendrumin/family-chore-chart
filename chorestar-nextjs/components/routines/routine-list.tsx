@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Loader2 } from 'lucide-react';
@@ -13,6 +13,8 @@ interface RoutineListProps {
   childName?: string;
   defaultRewardCents?: number;
   onPlayRoutine?: (routineId: string) => void;
+  openRoutineBuilderTrigger?: boolean;
+  onRoutineBuilderTriggerConsumed?: () => void;
 }
 
 export function RoutineList({
@@ -20,8 +22,18 @@ export function RoutineList({
   childName,
   defaultRewardCents = 7,
   onPlayRoutine,
+  openRoutineBuilderTrigger = false,
+  onRoutineBuilderTriggerConsumed,
 }: RoutineListProps) {
   const [showBuilder, setShowBuilder] = useState(false);
+
+  // When parent triggers "Add Routine" from tab bar, open the builder
+  useEffect(() => {
+    if (openRoutineBuilderTrigger) {
+      setShowBuilder(true);
+      onRoutineBuilderTriggerConsumed?.();
+    }
+  }, [openRoutineBuilderTrigger, onRoutineBuilderTriggerConsumed]);
   const [editingRoutine, setEditingRoutine] = useState<any | null>(null);
   const [filterType, setFilterType] = useState<string | null>(null);
 

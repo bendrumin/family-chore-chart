@@ -193,6 +193,12 @@ function DashboardContent({
   const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>('gradient')
   const [buttonColor, setButtonColor] = useState<'white' | 'black'>('black')
   const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
+  const [openRoutineBuilderTrigger, setOpenRoutineBuilderTrigger] = useState(false)
+
+  const handleAddRoutine = () => {
+    setActiveTab('routines')
+    setOpenRoutineBuilderTrigger(true)
+  }
 
   useEffect(() => {
     const checkTheme = () => {
@@ -388,30 +394,41 @@ function DashboardContent({
               <div>
                 {selectedChildId && (
                   <div className="space-y-6">
-                    {/* Professional Tab Switcher */}
-                    <div className="flex items-center gap-1 p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm w-fit">
-                      <button
-                        onClick={() => setActiveTab('chores')}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
-                          activeTab === 'chores'
-                            ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                        }`}
+                    {/* Professional Tab Switcher + Add Routine */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-1 p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm w-fit">
+                        <button
+                          onClick={() => setActiveTab('chores')}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                            activeTab === 'chores'
+                              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          }`}
+                        >
+                          <ListTodo className="w-4 h-4" />
+                          Chores
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('routines')}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
+                            activeTab === 'routines'
+                              ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md'
+                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          }`}
+                        >
+                          <Repeat className="w-4 h-4" />
+                          Routines
+                        </button>
+                      </div>
+                      <Button
+                        onClick={handleAddRoutine}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-400 dark:hover:border-purple-500 font-semibold"
                       >
-                        <ListTodo className="w-4 h-4" />
-                        Chores
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('routines')}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
-                          activeTab === 'routines'
-                            ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                        }`}
-                      >
-                        <Repeat className="w-4 h-4" />
-                        Routines
-                      </button>
+                        <Plus className="w-4 h-4" />
+                        Add Routine
+                      </Button>
                     </div>
 
                     {/* Tab Content */}
@@ -425,6 +442,8 @@ function DashboardContent({
                         childId={selectedChildId}
                         childName={children.find((c: Child) => c.id === selectedChildId)?.name}
                         defaultRewardCents={settings?.daily_reward_cents || 7}
+                        openRoutineBuilderTrigger={openRoutineBuilderTrigger}
+                        onRoutineBuilderTriggerConsumed={() => setOpenRoutineBuilderTrigger(false)}
                       />
                     )}
                   </div>
