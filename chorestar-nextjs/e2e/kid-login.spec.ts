@@ -12,7 +12,7 @@ test.describe('Kid Login (recording flow)', () => {
 
     await page.goto(`/kid-login/${familyCode}`);
 
-    await expect(page.getByText(/welcome|enter your.*pin/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /welcome/i })).toBeVisible({ timeout: 5000 });
 
     // Enter PIN using the numeric keypad
     for (const digit of pin) {
@@ -22,6 +22,6 @@ test.describe('Kid Login (recording flow)', () => {
 
     // Wait for redirect to kid dashboard
     await page.waitForURL(/\/kid\/[a-f0-9-]+$/, { timeout: 15_000 });
-    await expect(page.getByText(/hi,|ready for your routines/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: /hi,/i })).toBeVisible({ timeout: 5000 });
   });
 });

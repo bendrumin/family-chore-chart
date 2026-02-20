@@ -12,7 +12,10 @@
     "test:e2e": "playwright test",
     "test:e2e:create-routine": "playwright test --project=create-routine",
     "test:e2e:kid-login": "playwright test --project=kid-login",
+    "test:e2e:kid-dashboard": "playwright test --project=kid-dashboard",
     "test:e2e:run-routine": "playwright test --project=run-routine",
+    "test:e2e:add-edit-child": "playwright test --project=add-edit-child",
+    "test:e2e:add-edit-chore": "playwright test --project=add-edit-chore",
     "test:e2e:record": "playwright test --project=chromium"
   },
   "dependencies": {

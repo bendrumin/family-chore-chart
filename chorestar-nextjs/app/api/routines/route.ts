@@ -1,24 +1,58 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import type { Database } from '@/lib/supabase/database.types';
 
 type Routine = Database['public']['Tables']['routines']['Row'];
 type RoutineInsert = Database['public']['Tables']['routines']['Insert'];
 
-// GET /api/routines - Get all routines for authenticated user's children
+// GET /api/routines - Get routines for a child.
+// Supports two modes:
+//   • Parent (authenticated): returns all routines for their children, with ownership check.
+//   • Kid mode (no session): requires childId param, returns active routines via service role (read-only).
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('childId');
 
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Kid mode: no auth session but childId provided → service role read-only
+    if (!user) {
+      if (!childId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      const serviceClient = createServiceRoleClient();
+      const { data, error } = await serviceClient
+        .from('routines')
+        .select(`
+          *,
+          routine_steps (
+            id,
+            title,
+            description,
+            icon,
+            order_index,
+            duration_seconds
+          )
+        `)
+        .eq('child_id', childId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching routines (kid mode):', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const sorted = (data || []).map(routine => ({
+        ...routine,
+        routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
+      }));
+      return NextResponse.json(sorted);
+    }
+
+    // Parent mode: authenticated user, ownership check via children join
     let query = supabase
       .from('routines')
       .select(`
@@ -41,7 +75,6 @@ export async function GET(request: Request) {
       .eq('children.user_id', user.id)
       .order('created_at', { ascending: false });
 
-    // Filter by specific child if provided
     if (childId) {
       query = query.eq('child_id', childId);
     }
@@ -53,7 +86,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Sort routine steps by order_index
     const routinesWithSortedSteps = data.map(routine => ({
       ...routine,
       routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
