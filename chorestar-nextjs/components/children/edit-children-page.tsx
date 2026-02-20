@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AvatarPicker } from '@/components/ui/avatar-picker'
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, Lock, Unlock, User, Palette } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Lock, Unlock, User, Palette, Trash2 } from 'lucide-react'
 import { useSetChildPin, useRemoveChildPin } from '@/lib/hooks/useChildPin'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -24,6 +25,8 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
   const [children, setChildren] = useState<Child[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isLoadingChildren, setIsLoadingChildren] = useState(true)
   const [formData, setFormData] = useState({
     name: '',
@@ -189,6 +192,30 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
     }
   }
 
+  const confirmDelete = async () => {
+    const currentChild = children[currentIndex]
+    setIsDeleting(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('children').delete().eq('id', currentChild.id)
+      if (error) throw error
+
+      toast.success(`${currentChild.name} deleted`)
+      const updated = children.filter((_, i) => i !== currentIndex)
+      if (updated.length === 0) {
+        onSuccess()
+        onOpenChange(false)
+        return
+      }
+      setChildren(updated)
+      setCurrentIndex(Math.min(currentIndex, updated.length - 1))
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete child')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const goToPrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1)
@@ -204,6 +231,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
   const progress = children.length > 0 ? ((currentIndex + 1) / children.length) * 100 : 0
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
@@ -217,6 +245,20 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
+              {children.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isLoading || isDeleting}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg p-2 flex-shrink-0"
+                  title={`Delete ${children[currentIndex]?.name}`}
+                  style={{ WebkitTextFillColor: 'initial' }}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              )}
               👶 Edit Children
             </DialogTitle>
           </DialogHeader>
@@ -482,5 +524,18 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
         </form>
       </DialogContent>
     </Dialog>
+
+    <ConfirmationDialog
+      open={showDeleteConfirm}
+      onOpenChange={setShowDeleteConfirm}
+      onConfirm={confirmDelete}
+      title="Delete Child?"
+      description={`Are you sure you want to delete ${children[currentIndex]?.name}? This will also delete all their chores and cannot be undone.`}
+      confirmText="Delete"
+      cancelText="Cancel"
+      variant="danger"
+      isLoading={isDeleting}
+    />
+    </>
   )
 }
