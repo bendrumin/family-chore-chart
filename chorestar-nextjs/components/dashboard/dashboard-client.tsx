@@ -16,6 +16,7 @@ import { AddChildModal } from '@/components/children/add-child-modal'
 import { FAQModal } from '@/components/help/faq-modal'
 import { NewFeaturesModal } from '@/components/help/new-features-modal'
 import { ContactModal } from '@/components/help/contact-modal'
+import { WelcomeModal } from '@/components/help/welcome-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
 // import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard' // Disabled
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
@@ -455,6 +456,9 @@ function DashboardContent({
         open={isNewFeaturesOpen}
         onOpenChange={setIsNewFeaturesOpen}
       />
+
+      {/* Welcome Modal (first visit) */}
+      <WelcomeModal />
 
       {/* Contact Modal */}
       <ContactModal

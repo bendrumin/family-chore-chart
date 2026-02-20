@@ -46,7 +46,17 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Settings',
     question: 'How do I change the theme?',
-    answer: 'Go to Settings > Appearance. You can choose from 13 seasonal themes or enable auto-seasonal mode to automatically match the current season!'
+    answer: 'Go to Settings > Appearance. You can choose from 13 seasonal themes or enable auto-seasonal mode. Premium themes (Ocean, Sunset, Forest, etc.) require a Premium subscription.'
+  },
+  {
+    category: 'Settings',
+    question: 'How does kid login work?',
+    answer: 'Get your unique kid login link in Settings > Family. Share that link with kids—they enter their 4–6 digit PIN (set per child in Edit Children) and see only your family\'s routines.'
+  },
+  {
+    category: 'Account',
+    question: 'What\'s included in Premium?',
+    answer: 'Premium unlocks unlimited children and chores (free plan has 3 kids and 20 chores), printable charts, PDF/CSV export reports, premium themes, and advanced analytics. Upgrade in Settings > Billing.'
   },
   {
     category: 'Settings',

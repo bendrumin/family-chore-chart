@@ -18,12 +18,15 @@ function hashPin(pin: string, salt?: string): string {
 
 // Constant-time comparison to prevent timing attacks
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
+  try {
+    if (a.length !== b.length || a.length !== 64) return false;
+    const bufA = Buffer.from(a, 'hex');
+    const bufB = Buffer.from(b, 'hex');
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  } catch {
     return false;
   }
-  const bufA = Buffer.from(a, 'hex');
-  const bufB = Buffer.from(b, 'hex');
-  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 // POST /api/child-pin/verify - Verify a child's PIN
@@ -50,10 +53,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { pin } = body;
+    const pin = String(body.pin ?? '').replace(/\D/g, '');
+    const familyCode = (body.familyCode ?? '').trim().toLowerCase();
 
     if (!pin) {
       return NextResponse.json({ error: 'PIN is required' }, { status: 400 });
+    }
+
+    if (!familyCode) {
+      return NextResponse.json({ error: 'Family code is required. Use your family kid login URL.' }, { status: 400 });
     }
 
     // Validate PIN format (4-6 digits)
@@ -62,8 +70,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid PIN format' }, { status: 400 });
     }
 
-    // Find ALL child PINs and check each one with constant-time comparison
-    // This prevents timing attacks that could reveal which PINs exist
+    // Resolve family code to user_id (profiles.id = user_id for the family)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('kid_login_code', familyCode)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      return NextResponse.json({ error: 'Invalid family code' }, { status: 400 });
+    }
+
+    const userId = profile.id;
+
+    // Find child PINs ONLY for this family's children (scoped by family code)
     const { data: allPins, error: fetchError } = await supabase
       .from('child_pins')
       .select(`
@@ -72,14 +93,15 @@ export async function POST(request: Request) {
         pin_salt,
         failed_attempts,
         locked_until,
-        children (
+        children!inner (
           id,
           name,
           avatar_color,
           avatar_url,
           avatar_file
         )
-      `);
+      `)
+      .eq('children.user_id', userId);
 
     if (fetchError) {
       recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
@@ -100,7 +122,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // No match found
+    // No match found - try legacy pgcrypto only when no familyCode (backward compat)
+    if ((!matchedChild || !matchedPinRecord) && !familyCode) {
+      const { data: legacyMatch } = await supabase.rpc('verify_child_pin', { p_pin: pin });
+      const first = Array.isArray(legacyMatch) ? legacyMatch[0] : null;
+      if (first?.child_id) {
+        const { data: child } = await supabase
+          .from('children')
+          .select('id, name, avatar_color, avatar_url, avatar_file')
+          .eq('id', first.child_id)
+          .single();
+        if (child) {
+          matchedChild = child;
+          matchedPinRecord = { child_id: child.id, pin_hash: '', failed_attempts: 0, locked_until: null };
+        }
+      }
+    }
+
     if (!matchedChild || !matchedPinRecord) {
       recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 });

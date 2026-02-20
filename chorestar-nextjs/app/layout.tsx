@@ -102,7 +102,7 @@ export default function RootLayout({
           <KeyboardShortcutsProvider>
             {children}
           </KeyboardShortcutsProvider>
-          <Toaster position="top-center" richColors />
+          <Toaster position="top-center" richColors toastOptions={{ duration: 5000 }} />
         </QueryProvider>
       </body>
     </html>

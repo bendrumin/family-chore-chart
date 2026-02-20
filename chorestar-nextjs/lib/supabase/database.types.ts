@@ -17,6 +17,7 @@ export interface Database {
           created_at: string
           subscription_tier: 'free' | 'premium' | 'lifetime'
           trial_ends_at: string | null
+          kid_login_code: string | null
         }
         Insert: {
           id: string
@@ -25,6 +26,7 @@ export interface Database {
           created_at?: string
           subscription_tier?: 'free' | 'premium' | 'lifetime'
           trial_ends_at?: string | null
+          kid_login_code?: string | null
         }
         Update: {
           id?: string
@@ -33,6 +35,7 @@ export interface Database {
           created_at?: string
           subscription_tier?: 'free' | 'premium' | 'lifetime'
           trial_ends_at?: string | null
+          kid_login_code?: string | null
         }
       }
       children: {

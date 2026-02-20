@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Mail } from 'lucide-react'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 
 interface ContactModalProps {
   open: boolean
@@ -91,36 +90,26 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: profile } = user ? await supabase
-        .from('profiles')
-        .select('family_name')
-        .eq('id', user.id)
-        .single() : { data: null }
-
       let messageWithRating = formData.message
       if (rating > 0) {
         messageWithRating = `Rating: ${rating}/5 stars\n\n${formData.message}`
       }
 
-      const contactData = {
-        name: formData.name,
-        email: formData.email,
-        subject: formData.subject,
-        message: messageWithRating,
-        user_id: user?.id || null,
-        family_name: profile?.family_name || 'Unknown',
-        timestamp: new Date().toISOString(),
-        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        url: typeof window !== 'undefined' ? window.location.href : ''
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: messageWithRating,
+        }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to send message')
       }
-
-      const { error } = await supabase
-        .from('contact_submissions')
-        .insert(contactData)
-
-      if (error) throw error
 
       // Store submission time for rate limiting
       localStorage.setItem('lastContactSubmission', now.toString())
@@ -163,8 +152,11 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
             <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
               Get in Touch
             </h3>
-            <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              We're here to help! Send us a message and we'll get back to you within 24 hours.
+            <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+              We&apos;re here to help! Send us a message and we&apos;ll get back to you within 24 hours.
+            </p>
+            <p className="text-sm mb-6 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800" style={{ color: 'var(--text-secondary)' }}>
+              <strong>Something not working? Found a bug?</strong> Please contact us—we read every message and want to fix any issues you run into.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">

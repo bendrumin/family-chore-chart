@@ -27,7 +27,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   useEffect(() => {
     const kidModeData = localStorage.getItem('kidMode');
     if (!kidModeData) {
-      router.push('/kid-login');
+      router.push('/kid-login'); // No session - go to base page to enter family code
       return;
     }
 
@@ -40,16 +40,18 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         const sessionAge = now - sessionData.timestamp;
 
         if (sessionAge > sessionData.expiresIn) {
-          // Session expired, clear and redirect
+          // Session expired, clear and redirect (with family code if we have it)
+          const familyCode = sessionData.familyCode;
           localStorage.removeItem('kidMode');
-          router.push('/kid-login?message=Session expired');
+          router.push(familyCode ? `/kid-login/${familyCode}?message=Session expired` : '/kid-login?message=Session expired');
           return;
         }
       }
 
       const childData = sessionData.child || sessionData; // Support both new and old format
       if (childData.id !== childId) {
-        router.push('/kid-login');
+        const familyCode = sessionData.familyCode;
+        router.push(familyCode ? `/kid-login/${familyCode}` : '/kid-login');
         return;
       }
       setChild(childData);
