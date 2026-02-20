@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,30 +30,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   })
   const previousPerfectDays = useRef(0)
   const hasShownPerfectWeek = useRef(false)
-
-  useEffect(() => {
-    loadStats()
-  }, [child.id, weekStart])
-
-  useEffect(() => {
-    // Set up real-time subscription for live updates
-    const supabase = createClient()
-    const channel = supabase
-      .channel(`weekly-stats-${child.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'chore_completions'
-      }, (payload) => {
-        console.log('📊 Stats update detected:', payload)
-        loadStats()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [child.id])
+  const loadStatsRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   useEffect(() => {
     // Trigger celebrations when perfect days increase
@@ -91,7 +68,26 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     previousPerfectDays.current = 0
   }, [weekStart])
 
-  const loadStats = async () => {
+  useEffect(() => {
+    // Set up real-time subscription for live updates (use ref to avoid stale closure)
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`weekly-stats-${child.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chore_completions'
+      }, () => {
+        loadStatsRef.current()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [child.id])
+
+  const loadStats = useCallback(async () => {
     try {
       const supabase = createClient()
 
@@ -168,9 +164,15 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       })
     } catch (error) {
       console.error('Error loading stats:', error)
-      setStats({ ...stats, isLoading: false })
+      setStats(prev => ({ ...prev, isLoading: false }))
     }
-  }
+  }, [child.id, child.name, weekStart])
+
+  loadStatsRef.current = loadStats
+
+  useEffect(() => {
+    loadStats()
+  }, [loadStats])
 
   const calculateStreak = async (childId: string, choreIds: string[]) => {
     try {

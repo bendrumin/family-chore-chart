@@ -334,6 +334,9 @@ export interface Database {
           id: string
           child_id: string
           pin_hash: string
+          pin_salt: string | null
+          failed_attempts: number | null
+          locked_until: string | null
           created_at: string
           updated_at: string
         }
@@ -341,6 +344,9 @@ export interface Database {
           id?: string
           child_id: string
           pin_hash: string
+          pin_salt?: string | null
+          failed_attempts?: number | null
+          locked_until?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -348,8 +354,63 @@ export interface Database {
           id?: string
           child_id?: string
           pin_hash?: string
+          pin_salt?: string | null
+          failed_attempts?: number | null
+          locked_until?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth?: string
+          user_agent?: string | null
+          created_at?: string
+        }
+      }
+      kid_sessions: {
+        Row: {
+          id: string
+          child_id: string
+          token: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          token?: string
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          token?: string
+          expires_at?: string
+          created_at?: string
         }
       }
     }

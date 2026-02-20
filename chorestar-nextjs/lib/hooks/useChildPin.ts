@@ -16,6 +16,7 @@ interface VerifyPinResponse {
     avatar_url: string | null;
     avatar_file: string | null;
   };
+  kidToken?: string;
 }
 
 // Set or update a child's PIN

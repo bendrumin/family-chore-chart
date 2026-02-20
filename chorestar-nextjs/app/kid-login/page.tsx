@@ -42,10 +42,10 @@ export default function KidLoginPage() {
       const result = await verifyMutation.mutateAsync(pinToVerify);
       if (result.success && result.child) {
         playRoutineComplete();
-        // Store child info in localStorage for persistent kid mode
-        // Add timestamp for session expiry (8 hours)
+        // Store child info + kid token for routine completion (kid mode)
         const sessionData = {
           child: result.child,
+          kidToken: result.kidToken,
           timestamp: Date.now(),
           expiresIn: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
         };

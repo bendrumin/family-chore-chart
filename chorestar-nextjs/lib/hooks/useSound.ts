@@ -1,78 +1,56 @@
 'use client';
 
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
+import { soundManager } from '@/lib/utils/sound';
 
+/**
+ * Unified sound hook - reads from chorestar_sound_settings (Family tab)
+ * and uses soundManager for Web Audio tone-based effects (no MP3 files required).
+ */
 export function useSound() {
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const audioContextRef = useRef<{ [key: string]: HTMLAudioElement }>({});
 
-  // Load sound preference from localStorage
+  // Load sound preference from chorestar_sound_settings (matches Family tab)
   useEffect(() => {
-    const saved = localStorage.getItem('chorestar-sound-enabled');
-    if (saved !== null) {
-      setSoundEnabled(saved === 'true');
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('chorestar_sound_settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSoundEnabled(parsed.enabled !== false);
+      } catch {
+        // Use default
+      }
     }
   }, []);
 
-  // Save sound preference
   const toggleSound = useCallback(() => {
     setSoundEnabled((prev) => {
       const newValue = !prev;
-      localStorage.setItem('chorestar-sound-enabled', String(newValue));
+      soundManager.updateSettings({ enabled: newValue });
       return newValue;
     });
   }, []);
 
-  // Preload a sound
-  const preloadSound = useCallback((key: string, src: string) => {
-    if (!audioContextRef.current[key]) {
-      const audio = new Audio(src);
-      audio.preload = 'auto';
-      audioContextRef.current[key] = audio;
-    }
+  const playStepComplete = useCallback(() => {
+    soundManager.playSound('success');
   }, []);
 
-  // Play a sound
-  const playSound = useCallback(
-    (src: string, volume: number = 0.5) => {
-      if (!soundEnabled) return;
-
-      try {
-        const audio = new Audio(src);
-        audio.volume = volume;
-        audio.play().catch((err) => {
-          // iOS requires user interaction before playing audio
-          console.warn('Audio play failed:', err.message);
-        });
-      } catch (err) {
-        console.warn('Failed to create audio:', err);
-      }
-    },
-    [soundEnabled]
-  );
-
-  // Specific sound effects
-  const playStepComplete = useCallback(() => {
-    playSound('/sounds/step-complete.mp3', 0.5);
-  }, [playSound]);
-
   const playRoutineComplete = useCallback(() => {
-    playSound('/sounds/routine-complete.mp3', 0.6);
-  }, [playSound]);
+    soundManager.playSound('celebration');
+  }, []);
 
   const playClick = useCallback(() => {
-    playSound('/sounds/click.mp3', 0.3);
-  }, [playSound]);
+    soundManager.playSound('notification');
+  }, []);
 
   const playError = useCallback(() => {
-    playSound('/sounds/error.mp3', 0.4);
-  }, [playSound]);
+    soundManager.playSound('error');
+  }, []);
 
   return {
     soundEnabled,
     toggleSound,
-    preloadSound,
-    playSound,
     playStepComplete,
     playRoutineComplete,
     playClick,

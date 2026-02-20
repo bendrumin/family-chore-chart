@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, Flame, Star } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { checkAchievements, checkForNewAchievements, loadEarnedAchievements, type AchievementProgress } from '@/lib/utils/achievement-tracker'
+import { AchievementsDisplay } from '@/components/achievements/achievements-display'
+import { getCelebrationManager } from '@/lib/utils/celebrations'
+import { playSound } from '@/lib/utils/sound'
+import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Child = Database['public']['Tables']['children']['Row']
@@ -28,10 +33,14 @@ export function InsightsTab() {
     totalPerfectDays: 0,
     isLoading: true,
   })
+  const [achievementProgress, setAchievementProgress] = useState<AchievementProgress[]>([])
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState(true)
+  const hasCheckedAchievements = useRef(false)
 
   useEffect(() => {
     if (user) {
       loadAnalyticsData()
+      loadAchievementsData()
     }
   }, [user])
 
@@ -156,6 +165,86 @@ export function InsightsTab() {
     }
 
     return streak
+  }
+
+  const loadAchievementsData = async () => {
+    try {
+      setIsLoadingAchievements(true)
+      const supabase = createClient()
+
+      // Load all data
+      const [childrenRes, choresRes, completionsRes] = await Promise.all([
+        supabase.from('children').select('*').eq('user_id', user!.id),
+        supabase.from('chores').select('*').eq('user_id', user!.id).eq('is_active', true),
+        supabase.from('chore_completions').select('*').eq('user_id', user!.id),
+      ])
+
+      const children = childrenRes.data || []
+      const chores = choresRes.data || []
+      const completions = completionsRes.data || []
+
+      if (children.length === 0) {
+        setAchievementProgress([])
+        setIsLoadingAchievements(false)
+        return
+      }
+
+      // Aggregate achievements across all children
+      const allProgress: AchievementProgress[] = []
+
+      for (const child of children) {
+        const childChores = chores.filter(c => c.child_id === child.id)
+        const childCompletions = completions.filter(c =>
+          childChores.some(chore => chore.id === c.chore_id)
+        )
+
+        const earnedAchievements = loadEarnedAchievements(child.id)
+        const progress = checkAchievements(
+          childChores,
+          childCompletions,
+          child.id,
+          earnedAchievements
+        )
+
+        // Check for newly earned achievements and celebrate
+        if (!hasCheckedAchievements.current) {
+          const newAchievements = checkForNewAchievements(
+            child.id,
+            child.name,
+            progress,
+            (achievement) => {
+              // Celebrate new achievement!
+              const celebrationManager = getCelebrationManager()
+              celebrationManager.celebrateAchievement(achievement.name)
+              playSound('celebration')
+              toast.success(
+                `🏆 ${child.name} unlocked: ${achievement.name}!`,
+                { duration: 5000 }
+              )
+            }
+          )
+        }
+
+        allProgress.push(...progress)
+      }
+
+      hasCheckedAchievements.current = true
+
+      // Merge achievements by ID (show highest progress across all children)
+      const mergedProgress = new Map<string, AchievementProgress>()
+      for (const progress of allProgress) {
+        const existing = mergedProgress.get(progress.achievement.id)
+        if (!existing || progress.progress > existing.progress) {
+          mergedProgress.set(progress.achievement.id, progress)
+        }
+      }
+
+      setAchievementProgress(Array.from(mergedProgress.values()))
+      setIsLoadingAchievements(false)
+    } catch (error) {
+      console.error('Error loading achievements:', error)
+      setIsLoadingAchievements(false)
+    }
   }
 
   const hasData = !metrics.isLoading && (metrics.totalEarnings > 0 || metrics.averageCompletionRate > 0)
@@ -293,19 +382,23 @@ export function InsightsTab() {
         </Card>
       </div>
 
+      {/* Achievements Section */}
+      <div className="mt-8">
+        <AchievementsDisplay
+          achievementProgress={achievementProgress}
+          isLoading={isLoadingAchievements}
+        />
+      </div>
+
       {/* Coming Soon Section */}
       <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-2 border-blue-200 dark:border-blue-700 rounded-xl">
         <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
           📈 More Insights Coming Soon
         </h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="p-3 bg-white/70 dark:bg-gray-800/70 rounded-lg">
             <div className="text-2xl mb-1">📊</div>
             <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Progress Charts</div>
-          </div>
-          <div className="p-3 bg-white/70 dark:bg-gray-800/70 rounded-lg">
-            <div className="text-2xl mb-1">🏆</div>
-            <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Achievements</div>
           </div>
           <div className="p-3 bg-white/70 dark:bg-gray-800/70 rounded-lg">
             <div className="text-2xl mb-1">📅</div>

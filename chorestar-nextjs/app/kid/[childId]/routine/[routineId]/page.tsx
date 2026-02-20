@@ -28,15 +28,27 @@ export default function RoutinePlayerPage({
   const completeMutation = useCompleteRoutine();
   const { playStepComplete, playRoutineComplete } = useSound();
 
-  // Safety check: Verify child from session
+  // Safety check: Verify child from kid mode session (localStorage for persistence)
   useEffect(() => {
-    const kidMode = sessionStorage.getItem('kidMode');
-    if (!kidMode) {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('kidMode') : null;
+    if (!raw) {
       router.push('/kid-login');
       return;
     }
-    const child = JSON.parse(kidMode);
-    if (child.id !== childId) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.child?.id !== childId) {
+        router.push('/kid-login');
+        return;
+      }
+      // Check expiry
+      const age = Date.now() - (parsed.timestamp || 0);
+      if (age > (parsed.expiresIn || 8 * 60 * 60 * 1000)) {
+        localStorage.removeItem('kidMode');
+        router.push('/kid-login?message=Session expired');
+        return;
+      }
+    } catch {
       router.push('/kid-login');
     }
   }, [childId, router]);
@@ -91,7 +103,9 @@ export default function RoutinePlayerPage({
 
       playRoutineComplete();
 
-      // Mark routine as complete
+      // Mark routine as complete (include kidToken for auth when parent not logged in)
+      const kidModeRaw = typeof window !== 'undefined' ? localStorage.getItem('kidMode') : null;
+      const kidMode = kidModeRaw ? (() => { try { return JSON.parse(kidModeRaw); } catch { return null; } })() : null;
       completeMutation.mutate(
         {
           routineId,
@@ -99,6 +113,7 @@ export default function RoutinePlayerPage({
           stepsCompleted: steps.length,
           stepsTotal: steps.length,
           durationSeconds,
+          kidToken: kidMode?.kidToken,
         },
         {
           onSuccess: (data) => {
