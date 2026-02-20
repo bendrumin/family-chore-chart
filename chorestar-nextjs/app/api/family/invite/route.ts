@@ -42,13 +42,17 @@ export async function POST(request: Request) {
 
   let code: string
   if (existing) {
-    // Resend: update expires_at and reuse
-    const { data: updated } = await (admin as any)
+    // Resend: update expires_at and reuse existing code
+    const { data: updated, error: updateError } = await (admin as any)
       .from('family_invites')
       .update({ expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() })
       .eq('id', existing.id)
       .select('code')
       .single()
+    if (updateError || !updated) {
+      console.error('Failed to update invite:', updateError)
+      return NextResponse.json({ error: 'Failed to resend invite' }, { status: 500 })
+    }
     code = updated.code
   } else {
     // Generate unique code
@@ -74,7 +78,8 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://chorestar.app'
     const acceptUrl = `${baseUrl}/family/accept/${code}`
 
-    await resend.emails.send({
+    // Fire-and-forget — don't block the response waiting for Resend
+    resend.emails.send({
       from: 'ChoreStar <noreply@chorestar.app>',
       to: email,
       subject: `${familyName} invited you to ChoreStar 🌟`,
