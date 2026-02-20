@@ -112,12 +112,57 @@ const SEASONAL_THEMES = [
     }
   },
   {
+    id: 'sunset',
+    name: 'Sunset',
+    emoji: '🌅',
+    colors: {
+      light: { primary: '#f97316', secondary: '#fb923c' },
+      dark: { primary: '#f97316', secondary: '#fdba74' }
+    }
+  },
+  {
     id: 'ocean',
     name: 'Ocean',
     emoji: '🌊',
     colors: {
       light: { primary: '#006994', secondary: '#17c0eb' },
       dark: { primary: '#0288d1', secondary: '#29b6f6' }
+    }
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    emoji: '🌲',
+    colors: {
+      light: { primary: '#2d5016', secondary: '#4a7c59' },
+      dark: { primary: '#166534', secondary: '#22c55e' }
+    }
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    emoji: '🌌',
+    colors: {
+      light: { primary: '#4a148c', secondary: '#7b2cbf' },
+      dark: { primary: '#6d28d9', secondary: '#8b5cf6' }
+    }
+  },
+  {
+    id: 'coral',
+    name: 'Coral',
+    emoji: '🪸',
+    colors: {
+      light: { primary: '#ff6b6b', secondary: '#ee5a6f' },
+      dark: { primary: '#ef4444', secondary: '#f87171' }
+    }
+  },
+  {
+    id: 'lavender',
+    name: 'Lavender',
+    emoji: '💜',
+    colors: {
+      light: { primary: '#9b59b6', secondary: '#8e44ad' },
+      dark: { primary: '#a78bfa', secondary: '#c4b5fd' }
     }
   },
   {

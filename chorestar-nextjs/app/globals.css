@@ -544,6 +544,34 @@ body.seasonal-sunset {
   --seasonal-gradient: linear-gradient(135deg, #f97316, #fb923c);
 }
 
+html.seasonal-forest,
+body.seasonal-forest {
+  --seasonal-bg: #f0fdf4;
+  --seasonal-accent: #2d5016;
+  --seasonal-gradient: linear-gradient(135deg, #2d5016, #4a7c59);
+}
+
+html.seasonal-aurora,
+body.seasonal-aurora {
+  --seasonal-bg: #faf5ff;
+  --seasonal-accent: #4a148c;
+  --seasonal-gradient: linear-gradient(135deg, #4a148c, #7b2cbf);
+}
+
+html.seasonal-coral,
+body.seasonal-coral {
+  --seasonal-bg: #fff5f5;
+  --seasonal-accent: #ff6b6b;
+  --seasonal-gradient: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+}
+
+html.seasonal-lavender,
+body.seasonal-lavender {
+  --seasonal-bg: #faf5ff;
+  --seasonal-accent: #9b59b6;
+  --seasonal-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
 /* Apply seasonal backgrounds - using both body and html for maximum compatibility */
 html.seasonal-christmas,
 body.seasonal-christmas,
@@ -632,6 +660,34 @@ html body.seasonal-ocean {
 html.seasonal-sunset,
 body.seasonal-sunset,
 html body.seasonal-sunset {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-forest,
+body.seasonal-forest,
+html body.seasonal-forest {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-aurora,
+body.seasonal-aurora,
+html body.seasonal-aurora {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-coral,
+body.seasonal-coral,
+html body.seasonal-coral {
+  background: var(--seasonal-bg) !important;
+  background-color: var(--seasonal-bg) !important;
+}
+
+html.seasonal-lavender,
+body.seasonal-lavender,
+html body.seasonal-lavender {
   background: var(--seasonal-bg) !important;
   background-color: var(--seasonal-bg) !important;
 }
@@ -741,6 +797,38 @@ body.seasonal-sunset[data-theme="dark"] {
   background-color: #1f150f !important;
 }
 
+html[data-theme="dark"].seasonal-forest,
+body[data-theme="dark"].seasonal-forest,
+html body[data-theme="dark"].seasonal-forest,
+body.seasonal-forest[data-theme="dark"] {
+  background: #14532d !important;
+  background-color: #14532d !important;
+}
+
+html[data-theme="dark"].seasonal-aurora,
+body[data-theme="dark"].seasonal-aurora,
+html body[data-theme="dark"].seasonal-aurora,
+body.seasonal-aurora[data-theme="dark"] {
+  background: #3b0764 !important;
+  background-color: #3b0764 !important;
+}
+
+html[data-theme="dark"].seasonal-coral,
+body[data-theme="dark"].seasonal-coral,
+html body[data-theme="dark"].seasonal-coral,
+body.seasonal-coral[data-theme="dark"] {
+  background: #7f1d1d !important;
+  background-color: #7f1d1d !important;
+}
+
+html[data-theme="dark"].seasonal-lavender,
+body[data-theme="dark"].seasonal-lavender,
+html body[data-theme="dark"].seasonal-lavender,
+body.seasonal-lavender[data-theme="dark"] {
+  background: #581c87 !important;
+  background-color: #581c87 !important;
+}
+
 /* Apply seasonal accents to buttons and interactive elements */
 .seasonal-christmas .hover-glow:hover::before,
 .seasonal-halloween .hover-glow:hover::before,
@@ -754,7 +842,11 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-thanksgiving .hover-glow:hover::before,
 .seasonal-newYear .hover-glow:hover::before,
 .seasonal-ocean .hover-glow:hover::before,
-.seasonal-sunset .hover-glow:hover::before {
+.seasonal-sunset .hover-glow:hover::before,
+.seasonal-forest .hover-glow:hover::before,
+.seasonal-aurora .hover-glow:hover::before,
+.seasonal-coral .hover-glow:hover::before,
+.seasonal-lavender .hover-glow:hover::before {
   background: var(--seasonal-accent) !important;
   opacity: 0.2;
 }
@@ -772,7 +864,11 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-thanksgiving .glass,
 .seasonal-newYear .glass,
 .seasonal-ocean .glass,
-.seasonal-sunset .glass {
+.seasonal-sunset .glass,
+.seasonal-forest .glass,
+.seasonal-aurora .glass,
+.seasonal-coral .glass,
+.seasonal-lavender .glass {
   border-color: var(--seasonal-accent) !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--seasonal-accent) !important;
 }
@@ -790,7 +886,11 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-thanksgiving .glass:not(header),
 .seasonal-newYear .glass:not(header),
 .seasonal-ocean .glass:not(header),
-.seasonal-sunset .glass:not(header) {
+.seasonal-sunset .glass:not(header),
+.seasonal-forest .glass:not(header),
+.seasonal-aurora .glass:not(header),
+.seasonal-coral .glass:not(header),
+.seasonal-lavender .glass:not(header) {
   background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)) !important;
   background-blend-mode: overlay;
 }
@@ -808,7 +908,11 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-thanksgiving button[class*="gradient"],
 .seasonal-newYear button[class*="gradient"],
 .seasonal-ocean button[class*="gradient"],
-.seasonal-sunset button[class*="gradient"] {
+.seasonal-sunset button[class*="gradient"],
+.seasonal-forest button[class*="gradient"],
+.seasonal-aurora button[class*="gradient"],
+.seasonal-coral button[class*="gradient"],
+.seasonal-lavender button[class*="gradient"] {
   background: var(--seasonal-gradient) !important;
 }
 
@@ -825,7 +929,11 @@ body.seasonal-sunset[data-theme="dark"] {
 .seasonal-thanksgiving [data-selected="true"],
 .seasonal-newYear [data-selected="true"],
 .seasonal-ocean [data-selected="true"],
-.seasonal-sunset [data-selected="true"] {
+.seasonal-sunset [data-selected="true"],
+.seasonal-forest [data-selected="true"],
+.seasonal-aurora [data-selected="true"],
+.seasonal-coral [data-selected="true"],
+.seasonal-lavender [data-selected="true"] {
   border-color: var(--seasonal-accent) !important;
   box-shadow: 0 0 0 2px var(--seasonal-accent) !important;
 }
