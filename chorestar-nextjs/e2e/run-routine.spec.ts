@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Run Routine (recording flow)', () => {
   test('kid logs in, starts routine, completes steps, sees celebration', async ({ page }) => {
+    test.setTimeout(120_000); // Routines can have many steps; allow up to 2 min
+
     const familyCode = process.env.TEST_FAMILY_CODE;
     const pin = process.env.TEST_CHILD_PIN;
 
@@ -32,31 +34,30 @@ test.describe('Run Routine (recording flow)', () => {
     }
     await startBtn.click();
 
-    // Step 3: Complete each step (Done! / Finish!)
+    // Step 3: Complete each step by clicking Done! / Finish!
     await page.waitForURL(/\/kid\/[^/]+\/routine\//, { timeout: 5000 });
 
-    let stepCount = 0;
-    const maxSteps = 10; // Safety
-    while (stepCount < maxSteps) {
-      const doneBtn = page.getByRole('button', { name: /done|finish/i });
-      if (!(await doneBtn.isVisible())) break;
+    const maxSteps = 15; // Safety cap
+    for (let i = 0; i < maxSteps; i++) {
+      // Wait for the Done!/Finish! button to appear (handles transition animations)
+      const doneBtn = page.getByRole('button', { name: /done!|finish!/i }).first();
+      try {
+        await doneBtn.waitFor({ state: 'visible', timeout: 5_000 });
+      } catch {
+        break; // No more steps or already on celebration
+      }
 
       await doneBtn.click();
-      await page.waitForTimeout(800); // Let animation/transition play
+      await page.waitForTimeout(600); // Let animation play
 
-      if (await page.getByText(/saving/i).isVisible()) {
-        await page.waitForTimeout(2000); // Wait for API
-      }
-
-      // Celebration screen?
-      if (await page.getByText(/awesome|great job|celebration/i).isVisible()) {
+      // Stop if we've landed on the celebration screen
+      if (await page.getByRole('heading', { name: /you did it/i }).isVisible()) {
         break;
       }
-      stepCount++;
     }
 
-    await expect(
-      page.getByRole('button', { name: /continue|go back/i }).or(page.getByText(/points|earned/i))
-    ).toBeVisible({ timeout: 10_000 });
+    // Celebration screen: "You Did It!" heading + "Back to Home" button
+    await expect(page.getByRole('heading', { name: /you did it/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /back to home/i })).toBeVisible({ timeout: 5_000 });
   });
 });
