@@ -27,7 +27,7 @@ export function WelcomeModal() {
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent
         onClose={handleClose}
-        className="max-w-lg dialog-content-bg shadow-2xl border-2 border-gray-200/80 dark:border-gray-600/50 overflow-hidden"
+        className="max-w-lg dialog-content-bg shadow-2xl border-2 border-gray-200/80 dark:border-gray-600/50 overflow-hidden p-6"
       >
         <DialogHeader className="pb-2">
           <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
