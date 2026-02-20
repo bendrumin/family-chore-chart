@@ -21,7 +21,8 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 // import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard' // Disabled
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { Plus, HelpCircle, Sparkles, Mail, ListTodo, Repeat } from 'lucide-react'
+import { Plus, HelpCircle, Sparkles, Mail, ListTodo, Repeat, BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import type { Database } from '@/lib/supabase/database.types'
 import { RoutineList } from '@/components/routines/routine-list'
 
@@ -307,6 +308,18 @@ function DashboardContent({
                 >
                   <HelpCircle className="w-5 h-5" />
                 </Button>
+                <Link
+                  href="/how-to"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="How-To Guides"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-md hover-glow transition-colors hover:bg-accent hover:text-accent-foreground"
+                  style={{
+                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
+                  }}
+                >
+                  <BookOpen className="w-5 h-5" />
+                </Link>
                 <Button
                   variant="ghost"
                   size="icon"

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ChevronDown, ChevronUp, Search, HelpCircle } from 'lucide-react'
+import { ChevronDown, ChevronUp, Search, HelpCircle, BookOpen } from 'lucide-react'
 
 interface FAQItem {
   question: string
@@ -213,23 +214,31 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
           </div>
         </div>
 
-        {/* Contact Support */}
-        <div className="p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 text-center flex-shrink-0">
-          <div className="text-4xl mb-3">💬</div>
-          <h4 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-            Still need help?
-          </h4>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Can't find what you're looking for? We're here to help!
-          </p>
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={() => window.open('mailto:support@chorestar.app', '_blank')}
-            className="font-bold hover-glow"
+        {/* How-To Guides + Contact Support */}
+        <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+          <Link
+            href="/how-to"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 font-bold hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/50 dark:hover:to-indigo-900/50 transition-all"
+            style={{ color: 'var(--text-primary)' }}
           >
-            Contact Support
-          </Button>
+            <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <span>📖 How-To Guides</span>
+          </Link>
+          <div className="flex-1 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 text-center">
+            <p className="text-sm font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+              💬 Still need help?
+            </p>
+            <Button
+              variant="gradient"
+              size="sm"
+              onClick={() => window.open('mailto:support@chorestar.app', '_blank')}
+              className="font-bold hover-glow"
+            >
+              Contact Support
+            </Button>
+          </div>
         </div>
 
         <DialogFooter className="gap-3 flex-shrink-0 mt-4">

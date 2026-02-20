@@ -5,7 +5,7 @@ test.use({ storageState: 'e2e/.auth/parent.json' });
 const CHILD_NAME = 'Demo Child';
 
 test.describe('Add & Edit Child (recording flow)', () => {
-  test('parent adds a child then edits them', async ({ page }) => {
+  test('parent adds a child with avatar, then edits avatar and saves', async ({ page }) => {
     await page.goto('/dashboard');
 
     // Wait for dashboard to be ready
@@ -13,7 +13,6 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.waitForTimeout(800);
 
     // === ADD CHILD ===
-    // Prefer the "Add Your First Child" CTA if no children yet, else the header "Add" button
     const addChildCta = page.getByRole('button', { name: /add.*first.*child/i });
     const addHeaderBtn = page.getByRole('button', { name: /^add$/i });
 
@@ -24,7 +23,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
     }
 
     await expect(page.getByRole('heading', { name: /add child/i })).toBeVisible({ timeout: 5000 });
-    await page.waitForTimeout(500); // Let modal animate in
+    await page.waitForTimeout(500);
 
     await page.getByLabel(/child's name/i).fill(CHILD_NAME);
     await page.waitForTimeout(400);
@@ -32,26 +31,40 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.getByLabel(/age/i).fill('9');
     await page.waitForTimeout(400);
 
-    await page.getByRole('button', { name: /add child/i }).click();
-    await expect(page.getByRole('heading', { name: /add child/i })).not.toBeVisible({ timeout: 10_000 });
-    await page.waitForTimeout(1200); // Let success toast show + list refresh
+    // Show avatar randomization — click twice to demo the feature
+    const randomizeBtn = page.getByRole('button', { name: /randomize/i });
+    await randomizeBtn.click();
+    await page.waitForTimeout(700);
+    await randomizeBtn.click();
+    await page.waitForTimeout(700);
 
-    // === EDIT THE NEW CHILD ===
+    await page.locator('button[type="submit"]').filter({ hasText: /add child/i }).click();
+    await expect(page.getByRole('heading', { name: /add child/i })).not.toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(1200);
+
+    // === EDIT THE NEW CHILD — show full avatar picker ===
     // Use .first() in case previous test runs left duplicate Demo Child entries
     await page.getByRole('button', { name: `Select ${CHILD_NAME}` }).first().click();
     await page.waitForTimeout(500);
 
     await page.locator('[title="Edit child"]').last().click();
-    // Check modal opened via Save Changes button (avoids strict mode from multiple child name headings)
-    await expect(page.getByRole('button', { name: /save changes/i })).toBeVisible({ timeout: 5000 });
+    // Wait for edit modal with the Avatar & Appearance section
+    await expect(page.getByRole('heading', { name: /avatar.*appearance/i })).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(500);
 
-    // Change the age
-    const ageInput = page.getByLabel(/age/i);
-    await ageInput.clear();
-    await ageInput.fill('10');
+    // Scroll to color picker and pick teal
+    await page.locator('button[title="#4ECDC4"]').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await page.locator('button[title="#4ECDC4"]').click();
     await page.waitForTimeout(500);
 
+    // Select a robot avatar from the default Robots tab
+    const robotImg = page.locator('img[alt="Robot variant02"]');
+    await robotImg.scrollIntoViewIfNeeded();
+    await robotImg.click();
+    await page.waitForTimeout(600);
+
+    // Save changes
     await page.getByRole('button', { name: /save changes/i }).click();
     await expect(page.getByRole('button', { name: /save changes/i })).not.toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(800);

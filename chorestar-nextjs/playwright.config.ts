@@ -3,8 +3,9 @@ import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig({ path: '.env.test' });
 
-// Timestamp for this run so videos don't overwrite each other
-const runId = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+// Use RUN_ID env var (set by npm scripts) so all projects share one folder.
+// Falls back to a local-time timestamp when running directly with npx playwright.
+const runId = process.env.RUN_ID ?? new Date().toLocaleString('sv').slice(0, 19).replace(/[ :]/g, '-');
 
 /**
  * Playwright config for ChoreStar recording scripts.
@@ -68,6 +69,41 @@ export default defineConfig({
       name: 'add-edit-chore',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /add-edit-chore\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
+      name: 'family-settings',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /family-settings\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    // ── Tutorial projects (slow-paced, for how-to videos) ────────────────────
+    {
+      name: 'tutorial-add-child',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tutorial-add-child\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
+      name: 'tutorial-create-routine',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tutorial-create-routine\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
+      name: 'tutorial-kid-login',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tutorial-kid-login\.spec\.ts/,
+    },
+    {
+      name: 'tutorial-run-routine',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tutorial-run-routine\.spec\.ts/,
+    },
+    {
+      name: 'tutorial-family-settings',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tutorial-family-settings\.spec\.ts/,
       dependencies: ['setup'],
     },
     {
