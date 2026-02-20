@@ -94,17 +94,17 @@ export default function KidLoginPage() {
             {error ? 'Oops!' : 'Welcome!'}
           </h1>
           <p className="text-xl text-white/90">
-            {error ? error : 'Enter your PIN to start'}
+            {error ? error : 'Enter your 4-6 digit PIN'}
           </p>
         </motion.div>
 
-        {/* PIN Dots Display */}
+        {/* PIN Dots Display - 4 dots for default 4-digit PIN (supports up to 6) */}
         <motion.div
           animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.5 }}
           className="flex justify-center gap-4 mb-12"
         >
-          {[0, 1, 2, 3, 4, 5].map((index) => (
+          {[0, 1, 2, 3].map((index) => (
             <motion.div
               key={index}
               initial={{ scale: 0 }}

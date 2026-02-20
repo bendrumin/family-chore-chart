@@ -313,15 +313,28 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
                       className="mt-1 font-mono text-lg"
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button
                       type="button"
+                      variant="success"
                       size="sm"
                       onClick={handleSetPin}
                       disabled={setChildPin.isPending || pin.length < 4}
-                      className="font-semibold"
+                      className="font-semibold text-white"
                     >
                       {setChildPin.isPending ? 'Setting...' : 'Save PIN'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPin('')
+                        setConfirmPin('')
+                      }}
+                      className="font-semibold"
+                    >
+                      Clear
                     </Button>
                     <Button
                       type="button"
