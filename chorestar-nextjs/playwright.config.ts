@@ -77,6 +77,12 @@ export default defineConfig({
       testMatch: /family-settings\.spec\.ts/,
       dependencies: ['setup'],
     },
+    {
+      name: 'family-sharing',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /family-sharing\.spec\.ts/,
+      dependencies: ['setup'],
+    },
     // ── Tutorial projects (slow-paced, for how-to videos) ────────────────────
     {
       name: 'tutorial-add-child',
