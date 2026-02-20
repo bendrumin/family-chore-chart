@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { AvatarPicker } from '@/components/ui/avatar-picker'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { toast } from 'sonner'
-import { Lock, Unlock, User, Palette } from 'lucide-react'
+import { Lock, Unlock, User, Palette, Trash2 } from 'lucide-react'
 import { useSetChildPin, useRemoveChildPin } from '@/lib/hooks/useChildPin'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -164,14 +164,27 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
         >
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              Edit {child.name}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
+                background: 'var(--gradient-primary)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Edit {child.name}
+              </DialogTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isLoading || isDeleting}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg p-2"
+                title={`Delete ${child.name}`}
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            </div>
           </DialogHeader>
 
           {/* Form Fields - Card-based sections */}
