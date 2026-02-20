@@ -158,7 +158,7 @@ export function useRoutineCompletionStatus(routineId: string, childId: string) {
   });
 }
 
-// Complete a routine
+// Complete a routine (kidToken optional - for kid mode when parent not logged in)
 export function useCompleteRoutine() {
   const queryClient = useQueryClient();
 
@@ -169,22 +169,30 @@ export function useCompleteRoutine() {
       stepsCompleted,
       stepsTotal,
       durationSeconds,
+      kidToken,
     }: {
       routineId: string;
       childId: string;
       stepsCompleted: number;
       stepsTotal: number;
       durationSeconds?: number;
+      kidToken?: string;
     }) => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (kidToken) {
+        headers['Authorization'] = `Bearer ${kidToken}`;
+      }
+
       const response = await fetch(`/api/routines/${routineId}/complete`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           childId,
           stepsCompleted,
           stepsTotal,
           durationSeconds,
         }),
+        credentials: 'include',
       });
 
       if (!response.ok) {

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import {
@@ -29,7 +29,8 @@ function timingSafeEqual(a: string, b: string): boolean {
 // POST /api/child-pin/verify - Verify a child's PIN
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
+    // Use service role so PIN verify works without parent login (e.g. kid on own device)
+    const supabase = createServiceRoleClient();
 
     // Get client IP for rate limiting
     const clientIp = getClientIp(request);
@@ -86,14 +87,15 @@ export async function POST(request: Request) {
     }
 
     // Check each PIN with constant-time comparison
-    let matchedChild = null;
-    let matchedPinRecord = null;
+    let matchedChild: { id: string; name: string; avatar_color?: string | null; avatar_url?: string | null; avatar_file?: string | null } | null = null;
+    let matchedPinRecord: { child_id: string; pin_hash: string; failed_attempts?: number | null; locked_until?: string | null } | null = null;
 
-    for (const pinRecord of allPins || []) {
+    for (const pr of allPins || []) {
+      const pinRecord = pr as { child_id: string; pin_hash: string; pin_salt?: string | null; failed_attempts?: number | null; locked_until?: string | null; children?: typeof matchedChild };
       const hashedInput = hashPin(pin, pinRecord.pin_salt || undefined);
       if (timingSafeEqual(hashedInput, pinRecord.pin_hash)) {
-        matchedChild = pinRecord.children;
-        matchedPinRecord = pinRecord;
+        matchedChild = pinRecord.children ?? null;
+        matchedPinRecord = { child_id: pinRecord.child_id, pin_hash: pinRecord.pin_hash, failed_attempts: pinRecord.failed_attempts, locked_until: pinRecord.locked_until };
         break;
       }
     }
@@ -118,26 +120,42 @@ export async function POST(request: Request) {
       }
 
       // Lock expired, reset it
-      await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
         .from('child_pins')
         .update({ failed_attempts: 0, locked_until: null })
+        .eq('child_id', matchedPinRecord.child_id);
+    }
+
+    // Reset failed attempts for this child
+    if ((matchedPinRecord.failed_attempts ?? 0) > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from('child_pins')
+        .update({ failed_attempts: 0 })
         .eq('child_id', matchedPinRecord.child_id);
     }
 
     // Success! Reset rate limit attempts for this IP
     resetAttempts(clientIp);
 
-    // Reset failed attempts for this child
-    if (matchedPinRecord.failed_attempts > 0) {
-      await supabase
-        .from('child_pins')
-        .update({ failed_attempts: 0 })
-        .eq('child_id', matchedPinRecord.child_id);
-    }
+    // Create kid session for routine completion (8 hour expiry) - service role bypasses RLS
+    const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
+    const { data: session, error: sessionError } = await (supabase as any)
+      .from('kid_sessions')
+      .insert({
+        child_id: matchedPinRecord.child_id,
+        expires_at: expiresAt,
+      })
+      .select('token')
+      .single();
+
+    const kidToken = sessionError ? null : (session as { token?: string } | null)?.token;
 
     return NextResponse.json({
       success: true,
       child: matchedChild,
+      kidToken: kidToken || undefined,
     });
   } catch (error) {
     // Don't expose error details to client

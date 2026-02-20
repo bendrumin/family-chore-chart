@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -49,45 +49,6 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
     return counts
   }, [chores])
 
-  useEffect(() => {
-    loadChores()
-  }, [childId])
-
-  useEffect(() => {
-    if (chores.length > 0) {
-      loadCompletions()
-    }
-  }, [chores, weekStart])
-
-  useEffect(() => {
-    // Set up real-time subscription for live updates
-    const supabase = createClient()
-    const channel = supabase
-      .channel(`chore-updates-${childId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'chores',
-        filter: `child_id=eq.${childId}`
-      }, (payload) => {
-        console.log('🔄 Chore change detected:', payload)
-        loadChores()
-      })
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'chore_completions'
-      }, (payload) => {
-        console.log('✅ Completion change detected:', payload)
-        loadCompletions()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [childId])
-
   const loadChores = async () => {
     try {
       const supabase = createClient()
@@ -113,15 +74,13 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
     try {
       const supabase = createClient()
 
-      // Get all chore IDs for this child
       const choreIds = chores.map(c => c.id)
-
       if (choreIds.length === 0) {
         setCompletions([])
         return
       }
 
-      const { data, error} = await supabase
+      const { data, error } = await supabase
         .from('chore_completions')
         .select('*')
         .in('chore_id', choreIds)
@@ -133,6 +92,48 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
       console.error('Error loading completions:', error)
     }
   }
+
+  const loadChoresRef = useRef(loadChores)
+  const loadCompletionsRef = useRef(loadCompletions)
+  loadChoresRef.current = loadChores
+  loadCompletionsRef.current = loadCompletions
+
+  useEffect(() => {
+    loadChores()
+  }, [childId])
+
+  useEffect(() => {
+    if (chores.length > 0) {
+      loadCompletions()
+    }
+  }, [chores, weekStart])
+
+  useEffect(() => {
+    // Set up real-time subscription for live updates
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`chore-updates-${childId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chores',
+        filter: `child_id=eq.${childId}`
+      }, () => {
+        loadChoresRef.current()
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chore_completions'
+      }, () => {
+        loadCompletionsRef.current()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [childId])
 
   if (isLoading) {
     return (

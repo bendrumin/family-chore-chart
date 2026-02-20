@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // POST /api/routines/[routineId]/complete - Mark a routine as completed
@@ -20,23 +20,46 @@ export async function POST(
       );
     }
 
-    // AUTHORIZATION: Get authenticated user
-    // For kid mode, they should have a session after PIN verification
-    // For parent mode, they should be logged in
+    // AUTHORIZATION: Parent session OR kid token from PIN verification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    // If no authenticated user, check if this is a valid kid mode request
-    // by verifying the childId matches a kid session stored in cookies/headers
-    if (authError || !user) {
-      // For now, we require authentication for all routine completions
-      // TODO: Implement kid-specific session tokens after PIN verification
+    let authorizedChildId: string | null = null;
+
+    if (user) {
+      authorizedChildId = childId; // Will verify via routine ownership below
+    } else {
+      // No parent session - check for kid token (Authorization: Bearer <token>)
+      const authHeader = request.headers.get('Authorization');
+      const kidToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+
+      if (kidToken) {
+        try {
+          const adminSupabase = createServiceRoleClient();
+          const { data: session, error: sessionError } = await (adminSupabase as any)
+            .from('kid_sessions')
+            .select('child_id')
+            .eq('token', kidToken)
+            .gt('expires_at', new Date().toISOString())
+            .maybeSingle();
+
+          const sess = session as { child_id?: string } | null;
+          if (!sessionError && sess && sess.child_id === childId) {
+            authorizedChildId = childId;
+          }
+        } catch {
+          // Invalid or expired token
+        }
+      }
+    }
+
+    if (!authorizedChildId) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get routine with child verification AND verify child belongs to authenticated user
+    // Get routine with child verification
     const { data: routine, error: routineError } = await supabase
       .from('routines')
       .select(`
@@ -55,9 +78,8 @@ export async function POST(
       return NextResponse.json({ error: 'Routine not found' }, { status: 404 });
     }
 
-    // CRITICAL: Verify the child belongs to the authenticated user
-    // This prevents users from completing other families' routines
-    if ((routine.children as any).user_id !== user.id) {
+    // If parent session: verify child belongs to them. If kid token: already validated child_id.
+    if (user && (routine.children as any).user_id !== user.id) {
       return NextResponse.json(
         { error: 'Unauthorized - this routine belongs to another family' },
         { status: 403 }

@@ -84,9 +84,26 @@ class NotificationManager {
    */
   private async saveSubscription(subscription: PushSubscription): Promise<boolean> {
     try {
-      // TODO: Implement API endpoint to save subscription
-      // For now, just log it
-      console.log('Subscription:', subscription)
+      const sub = subscription.toJSON()
+      if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) {
+        console.warn('Invalid subscription format')
+        return false
+      }
+
+      const response = await fetch('/api/push-subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth },
+        }),
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        console.error('Failed to save subscription:', await response.text())
+        return false
+      }
       return true
     } catch (error) {
       console.error('Failed to save subscription:', error)
