@@ -1,5 +1,4 @@
 # Ignore build artifacts
-public/
 
 # Ignore development files
 .git/
