@@ -17,7 +17,7 @@ import { FAQModal } from '@/components/help/faq-modal'
 import { NewFeaturesModal } from '@/components/help/new-features-modal'
 import { ContactModal } from '@/components/help/contact-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
-import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
+// import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard' // Disabled
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Sparkles, Mail, ListTodo, Repeat } from 'lucide-react'
@@ -51,7 +51,7 @@ export function DashboardClient({ initialUser, initialProfile }: {
 
   useEffect(() => {
     loadChildren()
-    checkOnboarding()
+    // checkOnboarding() // Disabled - hiding tutorial
   }, [])
 
   const checkOnboarding = () => {
@@ -471,12 +471,12 @@ function DashboardContent({
         onSuccess={loadChildren}
       />
 
-      {/* Onboarding Wizard */}
-      <OnboardingWizard
+      {/* Onboarding Wizard - Disabled */}
+      {/* <OnboardingWizard
         open={showOnboarding}
         onOpenChange={setShowOnboarding}
         onComplete={handleOnboardingComplete}
-      />
+      /> */}
     </div>
   )
 }

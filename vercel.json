@@ -8,10 +8,18 @@
     {
       "src": "frontend/api/**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
     }
   ],
   "redirects": [],
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/chorestar-nextjs/index"
+    },
     {
       "source": "/_next/:path*",
       "destination": "/chorestar-nextjs/_next/:path*"
