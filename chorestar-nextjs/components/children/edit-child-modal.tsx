@@ -289,11 +289,11 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
                     </Label>
                     <Input
                       id="pin"
-                      type="number"
+                      type="text"
                       inputMode="numeric"
                       maxLength={6}
                       value={pin}
-                      onChange={(e) => setPin(e.target.value.slice(0, 6))}
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="1234"
                       className="mt-1 font-mono text-lg"
                     />
@@ -304,11 +304,11 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
                     </Label>
                     <Input
                       id="confirmPin"
-                      type="number"
+                      type="text"
                       inputMode="numeric"
                       maxLength={6}
                       value={confirmPin}
-                      onChange={(e) => setConfirmPin(e.target.value.slice(0, 6))}
+                      onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="1234"
                       className="mt-1 font-mono text-lg"
                     />
