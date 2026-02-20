@@ -56,12 +56,22 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [isEditChildrenPageOpen, setIsEditChildrenPageOpen] = useState(false)
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
   const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
+  const [kidLoginError, setKidLoginError] = useState(false)
 
   useEffect(() => {
     fetch('/api/kid-login-code')
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => data?.kidLoginUrl && setKidLoginUrl(data.kidLoginUrl))
-      .catch(() => {})
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`)
+        return r.json()
+      })
+      .then((data) => {
+        if (data?.kidLoginUrl) {
+          setKidLoginUrl(data.kidLoginUrl)
+        } else {
+          setKidLoginError(true)
+        }
+      })
+      .catch(() => setKidLoginError(true))
   }, [])
 
   useEffect(() => {
@@ -228,6 +238,10 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 Copy
               </Button>
             </div>
+          ) : kidLoginError ? (
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Kid login link is not available yet. Please ensure the database migration for kid login codes has been applied.
+            </p>
           ) : (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Loading...
