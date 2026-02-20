@@ -14,38 +14,7 @@
       "use": "@vercel/static"
     }
   ],
-  "redirects": [
-    {
-      "source": "/login",
-      "destination": "/app/login",
-      "permanent": false
-    },
-    {
-      "source": "/signup",
-      "destination": "/app/signup",
-      "permanent": false
-    },
-    {
-      "source": "/forgot-password",
-      "destination": "/app/forgot-password",
-      "permanent": false
-    },
-    {
-      "source": "/reset-password",
-      "destination": "/app/reset-password",
-      "permanent": false
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/app/dashboard",
-      "permanent": false
-    },
-    {
-      "source": "/resend-confirmation",
-      "destination": "/app/resend-confirmation",
-      "permanent": false
-    }
-  ],
+  "redirects": [],
   "rewrites": [
     {
       "source": "/_next/:path*",
@@ -88,16 +57,20 @@
       "destination": "/frontend/api/:path*.js"
     },
     {
-      "source": "/sw.js",
+      "source": "/legacy/sw.js",
       "destination": "/frontend/sw.js"
     },
     {
-      "source": "/",
+      "source": "/legacy",
       "destination": "/frontend/index.html"
     },
     {
-      "source": "/:path*",
+      "source": "/legacy/:path*",
       "destination": "/frontend/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/chorestar-nextjs/:path*"
     }
   ],
   "headers": [

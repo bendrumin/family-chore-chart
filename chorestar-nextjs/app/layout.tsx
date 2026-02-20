@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
-import { VersionSwitcher } from '@/components/version-switcher'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
@@ -100,7 +99,6 @@ export default function RootLayout({
         <GoogleAnalytics />
         <QueryProvider>
           <ServiceWorkerRegister />
-          <VersionSwitcher />
           <KeyboardShortcutsProvider>
             {children}
           </KeyboardShortcutsProvider>
