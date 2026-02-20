@@ -311,7 +311,7 @@ export function RoutineBuilderModal({
         onClose={() => onOpenChange(false)}
         className="overflow-y-auto max-h-[90vh] w-[90vw] sm:w-full max-w-3xl min-w-0 sm:min-w-[600px] dialog-content-bg"
       >
-        <form onSubmit={handleSubmit} className="w-full min-w-0 px-2">
+        <form onSubmit={handleSubmit} className="w-full min-w-0">
           <DialogHeader className="pb-2">
             <DialogTitle
               className="text-3xl font-black flex items-center gap-3"
