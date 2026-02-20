@@ -307,9 +307,12 @@ export function RoutineBuilderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-y-auto max-h-[90vh] w-[90vw] sm:w-full max-w-3xl min-w-0 sm:min-w-[600px] dialog-content-bg">
-        <form onSubmit={handleSubmit} className="w-full min-w-0">
-          <DialogHeader>
+      <DialogContent
+        onClose={() => onOpenChange(false)}
+        className="overflow-y-auto max-h-[90vh] w-[90vw] sm:w-full max-w-3xl min-w-0 sm:min-w-[600px] dialog-content-bg"
+      >
+        <form onSubmit={handleSubmit} className="w-full min-w-0 px-2">
+          <DialogHeader className="pb-2">
             <DialogTitle
               className="text-3xl font-black flex items-center gap-3"
               style={{
@@ -324,18 +327,23 @@ export function RoutineBuilderModal({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 my-6">
-            {/* Quick Templates */}
+          <div className="space-y-6 mt-6 mb-6">
+            {/* Quick Templates Section - Cyan accent */}
             {!editRoutine && (
-              <div className="space-y-2">
-                <Label className="text-base font-bold">Quick Start Templates</Label>
+              <div className="p-4 sm:p-5 rounded-2xl border-2 border-cyan-200 bg-cyan-50/30 dark:border-cyan-800 dark:bg-cyan-900/20 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                  <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Quick Start Templates
+                  </h4>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {ROUTINE_TEMPLATES.map((template, index) => (
                     <button
                       key={template.name}
                       type="button"
                       onClick={() => loadTemplate(index)}
-                      className="p-3 text-left border-2 rounded-lg hover:scale-105 transition-all bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-400"
+                      className="p-3 text-left border-2 rounded-lg hover:scale-105 transition-all bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-cyan-400"
                     >
                       <div className="font-bold text-sm">{template.name}</div>
                       <div className="text-xs text-gray-500">{template.steps.length} steps</div>
@@ -345,104 +353,125 @@ export function RoutineBuilderModal({
               </div>
             )}
 
-            {/* Routine Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-base font-bold">
-                Routine Name
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Morning Routine, Bedtime Routine"
-                required
-                className="h-14 text-base font-semibold"
-              />
-            </div>
+            {/* Routine Details Section - Blue accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-blue-200 bg-blue-50/30 dark:border-blue-800 dark:bg-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Routine Details
+                </h4>
+              </div>
 
-            {/* Routine Type */}
-            <div className="space-y-2">
-              <Label className="text-base font-bold">Routine Type</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {routineTypes.map((type) => (
-                  <button
-                    key={type.value}
+              <div className="space-y-4">
+                {/* Routine Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Routine Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., Morning Routine, Bedtime Routine"
+                    required
+                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-blue-200 transition-all input-bg-glass"
+                  />
+                </div>
+
+                {/* Routine Type */}
+                <div className="space-y-2">
+                  <Label className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Routine Type
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {routineTypes.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            type: type.value as any,
+                            color: type.color,
+                          })
+                        }
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          formData.type === type.value
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{type.icon}</span>
+                          <span className="font-bold">{type.label}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Icon Selection */}
+                <div className="space-y-2">
+                  <Label className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Routine Icon
+                  </Label>
+                  <Button
                     type="button"
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        type: type.value as any,
-                        color: type.color,
-                      })
-                    }
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      formData.type === type.value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                    }`}
+                    variant="outline"
+                    onClick={() => setShowIconPicker(!showIconPicker)}
+                    className="w-full h-14"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{type.icon}</span>
-                      <span className="font-bold">{type.label}</span>
+                    {ROUTINE_ICONS[formData.icon] && (
+                      <>
+                        {(() => {
+                          const IconComponent = ROUTINE_ICONS[formData.icon].icon;
+                          return <IconComponent className="w-6 h-6 mr-2" />;
+                        })()}
+                        {ROUTINE_ICONS[formData.icon].label}
+                      </>
+                    )}
+                  </Button>
+                  {showIconPicker && (
+                    <div className="mt-2">
+                      <RoutineIconPicker
+                        currentIcon={formData.icon}
+                        onSelect={(icon) => {
+                          setFormData({ ...formData, icon });
+                          setShowIconPicker(false);
+                        }}
+                      />
                     </div>
-                  </button>
-                ))}
+                  )}
+                </div>
+
+                {/* Reward Cents */}
+                <div className="space-y-2">
+                  <Label htmlFor="reward" className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <DollarSign className="w-4 h-4" />
+                    Reward (cents)
+                  </Label>
+                  <Input
+                    id="reward"
+                    type="number"
+                    value={formData.reward_cents}
+                    onChange={(e) => setFormData({ ...formData, reward_cents: parseInt(e.target.value) || 0 })}
+                    min="0"
+                    className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-blue-200 transition-all input-bg-glass"
+                  />
+                  <p className="text-xs text-gray-500">Points earned when routine is completed</p>
+                </div>
               </div>
             </div>
 
-            {/* Icon Selection */}
-            <div className="space-y-2">
-              <Label className="text-base font-bold">Routine Icon</Label>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowIconPicker(!showIconPicker)}
-                className="w-full h-14"
-              >
-                {ROUTINE_ICONS[formData.icon] && (
-                  <>
-                    {(() => {
-                      const IconComponent = ROUTINE_ICONS[formData.icon].icon;
-                      return <IconComponent className="w-6 h-6 mr-2" />;
-                    })()}
-                    {ROUTINE_ICONS[formData.icon].label}
-                  </>
-                )}
-              </Button>
-              {showIconPicker && (
-                <div className="mt-2">
-                  <RoutineIconPicker
-                    currentIcon={formData.icon}
-                    onSelect={(icon) => {
-                      setFormData({ ...formData, icon });
-                      setShowIconPicker(false);
-                    }}
-                  />
+            {/* Routine Steps Section - Purple accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-900/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Routine Steps ({steps.length})
+                  </h4>
                 </div>
-              )}
-            </div>
-
-            {/* Reward Cents */}
-            <div className="space-y-2">
-              <Label htmlFor="reward" className="text-base font-bold flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Reward (cents)
-              </Label>
-              <Input
-                id="reward"
-                type="number"
-                value={formData.reward_cents}
-                onChange={(e) => setFormData({ ...formData, reward_cents: parseInt(e.target.value) || 0 })}
-                min="0"
-                className="h-14 text-base font-semibold"
-              />
-              <p className="text-xs text-gray-500">Points earned when routine is completed</p>
-            </div>
-
-            {/* Steps */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-bold">Routine Steps ({steps.length})</Label>
                 <Button type="button" onClick={addStep} size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
                   Add Step
@@ -477,16 +506,29 @@ export function RoutineBuilderModal({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={createMutation.isPending || updateMutation.isPending}
+              size="lg"
+              className="flex-1 font-bold"
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              variant="gradient"
+              size="lg"
+              className="flex-1 font-bold hover-glow"
             >
-              {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editRoutine ? 'Update Routine' : 'Create Routine'}
+              {createMutation.isPending || updateMutation.isPending
+                ? '⏳ Saving...'
+                : editRoutine
+                ? '✨ Update Routine'
+                : '✨ Create Routine'}
             </Button>
           </DialogFooter>
         </form>
