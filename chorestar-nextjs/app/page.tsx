@@ -363,8 +363,13 @@ export default async function HomePage() {
         {/* Footer */}
         <footer className="text-center mt-16 text-gray-600 dark:text-gray-400">
           <p className="mb-2">🔒 Your privacy matters. We never sell your data.</p>
-          <p className="text-sm">
+          <p className="text-sm mb-4">
             Made with ❤️ by a parent who gets it
+          </p>
+          <p className="text-sm">
+            <Link href="/how-to" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              📖 How-To Guides
+            </Link>
           </p>
         </footer>
       </div>
