@@ -63,17 +63,17 @@ export async function POST(request: Request) {
       console.error('child-pin: Service role client failed. Ensure SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY is set in .env.local');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
-    const { error: upsertError } = await admin
-      .from('child_pins')
-      .upsert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase infers 'never' for child_pins upsert; schema is correct
+    const { error: upsertError } = await admin.from('child_pins').upsert(
+      {
         child_id: childId,
         pin_hash: pinHash,
         pin_salt: salt,
         failed_attempts: 0,
         locked_until: null,
-      }, {
-        onConflict: 'child_id',
-      });
+      } as any,
+      { onConflict: 'child_id' }
+    );
 
     if (upsertError) {
       console.error('Failed to set PIN:', upsertError);

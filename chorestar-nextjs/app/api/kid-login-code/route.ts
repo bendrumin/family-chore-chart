@@ -38,7 +38,8 @@ export async function GET() {
       }
       for (let attempt = 0; attempt < 5; attempt++) {
         code = generateCode();
-        const { error: updateError } = await admin
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase service role update type inference
+        const { error: updateError } = await (admin as any)
           .from('profiles')
           .update({ kid_login_code: code })
           .eq('id', user.id);

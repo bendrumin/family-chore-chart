@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid family code' }, { status: 400 });
     }
 
-    const userId = profile.id;
+    const userId = (profile as { id: string }).id;
 
     // Find child PINs ONLY for this family's children (scoped by family code)
     const { data: allPins, error: fetchError } = await supabase
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
 
     // No match found - try legacy pgcrypto only when no familyCode (backward compat)
     if ((!matchedChild || !matchedPinRecord) && !familyCode) {
-      const { data: legacyMatch } = await supabase.rpc('verify_child_pin', { p_pin: pin });
+      const { data: legacyMatch } = await (supabase as any).rpc('verify_child_pin', { p_pin: pin });
       const first = Array.isArray(legacyMatch) ? legacyMatch[0] : null;
       if (first?.child_id) {
         const { data: child } = await supabase
@@ -133,8 +133,9 @@ export async function POST(request: Request) {
           .eq('id', first.child_id)
           .single();
         if (child) {
-          matchedChild = child;
-          matchedPinRecord = { child_id: child.id, pin_hash: '', failed_attempts: 0, locked_until: null };
+          const c = child as { id: string; name: string; avatar_color?: string | null; avatar_url?: string | null; avatar_file?: string | null };
+          matchedChild = c;
+          matchedPinRecord = { child_id: c.id, pin_hash: '', failed_attempts: 0, locked_until: null };
         }
       }
     }

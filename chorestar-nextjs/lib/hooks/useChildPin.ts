@@ -41,8 +41,8 @@ export function useSetChildPin() {
       });
 
       if (!response.ok) {
-        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
-        throw new Error(error.error || 'Failed to set PIN');
+        const err = await parseJsonResponse<{ error?: string }>(response).catch(() => ({} as { error?: string }));
+        throw new Error(err.error || 'Failed to set PIN');
       }
 
       return parseJsonResponse(response);
@@ -64,8 +64,8 @@ export function useRemoveChildPin() {
       });
 
       if (!response.ok) {
-        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
-        throw new Error(error.error || 'Failed to remove PIN');
+        const err = await parseJsonResponse<{ error?: string }>(response).catch(() => ({} as { error?: string }));
+        throw new Error(err.error || 'Failed to remove PIN');
       }
 
       return parseJsonResponse(response);
@@ -87,8 +87,8 @@ export function useVerifyChildPin(familyCode?: string) {
       });
 
       if (!response.ok) {
-        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
-        throw new Error(error.error || 'Invalid PIN');
+        const err = await parseJsonResponse<{ error?: string }>(response).catch(() => ({} as { error?: string }));
+        throw new Error(err.error || 'Invalid PIN');
       }
 
       return parseJsonResponse<VerifyPinResponse>(response);
