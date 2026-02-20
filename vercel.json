@@ -85,6 +85,10 @@
       "destination": "/chorestar-nextjs/api/push-subscriptions"
     },
     {
+      "source": "/api/family/:path*",
+      "destination": "/chorestar-nextjs/api/family/:path*"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/frontend/api/:path*.js"
     },
