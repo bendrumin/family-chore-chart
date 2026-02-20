@@ -160,10 +160,10 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           onClose={() => onOpenChange(false)}
-          className="overflow-y-auto dialog-content-bg"
+          className="overflow-y-auto dialog-content-bg max-w-2xl"
         >
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
+        <form onSubmit={handleSubmit} className="px-2">
+          <DialogHeader className="pb-2">
             <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
               background: 'var(--gradient-primary)',
               WebkitBackgroundClip: 'text',
@@ -175,7 +175,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
           </DialogHeader>
 
           {/* Form Fields - Card-based sections */}
-          <div className="space-y-6 my-6">
+          <div className="space-y-6 mt-6 mb-6">
 
             {/* Basic Info Section - Blue accent */}
             <div className="p-4 sm:p-5 rounded-2xl border-2 border-blue-200 bg-blue-50/30 dark:border-blue-800 dark:bg-blue-900/20 shadow-sm hover:shadow-md transition-shadow">

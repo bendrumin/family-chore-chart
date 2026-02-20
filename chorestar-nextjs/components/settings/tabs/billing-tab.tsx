@@ -67,11 +67,13 @@ export function BillingTab() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
+      <div className="space-y-8 animate-pulse min-h-[600px]">
         <div className="h-40 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl" />
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
-          <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+          <div className="h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+          <div className="h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl" />
         </div>
       </div>
     )
@@ -81,7 +83,7 @@ export function BillingTab() {
   const isPremium = currentTier === 'premium' || currentTier === 'lifetime'
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-h-[600px]">
       {/* Current Plan Display */}
       <div className={`p-6 rounded-2xl border-2 ${
         isPremium

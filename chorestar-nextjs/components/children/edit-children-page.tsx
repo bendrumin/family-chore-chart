@@ -207,10 +207,10 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClose={() => onOpenChange(false)}
-        className="overflow-y-auto dialog-content-bg"
+        className="overflow-y-auto dialog-content-bg max-w-2xl"
       >
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
+        <form onSubmit={handleSubmit} className="px-2">
+          <DialogHeader className="pb-2">
             <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
               background: 'var(--gradient-primary)',
               WebkitBackgroundClip: 'text',
@@ -223,7 +223,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
 
           {isLoadingChildren ? (
             // Loading skeleton
-            <div className="space-y-6 my-6 animate-pulse">
+            <div className="space-y-6 mt-6 animate-pulse">
               <div className="h-32 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-2xl" />
               <div className="h-48 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-2xl" />
               <div className="h-40 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-2xl" />
@@ -231,7 +231,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
           ) : children.length > 0 && (
             <>
               {/* Navigation */}
-              <div className="space-y-3 my-4">
+              <div className="space-y-3 mt-4 mb-6">
                 <div className="flex items-center justify-between gap-2">
                   <Button
                     type="button"
