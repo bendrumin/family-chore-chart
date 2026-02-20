@@ -46,7 +46,7 @@ export function LoginForm() {
         return
       }
 
-      toast.success('Welcome back!')
+      toast.success('Welcome back!', { duration: 2500 })
       router.push('/dashboard')
       router.refresh()
     } catch (error) {
