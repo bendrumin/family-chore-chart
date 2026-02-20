@@ -59,8 +59,11 @@ export async function POST(
       );
     }
 
+    // Kid mode uses service role to bypass RLS; parent mode uses authenticated client.
+    const dbClient = user ? supabase : createServiceRoleClient();
+
     // Get routine with child verification
-    const { data: routine, error: routineError } = await supabase
+    const { data: routine, error: routineError } = await dbClient
       .from('routines')
       .select(`
         *,
@@ -88,7 +91,7 @@ export async function POST(
 
     // Check if routine was already completed today
     const today = new Date().toISOString().split('T')[0];
-    const { data: existingCompletion } = await supabase
+    const { data: existingCompletion } = await dbClient
       .from('routine_completions')
       .select('id')
       .eq('routine_id', routineId)
@@ -105,10 +108,10 @@ export async function POST(
     }
 
     // Calculate points earned (only if all steps completed)
-    const pointsEarned = stepsCompleted === stepsTotal ? routine.reward_cents : 0;
+    const pointsEarned = stepsCompleted === stepsTotal ? (routine as any).reward_cents : 0;
 
     // Record completion
-    const { data: completion, error: completionError } = await supabase
+    const { data: completion, error: completionError } = await dbClient
       .from('routine_completions')
       .insert({
         routine_id: routineId,
