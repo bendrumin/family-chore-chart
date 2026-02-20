@@ -48,11 +48,11 @@ export function InsightsTab() {
     try {
       const supabase = createClient()
 
-      // Load all data
+      // chores/chore_completions don't have user_id; RLS filters by auth.uid()
       const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user!.id),
-        supabase.from('chores').select('*').eq('user_id', user!.id).eq('is_active', true),
-        supabase.from('chore_completions').select('*').eq('user_id', user!.id),
+        supabase.from('chores').select('*').eq('is_active', true),
+        supabase.from('chore_completions').select('*'),
         supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user!.id).single()
       ])
 
@@ -172,11 +172,11 @@ export function InsightsTab() {
       setIsLoadingAchievements(true)
       const supabase = createClient()
 
-      // Load all data
+      // chores/chore_completions don't have user_id; RLS filters by auth.uid()
       const [childrenRes, choresRes, completionsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user!.id),
-        supabase.from('chores').select('*').eq('user_id', user!.id).eq('is_active', true),
-        supabase.from('chore_completions').select('*').eq('user_id', user!.id),
+        supabase.from('chores').select('*').eq('is_active', true),
+        supabase.from('chore_completions').select('*'),
       ])
 
       const children = childrenRes.data || []

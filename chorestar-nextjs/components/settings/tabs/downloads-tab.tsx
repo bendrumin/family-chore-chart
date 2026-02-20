@@ -49,11 +49,11 @@ export function DownloadsTab() {
     try {
       const supabase = createClient()
 
-      // Load all data including family settings
+      // Load all data; chores/chore_completions use RLS (no user_id column)
       const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user.id),
-        supabase.from('chores').select('*').eq('user_id', user.id),
-        supabase.from('chore_completions').select('*').eq('user_id', user.id),
+        supabase.from('chores').select('*'),
+        supabase.from('chore_completions').select('*'),
         supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
@@ -90,11 +90,11 @@ export function DownloadsTab() {
     try {
       const supabase = createClient()
 
-      // Load all data including family settings
+      // Load all data; chores/chore_completions use RLS (no user_id column)
       const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
         supabase.from('children').select('*').eq('user_id', user.id),
-        supabase.from('chores').select('*').eq('user_id', user.id),
-        supabase.from('chore_completions').select('*').eq('user_id', user.id),
+        supabase.from('chores').select('*'),
+        supabase.from('chore_completions').select('*'),
         supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
@@ -178,7 +178,7 @@ export function DownloadsTab() {
                   const supabase = createClient()
                   const [childrenRes, choresRes] = await Promise.all([
                     supabase.from('children').select('*').eq('user_id', user.id),
-                    supabase.from('chores').select('*').eq('user_id', user.id),
+                    supabase.from('chores').select('*'),
                   ])
                   if (childrenRes.error || choresRes.error) throw new Error('Failed to load data')
                   await exportPrintableChoreChart({
