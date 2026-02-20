@@ -295,8 +295,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
 
       const { data, error } = await supabase
         .from('family_settings')
-        .update(updates)
-        .eq('user_id', userId)
+        .upsert({ user_id: userId, ...updates }, { onConflict: 'user_id' })
         .select()
         .single()
 
