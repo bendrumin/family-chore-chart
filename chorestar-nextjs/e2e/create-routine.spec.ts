@@ -9,34 +9,32 @@ test.describe('Create Routine (recording flow)', () => {
     // Wait for dashboard to load (child list or content)
     await page.waitForSelector('[data-testid="child-list"], button:has-text("Chores")', { timeout: 10_000 });
 
+    // Dismiss any welcome / "What's New" modal that may auto-open
+    const overlay = page.locator('[data-dialog-overlay="true"]');
+    if (await overlay.isVisible()) {
+      await page.keyboard.press('Escape');
+      await overlay.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    }
+
     // Click Routines tab
     await page.getByRole('button', { name: /routines/i }).click();
 
     // Click Add Routine (in tab bar) or New Routine (in content)
     await page.getByRole('button', { name: /add routine|new routine/i }).first().click();
 
-    // Wait for modal
-    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+    // Wait for routine builder modal
+    await expect(page.getByRole('heading', { name: /create new routine/i })).toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(400);
 
-    // Use Morning Routine template (loads name + 8 steps)
-    await page.getByRole('button', { name: /morning routine/i }).click();
-    await page.waitForTimeout(600); // Let template load + toast
-
-    // Fallback: if no template clicked, fill manually
-    const nameInput = page.getByLabel(/routine name/i).or(page.getByPlaceholder(/morning|routine name/i));
-    if (await nameInput.isVisible() && !(await nameInput.inputValue())) {
-      await nameInput.fill('Morning Routine');
-      const addStepBtn = page.getByRole('button', { name: /add first step|add step/i });
-      if (await addStepBtn.isVisible()) {
-        await addStepBtn.click();
-        await page.locator('input[placeholder*="step" i]').first().fill('Wake up');
-      }
-    }
+    // Click the Morning Routine template card
+    await page.getByText('Morning Routine').first().click();
+    await page.waitForTimeout(800); // Let template fill name + steps
 
     // Save routine
-    await page.getByRole('button', { name: /create routine|saving/i }).click();
+    await page.getByRole('button', { name: /create routine/i }).click();
 
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/routine created|morning routine/i)).toBeVisible({ timeout: 5000 });
+    // Modal closes and routine appears in the list
+    await expect(page.getByRole('heading', { name: /create new routine/i })).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/morning routine/i).first()).toBeVisible({ timeout: 8000 });
   });
 });
