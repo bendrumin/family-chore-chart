@@ -37,15 +37,17 @@ export default function RoutinePlayerPage({
     }
     try {
       const parsed = JSON.parse(raw);
+      const familyCode = parsed.familyCode;
+      const kidLoginPath = familyCode ? `/kid-login/${familyCode}` : '/kid-login';
       if (parsed.child?.id !== childId) {
-        router.push('/kid-login');
+        router.push(kidLoginPath);
         return;
       }
       // Check expiry
       const age = Date.now() - (parsed.timestamp || 0);
       if (age > (parsed.expiresIn || 8 * 60 * 60 * 1000)) {
         localStorage.removeItem('kidMode');
-        router.push('/kid-login?message=Session expired');
+        router.push(familyCode ? `${kidLoginPath}?message=Session expired` : '/kid-login?message=Session expired');
         return;
       }
     } catch {

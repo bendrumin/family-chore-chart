@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 
@@ -54,9 +54,16 @@ export async function POST(request: Request) {
     // Hash the PIN with salt
     const pinHash = hashPin(pin, salt);
 
-    // Upsert PIN (update if exists, insert if not)
-    // Reset failed attempts and lock when setting a new PIN
-    const { error: upsertError } = await supabase
+    // Use service role for upsert to avoid RLS/session issues in API route context
+    // (We've already verified child belongs to user above)
+    let admin;
+    try {
+      admin = createServiceRoleClient();
+    } catch (e) {
+      console.error('child-pin: Service role client failed. Ensure SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY is set in .env.local');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+    const { error: upsertError } = await admin
       .from('child_pins')
       .upsert({
         child_id: childId,
@@ -69,12 +76,13 @@ export async function POST(request: Request) {
       });
 
     if (upsertError) {
-      // Don't expose detailed error messages to client
+      console.error('Failed to set PIN:', upsertError);
       return NextResponse.json({ error: 'Failed to set PIN' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('child-pin POST error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -109,8 +117,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    // Delete PIN
-    const { error: deleteError } = await supabase
+    // Use service role for delete (same pattern as upsert)
+    const admin = createServiceRoleClient();
+    const { error: deleteError } = await admin
       .from('child_pins')
       .delete()
       .eq('child_id', childId);

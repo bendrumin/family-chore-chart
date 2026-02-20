@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
@@ -55,6 +55,14 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [localSoundVolume, setLocalSoundVolume] = useState(50)
   const [isEditChildrenPageOpen, setIsEditChildrenPageOpen] = useState(false)
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
+  const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/kid-login-code')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => data?.kidLoginUrl && setKidLoginUrl(data.kidLoginUrl))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (settings) {
@@ -187,6 +195,44 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
               Open Editor
             </Button>
           </div>
+        </div>
+
+        {/* Kid Login Link Section */}
+        <div className="p-4 rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30">
+          <div className="flex items-center gap-2 mb-2">
+            <Link2 className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              Kid Login Link
+            </h5>
+          </div>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+            Share this link with your kids. They&apos;ll enter their PIN (set in Edit Children). Each family has a unique link—kids only see your family&apos;s routines.
+          </p>
+          {kidLoginUrl ? (
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={kidLoginUrl}
+                className="flex-1 font-mono text-sm bg-white dark:bg-gray-800"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(kidLoginUrl)
+                  toast.success('Link copied!')
+                }}
+                className="shrink-0"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Loading...
+            </p>
+          )}
         </div>
 
         {/* Family Sharing Section */}

@@ -2,6 +2,15 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+async function parseJsonResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : ({} as T);
+  } catch {
+    throw new Error('Invalid response from server. Please try again.');
+  }
+}
+
 interface SetPinData {
   childId: string;
   pin: string;
@@ -32,11 +41,11 @@ export function useSetChildPin() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
         throw new Error(error.error || 'Failed to set PIN');
       }
 
-      return response.json();
+      return parseJsonResponse(response);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['child-pins'] });
@@ -55,11 +64,11 @@ export function useRemoveChildPin() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
         throw new Error(error.error || 'Failed to remove PIN');
       }
 
-      return response.json();
+      return parseJsonResponse(response);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['child-pins'] });
@@ -67,22 +76,22 @@ export function useRemoveChildPin() {
   });
 }
 
-// Verify a child's PIN
-export function useVerifyChildPin() {
+// Verify a child's PIN (familyCode scopes to that family's children only)
+export function useVerifyChildPin(familyCode?: string) {
   return useMutation({
     mutationFn: async (pin: string) => {
       const response = await fetch('/api/child-pin/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ pin, familyCode: familyCode || '' }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await parseJsonResponse<{ error?: string }>(response).catch(() => ({}));
         throw new Error(error.error || 'Invalid PIN');
       }
 
-      return response.json() as Promise<VerifyPinResponse>;
+      return parseJsonResponse<VerifyPinResponse>(response);
     },
   });
 }
