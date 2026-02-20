@@ -24,7 +24,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { childId, pin } = body;
+    const childId = body.childId;
+    const pin = String(body.pin ?? '').replace(/\D/g, '');
 
     if (!childId || !pin) {
       return NextResponse.json({ error: 'childId and pin are required' }, { status: 400 });
