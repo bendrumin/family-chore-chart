@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         await resend.emails.send({
           from: 'ChoreStar <noreply@chorestar.app>',
           to: adminEmail,
-          reply_to: String(email),
+          replyTo: String(email),
           subject: `📧 ChoreStar Contact: ${String(subject).slice(0, 100)} - From ${String(name).slice(0, 100)}`,
           html: `
 <!DOCTYPE html>
