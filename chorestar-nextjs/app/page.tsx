@@ -298,10 +298,6 @@ export default async function HomePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Family sharing (multiple parents)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
                   <span className="text-gray-700 dark:text-gray-300">Priority email support</span>
                 </li>
               </ul>
