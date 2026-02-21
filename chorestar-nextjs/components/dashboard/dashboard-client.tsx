@@ -437,9 +437,10 @@ function DashboardContent({
                           onClick={() => setActiveTab('chores')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'chores'
-                              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
+                              ? 'text-white shadow-md'
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
+                          style={activeTab === 'chores' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
                           <ListTodo className="w-4 h-4" />
                           Chores
@@ -448,9 +449,10 @@ function DashboardContent({
                           onClick={() => setActiveTab('routines')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'routines'
-                              ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md'
+                              ? 'text-white shadow-md'
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
+                          style={activeTab === 'routines' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
                           <Repeat className="w-4 h-4" />
                           Routines
@@ -460,7 +462,8 @@ function DashboardContent({
                         onClick={handleAddRoutine}
                         size="sm"
                         variant="outline"
-                        className="gap-2 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-400 dark:hover:border-purple-500 font-semibold"
+                        className="gap-2 font-semibold"
+                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
                       >
                         <Plus className="w-4 h-4" />
                         Add Routine
