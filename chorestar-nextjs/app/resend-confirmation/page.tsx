@@ -46,10 +46,15 @@ export default function ResendConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <Link href="/" className="text-4xl font-bold text-gray-900 dark:text-white">
+          <Link href="/" className="text-4xl font-bold" style={{
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
             🌟 ChoreStar
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
@@ -95,7 +100,7 @@ export default function ResendConfirmationPage() {
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <Link
               href="/login"
-              className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              className="flex items-center justify-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

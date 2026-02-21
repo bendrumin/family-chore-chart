@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
+import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
 import { toast } from 'sonner'
@@ -46,6 +48,8 @@ interface FamilyTabProps {
 
 export function FamilyTab({ onClose }: FamilyTabProps) {
   const { settings, updateSettings } = useSettings()
+  const router = useRouter()
+  const [localFamilyName, setLocalFamilyName] = useState('')
   const [localCurrencyCode, setLocalCurrencyCode] = useState('USD')
   const [localDateFormat, setLocalDateFormat] = useState('auto')
   const [localLanguage, setLocalLanguage] = useState('en')
@@ -57,6 +61,24 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
   const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
   const [kidLoginError, setKidLoginError] = useState(false)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('family_name')
+          .eq('id', user.id)
+          .single()
+        if (data?.family_name) {
+          setLocalFamilyName(data.family_name)
+        }
+      }
+    }
+    fetchProfile()
+  }, [])
 
   useEffect(() => {
     fetch('/api/kid-login-code')
@@ -107,7 +129,19 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         daily_reward_cents: parseInt(localDailyReward),
         weekly_bonus_cents: parseInt(localWeeklyBonus),
       })
-      
+
+      // Save family name to profiles
+      if (localFamilyName.trim()) {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ family_name: localFamilyName.trim() })
+            .eq('id', user.id)
+        }
+      }
+
       // Save sound settings to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('chorestar_sound_settings', JSON.stringify({
@@ -115,8 +149,9 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
           volume: localSoundVolume,
         }))
       }
-      
+
       toast.success('✨ Settings saved!')
+      router.refresh()
       onClose()
     } catch (error) {
       toast.error('Failed to save settings')
@@ -131,6 +166,29 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   return (
     <>
       <div className="space-y-5">
+        {/* Family Name Section */}
+        <div className="space-y-4 p-4 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+          <div className="flex items-center gap-2 mb-1">
+            <Home className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              Family Name
+            </h5>
+          </div>
+          <div className="space-y-2">
+            <Input
+              id="family-name"
+              type="text"
+              placeholder="e.g. The Smith Family"
+              value={localFamilyName}
+              onChange={(e) => setLocalFamilyName(e.target.value)}
+              className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-700 transition-all backdrop-blur-md"
+            />
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Shown in the dashboard header
+            </p>
+          </div>
+        </div>
+
         {/* Reward Settings Section */}
         <div className="space-y-4 p-4 rounded-xl border-2 border-green-200 dark:border-green-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">
           <div className="flex items-center gap-2 mb-3">

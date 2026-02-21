@@ -202,8 +202,8 @@ function DashboardContent({
   handleOnboardingComplete
 }: any) {
   const { settings } = useSettings()
-  const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>('gradient')
-  const [buttonColor, setButtonColor] = useState<'white' | 'black'>('black')
+  const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>('white')
+  const [buttonColor, setButtonColor] = useState<'white' | 'black'>('white')
   const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
   const [openRoutineBuilderTrigger, setOpenRoutineBuilderTrigger] = useState(false)
 
@@ -214,33 +214,13 @@ function DashboardContent({
 
   useEffect(() => {
     const checkTheme = () => {
-      const customTheme = (settings?.custom_theme as any) || {}
-      const seasonalTheme = customTheme.seasonalTheme
       const isDarkMode = document.documentElement.classList.contains('dark') ||
                          document.documentElement.getAttribute('data-theme') === 'dark'
-
-      if (seasonalTheme && !isDarkMode) {
-        // Check if header has a colored background (not white/transparent) — light mode only
-        const header = document.querySelector('header.glass') as HTMLElement
-        if (header) {
-          const bg = window.getComputedStyle(header).background
-          const bgColor = window.getComputedStyle(header).backgroundColor
-
-          // Check if background is a gradient or a colored background (not white/transparent)
-          const hasColoredBg = bg.includes('gradient') ||
-                              (bgColor && !bgColor.includes('rgba(255, 255, 255') &&
-                              !bgColor.includes('rgb(255, 255, 255') &&
-                              bgColor !== 'rgba(0, 0, 0, 0)' &&
-                              bgColor !== 'transparent')
-
-          if (hasColoredBg) {
-            setHeaderTextColor('white')
-            setButtonColor('white')
-          } else {
-            setHeaderTextColor('gradient')
-            setButtonColor('black')
-          }
-        }
+      // Header is always gradient in light mode (primary or seasonal, via CSS var --header-gradient)
+      // so text and buttons are always white. Dark mode uses card-bg header with default colors.
+      if (!isDarkMode) {
+        setHeaderTextColor('white')
+        setButtonColor('white')
       } else {
         setHeaderTextColor('gradient')
         setButtonColor('black')
@@ -248,13 +228,8 @@ function DashboardContent({
     }
 
     checkTheme()
-    // Re-check after theme applies
     const timer = setTimeout(checkTheme, 200)
-    const interval = setInterval(checkTheme, 500)
-    return () => {
-      clearTimeout(timer)
-      clearInterval(interval)
-    }
+    return () => clearTimeout(timer)
   }, [settings])
 
   if (isLoading) {
@@ -274,26 +249,23 @@ function DashboardContent({
               <div className="text-3xl">⭐</div>
               <div>
                 <h1
-                  className="text-2xl font-bold tracking-tight"
-                  style={headerTextColor === 'white' ? {
-                    color: 'white',
-                    WebkitTextFillColor: 'white'
-                  } : {
+                  className="text-2xl font-bold tracking-tight text-white dark:text-white"
+                  style={headerTextColor !== 'white' ? {
                     background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text'
-                  }}
+                  } : undefined}
                 >
                   ChoreStar
                 </h1>
                 <p
-                  className="text-xs mt-0.5 font-medium flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
-                  style={headerTextColor === 'white' ? { color: 'rgba(255,255,255,0.75)' } : undefined}
+                  className="text-xs mt-0.5 font-semibold flex items-center gap-1.5 text-gray-600 dark:text-gray-400 tracking-wide uppercase"
+                  style={headerTextColor === 'white' ? { color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em' } : undefined}
                 >
                   {initialProfile?.family_name || 'My Family'}
                   {isSharedMember && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-white/20 text-white">
                       Shared
                     </span>
                   )}
@@ -375,7 +347,7 @@ function DashboardContent({
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {children.length === 0 ? (
-          <Card className="text-center animate-bounce-in card-bg-glass">
+          <Card className="text-center animate-bounce-in">
             <CardHeader className="pb-2">
               <div className="text-7xl mb-4 animate-float">🎉</div>
               <CardTitle
@@ -432,7 +404,7 @@ function DashboardContent({
                   <div className="space-y-6">
                     {/* Professional Tab Switcher + Add Routine */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-1 p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm w-fit">
+                      <div className="flex items-center gap-1 p-1.5 rounded-lg border shadow-sm w-fit" style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}>
                         <button
                           onClick={() => setActiveTab('chores')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${

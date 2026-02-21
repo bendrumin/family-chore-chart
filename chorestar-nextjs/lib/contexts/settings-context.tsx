@@ -55,8 +55,8 @@ const SEASONAL_THEME_COLORS: Record<string, { light: { primary: string; secondar
     dark: { primary: '#0288d1', secondary: '#29b6f6' }
   },
   sunset: {
-    light: { primary: '#ff6b35', secondary: '#f7931e' },
-    dark: { primary: '#ff8a65', secondary: '#ffab40' }
+    light: { primary: '#f97316', secondary: '#fb923c' },
+    dark: { primary: '#f97316', secondary: '#fdba74' }
   },
 }
 

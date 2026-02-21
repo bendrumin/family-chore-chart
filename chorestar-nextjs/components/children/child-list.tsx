@@ -24,16 +24,17 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
 
   return (
     <>
-      <Card className="overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-b border-gray-200 dark:border-gray-700 pb-4">
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b pb-4" style={{ borderColor: 'hsl(var(--border))' }}>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               👨‍👩‍👧‍👦 Children
             </CardTitle>
             <Button
               size="sm"
+              variant="gradient"
               onClick={() => setIsAddModalOpen(true)}
-              className="gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-sm hover:shadow-md transition-all font-medium px-3 py-2 rounded-lg text-xs"
+              className="gap-1 font-medium px-3 py-2 rounded-lg text-xs"
             >
               <Plus className="w-3.5 h-3.5" />
               Add
@@ -55,11 +56,12 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
             children.map((child, index) => (
               <div
                 key={child.id}
-                className={`w-full p-4 rounded-lg border transition-all duration-300 group relative ${
-                  selectedChildId === child.id
-                    ? 'border-blue-200 dark:border-blue-700 shadow-md bg-gradient-to-br from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm bg-white dark:bg-gray-800'
-                }`}
+                className="w-full p-4 rounded-lg border transition-all duration-300 group relative"
+                style={{
+                  borderColor: selectedChildId === child.id ? 'var(--primary)' : 'hsl(var(--border))',
+                  background: selectedChildId === child.id ? `color-mix(in srgb, var(--primary) 8%, var(--card-bg))` : 'var(--bg-secondary)',
+                  boxShadow: selectedChildId === child.id ? '0 2px 8px rgba(99,102,241,0.15)' : undefined,
+                }}
                 style={{
                   animationDelay: `${index * 0.1}s`
                 }}
@@ -78,11 +80,12 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                     e.stopPropagation()
                     setEditingChild(child)
                   }}
-                  className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-md transition-all ${
+                  className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-md transition-all border ${
                     selectedChildId === child.id
-                      ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-700'
-                      : 'opacity-0 group-hover:opacity-100 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                      ? 'shadow-sm'
+                      : 'opacity-0 group-hover:opacity-100'
                   }`}
+                  style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}
                   title="Edit child"
                 >
                   <Edit3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
