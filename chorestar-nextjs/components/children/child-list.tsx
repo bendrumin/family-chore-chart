@@ -61,9 +61,7 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                   borderColor: selectedChildId === child.id ? 'var(--primary)' : 'hsl(var(--border))',
                   background: selectedChildId === child.id ? `color-mix(in srgb, var(--primary) 8%, var(--card-bg))` : 'var(--bg-secondary)',
                   boxShadow: selectedChildId === child.id ? '0 2px 8px rgba(99,102,241,0.15)' : undefined,
-                }}
-                style={{
-                  animationDelay: `${index * 0.1}s`
+                  animationDelay: `${index * 0.1}s`,
                 }}
               >
                 <button
