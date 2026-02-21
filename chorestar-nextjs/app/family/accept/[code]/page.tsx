@@ -78,7 +78,7 @@ export default function AcceptInvitePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4 animate-bounce">⭐</div>
           <p className="text-gray-600 font-medium">Loading invite...</p>
@@ -88,7 +88,7 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-center">
@@ -113,7 +113,8 @@ export default function AcceptInvitePage() {
               <p className="text-gray-600 mb-6">{error}</p>
               <Link
                 href="/dashboard"
-                className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                className="inline-block text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all"
+                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
               >
                 Go to Dashboard
               </Link>
@@ -131,7 +132,8 @@ export default function AcceptInvitePage() {
                   <button
                     onClick={handleAccept}
                     disabled={accepting}
-                    className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                    className="w-full text-white py-3 rounded-lg font-semibold disabled:opacity-60 transition-all hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
                   >
                     {accepting ? 'Joining...' : '✓ Accept Invitation'}
                   </button>
@@ -149,7 +151,8 @@ export default function AcceptInvitePage() {
                   </p>
                   <Link
                     href={`/login?next=/family/accept/${code}`}
-                    className="block w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors text-center"
+                    className="block w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all text-center"
+                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
                   >
                     Sign In to Accept
                   </Link>

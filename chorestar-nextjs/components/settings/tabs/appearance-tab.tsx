@@ -165,15 +165,6 @@ const SEASONAL_THEMES = [
       dark: { primary: '#a78bfa', secondary: '#c4b5fd' }
     }
   },
-  {
-    id: 'sunset',
-    name: 'Sunset',
-    emoji: '🌅',
-    colors: {
-      light: { primary: '#ff6b35', secondary: '#f7931e' },
-      dark: { primary: '#ff8a65', secondary: '#ffab40' }
-    }
-  },
 ]
 
 export function AppearanceTab() {

@@ -68,7 +68,7 @@ export default function SignupSuccessPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
     }}>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -93,7 +93,7 @@ export default function SignupSuccessPage() {
                 repeatDelay: 3,
               }}
             >
-              <Mail className="w-20 h-20 text-purple-600" />
+              <Mail className="w-20 h-20 text-indigo-600" />
             </motion.div>
             <motion.div
               initial={{ scale: 0 }}
@@ -115,8 +115,8 @@ export default function SignupSuccessPage() {
           We've sent a confirmation link to:
         </p>
 
-        <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 mb-6 text-center">
-          <p className="font-semibold text-purple-900 break-all">{email}</p>
+        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-6 text-center">
+          <p className="font-semibold text-indigo-900 break-all">{email}</p>
         </div>
 
         {/* Provider Quick Link */}
@@ -125,7 +125,8 @@ export default function SignupSuccessPage() {
             href={providerLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full mb-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-center"
+            className="block w-full mb-4 px-6 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg hover:opacity-90 text-center"
+            style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             Open {emailProvider === 'gmail' ? 'Gmail' : emailProvider === 'outlook' ? 'Outlook' : emailProvider === 'yahoo' ? 'Yahoo Mail' : 'iCloud Mail'}
           </a>
@@ -190,7 +191,7 @@ export default function SignupSuccessPage() {
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm text-purple-600 hover:text-purple-700 font-semibold"
+            className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold"
           >
             ← Back to Login
           </Link>

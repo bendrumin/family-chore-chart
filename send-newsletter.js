@@ -15,6 +15,7 @@
 const { Resend } = require('resend');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 // Load your Resend API key
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -142,7 +143,13 @@ async function sendNewsletterToUser(userEmail, userName = 'Valued User') {
             to: userEmail,
             reply_to: NEWSLETTER_CONFIG.replyTo,
             subject: NEWSLETTER_CONFIG.subject,
-            html: loadNewsletterTemplate()
+            html: loadNewsletterTemplate(),
+            // Required by Gmail for bulk senders (Feb 2024+).
+            // Without these headers Gmail silently drops the email.
+            headers: {
+                'List-Unsubscribe': `<mailto:hi@chorestar.app?subject=unsubscribe&body=${encodeURIComponent(userEmail)}>`,
+                'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
         });
 
         console.log(`✅ Newsletter sent to ${userEmail} (ID: ${result.data?.id || 'N/A'})`);

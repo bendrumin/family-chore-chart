@@ -895,6 +895,25 @@ body.seasonal-lavender[data-theme="dark"] {
   background-blend-mode: overlay;
 }
 
+/* Header gradient system:
+   - Default (None theme): --gradient-primary (indigo/violet — matches app identity)
+   - Seasonal theme active: --seasonal-gradient (theme-specific colors)
+   - Dark mode: falls back to --card-bg (no colored header)
+   CSS-driven so it applies immediately, regardless of JS timing or render order. */
+:root {
+  --header-gradient: var(--gradient-primary);
+}
+html[class*="seasonal-"]:not(.dark):not([data-theme="dark"]) {
+  --header-gradient: var(--seasonal-gradient);
+}
+header.glass {
+  background: var(--header-gradient) !important;
+}
+html.dark header.glass,
+html[data-theme="dark"] header.glass {
+  background: var(--card-bg) !important;
+}
+
 /* Style primary buttons with seasonal colors */
 .seasonal-christmas button[class*="gradient"],
 .seasonal-halloween button[class*="gradient"],

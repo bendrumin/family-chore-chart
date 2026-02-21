@@ -223,7 +223,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-pink-50/50 dark:from-blue-900/10 dark:via-purple-900/10 dark:to-pink-900/10 border border-gray-200 dark:border-gray-700 shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
           <Trophy className="w-4 h-4 text-yellow-500" />
@@ -233,7 +233,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* Total Completions */}
-          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               {stats.totalCompletions}
             </div>
@@ -244,7 +244,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
           </div>
 
           {/* Total Earnings */}
-          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
             <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               ${stats.totalEarnings.toFixed(2)}
             </div>
@@ -255,7 +255,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
           </div>
 
           {/* Completion Rate */}
-          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
             <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               {stats.completionRate}%
             </div>
@@ -266,7 +266,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
           </div>
 
           {/* Streak */}
-          <div className="text-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
             <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               {stats.streak}
             </div>
@@ -278,7 +278,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         </div>
 
         {/* Perfect Days Stars - Compact */}
-        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="p-3 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
           <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
             <span>Perfect Days This Week</span>
             <span className="text-xs text-gray-500 dark:text-gray-400">{stats.perfectDays}/7 days</span>

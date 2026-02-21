@@ -2,49 +2,62 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
+const GRADIENT = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+const GRADIENT_TEXT = {
+  background: GRADIENT,
+  WebkitBackgroundClip: 'text' as const,
+  WebkitTextFillColor: 'transparent' as const,
+  backgroundClip: 'text' as const,
+}
+
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // If user is logged in, redirect to dashboard
   if (user) {
     redirect('/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Top Sign In Link - Always visible for returning users */}
-      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-3 text-right">
-          <Link
-            href="/login"
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
-          >
-            Already a member? <span className="underline">Sign In →</span>
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+
+      {/* Sticky Top Nav */}
+      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <span className="text-xl font-black" style={GRADIENT_TEXT}>🌟 ChoreStar</span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">Already a member?</span>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
+              style={{ background: GRADIENT }}
+            >
+              Sign In →
+            </Link>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-16">
+
         {/* Header */}
         <header className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-4">
-            🌟 ChoreStar
+          <h1 className="text-6xl font-black mb-4">
+            <span style={GRADIENT_TEXT}>🌟 ChoreStar</span>
           </h1>
           <p className="text-2xl text-gray-600 dark:text-gray-300 mb-4">
             Turn Household Chores Into Family Wins
           </p>
-          {/* Social Proof */}
-          <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">
+          <p className="text-sm font-semibold" style={{ color: '#6366f1' }}>
             ⭐ Join 87+ families already using ChoreStar
           </p>
         </header>
 
         {/* Hero Section */}
-        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-12 mb-16">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-12 mb-16 border border-indigo-100 dark:border-indigo-900">
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
             Stop Nagging. Start Rewarding.<br/>
-            <span className="text-blue-600 dark:text-blue-400">Finally Get Help Around the House</span>
+            <span style={GRADIENT_TEXT}>Finally Get Help Around the House</span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
             Tired of reminding your kids to clean their rooms? ChoreStar turns chores into a game that kids actually want to play.
@@ -57,7 +70,7 @@ export default async function HomePage() {
           </p>
 
           {/* Trust Signals */}
-          <div className="bg-blue-50 dark:bg-gray-700 rounded-lg p-4 mb-8">
+          <div className="rounded-lg p-4 mb-8 border border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/20">
             <p className="text-center text-sm text-gray-700 dark:text-gray-300">
               🔒 <strong>Start Free</strong> • No Credit Card to Try • Upgrade Anytime
             </p>
@@ -67,13 +80,15 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Link
               href="/signup"
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors text-center shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              className="px-8 py-4 rounded-xl font-bold text-lg text-white text-center shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              style={{ background: GRADIENT }}
             >
               Start Free Today →
             </Link>
             <Link
               href="/login"
-              className="px-8 py-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-center"
+              className="px-8 py-4 rounded-xl font-semibold text-lg text-center border-2 transition-all hover:opacity-80"
+              style={{ borderColor: '#8b5cf6', color: '#6366f1' }}
             >
               Sign In
             </Link>
@@ -81,6 +96,53 @@ export default async function HomePage() {
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
             ✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime
           </p>
+        </div>
+
+        {/* How It Works */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+            How It Works
+          </h3>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
+            Up and running in under 2 minutes
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '1',
+                icon: '👨‍👩‍👧‍👦',
+                title: 'Add Your Family',
+                desc: 'Create your account and add each child with their name and avatar. Takes less than 2 minutes.',
+              },
+              {
+                step: '2',
+                icon: '📋',
+                title: 'Assign Chores',
+                desc: 'Build daily and weekly routines for each child. Set a reward amount so kids always know what they\'re earning.',
+              },
+              {
+                step: '3',
+                icon: '🏆',
+                title: 'Kids Earn & Celebrate',
+                desc: 'Kids log in with their PIN, check off chores, and watch their earnings grow. Parents track everything at a glance.',
+              },
+            ].map(({ step, icon, title, desc }) => (
+              <div
+                key={step}
+                className="relative bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg text-center border border-indigo-100 dark:border-indigo-900"
+              >
+                <div
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-black shadow-md"
+                  style={{ background: GRADIENT }}
+                >
+                  {step}
+                </div>
+                <div className="text-4xl mb-4 mt-2">{icon}</div>
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Problem/Solution */}
@@ -112,7 +174,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Benefits (Not Features) */}
+        {/* Benefits */}
         <div className="max-w-6xl mx-auto mb-16">
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             Why Parents Love ChoreStar
@@ -121,87 +183,66 @@ export default async function HomePage() {
             Built by a parent, for parents who want less stress and more family harmony
           </p>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-blue-500">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Set Up in Minutes
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                No complicated setup. Add your kids, assign chores, and you're done. Start seeing results today, not next week.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-green-500">
-              <div className="text-4xl mb-4">🎮</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Kids Actually Use It
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Colorful, fun interface that feels like a game. Kids love checking off tasks and watching their earnings grow.
-              </p>
+            {[
+              { icon: '⚡', title: 'Set Up in Minutes', desc: 'No complicated setup. Add your kids, assign chores, and you\'re done. Start seeing results today, not next week.' },
+              { icon: '🎮', title: 'Kids Actually Use It', desc: 'Colorful, fun interface that feels like a game. Kids love checking off tasks and watching their earnings grow.' },
+              { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Automatically calculates earnings. No more "Did I get paid for that?" or manual math at the end of the week.' },
+              { icon: '📱', title: 'Works Everywhere', desc: 'Phone, tablet, computer - no app download needed. Everyone in the family stays synced in real-time.' },
+              { icon: '👨‍👩‍👧‍👦', title: 'Built for Real Families', desc: 'Multiple kids? Different chores per child? Various reward amounts? We\'ve got you covered.' },
+              { icon: '🔒', title: 'Safe & Private', desc: 'Your family data is secure and private. We never share or sell your information. Period.' },
+            ].map(({ icon, title, desc }) => (
+              <div
+                key={title}
+                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4"
+                style={{ borderTopColor: '#6366f1' }}
+              >
+                <div className="text-4xl mb-4">{icon}</div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{desc}</p>
               </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-purple-500">
-              <div className="text-4xl mb-4">💰</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Fair Allowance Tracking
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Automatically calculates earnings. No more "Did I get paid for that?" or manual math at the end of the week.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-orange-500">
-              <div className="text-4xl mb-4">📱</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Works Everywhere
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Phone, tablet, computer - no app download needed. Everyone in the family stays synced in real-time.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-pink-500">
-              <div className="text-4xl mb-4">👨‍👩‍👧‍👦</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Built for Real Families
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Multiple kids? Different chores per child? Various reward amounts? We've got you covered.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-red-500">
-              <div className="text-4xl mb-4">🔒</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Safe & Private
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Your family data is secure and private. We never share or sell your information. Period.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Testimonial */}
-        <div className="max-w-3xl mx-auto mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
-            <div className="flex items-start gap-4">
-              <div className="text-5xl">💬</div>
-              <div>
-                <p className="text-lg text-gray-700 dark:text-gray-300 mb-4 italic">
-                  "Game changer! My kids actually check ChoreStar every morning to see what needs to be done. No more arguments at bedtime about whether they cleaned their room. 10/10 recommend!"
-                </p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  - Sarah M., Mom of 3
-                </p>
-                <div className="text-yellow-400 text-lg">⭐⭐⭐⭐⭐</div>
+        {/* Testimonials */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+            What Parents Are Saying
+          </h3>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
+            Real families, real results
+          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: '"Game changer! My kids actually check ChoreStar every morning to see what needs to be done. No more arguments at bedtime about whether they cleaned their room."',
+                name: 'Sarah M.',
+                role: 'Mom of 3',
+              },
+              {
+                quote: '"I was skeptical, but my 7-year-old asks ME if she can do more chores now. The earning tracker makes it feel real to her. Worth every penny."',
+                name: 'James T.',
+                role: 'Dad of 2',
+              },
+              {
+                quote: '"Finally something that works for our blended family. Everyone knows exactly what\'s expected and the kids actually compete to finish first. Love it!"',
+                name: 'Michelle R.',
+                role: 'Mom of 4',
+              },
+            ].map(({ quote, name, role }) => (
+              <div key={name} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-indigo-100 dark:border-indigo-900">
+                <div className="text-yellow-400 text-lg mb-3">⭐⭐⭐⭐⭐</div>
+                <p className="text-gray-700 dark:text-gray-300 mb-4 italic text-sm leading-relaxed">{quote}</p>
+                <div>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">{name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Pricing Comparison */}
+        {/* Pricing */}
         <div className="max-w-6xl mx-auto mb-16">
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             Choose Your Plan
@@ -220,91 +261,68 @@ export default async function HomePage() {
               </div>
 
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Up to <strong>3 children</strong></span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Up to <strong>20 total chores</strong></span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Kid login with PIN</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Points & earnings tracking</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Achievement badges</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Weekly progress reports</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Basic themes</span>
-                </li>
+                {[
+                  'Up to 3 children',
+                  'Up to 20 total chores',
+                  'Kid login with PIN',
+                  'Points & earnings tracking',
+                  'Achievement badges',
+                  'Weekly progress reports',
+                  'Basic themes',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-green-500 text-xl">✓</span>
+                    <span className="text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                  </li>
+                ))}
               </ul>
 
               <Link
                 href="/signup"
-                className="block w-full px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-semibold text-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="block w-full px-6 py-3 rounded-xl font-semibold text-center text-white transition-all hover:opacity-90 hover:shadow-md"
+                style={{ background: GRADIENT }}
               >
                 Start Free
               </Link>
             </div>
 
             {/* Premium Plan */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 shadow-2xl border-2 border-blue-500 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 shadow-2xl border-2 border-indigo-400 relative">
+              <div
+                className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-1 rounded-full text-sm font-bold"
+                style={{ background: GRADIENT }}
+              >
                 BEST VALUE
               </div>
 
               <div className="text-center mb-6">
                 <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium</h4>
-                <div className="text-4xl font-black text-blue-600 dark:text-blue-400 mb-2">$4.99</div>
+                <div className="text-4xl font-black mb-2" style={GRADIENT_TEXT}>$4.99</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">per month</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">or $49.99/year (save 17%)</p>
               </div>
 
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>Everything in Free</strong></span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>Unlimited</strong> children</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300"><strong>Unlimited</strong> chores</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Custom chore icons & categories</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Premium themes & customization</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Export reports (PDF/CSV)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-blue-500 text-xl">✓</span>
-                  <span className="text-gray-700 dark:text-gray-300">Priority email support</span>
-                </li>
+                {[
+                  '<strong>Everything in Free</strong>',
+                  '<strong>Unlimited</strong> children',
+                  '<strong>Unlimited</strong> chores',
+                  'Family sharing (co-parents)',
+                  'Premium themes & seasonal looks',
+                  'Export reports (PDF/CSV)',
+                  'Priority email support',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-xl" style={{ color: '#6366f1' }}>✓</span>
+                    <span className="text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: item }} />
+                  </li>
+                ))}
               </ul>
 
               <Link
                 href="/signup"
-                className="block w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-bold text-center hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                className="block w-full px-6 py-3 rounded-xl font-bold text-center text-white transition-all hover:opacity-90 shadow-lg hover:shadow-xl"
+                style={{ background: GRADIENT }}
               >
                 Start Free Trial
               </Link>
@@ -325,7 +343,8 @@ export default async function HomePage() {
                 <div className="text-3xl font-black text-purple-600 dark:text-purple-400">$149.99</div>
                 <Link
                   href="/signup"
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
+                  className="px-6 py-2 rounded-xl font-bold text-white transition-all hover:opacity-90 hover:shadow-md"
+                  style={{ background: GRADIENT }}
                 >
                   Get Lifetime
                 </Link>
@@ -337,8 +356,68 @@ export default async function HomePage() {
           </div>
         </div>
 
+        {/* FAQ */}
+        <div className="max-w-3xl mx-auto mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+            Frequently Asked Questions
+          </h3>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
+            Everything you need to know before getting started
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                q: 'Does my child need their own account or email?',
+                a: 'No! Kids log in using a special family link and a simple PIN you set for them. No email address or account needed for kids — they just tap their name and enter their PIN.',
+              },
+              {
+                q: 'What devices does ChoreStar work on?',
+                a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required. Just bookmark the page and it works like an app on any device.',
+              },
+              {
+                q: 'Can I add chores that repeat daily or weekly?',
+                a: 'Yes! You can create routines with daily or weekly chores for each child. Chores reset automatically so you never have to set them up again.',
+              },
+              {
+                q: 'How does the allowance tracking work?',
+                a: 'You set a daily reward amount per child. When they complete their chores each day, they earn that amount. The weekly bonus kicks in if they complete all chores every day. ChoreStar tracks it all automatically.',
+              },
+              {
+                q: 'Can two parents manage the same family?',
+                a: 'Yes — with a Premium plan, you can invite a co-parent or guardian via email. They\'ll get their own login that shows your family\'s chores and kids.',
+              },
+              {
+                q: 'Can I try Premium before paying?',
+                a: 'Absolutely. Sign up for free and you can start a trial of Premium from your dashboard at any time. No credit card required to create your account.',
+              },
+            ].map(({ q, a }) => (
+              <details
+                key={q}
+                className="group bg-white dark:bg-gray-800 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm overflow-hidden"
+              >
+                <summary className="flex items-center justify-between p-5 cursor-pointer font-semibold text-gray-900 dark:text-white list-none hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                  {q}
+                  <span className="ml-4 text-indigo-500 text-xl flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <div className="px-5 pb-5 text-sm text-gray-600 dark:text-gray-300 leading-relaxed border-t border-indigo-50 dark:border-indigo-900 pt-4">
+                  {a}
+                </div>
+              </details>
+            ))}
+          </div>
+          <p className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
+            More questions?{' '}
+            <Link href="/how-to" className="underline hover:text-indigo-600 transition-colors">
+              Check out our How-To guides →
+            </Link>
+          </p>
+        </div>
+
         {/* Final CTA */}
-        <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-2xl p-12 text-center text-white mb-16">
+        <div
+          className="max-w-4xl mx-auto rounded-2xl shadow-2xl p-12 text-center text-white mb-16"
+          style={{ background: GRADIENT }}
+        >
           <h3 className="text-3xl font-bold mb-4">
             Ready to Transform Chore Time?
           </h3>
@@ -347,27 +426,34 @@ export default async function HomePage() {
           </p>
           <Link
             href="/signup"
-            className="inline-block px-12 py-5 bg-white text-blue-600 rounded-lg font-bold text-xl hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+            className="inline-block px-12 py-5 bg-white rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl"
+            style={{ color: '#6366f1' }}
           >
             Start Free Today →
           </Link>
           <p className="mt-6 text-sm opacity-75">
-            ✓ Set up in 2 minutes  •  ✓ Free plan available  •  ✓ 87+ happy families
+            ✓ Set up in 2 minutes  •  ✓ Free plan available  •  ✓ No credit card required
           </p>
         </div>
 
         {/* Footer */}
-        <footer className="text-center mt-16 text-gray-600 dark:text-gray-400">
-          <p className="mb-2">🔒 Your privacy matters. We never sell your data.</p>
-          <p className="text-sm mb-4">
-            Made with ❤️ by a parent who gets it
-          </p>
-          <p className="text-sm">
-            <Link href="/how-to" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              📖 How-To Guides
+        <footer className="text-center mt-8 pb-8 text-gray-500 dark:text-gray-400">
+          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}>🌟 ChoreStar</p>
+          <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
+            <Link href="/how-to" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              How-To Guides
             </Link>
-          </p>
+            <Link href="/login" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              Sign In
+            </Link>
+            <Link href="/signup" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              Sign Up Free
+            </Link>
+          </div>
+          <p className="text-xs">🔒 Your privacy matters. We never sell your data.</p>
         </footer>
+
       </div>
     </div>
   )

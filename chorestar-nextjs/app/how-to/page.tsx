@@ -2,6 +2,14 @@
 
 import Link from 'next/link'
 
+const GRADIENT = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+const GRADIENT_TEXT = {
+  background: GRADIENT,
+  WebkitBackgroundClip: 'text' as const,
+  WebkitTextFillColor: 'transparent' as const,
+  backgroundClip: 'text' as const,
+}
+
 const tutorials = [
   {
     emoji: '👧',
@@ -87,26 +95,30 @@ const tutorials = [
 
 export default function HowToPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Top Sign In Banner */}
-      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+
+      {/* Sticky Top Nav */}
+      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link
             href="/"
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+            className="text-sm font-semibold hover:opacity-80 transition-opacity"
+            style={GRADIENT_TEXT}
           >
-            ← Back to ChoreStar
+            ← 🌟 ChoreStar
           </Link>
           <Link
             href="/login"
-            className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
+            style={{ background: GRADIENT }}
           >
-            Already a member? <span className="underline">Sign In →</span>
+            Sign In →
           </Link>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-16 max-w-5xl">
+
         {/* Header */}
         <header className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -118,14 +130,14 @@ export default function HowToPage() {
         </header>
 
         {/* Quick Nav */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-12">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-12 border border-indigo-100 dark:border-indigo-900">
           <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Jump to a tutorial</p>
           <div className="flex flex-wrap gap-3">
             {tutorials.map((t) => (
               <a
                 key={t.slug}
                 href={`#${t.slug}`}
-                className="px-4 py-2 bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-indigo-50 dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium hover:bg-indigo-100 dark:hover:bg-gray-600 transition-colors"
               >
                 {t.emoji} {t.title}
               </a>
@@ -137,13 +149,13 @@ export default function HowToPage() {
         <div className="space-y-16">
           {tutorials.map((tutorial, index) => (
             <section key={tutorial.slug} id={tutorial.slug}>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-indigo-100 dark:border-indigo-900">
                 {/* Section Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+                <div className="px-8 py-6" style={{ background: GRADIENT }}>
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{tutorial.emoji}</span>
                     <div>
-                      <p className="text-blue-200 text-sm font-medium">Tutorial {index + 1}</p>
+                      <p className="text-indigo-200 text-sm font-medium">Tutorial {index + 1}</p>
                       <h2 className="text-2xl font-bold text-white">{tutorial.title}</h2>
                     </div>
                   </div>
@@ -181,7 +193,10 @@ export default function HowToPage() {
                       <ol className="space-y-3">
                         {tutorial.steps.map((step, i) => (
                           <li key={i} className="flex gap-3">
-                            <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full text-xs font-bold flex items-center justify-center mt-0.5">
+                            <span
+                              className="flex-shrink-0 w-6 h-6 text-white rounded-full text-xs font-bold flex items-center justify-center mt-0.5"
+                              style={{ background: GRADIENT }}
+                            >
                               {i + 1}
                             </span>
                             <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
@@ -192,8 +207,8 @@ export default function HowToPage() {
                       </ol>
 
                       {/* Tip */}
-                      <div className="mt-6 bg-blue-50 dark:bg-gray-700 rounded-lg p-4 border-l-4 border-blue-400">
-                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <div className="mt-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border-l-4 border-indigo-400">
+                        <p className="text-sm text-indigo-800 dark:text-indigo-200">
                           <strong>💡 Tip:</strong> {tutorial.tip}
                         </p>
                       </div>
@@ -206,7 +221,7 @@ export default function HowToPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-2xl p-12 text-center text-white">
+        <div className="mt-16 rounded-2xl shadow-2xl p-12 text-center text-white" style={{ background: GRADIENT }}>
           <h3 className="text-3xl font-bold mb-4">
             Ready to Get Started?
           </h3>
@@ -216,13 +231,14 @@ export default function HowToPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/signup"
-              className="px-10 py-4 bg-white text-blue-600 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              className="px-10 py-4 bg-white rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-xl"
+              style={{ color: '#6366f1' }}
             >
               Start Free Today →
             </Link>
             <Link
               href="/login"
-              className="px-10 py-4 bg-white/20 text-white border-2 border-white/40 rounded-lg font-semibold text-lg hover:bg-white/30 transition-colors text-center"
+              className="px-10 py-4 bg-white/20 text-white border-2 border-white/40 rounded-xl font-semibold text-lg hover:bg-white/30 transition-colors text-center"
             >
               Sign In
             </Link>
@@ -233,11 +249,21 @@ export default function HowToPage() {
         </div>
 
         {/* Footer */}
-        <footer className="text-center mt-16 text-gray-600 dark:text-gray-400">
-          <p className="mb-2">🔒 Your privacy matters. We never sell your data.</p>
-          <p className="text-sm">
-            Made with ❤️ by a parent who gets it
-          </p>
+        <footer className="text-center mt-16 pb-8 text-gray-500 dark:text-gray-400">
+          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}>🌟 ChoreStar</p>
+          <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
+            <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              Home
+            </Link>
+            <Link href="/login" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              Sign In
+            </Link>
+            <Link href="/signup" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              Sign Up Free
+            </Link>
+          </div>
+          <p className="text-xs">🔒 Your privacy matters. We never sell your data.</p>
         </footer>
       </div>
     </div>
