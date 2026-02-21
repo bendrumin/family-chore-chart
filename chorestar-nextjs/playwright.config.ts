@@ -83,6 +83,12 @@ export default defineConfig({
       testMatch: /family-sharing\.spec\.ts/,
       dependencies: ['setup'],
     },
+    {
+      name: 'signup',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /signup\.spec\.ts/,
+      // No auth dependency — signup is a public flow
+    },
     // ── Tutorial projects (slow-paced, for how-to videos) ────────────────────
     {
       name: 'tutorial-add-child',

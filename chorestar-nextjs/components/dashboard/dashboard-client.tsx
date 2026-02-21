@@ -18,7 +18,7 @@ import { NewFeaturesModal } from '@/components/help/new-features-modal'
 import { ContactModal } from '@/components/help/contact-modal'
 import { WelcomeModal } from '@/components/help/welcome-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
-// import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard' // Disabled
+import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Sparkles, Mail, ListTodo, Repeat, BookOpen } from 'lucide-react'
@@ -55,17 +55,21 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
 
   useEffect(() => {
     loadChildren()
-    // checkOnboarding() // Disabled - hiding tutorial
   }, [])
 
+  // After children load: show wizard only for brand-new users with no children
+  useEffect(() => {
+    if (!isLoading && !isSharedMember) {
+      checkOnboarding()
+    }
+  }, [isLoading])
+
   const checkOnboarding = () => {
-    // Check if user has seen onboarding
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
-    if (!hasSeenOnboarding) {
-      // Delay showing onboarding to let dashboard load
-      setTimeout(() => {
-        setShowOnboarding(true)
-      }, 1000)
+    if (!hasSeenOnboarding && children.length === 0) {
+      // Suppress welcome modal so they don't get both at once
+      localStorage.setItem('chorestar_welcome_v2_seen', 'true')
+      setTimeout(() => setShowOnboarding(true), 800)
     }
   }
 
@@ -283,8 +287,11 @@ function DashboardContent({
                 >
                   ChoreStar
                 </h1>
-                <p className="text-xs mt-0.5 font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                  {initialProfile?.family_name || 'Welcome!'} Family
+                <p
+                  className="text-xs mt-0.5 font-medium flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
+                  style={headerTextColor === 'white' ? { color: 'rgba(255,255,255,0.75)' } : undefined}
+                >
+                  {initialProfile?.family_name || 'My Family'}
                   {isSharedMember && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
                       Shared
@@ -523,12 +530,11 @@ function DashboardContent({
         onSuccess={loadChildren}
       />
 
-      {/* Onboarding Wizard - Disabled */}
-      {/* <OnboardingWizard
+      <OnboardingWizard
         open={showOnboarding}
         onOpenChange={setShowOnboarding}
         onComplete={handleOnboardingComplete}
-      /> */}
+      />
     </div>
   )
 }
