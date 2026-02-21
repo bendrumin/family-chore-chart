@@ -75,7 +75,11 @@ export async function POST(request: Request) {
   const resendKey = process.env.RESEND_API_KEY
   if (resendKey) {
     const resend = new Resend(resendKey)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://chorestar.app'
+    const host = request.headers.get('host') || 'chorestar.app'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      (host.includes('localhost') || host.includes('127.0.0.1')
+        ? `http://${host}`
+        : `https://${host}`)
     const acceptUrl = `${baseUrl}/family/accept/${code}`
 
     // Fire-and-forget — don't block the response waiting for Resend

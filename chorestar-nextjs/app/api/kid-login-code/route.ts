@@ -8,7 +8,7 @@ function generateCode(): string {
 }
 
 // GET /api/kid-login-code - Get or create the family's kid login code
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -51,7 +51,11 @@ export async function GET() {
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://chorestar.app';
+    const host = request.headers.get('host') || 'chorestar.app'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      (host.includes('localhost') || host.includes('127.0.0.1')
+        ? `http://${host}`
+        : `https://${host}`)
     const kidLoginUrl = `${baseUrl}/kid-login/${code}`;
 
     return NextResponse.json({ code, kidLoginUrl });
