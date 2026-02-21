@@ -156,7 +156,7 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              📋 Chores
+              <span style={{ WebkitTextFillColor: 'initial' }}>📋</span> Chores
             </CardTitle>
             <Button
               size="lg"

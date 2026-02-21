@@ -154,7 +154,9 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
               They'll get an email with a link to join your family. Once accepted, they'll have full access to manage children, chores, and routines.
             </p>
             <div className="flex gap-2">
+              <label htmlFor="invite-email" className="sr-only">Email address to invite</label>
               <Input
+                id="invite-email"
                 type="email"
                 placeholder="Enter email address"
                 value={inviteEmail}
@@ -204,10 +206,11 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
                         <button
                           onClick={() => handleRemoveMember(member.user_id)}
                           disabled={removingId === member.user_id}
-                          className="text-red-500 hover:text-red-700 disabled:opacity-40 p-1 rounded transition-colors"
+                          className="text-red-500 hover:text-red-700 disabled:opacity-40 p-2 rounded transition-colors"
+                          aria-label={`Remove ${member.profiles?.email || 'member'} from family`}
                           title="Remove member"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     ))}
@@ -237,10 +240,11 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
                         <button
                           onClick={() => handleResendInvite(invite.invited_email)}
                           disabled={resendingId === invite.invited_email}
-                          className="text-indigo-600 hover:text-indigo-800 disabled:opacity-40 p-1 rounded transition-colors"
+                          className="text-indigo-600 hover:text-indigo-800 disabled:opacity-40 p-2 rounded transition-colors"
+                          aria-label={`Resend invite to ${invite.invited_email}`}
                           title="Resend invite"
                         >
-                          <RefreshCw className={`w-4 h-4 ${resendingId === invite.invited_email ? 'animate-spin' : ''}`} />
+                          <RefreshCw className={`w-4 h-4 ${resendingId === invite.invited_email ? 'animate-spin' : ''}`} aria-hidden="true" />
                         </button>
                       </div>
                     ))}

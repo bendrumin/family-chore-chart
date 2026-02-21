@@ -109,7 +109,7 @@ export function SeasonalSuggestionsModal({
             backgroundClip: 'text'
           }}>
             <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
-            {currentTheme.icon} {currentTheme.name} Activity Suggestions
+            <span style={{ WebkitTextFillColor: 'initial' }}>{currentTheme.icon}</span> {currentTheme.name} Activity Suggestions
           </DialogTitle>
         </DialogHeader>
 

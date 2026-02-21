@@ -216,7 +216,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           </div>
 
           {/* Honeypot fields (hidden) */}
-          <div style={{ display: 'none' }}>
+          <div style={{ display: 'none' }} aria-hidden="true">
             <Input
               type="text"
               value={honeypotWebsite}

@@ -84,7 +84,8 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                       : 'opacity-0 group-hover:opacity-100'
                   }`}
                   style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}
-                  title="Edit child"
+                  aria-label={`Edit ${child.name}`}
+                  title={`Edit ${child.name}`}
                 >
                   <Edit3 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                 </Button>

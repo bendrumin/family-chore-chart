@@ -55,7 +55,7 @@ export default function ResendConfirmationPage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            🌟 ChoreStar
+            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Resend Confirmation Email

@@ -204,13 +204,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
                 subtitleEl.style.color = 'rgba(255, 255, 255, 0.9)'
               }
 
-              // Make sign out button white for visibility on gradient background
-              const signOutBtn = header.querySelector('button:last-of-type')
-              if (signOutBtn) {
-                const btnEl = signOutBtn as HTMLElement
-                btnEl.style.color = 'white'
-                btnEl.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-              }
+              // Button colors are managed by React state in dashboard-client.tsx
             } else {
               // In dark mode, just keep the normal dark mode styling
               // Don't override button colors
@@ -270,13 +264,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
           subtitleEl.style.removeProperty('color')
         }
 
-        // Reset sign out button
-        const signOutBtn = header.querySelector('button')
-        if (signOutBtn) {
-          const btnEl = signOutBtn as HTMLElement
-          btnEl.style.removeProperty('color')
-          btnEl.style.removeProperty('border-color')
-        }
+        // Button colors are managed by React state in dashboard-client.tsx
       }
 
       // Reset header title

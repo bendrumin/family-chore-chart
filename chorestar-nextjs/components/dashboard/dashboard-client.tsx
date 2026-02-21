@@ -21,7 +21,7 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { Plus, HelpCircle, Sparkles, Mail, ListTodo, Repeat, BookOpen } from 'lucide-react'
+import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import type { Database } from '@/lib/supabase/database.types'
 import { RoutineList } from '@/components/routines/routine-list'
@@ -202,8 +202,18 @@ function DashboardContent({
   handleOnboardingComplete
 }: any) {
   const { settings } = useSettings()
-  const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>('white')
-  const [buttonColor, setButtonColor] = useState<'white' | 'black'>('white')
+
+  const detectDarkMode = () =>
+    typeof window !== 'undefined' &&
+    (document.documentElement.classList.contains('dark') ||
+     document.documentElement.getAttribute('data-theme') === 'dark')
+
+  const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>(() =>
+    detectDarkMode() ? 'gradient' : 'white'
+  )
+  const [buttonColor, setButtonColor] = useState<'white' | 'black'>(() =>
+    detectDarkMode() ? 'black' : 'white'
+  )
   const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
   const [openRoutineBuilderTrigger, setOpenRoutineBuilderTrigger] = useState(false)
 
@@ -213,23 +223,9 @@ function DashboardContent({
   }
 
   useEffect(() => {
-    const checkTheme = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark') ||
-                         document.documentElement.getAttribute('data-theme') === 'dark'
-      // Header is always gradient in light mode (primary or seasonal, via CSS var --header-gradient)
-      // so text and buttons are always white. Dark mode uses card-bg header with default colors.
-      if (!isDarkMode) {
-        setHeaderTextColor('white')
-        setButtonColor('white')
-      } else {
-        setHeaderTextColor('gradient')
-        setButtonColor('black')
-      }
-    }
-
-    checkTheme()
-    const timer = setTimeout(checkTheme, 200)
-    return () => clearTimeout(timer)
+    const isDark = detectDarkMode()
+    setHeaderTextColor(isDark ? 'gradient' : 'white')
+    setButtonColor(isDark ? 'black' : 'white')
   }, [settings])
 
   if (isLoading) {
@@ -247,98 +243,71 @@ function DashboardContent({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-3xl">⭐</div>
-              <div>
-                <h1
-                  className="text-2xl font-bold tracking-tight text-white dark:text-white"
-                  style={headerTextColor !== 'white' ? {
-                    background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  } : undefined}
-                >
-                  ChoreStar
-                </h1>
-                <p
-                  className="text-xs mt-0.5 font-semibold flex items-center gap-1.5 text-gray-600 dark:text-gray-400 tracking-wide uppercase"
-                  style={headerTextColor === 'white' ? { color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em' } : undefined}
-                >
-                  {initialProfile?.family_name || 'My Family'}
-                  {isSharedMember && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-white/20 text-white">
-                      Shared
-                    </span>
-                  )}
-                </p>
-              </div>
+              <h1
+                className="text-2xl font-bold tracking-tight text-white dark:text-white"
+                style={headerTextColor !== 'white' ? {
+                  background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                } : undefined}
+              >
+                ChoreStar
+              </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Secondary actions - hidden on very small screens */}
-              <div className="hidden sm:flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsNewFeaturesOpen(true)}
-                  className="hover-glow"
-                  title="What's New"
-                  style={{
-                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                  }}
-                >
-                  <Sparkles className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
+              <div className="hidden sm:flex items-center gap-1">
+                <button
+                  type="button"
                   onClick={() => setIsFAQOpen(true)}
-                  className="hover-glow"
-                  title="Help & FAQ"
-                  style={{
-                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                  }}
+                  aria-label="Help & FAQ"
+                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
+                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
                 >
-                  <HelpCircle className="w-5 h-5" />
-                </Button>
+                  <HelpCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Help</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsContactOpen(true)}
+                  aria-label="Contact Us"
+                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
+                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
+                >
+                  <Mail className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Contact</span>
+                </button>
                 <Link
                   href="/how-to"
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="How-To Guides"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-md hover-glow transition-colors hover:bg-accent hover:text-accent-foreground"
-                  style={{
-                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                  }}
+                  aria-label="How-To Guides"
+                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
+                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
                 >
-                  <BookOpen className="w-5 h-5" />
+                  <BookOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>How-To</span>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsContactOpen(true)}
-                  className="hover-glow"
-                  title="Contact Us"
-                  style={{
-                    color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'
-                  }}
-                >
-                  <Mail className="w-5 h-5" />
-                </Button>
               </div>
               {/* Always visible: Settings and Sign Out */}
               <SettingsMenu buttonColor={buttonColor} />
-              <Button
-                variant="outline"
+              <button
                 onClick={handleLogout}
-                className="font-semibold hover-glow text-xs sm:text-sm"
+                className="font-semibold hover-glow text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg border transition-all"
                 style={buttonColor === 'white' ? {
                   borderColor: 'rgba(255, 255, 255, 0.5)',
                   color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                } : undefined}
+                  background: 'rgba(255, 255, 255, 0.15)',
+                } : {
+                  borderColor: 'hsl(var(--border))',
+                  color: 'var(--text-primary)',
+                  background: 'transparent',
+                }}
               >
                 <span className="hidden sm:inline">Sign Out</span>
                 <span className="sm:hidden">Out</span>
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -346,6 +315,29 @@ function DashboardContent({
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Family Name Banner */}
+        <div className="mb-6 flex items-center gap-3">
+          <h2
+            className="text-2xl sm:text-3xl font-black tracking-tight"
+            style={{
+              background: 'var(--gradient-primary)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
+            {initialProfile?.family_name || 'My Family'}
+          </h2>
+          {isSharedMember && (
+            <span
+              className="text-xs font-bold px-2 py-1 rounded-full"
+              style={{ background: 'var(--gradient-primary)', color: 'white' }}
+            >
+              Shared
+            </span>
+          )}
+        </div>
+
         {children.length === 0 ? (
           <Card className="text-center animate-bounce-in">
             <CardHeader className="pb-2">
@@ -404,8 +396,17 @@ function DashboardContent({
                   <div className="space-y-6">
                     {/* Professional Tab Switcher + Add Routine */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-1 p-1.5 rounded-lg border shadow-sm w-fit" style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}>
+                      <div
+                        role="tablist"
+                        aria-label="Content type"
+                        className="flex items-center gap-1 p-1.5 rounded-lg border shadow-sm w-fit"
+                        style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}
+                      >
                         <button
+                          role="tab"
+                          aria-selected={activeTab === 'chores'}
+                          aria-controls="tab-panel-chores"
+                          id="tab-chores"
                           onClick={() => setActiveTab('chores')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'chores'
@@ -414,10 +415,14 @@ function DashboardContent({
                           }`}
                           style={activeTab === 'chores' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
-                          <ListTodo className="w-4 h-4" />
+                          <ListTodo className="w-4 h-4" aria-hidden="true" />
                           Chores
                         </button>
                         <button
+                          role="tab"
+                          aria-selected={activeTab === 'routines'}
+                          aria-controls="tab-panel-routines"
+                          id="tab-routines"
                           onClick={() => setActiveTab('routines')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'routines'
@@ -426,7 +431,7 @@ function DashboardContent({
                           }`}
                           style={activeTab === 'routines' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
-                          <Repeat className="w-4 h-4" />
+                          <Repeat className="w-4 h-4" aria-hidden="true" />
                           Routines
                         </button>
                       </div>
@@ -443,12 +448,23 @@ function DashboardContent({
                     </div>
 
                     {/* Tab Content */}
-                    {activeTab === 'chores' ? (
+                    <div
+                      role="tabpanel"
+                      id="tab-panel-chores"
+                      aria-labelledby="tab-chores"
+                      hidden={activeTab !== 'chores'}
+                    >
                       <ChoreList
                         childId={selectedChildId}
                         userId={effectiveUserId}
                       />
-                    ) : (
+                    </div>
+                    <div
+                      role="tabpanel"
+                      id="tab-panel-routines"
+                      aria-labelledby="tab-routines"
+                      hidden={activeTab !== 'routines'}
+                    >
                       <RoutineList
                         childId={selectedChildId}
                         childName={children.find((c: Child) => c.id === selectedChildId)?.name}
@@ -456,7 +472,7 @@ function DashboardContent({
                         openRoutineBuilderTrigger={openRoutineBuilderTrigger}
                         onRoutineBuilderTriggerConsumed={() => setOpenRoutineBuilderTrigger(false)}
                       />
-                    )}
+                    </div>
                   </div>
                 )}
               </div>
