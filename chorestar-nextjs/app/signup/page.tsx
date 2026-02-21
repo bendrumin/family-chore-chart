@@ -3,12 +3,18 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SignupForm } from '@/components/auth/signup-form'
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const { next } = await searchParams
+  const redirectTo = next || '/dashboard'
 
   if (user) {
-    redirect('/dashboard')
+    redirect(redirectTo)
   }
 
   return (
@@ -27,7 +33,7 @@ export default async function SignupPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <SignupForm />
+          <SignupForm next={redirectTo} />
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">

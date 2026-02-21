@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
-export function LoginForm() {
+export function LoginForm({ next = '/dashboard' }: { next?: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -47,7 +47,7 @@ export function LoginForm() {
       }
 
       toast.success('Welcome back!', { duration: 2500 })
-      router.push('/dashboard')
+      router.push(next)
       router.refresh()
     } catch (error) {
       toast.error('An error occurred during login')
