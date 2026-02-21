@@ -21,7 +21,7 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen } from 'lucide-react'
+import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import type { Database } from '@/lib/supabase/database.types'
 import { RoutineList } from '@/components/routines/routine-list'
@@ -217,6 +217,20 @@ function DashboardContent({
   const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
   const [openRoutineBuilderTrigger, setOpenRoutineBuilderTrigger] = useState(false)
 
+  const THEME_EMOJIS: Record<string, string> = {
+    christmas: '🎄', halloween: '🎃', easter: '🐰', summer: '☀️',
+    spring: '🌸', fall: '🍂', winter: '❄️', valentine: '💕',
+    stPatricks: '☘️', thanksgiving: '🦃', newYear: '🎉',
+    ocean: '🌊', sunset: '🌅',
+  }
+
+  const customTheme = settings?.custom_theme as { seasonalTheme?: string; mode?: string } | null
+  const headerEmoji = customTheme?.seasonalTheme
+    ? (THEME_EMOJIS[customTheme.seasonalTheme] ?? '⭐')
+    : '⭐'
+
+  const [isNavOpen, setIsNavOpen] = useState(false)
+
   const handleAddRoutine = () => {
     setActiveTab('routines')
     setOpenRoutineBuilderTrigger(true)
@@ -234,15 +248,24 @@ function DashboardContent({
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--gradient-bg)' }}>
-      {/* Header - Professional */}
+      {/* Header */}
       <header className="glass glass-border sticky top-0 z-50 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700" style={{
         boxShadow: 'var(--shadow-sm)',
         backgroundColor: 'var(--card-bg)'
       }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">⭐</div>
+            <div className="flex items-center gap-2">
+              {/* Hamburger - desktop only */}
+              <button
+                type="button"
+                onClick={() => setIsNavOpen(prev => !prev)}
+                aria-label="Toggle navigation"
+                className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-white/20"
+                style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               <h1
                 className="text-2xl font-bold tracking-tight text-white dark:text-white"
                 style={headerTextColor !== 'white' ? {
@@ -252,66 +275,99 @@ function DashboardContent({
                   backgroundClip: 'text'
                 } : undefined}
               >
+                <span className="mr-1">{headerEmoji}</span>
                 ChoreStar
               </h1>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Secondary actions - hidden on very small screens */}
-              <div className="hidden sm:flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setIsFAQOpen(true)}
-                  aria-label="Help & FAQ"
-                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
-                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
-                >
-                  <HelpCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>Help</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsContactOpen(true)}
-                  aria-label="Contact Us"
-                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
-                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
-                >
-                  <Mail className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>Contact</span>
-                </button>
-                <Link
-                  href="/how-to"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="How-To Guides"
-                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-semibold hover-glow transition-colors"
-                  style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
-                >
-                  <BookOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>How-To</span>
-                </Link>
-              </div>
-              {/* Always visible: Settings and Sign Out */}
-              <SettingsMenu buttonColor={buttonColor} />
-              <button
-                onClick={handleLogout}
-                className="font-semibold hover-glow text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg border transition-all"
-                style={buttonColor === 'white' ? {
-                  borderColor: 'rgba(255, 255, 255, 0.5)',
-                  color: 'white',
-                  background: 'rgba(255, 255, 255, 0.15)',
-                } : {
-                  borderColor: 'hsl(var(--border))',
-                  color: 'var(--text-primary)',
-                  background: 'transparent',
-                }}
-              >
-                <span className="hidden sm:inline">Sign Out</span>
-                <span className="sm:hidden">Out</span>
-              </button>
-            </div>
+            <SettingsMenu buttonColor={buttonColor} onLogout={handleLogout} />
           </div>
         </div>
       </header>
+
+      {/* Slide-out nav drawer - desktop only */}
+      {isNavOpen && (
+        <div className="hidden sm:block fixed inset-0 z-[60]">
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setIsNavOpen(false)}
+          />
+          <nav
+            className="absolute top-0 left-0 h-full w-72 shadow-2xl border-r flex flex-col animate-slide-in-left"
+            style={{
+              background: 'var(--card-bg)',
+              borderColor: 'hsl(var(--border))',
+            }}
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
+              <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                {headerEmoji} ChoreStar
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsNavOpen(false)}
+                className="w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Nav items */}
+            <div className="flex-1 py-3 px-3 space-y-1">
+              <button
+                type="button"
+                onClick={() => { setIsFAQOpen(true); setIsNavOpen(false) }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <HelpCircle className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                FAQ &amp; Help
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsContactOpen(true); setIsNavOpen(false) }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <Mail className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                Contact Us
+              </button>
+              <Link
+                href="/how-to"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsNavOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <BookOpen className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                How-To Guides
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setIsNewFeaturesOpen(true); setIsNavOpen(false) }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <Sparkles className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                What&apos;s New
+              </button>
+            </div>
+
+            {/* Sign Out at bottom */}
+            <div className="px-3 py-4 border-t" style={{ borderColor: 'hsl(var(--border))' }}>
+              <button
+                onClick={() => { handleLogout(); setIsNavOpen(false) }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+              >
+                <LogOut className="w-5 h-5 shrink-0" />
+                Sign Out
+              </button>
+            </div>
+          </nav>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">

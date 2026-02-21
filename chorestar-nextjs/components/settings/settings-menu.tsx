@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard } from 'lucide-react'
+import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
@@ -31,9 +31,10 @@ const TABS = [
 
 interface SettingsMenuProps {
   buttonColor?: 'white' | 'black'
+  onLogout?: () => void
 }
 
-export function SettingsMenu({ buttonColor = 'black' }: SettingsMenuProps) {
+export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuProps) {
   const { settings, updateSettings } = useSettings()
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsTab>('family')
@@ -69,20 +70,33 @@ export function SettingsMenu({ buttonColor = 'black' }: SettingsMenuProps) {
           {/* Body - Scrollable */}
           <div className="flex flex-1 overflow-hidden min-h-0">
             {/* Tab Navigation - Left Sidebar */}
-            <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4 space-y-1 flex-shrink-0 overflow-y-auto">
-              {TABS.map((tab) => {
-                const Icon = tab.icon
-                return (
+            <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4 flex flex-col flex-shrink-0 overflow-y-auto">
+              <div className="space-y-1 flex-1">
+                {TABS.map((tab) => {
+                  const Icon = tab.icon
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`settings-tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {onLogout && (
+                <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`settings-tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                    onClick={() => { setIsOpen(false); onLogout() }}
+                    className="settings-tab-button text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
-                    <Icon className="w-5 h-5" />
-                    <span>{tab.label}</span>
+                    <LogOut className="w-5 h-5" />
+                    <span>Sign Out</span>
                   </button>
-                )
-              })}
+                </div>
+              )}
             </div>
 
             {/* Tab Content - Right Panel */}
