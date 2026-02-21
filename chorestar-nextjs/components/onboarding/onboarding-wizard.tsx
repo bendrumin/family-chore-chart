@@ -177,10 +177,7 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col bg-white dark:bg-gray-900"
-        style={{
-          backdropFilter: 'blur(20px)'
-        }}
+        className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col dialog-content-bg"
       >
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gray-200 dark:bg-gray-700">
@@ -198,13 +195,16 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
           {STEPS.map((_, index) => (
             <div
               key={index}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentStep
-                  ? 'w-8 bg-blue-600 dark:bg-blue-500'
+              className="rounded-full transition-all"
+              style={{
+                width: index === currentStep ? '2rem' : '0.5rem',
+                height: '0.5rem',
+                background: index === currentStep
+                  ? 'var(--gradient-primary)'
                   : index < currentStep
-                  ? 'bg-green-500 dark:bg-green-400'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
+                  ? 'var(--success)'
+                  : 'hsl(var(--border))'
+              }}
             />
           ))}
         </div>
