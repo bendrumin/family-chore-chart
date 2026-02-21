@@ -51,11 +51,10 @@ export async function GET(request: Request) {
       }
     }
 
-    const host = request.headers.get('host') || 'chorestar.app'
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
-      (host.includes('localhost') || host.includes('127.0.0.1')
-        ? `http://${host}`
-        : `https://${host}`)
+    const host = request.headers.get('host')
+    const baseUrl = host
+      ? (host.includes('localhost') || host.includes('127.0.0.1') ? `http://${host}` : `https://${host}`)
+      : (process.env.NEXT_PUBLIC_APP_URL || 'https://chorestar.app')
     const kidLoginUrl = `${baseUrl}/kid-login/${code}`;
 
     return NextResponse.json({ code, kidLoginUrl });
