@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Sparkles } from 'lucide-react'
@@ -9,10 +9,18 @@ import { CHANGELOG_DATA } from '@/lib/constants/changelog'
 interface NewFeaturesModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onDismiss?: (dontShowAgain: boolean) => void
 }
 
-export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) {
+export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesModalProps) {
   const [selectedVersion, setSelectedVersion] = useState<string>('all')
+  const [dontShowAgain, setDontShowAgain] = useState(false)
+
+  const handleClose = () => {
+    onDismiss?.(dontShowAgain)
+    onOpenChange(false)
+    setDontShowAgain(false)
+  }
 
   const versions = Object.keys(CHANGELOG_DATA).sort((a, b) => {
     const aParts = a.split('.').map(Number)
@@ -35,7 +43,7 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        onClose={() => onOpenChange(false)}
+        onClose={handleClose}
         className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden dialog-content-bg"
       >
         <DialogHeader>
@@ -151,16 +159,31 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
           })}
         </div>
 
-        {/* Action Button - pinned at bottom */}
-        <div className="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-700 shrink-0">
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={() => onOpenChange(false)}
-            className="font-bold hover-glow"
-          >
-            Awesome! Let's Go! 🚀
-          </Button>
+        {/* Footer - pinned at bottom */}
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700 shrink-0 space-y-3">
+          {onDismiss && (
+            <label className="flex items-center justify-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+              />
+              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Don't show this automatically on login
+              </span>
+            </label>
+          )}
+          <div className="flex justify-center">
+            <Button
+              variant="gradient"
+              size="lg"
+              onClick={handleClose}
+              className="font-bold hover-glow"
+            >
+              Awesome! Let's Go! 🚀
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

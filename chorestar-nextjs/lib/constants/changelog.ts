@@ -11,6 +11,8 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
+export const LATEST_CHANGELOG_VERSION = '2026.2.0'
+
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
   '2026.2.0': {
     version: '2026.2.0',

@@ -21,6 +21,7 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
+import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import type { Database } from '@/lib/supabase/database.types'
@@ -201,7 +202,30 @@ function DashboardContent({
   loadChildren,
   handleOnboardingComplete
 }: any) {
-  const { settings } = useSettings()
+  const { settings, updateSettings } = useSettings()
+
+  // Auto-show What's New if the user hasn't seen the latest version
+  useEffect(() => {
+    if (!settings) return
+    const theme = settings.custom_theme as Record<string, unknown> | null
+    const seenVersion = theme?.whatsNewSeenVersion as string | undefined
+    const dismissed = theme?.whatsNewDismissed as boolean | undefined
+    if (dismissed) return
+    if (seenVersion === LATEST_CHANGELOG_VERSION) return
+    const timer = setTimeout(() => setIsNewFeaturesOpen(true), 1200)
+    return () => clearTimeout(timer)
+  }, [settings?.custom_theme])
+
+  const handleWhatsNewDismiss = async (dontShowAgain: boolean) => {
+    const currentTheme = (settings?.custom_theme as Record<string, unknown>) || {}
+    await updateSettings({
+      custom_theme: {
+        ...currentTheme,
+        whatsNewSeenVersion: LATEST_CHANGELOG_VERSION,
+        ...(dontShowAgain ? { whatsNewDismissed: true } : {}),
+      },
+    })
+  }
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&
@@ -557,6 +581,7 @@ function DashboardContent({
       <NewFeaturesModal
         open={isNewFeaturesOpen}
         onOpenChange={setIsNewFeaturesOpen}
+        onDismiss={handleWhatsNewDismiss}
       />
 
       {/* Welcome Modal (first visit) */}
