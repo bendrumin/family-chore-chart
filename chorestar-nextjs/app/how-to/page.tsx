@@ -105,7 +105,7 @@ export default function HowToPage() {
             className="text-sm font-semibold hover:opacity-80 transition-opacity"
             style={GRADIENT_TEXT}
           >
-            ← 🌟 ChoreStar
+            ← <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
           </Link>
           <Link
             href="/login"
@@ -250,7 +250,7 @@ export default function HowToPage() {
 
         {/* Footer */}
         <footer className="text-center mt-16 pb-8 text-gray-500 dark:text-gray-400">
-          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}>🌟 ChoreStar</p>
+          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</p>
           <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
             <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">

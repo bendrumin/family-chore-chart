@@ -1098,12 +1098,27 @@ html[data-theme="dark"] header.glass {
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   .kid-mode-bg,
   .step-icon-bounce,
   .progress-pulse,
   .celebration-sparkle,
-  .timer-glow {
+  .timer-glow,
+  .animate-bounce-in,
+  .animate-float,
+  .animate-shimmer,
+  .animate-gradient,
+  .animate-pulse-subtle {
     animation: none !important;
+    transform: none !important;
   }
 
   .kid-button {

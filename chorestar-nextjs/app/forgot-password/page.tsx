@@ -12,11 +12,11 @@ export default function ForgotPasswordPage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            🌟 ChoreStar
+            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
           </Link>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Reset Password
-          </h2>
+          </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-300">
             Enter your email and we'll send you a reset link
           </p>

@@ -166,8 +166,10 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
         <div className="space-y-6 my-6 flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Search */}
           <div className="relative flex-shrink-0">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <label htmlFor="faq-search" className="sr-only">Search FAQ</label>
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
             <Input
+              id="faq-search"
               type="text"
               placeholder="Search for help..."
               value={searchQuery}

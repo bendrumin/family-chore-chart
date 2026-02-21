@@ -152,9 +152,10 @@ export default function KidLoginWithFamilyPage({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleDelete}
+            aria-label="Delete last digit"
             className="kid-button aspect-square rounded-2xl bg-orange-500 text-white shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
           >
-            <Delete className="w-10 h-10" />
+            <Delete className="w-10 h-10" aria-hidden="true" />
           </motion.button>
         </div>
 

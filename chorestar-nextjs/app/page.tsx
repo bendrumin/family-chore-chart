@@ -22,9 +22,9 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
 
       {/* Sticky Top Nav */}
-      <div className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <nav aria-label="Main navigation" className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <span className="text-xl font-black" style={GRADIENT_TEXT}>🌟 ChoreStar</span>
+          <span className="text-xl font-black" style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</span>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">Already a member?</span>
             <Link
@@ -36,14 +36,15 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </div>
+      </nav>
 
+      <main>
       <div className="container mx-auto px-4 py-16">
 
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-6xl font-black mb-4">
-            <span style={GRADIENT_TEXT}>🌟 ChoreStar</span>
+            <span style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</span>
           </h1>
           <p className="text-2xl text-gray-600 dark:text-gray-300 mb-4">
             Turn Household Chores Into Family Wins
@@ -100,9 +101,9 @@ export default async function HomePage() {
 
         {/* How It Works */}
         <div className="max-w-4xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
             How It Works
-          </h3>
+          </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
             Up and running in under 2 minutes
           </p>
@@ -147,9 +148,9 @@ export default async function HomePage() {
 
         {/* Problem/Solution */}
         <div className="max-w-4xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
             Sound Familiar?
-          </h3>
+          </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-red-50 dark:bg-gray-800 rounded-xl p-6 border-2 border-red-200 dark:border-red-900">
               <h4 className="text-xl font-bold text-red-700 dark:text-red-400 mb-3">😫 Before ChoreStar</h4>
@@ -176,9 +177,9 @@ export default async function HomePage() {
 
         {/* Benefits */}
         <div className="max-w-6xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             Why Parents Love ChoreStar
-          </h3>
+          </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
             Built by a parent, for parents who want less stress and more family harmony
           </p>
@@ -206,9 +207,9 @@ export default async function HomePage() {
 
         {/* Testimonials */}
         <div className="max-w-6xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             What Parents Are Saying
-          </h3>
+          </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
             Real families, real results
           </p>
@@ -244,9 +245,9 @@ export default async function HomePage() {
 
         {/* Pricing */}
         <div className="max-w-6xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             Choose Your Plan
-          </h3>
+          </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
             Start free and upgrade anytime. No credit card required to try.
           </p>
@@ -358,9 +359,9 @@ export default async function HomePage() {
 
         {/* FAQ */}
         <div className="max-w-3xl mx-auto mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             Frequently Asked Questions
-          </h3>
+          </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
             Everything you need to know before getting started
           </p>
@@ -418,9 +419,9 @@ export default async function HomePage() {
           className="max-w-4xl mx-auto rounded-2xl shadow-2xl p-12 text-center text-white mb-16"
           style={{ background: GRADIENT }}
         >
-          <h3 className="text-3xl font-bold mb-4">
+          <h2 className="text-3xl font-bold mb-4">
             Ready to Transform Chore Time?
-          </h3>
+          </h2>
           <p className="text-xl mb-8 opacity-90">
             Join 87+ families who've said goodbye to chore battles
           </p>
@@ -438,7 +439,7 @@ export default async function HomePage() {
 
         {/* Footer */}
         <footer className="text-center mt-8 pb-8 text-gray-500 dark:text-gray-400">
-          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}>🌟 ChoreStar</p>
+          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</p>
           <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
             <Link href="/how-to" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
@@ -455,6 +456,7 @@ export default async function HomePage() {
         </footer>
 
       </div>
+      </main>
     </div>
   )
 }

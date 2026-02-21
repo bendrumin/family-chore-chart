@@ -134,8 +134,8 @@ export function NewFeaturesModal({ open, onOpenChange }: NewFeaturesModalProps) 
                             }}
                           />
                           
-                          {/* Icon with circular background */}
-                          <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-gray-50 to-white flex items-center justify-center text-3xl shadow-sm group-hover:shadow-md transition-shadow">
+                          {/* Icon */}
+                          <div className="flex-shrink-0 w-12 flex items-center justify-center text-4xl" aria-hidden="true">
                             {feature.icon}
                           </div>
                           
