@@ -211,31 +211,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
             }
           }
 
-          // Update page title with theme emoji
-          const themeEmojis: Record<string, string> = {
-            christmas: '🎄',
-            halloween: '🎃',
-            easter: '🐰',
-            summer: '☀️',
-            spring: '🌸',
-            fall: '🍂',
-            winter: '❄️',
-            valentine: '💕',
-            stPatricks: '☘️',
-            thanksgiving: '🦃',
-            newYear: '🎉',
-            ocean: '🌊',
-            sunset: '🌅'
-          }
-
-          const emoji = themeEmojis[customTheme.seasonalTheme]
-          if (emoji) {
-            const headerTitle = document.querySelector('header h1')
-            if (headerTitle) {
-              headerTitle.textContent = `${emoji} ChoreStar`
-            }
-          }
-
           console.log('🎨 Theme colors applied:', modeColors)
         }, 50)
       }
@@ -265,12 +240,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
         }
 
         // Button colors are managed by React state in dashboard-client.tsx
-      }
-
-      // Reset header title
-      const headerTitle = document.querySelector('header h1')
-      if (headerTitle) {
-        headerTitle.textContent = '🌟 ChoreStar'
       }
 
       console.log('❌ No seasonal theme to apply')
