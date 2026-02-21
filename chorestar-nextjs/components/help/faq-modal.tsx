@@ -92,7 +92,32 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Account',
     question: 'Can I delete a child?',
-    answer: 'Yes, click the Edit button on a child card, then click Delete. Note that this will also delete all their chores and completion history.'
+    answer: 'Yes, open the child\'s edit modal (click their card or go to Settings > Family > Open Editor) and click the trash icon in the header or the Delete button at the bottom. This will also delete all their chores and completion history.'
+  },
+  {
+    category: 'Family Sharing',
+    question: 'What is Family Sharing?',
+    answer: 'Family Sharing lets you invite a co-parent or guardian to access your ChoreStar family. Shared members get full access to manage children, chores, and routines — perfect for two-parent households or blended families.'
+  },
+  {
+    category: 'Family Sharing',
+    question: 'How do I invite a co-parent or guardian?',
+    answer: 'Go to Settings > Family and click "Manage Sharing". Enter their email address and click "Send Invite". They\'ll receive an email with a link to accept — they\'ll need a ChoreStar account (free to create) to join.'
+  },
+  {
+    category: 'Family Sharing',
+    question: 'What can a shared family member do?',
+    answer: 'Shared members have full access: they can view and manage all children, chores, and routines just like the account owner. They log in with their own account and see your family\'s data.'
+  },
+  {
+    category: 'Family Sharing',
+    question: 'How do I remove a family member?',
+    answer: 'Go to Settings > Family > Manage Sharing. You\'ll see a list of active members — click the remove button next to anyone you want to revoke access for. They\'ll lose access immediately.'
+  },
+  {
+    category: 'Family Sharing',
+    question: 'Can I resend an invite if they didn\'t get the email?',
+    answer: 'Yes! Open Manage Sharing and find the pending invite. Click the resend icon next to it — this refreshes the invite link and sends a fresh email.'
   },
 ]
 
