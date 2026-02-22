@@ -24,7 +24,7 @@ const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboardin
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
-import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut } from 'lucide-react'
+import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake } from 'lucide-react'
 import Link from 'next/link'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
@@ -333,6 +333,36 @@ function DashboardContent({
 
             {/* Nav items */}
             <div className="flex-1 py-3 px-3 space-y-1">
+              <Link
+                href="/"
+                onClick={() => setIsNavOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <Home className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                Home
+              </Link>
+              <Link
+                href="/how-to"
+                onClick={() => setIsNavOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <BookOpen className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                How-To Guides
+              </Link>
+              <Link
+                href="/partners"
+                onClick={() => setIsNavOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                <Handshake className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                Partners
+              </Link>
+
+              <div className="my-2 border-t" style={{ borderColor: 'hsl(var(--border))' }} />
+
               <button
                 type="button"
                 onClick={() => { setIsFAQOpen(true); setIsNavOpen(false) }}
@@ -351,17 +381,6 @@ function DashboardContent({
                 <Mail className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
                 Contact Us
               </button>
-              <Link
-                href="/how-to"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsNavOpen(false)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                <BookOpen className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
-                How-To Guides
-              </Link>
               <button
                 type="button"
                 onClick={() => { setIsNewFeaturesOpen(true); setIsNavOpen(false) }}
@@ -454,8 +473,8 @@ function DashboardContent({
             )}
 
             <div className="grid lg:grid-cols-[320px,1fr] gap-6">
-              {/* Sidebar - Children List */}
-              <div>
+              {/* Sidebar - Children List (sticky on desktop) */}
+              <div className="lg:self-start lg:sticky lg:top-20">
                 <ChildList
                   children={children}
                   selectedChildId={selectedChildId}
