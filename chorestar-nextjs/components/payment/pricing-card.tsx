@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
-import { PlanType, formatPlanPrice, getPlanSavings } from '@/lib/utils/paypal'
+import { type PlanType, formatPlanPrice, getPlanSavings } from '@/lib/utils/stripe'
 
 interface PricingCardProps {
   planType: PlanType

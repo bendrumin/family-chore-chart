@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { CreditCard, Crown, CheckCircle, ExternalLink } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { PricingCard } from '@/components/payment/pricing-card'
-import { initiatePayPalPayment, PlanType } from '@/lib/utils/paypal'
+import { createCheckoutSession, createPortalSession, type PlanType } from '@/lib/utils/stripe'
 import { toast } from 'sonner'
 import { isPremium as checkPremium } from '@/lib/utils/subscription'
 import type { Database } from '@/lib/supabase/database.types'
@@ -53,8 +53,8 @@ export function BillingTab() {
     setUpgradingPlan(planType)
 
     try {
-      await initiatePayPalPayment(planType, user.id, user.email || '')
-      // User will be redirected to PayPal
+      const checkoutUrl = await createCheckoutSession(planType)
+      window.location.href = checkoutUrl
     } catch (error: any) {
       console.error('Upgrade error:', error)
       toast.error(error.message || 'Failed to start upgrade process. Please try again.')
@@ -62,8 +62,14 @@ export function BillingTab() {
     }
   }
 
-  const handleManageSubscription = () => {
-    window.open('https://www.paypal.com/myaccount/autopay/', '_blank')
+  const handleManageSubscription = async () => {
+    try {
+      const portalUrl = await createPortalSession()
+      window.location.href = portalUrl
+    } catch (error: any) {
+      console.error('Portal error:', error)
+      toast.error(error.message || 'Failed to open billing portal.')
+    }
   }
 
   if (isLoading) {
@@ -187,7 +193,7 @@ export function BillingTab() {
           </h4>
           <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              View your billing history, update payment method, or cancel your subscription through PayPal.
+              View your billing history, update payment method, or cancel your subscription.
             </p>
             <Button
               onClick={handleManageSubscription}
@@ -195,7 +201,7 @@ export function BillingTab() {
               className="font-semibold"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              Open PayPal Settings
+              Manage Billing
             </Button>
           </div>
         </div>
