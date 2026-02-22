@@ -14,9 +14,28 @@ export async function GET(
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Kid mode: no auth session → service role read-only
+    // Kid mode: no auth session → validate kid token, then service role read-only
     if (!user) {
+      const authHeader = request.headers.get('Authorization');
+      const kidToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+
+      if (!kidToken) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+
       const serviceClient = createServiceRoleClient();
+
+      const { data: session } = await (serviceClient as any)
+        .from('kid_sessions')
+        .select('child_id')
+        .eq('token', kidToken)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (!session) {
+        return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
+      }
+
       const { data, error } = await serviceClient
         .from('routines')
         .select(`
@@ -32,6 +51,7 @@ export async function GET(
           )
         `)
         .eq('id', routineId)
+        .eq('child_id', session.child_id)
         .single();
 
       if (error || !data) {
@@ -129,19 +149,23 @@ export async function PATCH(
 
       if (updateError) {
         console.error('Error updating routine:', updateError);
-        return NextResponse.json({ error: updateError.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to update routine' }, { status: 500 });
       }
     }
 
-    // Update steps if provided
+    // Update steps if provided (atomic: rollback on failure)
     if (steps) {
-      // Delete existing steps
+      // Save existing steps before deleting so we can rollback
+      const { data: oldSteps } = await supabase
+        .from('routine_steps')
+        .select('*')
+        .eq('routine_id', routineId);
+
       await supabase
         .from('routine_steps')
         .delete()
         .eq('routine_id', routineId);
 
-      // Insert new steps
       if (steps.length > 0) {
         const stepsToInsert = steps.map((step: any, index: number) => ({
           routine_id: routineId,
@@ -157,7 +181,11 @@ export async function PATCH(
           .insert(stepsToInsert);
 
         if (stepsError) {
-          console.error('Error updating routine steps:', stepsError);
+          console.error('Error inserting new routine steps:', stepsError);
+          // Rollback: re-insert old steps
+          if (oldSteps && oldSteps.length > 0) {
+            await supabase.from('routine_steps').insert(oldSteps);
+          }
           return NextResponse.json({ error: 'Failed to update routine steps' }, { status: 500 });
         }
       }
@@ -221,7 +249,7 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Error deleting routine:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to delete routine' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

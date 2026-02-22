@@ -6,29 +6,38 @@ import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
+import { ReducedMotionProvider } from '@/components/providers/reduced-motion-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chorestar.app'),
   title: {
-    default: 'ChoreStar - Family Activity Tracker & Reward System | Make Everything Fun',
+    default: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
     template: '%s | ChoreStar',
   },
-  description: 'Transform chores, homework, reading, and activities into achievements with ChoreStar. Track progress, earn rewards, and build good habits with our interactive family activity tracker for families with children.',
+  description: 'ChoreStar is a free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility. Works on any device — no download needed.',
   keywords: [
+    'chore chart app',
+    'chore tracker for kids',
+    'kids chore chart',
+    'allowance tracker',
+    'kids reward system',
+    'family chore app',
+    'chore app for families',
+    'household chore tracker',
+    'kids responsibility app',
+    'chore management app',
+    'digital chore chart',
     'family activity tracker',
-    'kids chores',
-    'homework tracker',
-    'reading log',
-    'family rewards',
-    'children responsibility',
-    'household tasks',
     'parenting app',
-    'activity management',
-    'family organization',
-    'kids motivation',
-    'achievement tracker',
+    'kids motivation app',
+    'chore gamification',
+    'family organization app',
+    'kids earning tracker',
+    'daily chore chart',
+    'weekly chore chart',
+    'interactive chore chart',
   ],
   authors: [{ name: 'ChoreStar' }],
   creator: 'ChoreStar',
@@ -49,41 +58,31 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
-    title: 'ChoreStar - Family Activity Tracker & Reward System',
-    description: 'Track chores, homework, reading, and all family activities with progress tracking and rewards. Help your children build responsibility and achieve goals across all their daily activities.',
+    title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 87+ happy families.',
     images: [
       {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'ChoreStar family activity tracker interface showing colorful progress tracking and rewards',
+        url: '/icon.svg',
+        width: 64,
+        height: 64,
+        alt: 'ChoreStar — the family chore chart and reward tracking app',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     site: '@chorestar',
     creator: '@chorestar',
-    title: 'ChoreStar - Family Activity Tracker & Reward System',
-    description: 'Transform chores, homework, reading, and activities into achievements. Track progress, earn rewards, and build good habits with our interactive family tracker.',
-    images: ['/twitter-image.jpg'],
+    title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 87+ happy families.',
+    images: ['/icon.svg'],
   },
   icons: {
-    // Use an SVG icon so we don't 404 missing png favicons
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
   },
   manifest: '/manifest.json',
   alternates: {
     canonical: 'https://chorestar.app/',
-    languages: {
-      'en': 'https://chorestar.app/',
-      'es': 'https://chorestar.app/es',
-      'fr': 'https://chorestar.app/fr',
-      'de': 'https://chorestar.app/de',
-    },
-  },
-  verification: {
-    google: 'your-google-verification-code',
   },
   category: 'Family & Parenting',
 }
@@ -96,7 +95,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold"
+        >
+          Skip to main content
+        </a>
         <GoogleAnalytics />
+        <ReducedMotionProvider>
         <QueryProvider>
           <ServiceWorkerRegister />
           <KeyboardShortcutsProvider>
@@ -104,6 +110,7 @@ export default function RootLayout({
           </KeyboardShortcutsProvider>
           <Toaster position="top-center" richColors toastOptions={{ duration: 5000 }} />
         </QueryProvider>
+        </ReducedMotionProvider>
       </body>
     </html>
   )

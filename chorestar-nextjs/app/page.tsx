@@ -1,13 +1,52 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { SiteNav } from '@/components/layout/site-nav'
+import { SiteFooter } from '@/components/layout/site-footer'
+import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
-const GRADIENT = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-const GRADIENT_TEXT = {
-  background: GRADIENT,
-  WebkitBackgroundClip: 'text' as const,
-  WebkitTextFillColor: 'transparent' as const,
-  backgroundClip: 'text' as const,
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'ChoreStar',
+  applicationCategory: 'LifestyleApplication',
+  operatingSystem: 'Web',
+  url: 'https://chorestar.app',
+  description: 'Free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility.',
+  offers: [
+    {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      name: 'Free Plan',
+      description: 'Up to 3 children, 20 chores, kid login with PIN, achievement badges',
+    },
+    {
+      '@type': 'Offer',
+      price: '4.99',
+      priceCurrency: 'USD',
+      name: 'Premium',
+      description: 'Unlimited children and chores, family sharing, premium themes, export reports',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '4.99',
+        priceCurrency: 'USD',
+        billingDuration: 'P1M',
+      },
+    },
+  ],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5',
+    ratingCount: '87',
+    bestRating: '5',
+    worstRating: '1',
+  },
+  author: {
+    '@type': 'Organization',
+    name: 'ChoreStar',
+    url: 'https://chorestar.app',
+  },
 }
 
 export default async function HomePage() {
@@ -21,24 +60,14 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
 
-      {/* Sticky Top Nav */}
-      <nav aria-label="Main navigation" className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <span className="text-xl font-black" style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</span>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">Already a member?</span>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
-              style={{ background: GRADIENT }}
-            >
-              Sign In →
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      <main>
+      <SiteNav />
+
+      <main id="main-content">
       <div className="container mx-auto px-4 py-16">
 
         {/* Header */}
@@ -437,23 +466,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        {/* Footer */}
-        <footer className="text-center mt-8 pb-8 text-gray-500 dark:text-gray-400">
-          <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</p>
-          <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
-            <Link href="/how-to" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              How-To Guides
-            </Link>
-            <Link href="/login" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Sign In
-            </Link>
-            <Link href="/signup" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Sign Up Free
-            </Link>
-          </div>
-          <p className="text-xs">🔒 Your privacy matters. We never sell your data.</p>
-        </footer>
+        <SiteFooter />
 
       </div>
       </main>

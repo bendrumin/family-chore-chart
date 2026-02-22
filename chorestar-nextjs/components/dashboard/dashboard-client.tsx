@@ -12,29 +12,22 @@ import { ChildList } from '@/components/children/child-list'
 import { ChoreList } from '@/components/chores/chore-list'
 import { SettingsMenu } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
-import { AddChildModal } from '@/components/children/add-child-modal'
-import { FAQModal } from '@/components/help/faq-modal'
-import { NewFeaturesModal } from '@/components/help/new-features-modal'
-import { ContactModal } from '@/components/help/contact-modal'
-import { WelcomeModal } from '@/components/help/welcome-modal'
-import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
-import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
+import dynamic from 'next/dynamic'
+
+const AddChildModal = dynamic(() => import('@/components/children/add-child-modal').then(m => ({ default: m.AddChildModal })), { ssr: false })
+const FAQModal = dynamic(() => import('@/components/help/faq-modal').then(m => ({ default: m.FAQModal })), { ssr: false })
+const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-modal').then(m => ({ default: m.NewFeaturesModal })), { ssr: false })
+const ContactModal = dynamic(() => import('@/components/help/contact-modal').then(m => ({ default: m.ContactModal })), { ssr: false })
+const WelcomeModal = dynamic(() => import('@/components/help/welcome-modal').then(m => ({ default: m.WelcomeModal })), { ssr: false })
+const SeasonalSuggestionsModal = dynamic(() => import('@/components/chores/seasonal-suggestions-modal').then(m => ({ default: m.SeasonalSuggestionsModal })), { ssr: false })
+const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboarding-wizard').then(m => ({ default: m.OnboardingWizard })), { ssr: false })
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut } from 'lucide-react'
 import Link from 'next/link'
-import type { Database } from '@/lib/supabase/database.types'
+import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
-
-type Profile = {
-  id: string
-  email: string
-  family_name: string
-  subscription_tier: 'free' | 'premium' | 'lifetime'
-}
-
-type Child = Database['public']['Tables']['children']['Row']
 
 export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember }: {
   initialUser: any
@@ -330,6 +323,7 @@ function DashboardContent({
               <button
                 type="button"
                 onClick={() => setIsNavOpen(false)}
+                aria-label="Close navigation menu"
                 className="w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
                 style={{ color: 'var(--text-secondary)' }}
               >

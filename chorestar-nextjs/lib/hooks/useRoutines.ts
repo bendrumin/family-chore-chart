@@ -28,6 +28,18 @@ interface UpdateRoutineData {
   steps?: RoutineStepInsert[];
 }
 
+function getKidToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('kidMode');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.kidToken || null;
+  } catch {
+    return null;
+  }
+}
+
 // Fetch all routines for a child
 export function useRoutines(childId?: string) {
   const supabase = createClient();
@@ -39,7 +51,13 @@ export function useRoutines(childId?: string) {
         ? `/api/routines?childId=${childId}`
         : '/api/routines';
 
-      const response = await fetch(url);
+      const headers: Record<string, string> = {};
+      const kidToken = getKidToken();
+      if (kidToken) {
+        headers['Authorization'] = `Bearer ${kidToken}`;
+      }
+
+      const response = await fetch(url, { headers });
       if (!response.ok) {
         throw new Error('Failed to fetch routines');
       }
@@ -53,7 +71,13 @@ export function useRoutine(routineId: string) {
   return useQuery({
     queryKey: ['routine', routineId],
     queryFn: async () => {
-      const response = await fetch(`/api/routines/${routineId}`);
+      const headers: Record<string, string> = {};
+      const kidToken = getKidToken();
+      if (kidToken) {
+        headers['Authorization'] = `Bearer ${kidToken}`;
+      }
+
+      const response = await fetch(`/api/routines/${routineId}`, { headers });
       if (!response.ok) {
         throw new Error('Failed to fetch routine');
       }

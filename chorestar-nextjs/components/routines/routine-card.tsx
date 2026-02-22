@@ -183,6 +183,7 @@ export function RoutineCard({
               variant="outline"
               size="sm"
               onClick={onEdit}
+              aria-label={`Edit ${routine.name}`}
               className="gap-1 rounded-lg font-medium hover:scale-[1.02] transition-all border-gray-300 dark:border-gray-600"
             >
               <Edit className="w-3.5 h-3.5" />
@@ -193,6 +194,7 @@ export function RoutineCard({
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
+              aria-label={`Delete ${routine.name}`}
               className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium hover:scale-[1.02] transition-all border-gray-300 dark:border-gray-600"
             >
               <Trash2 className="w-3.5 h-3.5" />

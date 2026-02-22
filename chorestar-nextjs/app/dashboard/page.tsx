@@ -12,19 +12,31 @@ export default async function DashboardPage() {
   }
 
   // Detect if this user is a shared family member
-  const { effectiveUserId, isSharedMember } = await getEffectiveFamilyId(supabase, user.id)
+  let effectiveUserId = user.id
+  let isSharedMember = false
+  try {
+    const result = await getEffectiveFamilyId(supabase, user.id)
+    effectiveUserId = result.effectiveUserId
+    isSharedMember = result.isSharedMember
+  } catch (err) {
+    console.error('Failed to determine family membership:', err)
+  }
 
   // Get profile — if member, fetch owner's profile for family name display
   let profile = null
-  const admin = createServiceRoleClient()
 
   if (isSharedMember) {
-    const { data: ownerProfile } = await (admin as any)
-      .from('profiles')
-      .select('*')
-      .eq('id', effectiveUserId)
-      .single()
-    profile = ownerProfile
+    try {
+      const admin = createServiceRoleClient()
+      const { data: ownerProfile } = await (admin as any)
+        .from('profiles')
+        .select('*')
+        .eq('id', effectiveUserId)
+        .single()
+      profile = ownerProfile
+    } catch (err) {
+      console.error('Failed to fetch owner profile:', err)
+    }
   } else {
     const { data: ownProfile, error: profileError } = await supabase
       .from('profiles')
@@ -55,7 +67,10 @@ export default async function DashboardPage() {
             id: user.id,
             email: user.email!,
             family_name: familyName,
-            subscription_tier: 'free'
+            subscription_tier: 'free',
+            created_at: new Date().toISOString(),
+            trial_ends_at: null,
+            kid_login_code: null,
           }}
           effectiveUserId={user.id}
           isSharedMember={false}

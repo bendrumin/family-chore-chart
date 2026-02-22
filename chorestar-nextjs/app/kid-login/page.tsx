@@ -34,10 +34,10 @@ export default function KidLoginPage() {
         >
           <div className="text-8xl mb-6">👋</div>
           <h1 className="text-4xl font-black text-white mb-2">Kid Login</h1>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-xl text-white mb-8">
             Enter your family code to get started
           </p>
-          <p className="text-sm text-white/70 mb-6">
+          <p className="text-sm text-white/90 mb-6">
             Ask a parent for your family&apos;s kid login link. It looks like<br />
             <code className="bg-white/20 px-2 py-1 rounded">chorestar.app/kid-login/abc123</code>
           </p>
@@ -66,9 +66,11 @@ export default function KidLoginPage() {
               className="mt-2 h-14 text-lg font-mono bg-white/90"
               maxLength={12}
             />
-            {error && (
-              <p className="text-red-200 text-sm mt-2">{error}</p>
-            )}
+            <div aria-live="polite" aria-atomic="true">
+              {error && (
+                <p role="alert" className="text-red-200 text-sm mt-2">{error}</p>
+              )}
+            </div>
           </div>
           <Button
             type="submit"
@@ -84,7 +86,7 @@ export default function KidLoginPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-8 text-center text-white/60 text-sm"
+          className="mt-8 text-center text-white/90 text-sm"
         >
           Parents: Get your family&apos;s link in Settings → Family
         </motion.p>

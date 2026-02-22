@@ -5,6 +5,7 @@ import crypto from 'crypto'
 
 // POST /api/family/invite — send an email invite to join the family
 export async function POST(request: Request) {
+  try {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -21,7 +22,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'You cannot invite yourself' }, { status: 400 })
   }
 
-  // Get inviter's family name
   const { data: profile } = await supabase
     .from('profiles')
     .select('family_name')
@@ -30,8 +30,12 @@ export async function POST(request: Request) {
 
   const familyName = profile?.family_name || 'Your family'
 
-  // Check for existing pending invite to this email
-  const admin = createServiceRoleClient()
+  let admin
+  try {
+    admin = createServiceRoleClient()
+  } catch {
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
   const { data: existing } = await (admin as any)
     .from('family_invites')
     .select('id, status')
@@ -124,4 +128,8 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Family invite error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

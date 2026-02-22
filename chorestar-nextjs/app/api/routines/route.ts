@@ -17,12 +17,32 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Kid mode: no auth session but childId provided → service role read-only
+    // Kid mode: no auth session but childId provided → validate kid token, then service role read-only
     if (!user) {
       if (!childId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
+
+      const authHeader = request.headers.get('Authorization');
+      const kidToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+
+      if (!kidToken) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+
       const serviceClient = createServiceRoleClient();
+
+      const { data: session } = await (serviceClient as any)
+        .from('kid_sessions')
+        .select('child_id')
+        .eq('token', kidToken)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (!session || session.child_id !== childId) {
+        return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
+      }
+
       const { data, error } = await serviceClient
         .from('routines')
         .select(`
@@ -42,7 +62,7 @@ export async function GET(request: Request) {
 
       if (error) {
         console.error('Error fetching routines (kid mode):', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch routines' }, { status: 500 });
       }
 
       const sorted = ((data || []) as any[]).map((routine: any) => ({
@@ -83,7 +103,7 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error('Error fetching routines:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch routines' }, { status: 500 });
     }
 
     const routinesWithSortedSteps = data.map(routine => ({
@@ -152,7 +172,7 @@ export async function POST(request: Request) {
 
     if (routineError || !newRoutine) {
       console.error('Error creating routine:', routineError);
-      return NextResponse.json({ error: routineError?.message || 'Failed to create routine' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create routine' }, { status: 500 });
     }
 
     // Create routine steps if provided

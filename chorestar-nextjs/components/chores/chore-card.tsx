@@ -101,6 +101,7 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
           onClick={() => setIsEditModalOpen(true)}
           className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm"
           title="Edit chore"
+          aria-label="Edit chore"
         >
           <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
         </Button>

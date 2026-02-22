@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { UserPlus, Sparkles, Crown, AlertCircle } from 'lucide-react'
+import { getChildLimit } from '@/lib/utils/subscription'
 import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -59,10 +60,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
 
   const canAddChild = () => {
     const tier = profile?.subscription_tier || 'free'
-    if (tier === 'free') {
-      return currentChildCount < 3
-    }
-    return true // Premium and lifetime have unlimited
+    return currentChildCount < getChildLimit(tier)
   }
 
   const isAtLimit = !canAddChild()
