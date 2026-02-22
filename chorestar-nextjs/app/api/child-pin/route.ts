@@ -126,7 +126,7 @@ export async function DELETE(request: Request) {
 
     if (deleteError) {
       console.error('Error deleting child PIN:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to remove PIN' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

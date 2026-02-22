@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { validatePassword } from '@/lib/utils/validation'
 
 export function SignupForm({ next = '/dashboard' }: { next?: string }) {
   const router = useRouter()
@@ -18,22 +19,6 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
     password: '',
     confirmPassword: '',
   })
-
-  const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters'
-    }
-    if (!/[A-Z]/.test(password)) {
-      return 'Password must contain an uppercase letter'
-    }
-    if (!/[a-z]/.test(password)) {
-      return 'Password must contain a lowercase letter'
-    }
-    if (!/[0-9]/.test(password)) {
-      return 'Password must contain a number'
-    }
-    return null
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

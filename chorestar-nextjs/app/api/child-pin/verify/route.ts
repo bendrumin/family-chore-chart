@@ -122,24 +122,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // No match found - try legacy pgcrypto only when no familyCode (backward compat)
-    if ((!matchedChild || !matchedPinRecord) && !familyCode) {
-      const { data: legacyMatch } = await (supabase as any).rpc('verify_child_pin', { p_pin: pin });
-      const first = Array.isArray(legacyMatch) ? legacyMatch[0] : null;
-      if (first?.child_id) {
-        const { data: child } = await supabase
-          .from('children')
-          .select('id, name, avatar_color, avatar_url, avatar_file')
-          .eq('id', first.child_id)
-          .single();
-        if (child) {
-          const c = child as { id: string; name: string; avatar_color?: string | null; avatar_url?: string | null; avatar_file?: string | null };
-          matchedChild = c;
-          matchedPinRecord = { child_id: c.id, pin_hash: '', failed_attempts: 0, locked_until: null };
-        }
-      }
-    }
-
     if (!matchedChild || !matchedPinRecord) {
       recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 });

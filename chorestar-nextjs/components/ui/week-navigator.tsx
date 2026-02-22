@@ -2,7 +2,7 @@
 
 import { Button } from './button'
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
-import { getWeekInfo, getPreviousWeek, getNextWeek, isCurrentWeek } from '@/lib/utils/date-helpers'
+import { getWeekStart, getWeekInfo, getPreviousWeek, getNextWeek, isCurrentWeek } from '@/lib/utils/date-helpers'
 
 interface WeekNavigatorProps {
   weekStart: string
@@ -24,12 +24,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
   }
 
   const handleToday = () => {
-    const currentWeek = new Date()
-    const dayOfWeek = currentWeek.getDay()
-    const diff = currentWeek.getDate() - dayOfWeek
-    const sunday = new Date(currentWeek.setDate(diff))
-    sunday.setHours(0, 0, 0, 0)
-    onWeekChange(sunday.toISOString().split('T')[0])
+    onWeekChange(getWeekStart())
   }
 
   return (

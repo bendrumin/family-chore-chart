@@ -123,7 +123,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-2xl text-white/80 font-bold"
+            className="text-2xl text-white font-bold"
           >
             Ready for your routines?
           </motion.p>
@@ -162,7 +162,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           >
             <div className="text-8xl mb-4">📋</div>
             <h2 className="text-4xl font-black text-white mb-4">No Routines Yet</h2>
-            <p className="text-xl text-white/80">Ask a grownup to add routines for you!</p>
+            <p className="text-xl text-white">Ask a grownup to add routines for you!</p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

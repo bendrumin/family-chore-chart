@@ -2,23 +2,38 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const formData = await request.formData()
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-  const rememberMe = formData.get('rememberMe') === 'on'
+  try {
+    const formData = await request.formData()
+    const email = formData.get('email')
+    const password = formData.get('password')
 
-  const supabase = await createClient()
+    if (!email || !password) {
+      return NextResponse.redirect(
+        new URL('/login?error=Email+and+password+are+required', request.url)
+      )
+    }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+    const supabase = await createClient()
 
-  if (error) {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: String(email),
+      password: String(password),
+    })
+
+    if (error) {
+      const friendlyMessage =
+        error.message === 'Invalid login credentials'
+          ? 'Invalid email or password'
+          : 'Login failed. Please try again.'
+      return NextResponse.redirect(
+        new URL(`/login?error=${encodeURIComponent(friendlyMessage)}`, request.url)
+      )
+    }
+
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  } catch {
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url)
+      new URL('/login?error=Something+went+wrong.+Please+try+again.', request.url)
     )
   }
-
-  return NextResponse.redirect(new URL('/dashboard', request.url))
 }

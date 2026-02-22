@@ -40,11 +40,11 @@ export default function NotFound() {
             <Link href="/dashboard" className="text-xs px-3 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
               Dashboard
             </Link>
-            <Link href="/dashboard/children" className="text-xs px-3 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
-              Children
+            <Link href="/how-to" className="text-xs px-3 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
+              How-To Guides
             </Link>
-            <Link href="/dashboard/settings" className="text-xs px-3 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
-              Settings
+            <Link href="/login" className="text-xs px-3 py-1 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
+              Sign In
             </Link>
           </div>
         </div>

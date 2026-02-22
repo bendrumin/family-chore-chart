@@ -7,8 +7,6 @@ import { createClient } from '@/lib/supabase/client'
 
 interface InviteDetails {
   status: string
-  invitedEmail: string
-  expiresAt: string
   familyName: string
   expired: boolean
 }
@@ -166,7 +164,7 @@ export default function AcceptInvitePage() {
               )}
 
               <p className="text-xs text-gray-400 mt-6">
-                Expires {new Date(invite.expiresAt).toLocaleDateString()}
+                This invite expires in 7 days
               </p>
             </div>
           ) : null}

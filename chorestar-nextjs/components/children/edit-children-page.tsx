@@ -254,6 +254,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                   disabled={isLoading || isDeleting}
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg p-2 flex-shrink-0"
                   title={`Delete ${children[currentIndex]?.name}`}
+                  aria-label={`Delete ${children[currentIndex]?.name}`}
                   style={{ WebkitTextFillColor: 'initial' }}
                 >
                   <Trash2 className="w-5 h-5" />

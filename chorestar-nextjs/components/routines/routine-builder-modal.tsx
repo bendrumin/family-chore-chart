@@ -88,6 +88,7 @@ function SortableStep({
       {/* Drag Handle */}
       <button
         type="button"
+        aria-label={`Reorder step ${index + 1}: ${step.title || 'untitled'}`}
         className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
         {...attributes}
         {...listeners}
@@ -110,12 +111,13 @@ function SortableStep({
         value={step.title}
         onChange={(e) => onUpdate({ title: e.target.value })}
         placeholder="Step name..."
+        aria-label={`Step ${index + 1} name`}
         className="flex-1"
       />
 
       {/* Duration (optional) */}
       <div className="flex items-center gap-1">
-        <Clock className="w-4 h-4 text-gray-400" />
+        <Clock className="w-4 h-4 text-gray-400" aria-hidden="true" />
         <Input
           type="number"
           value={step.duration_seconds ? Math.floor(step.duration_seconds / 60) : ''}
@@ -123,13 +125,14 @@ function SortableStep({
             onUpdate({ duration_seconds: e.target.value ? parseInt(e.target.value) * 60 : undefined })
           }
           placeholder="min"
+          aria-label={`Step ${index + 1} duration in minutes`}
           className="w-16 text-sm"
           min="0"
         />
       </div>
 
       {/* Delete Button */}
-      <Button type="button" variant="ghost" size="sm" onClick={onDelete} className="text-red-500 hover:text-red-700">
+      <Button type="button" variant="ghost" size="sm" onClick={onDelete} aria-label={`Delete step ${index + 1}`} className="text-red-500 hover:text-red-700">
         <Trash2 className="w-4 h-4" />
       </Button>
     </div>
@@ -333,9 +336,9 @@ export function RoutineBuilderModal({
               <div className="p-4 sm:p-5 rounded-2xl border-2 border-cyan-200 bg-cyan-50/30 dark:border-cyan-800 dark:bg-cyan-900/20 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                  <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                     Quick Start Templates
-                  </h4>
+                  </h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {ROUTINE_TEMPLATES.map((template, index) => (
@@ -357,9 +360,9 @@ export function RoutineBuilderModal({
             <div className="p-4 sm:p-5 rounded-2xl border-2 border-blue-200 bg-blue-50/30 dark:border-blue-800 dark:bg-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                   Routine Details
-                </h4>
+                </h3>
               </div>
 
               <div className="space-y-4">
@@ -468,9 +471,9 @@ export function RoutineBuilderModal({
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                     Routine Steps ({steps.length})
-                  </h4>
+                  </h3>
                 </div>
                 <Button type="button" onClick={addStep} size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />

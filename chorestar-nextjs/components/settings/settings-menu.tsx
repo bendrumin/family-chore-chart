@@ -46,6 +46,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
         size="icon"
         onClick={() => setIsOpen(true)}
         title="Settings"
+        aria-label="Open settings"
         className="hover-glow"
         style={{
           color: buttonColor === 'white' ? 'white' : 'var(--text-primary)'

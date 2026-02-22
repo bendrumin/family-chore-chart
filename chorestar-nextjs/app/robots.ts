@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/api/', '/admin/', '/*.json$'],
+        allow: ['/', '/manifest.json'],
+        disallow: ['/api/', '/admin/', '/dashboard', '/kid/', '/kid-login'],
       },
     ],
     sitemap: 'https://chorestar.app/sitemap.xml',

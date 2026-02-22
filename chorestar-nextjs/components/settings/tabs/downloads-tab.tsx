@@ -9,11 +9,8 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useSettings } from '@/lib/contexts/settings-context'
-import type { Database } from '@/lib/supabase/database.types'
-
-type Child = Database['public']['Tables']['children']['Row']
-type Chore = Database['public']['Tables']['chores']['Row']
-type ChoreCompletion = Database['public']['Tables']['chore_completions']['Row']
+import { getWeekStart } from '@/lib/utils/date-helpers'
+import type { Child, Chore, ChoreCompletion } from '@/lib/types'
 
 export function DownloadsTab() {
   const [isNewFeaturesOpen, setIsNewFeaturesOpen] = useState(false)
@@ -21,14 +18,6 @@ export function DownloadsTab() {
   const { user } = useAuth()
   const { settings } = useSettings()
   
-  const getWeekStart = () => {
-    const today = new Date()
-    const day = today.getDay()
-    const diff = today.getDate() - day
-    const weekStart = new Date(today.setDate(diff))
-    weekStart.setHours(0, 0, 0, 0)
-    return weekStart.toISOString().split('T')[0]
-  }
 
   const getCurrencySymbol = () => {
     if (!settings?.currency_code) return '$'

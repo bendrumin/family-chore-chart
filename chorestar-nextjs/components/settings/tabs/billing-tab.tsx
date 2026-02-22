@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { PricingCard } from '@/components/payment/pricing-card'
 import { initiatePayPalPayment, PlanType } from '@/lib/utils/paypal'
 import { toast } from 'sonner'
+import { isPremium as checkPremium } from '@/lib/utils/subscription'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -80,7 +81,7 @@ export function BillingTab() {
   }
 
   const currentTier = profile?.subscription_tier || 'free'
-  const isPremium = currentTier === 'premium' || currentTier === 'lifetime'
+  const isPremium = checkPremium(currentTier)
 
   return (
     <div className="space-y-8 min-h-[600px]">

@@ -14,8 +14,8 @@ export function ServiceWorkerRegister() {
       const isLegacy = path.startsWith('/legacy');
 
       if (isAppRoute && !isLegacy) {
-        const swPath = path.startsWith('/app') ? '/app/app-sw.js' : '/app-sw.js';
-        const scope = path.startsWith('/app') ? '/app/' : '/';
+        const swPath = '/sw.js';
+        const scope = '/';
         fetch(swPath, { method: 'HEAD' })
           .then((res) => {
             if (!res.ok) return;
