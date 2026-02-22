@@ -1,42 +1,90 @@
 import Link from 'next/link'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
 
-interface FooterLink {
-  href: string
-  label: string
-}
+export function SiteFooter() {
+  const currentYear = new Date().getFullYear()
 
-interface SiteFooterProps {
-  links?: FooterLink[]
-}
-
-const DEFAULT_LINKS: FooterLink[] = [
-  { href: '/', label: 'Home' },
-  { href: '/how-to', label: 'How-To Guides' },
-  { href: '/partners', label: 'Partners' },
-  { href: '/login', label: 'Sign In' },
-  { href: '/signup', label: 'Sign Up Free' },
-]
-
-export function SiteFooter({ links = DEFAULT_LINKS }: SiteFooterProps) {
   return (
-    <footer className="text-center mt-8 pb-8 text-gray-500 dark:text-gray-400">
-      <p className="mb-3 font-semibold text-sm" style={GRADIENT_TEXT}>
-        <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
-      </p>
-      <p className="text-xs mb-4">Made with ❤️ by a parent who gets it</p>
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4">
-        {links.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            {label}
-          </Link>
-        ))}
+    <footer className="bg-gray-900 text-gray-300 mt-16">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="text-xl font-black text-white mb-3 block">
+              <span>🌟</span> ChoreStar
+            </Link>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Turn household chores into a game kids love. Built by a parent who gets it.
+            </p>
+          </div>
+
+          {/* Product */}
+          <div>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Product</h4>
+            <ul className="space-y-2.5">
+              <li>
+                <Link href="/signup" className="text-sm hover:text-white transition-colors">
+                  Sign Up Free
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-sm hover:text-white transition-colors">
+                  Sign In
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard" className="text-sm hover:text-white transition-colors">
+                  Dashboard
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Resources</h4>
+            <ul className="space-y-2.5">
+              <li>
+                <Link href="/how-to" className="text-sm hover:text-white transition-colors">
+                  How-To Guides
+                </Link>
+              </li>
+              <li>
+                <Link href="/partners" className="text-sm hover:text-white transition-colors">
+                  Partners
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:support@chorestar.app" className="text-sm hover:text-white transition-colors">
+                  Contact Support
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal / Trust */}
+          <div>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Trust</h4>
+            <ul className="space-y-2.5">
+              <li className="text-sm text-gray-400">🔒 Your data is private</li>
+              <li className="text-sm text-gray-400">🚫 We never sell data</li>
+              <li className="text-sm text-gray-400">✅ COPPA-friendly</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-gray-500">
+            © {currentYear} ChoreStar. Made with ❤️ for families everywhere.
+          </p>
+          <div className="flex items-center gap-4">
+            <a href="mailto:hi@chorestar.app" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              hi@chorestar.app
+            </a>
+          </div>
+        </div>
       </div>
-      <p className="text-xs">🔒 Your privacy matters. We never sell your data.</p>
     </footer>
   )
 }

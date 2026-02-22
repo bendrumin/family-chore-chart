@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { LoggedInHome } from '@/components/home/logged-in-home'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
 const jsonLd = {
@@ -54,7 +54,24 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    redirect('/dashboard')
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('family_name, subscription_tier')
+      .eq('id', user.id)
+      .single()
+
+    const { count } = await supabase
+      .from('children')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    return (
+      <LoggedInHome
+        familyName={profile?.family_name || 'Family'}
+        subscriptionTier={profile?.subscription_tier || 'free'}
+        childCount={count || 0}
+      />
+    )
   }
 
   return (
