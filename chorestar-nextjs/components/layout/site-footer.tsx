@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
+import { ChoreStarLogo } from '@/components/brand/logo'
 
 export function SiteFooter() {
   const currentYear = new Date().getFullYear()
@@ -10,8 +11,8 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-black text-white mb-3 block">
-              <span>🌟</span> ChoreStar
+            <Link href="/" className="text-xl font-black text-white mb-3 flex items-center gap-1.5">
+              <ChoreStarLogo size={24} /> ChoreStar
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
               Turn household chores into a game kids love. Built by a parent who gets it.

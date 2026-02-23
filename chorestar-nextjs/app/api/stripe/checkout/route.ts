@@ -28,11 +28,11 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_tier')
+      .select('subscription_type')
       .eq('id', user.id)
       .single()
 
-    if (profile?.subscription_tier === 'premium' || profile?.subscription_tier === 'lifetime') {
+    if (profile?.subscription_type === 'premium' || profile?.subscription_type === 'lifetime') {
       return NextResponse.json(
         { error: 'You already have an active premium subscription' },
         { status: 400 }

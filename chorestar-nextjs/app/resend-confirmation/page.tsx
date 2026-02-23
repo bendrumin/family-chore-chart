@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,7 +56,7 @@ export default function ResendConfirmationPage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
+            <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Resend Confirmation Email

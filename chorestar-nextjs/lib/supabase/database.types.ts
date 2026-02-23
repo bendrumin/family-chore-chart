@@ -14,27 +14,27 @@ export interface Database {
           id: string
           email: string
           family_name: string
+          subscription_type: 'free' | 'premium' | 'lifetime'
           created_at: string
-          subscription_tier: 'free' | 'premium' | 'lifetime'
-          trial_ends_at: string | null
+          updated_at: string
           kid_login_code: string | null
         }
         Insert: {
           id: string
           email: string
           family_name: string
+          subscription_type?: 'free' | 'premium' | 'lifetime'
           created_at?: string
-          subscription_tier?: 'free' | 'premium' | 'lifetime'
-          trial_ends_at?: string | null
+          updated_at?: string
           kid_login_code?: string | null
         }
         Update: {
           id?: string
           email?: string
           family_name?: string
+          subscription_type?: 'free' | 'premium' | 'lifetime'
           created_at?: string
-          subscription_tier?: 'free' | 'premium' | 'lifetime'
-          trial_ends_at?: string | null
+          updated_at?: string
           kid_login_code?: string | null
         }
       }
@@ -47,7 +47,10 @@ export interface Database {
           avatar_color: string | null
           avatar_url: string | null
           avatar_file: string | null
+          child_pin: string | null
+          child_access_enabled: boolean
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -57,7 +60,10 @@ export interface Database {
           avatar_color?: string | null
           avatar_url?: string | null
           avatar_file?: string | null
+          child_pin?: string | null
+          child_access_enabled?: boolean
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -67,7 +73,10 @@ export interface Database {
           avatar_color?: string | null
           avatar_url?: string | null
           avatar_file?: string | null
+          child_pin?: string | null
+          child_access_enabled?: boolean
           created_at?: string
+          updated_at?: string
         }
       }
       chores: {
@@ -83,6 +92,7 @@ export interface Database {
           notes: string | null
           color: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -96,6 +106,7 @@ export interface Database {
           notes?: string | null
           color?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -109,6 +120,7 @@ export interface Database {
           notes?: string | null
           color?: string | null
           created_at?: string
+          updated_at?: string
         }
       }
       chore_completions: {
@@ -117,21 +129,21 @@ export interface Database {
           chore_id: string
           day_of_week: number
           week_start: string
-          created_at: string
+          completed_at: string
         }
         Insert: {
           id?: string
           chore_id: string
           day_of_week: number
           week_start: string
-          created_at?: string
+          completed_at?: string
         }
         Update: {
           id?: string
           chore_id?: string
           day_of_week?: number
           week_start?: string
-          created_at?: string
+          completed_at?: string
         }
       }
       family_settings: {
@@ -176,6 +188,58 @@ export interface Database {
           custom_theme?: Json | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      family_invites: {
+        Row: {
+          id: string
+          family_id: string
+          invited_email: string
+          code: string
+          status: string
+          accepted_by: string | null
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          family_id: string
+          invited_email: string
+          code: string
+          status?: string
+          accepted_by?: string | null
+          created_at?: string
+          expires_at: string
+        }
+        Update: {
+          id?: string
+          family_id?: string
+          invited_email?: string
+          code?: string
+          status?: string
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+        }
+      }
+      family_members: {
+        Row: {
+          id: string
+          user_id: string
+          family_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          family_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          family_id?: string
+          created_at?: string
         }
       }
       achievement_badges: {

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SignupForm } from '@/components/auth/signup-form'
@@ -44,7 +45,7 @@ export default async function SignupPage({
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
+            <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
           </Link>
           <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Create Family Account
