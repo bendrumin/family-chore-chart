@@ -12,12 +12,10 @@ export default function SignupSuccessPage() {
   const [resent, setResent] = useState(false);
 
   useEffect(() => {
-    // Get email from URL params or session storage
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get('email') || sessionStorage.getItem('signup_email') || '';
     setEmail(emailParam);
 
-    // Detect email provider for helpful links
     if (emailParam.includes('@gmail.com')) {
       setEmailProvider('gmail');
     } else if (emailParam.includes('@outlook.com') || emailParam.includes('@hotmail.com') || emailParam.includes('@live.com')) {
@@ -73,7 +71,7 @@ export default function SignupSuccessPage() {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-lg w-full bg-white rounded-2xl shadow-2xl p-8"
+        className="max-w-lg w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8"
       >
         {/* Success Icon */}
         <motion.div
@@ -93,7 +91,7 @@ export default function SignupSuccessPage() {
                 repeatDelay: 3,
               }}
             >
-              <Mail className="w-20 h-20 text-indigo-600" />
+              <Mail className="w-20 h-20 text-indigo-600 dark:text-indigo-400" />
             </motion.div>
             <motion.div
               initial={{ scale: 0 }}
@@ -106,20 +104,18 @@ export default function SignupSuccessPage() {
           </div>
         </motion.div>
 
-        {/* Main Message */}
-        <h1 className="text-3xl font-black text-gray-900 text-center mb-3">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white text-center mb-3">
           Check Your Email!
         </h1>
 
-        <p className="text-gray-600 text-center mb-6">
-          We've sent a confirmation link to:
+        <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+          We&apos;ve sent a confirmation link to:
         </p>
 
-        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-6 text-center">
-          <p className="font-semibold text-indigo-900 break-all">{email}</p>
+        <div className="bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-700 rounded-lg p-4 mb-6 text-center">
+          <p className="font-semibold text-indigo-900 dark:text-indigo-200 break-all">{email}</p>
         </div>
 
-        {/* Provider Quick Link */}
         {providerLink && (
           <a
             href={providerLink}
@@ -132,13 +128,12 @@ export default function SignupSuccessPage() {
           </a>
         )}
 
-        {/* Instructions */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 p-4 mb-6">
           <div className="flex">
-            <AlertCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-blue-900 mb-2">Next steps:</p>
-              <ol className="list-decimal list-inside space-y-1 text-blue-800">
+              <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">Next steps:</p>
+              <ol className="list-decimal list-inside space-y-1 text-blue-800 dark:text-blue-300">
                 <li>Open your email inbox</li>
                 <li>Look for an email from ChoreStar</li>
                 <li>Click the confirmation link</li>
@@ -148,12 +143,11 @@ export default function SignupSuccessPage() {
           </div>
         </div>
 
-        {/* Troubleshooting */}
         <details className="mb-6">
-          <summary className="cursor-pointer text-sm font-semibold text-gray-700 hover:text-gray-900 mb-2">
-            Don't see the email? Click here 👇
+          <summary className="cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-2">
+            Don&apos;t see the email? Click here 👇
           </summary>
-          <div className="bg-gray-50 rounded-lg p-4 mt-2 space-y-2 text-sm text-gray-600">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mt-2 space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <p>✓ Check your spam or junk folder</p>
             <p>✓ Wait a few minutes - it may be delayed</p>
             <p>✓ Make sure you entered the correct email</p>
@@ -161,9 +155,8 @@ export default function SignupSuccessPage() {
           </div>
         </details>
 
-        {/* Resend Button */}
         {resent ? (
-          <div className="flex items-center justify-center px-6 py-3 bg-green-100 text-green-700 font-semibold rounded-lg mb-4">
+          <div className="flex items-center justify-center px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-semibold rounded-lg mb-4">
             <CheckCircle className="w-5 h-5 mr-2" />
             Email sent! Check your inbox
           </div>
@@ -171,7 +164,7 @@ export default function SignupSuccessPage() {
           <button
             onClick={handleResend}
             disabled={resending}
-            className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mb-4"
+            className="w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mb-4"
           >
             {resending ? (
               <>
@@ -187,11 +180,10 @@ export default function SignupSuccessPage() {
           </button>
         )}
 
-        {/* Back to Login */}
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold"
+            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold"
           >
             ← Back to Login
           </Link>

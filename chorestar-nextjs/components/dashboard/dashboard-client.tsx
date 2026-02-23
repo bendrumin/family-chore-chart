@@ -26,6 +26,7 @@ import { getWeekStart } from '@/lib/utils/date-helpers'
 import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake } from 'lucide-react'
 import Link from 'next/link'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
 
@@ -292,7 +293,10 @@ function DashboardContent({
                   backgroundClip: 'text'
                 } : undefined}
               >
-                <span className="mr-1">{headerEmoji}</span>
+                {customTheme?.seasonalTheme
+                  ? <span className="mr-1">{headerEmoji}</span>
+                  : <ChoreStarLogo size={28} className="mr-1" />
+                }
                 ChoreStar
               </h1>
             </div>
@@ -317,8 +321,12 @@ function DashboardContent({
           >
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
-              <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                {headerEmoji} ChoreStar
+              <span className="text-lg font-bold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                {customTheme?.seasonalTheme
+                  ? <span>{headerEmoji}</span>
+                  : <ChoreStarLogo size={24} />
+                }
+                ChoreStar
               </span>
               <button
                 type="button"
