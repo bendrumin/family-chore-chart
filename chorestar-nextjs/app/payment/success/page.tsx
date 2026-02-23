@@ -57,7 +57,7 @@ function PaymentSuccessContent() {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-lg w-full bg-white rounded-2xl shadow-2xl p-8 text-center"
+        className="max-w-lg w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -66,8 +66,8 @@ function PaymentSuccessContent() {
           className="flex justify-center mb-6"
         >
           <div className="relative">
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-14 h-14 text-green-500" />
+            <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-14 h-14 text-green-500 dark:text-green-400" />
             </div>
             <motion.div
               initial={{ scale: 0 }}
@@ -80,16 +80,16 @@ function PaymentSuccessContent() {
           </div>
         </motion.div>
 
-        <h1 className="text-3xl font-black text-gray-900 mb-3">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-3">
           Welcome to Premium!
         </h1>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           Your payment was successful. You now have access to all premium features including unlimited children, chores, and more.
         </p>
 
-        <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 mb-8">
-          <div className="flex items-center justify-center gap-2 text-purple-700 font-semibold">
+        <div className="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-8">
+          <div className="flex items-center justify-center gap-2 text-purple-700 dark:text-purple-300 font-semibold">
             <Crown className="w-5 h-5" />
             <span>Premium features are now active</span>
           </div>
