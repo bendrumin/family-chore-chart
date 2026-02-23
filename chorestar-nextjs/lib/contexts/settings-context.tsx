@@ -115,7 +115,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
         currency_code: 'USD',
         locale: 'en-US',
         date_format: 'auto',
-        custom_theme: { mode: 'light', seasonalTheme: null, autoSeasonal: false },
+        custom_theme: { mode: 'auto', seasonalTheme: null, autoSeasonal: false },
         daily_reward_cents: 7,
         weekly_bonus_cents: 1,
         timezone: 'UTC',
@@ -139,10 +139,20 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
   const applyTheme = (customTheme: any) => {
     console.log('🎨 Applying theme:', customTheme)
 
-    // Handle the theme from custom_theme JSONB field
-    const theme = customTheme?.mode || 'light'
+    const mode = customTheme?.mode || 'auto'
 
-    if (theme === 'dark') {
+    let isDark: boolean
+    if (mode === 'dark') {
+      isDark = true
+    } else if (mode === 'light') {
+      isDark = false
+    } else {
+      // 'auto' — defer to OS preference or time-based (DarkModeProvider)
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches ||
+        (() => { const h = new Date().getHours(); return h >= 19 || h < 7 })()
+    }
+
+    if (isDark) {
       document.documentElement.classList.add('dark')
       document.documentElement.setAttribute('data-theme', 'dark')
       document.body.setAttribute('data-theme', 'dark')
@@ -151,6 +161,8 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       document.documentElement.setAttribute('data-theme', 'light')
       document.body.setAttribute('data-theme', 'light')
     }
+
+    const theme = isDark ? 'dark' : 'light'
 
     // Remove any existing seasonal theme classes from both html and body
     const seasonalClasses = document.body.className.split(' ').filter(c => c.startsWith('seasonal-'))
