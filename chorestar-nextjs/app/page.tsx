@@ -58,7 +58,7 @@ export default async function HomePage() {
       .from('profiles')
       .select('family_name, subscription_tier')
       .eq('id', user.id)
-      .single()
+      .single() as { data: { family_name: string; subscription_tier: string } | null }
 
     const { count } = await supabase
       .from('children')

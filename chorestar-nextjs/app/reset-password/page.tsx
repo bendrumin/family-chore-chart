@@ -1,5 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ResetPasswordForm } from '@/components/auth/reset-password-form'
+
+export const metadata: Metadata = {
+  title: 'Reset Password',
+  description: 'Set a new password for your ChoreStar account.',
+  robots: { index: false, follow: false },
+}
 
 export default function ResetPasswordPage() {
   return (

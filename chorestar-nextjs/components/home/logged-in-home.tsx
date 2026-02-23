@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
+import { GRADIENT } from '@/lib/constants/brand'
+import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import {
@@ -24,21 +25,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <nav className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link href="/" className="text-xl font-black" style={GRADIENT_TEXT}>
-            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
-          </Link>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
-            style={{ background: GRADIENT }}
-          >
-            Dashboard →
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main id="main-content" className="container mx-auto px-4 py-10 max-w-5xl">
         {/* Welcome */}

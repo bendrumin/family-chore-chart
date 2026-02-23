@@ -1,7 +1,15 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/auth/login-form'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your ChoreStar account to manage chores, track allowances, and keep your family organized.',
+  robots: { index: false, follow: true },
+  alternates: { canonical: 'https://chorestar.app/login' },
+}
 
 export default async function LoginPage({
   searchParams,

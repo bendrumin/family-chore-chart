@@ -7,6 +7,7 @@ import { QueryProvider } from '@/components/providers/query-provider'
 import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
 import { ReducedMotionProvider } from '@/components/providers/reduced-motion-provider'
+import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -94,6 +95,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var d=document.documentElement;if(window.matchMedia('(prefers-color-scheme:dark)').matches||(function(){var h=new Date().getHours();return h>=19||h<7})()){d.classList.add('dark')}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <a
           href="#main-content"
@@ -102,6 +110,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <GoogleAnalytics />
+        <DarkModeProvider>
         <ReducedMotionProvider>
         <QueryProvider>
           <ServiceWorkerRegister />
@@ -111,6 +120,7 @@ export default function RootLayout({
           <Toaster position="top-center" richColors toastOptions={{ duration: 5000 }} />
         </QueryProvider>
         </ReducedMotionProvider>
+        </DarkModeProvider>
       </body>
     </html>
   )
