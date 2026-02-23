@@ -103,6 +103,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           email: formData.email,
           subject: formData.subject,
           message: messageWithRating,
+          honeypot: honeypotWebsite || honeypotEmail || '',
         }),
       })
 
