@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,12 +18,18 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
     password: '',
     confirmPassword: '',
   })
+  const [honeypot, setHoneypot] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Validation
+    if (honeypot) {
+      toast.error('Invalid submission.')
+      setIsLoading(false)
+      return
+    }
+
     if (!formData.email || !formData.password || !formData.confirmPassword) {
       toast.error('Please fill in all required fields')
       setIsLoading(false)
@@ -45,36 +50,24 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
     }
 
     try {
-      const supabase = createClient()
-      // Use provided family name or default to "My Family"
-      const familyName = formData.familyName.trim() || 'My Family'
-
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-          data: {
-            family_name: familyName,
-          },
-        },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          familyName: formData.familyName.trim() || 'My Family',
+          honeypot,
+        }),
       })
 
-      if (error) {
-        toast.error(error.message)
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Signup failed. Please try again.')
         return
       }
 
-      // Create profile
-      if (data.user) {
-        await supabase.from('profiles').insert({
-          id: data.user.id,
-          email: data.user.email!,
-          family_name: familyName,
-        })
-      }
-
-      // Redirect to signup success page with email
       router.push(`/signup-success?email=${encodeURIComponent(formData.email)}`)
     } catch (error) {
       toast.error('An error occurred during signup')
@@ -146,7 +139,17 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
         />
       </div>
 
-      {/* Submit Button */}
+      <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Creating account...' : 'Create Account'}
       </Button>

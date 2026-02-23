@@ -1,12 +1,22 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { checkRateLimit, recordAttempt, RATE_LIMITS, getClientIp, createRateLimitResponse } from '@/lib/utils/rate-limit';
 
-// POST /api/contact - Submit contact form (works for both logged-in and anonymous users)
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
+    if (!rateCheck.allowed) {
+      return createRateLimitResponse(rateCheck.retryAfter || 60, 'Too many messages. Please wait before trying again.');
+    }
+
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, honeypot } = body;
+
+    if (honeypot) {
+      return NextResponse.json({ error: 'Invalid submission.' }, { status: 400 });
+    }
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
@@ -14,6 +24,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    recordAttempt(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
 
     // Optional: get user if logged in (for context)
     let userId: string | null = null;
