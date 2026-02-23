@@ -17,13 +17,11 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center"
+        className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center"
       >
         <motion.div
           animate={{
@@ -39,32 +37,32 @@ export default function Error({
           😅
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Oops! Something Went Wrong
         </h1>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
           Don't worry! Even the best apps have hiccups. Let's try to fix this.
         </p>
 
         <div className="space-y-3">
           <button
             onClick={reset}
-            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
           >
             Try Again
           </button>
 
           <Link
             href="/dashboard"
-            className="block w-full px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-all"
+            className="block w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
           >
             Go to Dashboard
           </Link>
 
           <Link
             href="/"
-            className="block text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="block text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           >
             ← Back to Home
           </Link>
@@ -72,10 +70,10 @@ export default function Error({
 
         {process.env.NODE_ENV === 'development' && error.message && (
           <details className="mt-6 text-left">
-            <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+            <summary className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
               Error Details (Development Only)
             </summary>
-            <pre className="mt-2 p-3 bg-gray-50 rounded text-xs text-red-600 overflow-auto max-h-40">
+            <pre className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded text-xs text-red-600 dark:text-red-400 overflow-auto max-h-40">
               {error.message}
             </pre>
           </details>

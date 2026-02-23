@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
+import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,12 +51,7 @@ export default function ResendConfirmationPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <Link href="/" className="text-4xl font-bold" style={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
+          <Link href="/" className="text-4xl font-bold" style={GRADIENT_TEXT}>
             <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
