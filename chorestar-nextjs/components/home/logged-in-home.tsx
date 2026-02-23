@@ -3,13 +3,13 @@ import { GRADIENT } from '@/lib/constants/brand'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import {
   LayoutDashboard,
   BookOpen,
   Handshake,
   Crown,
   ArrowRight,
-  Star,
   Users,
   Sparkles,
 } from 'lucide-react'
@@ -76,9 +76,9 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Plan</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 text-center">
-            <Star className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-            <div className="text-2xl font-black text-gray-900 dark:text-white">🌟</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">ChoreStar</div>
+            <ChoreStarLogo size={24} className="mx-auto mb-2" />
+            <div className="text-2xl font-black text-gray-900 dark:text-white">ChoreStar</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Your App</div>
           </div>
         </div>
 

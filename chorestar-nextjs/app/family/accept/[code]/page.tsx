@@ -24,12 +24,10 @@ export default function AcceptInvitePage() {
   useEffect(() => {
     async function loadInvite() {
       try {
-        // Check auth status via supabase client
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         setIsLoggedIn(!!user)
 
-        // Load invite details
         const res = await fetch(`/api/family/invite/${code}`)
         if (!res.ok) {
           setError('This invite link is invalid or has expired.')
@@ -76,18 +74,18 @@ export default function AcceptInvitePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4 animate-bounce">⭐</div>
-          <p className="text-gray-600 font-medium">Loading invite...</p>
+          <p className="text-gray-600 dark:text-gray-300 font-medium">Loading invite...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-center">
           <div className="text-5xl mb-3">👨‍👩‍👧‍👦</div>
@@ -99,16 +97,16 @@ export default function AcceptInvitePage() {
           {accepted ? (
             <div className="text-center">
               <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">You're in!</h2>
-              <p className="text-gray-600">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">You're in!</h2>
+              <p className="text-gray-600 dark:text-gray-300">
                 You've joined <strong>{invite?.familyName}</strong>'s family on ChoreStar. Redirecting to your dashboard...
               </p>
             </div>
           ) : error ? (
             <div className="text-center">
               <div className="text-5xl mb-4">😕</div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Invite unavailable</h2>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invite unavailable</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
               <Link
                 href="/dashboard"
                 className="inline-block text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all"
@@ -119,9 +117,9 @@ export default function AcceptInvitePage() {
             </div>
           ) : invite ? (
             <div className="text-center">
-              <p className="text-gray-600 mb-2 text-sm">You've been invited to join</p>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{invite.familyName}</h2>
-              <p className="text-gray-500 text-sm mb-8">
+              <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm">You've been invited to join</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{invite.familyName}</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
                 on ChoreStar — where families manage chores and routines together.
               </p>
 
@@ -137,14 +135,14 @@ export default function AcceptInvitePage() {
                   </button>
                   <Link
                     href="/dashboard"
-                    className="block w-full text-center text-gray-500 py-2 text-sm hover:text-gray-700 transition-colors"
+                    className="block w-full text-center text-gray-500 dark:text-gray-400 py-2 text-sm hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
                     Decline
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                     Sign in or create an account to accept this invitation.
                   </p>
                   <Link
@@ -156,14 +154,14 @@ export default function AcceptInvitePage() {
                   </Link>
                   <Link
                     href={`/signup?next=/family/accept/${code}`}
-                    className="block w-full border-2 border-indigo-600 text-indigo-600 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-colors text-center"
+                    className="block w-full border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 py-3 rounded-lg font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors text-center"
                   >
                     Create Free Account
                   </Link>
                 </div>
               )}
 
-              <p className="text-xs text-gray-400 mt-6">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-6">
                 This invite expires in 7 days
               </p>
             </div>

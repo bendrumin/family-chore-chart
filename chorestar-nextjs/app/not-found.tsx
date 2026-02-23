@@ -2,9 +2,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center">
         <div className="text-8xl mb-4">🔍</div>
 
