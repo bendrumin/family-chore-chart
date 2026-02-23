@@ -21,6 +21,11 @@ export const metadata: Metadata = {
     description: 'Partner with ChoreStar to promote the family chore app parents love. Download brand assets, approved copy, and connect with our team.',
     url: 'https://chorestar.app/partners',
   },
+  twitter: {
+    card: 'summary',
+    title: 'Promote ChoreStar — Partner & Affiliate Program',
+    description: 'Partner with ChoreStar to promote the family chore app parents love.',
+  },
   alternates: {
     canonical: 'https://chorestar.app/partners',
   },
@@ -75,7 +80,7 @@ export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
 
-      <SiteNav ctaText="Sign Up Free →" ctaHref="/signup" />
+      <SiteNav />
 
       <main>
         <div className="container mx-auto px-4 py-16">

@@ -1,7 +1,24 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SignupForm } from '@/components/auth/signup-form'
+
+export const metadata: Metadata = {
+  title: 'Create Your Free Account',
+  description: 'Sign up for ChoreStar — the free chore chart app that turns household tasks into a game kids love. No credit card required.',
+  openGraph: {
+    title: 'Create Your Free ChoreStar Account',
+    description: 'Sign up for ChoreStar and start tracking chores, allowances, and rewards for your family today.',
+    url: 'https://chorestar.app/signup',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Create Your Free ChoreStar Account',
+    description: 'Sign up for ChoreStar and start tracking chores, allowances, and rewards for your family today.',
+  },
+  alternates: { canonical: 'https://chorestar.app/signup' },
+}
 
 export default async function SignupPage({
   searchParams,
