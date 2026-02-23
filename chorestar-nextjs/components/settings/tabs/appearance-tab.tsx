@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
+import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
@@ -170,7 +170,7 @@ const SEASONAL_THEMES = [
 export function AppearanceTab() {
   const { settings, updateSettings } = useSettings()
   const { user } = useAuth()
-  const [localTheme, setLocalTheme] = useState<'light' | 'dark'>('light')
+  const [localTheme, setLocalTheme] = useState<'light' | 'dark' | 'auto'>('auto')
   const [seasonalTheme, setSeasonalTheme] = useState<string | null>(null)
   const [autoSeasonalEnabled, setAutoSeasonalEnabled] = useState(false)
   const [isPremiumThemesOpen, setIsPremiumThemesOpen] = useState(false)
@@ -180,7 +180,7 @@ export function AppearanceTab() {
   useEffect(() => {
     if (settings) {
       const customTheme = (settings.custom_theme as any) || {}
-      setLocalTheme(customTheme.mode || 'light')
+      setLocalTheme(customTheme.mode || 'auto')
       setSeasonalTheme(customTheme.seasonalTheme || null)
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
     }
@@ -207,13 +207,13 @@ export function AppearanceTab() {
     }
   }
 
-  const handleThemeChange = async (theme: 'light' | 'dark') => {
+  const handleThemeChange = async (theme: 'light' | 'dark' | 'auto') => {
     try {
       setLocalTheme(theme)
       const currentCustomTheme = (settings?.custom_theme as any) || {}
       const newCustomTheme = { ...currentCustomTheme, mode: theme }
       await updateSettings({ custom_theme: newCustomTheme })
-      toast.success(theme === 'light' ? '☀️ Light theme activated!' : '🌙 Dark theme activated!')
+      toast.success(theme === 'auto' ? '🔄 Auto theme activated!' : theme === 'light' ? '☀️ Light theme activated!' : '🌙 Dark theme activated!')
     } catch (error) {
       console.error('Error updating theme:', error)
       toast.error('Failed to update theme')
@@ -269,7 +269,16 @@ export function AppearanceTab() {
         <Label className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <span>Theme</span>
         </Label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <Button
+            variant={localTheme === 'auto' ? 'default' : 'outline'}
+            onClick={() => handleThemeChange('auto')}
+            className="h-16 text-base font-bold hover-glow"
+            size="lg"
+          >
+            <Monitor className="w-6 h-6 mr-2" />
+            Auto
+          </Button>
           <Button
             variant={localTheme === 'light' ? 'default' : 'outline'}
             onClick={() => handleThemeChange('light')}
@@ -289,6 +298,11 @@ export function AppearanceTab() {
             Dark
           </Button>
         </div>
+        {localTheme === 'auto' && (
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Follows your system preference and time of day (dark after 7 PM)
+          </p>
+        )}
       </div>
 
       {/* Seasonal Themes Section */}

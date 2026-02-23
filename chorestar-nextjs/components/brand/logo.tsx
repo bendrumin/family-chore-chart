@@ -1,9 +1,15 @@
 import Image from 'next/image'
 
-export function ChoreStarLogo({ size = 24, className = '' }: { size?: number; className?: string }) {
+interface ChoreStarLogoProps {
+  size?: number
+  className?: string
+  variant?: 'default' | 'white'
+}
+
+export function ChoreStarLogo({ size = 24, className = '', variant = 'default' }: ChoreStarLogoProps) {
   return (
     <Image
-      src="/icon.svg"
+      src={variant === 'white' ? '/icon-white.svg' : '/icon.svg'}
       alt=""
       width={size}
       height={size}

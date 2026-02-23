@@ -27,6 +27,7 @@ import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
+import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
 
@@ -284,20 +285,17 @@ function DashboardContent({
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <h1
-                className="text-2xl font-bold tracking-tight text-white dark:text-white"
-                style={headerTextColor !== 'white' ? {
-                  background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                } : undefined}
-              >
+              <h1 className="text-2xl font-bold tracking-tight flex items-center">
                 {customTheme?.seasonalTheme
                   ? <span className="mr-1">{headerEmoji}</span>
-                  : <ChoreStarLogo size={28} className="mr-1" />
+                  : <ChoreStarLogo size={28} className="mr-1" variant={headerTextColor === 'white' ? 'white' : 'default'} />
                 }
-                ChoreStar
+                <span
+                  className="text-white"
+                  style={headerTextColor !== 'white' ? GRADIENT_TEXT : undefined}
+                >
+                  ChoreStar
+                </span>
               </h1>
             </div>
             <SettingsMenu buttonColor={buttonColor} onLogout={handleLogout} />

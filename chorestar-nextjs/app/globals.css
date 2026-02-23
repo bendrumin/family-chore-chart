@@ -126,7 +126,7 @@
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
 
-    --gradient-bg: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(55, 65, 81, 0.9));
+    --gradient-bg: linear-gradient(135deg, #111827 0%, #1f2937 100%);
 
     /* Tailwind Dark */
     --background: 222.2 84% 4.9%;
