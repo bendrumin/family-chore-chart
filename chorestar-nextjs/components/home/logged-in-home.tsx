@@ -1,16 +1,15 @@
 import Link from 'next/link'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { Greeting } from '@/components/home/greeting'
 import {
   LayoutDashboard,
   BookOpen,
   Handshake,
-  Settings,
   Crown,
   ArrowRight,
   Star,
   Users,
-  ListChecks,
   Sparkles,
 } from 'lucide-react'
 
@@ -22,7 +21,6 @@ interface LoggedInHomeProps {
 
 export function LoggedInHome({ familyName, subscriptionTier, childCount }: LoggedInHomeProps) {
   const isPremium = subscriptionTier === 'premium' || subscriptionTier === 'lifetime'
-  const greeting = getGreeting()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -46,7 +44,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         {/* Welcome */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
-            {greeting}, {familyName}!
+            <Greeting familyName={familyName} />
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Welcome home. What would you like to do?
@@ -177,9 +175,3 @@ function ResourceLink({ href, label, external = false }: { href: string; label: 
   )
 }
 
-function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
-}
