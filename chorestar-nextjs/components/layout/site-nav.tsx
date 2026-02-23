@@ -10,6 +10,7 @@ import {
   Menu, X, Home, LayoutDashboard, BookOpen, Handshake,
   HelpCircle, Mail, Sparkles, LogOut,
 } from 'lucide-react'
+import { ChoreStarLogo } from '@/components/brand/logo'
 
 const FAQModal = dynamic(() => import('@/components/help/faq-modal').then(m => ({ default: m.FAQModal })), { ssr: false })
 const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-modal').then(m => ({ default: m.NewFeaturesModal })), { ssr: false })
@@ -98,8 +99,8 @@ export function SiteNav() {
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Link href="/" className="text-xl font-black" style={GRADIENT_TEXT}>
-              <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
+            <Link href="/" className="text-xl font-black flex items-center gap-1.5" style={GRADIENT_TEXT}>
+              <ChoreStarLogo size={28} /> ChoreStar
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -130,8 +131,8 @@ export function SiteNav() {
           >
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
-                🌟 ChoreStar
+              <span className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                <ChoreStarLogo size={24} /> ChoreStar
               </span>
               <button
                 type="button"

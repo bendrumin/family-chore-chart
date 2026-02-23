@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
 const jsonLd = {
@@ -56,9 +57,9 @@ export default async function HomePage() {
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('family_name, subscription_tier')
+      .select('family_name, subscription_type')
       .eq('id', user.id)
-      .single() as { data: { family_name: string; subscription_tier: string } | null }
+      .single() as { data: { family_name: string; subscription_type: string } | null }
 
     const { count } = await supabase
       .from('children')
@@ -68,7 +69,7 @@ export default async function HomePage() {
     return (
       <LoggedInHome
         familyName={profile?.family_name || 'Family'}
-        subscriptionTier={profile?.subscription_tier || 'free'}
+        subscriptionTier={profile?.subscription_type || 'free'}
         childCount={count || 0}
       />
     )
@@ -90,7 +91,7 @@ export default async function HomePage() {
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-6xl font-black mb-4">
-            <span style={GRADIENT_TEXT}><span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar</span>
+            <span className="inline-flex items-center gap-2" style={GRADIENT_TEXT}><ChoreStarLogo size={48} /> ChoreStar</span>
           </h1>
           <p className="text-2xl text-gray-600 dark:text-gray-300 mb-4">
             Turn Household Chores Into Family Wins

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ChoreStarLogo } from '@/components/brand/logo'
 import { ResetPasswordForm } from '@/components/auth/reset-password-form'
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function ResetPasswordPage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            <span style={{ WebkitTextFillColor: 'initial' }}>🌟</span> ChoreStar
+            <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Set New Password

@@ -63,7 +63,7 @@ async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium' |
   const supabase = createServiceRoleClient()
   const { error } = await (supabase as any)
     .from('profiles')
-    .update({ subscription_tier: tier })
+    .update({ subscription_type: tier })
     .eq('id', userId)
 
   if (error) {
@@ -106,11 +106,11 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const supabase = createServiceRoleClient()
   const { data: profile } = await (supabase as any)
     .from('profiles')
-    .select('subscription_tier')
+    .select('subscription_type')
     .eq('id', userId)
     .single()
 
-  if (profile?.subscription_tier === 'lifetime') return
+  if (profile?.subscription_type === 'lifetime') return
 
   await updateSubscriptionTier(userId, 'free')
 }

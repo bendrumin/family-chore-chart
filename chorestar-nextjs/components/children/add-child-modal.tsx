@@ -59,7 +59,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
   }
 
   const canAddChild = () => {
-    const tier = profile?.subscription_tier || 'free'
+    const tier = profile?.subscription_type || 'free'
     return currentChildCount < getChildLimit(tier)
   }
 

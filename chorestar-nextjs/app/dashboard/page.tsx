@@ -74,9 +74,9 @@ export default async function DashboardPage() {
             id: user.id,
             email: user.email!,
             family_name: familyName,
-            subscription_tier: 'free',
+            subscription_type: 'free',
             created_at: new Date().toISOString(),
-            trial_ends_at: null,
+            updated_at: new Date().toISOString(),
             kid_login_code: null,
           }}
           effectiveUserId={user.id}

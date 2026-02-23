@@ -86,7 +86,7 @@ export function BillingTab() {
     )
   }
 
-  const currentTier = profile?.subscription_tier || 'free'
+  const currentTier = profile?.subscription_type || 'free'
   const isPremium = checkPremium(currentTier)
 
   return (
