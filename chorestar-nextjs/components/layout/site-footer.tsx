@@ -75,6 +75,11 @@ export function SiteFooter() {
               <li className="text-sm text-gray-400">🔒 Your data is private</li>
               <li className="text-sm text-gray-400">🚫 We never sell data</li>
               <li className="text-sm text-gray-400">✅ COPPA-friendly</li>
+              <li>
+                <Link href="/privacy" className="text-sm hover:text-white transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
