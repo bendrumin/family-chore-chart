@@ -4,6 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
+import { TestFlightSignup } from '@/components/home/testflight-signup'
 import {
   LayoutDashboard,
   BookOpen,
@@ -61,10 +62,10 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             description="Collaboration opportunities"
           />
           <QuickAction
-            href="mailto:hi@chorestar.app?subject=iOS%20App%20Access"
+            href="#ios-app"
             icon={<Smartphone className="w-6 h-6" />}
             title="iOS App"
-            description="Get ChoreStar on your iPhone"
+            description="Join the TestFlight waitlist"
           />
         </div>
 
@@ -119,6 +120,20 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             <ResourceLink href="/how-to" label="Setting up routines" />
             <ResourceLink href="/how-to" label="Kid login with PIN" />
             <ResourceLink href="mailto:support@chorestar.app" label="Contact support" external />
+          </div>
+        </div>
+
+        {/* iOS App / TestFlight */}
+        <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-10">
+          <div className="flex items-start gap-4">
+            <div className="text-3xl shrink-0">📱</div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone — Beta</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                A native iOS app is in TestFlight beta. Enter your email and we'll send you an invite when a spot opens.
+              </p>
+              <TestFlightSignup compact />
+            </div>
           </div>
         </div>
       </main>
