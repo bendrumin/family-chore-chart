@@ -19,6 +19,12 @@ class SupabaseManager: ObservableObject {
     @Published var familySettings: FamilySettings?
     @Published var isChildSession = false
     @Published var currentChild: Child?
+    @Published var routines: [Routine] = []
+    @Published var subscriptionType: String = "free"
+    
+    var isPremium: Bool { subscriptionType == "premium" || subscriptionType == "lifetime" }
+    var childLimit: Int { isPremium ? Int.max : 3 }
+    var choreLimit: Int { isPremium ? Int.max : 20 }
     
     // Child session properties
     @Published var childSession: ChildSession?
@@ -124,7 +130,7 @@ class SupabaseManager: ObservableObject {
         // Check if there's a saved child session
         guard let savedChildId = UserDefaults.standard.string(forKey: "child_session_id"),
               let childUUID = UUID(uuidString: savedChildId),
-              let sessionToken = UserDefaults.standard.string(forKey: "child_session_token") else {
+              UserDefaults.standard.string(forKey: "child_session_token") != nil else {
             await MainActor.run {
                 isChildSession = false
                 currentChild = nil
@@ -198,7 +204,7 @@ class SupabaseManager: ObservableObject {
         }
         
         do {
-            let session = try await client.auth.signIn(
+            _ = try await client.auth.signIn(
                 email: email,
                 password: password
             )
@@ -261,6 +267,8 @@ class SupabaseManager: ObservableObject {
                 children = []
                 chores = []
                 choreCompletions = [:]
+                routines = []
+                subscriptionType = "free"
                 debugLastError = "Signed out successfully"
                 
                 // Also clear remember me
@@ -314,7 +322,7 @@ class SupabaseManager: ObservableObject {
             let uid = await MainActor.run { debugUserId }
             
             if let uid = uid {
-                remoteChildren = try await client.database
+                remoteChildren = try await client
                     .from("children")
                     .select()
                     .eq("user_id", value: uid)
@@ -325,7 +333,7 @@ class SupabaseManager: ObservableObject {
                     debugLastError = "Querying children for user_id: \(uid)"
                 }
             } else {
-                remoteChildren = try await client.database
+                remoteChildren = try await client
                     .from("children")
                     .select()
                     .limit(100)
@@ -371,7 +379,7 @@ class SupabaseManager: ObservableObject {
             if !currentChildren.isEmpty {
                 let ids = currentChildren.map { $0.id.uuidString }
                 if !ids.isEmpty {
-                    choresFetched = try await client.database
+                    choresFetched = try await client
                         .from("chores")
                         .select()
                         .in("child_id", values: ids)
@@ -415,6 +423,8 @@ class SupabaseManager: ObservableObject {
         await loadCurrentDayCompletions()
         await loadAchievements()
         await loadFamilySettings()
+        await loadProfile()
+        await loadRoutines()
         
         // If no data loaded, fall back to demo data
         let currentChildren = await MainActor.run { children }
@@ -452,7 +462,7 @@ class SupabaseManager: ObservableObject {
             let weekStartString = dateFormatter.string(from: weekStart)
             
             // Load ALL completions for the current week (all 7 days)
-            let allWeekCompletions: [ChoreCompletionRow] = try await client.database
+            let allWeekCompletions: [ChoreCompletionRow] = try await client
                 .from("chore_completions")
                 .select()
                 .eq("week_start", value: weekStartString)
@@ -473,10 +483,12 @@ class SupabaseManager: ObservableObject {
                 }
             }
             
+            let capturedToday = todayCompletions
+            let capturedWeek = fullWeekCompletions
             await MainActor.run {
-                self.choreCompletions = todayCompletions
-                self.weekCompletions = fullWeekCompletions
-                debugLastError = "Loaded \(todayCompletions.count) completions for today, \(fullWeekCompletions.count) for week"
+                self.choreCompletions = capturedToday
+                self.weekCompletions = capturedWeek
+                debugLastError = "Loaded \(capturedToday.count) completions for today, \(capturedWeek.count) for week"
             }
         } catch {
             await MainActor.run {
@@ -520,7 +532,7 @@ class SupabaseManager: ObservableObject {
             
             // Delete from database
             do {
-                let _ = try await client.database
+                let _ = try await client
                     .from("chore_completions")
                     .delete()
                     .eq("chore_id", value: chore.id.uuidString)
@@ -553,7 +565,7 @@ class SupabaseManager: ObservableObject {
                     completed_at: ISO8601DateFormatter().string(from: now)
                 )
                 
-                try await client.database
+                try await client
                     .from("chore_completions")
                     .insert(completion)
                     .execute()
@@ -661,7 +673,7 @@ class SupabaseManager: ObservableObject {
         guard let uid = uid else { return }
         
         do {
-            let settings: [FamilySettings] = try await client.database
+            let settings: [FamilySettings] = try await client
                 .from("family_settings")
                 .select()
                 .eq("user_id", value: uid)
@@ -728,7 +740,7 @@ class SupabaseManager: ObservableObject {
             child_access_enabled: false
         )
         
-        try await client.database
+        try await client
             .from("children")
             .insert(newChild)
             .execute()
@@ -769,7 +781,7 @@ class SupabaseManager: ObservableObject {
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
-        try await client.database
+        try await client
             .from("children")
             .update(update)
             .eq("id", value: childId.uuidString)
@@ -789,7 +801,7 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        let _ = try await client.database
+        let _ = try await client
             .from("children")
             .delete()
             .eq("id", value: childId.uuidString)
@@ -833,7 +845,7 @@ class SupabaseManager: ObservableObject {
             notes: notes
         )
         
-        try await client.database
+        try await client
             .from("chores")
             .insert(newChore)
             .execute()
@@ -876,7 +888,7 @@ class SupabaseManager: ObservableObject {
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
-        try await client.database
+        try await client
             .from("chores")
             .update(update)
             .eq("id", value: choreId.uuidString)
@@ -896,7 +908,7 @@ class SupabaseManager: ObservableObject {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
         
-        let _ = try await client.database
+        let _ = try await client
             .from("chores")
             .delete()
             .eq("id", value: choreId.uuidString)
@@ -922,7 +934,7 @@ class SupabaseManager: ObservableObject {
             
             let childIds = currentChildren.map { $0.id.uuidString }
             
-            let achievementRows: [AchievementBadgeRow] = try await client.database
+            let achievementRows: [AchievementBadgeRow] = try await client
                 .from("achievement_badges")
                 .select()
                 .in("child_id", values: childIds)
@@ -984,7 +996,7 @@ class SupabaseManager: ObservableObject {
         )
         
         do {
-            try await client.database
+            try await client
                 .from("achievement_badges")
                 .insert(newAchievement)
                 .execute()
@@ -1054,6 +1066,417 @@ class SupabaseManager: ObservableObject {
     
     func getAchievements(for childId: UUID) -> [Achievement] {
         return achievements.filter { $0.childId == childId }
+    }
+    
+    // MARK: - Profile & Subscription
+    
+    func loadProfile() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+        
+        do {
+            let profiles: [ProfileRow] = try await client
+                .from("profiles")
+                .select("id, subscription_type")
+                .eq("id", value: uid)
+                .limit(1)
+                .execute()
+                .value
+            
+            await MainActor.run {
+                self.subscriptionType = profiles.first?.subscription_type ?? "free"
+                debugLastError = "Profile loaded: \(self.subscriptionType)"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Profile error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+    
+    // MARK: - Routines Management
+    
+    func loadRoutines() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let currentChildren = await MainActor.run { children }
+        guard !currentChildren.isEmpty else { return }
+        
+        let childIds = currentChildren.map { $0.id.uuidString }
+        
+        do {
+            let routineRows: [RoutineRow] = try await client
+                .from("routines")
+                .select()
+                .in("child_id", values: childIds)
+                .eq("is_active", value: true)
+                .order("created_at", ascending: false)
+                .limit(100)
+                .execute()
+                .value
+            
+            let routineIds = routineRows.map { $0.id.uuidString }
+            
+            var stepRows: [RoutineStepRow] = []
+            if !routineIds.isEmpty {
+                stepRows = try await client
+                    .from("routine_steps")
+                    .select()
+                    .in("routine_id", values: routineIds)
+                    .order("order_index", ascending: true)
+                    .execute()
+                    .value
+            }
+            
+            let stepsByRoutine = Dictionary(grouping: stepRows, by: { $0.routine_id })
+            let isoFormatter = ISO8601DateFormatter()
+            
+            let mapped = routineRows.map { row in
+                let steps = (stepsByRoutine[row.id] ?? []).map { stepRow in
+                    RoutineStep(
+                        id: stepRow.id,
+                        routineId: stepRow.routine_id,
+                        title: stepRow.title,
+                        description: stepRow.description,
+                        icon: stepRow.icon ?? "circle",
+                        orderIndex: stepRow.order_index ?? 0,
+                        durationSeconds: stepRow.duration_seconds,
+                        createdAt: isoFormatter.date(from: stepRow.created_at) ?? Date()
+                    )
+                }
+                return Routine(
+                    id: row.id,
+                    childId: row.child_id,
+                    name: row.name,
+                    type: row.type,
+                    icon: row.icon ?? "list.bullet",
+                    color: row.color ?? "#6366f1",
+                    rewardCents: row.reward_cents ?? 7,
+                    isActive: row.is_active ?? true,
+                    createdAt: isoFormatter.date(from: row.created_at) ?? Date(),
+                    updatedAt: isoFormatter.date(from: row.updated_at) ?? Date(),
+                    steps: steps
+                )
+            }
+            
+            await MainActor.run {
+                self.routines = mapped
+                debugLastError = "Loaded \(mapped.count) routines"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Routines error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+    
+    func createRoutine(name: String, childId: UUID, type: String, icon: String, color: String,
+                       rewardCents: Int, steps: [(title: String, icon: String, durationSeconds: Int?)]) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        struct NewRoutineRow: Encodable {
+            let id: String
+            let child_id: String
+            let name: String
+            let type: String
+            let icon: String
+            let color: String
+            let reward_cents: Int
+            let is_active: Bool
+        }
+        
+        let routineId = UUID()
+        let newRoutine = NewRoutineRow(
+            id: routineId.uuidString,
+            child_id: childId.uuidString,
+            name: name,
+            type: type,
+            icon: icon,
+            color: color,
+            reward_cents: rewardCents,
+            is_active: true
+        )
+        
+        try await client
+            .from("routines")
+            .insert(newRoutine)
+            .execute()
+        
+        struct NewStepRow: Encodable {
+            let routine_id: String
+            let title: String
+            let icon: String
+            let order_index: Int
+            let duration_seconds: Int?
+        }
+        
+        if !steps.isEmpty {
+            let stepRows = steps.enumerated().map { index, step in
+                NewStepRow(
+                    routine_id: routineId.uuidString,
+                    title: step.title,
+                    icon: step.icon,
+                    order_index: index,
+                    duration_seconds: step.durationSeconds
+                )
+            }
+            
+            try await client
+                .from("routine_steps")
+                .insert(stepRows)
+                .execute()
+        }
+        
+        await MainActor.run {
+            debugLastError = "Routine created: \(name)"
+        }
+        
+        await loadRoutines()
+        #endif
+    }
+    
+    func updateRoutine(routineId: UUID, name: String, childId: UUID, type: String, icon: String,
+                       color: String, rewardCents: Int,
+                       steps: [(title: String, icon: String, durationSeconds: Int?)]) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        struct RoutineUpdate: Encodable {
+            let name: String
+            let child_id: String
+            let type: String
+            let icon: String
+            let color: String
+            let reward_cents: Int
+            let updated_at: String
+        }
+        
+        let update = RoutineUpdate(
+            name: name,
+            child_id: childId.uuidString,
+            type: type,
+            icon: icon,
+            color: color,
+            reward_cents: rewardCents,
+            updated_at: ISO8601DateFormatter().string(from: Date())
+        )
+        
+        try await client
+            .from("routines")
+            .update(update)
+            .eq("id", value: routineId.uuidString)
+            .execute()
+        
+        // Replace steps: delete existing, insert new
+        try await client
+            .from("routine_steps")
+            .delete()
+            .eq("routine_id", value: routineId.uuidString)
+            .execute()
+        
+        struct NewStepRow: Encodable {
+            let routine_id: String
+            let title: String
+            let icon: String
+            let order_index: Int
+            let duration_seconds: Int?
+        }
+        
+        if !steps.isEmpty {
+            let stepRows = steps.enumerated().map { index, step in
+                NewStepRow(
+                    routine_id: routineId.uuidString,
+                    title: step.title,
+                    icon: step.icon,
+                    order_index: index,
+                    duration_seconds: step.durationSeconds
+                )
+            }
+            
+            try await client
+                .from("routine_steps")
+                .insert(stepRows)
+                .execute()
+        }
+        
+        await MainActor.run {
+            debugLastError = "Routine updated: \(name)"
+        }
+        
+        await loadRoutines()
+        #endif
+    }
+    
+    func deleteRoutine(routineId: UUID) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        try await client
+            .from("routine_steps")
+            .delete()
+            .eq("routine_id", value: routineId.uuidString)
+            .execute()
+        
+        try await client
+            .from("routines")
+            .delete()
+            .eq("id", value: routineId.uuidString)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Routine deleted: \(routineId)"
+        }
+        
+        await loadRoutines()
+        #endif
+    }
+    
+    func completeRoutine(routineId: UUID, childId: UUID, stepsCompleted: Int,
+                         stepsTotal: Int, durationSeconds: Int) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        let routine = await MainActor.run { routines.first(where: { $0.id == routineId }) }
+        let pointsEarned = (stepsCompleted == stepsTotal) ? (routine?.rewardCents ?? 0) : 0
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        struct NewCompletionRow: Encodable {
+            let routine_id: String
+            let child_id: String
+            let duration_seconds: Int
+            let steps_completed: Int
+            let steps_total: Int
+            let points_earned: Int
+            let date: String
+        }
+        
+        let row = NewCompletionRow(
+            routine_id: routineId.uuidString,
+            child_id: childId.uuidString,
+            duration_seconds: durationSeconds,
+            steps_completed: stepsCompleted,
+            steps_total: stepsTotal,
+            points_earned: pointsEarned,
+            date: formatter.string(from: Date())
+        )
+        
+        try await client
+            .from("routine_completions")
+            .insert(row)
+            .execute()
+        
+        await MainActor.run {
+            debugLastError = "Routine completed: \(routineId), earned \(pointsEarned) points"
+        }
+        #endif
+    }
+    
+    // MARK: - Weekly Stats
+    
+    func calculateWeeklyStats(for childId: UUID) -> WeeklyStats {
+        let calendar = Calendar.current
+        let childChores = chores.filter { $0.childId == childId }
+        guard !childChores.isEmpty else { return .empty }
+        
+        var perfectDayCount = 0
+        var dailyStatus: [Bool] = []
+        var daysWithCompletions = 0
+        var totalCompletions = 0
+        
+        for day in 0..<7 {
+            let dayCompletions = weekCompletions.filter { completion in
+                completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
+            }
+            totalCompletions += dayCompletions.count
+            
+            let allDone = childChores.allSatisfy { chore in
+                dayCompletions.contains(where: { $0.choreId == chore.id })
+            }
+            dailyStatus.append(allDone)
+            if allDone { perfectDayCount += 1 }
+            if !dayCompletions.isEmpty { daysWithCompletions += 1 }
+        }
+        
+        let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
+        let weeklyBonusCents = familySettings?.weeklyBonusCents ?? 0
+        var earningsCents = daysWithCompletions * dailyRewardCents
+        if perfectDayCount == 7 {
+            earningsCents += weeklyBonusCents
+        }
+        
+        let completionRate = Double(perfectDayCount) / 7.0
+        
+        // Streak: consecutive days with at least one completion, counting backwards from today
+        let currentDay = calendar.component(.weekday, from: Date()) - 1
+        var streak = 0
+        for offset in 0..<7 {
+            let day = (currentDay - offset + 7) % 7
+            let hasCompletion = weekCompletions.contains { completion in
+                completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
+            }
+            if hasCompletion {
+                streak += 1
+            } else {
+                break
+            }
+        }
+        
+        return WeeklyStats(
+            totalCompletions: totalCompletions,
+            totalEarnings: Double(earningsCents) / 100.0,
+            completionRate: completionRate,
+            perfectDays: perfectDayCount,
+            streak: streak,
+            dailyStatus: dailyStatus
+        )
+    }
+    
+    func calculateAggregateWeeklyStats() -> WeeklyStats {
+        guard !children.isEmpty else { return .empty }
+        
+        var totalCompletions = 0
+        var totalEarnings = 0.0
+        var totalPerfectDays = 0
+        var maxStreak = 0
+        var aggregateDailyStatus = Array(repeating: true, count: 7)
+        
+        for child in children {
+            let stats = calculateWeeklyStats(for: child.id)
+            totalCompletions += stats.totalCompletions
+            totalEarnings += stats.totalEarnings
+            totalPerfectDays += stats.perfectDays
+            maxStreak = max(maxStreak, stats.streak)
+            for i in 0..<7 {
+                aggregateDailyStatus[i] = aggregateDailyStatus[i] && stats.dailyStatus[i]
+            }
+        }
+        
+        let avgPerfectDays = totalPerfectDays / max(children.count, 1)
+        let avgRate = Double(avgPerfectDays) / 7.0
+        
+        return WeeklyStats(
+            totalCompletions: totalCompletions,
+            totalEarnings: totalEarnings,
+            completionRate: avgRate,
+            perfectDays: avgPerfectDays,
+            streak: maxStreak,
+            dailyStatus: aggregateDailyStatus
+        )
     }
     
     // Demo data for testing

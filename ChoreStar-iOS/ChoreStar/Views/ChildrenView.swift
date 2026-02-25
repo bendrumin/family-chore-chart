@@ -48,7 +48,7 @@ struct ChildrenView: View {
             }
             .background(Color.choreStarBackground)
             .refreshable {
-                await manager.refreshData()
+                manager.refreshData()
             }
             .navigationTitle("Family")
             .navigationBarTitleDisplayMode(.large)

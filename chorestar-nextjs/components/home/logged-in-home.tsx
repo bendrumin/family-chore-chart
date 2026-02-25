@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Users,
   Sparkles,
+  Smartphone,
 } from 'lucide-react'
 
 interface LoggedInHomeProps {
@@ -39,7 +40,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <QuickAction
             href="/dashboard"
             icon={<LayoutDashboard className="w-6 h-6" />}
@@ -58,6 +59,12 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             icon={<Handshake className="w-6 h-6" />}
             title="Partners"
             description="Collaboration opportunities"
+          />
+          <QuickAction
+            href="mailto:hi@chorestar.app?subject=iOS%20App%20Access"
+            icon={<Smartphone className="w-6 h-6" />}
+            title="iOS App"
+            description="Get ChoreStar on your iPhone"
           />
         </div>
 
@@ -128,22 +135,26 @@ function QuickAction({ href, icon, title, description, primary = false }: {
   description: string
   primary?: boolean
 }) {
-  return (
-    <Link
-      href={href}
-      className={`group rounded-xl p-6 border-2 transition-all hover:shadow-lg hover:scale-[1.02] ${
-        primary
-          ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20'
-          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-      }`}
-    >
+  const isExternal = href.startsWith('mailto:') || href.startsWith('http')
+  const className = `group rounded-xl p-6 border-2 transition-all hover:shadow-lg hover:scale-[1.02] ${
+    primary
+      ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20'
+      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+  }`
+  const content = (
+    <>
       <div className={`mb-3 ${primary ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>
         {icon}
       </div>
       <h3 className="font-bold text-gray-900 dark:text-white mb-1">{title}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
-    </Link>
+    </>
   )
+
+  if (isExternal) {
+    return <a href={href} className={className}>{content}</a>
+  }
+  return <Link href={href} className={className}>{content}</Link>
 }
 
 function ResourceLink({ href, label, external = false }: { href: string; label: string; external?: boolean }) {

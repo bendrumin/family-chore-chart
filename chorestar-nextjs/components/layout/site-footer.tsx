@@ -60,6 +60,11 @@ export function SiteFooter() {
                   Contact Support
                 </a>
               </li>
+              <li>
+                <a href="mailto:hi@chorestar.app?subject=iOS%20App%20Access" className="text-sm hover:text-white transition-colors">
+                  iOS App (Beta)
+                </a>
+              </li>
             </ul>
           </div>
 

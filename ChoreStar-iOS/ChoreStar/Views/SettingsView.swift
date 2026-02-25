@@ -5,8 +5,19 @@ struct SettingsView: View {
     @ObservedObject var soundManager = SoundManager.shared
     @Environment(\.colorScheme) var colorScheme
     @AppStorage("darkModePreference") private var darkModePreference: DarkModePreference = .system
+    @AppStorage("seasonalTheme") private var seasonalThemeSetting: String = "auto"
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
+    
+    private var activeSeasonalTheme: SeasonalTheme? {
+        if seasonalThemeSetting == "auto" {
+            return SeasonalTheme.current()
+        } else if seasonalThemeSetting == "none" {
+            return nil
+        } else {
+            return SeasonalTheme(rawValue: seasonalThemeSetting)
+        }
+    }
     
     enum DarkModePreference: String, CaseIterable {
         case light = "Light"
@@ -39,6 +50,45 @@ struct SettingsView: View {
                     }
                 }
                 
+                Section("Seasonal Theme") {
+                    Picker("Theme", selection: $seasonalThemeSetting) {
+                        Text("Auto (by date)").tag("auto")
+                        Text("None").tag("none")
+                        
+                        Section("Holidays") {
+                            ForEach(SeasonalTheme.holidayThemes) { theme in
+                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "calendar")
+                                    .tag(theme.rawValue)
+                            }
+                        }
+                        
+                        Section("Seasons") {
+                            ForEach(SeasonalTheme.seasonThemes) { theme in
+                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "leaf")
+                                    .tag(theme.rawValue)
+                            }
+                        }
+                        
+                        Section("Premium") {
+                            ForEach(SeasonalTheme.premiumThemes) { theme in
+                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "crown")
+                                    .tag(theme.rawValue)
+                            }
+                        }
+                    }
+                    
+                    if let activeTheme = activeSeasonalTheme {
+                        HStack {
+                            Text("Active")
+                                .foregroundColor(.choreStarTextSecondary)
+                            Spacer()
+                            Text("\(activeTheme.emoji) \(activeTheme.displayName)")
+                                .foregroundColor(activeTheme.primaryColor)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+                
                 Section("Audio") {
                     Toggle(isOn: $soundManager.isSoundEnabled) {
                         HStack {
@@ -47,10 +97,57 @@ struct SettingsView: View {
                             Text("Sound Effects")
                         }
                     }
-                    .onChange(of: soundManager.isSoundEnabled) { newValue in
+                    .onChange(of: soundManager.isSoundEnabled) { _, newValue in
                         if newValue {
                             SoundManager.shared.play(.cheer)
                         }
+                    }
+                }
+                
+                Section("Subscription") {
+                    HStack {
+                        Text("Plan")
+                            .foregroundColor(.choreStarTextSecondary)
+                        Spacer()
+                        HStack(spacing: 6) {
+                            Image(systemName: manager.isPremium ? "crown.fill" : "star")
+                                .foregroundColor(manager.isPremium ? .choreStarAccent : .choreStarTextSecondary)
+                            Text(manager.subscriptionType.capitalized)
+                                .fontWeight(.semibold)
+                                .foregroundColor(manager.isPremium ? .choreStarAccent : .choreStarTextPrimary)
+                        }
+                    }
+                    
+                    if !manager.isPremium {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Upgrade to Premium")
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.choreStarPrimary)
+                                Text("Unlimited children, chores & more")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "arrow.up.right.circle.fill")
+                                .foregroundColor(.choreStarPrimary)
+                        }
+                    }
+                    
+                    HStack {
+                        Text("Children")
+                            .foregroundColor(.choreStarTextSecondary)
+                        Spacer()
+                        Text("\(manager.children.count)/\(manager.isPremium ? "∞" : "\(manager.childLimit)")")
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                    
+                    HStack {
+                        Text("Chores")
+                            .foregroundColor(.choreStarTextSecondary)
+                        Spacer()
+                        Text("\(manager.chores.count)/\(manager.isPremium ? "∞" : "\(manager.choreLimit)")")
+                            .foregroundColor(.choreStarTextSecondary)
                     }
                 }
                 
@@ -76,20 +173,6 @@ struct SettingsView: View {
                 Section("Data") {
                     Button("Refresh Data") {
                         manager.refreshData()
-                    }
-                    
-                    HStack {
-                        Text("Children")
-                        Spacer()
-                        Text("\(manager.children.count)")
-                            .foregroundColor(.choreStarTextSecondary)
-                    }
-                    
-                    HStack {
-                        Text("Chores")
-                        Spacer()
-                        Text("\(manager.chores.count)")
-                            .foregroundColor(.choreStarTextSecondary)
                     }
                 }
                 

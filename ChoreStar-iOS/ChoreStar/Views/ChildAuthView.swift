@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChildAuthView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.dismiss) var dismiss
     @State private var selectedChild: Child?
     @State private var enteredPin: String = ""
     @State private var errorMessage: String?
@@ -65,7 +66,7 @@ struct ChildAuthView: View {
                     
                     // Back to parent login
                     Button(action: {
-                        // This would navigate back to parent auth
+                        dismiss()
                     }) {
                         HStack {
                             Image(systemName: "arrow.left.circle")

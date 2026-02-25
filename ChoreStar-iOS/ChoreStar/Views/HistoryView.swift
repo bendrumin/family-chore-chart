@@ -2,46 +2,32 @@ import SwiftUI
 
 struct HistoryView: View {
     @EnvironmentObject var manager: SupabaseManager
-    @State private var selectedPeriod: TimePeriod = .week
+    @State private var selectedChild: UUID?
     
-    enum TimePeriod: String, CaseIterable {
-        case week = "Week"
-        case month = "Month"
-        case allTime = "All Time"
+    private var stats: WeeklyStats {
+        if let childId = selectedChild {
+            return manager.calculateWeeklyStats(for: childId)
+        }
+        return manager.calculateAggregateWeeklyStats()
     }
+    
+    private let dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Time period selector
-                    HStack(spacing: 0) {
-                        ForEach(TimePeriod.allCases, id: \.self) { period in
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedPeriod = period
-                                }
-                            }) {
-                                Text(period.rawValue)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(selectedPeriod == period ? .white : .choreStarTextSecondary)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(selectedPeriod == period ? Color.choreStarPrimary : Color.clear)
-                                    )
+                    // Child picker
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            childFilterButton(name: "All", id: nil)
+                            ForEach(manager.children) { child in
+                                childFilterButton(name: child.name, id: child.id)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
-                        Spacer()
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
                     }
-                    .padding(4)
-                    .background(Color.choreStarSecondary.opacity(0.2))
-                    .cornerRadius(16)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
                     
                     // Summary cards
                     LazyVGrid(columns: [
@@ -50,33 +36,110 @@ struct HistoryView: View {
                     ], spacing: 16) {
                         SummaryCard(
                             icon: "checkmark.circle.fill",
-                            value: "0",
+                            value: "\(stats.totalCompletions)",
                             label: "Completed",
                             color: .choreStarSuccess
                         )
                         
                         SummaryCard(
                             icon: "star.fill",
-                            value: "$0.00",
+                            value: String(format: "$%.2f", stats.totalEarnings),
                             label: "Total Earned",
                             color: .choreStarAccent
                         )
                         
-                    SummaryCard(
-                        icon: "trophy.fill",
-                        value: "\(manager.achievements.count)",
-                        label: "Total Badges",
-                        color: .choreStarWarning
-                    )
+                        SummaryCard(
+                            icon: "trophy.fill",
+                            value: "\(manager.achievements.count)",
+                            label: "Total Badges",
+                            color: .choreStarWarning
+                        )
                         
                         SummaryCard(
                             icon: "chart.line.uptrend.xyaxis",
-                            value: "0%",
+                            value: "\(Int(stats.completionRate * 100))%",
                             label: "Completion",
                             color: .choreStarPrimary
                         )
                     }
                     .padding(.horizontal, 20)
+                    
+                    // Perfect Days
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Perfect Days")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.choreStarTextPrimary)
+                            
+                            Spacer()
+                            
+                            Text("\(stats.perfectDays)/7")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.choreStarPrimary)
+                        }
+                        .padding(.horizontal, 20)
+                        
+                        HStack(spacing: 0) {
+                            ForEach(0..<7, id: \.self) { day in
+                                VStack(spacing: 6) {
+                                    Image(systemName: stats.dailyStatus[day] ? "star.fill" : "star")
+                                        .font(.title2)
+                                        .foregroundColor(stats.dailyStatus[day] ? .choreStarAccent : .choreStarTextSecondary.opacity(0.3))
+                                    
+                                    Text(dayLabels[day])
+                                        .font(.caption2)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding(16)
+                        .background(Color.choreStarCardBackground)
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+                        .padding(.horizontal, 20)
+                        
+                        if stats.perfectDays == 7 {
+                            Text("Perfect week! Amazing job!")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.choreStarSuccess)
+                                .padding(.horizontal, 20)
+                        }
+                    }
+                    
+                    // Streak
+                    if stats.streak > 0 {
+                        HStack(spacing: 16) {
+                            Image(systemName: "flame.fill")
+                                .font(.title)
+                                .foregroundColor(.orange)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(stats.streak) Day Streak")
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.choreStarTextPrimary)
+                                
+                                Text("Keep it going!")
+                                    .font(.subheadline)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(16)
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .strokeBorder(Color.orange.opacity(0.3), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
+                    }
                     
                     // Leaderboard
                     VStack(alignment: .leading, spacing: 16) {
@@ -87,29 +150,12 @@ struct HistoryView: View {
                             .padding(.horizontal, 20)
                         
                         VStack(spacing: 12) {
-                            ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
+                            ForEach(Array(sortedChildren.enumerated()), id: \.element.id) { index, child in
                                 LeaderboardRow(child: child, rank: index + 1, manager: manager)
                             }
                         }
                         .padding(.horizontal, 20)
                     }
-                    
-                    // Coming soon message
-                    VStack(spacing: 12) {
-                        Image(systemName: "chart.bar.xaxis")
-                            .font(.system(size: 50))
-                            .foregroundStyle(Color.choreStarGradient)
-                        
-                        Text("More Stats Coming Soon!")
-                            .font(.headline)
-                            .foregroundColor(.choreStarTextPrimary)
-                        
-                        Text("Weekly charts, trends, and achievements")
-                            .font(.subheadline)
-                            .foregroundColor(.choreStarTextSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(40)
                     
                     Spacer(minLength: 100)
                 }
@@ -119,6 +165,34 @@ struct HistoryView: View {
             .navigationTitle("Stats & History")
             .navigationBarTitleDisplayMode(.large)
         }
+    }
+    
+    private var sortedChildren: [Child] {
+        manager.children.sorted { a, b in
+            let statsA = manager.calculateWeeklyStats(for: a.id)
+            let statsB = manager.calculateWeeklyStats(for: b.id)
+            return statsA.totalCompletions > statsB.totalCompletions
+        }
+    }
+    
+    private func childFilterButton(name: String, id: UUID?) -> some View {
+        Button(action: {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                selectedChild = id
+            }
+        }) {
+            Text(name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(selectedChild == id ? .white : .choreStarTextSecondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(selectedChild == id ? Color.choreStarPrimary : Color.choreStarSecondary.opacity(0.2))
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

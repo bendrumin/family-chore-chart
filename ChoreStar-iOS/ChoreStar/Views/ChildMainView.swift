@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChildMainView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @State private var activeRoutine: Routine?
     
     private var childChores: [Chore] {
         guard let child = manager.currentChild else { return [] }
@@ -17,8 +18,12 @@ struct ChildMainView: View {
     }
     
     private var totalEarnings: Double {
-        // Only earn money when ALL chores for today are completed
         manager.calculateTodayEarnings(for: manager.currentChild?.id ?? UUID())
+    }
+    
+    private var childRoutines: [Routine] {
+        guard let child = manager.currentChild else { return [] }
+        return manager.routines.filter { $0.childId == child.id && $0.isActive }
     }
     
     var body: some View {
@@ -95,9 +100,28 @@ struct ChildMainView: View {
                     .background(Color.choreStarCardBackground)
                     .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 2)
                     
-                    // Chores list
+                    // Chores & Routines list
                     ScrollView {
                         VStack(spacing: 24) {
+                            // Routines section
+                            if !childRoutines.isEmpty {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("My Routines")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.choreStarTextPrimary)
+                                        .padding(.horizontal, 20)
+                                    
+                                    ForEach(childRoutines) { routine in
+                                        KidRoutineCard(routine: routine) {
+                                            activeRoutine = routine
+                                        }
+                                        .padding(.horizontal, 20)
+                                    }
+                                }
+                                .padding(.top, 20)
+                            }
+                            
                             // Pending chores
                             if !pendingChores.isEmpty {
                                 VStack(alignment: .leading, spacing: 16) {
@@ -154,6 +178,9 @@ struct ChildMainView: View {
                         }
                     }
                 }
+            }
+            .fullScreenCover(item: $activeRoutine) { routine in
+                RoutinePlayerView(routine: routine, childId: child.id)
             }
         } else {
             Text("No child selected")
