@@ -16,6 +16,7 @@ struct AddEditChildView: View {
     @State private var showingAvatarPicker = false
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var showingUpgradePrompt = false
     
     private let availableColors = [
         "red", "blue", "green", "orange", "purple", "pink",
@@ -196,6 +197,13 @@ struct AddEditChildView: View {
                     avatarFile = file.isEmpty ? nil : file
                 }
             }
+            .sheet(isPresented: $showingUpgradePrompt) {
+                UpgradePromptView(
+                    limitType: .children,
+                    currentCount: manager.children.count,
+                    limit: manager.childLimit
+                )
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -215,6 +223,11 @@ struct AddEditChildView: View {
     }
     
     private func saveChild() {
+        if !isEditing && manager.children.count >= manager.childLimit {
+            showingUpgradePrompt = true
+            return
+        }
+        
         isSaving = true
         errorMessage = nil
         

@@ -4,6 +4,12 @@ struct ChoresView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var selectedFilter: ChoreFilter = .all
     @State private var showingAddChore = false
+    @State private var selectedTab: ChoresTab = .chores
+    
+    enum ChoresTab: String, CaseIterable {
+        case chores = "Chores"
+        case routines = "Routines"
+    }
 
     enum ChoreFilter: String, CaseIterable {
         case all = "All"
@@ -30,94 +36,112 @@ struct ChoresView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text("Chores")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.choreStarTextPrimary)
-
-                                Text("Track and manage daily tasks")
-                                    .font(.subheadline)
-                                    .foregroundColor(.choreStarTextSecondary)
-                            }
-                            Spacer()
-                        }
-
-                        // Filter Tabs
-                        HStack(spacing: 0) {
-                            ForEach(ChoreFilter.allCases, id: \.self) { filter in
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedFilter = filter
-                                    }
-                                }) {
-                                    Text(filter.rawValue)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(selectedFilter == filter ? .white : .choreStarTextSecondary)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .fill(selectedFilter == filter ? Color.choreStarPrimary : Color.clear)
-                                        )
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                            Spacer()
-                        }
-                        .padding(4)
-                        .background(Color.choreStarSecondary.opacity(0.2))
-                        .cornerRadius(12)
+            VStack(spacing: 0) {
+                Picker("View", selection: $selectedTab) {
+                    ForEach(ChoresTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-
-                    // Chores by Child
-                    if filteredChores.isEmpty {
-                        EmptyChoresView(filter: selectedFilter)
-                    } else {
-                        LazyVStack(spacing: 20) {
-                            ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
-                                ChoreGroupCard(
-                                    childName: childName,
-                                    chores: groupedChores[childName] ?? [],
-                                    manager: manager
-                                )
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                    }
-
-                    Spacer(minLength: 100) // Bottom padding for tab bar
                 }
-                .padding(.top, 10)
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                
+                if selectedTab == .chores {
+                    choresList
+                } else {
+                    RoutinesListView()
+                }
             }
             .background(Color.choreStarBackground)
             .refreshable {
-                await manager.refreshData()
+                manager.refreshData()
             }
-            .navigationTitle("Chores")
+            .navigationTitle(selectedTab == .chores ? "Chores" : "Routines")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: {
-                        showingAddChore = true
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(Color.choreStarGradient)
+                    if selectedTab == .chores {
+                        Button(action: {
+                            showingAddChore = true
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(Color.choreStarGradient)
+                        }
                     }
                 }
             }
             .sheet(isPresented: $showingAddChore) {
                 AddEditChoreView()
             }
+        }
+    }
+    
+    private var choresList: some View {
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Chores")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.choreStarTextPrimary)
+
+                            Text("Track and manage daily tasks")
+                                .font(.subheadline)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                        Spacer()
+                    }
+
+                    HStack(spacing: 0) {
+                        ForEach(ChoreFilter.allCases, id: \.self) { filter in
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    selectedFilter = filter
+                                }
+                            }) {
+                                Text(filter.rawValue)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(selectedFilter == filter ? .white : .choreStarTextSecondary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(selectedFilter == filter ? Color.choreStarPrimary : Color.clear)
+                                    )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        Spacer()
+                    }
+                    .padding(4)
+                    .background(Color.choreStarSecondary.opacity(0.2))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
+                if filteredChores.isEmpty {
+                    EmptyChoresView(filter: selectedFilter)
+                } else {
+                    LazyVStack(spacing: 20) {
+                        ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
+                            ChoreGroupCard(
+                                childName: childName,
+                                chores: groupedChores[childName] ?? [],
+                                manager: manager
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+
+                Spacer(minLength: 100)
+            }
+            .padding(.top, 10)
         }
     }
 }

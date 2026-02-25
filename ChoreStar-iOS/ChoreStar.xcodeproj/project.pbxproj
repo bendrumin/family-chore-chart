@@ -34,6 +34,15 @@
 		A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AA /* SoundManager.swift */; };
 		A1234567890ABCDEF12345AB /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AC /* AchievementsView.swift */; };
 		A1234567890ABCDEF12345AD /* WeekCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AE /* WeekCalendarView.swift */; };
+		A1234567890ABCDEF12345B0 /* Routine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345AF /* Routine.swift */; };
+		A1234567890ABCDEF12345B2 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345B1 /* Profile.swift */; };
+		A1234567890ABCDEF12345B4 /* SeasonalThemes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345B3 /* SeasonalThemes.swift */; };
+		A1234567890ABCDEF12345B6 /* RoutineBuilderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345B5 /* RoutineBuilderView.swift */; };
+		A1234567890ABCDEF12345B8 /* RoutineCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345B7 /* RoutineCardView.swift */; };
+		A1234567890ABCDEF12345BA /* RoutineCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345B9 /* RoutineCelebrationView.swift */; };
+		A1234567890ABCDEF12345BC /* RoutinePlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345BB /* RoutinePlayerView.swift */; };
+		A1234567890ABCDEF12345BE /* RoutinesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345BD /* RoutinesListView.swift */; };
+		A1234567890ABCDEF12345C0 /* UpgradePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345BF /* UpgradePromptView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +74,15 @@
 		A1234567890ABCDEF12345AA /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345AC /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345AE /* WeekCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekCalendarView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345AF /* Routine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Routine.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345B1 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345B3 /* SeasonalThemes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonalThemes.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345B5 /* RoutineBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineBuilderView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345B7 /* RoutineCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineCardView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345B9 /* RoutineCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineCelebrationView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345BB /* RoutinePlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutinePlayerView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345BD /* RoutinesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutinesListView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345BF /* UpgradePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradePromptView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +141,8 @@
 			isa = PBXGroup;
 			children = (
 				A1234567890ABCDEF1234571 /* Models.swift */,
+				A1234567890ABCDEF12345AF /* Routine.swift */,
+				A1234567890ABCDEF12345B1 /* Profile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -156,6 +176,12 @@
 				A1234567890ABCDEF12345A8 /* ConfettiView.swift */,
 				A1234567890ABCDEF12345AC /* AchievementsView.swift */,
 				A1234567890ABCDEF12345AE /* WeekCalendarView.swift */,
+				A1234567890ABCDEF12345B5 /* RoutineBuilderView.swift */,
+				A1234567890ABCDEF12345B7 /* RoutineCardView.swift */,
+				A1234567890ABCDEF12345B9 /* RoutineCelebrationView.swift */,
+				A1234567890ABCDEF12345BB /* RoutinePlayerView.swift */,
+				A1234567890ABCDEF12345BD /* RoutinesListView.swift */,
+				A1234567890ABCDEF12345BF /* UpgradePromptView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -165,6 +191,7 @@
 			children = (
 				A1234567890ABCDEF123457D /* Colors.swift */,
 				A1234567890ABCDEF1234596 /* ViewModifiers.swift */,
+				A1234567890ABCDEF12345B3 /* SeasonalThemes.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -269,6 +296,15 @@
 				A1234567890ABCDEF12345A9 /* SoundManager.swift in Sources */,
 				A1234567890ABCDEF123457E /* Colors.swift in Sources */,
 				A1234567890ABCDEF1234595 /* ViewModifiers.swift in Sources */,
+				A1234567890ABCDEF12345B0 /* Routine.swift in Sources */,
+				A1234567890ABCDEF12345B2 /* Profile.swift in Sources */,
+				A1234567890ABCDEF12345B4 /* SeasonalThemes.swift in Sources */,
+				A1234567890ABCDEF12345B6 /* RoutineBuilderView.swift in Sources */,
+				A1234567890ABCDEF12345B8 /* RoutineCardView.swift in Sources */,
+				A1234567890ABCDEF12345BA /* RoutineCelebrationView.swift in Sources */,
+				A1234567890ABCDEF12345BC /* RoutinePlayerView.swift in Sources */,
+				A1234567890ABCDEF12345BE /* RoutinesListView.swift in Sources */,
+				A1234567890ABCDEF12345C0 /* UpgradePromptView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

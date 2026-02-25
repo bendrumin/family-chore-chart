@@ -15,6 +15,7 @@ struct AddEditChoreView: View {
     @State private var notes: String
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var showingUpgradePrompt = false
     
     private let categories = ["Bedroom", "Kitchen", "Bathroom", "Pets", "Homework", "General", "Outdoor", "Personal"]
     
@@ -155,6 +156,13 @@ struct AddEditChoreView: View {
             }
             .navigationTitle(isEditing ? "Edit Chore" : "Add Chore")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingUpgradePrompt) {
+                UpgradePromptView(
+                    limitType: .chores,
+                    currentCount: manager.chores.count,
+                    limit: manager.choreLimit
+                )
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -176,6 +184,11 @@ struct AddEditChoreView: View {
     private func saveChore() {
         guard let childId = selectedChild else {
             errorMessage = "Please select a child"
+            return
+        }
+        
+        if choreToEdit == nil && manager.chores.count >= manager.choreLimit {
+            showingUpgradePrompt = true
             return
         }
         

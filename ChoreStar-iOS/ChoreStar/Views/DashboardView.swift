@@ -208,7 +208,7 @@ struct DashboardView: View {
             }
             .background(Color.choreStarBackground)
             .refreshable {
-                await manager.refreshData()
+                manager.refreshData()
             }
             .navigationTitle("Dashboard")
             .navigationBarTitleDisplayMode(.large)
