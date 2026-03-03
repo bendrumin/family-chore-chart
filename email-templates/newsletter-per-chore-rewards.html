@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoreStar: Set Different Rewards for Each Chore 💰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #0f172a;
+            background-color: #f8fafc;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .header p {
+            font-size: 17px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #1e293b;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .section p {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #475569;
+            line-height: 1.7;
+        }
+
+        /* How it works box */
+        .steps-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            border-left: 4px solid #059669;
+        }
+
+        .steps-box h3 {
+            color: #059669;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .step-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-text strong {
+            display: block;
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 15px;
+        }
+
+        .step-text span {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Feature cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .feature-icon {
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Example reward table */
+        .reward-example {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 24px 0;
+        }
+
+        .reward-example-header {
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .reward-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 15px;
+        }
+
+        .reward-row:last-child {
+            border-bottom: none;
+        }
+
+        .reward-chore {
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .reward-amount {
+            color: #059669;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .reward-total-row {
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-top: 2px solid #059669;
+        }
+
+        .reward-total-label {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .reward-total-amount {
+            color: #059669;
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        /* Bonus box */
+        .bonus-box {
+            background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+            border: 1px solid #e879f9;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+
+        .bonus-box h3 {
+            color: #7e22ce;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .bonus-box p {
+            color: #6b21a8;
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .cta-section h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .cta-section p {
+            font-size: 15px;
+            margin-bottom: 24px;
+            opacity: 0.95;
+            color: white;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #059669;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer */
+        .footer {
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 32px 30px;
+            text-align: center;
+        }
+
+        .footer h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .footer p {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .footer a {
+            color: #34d399;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header, .content {
+                padding: 24px 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <span class="logo">⭐</span>
+            <h1>You Asked — We Built It: Per-Chore Reward Amounts</h1>
+            <p>Set exactly how much each chore is worth</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Intro -->
+            <div class="section">
+                <p>Hey ChoreStar families,</p>
+                <p>For a while now, one of the most common requests we've heard is: <strong>"Can we set different amounts for each chore?"</strong> Making the bed and scrubbing the bathroom shouldn't pay the same — and now they don't have to.</p>
+                <p>Today we're rolling out <strong>Per-Chore Rewards</strong>, a new way to handle allowance that gives each chore its own dollar value.</p>
+            </div>
+
+            <!-- How it works -->
+            <div class="section">
+                <h2>💰 How Per-Chore Rewards Work</h2>
+                <p>Head to <strong>Settings → Family → Reward Settings</strong> and you'll find a new toggle:</p>
+
+                <div class="steps-box">
+                    <h3>Getting Set Up (takes 2 minutes)</h3>
+
+                    <div class="step-item">
+                        <span class="step-icon">🔀</span>
+                        <div class="step-text">
+                            <strong>Flip the toggle to "Per Chore"</strong>
+                            <span>Switch from the flat daily rate to per-chore mode in one click</span>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <span class="step-icon">✏️</span>
+                        <div class="step-text">
+                            <strong>Set each chore's reward</strong>
+                            <span>Open any chore and enter how much it's worth — $0.25, $1.00, $2.00, whatever fits your family</span>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <span class="step-icon">📊</span>
+                        <div class="step-text">
+                            <strong>Earnings add up automatically</strong>
+                            <span>Each completed chore adds its amount to the weekly total — no math required</span>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <span class="step-icon">💵</span>
+                        <div class="step-text">
+                            <strong>Chore cards show the amount</strong>
+                            <span>Each chore displays its reward right on the card so kids always know what they're earning</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example reward table -->
+                <div class="reward-example">
+                    <div class="reward-example-header">Example: Emma's Week</div>
+                    <div class="reward-row">
+                        <span class="reward-chore">🛏️ Make Bed (×5 days)</span>
+                        <span class="reward-amount">$2.50</span>
+                    </div>
+                    <div class="reward-row">
+                        <span class="reward-chore">🍽️ Clear Dishes (×5 days)</span>
+                        <span class="reward-amount">$1.25</span>
+                    </div>
+                    <div class="reward-row">
+                        <span class="reward-chore">🐕 Walk the Dog (×3 days)</span>
+                        <span class="reward-amount">$3.00</span>
+                    </div>
+                    <div class="reward-row">
+                        <span class="reward-chore">🧹 Vacuum Room (×1 day)</span>
+                        <span class="reward-amount">$2.00</span>
+                    </div>
+                    <div class="reward-total-row">
+                        <span class="reward-total-label">Emma's Weekly Total</span>
+                        <span class="reward-total-amount">$8.75</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New features summary -->
+            <div class="section">
+                <h2>✨ What's New</h2>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🔀</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Flat Rate or Per Chore — Your Choice</div>
+                            <div class="feature-description">The flat daily rate is still there if you prefer simplicity. Flip the toggle anytime to switch between modes. Both work great.</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">💰</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Reward Amount on Every Chore Card</div>
+                            <div class="feature-description">In Per Chore mode, each chore shows its dollar value right on the card. Kids know exactly what they're working toward.</div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">📈</span>
+                        <div class="feature-content">
+                            <div class="feature-title">Automatic Weekly Totals</div>
+                            <div class="feature-description">Weekly earnings calculate automatically based on what was actually completed. No spreadsheets, no guessing.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full week bonus label -->
+            <div class="section">
+                <h2>🎉 Full Week Bonus Reward</h2>
+                <p>We also updated the weekly bonus. Instead of a dollar amount, you can now set a <strong>fun reward label</strong> — "pizza night", "movie night", "stay up late", anything your family loves.</p>
+
+                <div class="bonus-box">
+                    <h3>🏆 How it works</h3>
+                    <p>When a child completes every chore every day of the week, a celebration toast pops up with your bonus label. "🎉 Perfect week! Bonus: pizza night!" — that kind of moment goes a long way toward building habits that actually stick.</p>
+                </div>
+
+                <p>Set your bonus label in <strong>Settings → Family → Full Week Bonus Reward</strong>.</p>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-section">
+                <h3>Ready to Set Chore Amounts?</h3>
+                <p>It only takes a few minutes to get set up. Head to Settings → Family → Reward Settings.</p>
+                <a href="https://chorestar.app/dashboard" class="cta-button">Open ChoreStar →</a>
+            </div>
+
+            <!-- Share -->
+            <div class="section">
+                <h2>💌 Know a Family Who'd Love This?</h2>
+                <p>If this update helps your family, we'd love a share. Forward this email or tap below:</p>
+
+                <div style="text-align: center; margin: 24px 0;">
+                    <a href="https://twitter.com/intent/tweet?text=ChoreStar%20just%20added%20per-chore%20reward%20amounts%20%E2%80%94%20now%20each%20chore%20can%20earn%20a%20different%20amount.%20Love%20it.&url=https%3A%2F%2Fchorestar.app" style="display: inline-block; background: #1DA1F2; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px;">Twitter/X</a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fchorestar.app" style="display: inline-block; background: #1877F2; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px;">Facebook</a>
+                    <a href="https://wa.me/?text=ChoreStar%20now%20lets%20you%20set%20different%20reward%20amounts%20for%20each%20chore.%20Really%20useful%20for%20teaching%20kids%20about%20fair%20pay.%20Free%20to%20try%3A%20https%3A%2F%2Fchorestar.app" style="display: inline-block; background: #25D366; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px;">WhatsApp</a>
+                    <a href="mailto:?subject=ChoreStar%20now%20does%20per-chore%20rewards&body=Hey!%20Thought%20you%27d%20like%20this%20%E2%80%94%20ChoreStar%20just%20added%20per-chore%20reward%20amounts%20so%20each%20chore%20can%20be%20worth%20a%20different%20amount.%20We%20use%20it%20for%20our%20kids.%20Free%20to%20try%3A%20https%3A%2F%2Fchorestar.app" style="display: inline-block; background: #059669; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 4px;">Email a Friend</a>
+                </div>
+            </div>
+
+            <!-- Sign off -->
+            <div class="section">
+                <p>As always, reply to this email with questions, feedback, or to tell us how per-chore rewards are working for your family — we genuinely love hearing from you.</p>
+                <p style="margin-top: 24px; font-weight: 600; color: #1e293b;">Here's to fair rewards,</p>
+                <p style="color: #64748b; font-size: 14px;">— The ChoreStar Team</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h4>Stay Connected</h4>
+            <p>Questions or feedback? We'd love to hear from you!</p>
+            <p>Email: <a href="mailto:hi@chorestar.app">hi@chorestar.app</a></p>
+            <p>Website: <a href="https://chorestar.app">chorestar.app</a></p>
+
+            <p style="margin-top: 24px; font-size: 12px; color: #94a3b8;">
+                You're receiving this email because you're a valued ChoreStar user.
+                <br>To unsubscribe, reply with "unsubscribe" in the subject line.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

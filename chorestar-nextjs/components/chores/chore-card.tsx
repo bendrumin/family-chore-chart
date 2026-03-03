@@ -18,10 +18,11 @@ interface ChoreCardProps {
   chore: Chore
   completions: ChoreCompletion[]
   weekStart: string
+  rewardMode?: 'flat' | 'per_chore'
   onRefresh: () => void
 }
 
-export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCardProps) {
+export function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', onRefresh }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Get last 7 days with day of week
@@ -161,9 +162,11 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
               </span>
               this week {choreCompletions.length >= 5 && '🔥'}
             </div>
-            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-              ${((chore.reward_cents || 0) / 100).toFixed(2)} each
-            </div>
+            {rewardMode === 'per_chore' && (
+              <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                ${((chore.reward_cents || 0) / 100).toFixed(2)} each
+              </div>
+            )}
           </div>
         </div>
       </Card>
