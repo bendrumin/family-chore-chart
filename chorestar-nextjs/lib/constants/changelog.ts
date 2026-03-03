@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.2.0'
+export const LATEST_CHANGELOG_VERSION = '2026.3.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.3.0': {
+    version: '2026.3.0',
+    date: 'March 2026',
+    title: 'Per-Chore Rewards & Week Bonus',
+    features: [
+      {
+        icon: '💰',
+        title: 'Per-Chore Reward Mode',
+        description: 'Switch to "Per Chore" mode in Settings → Family and set a unique reward amount on each chore. Earnings add up as kids complete them — bigger chores can be worth more.'
+      },
+      {
+        icon: '🎉',
+        title: 'Full Week Bonus Reward',
+        description: 'Replace the old weekly bonus cents with a fun label — "pizza night," "movie night," "stay up late." When kids complete every chore every day, the label pops up as a celebration.'
+      },
+      {
+        icon: '🏷️',
+        title: 'Reward Amount on Chore Cards',
+        description: 'Each chore card now shows its reward amount so kids always know exactly what they\'re working toward.'
+      },
+    ]
+  },
   '2026.2.0': {
     version: '2026.2.0',
     date: 'February 2026',

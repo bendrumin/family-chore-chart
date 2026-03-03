@@ -32,7 +32,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Chores',
     question: 'How do chore rewards work?',
-    answer: 'Each chore has a reward value in cents. When a child completes all their chores for the day, they earn the daily reward. Completing all chores all week earns a weekly bonus!'
+    answer: 'Choose between two reward modes in Settings → Family. "Flat Daily Rate" pays a set amount for any day with completions. "Per Chore" adds up each individual chore\'s reward as kids complete them — great for making bigger chores worth more. Either way, you can set a Full Week Bonus Reward (like "pizza night") that shows as a celebration when kids nail every chore every day of the week.'
   },
   {
     category: 'Chores',

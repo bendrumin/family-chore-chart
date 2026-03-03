@@ -84,6 +84,12 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'per-chore-rewards',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /per-chore-rewards\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
       name: 'signup',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /signup\.spec\.ts/,

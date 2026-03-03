@@ -23,7 +23,8 @@
     "test:tutorials:create-routine": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-create-routine",
     "test:tutorials:kid-login": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-kid-login",
     "test:tutorials:run-routine": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-run-routine",
-    "test:tutorials:family-settings": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-family-settings"
+    "test:tutorials:family-settings": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-family-settings",
+    "test:e2e:per-chore-rewards": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=per-chore-rewards"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

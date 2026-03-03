@@ -152,6 +152,8 @@ export interface Database {
           user_id: string
           daily_reward_cents: number | null
           weekly_bonus_cents: number | null
+          reward_mode: string | null
+          weekly_bonus_label: string | null
           timezone: string | null
           currency_code: string | null
           locale: string | null
@@ -166,6 +168,8 @@ export interface Database {
           user_id: string
           daily_reward_cents?: number | null
           weekly_bonus_cents?: number | null
+          reward_mode?: string | null
+          weekly_bonus_label?: string | null
           timezone?: string | null
           currency_code?: string | null
           locale?: string | null
@@ -180,6 +184,8 @@ export interface Database {
           user_id?: string
           daily_reward_cents?: number | null
           weekly_bonus_cents?: number | null
+          reward_mode?: string | null
+          weekly_bonus_label?: string | null
           timezone?: string | null
           currency_code?: string | null
           locale?: string | null
