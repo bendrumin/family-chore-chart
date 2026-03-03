@@ -235,7 +235,7 @@ export default async function HomePage() {
             {[
               { icon: '⚡', title: 'Set Up in Minutes', desc: 'No complicated setup. Add your kids, assign chores, and you\'re done. Start seeing results today, not next week.' },
               { icon: '🎮', title: 'Kids Actually Use It', desc: 'Colorful, fun interface that feels like a game. Kids love checking off tasks and watching their earnings grow.' },
-              { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Automatically calculates earnings. No more "Did I get paid for that?" or manual math at the end of the week.' },
+              { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Flat daily rate or per-chore rewards — you choose. Bigger chores can earn more. ChoreStar tallies it all automatically.' },
               { icon: '📱', title: 'Works Everywhere', desc: 'Phone, tablet, computer - no app download needed. Everyone in the family stays synced in real-time.' },
               { icon: '👨‍👩‍👧‍👦', title: 'Built for Real Families', desc: 'Multiple kids? Different chores per child? Various reward amounts? We\'ve got you covered.' },
               { icon: '🔒', title: 'Safe & Private', desc: 'Your family data is secure and private. We never share or sell your information. Period.' },
@@ -429,7 +429,7 @@ export default async function HomePage() {
               },
               {
                 q: 'How does the allowance tracking work?',
-                a: 'You set a daily reward amount per child. When they complete their chores each day, they earn that amount. The weekly bonus kicks in if they complete all chores every day. ChoreStar tracks it all automatically.',
+                a: 'Choose your reward mode in Settings. "Flat Daily Rate" pays a set amount for each day with any completions. "Per Chore" tallies up each chore\'s individual reward as kids complete them — so a bigger chore can be worth more than a quick one. You can also set a Full Week Bonus Reward (like "ice cream" or "movie night") that pops up as a celebration when kids complete everything all 7 days.',
               },
               {
                 q: 'Can two parents manage the same family?',

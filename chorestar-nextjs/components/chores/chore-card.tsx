@@ -154,12 +154,15 @@ export function ChoreCard({ chore, completions, weekStart, onRefresh }: ChoreCar
           </div>
 
           {/* Stats */}
-          <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center">
+          <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               <span className="font-bold text-lg mr-1 text-gray-900 dark:text-gray-100">
                 {choreCompletions.length}
               </span>
               this week {choreCompletions.length >= 5 && '🔥'}
+            </div>
+            <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+              ${((chore.reward_cents || 0) / 100).toFixed(2)} each
             </div>
           </div>
         </div>

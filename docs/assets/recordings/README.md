@@ -113,6 +113,24 @@ Place screen recordings (GIFs or short videos) in this folder.
 
 ---
 
+### 8. Per-Chore Rewards
+
+**Script:** `npm run test:e2e:per-chore-rewards`
+**Path:** Settings → Reward Settings → toggle → Dashboard → edit chore
+**Steps:**
+1. Log in as parent
+2. Open Settings → Family tab → Reward Settings
+3. Toggle from **Flat Daily Rate** → **Per Chore**
+4. Type a Full Week Bonus Reward (e.g. "pizza night")
+5. Save settings
+6. Return to dashboard — chore cards show `$X.XX each`
+7. Edit a chore's reward amount (e.g. $0.50)
+8. Return to Settings — toggle back to **Flat Daily Rate**
+
+**Filename:** `per-chore-rewards.gif`
+
+---
+
 ## Run All Recordings
 
 ```bash

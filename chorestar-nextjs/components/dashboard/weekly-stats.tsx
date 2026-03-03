@@ -26,6 +26,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     completionRate: 0,
     perfectDays: 0,
     streak: 0,
+    weeklyBonusLabel: '',
     isLoading: true,
   })
   const previousPerfectDays = useRef(0)
@@ -52,7 +53,10 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             setTimeout(() => {
               celebrationManager.celebratePerfectWeek()
               playSound('celebration')
-              toast.success(`🎉 ${child.name} completed a PERFECT WEEK! All 7 days! 🎉`, {
+              const bonusText = stats.weeklyBonusLabel
+                ? ` Bonus unlocked: ${stats.weeklyBonusLabel}! 🎁`
+                : ' All 7 days! 🎉'
+              toast.success(`🎉 ${child.name} completed a PERFECT WEEK!${bonusText}`, {
                 duration: 5000,
               })
             }, 500)
@@ -104,7 +108,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         .eq('is_active', true)
 
       if (!chores || chores.length === 0) {
-        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, perfectDays: 0, streak: 0, isLoading: false })
+        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, perfectDays: 0, streak: 0, weeklyBonusLabel: '', isLoading: false })
         return
       }
 
@@ -123,11 +127,11 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       const { data: user } = await supabase.auth.getUser()
       const { data: familySettings } = await supabase
         .from('family_settings')
-        .select('daily_reward_cents, weekly_bonus_cents')
+        .select('daily_reward_cents, weekly_bonus_cents, reward_mode, weekly_bonus_label')
         .eq('user_id', user?.user?.id)
         .single()
 
-      // Calculate total earnings using family settings (matching Vanilla JS logic)
+      // Calculate total earnings using family settings
       // Count days with any completions
       const completionsPerDay = new Map<number, number>()
       completions?.forEach(comp => {
@@ -146,12 +150,20 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         }
       }
 
-      // Calculate earnings: (days with any completions × daily_reward_cents) + weekly bonus if perfect week
-      const dailyRewardCents = familySettings?.daily_reward_cents || 7
-      const weeklyBonusCents = familySettings?.weekly_bonus_cents || 0
-      const daysWithAnyCompletions = completionsPerDay.size
-      const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
-        (perfectDays === 7 ? weeklyBonusCents : 0)
+      // Calculate earnings based on reward mode
+      let totalEarnings: number
+      if (familySettings?.reward_mode === 'per_chore') {
+        const choreRewardMap = new Map(chores.map(c => [c.id, c.reward_cents || 0]))
+        totalEarnings = completions?.reduce((sum, comp) => {
+          return sum + (choreRewardMap.get(comp.chore_id) || 0)
+        }, 0) ?? 0
+      } else {
+        const dailyRewardCents = familySettings?.daily_reward_cents || 7
+        const weeklyBonusCents = familySettings?.weekly_bonus_cents || 0
+        const daysWithAnyCompletions = completionsPerDay.size
+        totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
+          (perfectDays === 7 ? weeklyBonusCents : 0)
+      }
 
       // Calculate completion rate based on perfect days (matching Vanilla JS logic)
       const completionRate = Math.round((perfectDays / 7) * 100)
@@ -165,6 +177,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         completionRate,
         perfectDays,
         streak,
+        weeklyBonusLabel: familySettings?.weekly_bonus_label || '',
         isLoading: false,
       })
     } catch (error) {
@@ -305,7 +318,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <div className="mt-1.5 text-center">
               <span className="text-xs font-medium text-green-600 dark:text-green-400">
                 {stats.perfectDays === 7
-                  ? '🎉 Perfect week! All chores done every day!'
+                  ? `🎉 Perfect week! ${stats.weeklyBonusLabel ? `Bonus: ${stats.weeklyBonusLabel}! 🎁` : 'All chores done every day!'}`
                   : stats.perfectDays >= 5
                   ? '🌟 Awesome progress! Keep it up!'
                   : stats.perfectDays >= 3

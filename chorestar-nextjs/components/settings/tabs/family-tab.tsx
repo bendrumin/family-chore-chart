@@ -55,6 +55,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [localLanguage, setLocalLanguage] = useState('en')
   const [localDailyReward, setLocalDailyReward] = useState('7')
   const [localWeeklyBonus, setLocalWeeklyBonus] = useState('1')
+  const [localRewardMode, setLocalRewardMode] = useState<'flat' | 'per_chore'>('flat')
+  const [localWeeklyBonusLabel, setLocalWeeklyBonusLabel] = useState('')
   const [localSoundEnabled, setLocalSoundEnabled] = useState(true)
   const [localSoundVolume, setLocalSoundVolume] = useState(50)
   const [isEditChildrenPageOpen, setIsEditChildrenPageOpen] = useState(false)
@@ -103,6 +105,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       setLocalLanguage(settings.language || 'en')
       setLocalDailyReward((settings.daily_reward_cents || 7).toString())
       setLocalWeeklyBonus((settings.weekly_bonus_cents || 1).toString())
+      setLocalRewardMode((settings.reward_mode as 'flat' | 'per_chore') || 'flat')
+      setLocalWeeklyBonusLabel(settings.weekly_bonus_label || '')
       
       // Load sound settings from localStorage (sound settings are client-side only)
       if (typeof window !== 'undefined') {
@@ -128,6 +132,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         language: localLanguage,
         daily_reward_cents: parseInt(localDailyReward),
         weekly_bonus_cents: parseInt(localWeeklyBonus),
+        reward_mode: localRewardMode,
+        weekly_bonus_label: localWeeklyBonusLabel,
       })
 
       // Save family name to profiles
@@ -201,7 +207,38 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             Configure how much children earn for completing chores.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Reward Mode Toggle */}
+          <div className="space-y-2">
+            <Label className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+              Reward Mode
+            </Label>
+            <div className="flex rounded-xl border-2 border-green-200 dark:border-green-700 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setLocalRewardMode('flat')}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
+                  localRewardMode === 'flat'
+                    ? 'bg-green-700 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                }`}
+              >
+                Flat Daily Rate
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocalRewardMode('per_chore')}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
+                  localRewardMode === 'per_chore'
+                    ? 'bg-green-700 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                }`}
+              >
+                Per Chore
+              </button>
+            </div>
+          </div>
+
+          {localRewardMode === 'flat' ? (
             <div className="space-y-2">
               <Label htmlFor="daily-reward" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                 Daily Reward (cents)
@@ -219,24 +256,29 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 Amount earned per day when any chore is completed
               </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="weekly-bonus" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
-                Weekly Bonus (cents)
-              </Label>
-              <Input
-                id="weekly-bonus"
-                type="number"
-                min="0"
-                max="50"
-                value={localWeeklyBonus}
-                onChange={(e) => setLocalWeeklyBonus(e.target.value)}
-                className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
-              />
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                Bonus for completing all chores every day for the whole week
+          ) : (
+            <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-700">
+              <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                Each chore earns its own set amount per completion. Set the reward on each chore individually.
               </p>
             </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="weekly-bonus-label" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+              Full Week Bonus Reward
+            </Label>
+            <Input
+              id="weekly-bonus-label"
+              type="text"
+              placeholder="e.g. ice cream, movie night, stay up late"
+              value={localWeeklyBonusLabel}
+              onChange={(e) => setLocalWeeklyBonusLabel(e.target.value)}
+              className="h-12 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-green-200 dark:focus:ring-green-700 transition-all backdrop-blur-md"
+            />
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Shown as a celebration when all chores are done every day for the full week
+            </p>
           </div>
         </div>
 
