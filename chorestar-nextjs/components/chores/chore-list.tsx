@@ -11,6 +11,7 @@ import { AddChoreModal } from './add-chore-modal'
 import { ChoreCard } from './chore-card'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
+import { useSettings } from '@/lib/contexts/settings-context'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -22,6 +23,8 @@ interface ChoreListProps {
 }
 
 export function ChoreList({ childId, userId }: ChoreListProps) {
+  const { settings } = useSettings()
+  const rewardMode = (settings?.reward_mode as 'flat' | 'per_chore') || 'flat'
   const [chores, setChores] = useState<Chore[]>([])
   const [completions, setCompletions] = useState<ChoreCompletion[]>([])
   const [weekStart, setWeekStart] = useState(getWeekStart())
@@ -264,6 +267,7 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                   chore={chore}
                   completions={completions.filter(c => c.chore_id === chore.id)}
                   weekStart={weekStart}
+                  rewardMode={rewardMode}
                   onRefresh={() => {
                     loadChores()
                     loadCompletions()

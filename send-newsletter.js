@@ -31,10 +31,10 @@ const resend = new Resend(RESEND_API_KEY);
 
 // Newsletter configuration
 const NEWSLETTER_CONFIG = {
-    subject: 'New in ChoreStar: Kid Zone, Routines & More 🌟',
+    subject: 'New in ChoreStar: Set Different Rewards for Each Chore 💰',
     from: 'ChoreStar <hi@chorestar.app>',
     replyTo: 'hi@chorestar.app',
-    template: 'newsletter-react-launch.html' // NEW: Updated version launch
+    template: 'newsletter-per-chore-rewards.html' // Per-Chore Rewards update
 };
 
 // Your active users (replace with your actual user list)
