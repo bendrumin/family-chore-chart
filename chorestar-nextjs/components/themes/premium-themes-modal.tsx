@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Star } from 'lucide-react'
+import { Sparkles, Star, CreditCard } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
+import { createCheckoutSession } from '@/lib/utils/stripe'
 
 interface PremiumThemesModalProps {
   open: boolean
@@ -24,6 +25,19 @@ const PREMIUM_THEMES = [
 export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalProps) {
   const { settings, updateSettings } = useSettings()
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
+  const [isUpgrading, setIsUpgrading] = useState(false)
+
+  const handleUpgrade = async () => {
+    setIsUpgrading(true)
+    try {
+      const checkoutUrl = await createCheckoutSession('annual')
+      window.location.href = checkoutUrl
+    } catch (error: any) {
+      console.error('Upgrade error:', error)
+      toast.error(error.message || 'Failed to start upgrade. Please try again.')
+      setIsUpgrading(false)
+    }
+  }
 
   const handleThemeSelect = async (themeId: string) => {
     try {
@@ -72,13 +86,12 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
             <Button
               variant="gradient"
               size="lg"
-              onClick={() => {
-                // TODO: Open upgrade modal
-                toast.info('Upgrade to Premium feature coming soon!')
-              }}
+              onClick={handleUpgrade}
+              disabled={isUpgrading}
               className="font-bold hover-glow"
             >
-              Upgrade to Premium
+              <CreditCard className="w-5 h-5 mr-2" />
+              {isUpgrading ? 'Redirecting...' : 'Upgrade to Premium'}
             </Button>
           </div>
 
