@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileDown, FileText, Image, Calendar, Sparkles } from 'lucide-react'
 import { NewFeaturesModal } from '@/components/help/new-features-modal'
-import { exportFamilyReportCSV, exportFamilyReportPDF, exportPrintableChoreChart } from '@/lib/utils/export'
+import { exportFamilyReportCSV, exportFamilyReportPDF, exportPrintableChoreChart, exportWeeklyTemplate, type WeeklyTemplateStyle } from '@/lib/utils/export'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -194,7 +194,49 @@ export function DownloadsTab() {
           <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 transition-all duration-200">
             <Calendar className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
             <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Weekly Templates</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Pre-designed templates for printing (Coming Soon)</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Themed printable templates</p>
+            <div className="flex flex-col gap-2">
+              {([
+                { style: 'stars' as WeeklyTemplateStyle, label: 'Stars', emoji: '⭐' },
+                { style: 'rainbow' as WeeklyTemplateStyle, label: 'Rainbow', emoji: '🌈' },
+                { style: 'minimal' as WeeklyTemplateStyle, label: 'Minimal', emoji: '📝' },
+              ]).map(tmpl => (
+                <Button
+                  key={tmpl.style}
+                  variant="outline"
+                  size="sm"
+                  disabled={isExporting}
+                  className="w-full font-bold text-xs"
+                  onClick={async () => {
+                    if (!user) { toast.error('Please log in to export'); return }
+                    setIsExporting(true)
+                    try {
+                      const supabase = createClient()
+                      const [childrenRes, choresRes] = await Promise.all([
+                        supabase.from('children').select('*').eq('user_id', user.id),
+                        supabase.from('chores').select('*'),
+                      ])
+                      if (childrenRes.error || choresRes.error) throw new Error('Failed to load data')
+                      await exportWeeklyTemplate({
+                        children: childrenRes.data || [],
+                        chores: choresRes.data || [],
+                        completions: [],
+                        weekStart: getWeekStart(),
+                        currencySymbol: getCurrencySymbol(),
+                        style: tmpl.style,
+                      })
+                      toast.success(`${tmpl.label} template exported!`)
+                    } catch (e: any) {
+                      toast.error(e.message || 'Failed to export')
+                    } finally {
+                      setIsExporting(false)
+                    }
+                  }}
+                >
+                  {tmpl.emoji} {tmpl.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
