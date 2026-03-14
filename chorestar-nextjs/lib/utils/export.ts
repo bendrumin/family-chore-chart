@@ -346,3 +346,168 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
   doc.save(`chorestar-chart-${childName}-${weekStart}.pdf`);
 }
 
+// ── Weekly template styles ──────────────────────────────────────
+export type WeeklyTemplateStyle = 'stars' | 'rainbow' | 'minimal'
+
+interface WeeklyTemplateOptions extends ExportOptions {
+  style: WeeklyTemplateStyle
+}
+
+const TEMPLATE_COLORS: Record<WeeklyTemplateStyle, { primary: number[]; accent: number[]; bg: number[]; headerText: number[] }> = {
+  stars: { primary: [99, 102, 241], accent: [245, 158, 11], bg: [238, 242, 255], headerText: [255, 255, 255] },
+  rainbow: { primary: [236, 72, 153], accent: [16, 185, 129], bg: [255, 241, 242], headerText: [255, 255, 255] },
+  minimal: { primary: [31, 41, 55], accent: [107, 114, 128], bg: [249, 250, 251], headerText: [255, 255, 255] },
+}
+
+/**
+ * Export a styled weekly chore template — one page per child with themed header, checkbox grid,
+ * reward summary, and motivational footer.
+ */
+export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
+  const { children, chores, weekStart, currencySymbol = '$', childId = 'all', style } = options;
+
+  const filteredChildren = childId === 'all' ? children : children.filter((c) => c.id === childId);
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const colors = TEMPLATE_COLORS[style];
+
+  let jsPDF: any;
+  try {
+    const mod = await import('jspdf');
+    jsPDF = mod.jsPDF || (mod as any).default?.jsPDF || (mod as any).default;
+  } catch {
+    throw new Error('PDF library not available. Please refresh and try again.');
+  }
+  if (!jsPDF) throw new Error('PDF library failed to load.');
+
+  const doc = new jsPDF({ orientation: 'portrait' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentW = pageW - margin * 2;
+
+  filteredChildren.forEach((child, childIdx) => {
+    if (childIdx > 0) doc.addPage();
+
+    const childChores = chores.filter(c => c.child_id === child.id);
+
+    // ── Header banner ──────────────────────────────
+    doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+    doc.rect(0, 0, pageW, 40, 'F');
+
+    doc.setTextColor(colors.headerText[0], colors.headerText[1], colors.headerText[2]);
+    doc.setFontSize(22);
+    doc.setFont(undefined, 'bold');
+    const title = style === 'stars' ? `${child.name}'s Weekly Chore Chart` :
+                  style === 'rainbow' ? `${child.name}'s Week` :
+                  `${child.name} — Weekly Chores`;
+    doc.text(title, margin, 26);
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    const weekDate = new Date(weekStart);
+    doc.text(`Week of ${weekDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, 35);
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+
+    // ── Chore grid ─────────────────────────────────
+    const gridTop = 55;
+    const colW = contentW / 8; // chore name + 7 days
+    const rowH = 14;
+
+    // Header row
+    doc.setFillColor(colors.bg[0], colors.bg[1], colors.bg[2]);
+    doc.rect(margin, gridTop - 5, contentW, rowH, 'F');
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+    doc.text('Chore', margin + 2, gridTop + 4);
+    for (let d = 0; d < 7; d++) {
+      const x = margin + colW * (d + 1);
+      doc.text(dayNames[d], x + colW / 2 - 4, gridTop + 4);
+    }
+
+    // Chore rows
+    doc.setTextColor(0, 0, 0);
+    doc.setFont(undefined, 'normal');
+    let y = gridTop + rowH;
+
+    if (childChores.length === 0) {
+      doc.setFontSize(11);
+      doc.text('No chores assigned yet — add some from the dashboard!', margin + 2, y + 6);
+    }
+
+    childChores.forEach((chore, i) => {
+      // Alternating row bg
+      if (i % 2 === 0) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(margin, y - 4, contentW, rowH, 'F');
+      }
+
+      // Border line
+      doc.setDrawColor(230, 230, 230);
+      doc.line(margin, y + rowH - 4, margin + contentW, y + rowH - 4);
+
+      // Chore name
+      doc.setFontSize(9);
+      const displayName = chore.name.length > 18 ? chore.name.substring(0, 17) + '...' : chore.name;
+      doc.text(displayName, margin + 2, y + 4);
+
+      // Reward hint
+      doc.setFontSize(6);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`${currencySymbol}${(chore.reward_cents / 100).toFixed(2)}`, margin + 2, y + 9);
+      doc.setTextColor(0, 0, 0);
+
+      // Checkboxes for each day
+      for (let d = 0; d < 7; d++) {
+        const cx = margin + colW * (d + 1) + colW / 2 - 4;
+        const cy = y - 1;
+        const size = 8;
+
+        // Draw rounded checkbox
+        doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(cx, cy, size, size, 1.5, 1.5);
+
+        // Star watermark for stars theme
+        if (style === 'stars') {
+          doc.setFontSize(5);
+          doc.setTextColor(220, 220, 220);
+          doc.text('*', cx + 2.5, cy + 5.5);
+          doc.setTextColor(0, 0, 0);
+        }
+      }
+
+      y += rowH;
+    });
+
+    // ── Reward summary ─────────────────────────────
+    const summaryY = Math.max(y + 15, pageH - 60);
+    doc.setFillColor(colors.bg[0], colors.bg[1], colors.bg[2]);
+    doc.roundedRect(margin, summaryY, contentW, 25, 3, 3, 'F');
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+    const totalReward = childChores.reduce((sum, c) => sum + c.reward_cents, 0) * 7;
+    doc.text(`Weekly Goal: Complete all ${childChores.length} chores every day`, margin + 5, summaryY + 10);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(9);
+    doc.text(`Possible earnings: ${currencySymbol}${(totalReward / 100).toFixed(2)} per week`, margin + 5, summaryY + 18);
+
+    // ── Footer ─────────────────────────────────────
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(7);
+    const footerMsg = style === 'stars' ? 'You\'re a star! Keep it up!' :
+                      style === 'rainbow' ? 'Every chore completed is a step toward something awesome!' :
+                      'Generated by ChoreStar';
+    doc.text(footerMsg, margin, pageH - 10);
+    doc.text('chorestar.app', pageW - margin - 20, pageH - 10);
+  });
+
+  const childName = childId === 'all' ? 'family' : filteredChildren[0]?.name.toLowerCase() || 'template';
+  doc.save(`chorestar-${style}-${childName}-${weekStart}.pdf`);
+}
+

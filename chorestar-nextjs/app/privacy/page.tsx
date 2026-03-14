@@ -3,7 +3,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — ChoreStar',
+  title: 'Privacy Policy',
   description: 'ChoreStar privacy policy. Learn how we collect, use, and protect your family\'s data.',
 }
 

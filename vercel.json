@@ -4,17 +4,30 @@
     {
       "src": "chorestar-nextjs/package.json",
       "use": "@vercel/next"
-    },
-    {
-      "src": "frontend/api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
     }
   ],
-  "redirects": [],
+  "redirects": [
+    {
+      "source": "/app",
+      "destination": "/dashboard",
+      "statusCode": 301
+    },
+    {
+      "source": "/app/:path*",
+      "destination": "/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/legacy",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/legacy/:path*",
+      "destination": "/",
+      "statusCode": 301
+    }
+  ],
   "rewrites": [
     {
       "source": "/",
@@ -27,22 +40,6 @@
     {
       "source": "/auth/callback",
       "destination": "/chorestar-nextjs/auth/callback"
-    },
-    {
-      "source": "/app",
-      "destination": "/chorestar-nextjs/dashboard"
-    },
-    {
-      "source": "/app/:path*",
-      "destination": "/chorestar-nextjs/:path*"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/frontend/api/health.js"
-    },
-    {
-      "source": "/api/send-contact-email",
-      "destination": "/frontend/api/send-contact-email.js"
     },
     {
       "source": "/api/contact",
@@ -78,19 +75,7 @@
     },
     {
       "source": "/api/:path*",
-      "destination": "/frontend/api/:path*.js"
-    },
-    {
-      "source": "/legacy/sw.js",
-      "destination": "/frontend/sw.js"
-    },
-    {
-      "source": "/legacy",
-      "destination": "/frontend/index.html"
-    },
-    {
-      "source": "/legacy/:path*",
-      "destination": "/frontend/:path*"
+      "destination": "/chorestar-nextjs/api/:path*"
     },
     {
       "source": "/:path*",

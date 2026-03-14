@@ -43,17 +43,17 @@ export function ChoresTab() {
 
             <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-purple-200 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700 transition-all">
               <Sparkles className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
-              <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">AI Suggestions</h4>
+              <h4 className="font-bold mb-2 text-gray-900 dark:text-gray-100">Smart Suggestions</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Get AI-powered chore recommendations based on your family's habits (Coming Soon)
+                Get age-appropriate chore recommendations based on your family's habits
               </p>
               <Button
-                variant="outline"
+                variant="gradient"
                 size="lg"
                 onClick={() => setIsAISuggestionsOpen(true)}
-                className="font-bold w-full"
+                className="font-bold hover-glow w-full"
               >
-                Learn More
+                Get Suggestions
               </Button>
             </div>
           </div>

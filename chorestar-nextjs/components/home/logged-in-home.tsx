@@ -128,9 +128,9 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           <div className="flex items-start gap-4">
             <div className="text-3xl shrink-0">📱</div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone — Beta</h3>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                A native iOS app is in TestFlight beta. Enter your email and we'll send you an invite when a spot opens.
+                Our native iOS app is available via TestFlight. Enter your email to get an invite.
               </p>
               <TestFlightSignup compact />
             </div>

@@ -98,7 +98,7 @@ export default async function HomePage() {
             Turn Household Chores Into Family Wins
           </p>
           <p className="text-sm font-semibold" style={{ color: '#6366f1' }}>
-            ⭐ Join 87+ families already using ChoreStar
+            ⭐ Join 100+ families already using ChoreStar
           </p>
         </header>
 
@@ -471,10 +471,10 @@ export default async function HomePage() {
                 ChoreStar for iPhone
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-md mx-auto">
-                A native iOS app is in beta — built for even faster chore tracking, offline support, and a better kid experience on iPhone.
+                A native iOS app built for faster chore tracking, offline support, and a better kid experience on iPhone.
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Join the waitlist and we'll send you a TestFlight invite when a spot opens.
+                Available now via TestFlight — enter your email to get an invite.
               </p>
               <TestFlightSignup />
             </div>
@@ -490,7 +490,7 @@ export default async function HomePage() {
             Ready to Transform Chore Time?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join 87+ families who've said goodbye to chore battles
+            Join 100+ families who've said goodbye to chore battles
           </p>
           <Link
             href="/signup"

@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 87+ happy families.',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 100+ happy families.',
     images: [
       {
         url: '/icon.svg',
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     site: '@chorestar',
     creator: '@chorestar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 87+ happy families.',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 100+ happy families.',
     images: ['/icon.svg'],
   },
   icons: {
