@@ -65,9 +65,22 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Failed to fetch routines' }, { status: 500 });
       }
 
+      // Fetch today's completions for this child so we can mark routines as done
+      const today = new Date().toISOString().split('T')[0];
+      const { data: completions } = await serviceClient
+        .from('routine_completions')
+        .select('routine_id')
+        .eq('child_id', childId)
+        .eq('date', today);
+
+      const completedRoutineIds = new Set(
+        (completions || []).map((c: any) => c.routine_id)
+      );
+
       const sorted = ((data || []) as any[]).map((routine: any) => ({
         ...routine,
-        routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
+        routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || [],
+        completedToday: completedRoutineIds.has(routine.id),
       }));
       return NextResponse.json(sorted);
     }

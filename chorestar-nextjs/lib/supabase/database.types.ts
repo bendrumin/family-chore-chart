@@ -37,6 +37,7 @@ export interface Database {
           updated_at?: string
           kid_login_code?: string | null
         }
+        Relationships: []
       }
       children: {
         Row: {
@@ -78,6 +79,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'children_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
       chores: {
         Row: {
@@ -122,6 +132,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'chores_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
       chore_completions: {
         Row: {
@@ -145,6 +164,15 @@ export interface Database {
           week_start?: string
           completed_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'chore_completions_chore_id_fkey'
+            columns: ['chore_id']
+            isOneToOne: false
+            referencedRelation: 'chores'
+            referencedColumns: ['id']
+          }
+        ]
       }
       family_settings: {
         Row: {
@@ -195,6 +223,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'family_settings_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: true
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
       family_invites: {
         Row: {
@@ -227,6 +264,7 @@ export interface Database {
           created_at?: string
           expires_at?: string
         }
+        Relationships: []
       }
       family_members: {
         Row: {
@@ -247,6 +285,7 @@ export interface Database {
           family_id?: string
           created_at?: string
         }
+        Relationships: []
       }
       achievement_badges: {
         Row: {
@@ -273,6 +312,15 @@ export interface Database {
           earned_date?: string
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'achievement_badges_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
       contact_submissions: {
         Row: {
@@ -296,6 +344,7 @@ export interface Database {
           message?: string
           created_at?: string
         }
+        Relationships: []
       }
       routines: {
         Row: {
@@ -334,6 +383,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'routines_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
       routine_steps: {
         Row: {
@@ -366,6 +424,15 @@ export interface Database {
           duration_seconds?: number | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'routine_steps_routine_id_fkey'
+            columns: ['routine_id']
+            isOneToOne: false
+            referencedRelation: 'routines'
+            referencedColumns: ['id']
+          }
+        ]
       }
       routine_completions: {
         Row: {
@@ -401,6 +468,22 @@ export interface Database {
           points_earned?: number
           date?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'routine_completions_routine_id_fkey'
+            columns: ['routine_id']
+            isOneToOne: false
+            referencedRelation: 'routines'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'routine_completions_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
       child_pins: {
         Row: {
@@ -433,6 +516,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'child_pins_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: true
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -462,6 +554,15 @@ export interface Database {
           user_agent?: string | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'push_subscriptions_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
       }
       kid_sessions: {
         Row: {
@@ -485,6 +586,15 @@ export interface Database {
           expires_at?: string
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'kid_sessions_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
+            referencedColumns: ['id']
+          }
+        ]
       }
     }
     Views: {

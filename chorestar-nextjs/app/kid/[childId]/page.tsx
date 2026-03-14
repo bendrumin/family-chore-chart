@@ -168,7 +168,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeRoutines.map((routine, index) => {
               const IconComponent = ROUTINE_ICONS[routine.icon as RoutineIconKey]?.icon;
-              // const completedToday = false; // TODO: Check completion status
+              const completedToday = (routine as any).completedToday === true;
 
               return (
                 <motion.div
@@ -236,12 +236,12 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
                     </div>
 
                     {/* Completed Badge */}
-                    {/* {completedToday && (
+                    {completedToday && (
                       <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full flex items-center gap-1 text-sm font-bold">
                         <CheckCircle2 className="w-4 h-4" />
                         Done!
                       </div>
-                    )} */}
+                    )}
                   </motion.button>
                 </motion.div>
               );

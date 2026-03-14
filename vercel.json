@@ -45,18 +45,6 @@
       "destination": "/frontend/api/send-contact-email.js"
     },
     {
-      "source": "/api/create-paypal-checkout",
-      "destination": "/frontend/api/create-paypal-checkout.js"
-    },
-    {
-      "source": "/api/paypal-webhook",
-      "destination": "/frontend/api/paypal-webhook.js"
-    },
-    {
-      "source": "/api/test-webhook",
-      "destination": "/frontend/api/test-webhook.js"
-    },
-    {
       "source": "/api/contact",
       "destination": "/chorestar-nextjs/api/contact"
     },

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { checkRateLimit, recordAttempt, getClientIp, createRateLimitResponse } from '@/lib/utils/rate-limit'
 
-const RATE_LIMIT = { maxAttempts: 3, windowMs: 60 * 60 * 1000 } // 3 per hour per IP
+const RATE_LIMIT = { maxAttempts: 3, interval: 60 * 60 * 1000 } // 3 per hour per IP
 
 export async function POST(request: Request) {
   try {
