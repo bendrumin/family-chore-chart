@@ -94,7 +94,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
 
       if (data) {
         setSettings(data)
-        applyTheme(data.custom_theme)
+        applyTheme(data.custom_theme as CustomTheme | null | undefined)
       } else {
         await createDefaultSettings()
       }
@@ -130,7 +130,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       if (error) throw error
 
       setSettings(data)
-      applyTheme(data.custom_theme)
+      applyTheme(data.custom_theme as CustomTheme | null | undefined)
     } catch (error) {
       console.error('Error creating default settings:', error)
     }
@@ -269,7 +269,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
 
       // Apply theme if it was updated
       if (updates.custom_theme !== undefined) {
-        applyTheme(updates.custom_theme)
+        applyTheme(updates.custom_theme as CustomTheme | null | undefined)
       }
     } catch (error) {
       console.error('Error updating settings:', error)

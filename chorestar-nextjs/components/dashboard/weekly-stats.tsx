@@ -128,7 +128,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       const { data: familySettings } = await supabase
         .from('family_settings')
         .select('daily_reward_cents, weekly_bonus_cents, reward_mode, weekly_bonus_label')
-        .eq('user_id', user?.user?.id)
+        .eq('user_id', user?.user?.id ?? '')
         .single()
 
       // Calculate total earnings using family settings
