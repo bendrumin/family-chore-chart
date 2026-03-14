@@ -40,7 +40,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
-      const compDate = c.created_at ? new Date(c.created_at) : weekDate
+      const compDate = c.completed_at ? new Date(c.completed_at) : weekDate
       return compDate >= startDate && compDate <= endDate
     })
   } else {
@@ -69,7 +69,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(comp.week_start)
       weekDate.setDate(weekDate.getDate() + comp.day_of_week)
-      const compDate = comp.created_at ? new Date(comp.created_at) : weekDate
+      const compDate = comp.completed_at ? new Date(comp.completed_at) : weekDate
       const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
       csvRows.push([
@@ -163,7 +163,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
       // Calculate date from week_start and day_of_week
       const weekDate = new Date(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
-      const compDate = c.created_at ? new Date(c.created_at) : weekDate
+      const compDate = c.completed_at ? new Date(c.completed_at) : weekDate
       return compDate >= startDate && compDate <= endDate
     })
   } else {

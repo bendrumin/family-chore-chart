@@ -35,11 +35,11 @@ export async function POST(request: Request) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: dbError } = await admin.from('testflight_waitlist').insert({
+    const { error: dbError } = await (admin as any).from('testflight_waitlist').insert({
       email: String(email).slice(0, 200).toLowerCase().trim(),
       name: name ? String(name).slice(0, 100).trim() : null,
       source: request.headers.get('referer') || 'direct',
-    } as any)
+    })
 
     if (dbError) {
       // Unique constraint = already signed up

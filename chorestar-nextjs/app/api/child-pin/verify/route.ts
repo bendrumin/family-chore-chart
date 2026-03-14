@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     let matchedPinRecord: { child_id: string; pin_hash: string; failed_attempts?: number | null; locked_until?: string | null } | null = null;
 
     for (const pr of allPins || []) {
-      const pinRecord = pr as { child_id: string; pin_hash: string; pin_salt?: string | null; failed_attempts?: number | null; locked_until?: string | null; children?: typeof matchedChild };
+      const pinRecord = pr as unknown as { child_id: string; pin_hash: string; pin_salt?: string | null; failed_attempts?: number | null; locked_until?: string | null; children?: typeof matchedChild };
       const hashedInput = hashPin(pin, pinRecord.pin_salt || undefined);
       if (timingSafeEqual(hashedInput, pinRecord.pin_hash)) {
         matchedChild = pinRecord.children ?? null;
