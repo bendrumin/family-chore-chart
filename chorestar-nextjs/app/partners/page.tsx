@@ -87,7 +87,7 @@ export default function PartnersPage() {
 
           {/* Hero */}
           <header className="text-center mb-16">
-            <p className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: '#6366f1' }}>
+            <p className="text-sm font-semibold uppercase tracking-wider mb-4 text-indigo-500 dark:text-indigo-400">
               Partner Program
             </p>
             <h1 className="text-5xl md:text-6xl font-black mb-6">

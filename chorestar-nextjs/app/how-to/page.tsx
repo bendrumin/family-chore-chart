@@ -215,8 +215,7 @@ export default function HowToPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-3 bg-white rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl"
-              style={{ color: '#6366f1' }}
+              className="px-8 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-500 dark:text-indigo-400"
             >
               Start Free Today →
             </Link>

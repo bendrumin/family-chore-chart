@@ -97,7 +97,7 @@ export default async function HomePage() {
           <p className="text-2xl text-gray-600 dark:text-gray-300 mb-4">
             Turn Household Chores Into Family Wins
           </p>
-          <p className="text-sm font-semibold" style={{ color: '#6366f1' }}>
+          <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
             ⭐ Join 100+ families already using ChoreStar
           </p>
         </header>
@@ -136,8 +136,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/login"
-              className="px-8 py-4 rounded-xl font-semibold text-lg text-center border-2 transition-all hover:opacity-80"
-              style={{ borderColor: '#8b5cf6', color: '#6366f1' }}
+              className="px-8 py-4 rounded-xl font-semibold text-lg text-center border-2 transition-all hover:opacity-80 border-purple-500 dark:border-purple-400 text-indigo-500 dark:text-indigo-400"
             >
               Sign In
             </Link>
@@ -242,8 +241,7 @@ export default async function HomePage() {
             ].map(({ icon, title, desc }) => (
               <div
                 key={title}
-                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4"
-                style={{ borderTopColor: '#6366f1' }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg border-t-4 border-t-indigo-500 dark:border-t-indigo-400"
               >
                 <div className="text-4xl mb-4">{icon}</div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{title}</h3>
@@ -362,7 +360,7 @@ export default async function HomePage() {
                   'Priority email support',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="text-xl" style={{ color: '#6366f1' }}>✓</span>
+                    <span className="text-xl text-indigo-500 dark:text-indigo-400">✓</span>
                     <span className="text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: item }} />
                   </li>
                 ))}
@@ -494,8 +492,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/signup"
-            className="inline-block px-12 py-5 bg-white rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl"
-            style={{ color: '#6366f1' }}
+            className="inline-block px-12 py-5 bg-white dark:bg-gray-800 rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-500 dark:text-indigo-400"
           >
             Start Free Today →
           </Link>

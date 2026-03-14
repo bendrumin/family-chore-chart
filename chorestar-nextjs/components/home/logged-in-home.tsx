@@ -103,8 +103,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg"
-              style={{ color: '#6366f1' }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-500 dark:text-indigo-400"
             >
               Upgrade from $4.99/mo
               <ArrowRight className="w-5 h-5" />
