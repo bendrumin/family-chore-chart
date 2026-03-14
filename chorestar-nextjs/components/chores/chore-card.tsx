@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ interface ChoreCardProps {
   onRefresh: () => void
 }
 
-export function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', onRefresh }: ChoreCardProps) {
+export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', onRefresh }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Get last 7 days with day of week
@@ -182,4 +182,4 @@ export function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', 
       />
     </>
   )
-}
+})

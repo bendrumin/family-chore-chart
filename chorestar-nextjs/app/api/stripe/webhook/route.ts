@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Webhook handler error:', error)
+    console.error(`Webhook handler error for event ${event.type} (${event.id}):`, error)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
@@ -119,14 +119,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const subscriptionId = (invoice as any).subscription as string | null
   if (!subscriptionId) return
 
-  try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-    const userId = subscription.metadata?.userId
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+  const userId = subscription.metadata?.userId
 
-    if (userId) {
-      console.warn(`Payment failed for user ${userId}, subscription ${subscriptionId}`)
-    }
-  } catch (err) {
-    console.error('Failed to retrieve subscription for failed payment:', err)
+  if (userId) {
+    console.warn(`Payment failed for user ${userId}, subscription ${subscriptionId}`)
   }
 }

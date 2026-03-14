@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 
-type Routine = Database['public']['Tables']['routines']['Row'] & {
+export type Routine = Database['public']['Tables']['routines']['Row'] & {
   routine_steps?: Database['public']['Tables']['routine_steps']['Row'][];
   children?: {
     id: string;
@@ -12,6 +12,8 @@ type Routine = Database['public']['Tables']['routines']['Row'] & {
     avatar_color: string | null;
     avatar_url: string | null;
   };
+  /** Set by the API in kid mode to indicate the routine was completed today. */
+  completedToday?: boolean;
 };
 
 type RoutineInsert = Database['public']['Tables']['routines']['Insert'];

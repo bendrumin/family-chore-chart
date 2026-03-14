@@ -70,7 +70,6 @@ export class CelebrationManager {
 
   celebrateWithConfetti(type: 'normal' | 'epic' | 'achievement' | 'streak' | 'perfect' = 'normal') {
     if (typeof window === 'undefined' || typeof window.confetti === 'undefined') {
-      console.log('Confetti celebration! 🎉')
       return
     }
 

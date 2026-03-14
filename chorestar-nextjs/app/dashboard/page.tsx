@@ -53,7 +53,7 @@ export default async function DashboardPage() {
 
     // If profile doesn't exist, create it
     if (profileError && profileError.code === 'PGRST116') {
-      console.log('Profile not found, creating one for user:', user.id)
+      console.warn('Profile not found, creating one for user:', user.id)
       const familyName = user.user_metadata?.family_name || user.email?.split('@')[0] || 'Family'
 
       const { data: newProfile, error: createError } = await supabase

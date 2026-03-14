@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -52,6 +52,20 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
     return counts
   }, [chores])
 
+  // Pre-compute completion map: choreId → completions[] (avoids O(n*m) filter per chore)
+  const completionsByChoreId = useMemo(() => {
+    const map = new Map<string, ChoreCompletion[]>()
+    completions.forEach(c => {
+      const existing = map.get(c.chore_id)
+      if (existing) {
+        existing.push(c)
+      } else {
+        map.set(c.chore_id, [c])
+      }
+    })
+    return map
+  }, [completions])
+
   const loadChores = async () => {
     try {
       const supabase = createClient()
@@ -100,6 +114,12 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
   const loadCompletionsRef = useRef(loadCompletions)
   loadChoresRef.current = loadChores
   loadCompletionsRef.current = loadCompletions
+
+  // Stable callback for ChoreCard onRefresh — avoids creating a new function per render
+  const handleRefresh = useCallback(() => {
+    loadChoresRef.current()
+    loadCompletionsRef.current()
+  }, [])
 
   useEffect(() => {
     loadChores()
@@ -265,13 +285,10 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                 <ChoreCard
                   key={chore.id}
                   chore={chore}
-                  completions={completions.filter(c => c.chore_id === chore.id)}
+                  completions={completionsByChoreId.get(chore.id) || []}
                   weekStart={weekStart}
                   rewardMode={rewardMode}
-                  onRefresh={() => {
-                    loadChores()
-                    loadCompletions()
-                  }}
+                  onRefresh={handleRefresh}
                 />
               ))}
             </div>

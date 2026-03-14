@@ -20,7 +20,7 @@ class NotificationManager {
    */
   async init(): Promise<boolean> {
     if (!this.isSupported) {
-      console.log('Push notifications not supported')
+      console.warn('Push notifications not supported in this browser')
       return false
     }
 
@@ -71,7 +71,7 @@ class NotificationManager {
       // Send subscription to server (you'll need to implement this endpoint)
       await this.saveSubscription(this.subscription)
 
-      console.log('Push notification subscription successful')
+      // Subscription registered successfully
       return true
     } catch (error) {
       console.error('Failed to subscribe to push notifications:', error)

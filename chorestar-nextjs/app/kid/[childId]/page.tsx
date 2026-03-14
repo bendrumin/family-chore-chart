@@ -168,7 +168,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeRoutines.map((routine, index) => {
               const IconComponent = ROUTINE_ICONS[routine.icon as RoutineIconKey]?.icon;
-              const completedToday = (routine as any).completedToday === true;
+              const completedToday = routine.completedToday === true;
 
               return (
                 <motion.div

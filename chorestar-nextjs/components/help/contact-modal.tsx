@@ -51,7 +51,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
     // Anti-spam checks
     if (honeypotWebsite || honeypotEmail) {
-      console.log('Spam detected: honeypot fields filled')
+      console.warn('Spam detected: honeypot fields filled')
       toast.error('Invalid submission detected.')
       return
     }
@@ -74,7 +74,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     const hasSpamKeywords = spamKeywords.some(keyword => messageLower.includes(keyword))
 
     if (hasSpamKeywords) {
-      console.log('Spam detected: suspicious keywords')
+      console.warn('Spam detected: suspicious keywords')
       toast.error('Your message contains suspicious content. Please revise and try again.')
       return
     }

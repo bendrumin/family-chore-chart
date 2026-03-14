@@ -6,6 +6,13 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+/** Shape of the `custom_theme` JSONB column in `family_settings`. */
+export interface CustomTheme {
+  mode?: 'light' | 'dark' | 'auto'
+  seasonalTheme?: string | null
+  autoSeasonal?: boolean
+}
+
 export interface Database {
   public: {
     Tables: {

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/lib/supabase/database.types'
+import type { Database, CustomTheme } from '@/lib/supabase/database.types'
 
 // Seasonal theme colors with dark mode support
 const SEASONAL_THEME_COLORS: Record<string, { light: { primary: string; secondary: string }, dark: { primary: string; secondary: string } }> = {
@@ -136,9 +136,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     }
   }
 
-  const applyTheme = (customTheme: any) => {
-    console.log('🎨 Applying theme:', customTheme)
-
+  const applyTheme = (customTheme: CustomTheme | null | undefined) => {
     const mode = customTheme?.mode || 'auto'
 
     let isDark: boolean
@@ -174,7 +172,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     // Apply seasonal theme if present to BOTH html and body (like original version)
     if (customTheme?.seasonalTheme) {
       const seasonalClass = `seasonal-${customTheme.seasonalTheme}`
-      console.log('✨ Applying seasonal class:', seasonalClass)
 
       // Apply the seasonal class to both html and body
       document.body.classList.add(seasonalClass)
@@ -223,7 +220,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
             }
           }
 
-          console.log('🎨 Theme colors applied:', modeColors)
         }, 50)
       }
     } else {
@@ -254,7 +250,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
         // Button colors are managed by React state in dashboard-client.tsx
       }
 
-      console.log('❌ No seasonal theme to apply')
     }
   }
 
