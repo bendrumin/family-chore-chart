@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
+import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
 import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
@@ -179,7 +180,7 @@ export function AppearanceTab() {
 
   useEffect(() => {
     if (settings) {
-      const customTheme = (settings.custom_theme as any) || {}
+      const customTheme = (settings.custom_theme as CustomTheme) || {}
       setLocalTheme(customTheme.mode || 'auto')
       setSeasonalTheme(customTheme.seasonalTheme || null)
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
@@ -210,7 +211,7 @@ export function AppearanceTab() {
   const handleThemeChange = async (theme: 'light' | 'dark' | 'auto') => {
     try {
       setLocalTheme(theme)
-      const currentCustomTheme = (settings?.custom_theme as any) || {}
+      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, mode: theme }
       await updateSettings({ custom_theme: newCustomTheme })
       toast.success(theme === 'auto' ? '🔄 Auto theme activated!' : theme === 'light' ? '☀️ Light theme activated!' : '🌙 Dark theme activated!')
@@ -226,14 +227,8 @@ export function AppearanceTab() {
   const handleSeasonalThemeChange = async (themeId: string | null) => {
     try {
       setSeasonalTheme(themeId)
-      const currentCustomTheme = (settings?.custom_theme as any) || {}
+      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, seasonalTheme: themeId }
-
-      console.log('🔄 Updating seasonal theme:', {
-        themeId,
-        currentCustomTheme,
-        newCustomTheme
-      })
 
       await updateSettings({ custom_theme: newCustomTheme })
       toast.success(themeId ? `${SEASONAL_THEMES.find(t => t.id === themeId)?.emoji} Theme applied!` : '✨ Theme removed!')
@@ -249,7 +244,7 @@ export function AppearanceTab() {
     try {
       const newValue = !autoSeasonalEnabled
       setAutoSeasonalEnabled(newValue)
-      const currentCustomTheme = (settings?.custom_theme as any) || {}
+      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, autoSeasonal: newValue }
       await updateSettings({ custom_theme: newCustomTheme })
       toast.success(newValue ? '🔄 Auto seasonal themes enabled!' : '🔄 Auto seasonal themes disabled!')

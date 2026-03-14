@@ -1,9 +1,32 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
 
 type Routine = Database['public']['Tables']['routines']['Row'];
 type RoutineInsert = Database['public']['Tables']['routines']['Insert'];
+
+// Input validation schemas
+const routineStepSchema = z.object({
+  title: z.string().min(1, 'Step title is required').max(200, 'Step title too long'),
+  description: z.string().max(500).nullable().optional(),
+  icon: z.string().max(50).optional(),
+  order_index: z.number().int().min(0).optional(),
+  duration_seconds: z.number().int().min(0).max(7200).nullable().optional(),
+});
+
+const createRoutineSchema = z.object({
+  routine: z.object({
+    child_id: z.string().uuid('Invalid child ID'),
+    name: z.string().min(1, 'Routine name is required').max(100, 'Routine name too long'),
+    type: z.enum(['morning', 'bedtime', 'afterschool', 'custom']).optional(),
+    icon: z.string().max(50).optional(),
+    color: z.string().max(20).optional(),
+    reward_cents: z.number().int().min(0).max(10000).optional(),
+    is_active: z.boolean().optional(),
+  }),
+  steps: z.array(routineStepSchema).max(50, 'Too many steps (max 50)').optional(),
+});
 
 // GET /api/routines - Get routines for a child.
 // Supports two modes:
@@ -143,7 +166,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { routine, steps } = body;
+
+    // Validate input
+    const parsed = createRoutineSchema.safeParse(body);
+    if (!parsed.success) {
+      const firstError = parsed.error.errors[0]?.message || 'Invalid input';
+      return NextResponse.json({ error: firstError }, { status: 400 });
+    }
+
+    const { routine, steps } = parsed.data;
 
     // Verify child belongs to user
     const { data: child, error: childError } = await supabase

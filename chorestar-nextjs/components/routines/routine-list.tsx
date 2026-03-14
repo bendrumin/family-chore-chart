@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Loader2 } from 'lucide-react';
@@ -67,16 +67,19 @@ export function RoutineList({
     handleCloseBuilder();
   };
 
+  // Pre-compute type counts once instead of filtering 4 times per render
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = { morning: 0, bedtime: 0, afterschool: 0, custom: 0 }
+    routines?.forEach((r) => { counts[r.type] = (counts[r.type] || 0) + 1 })
+    return counts
+  }, [routines])
+
   const types = [
     { value: null, label: 'All', count: routines?.length || 0 },
-    { value: 'morning', label: 'Morning', count: routines?.filter((r) => r.type === 'morning').length || 0 },
-    { value: 'bedtime', label: 'Bedtime', count: routines?.filter((r) => r.type === 'bedtime').length || 0 },
-    {
-      value: 'afterschool',
-      label: 'After School',
-      count: routines?.filter((r) => r.type === 'afterschool').length || 0,
-    },
-    { value: 'custom', label: 'Custom', count: routines?.filter((r) => r.type === 'custom').length || 0 },
+    { value: 'morning', label: 'Morning', count: typeCounts.morning },
+    { value: 'bedtime', label: 'Bedtime', count: typeCounts.bedtime },
+    { value: 'afterschool', label: 'After School', count: typeCounts.afterschool },
+    { value: 'custom', label: 'Custom', count: typeCounts.custom },
   ];
 
   if (error) {

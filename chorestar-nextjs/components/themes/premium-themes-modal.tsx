@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Sparkles, Star, CreditCard } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
+import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
 import { createCheckoutSession } from '@/lib/utils/stripe'
 
@@ -41,7 +42,7 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
 
   const handleThemeSelect = async (themeId: string) => {
     try {
-      const currentCustomTheme = (settings?.custom_theme as any) || {}
+      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, seasonalTheme: themeId }
       
       await updateSettings({ custom_theme: newCustomTheme })
@@ -53,7 +54,7 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
     }
   }
 
-  const currentTheme = (settings?.custom_theme as any)?.seasonalTheme || null
+  const currentTheme = (settings?.custom_theme as CustomTheme)?.seasonalTheme || null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

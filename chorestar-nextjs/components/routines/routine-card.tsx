@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +32,7 @@ interface RoutineCardProps {
   showActions?: boolean;
 }
 
-export function RoutineCard({
+export const RoutineCard = memo(function RoutineCard({
   routine,
   completedToday = false,
   onEdit,
@@ -211,4 +211,4 @@ export function RoutineCard({
       )}
     </Card>
   );
-}
+})

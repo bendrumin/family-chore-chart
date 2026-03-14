@@ -194,6 +194,7 @@ export async function GET(
       completion: data || null,
     });
   } catch (error) {
+    console.error('Error checking routine completion status:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

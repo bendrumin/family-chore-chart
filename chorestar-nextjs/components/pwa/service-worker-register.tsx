@@ -22,7 +22,7 @@ export function ServiceWorkerRegister() {
             return navigator.serviceWorker.register(swPath, { scope });
           })
           .then((registration) => {
-            if (registration) console.log('Service Worker registered:', registration.scope);
+            // SW registered successfully
           })
           .catch((error) => {
             console.error('Service Worker registration failed:', error);
@@ -40,7 +40,7 @@ export function ServiceWorkerRegister() {
 
       // Handle app installed
       window.addEventListener('appinstalled', () => {
-        console.log('PWA was installed')
+        // PWA installed successfully
         deferredPrompt = null
       })
     }
