@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Plus, Loader2 } from 'lucide-react';
 import { RoutineCard } from './routine-card';
-import { RoutineBuilderModal } from './routine-builder-modal';
 import { useRoutines } from '@/lib/hooks/useRoutines';
+
+const RoutineBuilderModal = dynamic(
+  () => import('./routine-builder-modal').then(m => ({ default: m.RoutineBuilderModal })),
+  { ssr: false }
+);
 
 interface RoutineListProps {
   childId: string;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -8,15 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut } from 'lucide-react'
+import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut, Loader2 } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
 import { ChoresTab } from '@/components/settings/tabs/chores-tab'
 import { AppearanceTab } from '@/components/settings/tabs/appearance-tab'
-import { InsightsTab } from '@/components/settings/tabs/insights-tab'
 import { DownloadsTab } from '@/components/settings/tabs/downloads-tab'
 import { BillingTab } from '@/components/settings/tabs/billing-tab'
+
+const InsightsTab = lazy(() => import('@/components/settings/tabs/insights-tab').then(m => ({ default: m.InsightsTab })))
 
 type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads' | 'billing'
 
@@ -105,7 +106,11 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
               {activeTab === 'family' && <FamilyTab onClose={() => setIsOpen(false)} />}
               {activeTab === 'chores' && <ChoresTab />}
               {activeTab === 'appearance' && <AppearanceTab />}
-              {activeTab === 'insights' && <InsightsTab />}
+              {activeTab === 'insights' && (
+                <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>}>
+                  <InsightsTab />
+                </Suspense>
+              )}
               {activeTab === 'downloads' && <DownloadsTab />}
               {activeTab === 'billing' && <BillingTab />}
             </div>

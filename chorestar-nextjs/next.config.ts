@@ -24,7 +24,13 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: [
+      'lucide-react',
+      'recharts',
+      'framer-motion',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
+    ],
   },
 }
 
