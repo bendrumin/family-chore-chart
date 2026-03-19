@@ -195,32 +195,43 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   const calculateStreak = async (childId: string, choreIds: string[]) => {
     try {
       const supabase = createClient()
-      let streak = 0
-      let currentDate = new Date()
-      currentDate.setHours(0, 0, 0, 0)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
 
-      // Check backwards from today
+      const thirtyDaysAgo = new Date(today)
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      // Compute the week_start for 30 days ago so we can filter in a single query
+      const thirtyDaysAgoDay = thirtyDaysAgo.getDay()
+      const earliestWeekStart = new Date(thirtyDaysAgo)
+      earliestWeekStart.setDate(thirtyDaysAgo.getDate() - thirtyDaysAgoDay)
+
+      const { data: completions } = await supabase
+        .from('chore_completions')
+        .select('day_of_week, week_start')
+        .in('chore_id', choreIds)
+        .gte('week_start', earliestWeekStart.toISOString().split('T')[0])
+
+      // Build a set of "weekStart|dayOfWeek" keys for O(1) lookup
+      const completionKeys = new Set<string>()
+      completions?.forEach(c => {
+        completionKeys.add(`${c.week_start}|${c.day_of_week}`)
+      })
+
+      let streak = 0
       for (let i = 0; i < 30; i++) {
-        const checkDate = new Date(currentDate)
-        checkDate.setDate(checkDate.getDate() - i)
+        const checkDate = new Date(today)
+        checkDate.setDate(today.getDate() - i)
 
         const dayOfWeek = checkDate.getDay()
-        const weekStart = new Date(checkDate)
-        weekStart.setDate(checkDate.getDate() - dayOfWeek)
-        weekStart.setHours(0, 0, 0, 0)
+        const ws = new Date(checkDate)
+        ws.setDate(checkDate.getDate() - dayOfWeek)
+        const wsKey = ws.toISOString().split('T')[0]
 
-        const { data } = await supabase
-          .from('chore_completions')
-          .select('*')
-          .in('chore_id', choreIds)
-          .eq('day_of_week', checkDate.getDay())
-          .eq('week_start', weekStart.toISOString().split('T')[0])
-          .limit(1)
-
-        if (data && data.length > 0) {
+        if (completionKeys.has(`${wsKey}|${dayOfWeek}`)) {
           streak++
         } else {
-          break // Streak broken
+          break
         }
       }
 

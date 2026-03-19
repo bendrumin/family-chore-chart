@@ -129,31 +129,6 @@ export function recordAttempt(identifier: string, config: RateLimitConfig): void
 }
 
 /**
- * Lock an identifier for a specified duration (e.g., after too many failed attempts)
- *
- * @param identifier - Unique identifier
- * @param durationMs - Lock duration in milliseconds
- */
-export function lockIdentifier(identifier: string, durationMs: number): void {
-  const now = Date.now();
-  const key = identifier;
-
-  let record = attemptStore.get(key);
-
-  if (!record) {
-    record = {
-      count: 0,
-      resetTime: now + durationMs,
-      lockedUntil: now + durationMs,
-    };
-  } else {
-    record.lockedUntil = now + durationMs;
-  }
-
-  attemptStore.set(key, record);
-}
-
-/**
  * Reset attempts for an identifier (e.g., after successful login)
  *
  * @param identifier - Unique identifier

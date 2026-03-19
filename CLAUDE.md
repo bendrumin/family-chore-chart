@@ -11,9 +11,37 @@ These files contain production secrets (Supabase keys, Stripe keys, Resend API k
 
 ## What This Project Is
 
-ChoreStar is a family chore tracking app that gamifies household tasks for kids. Parents create children with avatars, assign chores with reward amounts, and build step-by-step routines (morning, bedtime, afterschool). Kids log in with a PIN (no email needed), check off chores, earn allowance, unlock achievement badges, and get confetti celebrations on completion.
+ChoreStar is a family chore tracking app that gamifies household tasks for kids. Parents create children with avatars, assign chores with reward amounts, and build step-by-step routines (morning, bedtime, afterschool). Kids get their own login — no email required, just a family code and a PIN — so they can independently check off chores, run through routines, earn allowance, unlock achievement badges, and get confetti celebrations when they finish.
 
 **Live at:** [chorestar.app](https://chorestar.app)
+
+### Kid Login — How It Works
+
+Kid login is a core differentiator. Children don't need email accounts or passwords. The flow:
+
+1. **Parent sets up a family code** — auto-generated 6-character code shown in Settings > Family tab, stored in `profiles.kid_login_code`
+2. **Parent sets a PIN per child** — 4-digit PIN set in the child's edit modal, hashed and stored in `child_pins` (never stored in plain text)
+3. **Kid goes to `/kid-login`** — enters the family code, which loads all children in that family
+4. **Kid picks their name and enters their PIN** — verified via `POST /api/child-pin/verify`, which creates a temporary session token in `kid_sessions` (expires in 8 hours)
+5. **Kid lands on `/kid/[childId]`** — a dedicated kid-mode dashboard with large buttons, playful animations, and their routines
+
+The kid session token is stored in `localStorage` under the `kidMode` key. Kid-mode API requests pass it as `Authorization: Bearer <token>`. The service-role client is used server-side to bypass RLS for kid operations since kids aren't authenticated Supabase users.
+
+Key files: `app/kid-login/`, `app/kid/[childId]/`, `app/api/child-pin/`, `lib/hooks/useChildPin.ts`
+
+### Routines — The Killer Feature
+
+Routines are what make ChoreStar more than a checkbox app. Parents build structured, step-by-step routines (morning, bedtime, afterschool, or custom) that kids execute independently:
+
+1. **Parent creates a routine** via the routine builder modal (`components/routines/routine-builder-modal.tsx`) — drag-and-drop step ordering with `@dnd-kit`, per-step icons, optional timers, and a reward amount
+2. **Kid taps "Start" on their dashboard** — opens the routine player (`app/kid/[childId]/routine/[routineId]/page.tsx`)
+3. **Kid steps through each task one at a time** — large "Done!" button, optional countdown timer per step, progress bar at the top
+4. **On completion** — confetti celebration, sound effects, points earned, and the routine is marked done for the day via `POST /api/routines/[routineId]/complete`
+5. **Completion is tracked** in `routine_completions` with `steps_completed`, `steps_total`, `duration_seconds`, and `points_earned`
+
+Routines support four types (`morning`, `bedtime`, `afterschool`, `custom`), each with a default icon and color. The routine player prevents double-completion on the same day. Completed routines show a "Done!" badge on the kid dashboard.
+
+Key files: `components/routines/`, `lib/hooks/useRoutines.ts`, `app/api/routines/`, `app/kid/[childId]/routine/`
 
 ## Repository Structure
 
@@ -25,8 +53,8 @@ family-chore-chart/
 ├── ChoreStar-iOS/          # Native iOS app — SwiftUI
 ├── backend/supabase/       # Supabase schema & SQL migrations
 ├── database-migrations/    # Standalone migration files
-├── frontend/               # Legacy vanilla JS app (archived, do not modify)
-├── deployment/             # Docker config for legacy frontend
+├── frontend/               # Legacy vanilla JS app (archived, do not modify — 301 redirects in vercel.json)
+├── deployment/             # Docker config for legacy frontend (archived)
 ├── docs/                   # Assets & recordings
 ├── email-templates/        # Magic link email HTML
 └── vercel.json             # Vercel routing, rewrites, CSP headers
@@ -40,9 +68,9 @@ family-chore-chart/
 - **Tailwind CSS** for styling
 - **Supabase** (PostgreSQL + Auth + Row-Level Security)
 - **Stripe** for payments (monthly, annual, lifetime plans + webhooks)
-- **TanStack Query** for server state, **Zustand** for client state
+- **TanStack Query** for server state
 - **Framer Motion** for animations
-- **React Hook Form** + **Zod** for form validation
+- **Zod** for validation
 - **Sonner** for toast notifications
 - **Lucide React** for icons
 - **Playwright** for E2E tests
@@ -82,7 +110,10 @@ chorestar-nextjs/
 - **Service-role client** at `@/lib/supabase/service-role` bypasses RLS for admin operations (kid sessions, routine completions)
 - **API routes** are Next.js Route Handlers under `app/api/`
 - **User feedback** uses Sonner toasts (`toast.success()`, `toast.error()`)
-- **TypeScript** is strict but `ignoreBuildErrors: true` in next.config.ts due to pre-existing Supabase type inference issues
+- **TypeScript** is strict — currently at zero errors. Keep it that way.
+- **Dark mode** — every UI element must include `dark:` variants. Never use hardcoded hex colors in inline `style={{ }}` for text, borders, or backgrounds that appear on both light and dark surfaces. Use Tailwind classes like `text-indigo-500 dark:text-indigo-400` instead.
+- **Brand gradient** is indigo→purple (`#6366f1` → `#8b5cf6`), defined in `lib/constants/brand.ts`. The Button `gradient` variant uses `from-indigo-500 to-purple-500`.
+- **Changelog** lives in `lib/constants/changelog.ts`. Bump `LATEST_CHANGELOG_VERSION` and add a new entry when shipping user-facing features. The "What's New" modal auto-shows on dashboard if the user hasn't seen the latest version.
 
 ### Development
 
@@ -121,7 +152,7 @@ npm run build             # production build
 npm run lint              # ESLint
 ```
 
-Deployed on **Vercel**. The root `vercel.json` handles routing: `/` serves the Next.js app, `/legacy` serves the archived frontend.
+Deployed on **Vercel**. The root `vercel.json` handles routing: `/` serves the Next.js app. Legacy `/app/*` and `/legacy/*` paths 301-redirect to their Next.js equivalents.
 
 ## iOS App (`ChoreStar-iOS/`)
 
@@ -193,6 +224,7 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 | `kid_sessions` | Temporary sessions for kid mode |
 | `achievement_badges` | Earned badges (streaks, Early Bird, etc.) |
 | `push_subscriptions` | Web push notification subscriptions |
+| `testflight_waitlist` | iOS TestFlight beta email signups |
 
 ### Schema & Migrations
 
@@ -203,9 +235,20 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 ## Key Features Across Both Platforms
 
 - **Parent dashboard** with child management, chore assignment, and weekly stats
-- **Kid mode** with PIN login, large tap targets, confetti celebrations
-- **Routines** with step-by-step execution, optional timers, and completion tracking
+- **Kid login** — email-free PIN-based auth so kids can use the app independently (see "Kid Login" above)
+- **Routines** — drag-and-drop builder, step-by-step player with timers, confetti celebrations (see "Routines" above)
 - **Achievement badges** for streaks, perfect weeks, time-based goals
 - **Allowance tracking** with configurable reward modes (per-chore or daily)
 - **Dark mode** and **seasonal themes** (auto-detected by date)
 - **Family sharing** with invite links and role-based access
+- **Smart chore suggestions** — rule-based engine in `lib/utils/chore-suggestions.ts` (age-filtered, seasonal, category-diverse)
+- **Analytics charts** (Recharts) — weekly completion trend line + per-child bar chart on the Insights tab
+- **Printable weekly templates** (jsPDF) — themed PDFs (Stars/Rainbow/Minimal) on the Downloads tab
+- **How-to guides** — timeline-style tutorials on `/how-to`
+- **TestFlight waitlist** — email signup stored in `testflight_waitlist`, admin notified via Resend
+
+## Known Gotchas
+
+- The `testflight_waitlist` table is **not** in the auto-generated Supabase types (`database.types.ts`). The API route casts the client with `as any`. If you regenerate types, this table will still be absent unless you add it manually or run `npx supabase gen types` against the live database.
+- Kid-mode pages (`/kid/*`, `/kid-login/*`) intentionally use light-only `bg-white` buttons on gradient backgrounds — this is by design, not a dark mode gap.
+- `@supabase/ssr` must stay compatible with `@supabase/supabase-js`. Version 0.9.0 pairs with 2.97.0. Mismatched versions cause cascading `never` type errors across every Supabase query.

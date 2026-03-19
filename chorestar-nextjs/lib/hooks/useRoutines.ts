@@ -167,23 +167,6 @@ export function useDeleteRoutine() {
   });
 }
 
-// Check if routine is completed today
-export function useRoutineCompletionStatus(routineId: string, childId: string) {
-  return useQuery({
-    queryKey: ['routine-completion-status', routineId, childId],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/routines/${routineId}/complete?childId=${childId}`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to check completion status');
-      }
-      return response.json() as Promise<{ completed: boolean; completion: any }>;
-    },
-    enabled: !!routineId && !!childId,
-  });
-}
-
 // Complete a routine (kidToken optional - for kid mode when parent not logged in)
 export function useCompleteRoutine() {
   const queryClient = useQueryClient();

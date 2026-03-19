@@ -45,32 +45,27 @@ self.addEventListener('fetch', (event: any) => {
   
   // Only intercept requests for our app, not external resources
   // Allow external CDNs, fonts, and APIs to pass through
-  if (
-    url.origin !== self.location.origin ||
-    url.pathname.startsWith('/app') ||
-    url.pathname === '/' ||
-    url.pathname.startsWith('/api')
-  ) {
-    // Only intercept same-origin requests for our app
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          // Return cached version or fetch from network
-          return response || fetch(event.request)
-        })
-        .catch(() => {
-          // If both fail, return offline page for document requests
-          if (event.request.destination === 'document') {
-            return caches.match('/app/dashboard').catch(() => fetch(event.request))
-          }
-          // For other requests, just fetch normally
-          return fetch(event.request)
-        })
-    )
-  } else {
-    // For external resources, don't intercept - let them fetch normally
+  if (url.origin !== self.location.origin) {
     return
   }
+
+  // Skip API routes — always fetch fresh
+  if (url.pathname.startsWith('/api')) {
+    return
+  }
+
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        return response || fetch(event.request)
+      })
+      .catch(() => {
+        if (event.request.destination === 'document') {
+          return caches.match('/dashboard').catch(() => fetch(event.request))
+        }
+        return fetch(event.request)
+      })
+  )
 })
 
 // Push notification event
