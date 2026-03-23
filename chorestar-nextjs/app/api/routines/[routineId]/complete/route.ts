@@ -1,5 +1,16 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const completeRoutineSchema = z.object({
+  childId: z.string().uuid(),
+  stepsCompleted: z.number().int().min(0).max(200),
+  stepsTotal: z.number().int().min(1).max(200),
+  durationSeconds: z.number().int().min(0).max(86400).optional(),
+}).refine(data => data.stepsCompleted <= data.stepsTotal, {
+  message: 'stepsCompleted cannot exceed stepsTotal',
+  path: ['stepsCompleted'],
+});
 
 // POST /api/routines/[routineId]/complete - Mark a routine as completed
 export async function POST(
@@ -10,15 +21,15 @@ export async function POST(
     const supabase = await createClient();
     const { routineId } = await params;
 
-    const body = await request.json();
-    const { childId, stepsCompleted, stepsTotal, durationSeconds } = body;
-
-    if (!childId || stepsCompleted === undefined || stepsTotal === undefined) {
+    const raw = await request.json();
+    const parsed = completeRoutineSchema.safeParse(raw);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields: childId, stepsCompleted, stepsTotal' },
+        { error: 'Invalid request body', details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
+    const { childId, stepsCompleted, stepsTotal, durationSeconds } = parsed.data;
 
     // AUTHORIZATION: Parent session OR kid token from PIN verification
     const { data: { user }, error: authError } = await supabase.auth.getUser();

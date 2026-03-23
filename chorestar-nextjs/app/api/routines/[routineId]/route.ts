@@ -1,5 +1,28 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const updateRoutineSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  type: z.enum(['morning', 'bedtime', 'afterschool', 'custom']).optional(),
+  icon: z.string().max(50).optional(),
+  color: z.string().max(20).optional(),
+  reward_cents: z.number().int().min(0).max(100000).optional(),
+  is_active: z.boolean().optional(),
+}).strict();
+
+const updateStepSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(500).nullable().optional(),
+  icon: z.string().max(50).optional(),
+  order_index: z.number().int().min(0).optional(),
+  duration_seconds: z.number().int().min(0).max(3600).nullable().optional(),
+});
+
+const updateBodySchema = z.object({
+  routine: updateRoutineSchema.optional(),
+  steps: z.array(updateStepSchema).max(50).optional(),
+});
 
 // GET /api/routines/[routineId] - Get a specific routine.
 // Kid mode (no session): fetches via service role (read-only, no ownership check).
@@ -119,8 +142,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { routine, steps } = body;
+    const raw = await request.json();
+    const parsed = updateBodySchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request body', details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    const { routine, steps } = parsed.data;
 
     // Verify routine belongs to user's child
     const { data: existingRoutine, error: verifyError } = await supabase

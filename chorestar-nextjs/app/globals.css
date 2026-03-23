@@ -297,11 +297,28 @@
     background: rgba(99, 102, 241, 0.5);
   }
 
-  /* Ensure minimum touch target sizes */
+  /* Ensure minimum touch target sizes on coarse pointers */
   @media (pointer: coarse) {
     button, a, [role="button"] {
       min-height: 44px;
       min-width: 44px;
+    }
+  }
+
+  /* Fallback: always show touch-critical elements on devices without hover */
+  @media (hover: none) {
+    .touch-device-visible {
+      opacity: 1 !important;
+    }
+  }
+
+  /* Only apply decorative hover effects on devices that support hover */
+  @media (hover: hover) {
+    .hover-scale {
+      transition: transform 0.2s;
+    }
+    .hover-scale:hover {
+      transform: scale(1.02);
     }
   }
 
@@ -422,21 +439,30 @@
     color: var(--text-secondary);
   }
 
-  .settings-tab-button:hover {
-    background: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  @media (hover: hover) {
+    .settings-tab-button:hover {
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .settings-tab-button:hover {
+      background: rgba(55, 65, 81, 0.5);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    }
   }
 
-  .dark .settings-tab-button:hover {
-    background: rgba(55, 65, 81, 0.5);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  .settings-tab-button:active {
+    background: rgba(200, 200, 200, 0.5);
+  }
+
+  .dark .settings-tab-button:active {
+    background: rgba(55, 65, 81, 0.7);
   }
 
   .settings-tab-button.active {
     background: var(--gradient-primary);
     color: white;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: scale(1.05);
   }
 
 /* Dialog/Modal z-index - outside @layer for higher specificity */

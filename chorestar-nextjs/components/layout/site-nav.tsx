@@ -31,6 +31,8 @@ export function SiteNav() {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       setIsLoggedIn(!!user)
+    }).catch(() => {
+      setIsLoggedIn(false)
     })
   }, [])
 
@@ -94,7 +96,7 @@ export function SiteNav() {
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
                 aria-expanded={isNavOpen}
-                className="inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 active:bg-gray-200 dark:active:bg-gray-600 text-gray-700 dark:text-gray-200"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -138,7 +140,7 @@ export function SiteNav() {
                 type="button"
                 onClick={() => { setIsNavOpen(false); hamburgerRef.current?.focus() }}
                 aria-label="Close navigation menu"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400"
+                className="w-11 h-11 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 active:bg-gray-200 dark:active:bg-gray-600 text-gray-500 dark:text-gray-400"
               >
                 <X className="w-5 h-5" />
               </button>

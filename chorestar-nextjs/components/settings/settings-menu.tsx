@@ -59,7 +59,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent
           onClose={() => setIsOpen(false)}
-          className="p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] min-w-[720px] max-w-6xl"
+          className="p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] md:min-w-[720px] max-w-6xl"
         >
           {/* Header - Fixed */}
           <DialogHeader className="dialog-header-settings">
@@ -70,17 +70,19 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
           </DialogHeader>
 
           {/* Body - Scrollable */}
-          <div className="flex flex-1 overflow-hidden min-h-0">
-            {/* Tab Navigation - Left Sidebar */}
-            <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4 flex flex-col flex-shrink-0 overflow-y-auto">
-              <div className="space-y-1 flex-1">
+          <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
+            {/* Tab Navigation - Top on mobile, left sidebar on desktop */}
+            <div className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
+              <div className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
                 {TABS.map((tab) => {
                   const Icon = tab.icon
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`settings-tab-button ${activeTab === tab.id ? 'active' : ''}`}
+                      aria-selected={activeTab === tab.id}
+                      role="tab"
+                      className={`settings-tab-button whitespace-nowrap ${activeTab === tab.id ? 'active' : ''}`}
                     >
                       <Icon className="w-5 h-5" />
                       <span>{tab.label}</span>
@@ -89,7 +91,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
                 })}
               </div>
               {onLogout && (
-                <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="hidden md:block pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => { setIsOpen(false); onLogout() }}
                     className="settings-tab-button text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -102,7 +104,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
             </div>
 
             {/* Tab Content - Right Panel */}
-            <div className="flex-1 overflow-y-auto p-6 min-h-0">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0">
               {activeTab === 'family' && <FamilyTab onClose={() => setIsOpen(false)} />}
               {activeTab === 'chores' && <ChoresTab />}
               {activeTab === 'appearance' && <AppearanceTab />}
