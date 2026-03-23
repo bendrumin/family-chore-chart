@@ -79,7 +79,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
         import('@/lib/utils/celebrations').then(({ getCelebrationManager }) => {
           const celebrationManager = getCelebrationManager()
           celebrationManager.celebrateChoreCompletion('', chore.name)
-        })
+        }).catch(() => {})
       }
 
       onRefresh()
@@ -94,13 +94,13 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
 
   return (
     <>
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl group relative border border-gray-200 dark:border-gray-700">
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl active:shadow-lg active:scale-[0.995] group relative border border-gray-200 dark:border-gray-700">
         {/* Edit Button - Top Right */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm"
+          className="absolute top-3 right-3 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm touch-device-visible"
           title="Edit chore"
           aria-label="Edit chore"
         >
@@ -132,6 +132,8 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
                 <button
                   key={day.dayOfWeek}
                   onClick={() => toggleCompletion(day.dayOfWeek)}
+                  aria-label={`${chore.name} ${day.dayName} — ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
+                  aria-pressed={completed}
                   className={`aspect-square min-h-[52px] rounded-lg transition-all duration-300 flex flex-col items-center justify-center font-bold touch-manipulation ${
                     completed
                       ? 'text-white hover:scale-110 active:scale-95 shadow-md'

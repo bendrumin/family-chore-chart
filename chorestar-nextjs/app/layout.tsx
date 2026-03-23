@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
@@ -10,6 +10,15 @@ import { ReducedMotionProvider } from '@/components/providers/reduced-motion-pro
 import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#6366f1' },
+    { media: '(prefers-color-scheme: dark)', color: '#1f2937' },
+  ],
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chorestar.app'),

@@ -33,7 +33,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
         variant="outline"
         size="sm"
         onClick={handlePrevious}
-        className="h-8"
+        className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
       >
         <ChevronLeft className="w-4 h-4" />
         Previous
@@ -57,7 +57,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
             variant="outline"
             size="sm"
             onClick={handleToday}
-            className="h-8"
+            className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
           >
             Today
           </Button>
@@ -66,7 +66,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
           variant="outline"
           size="sm"
           onClick={handleNext}
-          className="h-8"
+          className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
         >
           Next
           <ChevronRight className="w-4 h-4" />

@@ -54,6 +54,7 @@ export function InsightsTab() {
   })
   const [achievementProgress, setAchievementProgress] = useState<AchievementProgress[]>([])
   const [isLoadingAchievements, setIsLoadingAchievements] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const hasCheckedAchievements = useRef(false)
 
   // Chart data
@@ -175,6 +176,7 @@ export function InsightsTab() {
       })
     } catch (error) {
       console.error('Error loading analytics:', error)
+      setLoadError(true)
       setMetrics({ ...metrics, isLoading: false })
     }
   }
@@ -257,11 +259,32 @@ export function InsightsTab() {
       setIsLoadingAchievements(false)
     } catch (error) {
       console.error('Error loading achievements:', error)
+      setLoadError(true)
       setIsLoadingAchievements(false)
     }
   }
 
   const hasData = !metrics.isLoading && (metrics.totalEarnings > 0 || metrics.averageCompletionRate > 0)
+
+  if (loadError && !hasData) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+          Failed to Load Insights
+        </h3>
+        <p className="text-base mb-6 text-gray-600 dark:text-gray-400">
+          Something went wrong while loading your analytics data.
+        </p>
+        <button
+          onClick={() => { setLoadError(false); setMetrics(m => ({ ...m, isLoading: true })); loadAnalyticsData(); loadAchievementsData() }}
+          className="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    )
+  }
 
   if (metrics.isLoading) {
     return (

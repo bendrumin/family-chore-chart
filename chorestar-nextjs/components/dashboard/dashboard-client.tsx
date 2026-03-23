@@ -280,7 +280,7 @@ function DashboardContent({
                 type="button"
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
-                className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors hover:bg-white/20"
+                className="hidden sm:inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/20 active:bg-white/30"
                 style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
               >
                 <Menu className="w-5 h-5" />
@@ -330,7 +330,7 @@ function DashboardContent({
                 type="button"
                 onClick={() => setIsNavOpen(false)}
                 aria-label="Close navigation menu"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                className="w-11 h-11 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 active:bg-gray-200 dark:active:bg-gray-600"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <X className="w-5 h-5" />

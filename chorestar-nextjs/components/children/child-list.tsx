@@ -56,7 +56,7 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
             children.map((child, index) => (
               <div
                 key={child.id}
-                className="w-full p-4 rounded-lg border transition-all duration-300 group relative"
+                className="w-full p-4 rounded-lg border transition-all duration-300 group relative active:scale-[0.98] touch-manipulation"
                 style={{
                   borderColor: selectedChildId === child.id ? 'var(--primary)' : 'hsl(var(--border))',
                   background: selectedChildId === child.id ? `color-mix(in srgb, var(--primary) 8%, var(--card-bg))` : 'var(--bg-secondary)',
@@ -78,10 +78,10 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                     e.stopPropagation()
                     setEditingChild(child)
                   }}
-                  className={`absolute top-2 right-2 z-30 p-1.5 h-7 w-7 rounded-md transition-all border ${
+                  className={`absolute top-2 right-2 z-30 p-1.5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-7 sm:w-7 rounded-md transition-all border touch-device-visible ${
                     selectedChildId === child.id
                       ? 'shadow-sm'
-                      : 'opacity-0 group-hover:opacity-100'
+                      : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                   }`}
                   style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}
                   aria-label={`Edit ${child.name}`}

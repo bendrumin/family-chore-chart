@@ -107,6 +107,7 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
       setCompletions(data || [])
     } catch (error) {
       console.error('Error loading completions:', error)
+      toast.error('Failed to load completions. Tap a chore to retry.')
     }
   }
 
