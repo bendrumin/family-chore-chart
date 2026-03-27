@@ -124,13 +124,19 @@ struct RoutineCelebrationView: View {
             if !saved {
                 saved = true
                 Task {
-                    try? await manager.completeRoutine(
-                        routineId: routine.id,
-                        childId: childId,
-                        stepsCompleted: stepsCompleted,
-                        stepsTotal: routine.steps.count,
-                        durationSeconds: durationSeconds
-                    )
+                    do {
+                        try await manager.completeRoutine(
+                            routineId: routine.id,
+                            childId: childId,
+                            stepsCompleted: stepsCompleted,
+                            stepsTotal: routine.steps.count,
+                            durationSeconds: durationSeconds
+                        )
+                    } catch {
+                        await MainActor.run {
+                            manager.debugLastError = "Failed to save routine completion: \(error.localizedDescription)"
+                        }
+                    }
                 }
             }
         }

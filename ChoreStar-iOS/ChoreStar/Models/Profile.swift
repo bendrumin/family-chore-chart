@@ -17,4 +17,5 @@ struct Profile: Codable {
 struct ProfileRow: Codable {
     let id: UUID
     let subscription_type: String?
+    let kid_login_code: String?
 }

@@ -2,22 +2,13 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @EnvironmentObject var themeManager: ThemeManager
     @ObservedObject var soundManager = SoundManager.shared
     @Environment(\.colorScheme) var colorScheme
     @AppStorage("darkModePreference") private var darkModePreference: DarkModePreference = .system
     @AppStorage("seasonalTheme") private var seasonalThemeSetting: String = "auto"
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
-    
-    private var activeSeasonalTheme: SeasonalTheme? {
-        if seasonalThemeSetting == "auto" {
-            return SeasonalTheme.current()
-        } else if seasonalThemeSetting == "none" {
-            return nil
-        } else {
-            return SeasonalTheme(rawValue: seasonalThemeSetting)
-        }
-    }
     
     enum DarkModePreference: String, CaseIterable {
         case light = "Light"
@@ -77,14 +68,19 @@ struct SettingsView: View {
                         }
                     }
                     
-                    if let activeTheme = activeSeasonalTheme {
+                    if let activeTheme = themeManager.activeTheme {
                         HStack {
                             Text("Active")
                                 .foregroundColor(.choreStarTextSecondary)
                             Spacer()
-                            Text("\(activeTheme.emoji) \(activeTheme.displayName)")
-                                .foregroundColor(activeTheme.primaryColor)
-                                .fontWeight(.semibold)
+                            HStack(spacing: 6) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(activeTheme.gradient)
+                                    .frame(width: 24, height: 24)
+                                Text("\(activeTheme.emoji) \(activeTheme.displayName)")
+                                    .foregroundColor(activeTheme.primaryColor)
+                                    .fontWeight(.semibold)
+                            }
                         }
                     }
                 }
@@ -97,7 +93,7 @@ struct SettingsView: View {
                             Text("Sound Effects")
                         }
                     }
-                    .onChange(of: soundManager.isSoundEnabled) { _, newValue in
+                    .onChange(of: soundManager.isSoundEnabled) { newValue in
                         if newValue {
                             SoundManager.shared.play(.cheer)
                         }
@@ -263,5 +259,7 @@ struct SettingsView: View {
 }
 
 #Preview { 
-    SettingsView().environmentObject(SupabaseManager.shared) 
+    SettingsView()
+        .environmentObject(SupabaseManager.shared)
+        .environmentObject(ThemeManager.shared)
 }

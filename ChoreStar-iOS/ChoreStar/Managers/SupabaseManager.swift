@@ -28,6 +28,9 @@ class SupabaseManager: ObservableObject {
     
     // Child session properties
     @Published var childSession: ChildSession?
+    @Published var kidLoginCode: String?
+    
+    private static let appBaseURL = "https://chorestar.app"
     
     // Debug properties
     @Published var debugSupabaseURL: String?
@@ -86,11 +89,12 @@ class SupabaseManager: ObservableObject {
     
     func initialize() async {
         await checkAuthStatus()
-        await checkChildSession()
         
         if isAuthenticated {
             await loadRemoteData()
         }
+        
+        await checkChildSession()
     }
     
     func checkAuthStatus() async {
@@ -156,10 +160,31 @@ class SupabaseManager: ObservableObject {
     }
     
     func authenticateChild(childId: UUID, pin: String) async -> Bool {
-        let child = await MainActor.run { children.first(where: { $0.id == childId }) }
+        let familyCode = await MainActor.run { kidLoginCode }
         
+        // Try server-side verification via web API (matches web's hashed PIN model)
+        if let familyCode = familyCode, !familyCode.isEmpty {
+            if let result = await verifyPinViaAPI(familyCode: familyCode, pin: pin) {
+                let child = await MainActor.run { children.first(where: { $0.id == childId }) }
+                guard let child = child else { return false }
+                
+                await MainActor.run {
+                    self.currentChild = child
+                    self.isChildSession = true
+                    debugLastError = "Child authenticated via API: \(child.name)"
+                }
+                
+                UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
+                UserDefaults.standard.set(result.kidToken ?? UUID().uuidString, forKey: "child_session_token")
+                return true
+            }
+        }
+        
+        // Fallback: local comparison for PINs set via iOS (stored in children.child_pin)
+        let child = await MainActor.run { children.first(where: { $0.id == childId }) }
         guard let child = child,
               let storedPin = child.childPin,
+              !storedPin.isEmpty,
               storedPin == pin else {
             await MainActor.run {
                 debugLastError = "Child auth failed: invalid PIN"
@@ -167,20 +192,50 @@ class SupabaseManager: ObservableObject {
             return false
         }
         
-        // Create session
         let sessionToken = UUID().uuidString
-        
         await MainActor.run {
             self.currentChild = child
             self.isChildSession = true
-            debugLastError = "Child authenticated: \(child.name)"
+            debugLastError = "Child authenticated locally: \(child.name)"
         }
         
-        // Save session
         UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
         UserDefaults.standard.set(sessionToken, forKey: "child_session_token")
-        
         return true
+    }
+    
+    private struct PinVerifyResponse: Codable {
+        let success: Bool?
+        let child: PinVerifyChild?
+        let kidToken: String?
+        let error: String?
+    }
+    
+    private struct PinVerifyChild: Codable {
+        let id: String
+        let name: String
+    }
+    
+    private func verifyPinViaAPI(familyCode: String, pin: String) async -> PinVerifyResponse? {
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/child-pin/verify") else { return nil }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONEncoder().encode(["familyCode": familyCode, "pin": pin])
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                return nil
+            }
+            return try JSONDecoder().decode(PinVerifyResponse.self, from: data)
+        } catch {
+            await MainActor.run {
+                debugLastError = "PIN API verify failed: \(error.localizedDescription)"
+            }
+            return nil
+        }
     }
     
     func signOutChild() {
@@ -247,12 +302,59 @@ class SupabaseManager: ObservableObject {
                 self.currentUserEmail = nil
                 self.debugUserId = nil
             }
-            // Don't load data on auth failure
         }
         #else
         await MainActor.run {
             debugLastError = "Supabase not available for sign in"
         }
+        #endif
+    }
+    
+    func signUp(email: String, password: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        let result = try await client.auth.signUp(
+            email: email,
+            password: password
+        )
+        
+        if let session = result.session {
+            await MainActor.run {
+                self.debugUserId = session.user.id.uuidString
+                self.currentUserEmail = session.user.email ?? email
+                self.isAuthenticated = true
+                debugLastError = "Sign-up successful, user ID: \(session.user.id.uuidString)"
+            }
+            await loadRemoteData()
+        } else {
+            await MainActor.run {
+                debugLastError = "Sign-up successful — check your email to confirm your account."
+            }
+        }
+        #else
+        throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
+        #endif
+    }
+    
+    func resetPassword(email: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        
+        try await client.auth.resetPasswordForEmail(
+            email,
+            redirectTo: URL(string: "\(SupabaseManager.appBaseURL)/auth/callback?type=recovery")
+        )
+        
+        await MainActor.run {
+            debugLastError = "Password reset email sent"
+        }
+        #else
+        throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
         #endif
     }
     
@@ -269,13 +371,10 @@ class SupabaseManager: ObservableObject {
                 choreCompletions = [:]
                 routines = []
                 subscriptionType = "free"
+                kidLoginCode = nil
                 debugLastError = "Signed out successfully"
-                
-                // Also clear remember me
-                UserDefaults.standard.removeObject(forKey: "saved_email")
-                UserDefaults.standard.removeObject(forKey: "saved_password")
-                UserDefaults.standard.set(false, forKey: "remember_me")
             }
+            signOutChild()
         }
         #else
         debugLastError = "Supabase not available for sign out"
@@ -296,11 +395,6 @@ class SupabaseManager: ObservableObject {
         
         await MainActor.run {
             debugLastError = "Password changed successfully"
-            
-            // Update saved password if remember me is enabled
-            if UserDefaults.standard.bool(forKey: "remember_me") {
-                UserDefaults.standard.set(newPassword, forKey: "saved_password")
-            }
         }
         #else
         throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
@@ -321,27 +415,22 @@ class SupabaseManager: ObservableObject {
             let remoteChildren: [ChildRow]
             let uid = await MainActor.run { debugUserId }
             
-            if let uid = uid {
-                remoteChildren = try await client
-                    .from("children")
-                    .select()
-                    .eq("user_id", value: uid)
-                    .limit(100)
-                    .execute()
-                    .value
+            guard let uid = uid else {
                 await MainActor.run {
-                    debugLastError = "Querying children for user_id: \(uid)"
+                    debugLastError = "Cannot load children: no authenticated user ID"
                 }
-            } else {
-                remoteChildren = try await client
-                    .from("children")
-                    .select()
-                    .limit(100)
-                    .execute()
-                    .value
-                await MainActor.run {
-                    debugLastError = "No user_id, querying all children"
-                }
+                return
+            }
+            
+            remoteChildren = try await client
+                .from("children")
+                .select()
+                .eq("user_id", value: uid)
+                .limit(100)
+                .execute()
+                .value
+            await MainActor.run {
+                debugLastError = "Querying children for user_id: \(uid)"
             }
             
             let mappedChildren = remoteChildren.map { row in
@@ -426,20 +515,21 @@ class SupabaseManager: ObservableObject {
         await loadProfile()
         await loadRoutines()
         
-        // If no data loaded, fall back to demo data
         let currentChildren = await MainActor.run { children }
         let currentChores = await MainActor.run { chores }
-        let uid = await MainActor.run { debugUserId }
         
+        #if DEBUG
         if currentChildren.isEmpty && currentChores.isEmpty {
+            let uid = await MainActor.run { debugUserId }
             await MainActor.run {
                 debugLastError = "No remote data found for user \(uid ?? "unknown"), loading demo data"
                 loadSampleData()
             }
-        } else {
-            await MainActor.run {
-                debugLastError = "Successfully loaded \(currentChildren.count) children and \(currentChores.count) chores"
-            }
+        }
+        #endif
+        
+        await MainActor.run {
+            debugLastError = "Loaded \(currentChildren.count) children and \(currentChores.count) chores"
         }
         #endif
     }
@@ -641,19 +731,23 @@ class SupabaseManager: ObservableObject {
     }
     
     // Calculate earnings for a child for a specific day
-    // Money is only earned when ALL chores for the day are completed
     func calculateDayEarnings(for childId: UUID, dayOfWeek: Int) -> Double {
         let childChores = chores.filter { $0.childId == childId }
         guard !childChores.isEmpty else { return 0.0 }
         
-        // Check if this day is a perfect day (all chores completed)
-        if isPerfectDay(for: childId, dayOfWeek: dayOfWeek) {
-            // Use the fixed daily reward from settings (default 7 cents = $0.07)
-            let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
-            return Double(dailyRewardCents) / 100.0
+        if familySettings?.isPerChoreMode == true {
+            // Per-chore mode: sum reward_cents for each completed chore
+            let completedChores = childChores.filter { isChoreCompleted($0, forDay: dayOfWeek) }
+            let totalCents = completedChores.reduce(0) { $0 + Int($1.reward) }
+            return Double(totalCents) / 100.0
+        } else {
+            // Daily mode: flat daily reward when ALL chores are completed
+            if isPerfectDay(for: childId, dayOfWeek: dayOfWeek) {
+                let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
+                return Double(dailyRewardCents) / 100.0
+            }
+            return 0.0
         }
-        
-        return 0.0
     }
     
     // Calculate earnings for a child based on today's completions
@@ -1046,8 +1140,9 @@ class SupabaseManager: ObservableObject {
             }
         }
         
-        // Check for Perfect Week achievement (all chores completed today)
-        if completedToday == childChores.count && completedToday > 0 {
+        // Check for Perfect Week: all 7 days must have all chores completed
+        let weeklyStats = await MainActor.run { calculateWeeklyStats(for: childId) }
+        if weeklyStats.perfectDays == 7 {
             let awarded = await awardAchievement(childId: childId, badgeType: .perfectWeek)
             if awarded {
                 let foundAchievement = await MainActor.run {
@@ -1059,7 +1154,23 @@ class SupabaseManager: ObservableObject {
             }
         }
         
-        // TODO: Add more achievement checks (dedicated, etc.) when we have historical completion data
+        // Check for Dedicated Helper: 10+ total completions across all time
+        let totalCompletions = await MainActor.run {
+            weekCompletions.filter { completion in
+                childChores.contains(where: { $0.id == completion.choreId })
+            }.count
+        }
+        if totalCompletions >= 10 {
+            let awarded = await awardAchievement(childId: childId, badgeType: .dedicated)
+            if awarded {
+                let foundAchievement = await MainActor.run {
+                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.dedicated.rawValue })
+                }
+                if let achievement = foundAchievement {
+                    newAchievements.append(achievement)
+                }
+            }
+        }
         
         return newAchievements
     }
@@ -1079,7 +1190,7 @@ class SupabaseManager: ObservableObject {
         do {
             let profiles: [ProfileRow] = try await client
                 .from("profiles")
-                .select("id, subscription_type")
+                .select("id, subscription_type, kid_login_code")
                 .eq("id", value: uid)
                 .limit(1)
                 .execute()
@@ -1087,6 +1198,7 @@ class SupabaseManager: ObservableObject {
             
             await MainActor.run {
                 self.subscriptionType = profiles.first?.subscription_type ?? "free"
+                self.kidLoginCode = profiles.first?.kid_login_code
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
             }
         } catch {
@@ -1412,9 +1524,26 @@ class SupabaseManager: ObservableObject {
             if !dayCompletions.isEmpty { daysWithCompletions += 1 }
         }
         
-        let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
         let weeklyBonusCents = familySettings?.weeklyBonusCents ?? 0
-        var earningsCents = daysWithCompletions * dailyRewardCents
+        var earningsCents: Int
+        
+        if familySettings?.isPerChoreMode == true {
+            earningsCents = 0
+            for day in 0..<7 {
+                let dayCompletions = weekCompletions.filter { completion in
+                    completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
+                }
+                for completion in dayCompletions {
+                    if let chore = childChores.first(where: { $0.id == completion.choreId }) {
+                        earningsCents += Int(chore.reward)
+                    }
+                }
+            }
+        } else {
+            let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
+            earningsCents = perfectDayCount * dailyRewardCents
+        }
+        
         if perfectDayCount == 7 {
             earningsCents += weeklyBonusCents
         }

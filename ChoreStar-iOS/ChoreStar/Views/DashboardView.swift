@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
@@ -60,7 +61,7 @@ struct DashboardView: View {
                     ZStack {
                         // Gradient background
                         LinearGradient(
-                            colors: [Color.choreStarPrimary.opacity(0.1), Color.choreStarSecondary.opacity(0.1)],
+                            colors: [themeManager.accentColor.opacity(0.1), Color.choreStarSecondary.opacity(0.1)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -69,19 +70,21 @@ struct DashboardView: View {
                             HStack {
                                 HStack(spacing: 8) {
                                     Image(systemName: "chart.bar.fill")
-                                        .foregroundStyle(Color.choreStarGradient)
+                                        .foregroundColor(themeManager.accentColor)
                                     Text("Today's Progress")
                                         .font(.headline)
                                         .fontWeight(.bold)
                                         .foregroundColor(.choreStarTextPrimary)
                                 }
                                 Spacer()
-                                Text("\(completedChores)")
-                                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color.choreStarGradient)
-                                + Text("/\(totalChores)")
-                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.choreStarTextSecondary)
+                                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                                    Text("\(completedChores)")
+                                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                                        .foregroundColor(themeManager.accentColor)
+                                    Text("/\(totalChores)")
+                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
                             }
 
                             // Animated Progress Bar
@@ -93,12 +96,12 @@ struct DashboardView: View {
                                         .frame(height: 16)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.choreStarPrimary.opacity(0.1), lineWidth: 1)
+                                                .stroke(themeManager.accentColor.opacity(0.1), lineWidth: 1)
                                         )
 
                                     // Progress fill with gradient
                                     RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.choreStarGradient)
+                                        .fill(themeManager.gradient)
                                         .frame(width: geometry.size.width * completionPercentage, height: 16)
                                         .overlay(
                                             // Shimmer effect
@@ -464,5 +467,7 @@ struct ChoreCard: View {
 }
 
 #Preview {
-    DashboardView().environmentObject(SupabaseManager.shared)
+    DashboardView()
+        .environmentObject(SupabaseManager.shared)
+        .environmentObject(ThemeManager.shared)
 }
