@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Smartphone, CheckCircle2, Loader2 } from 'lucide-react'
 import { GRADIENT } from '@/lib/constants/brand'
 
@@ -9,6 +9,7 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
   const [name, setName] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'already' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const honeypotRef = useRef<HTMLInputElement>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -16,10 +17,11 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
     setErrorMsg('')
 
     try {
+      const honeypot = honeypotRef.current?.value || undefined
       const res = await fetch('/api/testflight-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name }),
+        body: JSON.stringify({ email, name, honeypot }),
       })
       const data = await res.json()
 
@@ -57,7 +59,7 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
     return (
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 w-full max-w-md mx-auto">
         {/* Honeypot */}
-        <input type="text" name="website" className="hidden" tabIndex={-1} aria-hidden="true" />
+        <input ref={honeypotRef} type="text" name="website" className="hidden" tabIndex={-1} aria-hidden="true" autoComplete="off" />
         <input
           type="email"
           placeholder="your@email.com"
@@ -85,7 +87,7 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto w-full">
       {/* Honeypot */}
-      <input type="text" name="website" className="hidden" tabIndex={-1} aria-hidden="true" />
+      <input ref={honeypotRef} type="text" name="website" className="hidden" tabIndex={-1} aria-hidden="true" autoComplete="off" />
       <div>
         <label htmlFor="tf-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Name <span className="text-gray-400 font-normal">(optional)</span>
