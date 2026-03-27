@@ -461,7 +461,7 @@ export default async function HomePage() {
         </div>
 
         {/* iOS App / TestFlight */}
-        <div className="max-w-3xl mx-auto mb-16">
+        <div id="ios-app" className="max-w-3xl mx-auto mb-16">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-hidden">
             <div className="p-8 text-center">
               <div className="text-5xl mb-4">📱</div>
