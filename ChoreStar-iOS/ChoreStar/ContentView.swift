@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var supabaseManager: SupabaseManager
+    @EnvironmentObject var themeManager: ThemeManager
     @AppStorage("darkModePreference") private var darkModePreference: String = "System"
     @State private var isLoading = true
     @State private var showingChildAuth = false
@@ -13,7 +14,7 @@ struct ContentView: View {
         case "Dark":
             return .dark
         default:
-            return nil // System default
+            return nil
         }
     }
 
@@ -27,7 +28,6 @@ struct ContentView: View {
                 ZStack(alignment: .bottomTrailing) {
                     MainTabs()
                     
-                    // Floating child mode button
                     if supabaseManager.children.filter({ $0.hasChildAccess }).count > 0 {
                         Button(action: {
                             showingChildAuth = true
@@ -41,9 +41,9 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 14)
-                            .background(Color.choreStarGradient)
+                            .background(themeManager.gradient)
                             .cornerRadius(30)
-                            .shadow(color: Color.choreStarPrimary.opacity(0.4), radius: 12, x: 0, y: 4)
+                            .shadow(color: themeManager.accentColor.opacity(0.4), radius: 12, x: 0, y: 4)
                         }
                         .padding(.trailing, 20)
                         .padding(.bottom, 100)
@@ -57,17 +57,15 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(preferredColorScheme)
-        .onAppear {
-            Task {
-                await supabaseManager.checkAuthStatus()
-                await supabaseManager.checkChildSession()
-                isLoading = false
-            }
+        .task {
+            await supabaseManager.initialize()
+            isLoading = false
         }
     }
 }
 
 struct LoadingView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var isAnimating = false
     @State private var starScale: CGFloat = 0.5
     @State private var starRotation: Double = 0
@@ -75,21 +73,18 @@ struct LoadingView: View {
     
     var body: some View {
         ZStack {
-            // Gradient background
-            Color.choreStarGradient
+            themeManager.gradient
                 .ignoresSafeArea()
             
             VStack(spacing: 30) {
                 Spacer()
                 
-                // Animated star
                 ZStack {
-                    // Outer glow ring
                     ForEach(0..<3) { index in
                         Circle()
                             .stroke(
                                 LinearGradient(
-                                    colors: [Color.white.opacity(0.5), Color.choreStarAccent.opacity(0.3)],
+                                    colors: [Color.white.opacity(0.5), Color.white.opacity(0.2)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
@@ -107,12 +102,11 @@ struct LoadingView: View {
                             )
                     }
                     
-                    // Main star icon
                     Image(systemName: "star.fill")
                         .font(.system(size: 70))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.white, Color.choreStarAccent],
+                                colors: [Color.white, Color.white.opacity(0.7)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -136,15 +130,20 @@ struct LoadingView: View {
                 }
                 .frame(height: 200)
                 
-                // App name
                 VStack(spacing: 12) {
-                    Text("ChoreStar")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                        .opacity(showText ? 1 : 0)
-                        .offset(y: showText ? 0 : 20)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3), value: showText)
+                    HStack(spacing: 8) {
+                        if let emoji = themeManager.themeEmoji {
+                            Text(emoji)
+                                .font(.system(size: 36))
+                        }
+                        Text("ChoreStar")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    }
+                    .opacity(showText ? 1 : 0)
+                    .offset(y: showText ? 0 : 20)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3), value: showText)
                     
                     Text("Make chores fun!")
                         .font(.title3)
@@ -153,7 +152,6 @@ struct LoadingView: View {
                         .offset(y: showText ? 0 : 20)
                         .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.5), value: showText)
                     
-                    // Animated loading dots
                     HStack(spacing: 8) {
                         ForEach(0..<3) { index in
                             Circle()
@@ -187,6 +185,7 @@ struct LoadingView: View {
 
 struct MainTabs: View {
     @EnvironmentObject var manager: SupabaseManager
+    @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
         TabView {
@@ -220,36 +219,41 @@ struct MainTabs: View {
                 }
                 .tag(4)
         }
-        .accentColor(.choreStarPrimary)
+        .accentColor(themeManager.accentColor)
         .onAppear {
-            // Customize tab bar appearance
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor(Color.choreStarCardBackground)
-            appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
-
-            // Selected item
-            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.choreStarPrimary)
-            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                .foregroundColor: UIColor(Color.choreStarPrimary),
-                .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
-            ]
-
-            // Normal item
-            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.choreStarTextSecondary)
-            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-                .foregroundColor: UIColor(Color.choreStarTextSecondary),
-                .font: UIFont.systemFont(ofSize: 12, weight: .medium)
-            ]
-
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+            updateTabBarAppearance()
         }
+        .onChange(of: themeManager.activeTheme) { _ in
+            updateTabBarAppearance()
+        }
+    }
+    
+    private func updateTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.choreStarCardBackground)
+        appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
+
+        let accentUIColor = UIColor(themeManager.accentColor)
+        appearance.stackedLayoutAppearance.selected.iconColor = accentUIColor
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: accentUIColor,
+            .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
+        ]
+
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.choreStarTextSecondary)
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(Color.choreStarTextSecondary),
+            .font: UIFont.systemFont(ofSize: 12, weight: .medium)
+        ]
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 
-// Child view is now in ChildMainView.swift
-
 #Preview {
-    ContentView().environmentObject(SupabaseManager.shared)
+    ContentView()
+        .environmentObject(SupabaseManager.shared)
+        .environmentObject(ThemeManager.shared)
 }

@@ -213,6 +213,24 @@ struct FamilySettings: Codable {
     let dailyRewardCents: Int
     let weeklyBonusCents: Int
     let timezone: String
+    let rewardMode: String?
+    let currencyCode: String?
+    let locale: String?
+    let dateFormat: String?
+    let language: String?
+    let customTheme: String?
+    let weeklyBonusLabel: String?
+    
+    var isPerChoreMode: Bool { rewardMode == "per_chore" }
+    var currencySymbol: String {
+        switch currencyCode {
+        case "GBP": return "£"
+        case "EUR": return "€"
+        case "CAD": return "CA$"
+        case "AUD": return "A$"
+        default: return "$"
+        }
+    }
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -220,5 +238,12 @@ struct FamilySettings: Codable {
         case dailyRewardCents = "daily_reward_cents"
         case weeklyBonusCents = "weekly_bonus_cents"
         case timezone
+        case rewardMode = "reward_mode"
+        case currencyCode = "currency_code"
+        case locale
+        case dateFormat = "date_format"
+        case language
+        case customTheme = "custom_theme"
+        case weeklyBonusLabel = "weekly_bonus_label"
     }
 }

@@ -87,9 +87,31 @@ enum SeasonalTheme: String, CaseIterable, Identifiable {
         }
     }
     
+    var secondaryColor: Color {
+        switch self {
+        case .christmas: return Color(red: 0.13, green: 0.53, blue: 0.20)  // green accent
+        case .thanksgiving: return Color(red: 0.78, green: 0.35, blue: 0.05)
+        case .halloween: return Color(red: 0.55, green: 0.14, blue: 0.67)  // purple accent
+        case .easter: return Color(red: 0.93, green: 0.47, blue: 0.62)     // pink accent
+        case .valentine: return Color(red: 0.85, green: 0.18, blue: 0.38)
+        case .stpatricks: return Color(red: 0.08, green: 0.53, blue: 0.22)
+        case .newYear: return Color(red: 0.55, green: 0.36, blue: 0.97)    // purple accent
+        case .spring: return Color(red: 0.66, green: 0.33, blue: 0.97)     // purple accent
+        case .summer: return Color(red: 0.97, green: 0.45, blue: 0.09)     // orange accent
+        case .fall: return Color(red: 0.72, green: 0.30, blue: 0.05)
+        case .winter: return Color(red: 0.36, green: 0.28, blue: 0.84)     // indigo accent
+        case .ocean: return Color(red: 0.04, green: 0.36, blue: 0.65)
+        case .sunset: return Color(red: 0.96, green: 0.62, blue: 0.04)     // amber accent
+        case .forest: return Color(red: 0.05, green: 0.38, blue: 0.22)
+        case .aurora: return Color(red: 0.12, green: 0.67, blue: 0.55)     // teal accent
+        case .coral: return Color(red: 0.96, green: 0.62, blue: 0.04)
+        case .lavender: return Color(red: 0.40, green: 0.25, blue: 0.70)
+        }
+    }
+    
     var gradient: LinearGradient {
         LinearGradient(
-            colors: [primaryColor, primaryColor.opacity(0.7)],
+            colors: [primaryColor, secondaryColor],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
