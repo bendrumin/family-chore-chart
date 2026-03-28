@@ -82,7 +82,7 @@ export default function PartnersPage() {
 
       <SiteNav />
 
-      <main>
+      <main id="main-content">
         <div className="container mx-auto px-4 py-16">
 
           {/* Hero */}
