@@ -5,6 +5,19 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'ChoreStar privacy policy. Learn how we collect, use, and protect your family\'s data.',
+  openGraph: {
+    title: 'Privacy Policy | ChoreStar',
+    description: 'Learn how ChoreStar collects, uses, and protects your family\'s data. We never sell your data or run ads.',
+    url: 'https://chorestar.app/privacy',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Privacy Policy | ChoreStar',
+    description: 'Learn how ChoreStar collects, uses, and protects your family\'s data.',
+  },
+  alternates: {
+    canonical: 'https://chorestar.app/privacy',
+  },
 }
 
 const LAST_UPDATED = 'February 24, 2026'
