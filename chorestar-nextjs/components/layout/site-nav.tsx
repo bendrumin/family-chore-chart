@@ -151,6 +151,7 @@ export function SiteNav() {
               <NavLink href="/" icon={<Home className="w-5 h-5 shrink-0" />} label="Home" onClick={() => setIsNavOpen(false)} />
               <NavLink href="/dashboard" icon={<LayoutDashboard className="w-5 h-5 shrink-0" />} label="Dashboard" onClick={() => setIsNavOpen(false)} />
               <NavLink href="/how-to" icon={<BookOpen className="w-5 h-5 shrink-0" />} label="How-To Guides" onClick={() => setIsNavOpen(false)} />
+              <NavLink href="/blog" icon={<BookOpen className="w-5 h-5 shrink-0" />} label="Blog" onClick={() => setIsNavOpen(false)} />
               <NavLink href="/partners" icon={<Handshake className="w-5 h-5 shrink-0" />} label="Partners" onClick={() => setIsNavOpen(false)} />
 
               <div className="my-2 border-t border-gray-200 dark:border-gray-700" role="separator" />
