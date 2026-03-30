@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/manifest.json'],
+        allow: ['/', '/manifest.json', '/llms.txt'],
         disallow: ['/api/', '/admin/', '/dashboard', '/kid/', '/kid-login', '/family/'],
       },
     ],
