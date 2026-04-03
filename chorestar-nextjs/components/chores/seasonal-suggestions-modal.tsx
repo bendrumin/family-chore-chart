@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { SEASONAL_THEMES_DATA, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
 import { useSettings } from '@/lib/contexts/settings-context'
+import type { CustomTheme } from '@/lib/supabase/database.types'
 
 interface SeasonalSuggestionsModalProps {
   open: boolean
@@ -30,7 +31,7 @@ export function SeasonalSuggestionsModal({
 
   useEffect(() => {
     // Get current seasonal theme from settings or auto-detect
-    const customTheme = (settings?.custom_theme as any) || {}
+    const customTheme = (settings?.custom_theme as CustomTheme) || {}
     const themeId = customTheme.seasonalTheme || null
     
     if (themeId && SEASONAL_THEMES_DATA[themeId]) {

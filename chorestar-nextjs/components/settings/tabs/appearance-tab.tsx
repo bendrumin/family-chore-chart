@@ -219,8 +219,8 @@ export function AppearanceTab() {
       console.error('Error updating theme:', error)
       toast.error('Failed to update theme')
       // Revert on error
-      const customTheme = settings?.custom_theme as any
-      setLocalTheme(customTheme?.mode || 'light')
+      const customTheme = (settings?.custom_theme as CustomTheme) || {}
+      setLocalTheme(customTheme.mode || 'light')
     }
   }
 
@@ -235,8 +235,8 @@ export function AppearanceTab() {
     } catch (error) {
       console.error('Error updating seasonal theme:', error)
       toast.error('Failed to update seasonal theme')
-      const customTheme = settings?.custom_theme as any
-      setSeasonalTheme(customTheme?.seasonalTheme || null)
+      const customTheme = (settings?.custom_theme as CustomTheme) || {}
+      setSeasonalTheme(customTheme.seasonalTheme || null)
     }
   }
 
@@ -251,8 +251,8 @@ export function AppearanceTab() {
     } catch (error) {
       console.error('Error updating auto seasonal:', error)
       toast.error('Failed to update auto seasonal setting')
-      const customTheme = settings?.custom_theme as any
-      setAutoSeasonalEnabled(customTheme?.autoSeasonal || false)
+      const customTheme = (settings?.custom_theme as CustomTheme) || {}
+      setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
     }
   }
 

@@ -114,8 +114,8 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
         reward_cents: suggestion.rewardCents,
         is_active: true,
         icon: suggestion.icon,
-        category: suggestion.category as any,
-      } as any)
+        category: suggestion.category,
+      })
 
       if (error) throw error
 

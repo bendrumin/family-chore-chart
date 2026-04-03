@@ -13,6 +13,8 @@ interface ContactModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+const VERIFICATION_ANSWER = '8'
+
 export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -51,13 +53,12 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
     // Anti-spam checks
     if (honeypotWebsite || honeypotEmail) {
-      console.warn('Spam detected: honeypot fields filled')
       toast.error('Invalid submission detected.')
       return
     }
 
     // Check verification answer
-    if (formData.verification !== '8') {
+    if (formData.verification !== VERIFICATION_ANSWER) {
       toast.error('Please answer the verification question correctly.')
       return
     }
@@ -74,7 +75,6 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     const hasSpamKeywords = spamKeywords.some(keyword => messageLower.includes(keyword))
 
     if (hasSpamKeywords) {
-      console.warn('Spam detected: suspicious keywords')
       toast.error('Your message contains suspicious content. Please revise and try again.')
       return
     }

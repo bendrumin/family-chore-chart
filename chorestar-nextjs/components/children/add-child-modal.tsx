@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { UserPlus, Sparkles, Crown, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
 import { getChildLimit } from '@/lib/utils/subscription'
 import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
@@ -207,10 +208,13 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                       background: `linear-gradient(135deg, ${formData.avatarColor} 0%, ${formData.avatarColor}dd 100%)`
                     }}
                   >
-                    <img
+                    <Image
                       src={`https://api.dicebear.com/7.x/bottts/svg?seed=${formData.avatarSeed}`}
                       alt="Avatar preview"
+                      width={80}
+                      height={80}
                       className="w-full h-full"
+                      unoptimized
                     />
                   </div>
                   <div>
