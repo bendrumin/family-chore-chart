@@ -301,7 +301,7 @@ export function RoutineBuilderModal({
     }
   };
 
-  const routineTypes = [
+  const routineTypes: { value: 'morning' | 'bedtime' | 'afterschool' | 'custom'; label: string; color: string; icon: string }[] = [
     { value: 'morning', label: 'Morning', color: '#fbbf24', icon: '🌅' },
     { value: 'bedtime', label: 'Bedtime', color: '#6366f1', icon: '🌙' },
     { value: 'afterschool', label: 'After School', color: '#10b981', icon: '🎒' },
@@ -394,7 +394,7 @@ export function RoutineBuilderModal({
                         onClick={() =>
                           setFormData({
                             ...formData,
-                            type: type.value as any,
+                            type: type.value,
                             color: type.color,
                           })
                         }

@@ -145,7 +145,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       {/* Routines Grid */}
       <div className="max-w-6xl mx-auto">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-20" role="status" aria-live="polite">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -153,6 +153,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             >
               ⭐
             </motion.div>
+            <span className="sr-only">Loading routines...</span>
           </div>
         ) : activeRoutines.length === 0 ? (
           <motion.div

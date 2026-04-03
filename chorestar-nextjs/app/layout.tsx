@@ -70,6 +70,14 @@ export const metadata: Metadata = {
     siteName: 'ChoreStar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
     description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 100+ happy families.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ChoreStar — Make chores fun for kids',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -77,6 +85,7 @@ export const metadata: Metadata = {
     creator: '@chorestar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
     description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 100+ happy families.',
+    images: ['/og-image.png'],
   },
   icons: {
     icon: [

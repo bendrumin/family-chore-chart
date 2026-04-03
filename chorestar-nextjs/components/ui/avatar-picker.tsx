@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from './button'
 import { Label } from './label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
@@ -118,16 +119,20 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   type="button"
                   key={variant}
                   onClick={() => onSelect(url, selectedColor)}
+                  aria-label={`Select robot avatar ${variant}`}
                   className={`aspect-square rounded-lg border-2 p-1 transition-all hover:scale-105 hover:shadow-lg ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
-                  <img
+                  <Image
                     src={url}
                     alt={`Robot ${variant}`}
+                    width={64}
+                    height={64}
                     className="w-full h-full rounded"
+                    unoptimized
                   />
                 </button>
               )
@@ -144,16 +149,20 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   type="button"
                   key={variant}
                   onClick={() => onSelect(url, selectedColor)}
+                  aria-label={`Select adventurer avatar ${variant}`}
                   className={`aspect-square rounded-lg border-2 p-1 transition-all hover:scale-105 hover:shadow-lg ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
-                  <img
+                  <Image
                     src={url}
                     alt={`Adventurer ${variant}`}
+                    width={64}
+                    height={64}
                     className="w-full h-full rounded"
+                    unoptimized
                   />
                 </button>
               )
@@ -170,6 +179,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   type="button"
                   key={emoji}
                   onClick={() => onSelect(url, selectedColor)}
+                  aria-label={`Select ${emoji} emoji avatar`}
                   className={`aspect-square rounded-lg border-2 flex items-center justify-center text-3xl transition-all hover:scale-105 hover:shadow-lg ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
