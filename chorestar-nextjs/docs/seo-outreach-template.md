@@ -90,4 +90,4 @@ chorestar.app
 3. **Routine player** — one-step-at-a-time with timers (unique feature)
 4. **Native iOS app** — available on TestFlight, not just web
 5. **Privacy-first** — COPPA compliant, kids never submit personal data
-6. **87+ families** — real traction with real testimonials
+6. **100+ families** — real traction with real testimonials

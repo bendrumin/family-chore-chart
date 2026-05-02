@@ -8,6 +8,7 @@ interface BlogPost {
   title: string
   description: string
   date: string
+  isoDate: string
   readTime: string
   emoji: string
   category: string
@@ -15,10 +16,21 @@ interface BlogPost {
 
 const posts: BlogPost[] = [
   {
+    slug: 'spring-cleaning-chores-for-kids',
+    title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
+    description: 'A practical spring cleaning chore list for kids, including age-appropriate yard work, dog poop cleanup, litter pickup, gardening, and Earth Day cleanup ideas.',
+    date: 'May 2, 2026',
+    isoDate: '2026-05-02',
+    readTime: '7 min read',
+    emoji: '🌎',
+    category: 'Chores',
+  },
+  {
     slug: 'morning-routine-for-kids',
     title: 'How to Build a Morning Routine for Kids That Actually Sticks',
     description: 'A step-by-step guide to creating morning routines kids follow independently — with timers, progress tracking, and celebrations built in.',
     date: 'March 28, 2026',
+    isoDate: '2026-03-28',
     readTime: '6 min read',
     emoji: '☀️',
     category: 'Routines',
@@ -28,6 +40,7 @@ const posts: BlogPost[] = [
     title: 'How to Give Kids Their Own Chore App — No Email Required',
     description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
     date: 'March 28, 2026',
+    isoDate: '2026-03-28',
     readTime: '5 min read',
     emoji: '🔑',
     category: 'Features',
@@ -37,6 +50,7 @@ const posts: BlogPost[] = [
     title: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
     description: 'Achievements, streaks, confetti, and progress bars aren\'t just fun — they tap into the same psychology that makes kids want to level up.',
     date: 'March 28, 2026',
+    isoDate: '2026-03-28',
     readTime: '7 min read',
     emoji: '🎮',
     category: 'Parenting',
@@ -46,6 +60,7 @@ const posts: BlogPost[] = [
     title: 'Teaching Kids About Money With a Chore Reward System',
     description: 'How to set up allowance tracking that teaches financial responsibility — from flat daily rates to per-chore rewards and weekly bonuses.',
     date: 'March 28, 2026',
+    isoDate: '2026-03-28',
     readTime: '6 min read',
     emoji: '💰',
     category: 'Allowance',
@@ -55,6 +70,7 @@ const posts: BlogPost[] = [
     title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
     description: 'A practical guide to matching chores with your child\'s age — from simple self-care at 3 to full household responsibilities at 15.',
     date: 'March 28, 2026',
+    isoDate: '2026-03-28',
     readTime: '8 min read',
     emoji: '📋',
     category: 'Chores',
@@ -77,7 +93,7 @@ const blogJsonLd = {
     headline: post.title,
     description: post.description,
     url: `https://chorestar.app/blog/${post.slug}`,
-    datePublished: '2026-03-28',
+    datePublished: post.isoDate,
     author: { '@type': 'Organization', name: 'ChoreStar' },
   })),
 }

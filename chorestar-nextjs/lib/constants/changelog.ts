@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.3.1'
+export const LATEST_CHANGELOG_VERSION = '2026.5.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.5.0': {
+    version: '2026.5.0',
+    date: 'May 2026',
+    title: 'Spring Cleanup Chore Ideas',
+    features: [
+      {
+        icon: '🌎',
+        title: 'New Spring & Earth Day Suggestions',
+        description: 'Smart Suggestions now include outdoor cleanup ideas like dog poop cleanup, litter pickup, weed pulling, planting flowers, patio sweeping, bird feeder refills, and trash bin washing.'
+      },
+      {
+        icon: '🌷',
+        title: 'More Yard Work for Kids',
+        description: 'Spring chores are age-filtered and seasonally boosted so families see helpful yard work ideas right when the weather turns.'
+      },
+    ]
+  },
   '2026.3.1': {
     version: '2026.3.1',
     date: 'March 2026',
