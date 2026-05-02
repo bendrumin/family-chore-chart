@@ -40,7 +40,7 @@ const jsonLd = {
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: '5',
-    ratingCount: '87',
+    ratingCount: '3',
     bestRating: '5',
     worstRating: '1',
   },
@@ -371,7 +371,7 @@ export default async function HomePage() {
                 className="block w-full px-6 py-3 rounded-xl font-bold text-center text-white transition-all hover:opacity-90 shadow-lg hover:shadow-xl"
                 style={{ background: GRADIENT }}
               >
-                Start Free Trial
+                Start Free, Upgrade Anytime
               </Link>
               <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-3">
                 💳 Upgrade to Premium anytime from your dashboard

@@ -41,13 +41,19 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
           <QuickAction
             href="/dashboard"
             icon={<LayoutDashboard className="w-6 h-6" />}
             title="Dashboard"
             description="Manage chores and routines"
             primary
+          />
+          <QuickAction
+            href="/blog"
+            icon={<BookOpen className="w-6 h-6" />}
+            title="Blog"
+            description="Fresh chore ideas and parenting tips"
           />
           <QuickAction
             href="/how-to"
@@ -118,6 +124,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             <ResourceLink href="/how-to" label="How to add a child" />
             <ResourceLink href="/how-to" label="Setting up routines" />
             <ResourceLink href="/how-to" label="Kid login with PIN" />
+            <ResourceLink href="/blog/spring-cleaning-chores-for-kids" label="Spring cleanup chore ideas" />
             <ResourceLink href="mailto:support@chorestar.app" label="Contact support" external />
           </div>
         </div>

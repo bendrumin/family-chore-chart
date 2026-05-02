@@ -13,11 +13,13 @@ export const metadata: Metadata = {
     title: 'Create Your Free ChoreStar Account',
     description: 'Sign up for ChoreStar and start tracking chores, allowances, and rewards for your family today.',
     url: 'https://chorestar.app/signup',
+    images: ['/og-image.png'],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Create Your Free ChoreStar Account',
     description: 'Sign up for ChoreStar and start tracking chores, allowances, and rewards for your family today.',
+    images: ['/og-image.png'],
   },
   alternates: { canonical: 'https://chorestar.app/signup' },
 }

@@ -59,10 +59,18 @@ const CHORE_CATALOGUE: ChoreDef[] = [
   { name: 'Fill water bowl', category: 'pets', icon: '💧', minAge: 4, maxAge: 14, rewardCents: 5, seasonalMonths: [] },
   { name: 'Walk the dog', category: 'pets', icon: '🐕', minAge: 8, maxAge: 18, rewardCents: 25, seasonalMonths: [] },
   { name: 'Clean pet area', category: 'pets', icon: '🧹', minAge: 8, maxAge: 18, rewardCents: 20, seasonalMonths: [] },
+  { name: 'Clean up dog poop', category: 'pets', icon: '🐕', minAge: 9, maxAge: 18, rewardCents: 30, seasonalMonths: [3, 4, 5, 6, 7, 8, 9, 10] },
 
   // ── Outdoor / seasonal ────────────────────────────────────
   { name: 'Water plants', category: 'outdoor', icon: '🌱', minAge: 4, maxAge: 14, rewardCents: 10, seasonalMonths: [4, 5, 6, 7, 8, 9] },
   { name: 'Help in the garden', category: 'outdoor', icon: '🌻', minAge: 6, maxAge: 18, rewardCents: 25, seasonalMonths: [3, 4, 5, 6, 7, 8, 9] },
+  { name: 'Pull weeds', category: 'outdoor', icon: '🌿', minAge: 6, maxAge: 18, rewardCents: 20, seasonalMonths: [3, 4, 5, 6, 7, 8] },
+  { name: 'Plant flowers', category: 'outdoor', icon: '🌷', minAge: 6, maxAge: 18, rewardCents: 25, seasonalMonths: [3, 4, 5, 6] },
+  { name: 'Pick up sticks', category: 'outdoor', icon: '🪵', minAge: 5, maxAge: 14, rewardCents: 15, seasonalMonths: [3, 4, 5, 6, 9, 10, 11] },
+  { name: 'Pick up litter', category: 'outdoor', icon: '🌎', minAge: 6, maxAge: 18, rewardCents: 20, seasonalMonths: [3, 4, 5] },
+  { name: 'Sweep porch or patio', category: 'outdoor', icon: '🧹', minAge: 7, maxAge: 18, rewardCents: 15, seasonalMonths: [3, 4, 5, 6, 7, 8, 9] },
+  { name: 'Wash outdoor toys', category: 'outdoor', icon: '🫧', minAge: 6, maxAge: 14, rewardCents: 20, seasonalMonths: [4, 5, 6, 7, 8] },
+  { name: 'Refill bird feeder', category: 'outdoor', icon: '🐦', minAge: 5, maxAge: 14, rewardCents: 10, seasonalMonths: [3, 4, 5, 6, 7, 8] },
   { name: 'Rake leaves', category: 'outdoor', icon: '🍂', minAge: 6, maxAge: 18, rewardCents: 25, seasonalMonths: [9, 10, 11] },
   { name: 'Shovel snow from walkway', category: 'outdoor', icon: '❄️', minAge: 8, maxAge: 18, rewardCents: 50, seasonalMonths: [11, 12, 1, 2, 3] },
   { name: 'Take out recycling', category: 'outdoor', icon: '♻️', minAge: 6, maxAge: 18, rewardCents: 10, seasonalMonths: [] },
@@ -75,6 +83,7 @@ const CHORE_CATALOGUE: ChoreDef[] = [
   { name: 'Dust furniture', category: 'household', icon: '✨', minAge: 7, maxAge: 18, rewardCents: 15, seasonalMonths: [] },
   { name: 'Clean bathroom sink', category: 'household', icon: '🚰', minAge: 8, maxAge: 18, rewardCents: 20, seasonalMonths: [] },
   { name: 'Take out trash cans', category: 'household', icon: '🗑️', minAge: 9, maxAge: 18, rewardCents: 15, seasonalMonths: [] },
+  { name: 'Wash trash bins', category: 'household', icon: '🧼', minAge: 10, maxAge: 18, rewardCents: 35, seasonalMonths: [3, 4, 5, 6, 7, 8, 9] },
   { name: 'Wipe down mirrors', category: 'household', icon: '🪞', minAge: 7, maxAge: 18, rewardCents: 10, seasonalMonths: [] },
 
   // ── Academic / responsibility (ages 5-18) ─────────────────
