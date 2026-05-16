@@ -65,11 +65,6 @@ export function SiteFooter() {
                   Contact Support
                 </a>
               </li>
-              <li>
-                <a href="/#ios-app" className="text-sm hover:text-white transition-colors">
-                  iOS App
-                </a>
-              </li>
             </ul>
           </div>
 

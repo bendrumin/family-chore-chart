@@ -6,29 +6,61 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
 export const metadata: Metadata = {
-  title: 'Promote ChoreStar — Partner & Affiliate Program',
-  description: 'Partner with ChoreStar to promote the family chore tracking app parents love. Download brand assets, get approved copy, and start earning as an affiliate or agency partner.',
+  title: 'ChoreStar Affiliate & Partner Program for Parenting Creators',
+  description: 'Partner with ChoreStar to promote a mobile-friendly chore chart app for families. Built for parenting bloggers, family newsletters, creators, agencies, and chore app roundups.',
   keywords: [
     'ChoreStar affiliate',
     'ChoreStar partner',
     'family app affiliate program',
+    'parenting affiliate program',
+    'parenting creator partnerships',
+    'chore app affiliate',
     'parenting app promotion',
     'chore app marketing',
     'ChoreStar brand assets',
   ],
   openGraph: {
-    title: 'Promote ChoreStar — Partner & Affiliate Program',
-    description: 'Partner with ChoreStar to promote the family chore app parents love. Download brand assets, approved copy, and connect with our team.',
+    title: 'ChoreStar Affiliate & Partner Program',
+    description: 'Promote a free-to-start chore chart app parents can use instantly on any device. Brand assets, approved copy, testimonials, and a partner inquiry form.',
     url: 'https://chorestar.app/partners',
+    images: ['/og-image.png'],
   },
   twitter: {
-    card: 'summary',
-    title: 'Promote ChoreStar — Partner & Affiliate Program',
-    description: 'Partner with ChoreStar to promote the family chore app parents love.',
+    card: 'summary_large_image',
+    title: 'ChoreStar Affiliate & Partner Program',
+    description: 'Partner with ChoreStar to promote a free-to-start chore chart app parents can use instantly on any device.',
+    images: ['/og-image.png'],
   },
   alternates: {
     canonical: 'https://chorestar.app/partners',
   },
+}
+
+const partnersJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'ChoreStar Affiliate & Partner Program',
+  description: 'Partner resources for parenting creators, family newsletters, agencies, and chore app roundups promoting ChoreStar.',
+  url: 'https://chorestar.app/partners',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'ChoreStar',
+    url: 'https://chorestar.app',
+  },
+  about: {
+    '@type': 'SoftwareApplication',
+    name: 'ChoreStar',
+    applicationCategory: 'LifestyleApplication',
+    operatingSystem: 'Web',
+    url: 'https://chorestar.app',
+    description: 'A mobile-friendly chore chart and allowance tracking app for families.',
+  },
+  audience: [
+    { '@type': 'Audience', audienceType: 'Parenting bloggers' },
+    { '@type': 'Audience', audienceType: 'Family newsletters' },
+    { '@type': 'Audience', audienceType: 'Content creators' },
+    { '@type': 'Audience', audienceType: 'Ad agencies' },
+  ],
 }
 
 const BRAND_COLORS = [
@@ -76,9 +108,32 @@ const SAMPLE_COPY = [
   },
 ]
 
+const PARTNER_AUDIENCES = [
+  {
+    title: 'Parenting Bloggers',
+    detail: 'Great fit for chore chart roundups, allowance guides, morning routine posts, and family organization content.',
+  },
+  {
+    title: 'Family Newsletters',
+    detail: 'Easy recommendation for parents who want less nagging, clearer expectations, and a free way to start.',
+  },
+  {
+    title: 'Creators & Influencers',
+    detail: 'Works well for short demos: add a child, assign chores, then show the kid-friendly PIN login flow.',
+  },
+  {
+    title: 'Agencies & PPC Teams',
+    detail: 'Clear positioning, simple pricing, browser-based onboarding, and ready-to-use copy make campaigns faster to launch.',
+  },
+]
+
 export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(partnersJsonLd) }}
+      />
 
       <SiteNav />
 
@@ -117,6 +172,24 @@ export default function PartnersPage() {
               </div>
             ))}
           </div>
+
+          {/* Best-fit partners */}
+          <section className="max-w-4xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+              Who Should Promote ChoreStar?
+            </h2>
+            <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
+              ChoreStar is easiest to recommend to audiences already looking for calmer mornings, allowance tracking, and kid-friendly responsibility tools.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              {PARTNER_AUDIENCES.map(({ title, detail }) => (
+                <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-indigo-100 dark:border-indigo-900">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* What is ChoreStar */}
           <section className="max-w-4xl mx-auto mb-16">

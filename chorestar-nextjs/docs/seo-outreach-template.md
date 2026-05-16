@@ -12,7 +12,7 @@ I came across your article "[Article Title]" and really enjoyed the breakdown. I
 - **Free forever plan.** Up to 3 kids and 20 chores, no credit card, no 14-day trial clock ticking.
 - **Step-by-step routines with timers.** Parents build morning/bedtime/after-school routines, and kids step through them one task at a time with optional countdown timers and a confetti celebration at the end.
 - **10 achievement badges across 4 rarity tiers.** Streaks, category milestones, and a "Perfect Week" badge that's genuinely hard to earn.
-- **Built by a parent, for parents.** 100+ families actively using it. 5-star reviews.
+- **Built by a parent, for parents.** 108+ parents and kids actively using it. 5-star reviews.
 
 Would you be open to taking a look and considering ChoreStar for your roundup? Happy to answer any questions or set up a demo account for you.
 
@@ -88,6 +88,6 @@ chorestar.app
 1. **No email for kids** — PIN-based login (most competitors require accounts)
 2. **Free forever** — not a 14-day trial (PointWiseSystem, BusyKid charge)
 3. **Routine player** — one-step-at-a-time with timers (unique feature)
-4. **Native iOS app** — available on TestFlight, not just web
+4. **Mobile-friendly web app** — works great on phones and tablets with no app download
 5. **Privacy-first** — COPPA compliant, kids never submit personal data
-6. **100+ families** — real traction with real testimonials
+6. **108+ users** — real traction with real testimonials
