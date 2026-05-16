@@ -67,7 +67,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <a href="/#ios-app" className="text-sm hover:text-white transition-colors">
-                  iOS App (TestFlight)
+                  iOS App
                 </a>
               </li>
             </ul>

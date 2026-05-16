@@ -4,7 +4,6 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { TestFlightSignup } from '@/components/home/testflight-signup'
 import {
   LayoutDashboard,
   BookOpen,
@@ -15,6 +14,8 @@ import {
   Sparkles,
   Smartphone,
 } from 'lucide-react'
+
+const APP_STORE_URL = 'https://apps.apple.com/us/app/chores-tracker-chorestar/id6746131013'
 
 interface LoggedInHomeProps {
   familyName: string
@@ -71,7 +72,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             href="#ios-app"
             icon={<Smartphone className="w-6 h-6" />}
             title="iOS App"
-            description="Join the TestFlight waitlist"
+            description="Download on the App Store"
           />
         </div>
 
@@ -129,16 +130,25 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           </div>
         </div>
 
-        {/* iOS App / TestFlight */}
+        {/* iOS App */}
         <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-10">
           <div className="flex items-start gap-4">
             <div className="text-3xl shrink-0">📱</div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Our native iOS app is available via TestFlight. Enter your email to get an invite.
+                Keep chores moving from your phone or tablet with the native ChoreStar app.
               </p>
-              <TestFlightSignup compact />
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white hover:opacity-90 transition-opacity"
+                style={{ background: GRADIENT }}
+              >
+                Download on the App Store
+                <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </div>
