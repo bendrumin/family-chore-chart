@@ -4,8 +4,9 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { TestFlightSignup } from '@/components/home/testflight-signup'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
+
+const APP_STORE_URL = 'https://apps.apple.com/us/app/chores-tracker-chorestar/id6746131013'
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -98,7 +99,7 @@ export default async function HomePage() {
             Turn Household Chores Into Family Wins
           </p>
           <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
-            ⭐ Join 100+ families already using ChoreStar
+            ⭐ Join 108+ parents and kids already using ChoreStar
           </p>
         </header>
 
@@ -460,7 +461,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        {/* iOS App / TestFlight */}
+        {/* iOS App */}
         <div id="ios-app" className="max-w-3xl mx-auto mb-16">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-hidden">
             <div className="p-8 text-center">
@@ -469,12 +470,20 @@ export default async function HomePage() {
                 ChoreStar for iPhone
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-md mx-auto">
-                A native iOS app built for faster chore tracking, offline support, and a better kid experience on iPhone.
+                A native iOS app built for faster chore tracking and a smoother kid experience on iPhone and iPad.
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Available now via TestFlight — enter your email to get an invite.
+                Available now on the App Store.
               </p>
-              <TestFlightSignup />
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg"
+                style={{ background: GRADIENT }}
+              >
+                Download on the App Store →
+              </a>
             </div>
           </div>
         </div>
@@ -488,7 +497,7 @@ export default async function HomePage() {
             Ready to Transform Chore Time?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join 100+ families who've said goodbye to chore battles
+            Join 108+ parents and kids who've said goodbye to chore battles
           </p>
           <Link
             href="/signup"

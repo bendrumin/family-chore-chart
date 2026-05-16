@@ -227,7 +227,7 @@ export default function HowToPage() {
             </Link>
           </div>
           <p className="mt-4 text-xs opacity-75">
-            ✓ Free plan available  •  ✓ No credit card to start  •  ✓ 100+ happy families
+            ✓ Free plan available  •  ✓ No credit card to start  •  ✓ 108+ happy users
           </p>
         </div>
 

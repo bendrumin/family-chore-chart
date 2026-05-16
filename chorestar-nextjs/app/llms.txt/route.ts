@@ -26,7 +26,7 @@ Live at: https://chorestar.app
 
 ## Public Pages
 
-- [Home](https://chorestar.app) — Marketing homepage with feature overview and TestFlight signup
+- [Home](https://chorestar.app) — Marketing homepage with feature overview and iOS App Store link
 - [How-To Guides](https://chorestar.app/how-to) — Step-by-step tutorials for parents
 - [Blog](https://chorestar.app/blog) — Parenting tips and chore strategies
 - [Partners](https://chorestar.app/partners) — Partnership information
