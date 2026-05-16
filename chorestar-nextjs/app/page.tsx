@@ -6,8 +6,6 @@ import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
-const APP_STORE_URL = 'https://apps.apple.com/us/app/chores-tracker-chorestar/id6746131013'
-
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -459,33 +457,6 @@ export default async function HomePage() {
               Check out our How-To guides →
             </Link>
           </p>
-        </div>
-
-        {/* iOS App */}
-        <div id="ios-app" className="max-w-3xl mx-auto mb-16">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-hidden">
-            <div className="p-8 text-center">
-              <div className="text-5xl mb-4">📱</div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                ChoreStar for iPhone
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-md mx-auto">
-                A native iOS app built for faster chore tracking and a smoother kid experience on iPhone and iPad.
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Available now on the App Store.
-              </p>
-              <a
-                href={APP_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg"
-                style={{ background: GRADIENT }}
-              >
-                Download on the App Store →
-              </a>
-            </div>
-          </div>
         </div>
 
         {/* Final CTA */}
