@@ -5,6 +5,8 @@ const FOUNDER_EXCLUDE = [...getAdminEmails(), 'bsiegel13+2@gmail.com', 'hi@chore
 
 export interface OutreachCampaign {
   id: string
+  /** Admin-only label — never included in recipient email subjects */
+  label: string
   description: string
   selectRecipients: (report: PowerUserReport) => PowerUserStat[]
   subject: (user: PowerUserStat) => string
@@ -52,7 +54,7 @@ function excludeFounder(users: PowerUserStat[]) {
 export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
   week2: {
     id: 'week2',
-    description: 'Routine case study (Wootten) → win-back (THE GOATS + Chaos Clan)',
+    description: 'Week 2: Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
     steps: [
       { campaign: 'routine-case-study' },
       { campaign: 'win-back', emails: ['yeliufiorella@gmail.com', 'madtail.79@gmail.com'] },
@@ -68,6 +70,7 @@ export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
 export const OUTREACH_CAMPAIGNS: Record<string, OutreachCampaign> = {
   champion: {
     id: 'champion',
+    label: 'Champion thank-you',
     description: 'Top active families — testimonial or referral ask',
     selectRecipients(report) {
       return excludeFounder(
@@ -125,6 +128,7 @@ chorestar.app`
 
   'routine-case-study': {
     id: 'routine-case-study',
+    label: 'Routine feedback',
     description: 'Families using routines + kid login — feature feedback',
     selectRecipients(report) {
       return excludeFounder((report.allUsers || []).filter((u) => u.usesRoutines && u.kidPinsSet > 0)).slice(0, 3)
@@ -160,6 +164,7 @@ chorestar.app`
 
   'win-back': {
     id: 'win-back',
+    label: 'Inactive family check-in',
     description: 'Heavy past usage, quiet 30+ days',
     selectRecipients(report) {
       return excludeFounder(
@@ -199,6 +204,7 @@ chorestar.app`
 
   'summer-blog': {
     id: 'summer-blog',
+    label: 'Summer blog share',
     description: 'Recently active users — share summer chores blog post',
     selectRecipients(report) {
       return excludeFounder(

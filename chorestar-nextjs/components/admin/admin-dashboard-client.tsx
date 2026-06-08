@@ -18,6 +18,7 @@ import type { PowerUserReport, PowerUserStat } from '@/lib/admin/types'
 
 interface CampaignMeta {
   id: string
+  label: string
   description: string
 }
 
@@ -337,7 +338,7 @@ export function AdminDashboardClient() {
                   <optgroup label="Campaigns">
                     {campaigns.map((c) => (
                       <option key={c.id} value={`campaign:${c.id}`}>
-                        {c.id} — {c.description}
+                        {c.label} — {c.description}
                       </option>
                     ))}
                   </optgroup>
@@ -364,7 +365,12 @@ export function AdminDashboardClient() {
                   <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">
                     {p.familyName} · {p.email}
                   </CardTitle>
-                  <p className="text-xs text-indigo-500 dark:text-indigo-400">{p.campaign} — {p.subject}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    Subject: {p.subject}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Internal log tag: {p.campaign}
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <pre className="text-xs whitespace-pre-wrap text-gray-700 dark:text-gray-300 font-sans leading-relaxed">
@@ -389,7 +395,7 @@ export function AdminDashboardClient() {
                   <thead>
                     <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                       <th className="pb-2 pr-4">When</th>
-                      <th className="pb-2 pr-4">Campaign</th>
+                      <th className="pb-2 pr-4">Log tag</th>
                       <th className="pb-2 pr-4">Email</th>
                       <th className="pb-2">Family</th>
                     </tr>

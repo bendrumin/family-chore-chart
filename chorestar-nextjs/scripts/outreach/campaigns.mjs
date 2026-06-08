@@ -41,11 +41,29 @@ function excludeFounder(users) {
   return users.filter((u) => !FOUNDER_EXCLUDE.includes((u.email || '').toLowerCase()))
 }
 
+const INTERNAL_SLUGS = ['win-back', 'routine-case-study', 'summer-blog', 'champion', 'week2', 'week3']
+
+/** Strip internal campaign slugs from recipient-facing subject lines. */
+export function sanitizeRecipientSubject(subject, campaignId) {
+  let cleaned = subject.trim()
+  const slugs = campaignId ? [campaignId, ...INTERNAL_SLUGS] : INTERNAL_SLUGS
+  for (const slug of slugs) {
+    const escaped = slug.replace(/-/g, '[\\s-]*')
+    cleaned = cleaned.replace(new RegExp(`^${escaped}\\s*[—–:-]+\\s*`, 'i'), '')
+    cleaned = cleaned.replace(new RegExp(`\\s*[\\[\\(]${escaped}[\\]\\)]\\s*`, 'gi'), ' ')
+  }
+  return cleaned.replace(/\s+/g, ' ').trim() || subject.trim()
+}
+
+export function getRecipientSubject(campaignId, campaign, user) {
+  return sanitizeRecipientSubject(campaign.subject(user), campaignId)
+}
+
 /** Multi-step outreach sequences */
 export const PRESETS = {
   week2: {
     id: 'week2',
-    description: 'Routine case study (Wootten) → win-back (THE GOATS + Chaos Clan)',
+    description: 'Week 2: Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
     steps: [
       { campaign: 'routine-case-study' },
       {
@@ -65,6 +83,7 @@ export const PRESETS = {
 export const CAMPAIGNS = {
   champion: {
     id: 'champion',
+    label: 'Champion thank-you',
     description: 'Top active families — testimonial or referral ask',
     selectRecipients(report) {
       return excludeFounder(
@@ -122,6 +141,7 @@ chorestar.app`
 
   'routine-case-study': {
     id: 'routine-case-study',
+    label: 'Routine feedback',
     description: 'Families using routines + kid login — feature feedback',
     selectRecipients(report) {
       return excludeFounder((report.allUsers || []).filter((u) => u.usesRoutines && u.kidPinsSet > 0)).slice(0, 3)
@@ -157,6 +177,7 @@ chorestar.app`
 
   'win-back': {
     id: 'win-back',
+    label: 'Inactive family check-in',
     description: 'Heavy past usage, quiet 30+ days',
     selectRecipients(report) {
       return excludeFounder(
@@ -197,6 +218,7 @@ chorestar.app`
 
   'summer-blog': {
     id: 'summer-blog',
+    label: 'Summer blog share',
     description: 'Recently active users — share summer chores blog post',
     selectRecipients(report) {
       return excludeFounder(
