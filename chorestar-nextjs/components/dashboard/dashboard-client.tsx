@@ -18,12 +18,10 @@ const AddChildModal = dynamic(() => import('@/components/children/add-child-moda
 const FAQModal = dynamic(() => import('@/components/help/faq-modal').then(m => ({ default: m.FAQModal })), { ssr: false })
 const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-modal').then(m => ({ default: m.NewFeaturesModal })), { ssr: false })
 const ContactModal = dynamic(() => import('@/components/help/contact-modal').then(m => ({ default: m.ContactModal })), { ssr: false })
-const WelcomeModal = dynamic(() => import('@/components/help/welcome-modal').then(m => ({ default: m.WelcomeModal })), { ssr: false })
 const SeasonalSuggestionsModal = dynamic(() => import('@/components/chores/seasonal-suggestions-modal').then(m => ({ default: m.SeasonalSuggestionsModal })), { ssr: false })
 const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboarding-wizard').then(m => ({ default: m.OnboardingWizard })), { ssr: false })
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
-import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
@@ -65,8 +63,6 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
   const checkOnboarding = () => {
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
     if (!hasSeenOnboarding && children.length === 0) {
-      // Suppress welcome modal so they don't get both at once
-      localStorage.setItem('chorestar_welcome_v2_seen', 'true')
       setTimeout(() => setShowOnboarding(true), 800)
     }
   }
@@ -203,30 +199,7 @@ function DashboardContent({
   handleOnboardingComplete,
   isAdmin,
 }: any) {
-  const { settings, updateSettings } = useSettings()
-
-  // Auto-show What's New if the user hasn't seen the latest version
-  useEffect(() => {
-    if (!settings) return
-    const theme = settings.custom_theme as Record<string, unknown> | null
-    const seenVersion = theme?.whatsNewSeenVersion as string | undefined
-    const dismissed = theme?.whatsNewDismissed as boolean | undefined
-    if (dismissed) return
-    if (seenVersion === LATEST_CHANGELOG_VERSION) return
-    const timer = setTimeout(() => setIsNewFeaturesOpen(true), 1200)
-    return () => clearTimeout(timer)
-  }, [settings?.custom_theme])
-
-  const handleWhatsNewDismiss = async (dontShowAgain: boolean) => {
-    const currentTheme = (settings?.custom_theme as Record<string, unknown>) || {}
-    await updateSettings({
-      custom_theme: {
-        ...currentTheme,
-        whatsNewSeenVersion: LATEST_CHANGELOG_VERSION,
-        ...(dontShowAgain ? { whatsNewDismissed: true } : {}),
-      },
-    })
-  }
+  const { settings } = useSettings()
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&
@@ -617,11 +590,7 @@ function DashboardContent({
       <NewFeaturesModal
         open={isNewFeaturesOpen}
         onOpenChange={setIsNewFeaturesOpen}
-        onDismiss={handleWhatsNewDismiss}
       />
-
-      {/* Welcome Modal (first visit) */}
-      <WelcomeModal />
 
       {/* Contact Modal */}
       <ContactModal

@@ -21,7 +21,7 @@ import { config } from 'dotenv'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
-import { CAMPAIGNS, PRESETS } from './outreach/campaigns.mjs'
+import { CAMPAIGNS, PRESETS, getRecipientSubject } from './outreach/campaigns.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const appRoot = join(__dirname, '..')
@@ -109,7 +109,7 @@ function preview(user, campaign) {
   console.log('─'.repeat(60))
   console.log(`To:      ${user.email}`)
   console.log(`Family:  ${user.familyName}`)
-  console.log(`Subject: ${campaign.subject(user)}`)
+  console.log(`Subject: ${getRecipientSubject(campaign.id, campaign, user)}`)
   console.log('─'.repeat(60))
   console.log(campaign.text(user))
   console.log('')
@@ -163,7 +163,7 @@ async function runCampaign({
     return { sent: 0, failed: 0, skipped: true }
   }
 
-  console.log(`▶ Campaign: ${campaign.id} — ${campaign.description}`)
+  console.log(`▶ ${campaign.label || campaign.id} — ${campaign.description}`)
   console.log(`  Recipients: ${recipients.length}\n`)
 
   let sent = 0
@@ -176,7 +176,7 @@ async function runCampaign({
       try {
         const id = await sendEmail(resend, {
           to: user.email,
-          subject: campaign.subject(user),
+          subject: getRecipientSubject(campaignId, campaign, user),
           text: campaign.text(user),
         })
         sentLog.sends.push({

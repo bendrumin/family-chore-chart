@@ -15,7 +15,11 @@ export async function GET(request: Request) {
 
   if (!campaign && !preset) {
     return NextResponse.json({
-      campaigns: Object.values(OUTREACH_CAMPAIGNS).map((c) => ({ id: c.id, description: c.description })),
+      campaigns: Object.values(OUTREACH_CAMPAIGNS).map((c) => ({
+        id: c.id,
+        label: c.label,
+        description: c.description,
+      })),
       presets: Object.values(OUTREACH_PRESETS).map((p) => ({
         id: p.id,
         description: p.description,

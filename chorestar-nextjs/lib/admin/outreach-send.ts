@@ -7,6 +7,7 @@ import {
   OUTREACH_PRESETS,
   resolveCampaignRecipients,
 } from '@/lib/admin/outreach-campaigns'
+import { getRecipientSubject } from '@/lib/admin/outreach-subject'
 
 const FROM = 'Ben Siegel <hi@chorestar.app>'
 const REPLY_TO = 'hi@chorestar.app'
@@ -95,7 +96,7 @@ function buildPreviews(
     campaign: campaignId,
     email: user.email,
     familyName: user.familyName,
-    subject: campaign.subject(user),
+    subject: getRecipientSubject(campaignId, campaign, user),
     text: campaign.text(user),
   }))
 }
@@ -138,7 +139,7 @@ async function sendOne(resend: Resend, user: PowerUserStat, campaignId: string) 
     from: FROM,
     to: user.email,
     replyTo: REPLY_TO,
-    subject: campaign.subject(user),
+    subject: getRecipientSubject(campaignId, campaign, user),
     text: campaign.text(user),
   })
   return result.data?.id || 'ok'
