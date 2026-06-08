@@ -5,6 +5,7 @@ const routes = [
   { path: '/signup', changeFrequency: 'monthly', priority: '0.9' },
   { path: '/how-to', changeFrequency: 'weekly', priority: '0.8' },
   { path: '/blog', changeFrequency: 'weekly', priority: '0.8' },
+  { path: '/blog/summer-chores-for-kids', changeFrequency: 'monthly', priority: '0.7' },
   { path: '/blog/spring-cleaning-chores-for-kids', changeFrequency: 'monthly', priority: '0.7' },
   { path: '/blog/morning-routine-for-kids', changeFrequency: 'monthly', priority: '0.7' },
   { path: '/blog/kids-chore-app-no-email', changeFrequency: 'monthly', priority: '0.7' },

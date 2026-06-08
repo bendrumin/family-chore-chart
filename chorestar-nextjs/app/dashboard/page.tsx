@@ -3,6 +3,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { getEffectiveFamilyId } from '@/lib/utils/family'
+import { isAdminEmail } from '@/lib/admin/is-admin'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -81,6 +82,7 @@ export default async function DashboardPage() {
           }}
           effectiveUserId={user.id}
           isSharedMember={false}
+          isAdmin={isAdminEmail(user.email)}
         />
       }
 
@@ -89,6 +91,7 @@ export default async function DashboardPage() {
         initialProfile={newProfile}
         effectiveUserId={user.id}
         isSharedMember={false}
+        isAdmin={isAdminEmail(user.email)}
       />
     }
 
@@ -101,6 +104,7 @@ export default async function DashboardPage() {
       initialProfile={profile}
       effectiveUserId={effectiveUserId}
       isSharedMember={isSharedMember}
+      isAdmin={isAdminEmail(user.email)}
     />
   )
 }

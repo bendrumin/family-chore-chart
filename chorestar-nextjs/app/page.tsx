@@ -97,7 +97,7 @@ export default async function HomePage() {
             Turn Household Chores Into Family Wins
           </p>
           <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
-            ⭐ Join 108+ parents and kids already using ChoreStar
+            ⭐ Join 117+ parents and kids already using ChoreStar
           </p>
         </header>
 
@@ -468,7 +468,7 @@ export default async function HomePage() {
             Ready to Transform Chore Time?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join 108+ parents and kids who've said goodbye to chore battles
+            Join 117+ parents and kids who've said goodbye to chore battles
           </p>
           <Link
             href="/signup"

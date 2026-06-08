@@ -1,0 +1,201 @@
+import { Resend } from 'resend'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/lib/supabase/database.types'
+import { analyzePowerUsers, type PowerUserReport, type PowerUserStat } from '@/lib/admin/power-users'
+import {
+  OUTREACH_CAMPAIGNS,
+  OUTREACH_PRESETS,
+  resolveCampaignRecipients,
+} from '@/lib/admin/outreach-campaigns'
+
+const FROM = 'Ben Siegel <hi@chorestar.app>'
+const REPLY_TO = 'hi@chorestar.app'
+
+export interface OutreachPreviewItem {
+  campaign: string
+  email: string
+  familyName: string
+  subject: string
+  text: string
+}
+
+export interface OutreachSendResult {
+  campaign: string
+  email: string
+  familyName: string
+  success: boolean
+  resendId?: string
+  error?: string
+}
+
+export async function loadSentEmailKeys(admin: SupabaseClient<Database>): Promise<Set<string>> {
+  const { data, error } = await (admin as SupabaseClient)
+    .from('outreach_sent_log' as 'profiles')
+    .select('campaign, email')
+
+  if (error) {
+    if (error.message.includes('does not exist') || error.code === '42P01') {
+      throw new Error('OUTREACH_TABLE_MISSING')
+    }
+    throw error
+  }
+
+  const keys = new Set<string>()
+  for (const row of data || []) {
+    const r = row as { campaign: string; email: string }
+    keys.add(`${r.campaign}:${r.email.toLowerCase()}`)
+  }
+  return keys
+}
+
+export async function logOutreachSend(
+  admin: SupabaseClient<Database>,
+  entry: { campaign: string; email: string; familyName: string; resendId: string }
+) {
+  const { error } = await (admin as SupabaseClient)
+    .from('outreach_sent_log' as 'profiles')
+    .insert({
+      campaign: entry.campaign,
+      email: entry.email,
+      family_name: entry.familyName,
+      resend_id: entry.resendId,
+    } as never)
+
+  if (error) throw error
+}
+
+export async function getOutreachSentHistory(admin: SupabaseClient<Database>) {
+  const { data, error } = await (admin as SupabaseClient)
+    .from('outreach_sent_log' as 'profiles')
+    .select('id, campaign, email, family_name, resend_id, sent_at')
+    .order('sent_at', { ascending: false })
+    .limit(100)
+
+  if (error) {
+    if (error.message.includes('does not exist') || error.code === '42P01') {
+      return { rows: [], tableMissing: true }
+    }
+    throw error
+  }
+
+  return { rows: data || [], tableMissing: false }
+}
+
+function buildPreviews(
+  report: PowerUserReport,
+  campaignId: string,
+  sentKeys: Set<string>,
+  stepEmails?: string[],
+  force?: boolean
+): OutreachPreviewItem[] {
+  const campaign = OUTREACH_CAMPAIGNS[campaignId]
+  if (!campaign) return []
+
+  return resolveCampaignRecipients(report, campaignId, sentKeys, { stepEmails, force }).map((user) => ({
+    campaign: campaignId,
+    email: user.email,
+    familyName: user.familyName,
+    subject: campaign.subject(user),
+    text: campaign.text(user),
+  }))
+}
+
+export async function previewOutreach(
+  admin: SupabaseClient<Database>,
+  options: { campaign?: string; preset?: string; force?: boolean }
+): Promise<{ report: PowerUserReport; previews: OutreachPreviewItem[]; tableMissing?: boolean }> {
+  const report = await analyzePowerUsers(admin)
+  let sentKeys = new Set<string>()
+  let tableMissing = false
+  try {
+    sentKeys = await loadSentEmailKeys(admin)
+  } catch (e) {
+    if (e instanceof Error && e.message === 'OUTREACH_TABLE_MISSING') {
+      tableMissing = true
+    } else {
+      throw e
+    }
+  }
+
+  const previews: OutreachPreviewItem[] = []
+
+  if (options.preset) {
+    const preset = OUTREACH_PRESETS[options.preset]
+    if (!preset) throw new Error(`Unknown preset: ${options.preset}`)
+    for (const step of preset.steps) {
+      previews.push(...buildPreviews(report, step.campaign, sentKeys, step.emails, options.force))
+    }
+  } else if (options.campaign) {
+    previews.push(...buildPreviews(report, options.campaign, sentKeys, undefined, options.force))
+  }
+
+  return { report, previews, tableMissing }
+}
+
+async function sendOne(resend: Resend, user: PowerUserStat, campaignId: string) {
+  const campaign = OUTREACH_CAMPAIGNS[campaignId]
+  const result = await resend.emails.send({
+    from: FROM,
+    to: user.email,
+    replyTo: REPLY_TO,
+    subject: campaign.subject(user),
+    text: campaign.text(user),
+  })
+  return result.data?.id || 'ok'
+}
+
+export async function sendOutreach(
+  admin: SupabaseClient<Database>,
+  options: { campaign?: string; preset?: string; force?: boolean }
+): Promise<{
+  results: OutreachSendResult[]
+  tableMissing?: boolean
+}> {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error('RESEND_API_KEY is not configured')
+
+  const { report, previews, tableMissing } = await previewOutreach(admin, options)
+  if (tableMissing) {
+    return { results: [], tableMissing: true }
+  }
+
+  if (!previews.length) {
+    return { results: [] }
+  }
+
+  const resend = new Resend(apiKey)
+  const results: OutreachSendResult[] = []
+
+  for (const preview of previews) {
+    const user = report.allUsers.find((u) => u.email === preview.email)
+    if (!user) continue
+
+    try {
+      const resendId = await sendOne(resend, user, preview.campaign)
+      await logOutreachSend(admin, {
+        campaign: preview.campaign,
+        email: preview.email,
+        familyName: preview.familyName,
+        resendId,
+      })
+      results.push({
+        campaign: preview.campaign,
+        email: preview.email,
+        familyName: preview.familyName,
+        success: true,
+        resendId,
+      })
+      await new Promise((r) => setTimeout(r, 500))
+    } catch (err) {
+      results.push({
+        campaign: preview.campaign,
+        email: preview.email,
+        familyName: preview.familyName,
+        success: false,
+        error: err instanceof Error ? err.message : 'Send failed',
+      })
+    }
+  }
+
+  return { results }
+}

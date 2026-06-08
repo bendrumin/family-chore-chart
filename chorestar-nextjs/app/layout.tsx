@@ -8,6 +8,7 @@ import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
 import { ReducedMotionProvider } from '@/components/providers/reduced-motion-provider'
 import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
+import { THEME_INIT_SCRIPT } from '@/lib/utils/theme-mode'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 108+ parents and kids.',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 117+ parents and kids.',
     images: [
       {
         url: '/og-image.png',
@@ -84,7 +85,7 @@ export const metadata: Metadata = {
     site: '@chorestar',
     creator: '@chorestar',
     title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 108+ parents and kids.',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 117+ parents and kids.',
     images: ['/og-image.png'],
   },
   icons: {
@@ -111,7 +112,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;if(window.matchMedia('(prefers-color-scheme:dark)').matches||(function(){var h=new Date().getHours();return h>=19||h<7})()){d.classList.add('dark')}}catch(e){}})()`,
+            __html: THEME_INIT_SCRIPT,
           }}
         />
       </head>
