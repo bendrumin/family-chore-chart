@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.6.0'
+export const LATEST_CHANGELOG_VERSION = '2026.6.1'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.6.1': {
+    version: '2026.6.1',
+    date: 'June 2026',
+    title: 'Summer Guides & Polish',
+    features: [
+      {
+        icon: '🏫',
+        title: "School's Out — Now What?",
+        description: 'New blog guide for the first two weeks of summer break: sleep, screens, daily rhythm, and when to add chores — without overscheduling.',
+      },
+      {
+        icon: '🌙',
+        title: 'Consistent Dark Mode',
+        description: 'Your light/dark/auto theme preference now follows you across the dashboard, homepage, and login — no more flipping between modes.',
+      },
+    ],
+  },
   '2026.6.0': {
     version: '2026.6.0',
     date: 'June 2026',

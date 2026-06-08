@@ -62,8 +62,8 @@ export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
   },
   week3: {
     id: 'week3',
-    description: 'Summer blog share → recently active families',
-    steps: [{ campaign: 'summer-blog' }],
+    description: "School's out guide → recently active families",
+    steps: [{ campaign: 'schools-out-blog' }],
   },
 }
 
@@ -202,9 +202,38 @@ chorestar.app`
     },
   },
 
+  'schools-out-blog': {
+    id: 'schools-out-blog',
+    label: "School's out guide",
+    description: "Recently active users — share school's out summer plan post",
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.recentlyActive || []).filter((u) => (u.daysSinceLastActivity ?? 999) <= 14)
+      ).slice(0, 10)
+    },
+    subject() {
+      return "School's out — now what?"
+    },
+    text(user) {
+      const hi = greeting(user)
+      return `${hi}
+
+I'm Ben from ChoreStar — quick share now that summer break is here.
+
+We wrote a short guide for the first two weeks: sleep, screens, a light daily rhythm, and when to add chores (hint: not day one): https://chorestar.app/blog/schools-out-summer-plan
+
+Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so you're ahead of the game if you want to layer in routines when you're ready.
+
+No reply needed — just thought it might help.
+
+Ben
+chorestar.app`
+    },
+  },
+
   'summer-blog': {
     id: 'summer-blog',
-    label: 'Summer blog share',
+    label: 'Summer chore list',
     description: 'Recently active users — share summer chores blog post',
     selectRecipients(report) {
       return excludeFounder(
