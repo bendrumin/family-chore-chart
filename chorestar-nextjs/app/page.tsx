@@ -250,6 +250,44 @@ export default async function HomePage() {
           </div>
         </div>
 
+        {/* Summer guides */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+            Summer Survival Guides
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
+            Free reads from the ChoreStar blog — no signup required
+          </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Link
+              href="/blog/schools-out-summer-plan"
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-indigo-100 dark:border-indigo-900 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors group"
+            >
+              <span className="text-3xl mb-3 block">🏫</span>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                School&apos;s Out — Now What?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                A simple plan for the first two weeks: sleep, screens, daily rhythm, and when to add chores.
+              </p>
+              <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">Read guide →</span>
+            </Link>
+            <Link
+              href="/blog/summer-chores-for-kids"
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-indigo-100 dark:border-indigo-900 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors group"
+            >
+              <span className="text-3xl mb-3 block">☀️</span>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                Summer Chores for Kids
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                Outdoor jobs by age, screen-time swaps, and a five-step morning routine for week two.
+              </p>
+              <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">Read guide →</span>
+            </Link>
+          </div>
+        </div>
+
         {/* Testimonials */}
         <div className="max-w-6xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">

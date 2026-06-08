@@ -6,6 +6,7 @@ const INTERNAL_SLUGS = [
   'win-back',
   'routine-case-study',
   'summer-blog',
+  'schools-out-blog',
   'champion',
   'week2',
   'week3',

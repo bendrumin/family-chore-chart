@@ -16,6 +16,17 @@ interface BlogPost {
 
 const posts: BlogPost[] = [
   {
+    slug: 'schools-out-summer-plan',
+    title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
+    description:
+      'Survive the first two weeks of summer break — sleep, screens, daily rhythm, and when to add chores without overscheduling.',
+    date: 'June 8, 2026',
+    isoDate: '2026-06-08',
+    readTime: '6 min read',
+    emoji: '🏫',
+    category: 'Parenting',
+  },
+  {
     slug: 'summer-chores-for-kids',
     title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
     description: 'A practical summer chore list for kids — watering plants, washing the car, BBQ prep, and daily jobs that keep structure without killing summer fun.',
