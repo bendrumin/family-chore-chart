@@ -85,7 +85,7 @@ const TALKING_POINTS = [
   },
   {
     headline: 'Proven Traction',
-    detail: '108+ parents and kids actively using ChoreStar. 5-star reviews from real parents. Steady organic growth from word-of-mouth.',
+    detail: '117+ parents and kids actively using ChoreStar. 5-star reviews from real parents. Steady organic growth from word-of-mouth.',
   },
   {
     headline: 'Premium Upsell Built In',
@@ -100,7 +100,7 @@ const SAMPLE_COPY = [
   },
   {
     label: 'Medium (email / blog)',
-    text: 'ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed — works on any device. Join 108+ parents and kids at chorestar.app',
+    text: 'ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed — works on any device. Join 117+ parents and kids at chorestar.app',
   },
   {
     label: 'Tagline options',
@@ -161,7 +161,7 @@ export default function PartnersPage() {
           {/* Quick Stats */}
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             {[
-              { stat: '108+', label: 'Active users' },
+              { stat: '117+', label: 'Active users' },
               { stat: '$0', label: 'Free to start' },
               { stat: '5★', label: 'Parent reviews' },
               { stat: 'Any device', label: 'No download needed' },

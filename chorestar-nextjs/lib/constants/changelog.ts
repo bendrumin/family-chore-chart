@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.5.0'
+export const LATEST_CHANGELOG_VERSION = '2026.6.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.6.0': {
+    version: '2026.6.0',
+    date: 'June 2026',
+    title: 'Summer Chores & Sunny Themes',
+    features: [
+      {
+        icon: '☀️',
+        title: 'Summer Chore Suggestions',
+        description: 'Smart Suggestions now boost outdoor summer jobs — watering plants, washing the car, BBQ prep, pool cleanup, mowing, and more — age-filtered for each child.'
+      },
+      {
+        icon: '🏖️',
+        title: 'Summer Theme',
+        description: 'The sunny Summer theme is live in Settings → Appearance. Turn on Auto-Seasonal and your dashboard picks it up automatically through August.'
+      },
+    ]
+  },
   '2026.5.0': {
     version: '2026.5.0',
     date: 'May 2026',

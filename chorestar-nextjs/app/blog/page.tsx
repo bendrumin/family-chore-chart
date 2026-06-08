@@ -16,6 +16,16 @@ interface BlogPost {
 
 const posts: BlogPost[] = [
   {
+    slug: 'summer-chores-for-kids',
+    title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
+    description: 'A practical summer chore list for kids — watering plants, washing the car, BBQ prep, and daily jobs that keep structure without killing summer fun.',
+    date: 'June 7, 2026',
+    isoDate: '2026-06-07',
+    readTime: '7 min read',
+    emoji: '☀️',
+    category: 'Chores',
+  },
+  {
     slug: 'spring-cleaning-chores-for-kids',
     title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
     description: 'A practical spring cleaning chore list for kids, including age-appropriate yard work, dog poop cleanup, litter pickup, gardening, and Earth Day cleanup ideas.',

@@ -24,18 +24,20 @@ const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboardin
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { LATEST_CHANGELOG_VERSION } from '@/lib/constants/changelog'
-import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake } from 'lucide-react'
+import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
+import { applyThemeMode, clearStoredThemeMode } from '@/lib/utils/theme-mode'
 
-export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember }: {
+export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember, isAdmin }: {
   initialUser: any
   initialProfile: Profile | null
   effectiveUserId?: string
   isSharedMember?: boolean
+  isAdmin?: boolean
 }) {
   const router = useRouter()
   const [children, setChildren] = useState<Child[]>([])
@@ -125,6 +127,8 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
+    clearStoredThemeMode()
+    applyThemeMode('auto')
     router.push('/login')
     router.refresh()
   }
@@ -163,6 +167,7 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
         handleLogout={handleLogout}
         loadChildren={loadChildren}
         handleOnboardingComplete={handleOnboardingComplete}
+        isAdmin={isAdmin}
       />
     </SettingsProvider>
   )
@@ -195,7 +200,8 @@ function DashboardContent({
   setShowOnboarding,
   handleLogout,
   loadChildren,
-  handleOnboardingComplete
+  handleOnboardingComplete,
+  isAdmin,
 }: any) {
   const { settings, updateSettings } = useSettings()
 
@@ -366,6 +372,17 @@ function DashboardContent({
                 <Handshake className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
                 Partners
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/dashboard/admin"
+                  onClick={() => setIsNavOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  <Shield className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                  Founder Admin
+                </Link>
+              )}
 
               <div className="my-2 border-t" style={{ borderColor: 'hsl(var(--border))' }} />
 

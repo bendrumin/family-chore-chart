@@ -11,6 +11,7 @@ import {
   HelpCircle, Mail, Sparkles, LogOut,
 } from 'lucide-react'
 import { ChoreStarLogo } from '@/components/brand/logo'
+import { applyThemeMode, clearStoredThemeMode } from '@/lib/utils/theme-mode'
 
 const FAQModal = dynamic(() => import('@/components/help/faq-modal').then(m => ({ default: m.FAQModal })), { ssr: false })
 const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-modal').then(m => ({ default: m.NewFeaturesModal })), { ssr: false })
@@ -80,6 +81,8 @@ export function SiteNav() {
   const handleLogout = useCallback(async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
+    clearStoredThemeMode()
+    applyThemeMode('auto')
     router.push('/login')
     router.refresh()
   }, [router])

@@ -3,6 +3,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Database, CustomTheme } from '@/lib/supabase/database.types'
+import {
+  applyThemeClasses,
+  resolveIsDark,
+  setStoredThemeMode,
+  type ThemeMode,
+} from '@/lib/utils/theme-mode'
 
 // Seasonal theme colors with dark mode support
 const SEASONAL_THEME_COLORS: Record<string, { light: { primary: string; secondary: string }, dark: { primary: string; secondary: string } }> = {
@@ -137,28 +143,10 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
   }
 
   const applyTheme = (customTheme: CustomTheme | null | undefined) => {
-    const mode = customTheme?.mode || 'auto'
-
-    let isDark: boolean
-    if (mode === 'dark') {
-      isDark = true
-    } else if (mode === 'light') {
-      isDark = false
-    } else {
-      // 'auto' — defer to OS preference or time-based (DarkModeProvider)
-      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches ||
-        (() => { const h = new Date().getHours(); return h >= 19 || h < 7 })()
-    }
-
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-      document.documentElement.setAttribute('data-theme', 'dark')
-      document.body.setAttribute('data-theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      document.documentElement.setAttribute('data-theme', 'light')
-      document.body.setAttribute('data-theme', 'light')
-    }
+    const mode = (customTheme?.mode || 'auto') as ThemeMode
+    setStoredThemeMode(mode)
+    const isDark = resolveIsDark(mode)
+    applyThemeClasses(isDark)
 
     const theme = isDark ? 'dark' : 'light'
 

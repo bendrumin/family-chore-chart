@@ -28,6 +28,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Admin analysis output (contains user emails)
+chorestar-nextjs/scripts/output/
+
 # Logs
 *.log
 
