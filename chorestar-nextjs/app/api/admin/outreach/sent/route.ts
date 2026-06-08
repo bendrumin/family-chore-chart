@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { requireAdminApi } from '@/lib/admin/require-admin'
-import { getOutreachSentHistory, logOutreachSend } from '@/lib/admin/outreach-send'
+import { getOutreachSentHistory, logManualSendBatch, logOutreachSend } from '@/lib/admin/outreach-send'
 
 export async function GET() {
   const { error } = await requireAdminApi()
@@ -22,12 +22,32 @@ export async function POST(request: Request) {
   if (error) return error
 
   try {
-    const { campaign, email, familyName } = await request.json()
-    if (!campaign || !email) {
-      return NextResponse.json({ error: 'campaign and email required' }, { status: 400 })
+    const body = await request.json()
+    const { batch, campaign, email, familyName } = body as {
+      batch?: string
+      campaign?: string
+      email?: string
+      familyName?: string
     }
 
     const admin = createServiceRoleClient()
+
+    if (batch) {
+      const result = await logManualSendBatch(admin, batch)
+      if (result.empty) {
+        return NextResponse.json({
+          success: false,
+          empty: true,
+          hint: result.hint,
+        })
+      }
+      return NextResponse.json({ success: true, ...result })
+    }
+
+    if (!campaign || !email) {
+      return NextResponse.json({ error: 'batch or (campaign and email) required' }, { status: 400 })
+    }
+
     await logOutreachSend(admin, {
       campaign,
       email,

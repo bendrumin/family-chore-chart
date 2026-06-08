@@ -63,7 +63,8 @@ export function getRecipientSubject(campaignId, campaign, user) {
 export const PRESETS = {
   week2: {
     id: 'week2',
-    description: 'Week 2: Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
+    label: 'Week 2',
+    description: 'Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
     steps: [
       { campaign: 'routine-case-study' },
       {
@@ -75,6 +76,7 @@ export const PRESETS = {
   },
   week3: {
     id: 'week3',
+    label: 'Week 3',
     description: "School's out guide → recently active families",
     steps: [{ campaign: 'schools-out-blog' }],
   },
