@@ -22,10 +22,23 @@ interface CampaignMeta {
   description: string
 }
 
+interface PresetStep {
+  campaign: string
+  emails?: string[]
+}
+
 interface PresetMeta {
   id: string
+  label: string
   description: string
-  steps: string[]
+  steps: PresetStep[]
+}
+
+interface ManualSendLogMeta {
+  id: string
+  label: string
+  hint?: string
+  count: number
 }
 
 interface OutreachPreview {
@@ -69,7 +82,9 @@ export function AdminDashboardClient() {
   const [report, setReport] = useState<PowerUserReport | null>(null)
   const [campaigns, setCampaigns] = useState<CampaignMeta[]>([])
   const [presets, setPresets] = useState<PresetMeta[]>([])
-  const [selected, setSelected] = useState('preset:week2')
+  const [manualSendLogs, setManualSendLogs] = useState<ManualSendLogMeta[]>([])
+  const [selected, setSelected] = useState('preset:week3')
+  const [loggingBatch, setLoggingBatch] = useState<string | null>(null)
   const [previews, setPreviews] = useState<OutreachPreview[]>([])
   const [sentRows, setSentRows] = useState<SentRow[]>([])
   const [tableMissing, setTableMissing] = useState(false)
@@ -101,6 +116,7 @@ export function AdminDashboardClient() {
       const data = await res.json()
       setCampaigns(data.campaigns || [])
       setPresets(data.presets || [])
+      setManualSendLogs(data.manualSendLogs || [])
     }
   }, [])
 
@@ -171,22 +187,45 @@ export function AdminDashboardClient() {
     }
   }
 
-  const markWeek1 = async () => {
-    const emails = [
-      'greer.abigail@gmail.com',
-      'claresse.sheppard@gmail.com',
-      'nicholemckenzie3@gmail.com',
-    ]
-    for (const email of emails) {
-      await fetch('/api/admin/outreach/sent', {
+  const logManualBatch = async (batchId: string) => {
+    const meta = manualSendLogs.find((b) => b.id === batchId)
+    if (meta?.count === 0) {
+      toast.info(meta.hint || 'No manual entries for this week — sends via preset auto-log.')
+      return
+    }
+    if (!confirm(`Log ${meta?.count ?? ''} manual send(s) for ${meta?.label ?? batchId}?`)) return
+
+    setLoggingBatch(batchId)
+    try {
+      const res = await fetch('/api/admin/outreach/sent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign: 'champion', email, familyName: 'Week 1 manual' }),
+        body: JSON.stringify({ batch: batchId }),
       })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to log')
+
+      if (data.empty) {
+        toast.info(data.hint || 'Nothing to log')
+        return
+      }
+
+      toast.success(
+        `${meta?.label}: ${data.added} logged${data.skipped ? `, ${data.skipped} already recorded` : ''}`
+      )
+      loadHistory()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to log sends')
+    } finally {
+      setLoggingBatch(null)
     }
-    toast.success('Week 1 champion sends logged')
-    loadHistory()
   }
+
+  const selectedPreset = selected.startsWith('preset:')
+    ? presets.find((p) => p.id === selected.split(':')[1])
+    : null
+
+  const campaignLabel = (id: string) => campaigns.find((c) => c.id === id)?.label || id
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -328,10 +367,10 @@ export function AdminDashboardClient() {
                   onChange={(e) => setSelected(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
                 >
-                  <optgroup label="Presets">
+                  <optgroup label="Presets (week sequences)">
                     {presets.map((p) => (
                       <option key={p.id} value={`preset:${p.id}`}>
-                        {p.id} — {p.description}
+                        {p.label} — {p.description}
                       </option>
                     ))}
                   </optgroup>
@@ -344,6 +383,20 @@ export function AdminDashboardClient() {
                   </optgroup>
                 </select>
 
+                {selectedPreset && (
+                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 px-3 py-2 text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                    <p className="font-semibold text-gray-700 dark:text-gray-300">This preset includes:</p>
+                    {selectedPreset.steps.map((step) => (
+                      <p key={step.campaign}>
+                        • {campaignLabel(step.campaign)}
+                        {step.emails?.length
+                          ? ` (${step.emails.length} specific ${step.emails.length === 1 ? 'address' : 'addresses'})`
+                          : ' (segment from power-user report)'}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={loadPreview} disabled={previewLoading} variant="outline">
                     {previewLoading ? 'Loading…' : 'Preview emails'}
@@ -352,9 +405,31 @@ export function AdminDashboardClient() {
                     <Send className="w-4 h-4 mr-2" />
                     {sending ? 'Sending…' : `Send ${previews.length || ''} email(s)`}
                   </Button>
-                  <Button onClick={markWeek1} variant="outline" size="sm">
-                    Log week 1 sends
-                  </Button>
+                </div>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Log manual sends (emailed outside admin)
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {manualSendLogs.map((batch) => (
+                      <Button
+                        key={batch.id}
+                        onClick={() => logManualBatch(batch.id)}
+                        variant="outline"
+                        size="sm"
+                        disabled={loggingBatch === batch.id}
+                      >
+                        {loggingBatch === batch.id ? 'Logging…' : `Log ${batch.label}`}
+                        {batch.count > 0 && (
+                          <span className="ml-1 text-gray-500 dark:text-gray-400">({batch.count})</span>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Skips addresses already in send history. Week 3 auto-logs when you send from the preset above.
+                  </p>
                 </div>
               </CardContent>
             </Card>

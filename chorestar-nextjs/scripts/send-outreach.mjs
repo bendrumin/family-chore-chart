@@ -11,6 +11,7 @@
  *   node scripts/send-outreach.mjs --sent
  *   node scripts/send-outreach.mjs --campaign champion --email x@y.z --mark-sent
  *   node scripts/send-outreach.mjs --mark-week1                     # log manual week 1 sends
+ *   node scripts/send-outreach.mjs --mark-week2                     # log manual week 2 sends
  *
  * Requires in .env.local: RESEND_API_KEY
  * Reads recipients from scripts/output/power-users-report.json (run analyze-power-users.mjs first)
@@ -22,6 +23,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { CAMPAIGNS, PRESETS, getRecipientSubject } from './outreach/campaigns.mjs'
+import { MANUAL_SEND_LOG_BATCHES } from './outreach/manual-logs.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const appRoot = join(__dirname, '..')
@@ -35,12 +37,6 @@ const REPORT_PATH = join(__dirname, 'output', 'power-users-report.json')
 const SENT_LOG_PATH = join(__dirname, 'output', 'outreach-sent-log.json')
 const DELAY_MS = 500
 const DELAY_BETWEEN_CAMPAIGNS_MS = 2000
-
-const WEEK1_CHAMPION_EMAILS = [
-  'greer.abigail@gmail.com',
-  'claresse.sheppard@gmail.com',
-  'nicholemckenzie3@gmail.com',
-]
 
 function loadReport() {
   if (!existsSync(REPORT_PATH)) {
@@ -76,7 +72,7 @@ function parseArgs(argv) {
     list: false,
     sent: false,
     markSent: false,
-    markWeek1: false,
+    markWeek: null,
   }
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i]
@@ -86,7 +82,8 @@ function parseArgs(argv) {
     else if (a === '--list') args.list = true
     else if (a === '--sent') args.sent = true
     else if (a === '--mark-sent') args.markSent = true
-    else if (a === '--mark-week1') args.markWeek1 = true
+    else if (a === '--mark-week1') args.markWeek = 'week1'
+    else if (a === '--mark-week2') args.markWeek = 'week2'
     else if (a === '--campaign' && argv[i + 1]) args.campaign = argv[++i]
     else if (a === '--preset' && argv[i + 1]) args.preset = argv[++i]
     else if (a === '--email' && argv[i + 1]) args.email = argv[++i]
@@ -274,6 +271,7 @@ async function main() {
     console.log('  node scripts/send-outreach.mjs --preset week2')
     console.log('  node scripts/send-outreach.mjs --preset week2 --send')
     console.log('  node scripts/send-outreach.mjs --mark-week1')
+    console.log('  node scripts/send-outreach.mjs --mark-week2')
     return
   }
 
@@ -290,23 +288,30 @@ async function main() {
     return
   }
 
-  if (args.markWeek1) {
+  if (args.markWeek) {
+    const batch = MANUAL_SEND_LOG_BATCHES.find((b) => b.id === args.markWeek)
+    if (!batch) {
+      console.error(`Unknown batch: ${args.markWeek}`)
+      process.exit(1)
+    }
     const log = loadSentLog()
     let added = 0
-    for (const email of WEEK1_CHAMPION_EMAILS) {
-      if (!alreadySent(log, 'champion', email)) {
+    for (const entry of batch.entries) {
+      if (!alreadySent(log, entry.campaign, entry.email)) {
         log.sends.push({
           sentAt: new Date().toISOString(),
-          campaign: 'champion',
-          email,
-          familyName: '(manual week1)',
+          campaign: entry.campaign,
+          email: entry.email,
+          familyName: entry.familyName,
           resendId: 'manual',
         })
         added++
       }
     }
     saveSentLog(log)
-    console.log(`Week 1 champion sends logged: ${added} new, ${WEEK1_CHAMPION_EMAILS.length - added} already recorded.`)
+    console.log(
+      `${batch.label}: ${added} new, ${batch.entries.length - added} already recorded (${batch.entries.length} total).`
+    )
     return
   }
 

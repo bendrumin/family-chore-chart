@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { requireAdminApi } from '@/lib/admin/require-admin'
 import { OUTREACH_CAMPAIGNS, OUTREACH_PRESETS } from '@/lib/admin/outreach-campaigns'
+import { MANUAL_SEND_LOG_BATCHES } from '@/lib/admin/manual-send-logs'
 import { previewOutreach, sendOutreach } from '@/lib/admin/outreach-send'
 
 export async function GET(request: Request) {
@@ -22,8 +23,19 @@ export async function GET(request: Request) {
       })),
       presets: Object.values(OUTREACH_PRESETS).map((p) => ({
         id: p.id,
+        label: p.label,
         description: p.description,
-        steps: p.steps.map((s) => s.campaign),
+        steps: p.steps.map((s) => ({
+          campaign: s.campaign,
+          emails: s.emails,
+        })),
+      })),
+      manualSendLogs: MANUAL_SEND_LOG_BATCHES.map((b) => ({
+        id: b.id,
+        label: b.label,
+        hint: b.hint,
+        count: b.entries.length,
+        entries: b.entries,
       })),
     })
   }

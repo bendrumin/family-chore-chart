@@ -15,6 +15,7 @@ export interface OutreachCampaign {
 
 export interface OutreachPreset {
   id: string
+  label: string
   description: string
   steps: { campaign: string; emails?: string[] }[]
 }
@@ -54,7 +55,8 @@ function excludeFounder(users: PowerUserStat[]) {
 export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
   week2: {
     id: 'week2',
-    description: 'Week 2: Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
+    label: 'Week 2',
+    description: 'Routine feedback (Wootten) + inactive check-in (GOATS, Chaos Clan)',
     steps: [
       { campaign: 'routine-case-study' },
       { campaign: 'win-back', emails: ['yeliufiorella@gmail.com', 'madtail.79@gmail.com'] },
@@ -62,6 +64,7 @@ export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
   },
   week3: {
     id: 'week3',
+    label: 'Week 3',
     description: "School's out guide → recently active families",
     steps: [{ campaign: 'schools-out-blog' }],
   },

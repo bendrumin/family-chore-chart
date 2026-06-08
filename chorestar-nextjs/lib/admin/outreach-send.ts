@@ -8,6 +8,7 @@ import {
   resolveCampaignRecipients,
 } from '@/lib/admin/outreach-campaigns'
 import { getRecipientSubject } from '@/lib/admin/outreach-subject'
+import { getManualSendLogBatch } from '@/lib/admin/manual-send-logs'
 
 const FROM = 'Ben Siegel <hi@chorestar.app>'
 const REPLY_TO = 'hi@chorestar.app'
@@ -63,6 +64,53 @@ export async function logOutreachSend(
     } as never)
 
   if (error) throw error
+}
+
+export async function logManualSendBatch(
+  admin: SupabaseClient<Database>,
+  batchId: string
+): Promise<{ added: number; skipped: number; total: number; empty?: boolean; hint?: string }> {
+  const batch = getManualSendLogBatch(batchId)
+  if (!batch) throw new Error(`Unknown batch: ${batchId}`)
+
+  if (!batch.entries.length) {
+    return {
+      added: 0,
+      skipped: 0,
+      total: 0,
+      empty: true,
+      hint: batch.hint,
+    }
+  }
+
+  let sentKeys: Set<string>
+  try {
+    sentKeys = await loadSentEmailKeys(admin)
+  } catch (err) {
+    if (err instanceof Error && err.message === 'OUTREACH_TABLE_MISSING') throw err
+    sentKeys = new Set()
+  }
+
+  let added = 0
+  let skipped = 0
+
+  for (const entry of batch.entries) {
+    const key = `${entry.campaign}:${entry.email.toLowerCase()}`
+    if (sentKeys.has(key)) {
+      skipped++
+      continue
+    }
+    await logOutreachSend(admin, {
+      campaign: entry.campaign,
+      email: entry.email,
+      familyName: entry.familyName,
+      resendId: 'manual',
+    })
+    sentKeys.add(key)
+    added++
+  }
+
+  return { added, skipped, total: batch.entries.length }
 }
 
 export async function getOutreachSentHistory(admin: SupabaseClient<Database>) {
