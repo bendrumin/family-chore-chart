@@ -431,7 +431,7 @@ export function AppearanceTab() {
             Premium Themes
           </Label>
         </div>
-        <div className="p-4 rounded-xl border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50">
+        <div className="p-4 rounded-xl border-2 border-yellow-200 dark:border-yellow-700/50 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             Unlock exclusive premium themes with unique color schemes and customization options!
           </p>

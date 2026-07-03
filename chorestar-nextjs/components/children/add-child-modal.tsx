@@ -218,8 +218,8 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-700">Random Avatar</p>
-                    <p className="text-xs text-gray-500">Click to randomize</p>
+                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">Random Avatar</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Click to randomize</p>
                   </div>
                 </div>
                 <Button

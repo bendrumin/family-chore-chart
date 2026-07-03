@@ -9,6 +9,7 @@ import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icon
 import { useDeleteRoutine } from '@/lib/hooks/useRoutines';
 import { toast } from 'sonner';
 import { playSound } from '@/lib/utils/sound';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface RoutineCardProps {
   routine: {
@@ -40,13 +41,10 @@ export const RoutineCard = memo(function RoutineCard({
   showActions = true,
 }: RoutineCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const deleteMutation = useDeleteRoutine();
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${routine.name}"? This cannot be undone.`)) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await deleteMutation.mutateAsync(routine.id);
@@ -192,7 +190,7 @@ export const RoutineCard = memo(function RoutineCard({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={isDeleting}
               aria-label={`Delete ${routine.name}`}
               className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium hover:scale-[1.02] transition-all border-gray-300 dark:border-gray-600"
@@ -209,6 +207,17 @@ export const RoutineCard = memo(function RoutineCard({
           <Badge variant="secondary">Inactive</Badge>
         </div>
       )}
+
+      <ConfirmationDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDelete}
+        title={`Delete "${routine.name}"?`}
+        description="This cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </Card>
   );
 })

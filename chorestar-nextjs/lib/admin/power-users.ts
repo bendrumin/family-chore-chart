@@ -9,7 +9,9 @@ function daysSince(iso: string | null | undefined): number | null {
   return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-async function fetchAll<T>(admin: SupabaseClient<Database>, table: string, select: string) {
+type TableName = keyof Database['public']['Tables']
+
+async function fetchAll<T>(admin: SupabaseClient<Database>, table: TableName, select: string) {
   const rows: T[] = []
   let from = 0
   const pageSize = 1000
@@ -17,7 +19,7 @@ async function fetchAll<T>(admin: SupabaseClient<Database>, table: string, selec
     const { data, error } = await admin.from(table).select(select).range(from, from + pageSize - 1)
     if (error) throw new Error(`${table}: ${error.message}`)
     if (!data?.length) break
-    rows.push(...(data as T[]))
+    rows.push(...(data as unknown as T[]))
     if (data.length < pageSize) break
     from += pageSize
   }

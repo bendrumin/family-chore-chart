@@ -5,7 +5,7 @@ import { checkRateLimit, recordAttempt, RATE_LIMITS, getClientIp, createRateLimi
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request)
-    const rateCheck = checkRateLimit(`pwreset:${ip}`, RATE_LIMITS.PASSWORD_RESET)
+    const rateCheck = await checkRateLimit(`pwreset:${ip}`, RATE_LIMITS.PASSWORD_RESET)
     if (!rateCheck.allowed) {
       return createRateLimitResponse(rateCheck.retryAfter || 60, 'Too many password reset requests. Please wait before trying again.')
     }
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    recordAttempt(`pwreset:${ip}`, RATE_LIMITS.PASSWORD_RESET)
+    await recordAttempt(`pwreset:${ip}`, RATE_LIMITS.PASSWORD_RESET)
 
     const supabase = await createClient()
     const origin = new URL(request.url).origin

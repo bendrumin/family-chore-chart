@@ -49,6 +49,7 @@ interface FamilyTabProps {
 export function FamilyTab({ onClose }: FamilyTabProps) {
   const { settings, updateSettings } = useSettings()
   const router = useRouter()
+  const [isSaving, setIsSaving] = useState(false)
   const [localFamilyName, setLocalFamilyName] = useState('')
   const [localCurrencyCode, setLocalCurrencyCode] = useState('USD')
   const [localDateFormat, setLocalDateFormat] = useState('auto')
@@ -125,6 +126,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   }, [settings])
 
   const handleSave = async () => {
+    if (isSaving) return // guard against double-tap firing two save sequences
+    setIsSaving(true)
     try {
       await updateSettings({
         currency_code: localCurrencyCode,
@@ -161,6 +164,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       onClose()
     } catch (error) {
       toast.error('Failed to save settings')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -484,8 +489,9 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             size="lg"
             className="w-full font-bold hover-glow"
             onClick={handleSave}
+            disabled={isSaving}
           >
-            💾 Save Settings
+            {isSaving ? 'Saving…' : '💾 Save Settings'}
           </Button>
         </div>
       </div>
