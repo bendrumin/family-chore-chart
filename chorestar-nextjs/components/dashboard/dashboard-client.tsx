@@ -254,12 +254,12 @@ function DashboardContent({
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {/* Hamburger - desktop only */}
+              {/* Hamburger - all screen sizes (mobile users need nav + sign out) */}
               <button
                 type="button"
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
-                className="hidden sm:inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/20 active:bg-white/30"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/20 active:bg-white/30"
                 style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
               >
                 <Menu className="w-5 h-5" />
@@ -282,9 +282,9 @@ function DashboardContent({
         </div>
       </header>
 
-      {/* Slide-out nav drawer - desktop only */}
+      {/* Slide-out nav drawer - all screen sizes */}
       {isNavOpen && (
-        <div className="hidden sm:block fixed inset-0 z-[60]">
+        <div className="fixed inset-0 z-[60]">
           <div
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setIsNavOpen(false)}

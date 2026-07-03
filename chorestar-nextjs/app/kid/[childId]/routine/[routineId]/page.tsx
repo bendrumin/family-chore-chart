@@ -11,6 +11,7 @@ import { CelebrationScreen } from '@/components/routines/celebration-screen';
 import { useRoutine, useCompleteRoutine } from '@/lib/hooks/useRoutines';
 import { useSound } from '@/lib/hooks/useSound';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
+import { toast } from 'sonner';
 
 export default function RoutinePlayerPage({
   params,
@@ -124,6 +125,13 @@ export default function RoutinePlayerPage({
               duration: durationSeconds,
             });
             setShowCelebration(true);
+          },
+          onError: () => {
+            // Never fail silently: tell the kid it didn't save so they can retry.
+            // The mutation resets isPending, so the "Finish!" button re-enables.
+            toast.error("Oops! We couldn't save that. Tap Finish to try again. 💫", {
+              duration: 6000,
+            });
           },
         }
       );

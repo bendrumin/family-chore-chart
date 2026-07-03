@@ -1,6 +1,7 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { validateKidToken } from '@/lib/utils/kid-auth';
 
 const completeRoutineSchema = z.object({
   childId: z.string().uuid(),
@@ -40,26 +41,9 @@ export async function POST(
       authorizedChildId = childId; // Will verify via routine ownership below
     } else {
       // No parent session - check for kid token (Authorization: Bearer <token>)
-      const authHeader = request.headers.get('Authorization');
-      const kidToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-
-      if (kidToken) {
-        try {
-          const adminSupabase = createServiceRoleClient();
-          const { data: session, error: sessionError } = await (adminSupabase as any)
-            .from('kid_sessions')
-            .select('child_id')
-            .eq('token', kidToken)
-            .gt('expires_at', new Date().toISOString())
-            .maybeSingle();
-
-          const sess = session as { child_id?: string } | null;
-          if (!sessionError && sess && sess.child_id === childId) {
-            authorizedChildId = childId;
-          }
-        } catch {
-          // Invalid or expired token
-        }
+      const kidSession = await validateKidToken(request, childId);
+      if (kidSession) {
+        authorizedChildId = kidSession.childId;
       }
     }
 
@@ -137,6 +121,15 @@ export async function POST(
       .single();
 
     if (completionError) {
+      // Unique-constraint violation (migration 006) = a concurrent request already
+      // recorded today's completion. Treat as idempotent success so we never
+      // double-award points on a double-submit.
+      if ((completionError as { code?: string }).code === '23505') {
+        return NextResponse.json({
+          alreadyCompleted: true,
+          message: 'Routine already completed today!',
+        });
+      }
       // Don't expose database error details to client
       return NextResponse.json({ error: 'Failed to record completion' }, { status: 500 });
     }

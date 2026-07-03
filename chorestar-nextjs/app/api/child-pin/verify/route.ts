@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const clientIp = getClientIp(request);
 
     // Check rate limit (5 attempts per 15 minutes per IP)
-    const rateLimitCheck = checkRateLimit(clientIp, RATE_LIMITS.PIN_VERIFY);
+    const rateLimitCheck = await checkRateLimit(clientIp, RATE_LIMITS.PIN_VERIFY);
 
     if (!rateLimitCheck.allowed) {
       const retryAfter = rateLimitCheck.retryAfter || 60;
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
     // Validate PIN format (4-6 digits)
     if (!/^\d{4,6}$/.test(pin)) {
-      recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      await recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Invalid PIN format' }, { status: 400 });
     }
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (profileError || !profile) {
-      recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      await recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Invalid family code' }, { status: 400 });
     }
 
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       .eq('children.user_id', userId);
 
     if (fetchError) {
-      recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      await recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
     }
 
@@ -123,9 +123,16 @@ export async function POST(request: Request) {
     }
 
     if (!matchedChild || !matchedPinRecord) {
-      recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      await recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
       return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 });
     }
+
+    // NOTE on brute-force defense: the request carries only { familyCode, pin },
+    // so a failed attempt can't be attributed to a specific child. Per-child
+    // failed_attempts/locked_until are therefore honored when present (below) but
+    // not incremented here — a family-wide lockout would let one mistyped PIN
+    // lock every sibling out. The primary barrier is the per-IP rate limit above
+    // (getClientIp now uses Vercel's un-spoofable client IP).
 
     // Check if this specific child's PIN is locked
     if (matchedPinRecord.locked_until) {
@@ -158,11 +165,22 @@ export async function POST(request: Request) {
     }
 
     // Success! Reset rate limit attempts for this IP
-    resetAttempts(clientIp);
+    await resetAttempts(clientIp);
+
+    // Opportunistic cleanup: purge expired kid sessions so the table doesn't
+    // grow forever and stale tokens are gone (cheap indexed delete, best-effort).
+    try {
+      await supabase
+        .from('kid_sessions')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+    } catch {
+      // Non-fatal: login should still succeed if cleanup fails
+    }
 
     // Create kid session for routine completion (8 hour expiry) - service role bypasses RLS
     const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
-    const { data: session, error: sessionError } = await (supabase as any)
+    const { data: session, error: sessionError } = await supabase
       .from('kid_sessions')
       .insert({
         child_id: matchedPinRecord.child_id,

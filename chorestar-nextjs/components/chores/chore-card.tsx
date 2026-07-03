@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, memo } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,22 @@ interface ChoreCardProps {
 
 export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', onRefresh }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  // Optimistic overrides so the grid responds instantly, before the DB round-trip
+  const [optimistic, setOptimistic] = useState<Record<number, boolean>>({})
+  const [pendingDays, setPendingDays] = useState<Set<number>>(new Set())
+
+  // Once fresh completions arrive, drop optimistic overrides (except in-flight ones)
+  useEffect(() => {
+    setOptimistic(prev => {
+      if (Object.keys(prev).length === 0) return prev
+      const next: Record<number, boolean> = {}
+      for (const key of Object.keys(prev)) {
+        const day = Number(key)
+        if (pendingDays.has(day)) next[day] = prev[day]
+      }
+      return next
+    })
+  }, [completions, pendingDays])
 
   // Get last 7 days with day of week
   const getLast7Days = () => {
@@ -41,10 +57,27 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
   }
 
   const toggleCompletion = async (dayOfWeek: number) => {
+    if (pendingDays.has(dayOfWeek)) return // ignore double-taps while saving
+
+    const completed = optimistic[dayOfWeek] ?? isCompleted(dayOfWeek)
+
+    // Flip immediately for instant feedback; revert on error below
+    setOptimistic(prev => ({ ...prev, [dayOfWeek]: !completed }))
+    setPendingDays(prev => new Set(prev).add(dayOfWeek))
+
+    // Play sound + celebration right away
+    if (completed) {
+      playSound('notification')
+    } else {
+      playSound('success')
+      import('@/lib/utils/celebrations').then(({ getCelebrationManager }) => {
+        const celebrationManager = getCelebrationManager()
+        celebrationManager.celebrateChoreCompletion('', chore.name)
+      }).catch(() => {})
+    }
+
     try {
       const supabase = createClient()
-
-      const completed = isCompleted(dayOfWeek)
 
       if (completed) {
         // Remove completion
@@ -70,23 +103,19 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
         if (error) throw error
       }
 
-      // Play sound effect
-      if (completed) {
-        playSound('notification')
-      } else {
-        playSound('success')
-        // Celebrate chore completion
-        import('@/lib/utils/celebrations').then(({ getCelebrationManager }) => {
-          const celebrationManager = getCelebrationManager()
-          celebrationManager.celebrateChoreCompletion('', chore.name)
-        }).catch(() => {})
-      }
-
       onRefresh()
     } catch (error: any) {
       console.error('Error toggling completion:', error)
+      // Revert the optimistic flip
+      setOptimistic(prev => ({ ...prev, [dayOfWeek]: completed }))
       toast.error('Failed to update completion')
       playSound('error')
+    } finally {
+      setPendingDays(prev => {
+        const next = new Set(prev)
+        next.delete(dayOfWeek)
+        return next
+      })
     }
   }
 
@@ -126,7 +155,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           {/* 7-Day Grid - Professional */}
           <div className="grid grid-cols-7 gap-1.5 mb-3">
             {days.map((day, index) => {
-              const completed = isCompleted(day.dayOfWeek)
+              const completed = optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek)
 
               return (
                 <button

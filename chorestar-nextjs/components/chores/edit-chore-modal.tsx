@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Edit3, DollarSign, Trash2, FileText, Palette } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -24,6 +25,7 @@ interface EditChoreModalProps {
 export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditChoreModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState({
     name: chore.name,
     rewardAmount: (chore.reward_cents / 100).toFixed(2),
@@ -72,10 +74,6 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${chore.name}"? This will also delete all completion history.`)) {
-      return
-    }
-
     setIsDeleting(true)
 
     try {
@@ -246,7 +244,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
             <Button
               type="button"
               variant="destructive"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={isLoading || isDeleting}
               size="lg"
               className="flex-1 font-bold"
@@ -275,6 +273,17 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <ConfirmationDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDelete}
+        title={`Delete "${chore.name}"?`}
+        description="This will also delete all completion history. This cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </Dialog>
   )
 }

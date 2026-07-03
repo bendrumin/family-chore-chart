@@ -6,7 +6,7 @@ import { checkRateLimit, recordAttempt, RATE_LIMITS, getClientIp, createRateLimi
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
+    const rateCheck = await checkRateLimit(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
     if (!rateCheck.allowed) {
       return createRateLimitResponse(rateCheck.retryAfter || 60, 'Too many messages. Please wait before trying again.');
     }
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    recordAttempt(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
+    await recordAttempt(`contact:${ip}`, RATE_LIMITS.CONTACT_FORM);
 
     // Optional: get user if logged in (for context)
     let userId: string | null = null;

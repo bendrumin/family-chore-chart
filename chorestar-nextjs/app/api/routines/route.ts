@@ -1,6 +1,7 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { validateKidToken } from '@/lib/utils/kid-auth';
 import type { Database } from '@/lib/supabase/database.types';
 
 type Routine = Database['public']['Tables']['routines']['Row'];
@@ -46,25 +47,12 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
-      const authHeader = request.headers.get('Authorization');
-      const kidToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-
-      if (!kidToken) {
-        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      const kidSession = await validateKidToken(request, childId);
+      if (!kidSession) {
+        return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
       }
 
       const serviceClient = createServiceRoleClient();
-
-      const { data: session } = await (serviceClient as any)
-        .from('kid_sessions')
-        .select('child_id')
-        .eq('token', kidToken)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle();
-
-      if (!session || session.child_id !== childId) {
-        return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
-      }
 
       const { data, error } = await serviceClient
         .from('routines')

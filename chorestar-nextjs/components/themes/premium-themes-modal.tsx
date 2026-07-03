@@ -105,7 +105,11 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
               return (
                 <div
                   key={theme.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative ${
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isActive}
+                  aria-label={`Select ${theme.name} theme`}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
                     isActive
                       ? 'border-transparent shadow-lg scale-105'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
@@ -117,6 +121,12 @@ export function PremiumThemesModal({ open, onOpenChange }: PremiumThemesModalPro
                     borderColor: isActive ? theme.colors.primary : undefined
                   }}
                   onClick={() => handleThemeSelect(theme.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleThemeSelect(theme.id)
+                    }
+                  }}
                 >
                   {/* Premium Badge */}
                   {isPremium && (
