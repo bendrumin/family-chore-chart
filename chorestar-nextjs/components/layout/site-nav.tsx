@@ -122,14 +122,31 @@ export function SiteNav() {
                 </Link>
               </div>
             )}
-            {isLoggedIn !== null && (
+            {isLoggedIn === true && (
               <Link
-                href={isLoggedIn ? '/dashboard' : '/login'}
+                href="/dashboard"
                 className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
                 style={{ background: GRADIENT }}
               >
-                {isLoggedIn ? 'Dashboard →' : 'Sign In →'}
+                Dashboard →
               </Link>
+            )}
+            {isLoggedIn === false && (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
+                  style={{ background: GRADIENT }}
+                >
+                  Create Account
+                </Link>
+              </>
             )}
           </div>
         </div>
