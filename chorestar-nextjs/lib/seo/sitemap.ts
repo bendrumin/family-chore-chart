@@ -1,4 +1,5 @@
 import { BLOG_POSTS } from '@/lib/constants/blog-posts'
+import { COMPARISON_PAGES } from '@/lib/constants/comparison'
 
 export type SitemapChangeFrequency = 'weekly' | 'monthly' | 'yearly'
 
@@ -22,6 +23,7 @@ export function getSitemapEntries(): SitemapEntry[] {
     { path: '/signup', lastModified: fresh, changeFrequency: 'monthly', priority: '0.9' },
     { path: '/how-to', lastModified: fresh, changeFrequency: 'weekly', priority: '0.8' },
     { path: '/blog', lastModified: fresh, changeFrequency: 'weekly', priority: '0.8' },
+    { path: '/compare', lastModified: fresh, changeFrequency: 'monthly', priority: '0.8' },
     { path: '/partners', lastModified: '2026-05-16', changeFrequency: 'monthly', priority: '0.6' },
     { path: '/privacy', lastModified: '2026-03-28', changeFrequency: 'yearly', priority: '0.3' },
   ]
@@ -33,5 +35,15 @@ export function getSitemapEntries(): SitemapEntry[] {
     priority: '0.7',
   }))
 
-  return [...staticRoutes, ...blogRoutes]
+  // Comparison spokes (the /compare hub is already in staticRoutes)
+  const comparisonRoutes: SitemapEntry[] = COMPARISON_PAGES.filter((p) => p.slug !== '').map(
+    (page) => ({
+      path: page.path,
+      lastModified: page.isoDate,
+      changeFrequency: 'monthly' as const,
+      priority: '0.7',
+    })
+  )
+
+  return [...staticRoutes, ...blogRoutes, ...comparisonRoutes]
 }
