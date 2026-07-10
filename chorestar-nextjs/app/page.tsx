@@ -36,13 +36,6 @@ const jsonLd = {
       },
     },
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '5',
-    ratingCount: '3',
-    bestRating: '5',
-    worstRating: '1',
-  },
   author: {
     '@type': 'Organization',
     name: 'ChoreStar',
@@ -247,6 +240,52 @@ export default async function HomePage() {
                 <p className="text-gray-600 dark:text-gray-300">{desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Comparison strip */}
+        <div className="max-w-5xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
+            How ChoreStar Compares
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
+            No hardware to buy. No bank account. No email for your kids.
+          </p>
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <table className="w-full min-w-[560px] border-collapse bg-white dark:bg-gray-800 text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left p-4 w-[31%]"><span className="sr-only">Feature</span></th>
+                  <th className="text-center p-4 font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20">ChoreStar</th>
+                  <th className="text-center p-4 font-bold text-gray-900 dark:text-white">Smart displays</th>
+                  <th className="text-center p-4 font-bold text-gray-900 dark:text-white">Debit-card apps</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { f: 'Cost to start', a: 'Free', b: 'Buy a device', c: 'Monthly fee' },
+                  { f: 'Hardware required', a: 'No', b: 'Yes', c: 'No' },
+                  { f: 'Bank account / card', a: 'No', b: 'No', c: 'Required' },
+                  { f: 'Kid login, no email', a: 'Yes', b: 'Shared screen', c: 'Kid account' },
+                  { f: 'Routines with timers', a: 'Yes', b: 'Limited', c: 'No' },
+                ].map((r, i) => (
+                  <tr key={r.f} className={i % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-900/30' : ''}>
+                    <th scope="row" className="text-left p-4 font-medium text-gray-700 dark:text-gray-300">{r.f}</th>
+                    <td className="text-center p-4 font-semibold text-emerald-600 dark:text-emerald-400 bg-indigo-50/40 dark:bg-indigo-900/10">{r.a}</td>
+                    <td className="text-center p-4 text-gray-500 dark:text-gray-400">{r.b}</td>
+                    <td className="text-center p-4 text-gray-500 dark:text-gray-400">{r.c}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="text-center mt-6">
+            <Link
+              href="/compare"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold border-2 border-indigo-500 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+            >
+              See the full comparison →
+            </Link>
           </div>
         </div>
 
