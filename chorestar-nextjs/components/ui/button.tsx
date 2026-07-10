@@ -38,8 +38,13 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, style, ...props }, ref) => {
-    // Apply gradient background to default variant
-    const defaultStyle = variant === 'default' ? {
+    // Apply the gradient background to the default variant — including when no
+    // `variant` prop is passed. cva defaults the *classes* to 'default' (which
+    // only set text-white, no background), but `variant` is still undefined
+    // here, so without treating undefined as default the button renders white
+    // text on no background (white-on-white / invisible).
+    const isDefaultVariant = variant === undefined || variant === 'default'
+    const defaultStyle = isDefaultVariant ? {
       background: 'var(--gradient-primary)',
       ...style
     } : style
