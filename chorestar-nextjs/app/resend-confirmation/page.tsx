@@ -54,9 +54,9 @@ export default function ResendConfirmationPage() {
           <Link href="/" className="text-4xl font-bold" style={GRADIENT_TEXT}>
             <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
           </Link>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
             Resend Confirmation Email
-          </h2>
+          </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-300">
             Didn't receive your confirmation email? We'll send you a new one.
           </p>
