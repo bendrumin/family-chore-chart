@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { getIconsByCategory, getIconCategories, type RoutineIconKey, type RoutineIcon } from '@/lib/constants/routine-icons';
+import { getIconsByCategory, getIconCategories, ROUTINE_ICONS, type RoutineIconKey, type RoutineIcon } from '@/lib/constants/routine-icons';
 
 interface RoutineIconPickerProps {
   currentIcon?: string | null;
@@ -18,7 +18,7 @@ export function RoutineIconPicker({ currentIcon, onSelect, category }: RoutineIc
   // Get icons to display
   const categories = getIconCategories();
   const allIcons = selectedCategory === 'all'
-    ? Object.entries(require('@/lib/constants/routine-icons').ROUTINE_ICONS) as [RoutineIconKey, RoutineIcon][]
+    ? Object.entries(ROUTINE_ICONS) as [RoutineIconKey, RoutineIcon][]
     : getIconsByCategory(selectedCategory);
 
   // Filter by search term
@@ -100,7 +100,7 @@ export function RoutineIconPicker({ currentIcon, onSelect, category }: RoutineIc
       {currentIcon && (
         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           {(() => {
-            const iconData = require('@/lib/constants/routine-icons').ROUTINE_ICONS[currentIcon as RoutineIconKey];
+            const iconData = ROUTINE_ICONS[currentIcon as RoutineIconKey];
             if (!iconData) return <div className="text-3xl">{currentIcon}</div>;
             const IconComponent = iconData.icon;
             return (

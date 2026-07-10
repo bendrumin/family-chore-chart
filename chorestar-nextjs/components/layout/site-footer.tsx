@@ -46,6 +46,11 @@ export function SiteFooter() {
             <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Resources</h4>
             <ul className="space-y-2.5">
               <li>
+                <Link href="/compare" className="text-sm hover:text-white transition-colors">
+                  Compare
+                </Link>
+              </li>
+              <li>
                 <Link href="/how-to" className="text-sm hover:text-white transition-colors">
                   How-To Guides
                 </Link>

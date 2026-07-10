@@ -111,6 +111,9 @@ export function SiteNav() {
           <div className="flex items-center gap-3">
             {isLoggedIn === false && (
               <div className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+                <Link href="/compare" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  Compare
+                </Link>
                 <Link href="/how-to" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   How-To
                 </Link>
