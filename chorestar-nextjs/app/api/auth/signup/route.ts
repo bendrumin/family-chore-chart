@@ -62,18 +62,23 @@ export async function POST(request: Request) {
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
+      // Create the profile with the service-role client (bypasses RLS). Right
+      // after signUp there is no user session yet (email-confirmation flow), so
+      // the anon client is blocked by the profiles "auth.uid() = id" INSERT
+      // policy (error 42501) — which previously triggered the rollback below and
+      // deleted the freshly created account.
+      const admin = createServiceRoleClient()
+      const { error: profileError } = await admin.from('profiles').insert({
         id: data.user.id,
         email: data.user.email || normalizedEmail,
         family_name: normalizedFamilyName,
       })
 
-      // Profile creation failed (ignore duplicate = already exists): roll back
-      // the auth user so this email isn't left in a broken half-created state.
+      // Ignore duplicate (already exists); otherwise roll back the auth user so
+      // this email isn't left in a broken half-created state.
       if (profileError && profileError.code !== '23505') {
         console.error('Profile creation failed after signup:', profileError)
         try {
-          const admin = createServiceRoleClient()
           await admin.auth.admin.deleteUser(data.user.id)
         } catch (rollbackError) {
           console.error('Failed to roll back auth user after profile error:', rollbackError)
