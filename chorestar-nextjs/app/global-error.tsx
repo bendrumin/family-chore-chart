@@ -76,6 +76,9 @@ export default function GlobalError({
               Refresh Page
             </button>
 
+            {/* global-error renders outside the router (replaces the root layout),
+                so next/link is unavailable here — a plain anchor is required. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/"
               style={{
