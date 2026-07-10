@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       </div>
       <div class="field">
         <div class="field-label">📧 Email</div>
-        <div class="field-value"><a href="mailto:${String(email).replace(/</g, '&lt;')}" style="color: #6366f1;">${String(email).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</a></div>
+        <div class="field-value"><a href="mailto:${String(email).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}" style="color: #6366f1;">${String(email).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</a></div>
       </div>
       <div class="field">
         <div class="field-label">📝 Subject</div>
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
     </div>
     <div class="footer">
       <p>Sent from <a href="https://chorestar.app" style="color: #6366f1;">chorestar.app</a> contact form</p>
-      <p><a href="mailto:${String(email).replace(/</g, '&lt;')}?subject=Re: ${encodeURIComponent(String(subject))}" style="color: #6366f1;">Reply to ${String(name).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</a></p>
+      <p><a href="mailto:${String(email).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}?subject=Re: ${encodeURIComponent(String(subject))}" style="color: #6366f1;">Reply to ${String(name).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</a></p>
     </div>
   </div>
 </body>

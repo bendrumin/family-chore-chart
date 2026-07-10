@@ -121,7 +121,7 @@ export function generateSuggestions(req: SuggestionRequest, count = 5): ChoreSug
   const existingLower = new Set(req.existingChoreNames.map(n => n.toLowerCase().trim()))
 
   // Filter catalogue to age-appropriate, non-duplicate chores
-  let candidates = CHORE_CATALOGUE.filter(c => {
+  const candidates = CHORE_CATALOGUE.filter(c => {
     if (age < c.minAge || age > c.maxAge) return false
     if (existingLower.has(c.name.toLowerCase())) return false
     return true

@@ -243,7 +243,24 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   }
 
   if (stats.isLoading) {
-    return null
+    // Skeleton keeps the card's footprint so the dashboard doesn't shift when stats load
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
+            <Trophy className="w-4 h-4 text-yellow-500" />
+            {child.name}'s Weekly Stats
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-8 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
