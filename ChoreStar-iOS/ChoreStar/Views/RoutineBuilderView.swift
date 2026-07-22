@@ -147,7 +147,7 @@ struct RoutineBuilderView: View {
                         .tag(type)
                 }
             }
-            .onChange(of: selectedType) { newValue in
+            .onChange(of: selectedType) { _, newValue in
                 selectedColor = newValue.defaultColor
                 selectedIcon = newValue.systemImage
             }

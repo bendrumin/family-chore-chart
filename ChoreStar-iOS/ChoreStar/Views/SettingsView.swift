@@ -76,7 +76,7 @@ struct SettingsView: View {
                             Text("Sound Effects")
                         }
                     }
-                    .onChange(of: soundManager.isSoundEnabled) { newValue in
+                    .onChange(of: soundManager.isSoundEnabled) { _, newValue in
                         if newValue {
                             SoundManager.shared.play(.cheer)
                         }
@@ -179,7 +179,7 @@ struct SettingsView: View {
                             Text("Daily Reminder")
                         }
                     }
-                    .onChange(of: reminderEnabled) { enabled in
+                    .onChange(of: reminderEnabled) { _, enabled in
                         Task {
                             if enabled {
                                 let granted = await NotificationsManager.shared.requestAuthorization()
@@ -202,7 +202,7 @@ struct SettingsView: View {
                             selection: reminderTimeBinding,
                             displayedComponents: .hourAndMinute
                         )
-                        .onChange(of: reminderTimeStorage) { newValue in
+                        .onChange(of: reminderTimeStorage) { _, newValue in
                             NotificationsManager.shared.scheduleDailyReminder(
                                 at: Date(timeIntervalSinceReferenceDate: newValue)
                             )

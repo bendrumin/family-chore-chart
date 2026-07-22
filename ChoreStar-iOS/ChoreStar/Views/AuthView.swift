@@ -109,7 +109,7 @@ struct AuthView: View {
                 Text("Sign Up").tag(AuthMode.signUp)
             }
             .pickerStyle(.segmented)
-            .onChange(of: authMode) { _ in
+            .onChange(of: authMode) {
                 errorMessage = nil
                 successMessage = nil
             }
