@@ -11,6 +11,15 @@ struct SettingsView: View {
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
     @State private var showingWhatsNew = false
+    @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
+    @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
+
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: { Date(timeIntervalSinceReferenceDate: reminderTimeStorage) },
+            set: { reminderTimeStorage = $0.timeIntervalSinceReferenceDate }
+        )
+    }
     
     enum DarkModePreference: String, CaseIterable {
         case light = "Light"
@@ -178,6 +187,61 @@ struct SettingsView: View {
                     }
                 }
                 
+                Section("Family") {
+                    NavigationLink {
+                        FamilySharingView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                                .foregroundColor(.choreStarPrimary)
+                            Text("Family Sharing & Kid Login")
+                        }
+                    }
+                }
+
+                Section {
+                    Toggle(isOn: $reminderEnabled) {
+                        HStack {
+                            Image(systemName: "bell.badge.fill")
+                                .foregroundColor(reminderEnabled ? .choreStarAccent : .choreStarTextSecondary)
+                            Text("Daily Reminder")
+                        }
+                    }
+                    .onChange(of: reminderEnabled) { enabled in
+                        Task {
+                            if enabled {
+                                let granted = await NotificationsManager.shared.requestAuthorization()
+                                if granted {
+                                    NotificationsManager.shared.scheduleDailyReminder(
+                                        at: Date(timeIntervalSinceReferenceDate: reminderTimeStorage)
+                                    )
+                                } else {
+                                    reminderEnabled = false
+                                }
+                            } else {
+                                NotificationsManager.shared.cancelDailyReminder()
+                            }
+                        }
+                    }
+
+                    if reminderEnabled {
+                        DatePicker(
+                            "Reminder Time",
+                            selection: reminderTimeBinding,
+                            displayedComponents: .hourAndMinute
+                        )
+                        .onChange(of: reminderTimeStorage) { newValue in
+                            NotificationsManager.shared.scheduleDailyReminder(
+                                at: Date(timeIntervalSinceReferenceDate: newValue)
+                            )
+                        }
+                    }
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("A gentle nudge to check off today's chores.")
+                }
+
                 Section("Data") {
                     Button("Refresh Data") {
                         manager.refreshData()

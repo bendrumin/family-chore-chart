@@ -89,6 +89,13 @@ struct ChildSession: Codable {
     }
 }
 
+/// A co-parent who joined this family via a join code.
+struct FamilyMemberInfo: Identifiable {
+    let id: UUID
+    let userId: UUID
+    let joinedAt: Date?
+}
+
 /// Standalone kid-mode session (kid's own device, no parent login).
 /// Mirrors the web app's `kidMode` localStorage entry.
 struct KidModeSession: Codable {
