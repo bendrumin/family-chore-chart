@@ -99,7 +99,14 @@ struct DashboardView: View {
                         }
                         .frame(width: 88, height: 88)
                     }
-                    .appCard(padding: 20)
+                    .padding(20)
+                    .background(
+                        ZStack {
+                            Color.choreStarCardBackground
+                            themeManager.gradient.opacity(0.10)
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
 

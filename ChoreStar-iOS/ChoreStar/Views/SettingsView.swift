@@ -52,47 +52,19 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section("Seasonal Theme") {
-                    Picker("Theme", selection: $seasonalThemeSetting) {
-                        Text("Auto (by date)").tag("auto")
-                        Text("None").tag("none")
-                        
-                        Section("Holidays") {
-                            ForEach(SeasonalTheme.holidayThemes) { theme in
-                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "calendar")
-                                    .tag(theme.rawValue)
-                            }
-                        }
-                        
-                        Section("Seasons") {
-                            ForEach(SeasonalTheme.seasonThemes) { theme in
-                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "leaf")
-                                    .tag(theme.rawValue)
-                            }
-                        }
-                        
-                        Section("Premium") {
-                            ForEach(SeasonalTheme.premiumThemes) { theme in
-                                Label("\(theme.emoji) \(theme.displayName)", systemImage: "crown")
-                                    .tag(theme.rawValue)
-                            }
-                        }
-                    }
-                    
+                Section {
+                    ThemeGalleryView(
+                        selection: $seasonalThemeSetting,
+                        isPremiumUser: manager.isPremium,
+                        onPremiumLocked: { showingPaywall = true }
+                    )
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                    .listRowBackground(Color.clear)
+                } header: {
+                    Text("Theme")
+                } footer: {
                     if let activeTheme = themeManager.activeTheme {
-                        HStack {
-                            Text("Active")
-                                .foregroundColor(.choreStarTextSecondary)
-                            Spacer()
-                            HStack(spacing: 6) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(activeTheme.gradient)
-                                    .frame(width: 24, height: 24)
-                                Text("\(activeTheme.emoji) \(activeTheme.displayName)")
-                                    .foregroundColor(activeTheme.primaryColor)
-                                    .fontWeight(.semibold)
-                            }
-                        }
+                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName)")
                     }
                 }
                 
@@ -353,7 +325,155 @@ struct SettingsView: View {
     }
 }
 
-#Preview { 
+/// Visual theme picker: swatch cards in horizontal rows, grouped like the
+/// old dropdown but showing each theme's actual gradient. Premium themes
+/// show a lock for free users and open the paywall.
+struct ThemeGalleryView: View {
+    @Binding var selection: String
+    let isPremiumUser: Bool
+    let onPremiumLocked: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            themeRow(title: nil, items: [.auto, .none])
+            themeRow(title: "Holidays", items: SeasonalTheme.holidayThemes.map { .theme($0) })
+            themeRow(title: "Seasons", items: SeasonalTheme.seasonThemes.map { .theme($0) })
+            themeRow(title: "Premium", items: SeasonalTheme.premiumThemes.map { .theme($0) })
+        }
+    }
+
+    private enum ThemeItem: Identifiable {
+        case auto
+        case none
+        case theme(SeasonalTheme)
+
+        var id: String {
+            switch self {
+            case .auto: return "auto"
+            case .none: return "none"
+            case .theme(let theme): return theme.rawValue
+            }
+        }
+
+        var name: String {
+            switch self {
+            case .auto: return "Auto"
+            case .none: return "Classic"
+            case .theme(let theme): return theme.displayName
+            }
+        }
+
+        var emoji: String {
+            switch self {
+            case .auto: return "✨"
+            case .none: return "⭐"
+            case .theme(let theme): return theme.emoji
+            }
+        }
+
+        var gradient: LinearGradient {
+            switch self {
+            case .auto:
+                return SeasonalTheme.current()?.gradient ?? Color.choreStarGradient
+            case .none:
+                return Color.choreStarGradient
+            case .theme(let theme):
+                return theme.gradient
+            }
+        }
+
+        var isPremium: Bool {
+            if case .theme(let theme) = self { return theme.isPremium }
+            return false
+        }
+    }
+
+    private func themeRow(title: String?, items: [ThemeItem]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let title = title {
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .padding(.horizontal, 20)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(items) { item in
+                        themeCard(item)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+    }
+
+    private func themeCard(_ item: ThemeItem) -> some View {
+        let isSelected = selection == item.id
+        let isLocked = item.isPremium && !isPremiumUser
+
+        return Button {
+            if isLocked {
+                Haptics.light()
+                onPremiumLocked()
+            } else {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                    selection = item.id
+                }
+                Haptics.success()
+                SoundManager.shared.play(.pop)
+            }
+        } label: {
+            VStack(spacing: 6) {
+                ZStack(alignment: .topTrailing) {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(item.gradient)
+                        .frame(width: 84, height: 64)
+                        .overlay(
+                            Text(item.emoji)
+                                .font(.system(size: 28))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(
+                                    isSelected ? Color.choreStarTextPrimary : Color.clear,
+                                    lineWidth: 2.5
+                                )
+                        )
+                        .opacity(isLocked ? 0.55 : 1)
+
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .padding(5)
+                            .background(.black.opacity(0.45))
+                            .clipShape(Circle())
+                            .padding(4)
+                    } else if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.4), radius: 2)
+                            .padding(5)
+                    }
+                }
+
+                Text(item.name)
+                    .font(.caption2)
+                    .fontWeight(isSelected ? .bold : .medium)
+                    .foregroundColor(isSelected ? .choreStarTextPrimary : .choreStarTextSecondary)
+                    .lineLimit(1)
+            }
+            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+#Preview {
     SettingsView()
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
