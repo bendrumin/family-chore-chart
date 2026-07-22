@@ -62,9 +62,15 @@ struct RoutinePlayerView: View {
             .onAppear {
                 startTime = Date()
                 startTimerIfNeeded()
+
+                let childName = manager.children.first(where: { $0.id == childId })?.name
+                    ?? manager.currentChild?.name
+                    ?? "Kid"
+                RoutineActivityController.shared.start(routine: routine, childName: childName)
             }
             .onDisappear {
                 stepTimer?.invalidate()
+                RoutineActivityController.shared.end()
             }
         }
     }
@@ -242,7 +248,9 @@ struct RoutinePlayerView: View {
                 currentStepIndex += 1
             }
             startTimerIfNeeded()
+            RoutineActivityController.shared.update(stepIndex: currentStepIndex, step: currentStep)
         } else {
+            RoutineActivityController.shared.end()
             withAnimation {
                 showCelebration = true
             }
