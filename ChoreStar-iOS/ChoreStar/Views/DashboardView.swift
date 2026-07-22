@@ -7,6 +7,7 @@ struct DashboardView: View {
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
     @State private var showWhatsNew = false
+    @State private var showingKidMode = false
     @AppStorage("lastSeenChangelogVersion") private var lastSeenChangelogVersion = ""
 
     private var completedChores: Int {
@@ -162,6 +163,20 @@ struct DashboardView: View {
             }
             .navigationTitle("Home")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                if manager.children.contains(where: { manager.childHasPin($0.id) }) {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showingKidMode = true
+                        } label: {
+                            Label("Kid Mode", systemImage: "figure.child.circle.fill")
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showingKidMode) {
+                ChildAuthView()
+            }
         }
         .onAppear {
             if lastSeenChangelogVersion != Changelog.latestVersion {

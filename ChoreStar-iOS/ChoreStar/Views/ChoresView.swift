@@ -2,10 +2,12 @@ import SwiftUI
 
 struct ChoresView: View {
     @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedFilter: ChoreFilter = .all
     @State private var showingAddChore = false
     @State private var selectedTab: ChoresTab = .chores
-    
+    @State private var searchText = ""
+
     enum ChoresTab: String, CaseIterable {
         case chores = "Chores"
         case routines = "Routines"
@@ -18,14 +20,18 @@ struct ChoresView: View {
     }
 
     private var filteredChores: [Chore] {
+        let base: [Chore]
         switch selectedFilter {
         case .all:
-            return manager.chores
+            base = manager.chores
         case .pending:
-            return manager.chores.filter { !manager.isChoreCompleted($0) }
+            base = manager.chores.filter { !manager.isChoreCompleted($0) }
         case .completed:
-            return manager.chores.filter { manager.isChoreCompleted($0) }
+            base = manager.chores.filter { manager.isChoreCompleted($0) }
         }
+
+        guard !searchText.isEmpty else { return base }
+        return base.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
     private var groupedChores: [String: [Chore]] {
@@ -47,7 +53,8 @@ struct ChoresView: View {
                 .padding(.vertical, 10)
                 
                 if selectedTab == .chores {
-                    choresList
+                    choresContent
+                        .searchable(text: $searchText, prompt: "Search chores")
                 } else {
                     RoutinesListView()
                 }
@@ -59,14 +66,27 @@ struct ChoresView: View {
             .navigationTitle(selectedTab == .chores ? "Chores" : "Routines")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    if selectedTab == .chores {
+                if selectedTab == .chores {
+                    ToolbarItem(placement: .secondaryAction) {
+                        // Reminders-style filter menu
+                        Menu {
+                            Picker("Filter", selection: $selectedFilter) {
+                                ForEach(ChoreFilter.allCases, id: \.self) { filter in
+                                    Text(filter.rawValue).tag(filter)
+                                }
+                            }
+                        } label: {
+                            Label("Filter", systemImage: selectedFilter == .all
+                                  ? "line.3.horizontal.decrease.circle"
+                                  : "line.3.horizontal.decrease.circle.fill")
+                        }
+                    }
+
+                    ToolbarItem(placement: .primaryAction) {
                         Button(action: {
                             showingAddChore = true
                         }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(Color.choreStarGradient)
+                            Label("New Chore", systemImage: "plus")
                         }
                     }
                 }
@@ -76,42 +96,150 @@ struct ChoresView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var choresContent: some View {
+        if filteredChores.isEmpty {
+            ScrollView {
+                EmptyChoresView(filter: selectedFilter)
+                    .padding(.top, 60)
+            }
+        } else if horizontalSizeClass == .compact {
+            nativeList
+        } else {
+            choresList
+        }
+    }
+
+    // iPhone: native inset-grouped list with swipe actions (Reminders-style)
+    private var nativeList: some View {
+        List {
+            ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
+                Section {
+                    ForEach(groupedChores[childName] ?? [], id: \.id) { chore in
+                        ChoreListRow(chore: chore, manager: manager)
+                    }
+                } header: {
+                    Text(childName)
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+    }
     
+    // iPad: adaptive grid of per-child cards
     private var choresList: some View {
         ScrollView {
             LazyVStack(spacing: 20) {
-                Picker("Filter", selection: $selectedFilter) {
-                    ForEach(ChoreFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
+                    alignment: .center,
+                    spacing: 16
+                ) {
+                    ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
+                        ChoreGroupCard(
+                            childName: childName,
+                            chores: groupedChores[childName] ?? [],
+                            manager: manager
+                        )
                     }
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
-                .padding(.top, 6)
-
-                if filteredChores.isEmpty {
-                    EmptyChoresView(filter: selectedFilter)
-                } else {
-                    // Adaptive columns: one per child on iPad, single column on iPhone
-                    LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
-                        alignment: .center,
-                        spacing: 16
-                    ) {
-                        ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
-                            ChoreGroupCard(
-                                childName: childName,
-                                chores: groupedChores[childName] ?? [],
-                                manager: manager
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
 
                 Spacer(minLength: 100)
             }
             .padding(.top, 10)
+        }
+    }
+}
+
+/// Native list row with leading swipe-to-complete and trailing edit/delete.
+struct ChoreListRow: View {
+    let chore: Chore
+    @ObservedObject var manager: SupabaseManager
+    @State private var showingEditSheet = false
+    @State private var showingDeleteAlert = false
+
+    private var isCompleted: Bool {
+        manager.isChoreCompleted(chore)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: toggle) {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            HStack(spacing: 6) {
+                if let icon = chore.icon, !icon.isEmpty {
+                    Text(icon)
+                        .font(.subheadline)
+                }
+                Text(chore.name)
+                    .font(.body)
+                    .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(manager.formatMoney(chore.reward))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: toggle)
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            Button(action: toggle) {
+                Label(isCompleted ? "Undo" : "Done",
+                      systemImage: isCompleted ? "arrow.uturn.backward" : "checkmark")
+            }
+            .tint(isCompleted ? .orange : .choreStarSuccess)
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                showingDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+
+            Button {
+                showingEditSheet = true
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            .tint(.blue)
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            AddEditChoreView(chore: chore)
+        }
+        .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    try? await manager.deleteChore(choreId: chore.id)
+                }
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+    }
+
+    private func toggle() {
+        if isCompleted {
+            Haptics.light()
+        } else {
+            Haptics.success()
+            SoundManager.shared.play(.success)
+        }
+        Task {
+            let _ = await manager.toggleChoreCompletion(chore)
         }
     }
 }
