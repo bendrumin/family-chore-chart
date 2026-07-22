@@ -3,6 +3,7 @@ import SwiftUI
 struct ChildMainView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var activeRoutine: Routine?
+    @State private var showPerfectDay = false
     
     private var childChores: [Chore] {
         guard let child = manager.currentChild else { return [] }
@@ -117,6 +118,11 @@ struct ChildMainView: View {
                                             activeRoutine = routine
                                         }
                                         .padding(.horizontal, 20)
+                                        .scrollTransition { content, phase in
+                                            content
+                                                .opacity(phase.isIdentity ? 1 : 0.5)
+                                                .scaleEffect(phase.isIdentity ? 1 : 0.94)
+                                        }
                                     }
                                 }
                                 .padding(.top, 20)
@@ -134,6 +140,11 @@ struct ChildMainView: View {
                                     ForEach(pendingChores) { chore in
                                         BigChoreCard(chore: chore, child: child, manager: manager)
                                             .padding(.horizontal, 20)
+                                            .scrollTransition { content, phase in
+                                                content
+                                                    .opacity(phase.isIdentity ? 1 : 0.5)
+                                                    .scaleEffect(phase.isIdentity ? 1 : 0.94)
+                                            }
                                     }
                                 }
                                 .padding(.top, 20)
@@ -181,6 +192,21 @@ struct ChildMainView: View {
             }
             .fullScreenCover(item: $activeRoutine) { routine in
                 RoutinePlayerView(routine: routine, childId: child.id)
+            }
+            .onChange(of: pendingChores.count) { oldValue, newValue in
+                // The kid just finished their last chore of the day
+                if newValue == 0, oldValue == 1, !childChores.isEmpty {
+                    showPerfectDay = true
+                }
+            }
+            .overlay {
+                if showPerfectDay {
+                    PerfectDayOverlay {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showPerfectDay = false
+                        }
+                    }
+                }
             }
         } else {
             Text("No child selected")

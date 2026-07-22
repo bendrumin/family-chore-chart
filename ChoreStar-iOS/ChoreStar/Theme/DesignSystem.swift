@@ -143,6 +143,58 @@ struct AvatarRingChip: View {
     }
 }
 
+// MARK: - Perfect Day Celebration
+
+/// Full-screen moment shown when every chore of the day is done.
+struct PerfectDayOverlay: View {
+    let onDismiss: () -> Void
+
+    @State private var appeared = false
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+                .onTapGesture { onDismiss() }
+
+            VStack(spacing: 16) {
+                Text("🌟")
+                    .font(.system(size: 84))
+                    .scaleEffect(appeared ? 1 : 0.2)
+                    .rotationEffect(.degrees(appeared ? 0 : -30))
+
+                Text("Perfect Day!")
+                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+
+                Text("Every single chore is done. Amazing!")
+                    .font(.headline)
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(40)
+            .background(Color.choreStarGradient)
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+            .padding(40)
+            .scaleEffect(appeared ? 1 : 0.7)
+            .opacity(appeared ? 1 : 0)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.65)) {
+                appeared = true
+            }
+            Haptics.success()
+            SoundManager.shared.play(.cheer)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                onDismiss()
+            }
+        }
+        .transition(.opacity)
+    }
+}
+
 // MARK: - Stat Tile
 
 /// Compact stat tile: tinted SF Symbol chip + rounded value + quiet label.

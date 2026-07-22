@@ -39,6 +39,7 @@ struct Chore: Codable, Identifiable {
     let icon: String?
     let color: String?
     let notes: String?
+    let sortOrder: Int
     let createdAt: Date
     let updatedAt: Date
 
@@ -52,6 +53,7 @@ struct Chore: Codable, Identifiable {
         case icon
         case color
         case notes
+        case sortOrder = "sort_order"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -167,6 +169,7 @@ struct ChoreRow: Codable {
     let icon: String?
     let color: String?
     let notes: String?
+    let sort_order: Int?
     let created_at: String
     let updated_at: String
 }

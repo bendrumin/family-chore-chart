@@ -856,11 +856,13 @@ class SupabaseManager: ObservableObject {
                     icon: row.icon,
                     color: row.color,
                     notes: row.notes,
+                    sortOrder: row.sort_order ?? 0,
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
                     updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()
                 )
             }
-            
+            .sorted { ($0.sortOrder, $0.createdAt) < ($1.sortOrder, $1.createdAt) }
+
             await MainActor.run {
                 self.chores = mappedChores
                 debugLastError = "Loaded \(self.chores.count) chores"
@@ -1371,6 +1373,42 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    /// Persists a new display order for one child's chores (drag-to-reorder).
+    /// Optimistically reorders local state, then writes sort_order sequentially.
+    func updateChoreOrder(_ orderedChores: [Chore]) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+
+        // Optimistic local update
+        await MainActor.run {
+            let orderedIds = orderedChores.map(\.id)
+            chores.sort { a, b in
+                let ai = orderedIds.firstIndex(of: a.id) ?? Int.max
+                let bi = orderedIds.firstIndex(of: b.id) ?? Int.max
+                return ai == bi ? a.createdAt < b.createdAt : ai < bi
+            }
+        }
+
+        struct SortUpdate: Encodable {
+            let sort_order: Int
+        }
+
+        for (index, chore) in orderedChores.enumerated() where chore.sortOrder != index {
+            do {
+                try await client
+                    .from("chores")
+                    .update(SortUpdate(sort_order: index))
+                    .eq("id", value: chore.id.uuidString)
+                    .execute()
+            } catch {
+                await MainActor.run {
+                    debugLastError = "Reorder error: \(error.localizedDescription)"
+                }
+            }
+        }
+        #endif
+    }
+
     func deleteChore(choreId: UUID) async throws {
         #if canImport(Supabase)
         guard let client = client else {
@@ -2355,6 +2393,7 @@ class SupabaseManager: ObservableObject {
                 icon: "bed.double",
                 color: "blue",
                 notes: nil,
+                sortOrder: 0,
                 createdAt: Date(),
                 updatedAt: Date()
             ),
@@ -2368,6 +2407,7 @@ class SupabaseManager: ObservableObject {
                 icon: "pawprint",
                 color: "green",
                 notes: nil,
+                sortOrder: 1,
                 createdAt: Date(),
                 updatedAt: Date()
             )

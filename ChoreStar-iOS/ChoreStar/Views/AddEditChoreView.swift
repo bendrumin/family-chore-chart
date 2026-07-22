@@ -394,6 +394,7 @@ struct SmallColorOption: View {
             icon: "bed.double",
             color: "blue",
             notes: "Fold the corners nicely",
+            sortOrder: 0,
             createdAt: Date(),
             updatedAt: Date()
         )
