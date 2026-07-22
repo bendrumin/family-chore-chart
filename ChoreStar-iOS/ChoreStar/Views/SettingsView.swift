@@ -382,6 +382,28 @@ struct ThemeGalleryView: View {
             }
         }
 
+        var primaryColor: Color {
+            switch self {
+            case .auto:
+                return SeasonalTheme.current()?.primaryColor ?? .choreStarPrimary
+            case .none:
+                return .choreStarPrimary
+            case .theme(let theme):
+                return theme.primaryColor
+            }
+        }
+
+        var secondaryColor: Color {
+            switch self {
+            case .auto:
+                return SeasonalTheme.current()?.secondaryColor ?? .choreStarPurple
+            case .none:
+                return .choreStarPurple
+            case .theme(let theme):
+                return theme.secondaryColor
+            }
+        }
+
         var isPremium: Bool {
             if case .theme(let theme) = self { return theme.isPremium }
             return false
@@ -425,51 +447,132 @@ struct ThemeGalleryView: View {
                 SoundManager.shared.play(.pop)
             }
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: 8) {
                 ZStack(alignment: .topTrailing) {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(item.gradient)
-                        .frame(width: 84, height: 64)
-                        .overlay(
-                            Text(item.emoji)
-                                .font(.system(size: 28))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .strokeBorder(
-                                    isSelected ? Color.choreStarTextPrimary : Color.clear,
-                                    lineWidth: 2.5
-                                )
-                        )
-                        .opacity(isLocked ? 0.55 : 1)
+                    ThemePreviewCard(
+                        gradient: item.gradient,
+                        primary: item.primaryColor,
+                        secondary: item.secondaryColor,
+                        emoji: item.emoji
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .strokeBorder(
+                                isSelected ? item.primaryColor : Color.choreStarTextSecondary.opacity(0.12),
+                                lineWidth: isSelected ? 3 : 1
+                            )
+                    )
+                    .opacity(isLocked ? 0.6 : 1)
+                    .saturation(isLocked ? 0.5 : 1)
 
                     if isLocked {
                         Image(systemName: "lock.fill")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundColor(.white)
-                            .padding(5)
-                            .background(.black.opacity(0.45))
+                            .padding(6)
+                            .background(.black.opacity(0.5))
                             .clipShape(Circle())
-                            .padding(4)
+                            .padding(6)
                     } else if isSelected {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.4), radius: 2)
-                            .padding(5)
+                            .font(.title3)
+                            .foregroundStyle(.white, item.primaryColor)
+                            .background(Circle().fill(.white))
+                            .padding(6)
                     }
                 }
 
                 Text(item.name)
-                    .font(.caption2)
+                    .font(.caption)
                     .fontWeight(isSelected ? .bold : .medium)
                     .foregroundColor(isSelected ? .choreStarTextPrimary : .choreStarTextSecondary)
                     .lineLimit(1)
             }
-            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .scaleEffect(isSelected ? 1.04 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+/// A miniature ChoreStar screen wearing the theme — the wallpaper-picker
+/// pattern: you see the app itself in each theme, not just a swatch.
+private struct ThemePreviewCard: View {
+    let gradient: LinearGradient
+    let primary: Color
+    let secondary: Color
+    let emoji: String
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            // Theme backdrop
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(gradient)
+
+            // Miniature app screen
+            VStack(alignment: .leading, spacing: 5) {
+                // Mini hero: greeting bars + progress ring
+                HStack(spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.5))
+                            .frame(width: 34, height: 4)
+                        Capsule()
+                            .fill(Color.primary.opacity(0.2))
+                            .frame(width: 24, height: 3)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    ZStack {
+                        Circle()
+                            .stroke(primary.opacity(0.25), lineWidth: 3)
+                        Circle()
+                            .trim(from: 0, to: 0.68)
+                            .stroke(primary, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                    }
+                    .frame(width: 18, height: 18)
+                }
+
+                // Mini chore rows
+                ForEach(0..<2, id: \.self) { row in
+                    HStack(spacing: 4) {
+                        Circle()
+                            .strokeBorder(row == 0 ? primary : Color.primary.opacity(0.25), lineWidth: 1.5)
+                            .background(Circle().fill(row == 0 ? primary.opacity(0.9) : Color.clear))
+                            .frame(width: 7, height: 7)
+
+                        Capsule()
+                            .fill(Color.primary.opacity(0.25))
+                            .frame(width: row == 0 ? 30 : 38, height: 3)
+
+                        Spacer(minLength: 0)
+
+                        Capsule()
+                            .fill(secondary.opacity(0.55))
+                            .frame(width: 10, height: 4)
+                    }
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 4)
+                    .background(Color.primary.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                }
+            }
+            .padding(7)
+            .background(Color(uiColor: .systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .shadow(color: .black.opacity(0.18), radius: 4, y: 2)
+            .padding(10)
+
+            // Theme emoji as a small corner charm
+            Text(emoji)
+                .font(.system(size: 16))
+                .padding(4)
+                .background(.thinMaterial, in: Circle())
+                .padding(6)
+        }
+        .frame(width: 128, height: 96)
     }
 }
 
