@@ -167,6 +167,33 @@ CREATE POLICY "Family members can insert routine completions" ON routine_complet
     );
 
 -- ── achievement_badges ───────────────────────────────────────────────────────
+-- SECURITY FIX (found during the 2026-07-22 policy audit): this table was
+-- created with NO RLS at all — readable and writable by anyone holding the
+-- anon key. Enable RLS and add the owner policies that should always have
+-- existed, then the family-member policies.
+ALTER TABLE achievement_badges ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view badges for own children" ON achievement_badges;
+CREATE POLICY "Users can view badges for own children" ON achievement_badges
+    FOR SELECT USING (
+        EXISTS (SELECT 1 FROM children c
+                WHERE c.id = achievement_badges.child_id AND c.user_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Users can insert badges for own children" ON achievement_badges;
+CREATE POLICY "Users can insert badges for own children" ON achievement_badges
+    FOR INSERT WITH CHECK (
+        EXISTS (SELECT 1 FROM children c
+                WHERE c.id = achievement_badges.child_id AND c.user_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Users can delete badges for own children" ON achievement_badges;
+CREATE POLICY "Users can delete badges for own children" ON achievement_badges
+    FOR DELETE USING (
+        EXISTS (SELECT 1 FROM children c
+                WHERE c.id = achievement_badges.child_id AND c.user_id = auth.uid())
+    );
+
 DROP POLICY IF EXISTS "Family members can view badges" ON achievement_badges;
 CREATE POLICY "Family members can view badges" ON achievement_badges
     FOR SELECT USING (
