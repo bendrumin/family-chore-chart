@@ -5,7 +5,6 @@ struct ContentView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @AppStorage("darkModePreference") private var darkModePreference: String = "System"
     @State private var isLoading = true
-    @State private var showingChildAuth = false
     
     private var preferredColorScheme: ColorScheme? {
         switch darkModePreference {
@@ -25,33 +24,7 @@ struct ContentView: View {
             } else if supabaseManager.isChildSession {
                 ChildMainView()
             } else if supabaseManager.isAuthenticated {
-                ZStack(alignment: .bottomTrailing) {
-                    MainTabs()
-                    
-                    if supabaseManager.children.contains(where: { supabaseManager.childHasPin($0.id) }) {
-                        Button(action: {
-                            showingChildAuth = true
-                        }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "figure.child")
-                                    .font(.title3)
-                                Text("Kids")
-                                    .font(.headline)
-                            }
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 14)
-                            .background(themeManager.gradient)
-                            .cornerRadius(30)
-                            .shadow(color: themeManager.accentColor.opacity(0.4), radius: 12, x: 0, y: 4)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 100)
-                    }
-                }
-                .sheet(isPresented: $showingChildAuth) {
-                    ChildAuthView()
-                }
+                MainTabs()
             } else {
                 AuthView()
             }
