@@ -107,7 +107,7 @@ struct WeekCalendarView: View {
                                 .frame(height: 60)
                             
                             VStack(spacing: 4) {
-                                Text(String(format: "$%.2f", weekCompletionStats.earnings))
+                                Text(manager.formatMoney(weekCompletionStats.earnings))
                                     .font(.system(size: 36, weight: .bold, design: .rounded))
                                     .foregroundStyle(Color.choreStarWarningGradient)
                                 Image(systemName: "dollarsign.circle.fill")
@@ -140,7 +140,7 @@ struct WeekCalendarView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "info.circle.fill")
                                 .font(.caption)
-                            Text("Complete all chores in a day to earn \(String(format: "$%.2f", Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0))")
+                            Text("Complete all chores in a day to earn \(manager.formatMoney(Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0))")
                                 .font(.caption)
                         }
                         .foregroundColor(.choreStarTextSecondary)
@@ -209,7 +209,7 @@ struct WeekCalendarView: View {
                                         
                                         // Show earnings if perfect day
                                         if isDayPerfect(dayIndex) {
-                                            Text(String(format: "$%.2f", dayEarnings(dayIndex)))
+                                            Text(manager.formatMoney(dayEarnings(dayIndex)))
                                                 .font(.caption2)
                                                 .fontWeight(.bold)
                                                 .foregroundColor(.choreStarAccent)
@@ -468,7 +468,7 @@ struct DayBreakdownCard: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "star.fill")
                                     .font(.system(size: 10))
-                                Text(String(format: "$%.2f", dayEarnings))
+                                Text(manager.formatMoney(dayEarnings))
                                     .font(.caption)
                                     .fontWeight(.bold)
                             }
@@ -657,7 +657,7 @@ struct EmptyWeekView: View {
 }
 
 #Preview {
-    NavigationView {
+    NavigationStack {
         WeekCalendarView(
             child: Child(
                 id: UUID(),
@@ -667,8 +667,6 @@ struct EmptyWeekView: View {
                 avatarUrl: nil,
                 avatarFile: nil,
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             )

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import CryptoKit
 
 #if canImport(Supabase)
 import Supabase
@@ -25,10 +26,37 @@ class SupabaseManager: ObservableObject {
     var isPremium: Bool { subscriptionType == "premium" || subscriptionType == "lifetime" }
     var childLimit: Int { isPremium ? Int.max : 3 }
     var choreLimit: Int { isPremium ? Int.max : 20 }
+
+    // Family's currency symbol (falls back to $ until settings load)
+    var currencySymbol: String { familySettings?.currencySymbol ?? "$" }
+
+    /// Formats a dollar amount using the family's currency, e.g. "£2.50".
+    func formatMoney(_ amount: Double) -> String {
+        String(format: "%@%.2f", currencySymbol, amount)
+    }
     
     // Child session properties
     @Published var childSession: ChildSession?
     @Published var kidLoginCode: String?
+
+    // Children that have a PIN set in child_pins (kid login enabled)
+    @Published var childIdsWithPin: Set<UUID> = []
+
+    func childHasPin(_ childId: UUID) -> Bool {
+        childIdsWithPin.contains(childId)
+    }
+
+    // Standalone kid-mode session (kid's own device, no parent Supabase auth)
+    @Published var kidModeSession: KidModeSession?
+    var isStandaloneKidSession: Bool { kidModeSession != nil }
+
+    // Routines already completed today (drives "Done!" badges and replay prevention)
+    @Published var completedRoutineIds: Set<UUID> = []
+
+    // All-time completion history (feeds achievement progress)
+    @Published var allTimeCompletions: [HistoricalCompletion] = []
+
+    private static let kidModeSessionKey = "kid_mode_session"
     
     private static let appBaseURL = "https://chorestar.app"
     
@@ -131,6 +159,11 @@ class SupabaseManager: ObservableObject {
     }
     
     func checkChildSession() async {
+        // Standalone kid session takes priority (kid's own device)
+        if await restoreKidModeSession() {
+            return
+        }
+
         // Check if there's a saved child session
         guard let savedChildId = UserDefaults.standard.string(forKey: "child_session_id"),
               let childUUID = UUID(uuidString: savedChildId),
@@ -159,94 +192,408 @@ class SupabaseManager: ObservableObject {
         }
     }
     
-    func authenticateChild(childId: UUID, pin: String) async -> Bool {
+    /// Verifies a child's PIN against the web API (hashed child_pins model).
+    /// Returns nil on success, or a user-facing error message on failure.
+    func authenticateChild(childId: UUID, pin: String) async -> String? {
         let familyCode = await MainActor.run { kidLoginCode }
-        
-        // Try server-side verification via web API (matches web's hashed PIN model)
-        if let familyCode = familyCode, !familyCode.isEmpty {
-            if let result = await verifyPinViaAPI(familyCode: familyCode, pin: pin) {
-                let child = await MainActor.run { children.first(where: { $0.id == childId }) }
-                guard let child = child else { return false }
-                
-                await MainActor.run {
-                    self.currentChild = child
-                    self.isChildSession = true
-                    debugLastError = "Child authenticated via API: \(child.name)"
-                }
-                
-                UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
-                UserDefaults.standard.set(result.kidToken ?? UUID().uuidString, forKey: "child_session_token")
-                return true
-            }
+
+        guard let familyCode = familyCode, !familyCode.isEmpty else {
+            return "Kid login isn't set up yet. Open Settings on chorestar.app to get your family code."
         }
-        
-        // Fallback: local comparison for PINs set via iOS (stored in children.child_pin)
-        let child = await MainActor.run { children.first(where: { $0.id == childId }) }
-        guard let child = child,
-              let storedPin = child.childPin,
-              !storedPin.isEmpty,
-              storedPin == pin else {
+
+        let outcome = await verifyPinViaAPI(familyCode: familyCode, pin: pin)
+        switch outcome {
+        case .failure(let message):
             await MainActor.run {
-                debugLastError = "Child auth failed: invalid PIN"
+                debugLastError = "Child auth failed: \(message)"
             }
-            return false
+            return message
+        case .success(let result):
+            // The API matches the PIN against every child in the family —
+            // only accept it if it belongs to the child that was selected.
+            guard let matchedId = result.child.flatMap({ UUID(uuidString: $0.id) }),
+                  matchedId == childId else {
+                return "Incorrect PIN. Try again!"
+            }
+
+            let child = await MainActor.run { children.first(where: { $0.id == childId }) }
+            guard let child = child else { return "Something went wrong. Try again!" }
+
+            await MainActor.run {
+                self.currentChild = child
+                self.isChildSession = true
+                debugLastError = "Child authenticated via API: \(child.name)"
+            }
+
+            UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
+            UserDefaults.standard.set(result.kidToken ?? UUID().uuidString, forKey: "child_session_token")
+            return nil
         }
-        
-        let sessionToken = UUID().uuidString
-        await MainActor.run {
-            self.currentChild = child
-            self.isChildSession = true
-            debugLastError = "Child authenticated locally: \(child.name)"
-        }
-        
-        UserDefaults.standard.set(childId.uuidString, forKey: "child_session_id")
-        UserDefaults.standard.set(sessionToken, forKey: "child_session_token")
-        return true
     }
-    
+
     private struct PinVerifyResponse: Codable {
         let success: Bool?
         let child: PinVerifyChild?
         let kidToken: String?
         let error: String?
     }
-    
+
     private struct PinVerifyChild: Codable {
         let id: String
         let name: String
+        let avatar_color: String?
+        let avatar_url: String?
+        let avatar_file: String?
     }
-    
-    private func verifyPinViaAPI(familyCode: String, pin: String) async -> PinVerifyResponse? {
-        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/child-pin/verify") else { return nil }
-        
+
+    private enum PinVerifyOutcome {
+        case success(PinVerifyResponse)
+        case failure(String)
+    }
+
+    private func verifyPinViaAPI(familyCode: String, pin: String) async -> PinVerifyOutcome {
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/child-pin/verify") else {
+            return .failure("Something went wrong. Try again!")
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONEncoder().encode(["familyCode": familyCode, "pin": pin])
-        
+
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return nil
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure("Couldn't reach ChoreStar. Check your connection.")
             }
-            return try JSONDecoder().decode(PinVerifyResponse.self, from: data)
+            if httpResponse.statusCode == 429 {
+                return .failure("Too many tries. Please wait a few minutes and try again.")
+            }
+            let decoded = try? JSONDecoder().decode(PinVerifyResponse.self, from: data)
+            guard httpResponse.statusCode == 200, let decoded = decoded, decoded.success == true else {
+                return .failure(decoded?.error ?? "Incorrect PIN. Try again!")
+            }
+            return .success(decoded)
         } catch {
             await MainActor.run {
                 debugLastError = "PIN API verify failed: \(error.localizedDescription)"
             }
-            return nil
+            return .failure("Couldn't reach ChoreStar. Check your connection.")
         }
+    }
+
+    // MARK: - Child PIN Management (child_pins table, matches web's hashed model)
+
+    private static func randomSaltHex() -> String {
+        // SystemRandomNumberGenerator is cryptographically secure on Apple platforms
+        (0..<32).map { _ in String(format: "%02x", UInt8.random(in: .min ... .max)) }.joined()
+    }
+
+    private static func hashPin(_ pin: String, salt: String) -> String {
+        let digest = SHA256.hash(data: Data("\(pin)\(salt)".utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Sets or replaces a child's kid-login PIN (4-6 digits), stored salted+hashed in child_pins.
+    func setChildPin(childId: UUID, pin: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+
+        let digitsOnly = pin.filter(\.isNumber)
+        guard digitsOnly.count >= 4, digitsOnly.count <= 6, digitsOnly == pin else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "PIN must be 4-6 digits"])
+        }
+
+        let salt = Self.randomSaltHex()
+
+        struct PinUpsertRow: Encodable {
+            let child_id: String
+            let pin_hash: String
+            let pin_salt: String
+            let failed_attempts: Int
+            let locked_until: String?
+        }
+
+        let row = PinUpsertRow(
+            child_id: childId.uuidString,
+            pin_hash: Self.hashPin(pin, salt: salt),
+            pin_salt: salt,
+            failed_attempts: 0,
+            locked_until: nil
+        )
+
+        try await client
+            .from("child_pins")
+            .upsert(row, onConflict: "child_id")
+            .execute()
+
+        await MainActor.run {
+            childIdsWithPin.insert(childId)
+            debugLastError = "PIN set for child \(childId)"
+        }
+        #endif
+    }
+
+    /// Removes a child's kid-login PIN, disabling kid login for them.
+    func removeChildPin(childId: UUID) async throws {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+
+        try await client
+            .from("child_pins")
+            .delete()
+            .eq("child_id", value: childId.uuidString)
+            .execute()
+
+        await MainActor.run {
+            childIdsWithPin.remove(childId)
+            debugLastError = "PIN removed for child \(childId)"
+        }
+        #endif
+    }
+
+    func loadChildPins() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let currentChildren = await MainActor.run { children }
+        guard !currentChildren.isEmpty else {
+            await MainActor.run { childIdsWithPin = [] }
+            return
+        }
+
+        struct PinChildIdRow: Codable {
+            let child_id: UUID
+        }
+
+        do {
+            let rows: [PinChildIdRow] = try await client
+                .from("child_pins")
+                .select("child_id")
+                .in("child_id", values: currentChildren.map { $0.id.uuidString })
+                .execute()
+                .value
+
+            await MainActor.run {
+                childIdsWithPin = Set(rows.map(\.child_id))
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Child PINs error: \(error.localizedDescription)"
+            }
+        }
+        #endif
     }
     
     func signOutChild() {
         UserDefaults.standard.removeObject(forKey: "child_session_id")
         UserDefaults.standard.removeObject(forKey: "child_session_token")
-        
+        UserDefaults.standard.removeObject(forKey: SupabaseManager.kidModeSessionKey)
+
         isChildSession = false
         currentChild = nil
         childSession = nil
-        
+        kidModeSession = nil
+
+        // Standalone sessions have no parent data behind them — clear kid-loaded routines
+        if !isAuthenticated {
+            routines = []
+            completedRoutineIds = []
+        }
+
         debugLastError = "Child signed out"
+    }
+
+    // MARK: - Standalone Kid Mode (kid's own device, mirrors web /kid-login flow)
+
+    /// Logs a kid in with just a family code and PIN — no parent account needed on this device.
+    /// Returns nil on success, or a user-facing error message.
+    func kidLogin(familyCode: String, pin: String) async -> String? {
+        let outcome = await verifyPinViaAPI(familyCode: familyCode, pin: pin)
+        switch outcome {
+        case .failure(let message):
+            return message
+        case .success(let result):
+            guard let apiChild = result.child,
+                  let childId = UUID(uuidString: apiChild.id),
+                  let kidToken = result.kidToken else {
+                return "Something went wrong. Try again!"
+            }
+
+            let session = KidModeSession(
+                childId: childId,
+                childName: apiChild.name,
+                avatarColor: apiChild.avatar_color,
+                avatarUrl: apiChild.avatar_url,
+                avatarFile: apiChild.avatar_file,
+                kidToken: kidToken,
+                familyCode: familyCode,
+                expiresAt: Date().addingTimeInterval(8 * 60 * 60)
+            )
+
+            if let encoded = try? JSONEncoder().encode(session) {
+                UserDefaults.standard.set(encoded, forKey: SupabaseManager.kidModeSessionKey)
+            }
+
+            await MainActor.run {
+                self.kidModeSession = session
+                self.currentChild = session.asChild
+                self.isChildSession = true
+                debugLastError = "Kid logged in: \(apiChild.name)"
+            }
+
+            await loadKidModeRoutines()
+            return nil
+        }
+    }
+
+    /// Restores a persisted standalone kid session if it hasn't expired.
+    private func restoreKidModeSession() async -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: SupabaseManager.kidModeSessionKey),
+              let session = try? JSONDecoder().decode(KidModeSession.self, from: data) else {
+            return false
+        }
+
+        guard session.expiresAt > Date() else {
+            UserDefaults.standard.removeObject(forKey: SupabaseManager.kidModeSessionKey)
+            return false
+        }
+
+        await MainActor.run {
+            self.kidModeSession = session
+            self.currentChild = session.asChild
+            self.isChildSession = true
+            debugLastError = "Kid session restored: \(session.childName)"
+        }
+
+        await loadKidModeRoutines()
+        return true
+    }
+
+    private struct KidRoutineStepRow: Codable {
+        let id: UUID
+        let title: String
+        let description: String?
+        let icon: String?
+        let order_index: Int?
+        let duration_seconds: Int?
+    }
+
+    private struct KidRoutineRow: Codable {
+        let id: UUID
+        let child_id: UUID
+        let name: String
+        let type: String
+        let icon: String?
+        let color: String?
+        let reward_cents: Int?
+        let is_active: Bool?
+        let created_at: String?
+        let updated_at: String?
+        let routine_steps: [KidRoutineStepRow]?
+        let completedToday: Bool?
+    }
+
+    /// Loads the kid's active routines through the web API (Bearer kid token bypasses RLS server-side).
+    func loadKidModeRoutines() async {
+        guard let session = await MainActor.run(body: { kidModeSession }) else { return }
+
+        guard var components = URLComponents(string: "\(SupabaseManager.appBaseURL)/api/routines") else { return }
+        components.queryItems = [URLQueryItem(name: "childId", value: session.childId.uuidString.lowercased())]
+        guard let url = components.url else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                await MainActor.run {
+                    debugLastError = "Kid routines fetch failed: HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+                }
+                return
+            }
+
+            let rows = try JSONDecoder().decode([KidRoutineRow].self, from: data)
+            let isoFormatter = ISO8601DateFormatter()
+
+            let mapped = rows.map { row in
+                let steps = (row.routine_steps ?? []).map { stepRow in
+                    RoutineStep(
+                        id: stepRow.id,
+                        routineId: row.id,
+                        title: stepRow.title,
+                        description: stepRow.description,
+                        icon: stepRow.icon ?? "circle",
+                        orderIndex: stepRow.order_index ?? 0,
+                        durationSeconds: stepRow.duration_seconds,
+                        createdAt: Date()
+                    )
+                }
+                return Routine(
+                    id: row.id,
+                    childId: row.child_id,
+                    name: row.name,
+                    type: row.type,
+                    icon: row.icon ?? "list.bullet",
+                    color: row.color ?? "#6366f1",
+                    rewardCents: row.reward_cents ?? 7,
+                    isActive: row.is_active ?? true,
+                    createdAt: isoFormatter.date(from: row.created_at ?? "") ?? Date(),
+                    updatedAt: isoFormatter.date(from: row.updated_at ?? "") ?? Date(),
+                    steps: steps
+                )
+            }
+
+            let doneIds = Set(rows.filter { $0.completedToday == true }.map(\.id))
+
+            await MainActor.run {
+                self.routines = mapped
+                self.completedRoutineIds = doneIds
+                debugLastError = "Loaded \(mapped.count) kid-mode routines"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Kid routines error: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    /// Completes a routine through the web API using the kid token (standalone mode only).
+    private func completeRoutineViaAPI(routineId: UUID, stepsCompleted: Int, stepsTotal: Int, durationSeconds: Int) async throws {
+        guard let session = await MainActor.run(body: { kidModeSession }) else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No kid session"])
+        }
+
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/routines/\(routineId.uuidString.lowercased())/complete") else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Bad URL"])
+        }
+
+        struct CompleteBody: Encodable {
+            let childId: String
+            let stepsCompleted: Int
+            let stepsTotal: Int
+            let durationSeconds: Int
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONEncoder().encode(CompleteBody(
+            childId: session.childId.uuidString.lowercased(),
+            stepsCompleted: stepsCompleted,
+            stepsTotal: stepsTotal,
+            durationSeconds: durationSeconds
+        ))
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Couldn't save your routine. Check your connection."])
+        }
     }
     
     func signIn(email: String, password: String) async {
@@ -442,8 +789,6 @@ class SupabaseManager: ObservableObject {
                     avatarUrl: row.avatar_url,
                     avatarFile: row.avatar_file,
                     userId: row.user_id,
-                    childPin: row.child_pin,
-                    childAccessEnabled: row.child_access_enabled ?? false,
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
                     updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()
                 )
@@ -514,6 +859,8 @@ class SupabaseManager: ObservableObject {
         await loadFamilySettings()
         await loadProfile()
         await loadRoutines()
+        await loadChildPins()
+        await loadAllTimeCompletions()
         
         let currentChildren = await MainActor.run { children }
         let currentChores = await MainActor.run { chores }
@@ -612,7 +959,12 @@ class SupabaseManager: ObservableObject {
             await MainActor.run {
                 self.objectWillChange.send()
                 weekCompletions.removeAll(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
-                
+                if let idx = allTimeCompletions.firstIndex(where: {
+                    $0.choreId == chore.id && $0.weekStart == weekStartString && $0.dayOfWeek == dayOfWeek
+                }) {
+                    allTimeCompletions.remove(at: idx)
+                }
+
                 // Also remove from today's completions if it's today
                 let currentDay = calendar.component(.weekday, from: now) - 1
                 if dayOfWeek == currentDay {
@@ -637,7 +989,13 @@ class SupabaseManager: ObservableObject {
             await MainActor.run {
                 self.objectWillChange.send()
                 weekCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek))
-                
+                allTimeCompletions.append(HistoricalCompletion(
+                    choreId: chore.id,
+                    weekStart: weekStartString,
+                    dayOfWeek: dayOfWeek,
+                    date: calendar.date(byAdding: .day, value: dayOfWeek, to: weekStart)
+                ))
+
                 // Also add to today's completions if it's today
                 let currentDay = calendar.component(.weekday, from: now) - 1
                 if dayOfWeek == currentDay {
@@ -738,7 +1096,7 @@ class SupabaseManager: ObservableObject {
         if familySettings?.isPerChoreMode == true {
             // Per-chore mode: sum reward_cents for each completed chore
             let completedChores = childChores.filter { isChoreCompleted($0, forDay: dayOfWeek) }
-            let totalCents = completedChores.reduce(0) { $0 + Int($1.reward) }
+            let totalCents = completedChores.reduce(0) { $0 + Int(round($1.reward * 100)) }
             return Double(totalCents) / 100.0
         } else {
             // Daily mode: flat daily reward when ALL chores are completed
@@ -821,17 +1179,15 @@ class SupabaseManager: ObservableObject {
             let avatar_url: String?
             let avatar_file: String?
             let user_id: String
-            let child_access_enabled: Bool
         }
-        
+
         let newChild = NewChildRow(
             name: name,
             age: age,
             avatar_color: avatarColor,
             avatar_url: avatarUrl,
             avatar_file: avatarFile,
-            user_id: uid,
-            child_access_enabled: false
+            user_id: uid
         )
         
         try await client
@@ -847,31 +1203,27 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func updateChild(childId: UUID, name: String?, age: Int?, avatarColor: String?, avatarUrl: String?, avatarFile: String?, childPin: String?, childAccessEnabled: Bool?) async throws {
+    func updateChild(childId: UUID, name: String?, age: Int?, avatarColor: String?, avatarUrl: String?, avatarFile: String?) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+
         struct ChildUpdate: Encodable {
             let name: String?
             let age: Int?
             let avatar_color: String?
             let avatar_url: String?
             let avatar_file: String?
-            let child_pin: String?
-            let child_access_enabled: Bool?
             let updated_at: String
         }
-        
+
         let update = ChildUpdate(
             name: name,
             age: age,
             avatar_color: avatarColor,
             avatar_url: avatarUrl,
             avatar_file: avatarFile,
-            child_pin: childPin,
-            child_access_enabled: childAccessEnabled,
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
@@ -1060,19 +1412,80 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func awardAchievement(childId: UUID, badgeType: BadgeType) async -> Bool {
+    /// All-time completion history for achievement progress (web parity: the
+    /// tracker evaluates against every completion, not just the current week).
+    func loadAllTimeCompletions() async {
         #if canImport(Supabase)
-        guard let client = client else { return false }
-        
-        // Check if badge already earned
-        let existingBadge = await MainActor.run {
-            achievements.first(where: { $0.childId == childId && $0.badgeType == badgeType.rawValue })
+        guard let client = client else { return }
+
+        let currentChores = await MainActor.run { chores }
+        guard !currentChores.isEmpty else {
+            await MainActor.run { allTimeCompletions = [] }
+            return
         }
-        
-        if existingBadge != nil {
-            return false // Already earned
+
+        struct HistoryRow: Codable {
+            let chore_id: UUID
+            let week_start: String?
+            let day_of_week: Int?
         }
-        
+
+        do {
+            let rows: [HistoryRow] = try await client
+                .from("chore_completions")
+                .select("chore_id, week_start, day_of_week")
+                .in("chore_id", values: currentChores.map { $0.id.uuidString })
+                .limit(10000)
+                .execute()
+                .value
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let calendar = Calendar.current
+
+            let mapped = rows.map { row -> HistoricalCompletion in
+                let weekStart = row.week_start ?? ""
+                let day = row.day_of_week ?? 0
+                let date = dateFormatter.date(from: weekStart).flatMap {
+                    calendar.date(byAdding: .day, value: day, to: $0)
+                }
+                return HistoricalCompletion(choreId: row.chore_id, weekStart: weekStart, dayOfWeek: day, date: date)
+            }
+
+            await MainActor.run {
+                self.allTimeCompletions = mapped
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Completion history error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Full progress across the 10-achievement taxonomy (web parity).
+    func achievementProgress(for childId: UUID) -> [AchievementProgressInfo] {
+        AchievementEngine.progress(
+            for: childId,
+            chores: chores,
+            completions: allTimeCompletions,
+            earnedBadges: achievements
+        )
+    }
+
+    /// Awards any newly-earned achievements and returns them (for celebration UI).
+    func checkAndAwardAchievements(for childId: UUID) async -> [Achievement] {
+        #if canImport(Supabase)
+        guard let client = client else { return [] }
+
+        let progress = await MainActor.run { achievementProgress(for: childId) }
+        let persisted = await MainActor.run {
+            Set(achievements.filter { $0.childId == childId }.map(\.badgeType))
+        }
+
+        let newlyEarned = progress.filter { $0.earned && !persisted.contains($0.definition.id) }
+        guard !newlyEarned.isEmpty else { return [] }
+
         struct NewAchievement: Encodable {
             let child_id: String
             let badge_type: String
@@ -1080,101 +1493,38 @@ class SupabaseManager: ObservableObject {
             let badge_description: String
             let badge_icon: String
         }
-        
-        let newAchievement = NewAchievement(
-            child_id: childId.uuidString,
-            badge_type: badgeType.rawValue,
-            badge_name: badgeType.name,
-            badge_description: badgeType.description,
-            badge_icon: badgeType.icon
-        )
-        
-        do {
-            try await client
-                .from("achievement_badges")
-                .insert(newAchievement)
-                .execute()
-            
-            await loadAchievements()
-            
-            await MainActor.run {
-                debugLastError = "✅ Achievement awarded: \(badgeType.name)"
+
+        for info in newlyEarned {
+            let row = NewAchievement(
+                child_id: childId.uuidString,
+                badge_type: info.definition.id,
+                badge_name: info.definition.name,
+                badge_description: info.definition.description,
+                badge_icon: info.definition.icon
+            )
+            do {
+                try await client
+                    .from("achievement_badges")
+                    .insert(row)
+                    .execute()
+            } catch {
+                await MainActor.run {
+                    debugLastError = "Achievement award error: \(error.localizedDescription)"
+                }
             }
-            
-            return true
-        } catch {
-            await MainActor.run {
-                debugLastError = "❌ Achievement error: \(error.localizedDescription)"
-            }
-            return false
+        }
+
+        await loadAchievements()
+
+        let earnedIds = Set(newlyEarned.map { $0.definition.id })
+        return await MainActor.run {
+            achievements.filter { $0.childId == childId && earnedIds.contains($0.badgeType) }
         }
         #else
-        return false
+        return []
         #endif
     }
-    
-    func checkAndAwardAchievements(for childId: UUID) async -> [Achievement] {
-        var newAchievements: [Achievement] = []
-        
-        let childChores = await MainActor.run {
-            chores.filter { $0.childId == childId }
-        }
-        
-        guard !childChores.isEmpty else { return newAchievements }
-        
-        // Count total completions for this child (simple count of completed today)
-        let completedToday = await MainActor.run {
-            childChores.filter { isChoreCompleted($0) }.count
-        }
-        
-        // Check for First Chore achievement
-        if completedToday == 1 {
-            let awarded = await awardAchievement(childId: childId, badgeType: .firstChore)
-            if awarded {
-                let foundAchievement = await MainActor.run {
-                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.firstChore.rawValue })
-                }
-                if let achievement = foundAchievement {
-                    newAchievements.append(achievement)
-                }
-            }
-        }
-        
-        // Check for Perfect Week: all 7 days must have all chores completed
-        let weeklyStats = await MainActor.run { calculateWeeklyStats(for: childId) }
-        if weeklyStats.perfectDays == 7 {
-            let awarded = await awardAchievement(childId: childId, badgeType: .perfectWeek)
-            if awarded {
-                let foundAchievement = await MainActor.run {
-                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.perfectWeek.rawValue })
-                }
-                if let achievement = foundAchievement {
-                    newAchievements.append(achievement)
-                }
-            }
-        }
-        
-        // Check for Dedicated Helper: 10+ total completions across all time
-        let totalCompletions = await MainActor.run {
-            weekCompletions.filter { completion in
-                childChores.contains(where: { $0.id == completion.choreId })
-            }.count
-        }
-        if totalCompletions >= 10 {
-            let awarded = await awardAchievement(childId: childId, badgeType: .dedicated)
-            if awarded {
-                let foundAchievement = await MainActor.run {
-                    achievements.first(where: { $0.childId == childId && $0.badgeType == BadgeType.dedicated.rawValue })
-                }
-                if let achievement = foundAchievement {
-                    newAchievements.append(achievement)
-                }
-            }
-        }
-        
-        return newAchievements
-    }
-    
+
     func getAchievements(for childId: UUID) -> [Achievement] {
         return achievements.filter { $0.childId == childId }
     }
@@ -1209,6 +1559,37 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    /// Persists a subscription upgrade to the user's profile (called after a
+    /// verified App Store transaction — see StoreKitManager for the policy).
+    func updateSubscriptionType(_ type: String) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        struct ProfileUpdate: Encodable {
+            let subscription_type: String
+        }
+
+        do {
+            try await client
+                .from("profiles")
+                .update(ProfileUpdate(subscription_type: type))
+                .eq("id", value: uid)
+                .execute()
+
+            await MainActor.run {
+                self.subscriptionType = type
+                debugLastError = "Subscription updated: \(type)"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Subscription update error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
     // MARK: - Routines Management
     
     func loadRoutines() async {
@@ -1274,8 +1655,31 @@ class SupabaseManager: ObservableObject {
                 )
             }
             
+            // Today's completions drive "Done!" badges and replay prevention
+            struct CompletionIdRow: Codable {
+                let routine_id: UUID
+            }
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let today = dateFormatter.string(from: Date())
+
+            var doneIds: Set<UUID> = []
+            if !routineIds.isEmpty {
+                let completionRows: [CompletionIdRow] = (try? await client
+                    .from("routine_completions")
+                    .select("routine_id")
+                    .in("routine_id", values: routineIds)
+                    .eq("date", value: today)
+                    .execute()
+                    .value) ?? []
+                doneIds = Set(completionRows.map(\.routine_id))
+            }
+
+            let capturedDoneIds = doneIds
             await MainActor.run {
                 self.routines = mapped
+                self.completedRoutineIds = capturedDoneIds
                 debugLastError = "Loaded \(mapped.count) routines"
             }
         } catch {
@@ -1456,6 +1860,20 @@ class SupabaseManager: ObservableObject {
     
     func completeRoutine(routineId: UUID, childId: UUID, stepsCompleted: Int,
                          stepsTotal: Int, durationSeconds: Int) async throws {
+        // Standalone kid mode: no parent Supabase session, go through the web API
+        if await MainActor.run(body: { isStandaloneKidSession }) {
+            try await completeRoutineViaAPI(
+                routineId: routineId,
+                stepsCompleted: stepsCompleted,
+                stepsTotal: stepsTotal,
+                durationSeconds: durationSeconds
+            )
+            _ = await MainActor.run {
+                completedRoutineIds.insert(routineId)
+            }
+            return
+        }
+
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -1487,12 +1905,22 @@ class SupabaseManager: ObservableObject {
             date: formatter.string(from: Date())
         )
         
-        try await client
-            .from("routine_completions")
-            .insert(row)
-            .execute()
-        
+        do {
+            try await client
+                .from("routine_completions")
+                .insert(row)
+                .execute()
+        } catch let error as PostgrestError where error.code == "23505" {
+            // Already completed today (unique index on routine_id + child_id + date)
+            await MainActor.run {
+                completedRoutineIds.insert(routineId)
+                debugLastError = "Routine already completed today: \(routineId)"
+            }
+            return
+        }
+
         await MainActor.run {
+            completedRoutineIds.insert(routineId)
             debugLastError = "Routine completed: \(routineId), earned \(pointsEarned) points"
         }
         #endif
@@ -1535,7 +1963,7 @@ class SupabaseManager: ObservableObject {
                 }
                 for completion in dayCompletions {
                     if let chore = childChores.first(where: { $0.id == completion.choreId }) {
-                        earningsCents += Int(chore.reward)
+                        earningsCents += Int(round(chore.reward * 100))
                     }
                 }
             }
@@ -1620,8 +2048,6 @@ class SupabaseManager: ObservableObject {
                 avatarUrl: nil,
                 avatarFile: nil,
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             ),
@@ -1633,8 +2059,6 @@ class SupabaseManager: ObservableObject {
                 avatarUrl: nil,
                 avatarFile: nil,
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             )

@@ -28,7 +28,7 @@ struct ContentView: View {
                 ZStack(alignment: .bottomTrailing) {
                     MainTabs()
                     
-                    if supabaseManager.children.filter({ $0.hasChildAccess }).count > 0 {
+                    if supabaseManager.children.contains(where: { supabaseManager.childHasPin($0.id) }) {
                         Button(action: {
                             showingChildAuth = true
                         }) {
@@ -186,9 +186,28 @@ struct LoadingView: View {
 struct MainTabs: View {
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
+    @State private var selectedTab: Int = MainTabs.initialTab()
+
+    /// DEBUG-only: allows UI verification tooling to open a specific tab, e.g.
+    /// `simctl launch <device> com.chorestar.ChoreStar -chorestar-tab chores`
+    static func initialTab() -> Int {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let idx = args.firstIndex(of: "-chorestar-tab"), idx + 1 < args.count {
+            switch args[idx + 1] {
+            case "family": return 1
+            case "chores": return 2
+            case "stats": return 3
+            case "settings": return 4
+            default: return 0
+            }
+        }
+        #endif
+        return 0
+    }
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             DashboardView()
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
@@ -219,36 +238,7 @@ struct MainTabs: View {
                 }
                 .tag(4)
         }
-        .accentColor(themeManager.accentColor)
-        .onAppear {
-            updateTabBarAppearance()
-        }
-        .onChange(of: themeManager.activeTheme) { _ in
-            updateTabBarAppearance()
-        }
-    }
-    
-    private func updateTabBarAppearance() {
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.choreStarCardBackground)
-        appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
-
-        let accentUIColor = UIColor(themeManager.accentColor)
-        appearance.stackedLayoutAppearance.selected.iconColor = accentUIColor
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: accentUIColor,
-            .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
-        ]
-
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.choreStarTextSecondary)
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor(Color.choreStarTextSecondary),
-            .font: UIFont.systemFont(ofSize: 12, weight: .medium)
-        ]
-
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        .tint(themeManager.accentColor)
     }
 }
 

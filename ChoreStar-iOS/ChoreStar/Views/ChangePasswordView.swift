@@ -12,7 +12,7 @@ struct ChangePasswordView: View {
     @State private var successMessage: String?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Current Password") {
                     SecureField("Enter current password", text: $currentPassword)

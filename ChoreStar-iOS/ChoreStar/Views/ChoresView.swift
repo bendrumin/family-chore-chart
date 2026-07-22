@@ -35,7 +35,7 @@ struct ChoresView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 Picker("View", selection: $selectedTab) {
                     ForEach(ChoresTab.allCases, id: \.self) { tab in
@@ -80,54 +80,24 @@ struct ChoresView: View {
     private var choresList: some View {
         ScrollView {
             LazyVStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Chores")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.choreStarTextPrimary)
-
-                            Text("Track and manage daily tasks")
-                                .font(.subheadline)
-                                .foregroundColor(.choreStarTextSecondary)
-                        }
-                        Spacer()
+                Picker("Filter", selection: $selectedFilter) {
+                    ForEach(ChoreFilter.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
                     }
-
-                    HStack(spacing: 0) {
-                        ForEach(ChoreFilter.allCases, id: \.self) { filter in
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    selectedFilter = filter
-                                }
-                            }) {
-                                Text(filter.rawValue)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(selectedFilter == filter ? .white : .choreStarTextSecondary)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(selectedFilter == filter ? Color.choreStarPrimary : Color.clear)
-                                    )
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        Spacer()
-                    }
-                    .padding(4)
-                    .background(Color.choreStarSecondary.opacity(0.2))
-                    .cornerRadius(12)
                 }
+                .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .padding(.top, 6)
 
                 if filteredChores.isEmpty {
                     EmptyChoresView(filter: selectedFilter)
                 } else {
-                    LazyVStack(spacing: 20) {
+                    // Adaptive columns: one per child on iPad, single column on iPhone
+                    LazyVGrid(
+                        columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
+                        alignment: .center,
+                        spacing: 16
+                    ) {
                         ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
                             ChoreGroupCard(
                                 childName: childName,
@@ -161,46 +131,54 @@ struct ChoreGroupCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header: avatar with the child's own progress ring
             HStack(spacing: 12) {
                 if let child = child {
-                    Circle()
-                        .fill(Color.fromString(child.avatarColor))
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Text(child.initials)
-                                .font(.headline)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                        )
+                    ProgressRing(
+                        progress: chores.isEmpty ? 0 : Double(completedCount) / Double(chores.count),
+                        lineWidth: 3.5,
+                        tint: Color.fromString(child.avatarColor)
+                    ) {
+                        Circle()
+                            .fill(Color.fromString(child.avatarColor))
+                            .frame(width: 34, height: 34)
+                            .overlay(
+                                Text(child.initials)
+                                    .font(.footnote)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                            )
+                    }
+                    .frame(width: 44, height: 44)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(childName)
                         .font(.headline)
-                        .fontWeight(.semibold)
                         .foregroundColor(.choreStarTextPrimary)
-                    
-                    Text("\(completedCount)/\(chores.count) completed")
-                        .font(.subheadline)
+
+                    Text("\(completedCount) of \(chores.count) done")
+                        .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)
                 }
-                
+
                 Spacer()
             }
-            .padding(.bottom, 4)
-            
+            .padding(.bottom, 2)
+
             // Chores list
-            VStack(spacing: 8) {
+            VStack(spacing: 2) {
                 ForEach(chores, id: \.id) { chore in
                     EnhancedChoreRow(chore: chore, manager: manager)
+
+                    if chore.id != chores.last?.id {
+                        Divider()
+                            .padding(.leading, 40)
+                    }
                 }
             }
         }
-        .padding(16)
-        .background(Color.choreStarCardBackground)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .appCard()
     }
 }
 
@@ -215,68 +193,58 @@ struct EnhancedChoreRow: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Completion button with animation
-            Button(action: {
-                Task {
-                    let _ = await manager.toggleChoreCompletion(chore)
-                }
-            }) {
-                ZStack {
-                    Circle()
-                        .stroke(isCompleted ? Color.choreStarSuccess : Color.choreStarTextSecondary, lineWidth: 2)
-                        .frame(width: 28, height: 28)
-                    
-                    if isCompleted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.choreStarSuccess)
-                            .transition(.scale.combined(with: .opacity))
+        Button(action: {
+            if isCompleted {
+                Haptics.light()
+            } else {
+                Haptics.success()
+                SoundManager.shared.play(.success)
+            }
+            Task {
+                let _ = await manager.toggleChoreCompletion(chore)
+            }
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+
+                // Chore info
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        if let icon = chore.icon, !icon.isEmpty {
+                            Text(icon)
+                                .font(.subheadline)
+                        }
+                        Text(chore.name)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                            .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                            .lineLimit(1)
+                    }
+
+                    if let description = chore.description, !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.choreStarTextSecondary)
+                            .lineLimit(1)
                     }
                 }
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isCompleted)
+
+                Spacer()
+
+                // Reward
+                Text(manager.formatMoney(chore.reward))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
             }
-            .buttonStyle(PlainButtonStyle())
-            
-            // Chore info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(chore.name)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.choreStarTextPrimary)
-                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                
-                if let description = chore.description, !description.isEmpty {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(.choreStarTextSecondary)
-                        .lineLimit(1)
-                }
-            }
-            
-            Spacer()
-            
-            // Reward
-            HStack(spacing: 4) {
-                Image(systemName: "dollarsign.circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.choreStarAccent)
-                
-                Text(String(format: "%.2f", chore.reward))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.choreStarAccent)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.choreStarAccent.opacity(0.1))
-            .cornerRadius(8)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+            .opacity(isCompleted ? 0.75 : 1.0)
         }
-        .padding(12)
-        .background(Color.choreStarBackground)
-        .cornerRadius(12)
-        .opacity(isCompleted ? 0.7 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isCompleted)
+        .buttonStyle(PlainButtonStyle())
         .contextMenu {
             Button(action: { showingEditSheet = true }) {
                 Label("Edit", systemImage: "pencil")

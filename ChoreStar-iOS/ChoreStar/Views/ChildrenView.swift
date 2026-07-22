@@ -5,7 +5,7 @@ struct ChildrenView: View {
     @State private var showingAddChild = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
                     // Header
@@ -32,8 +32,7 @@ struct ChildrenView: View {
                         EmptyChildrenView()
                     } else {
                         LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: 16),
-                            GridItem(.flexible(), spacing: 16)
+                            GridItem(.adaptive(minimum: 165, maximum: 260), spacing: 16)
                         ], spacing: 16) {
                             ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
                                 ChildDetailCard(child: child, index: index, manager: manager)
@@ -163,7 +162,7 @@ struct ChildDetailCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "dollarsign.circle.fill")
                         .foregroundColor(.choreStarAccent)
-                    Text(String(format: "$%.2f", totalEarnings))
+                    Text(manager.formatMoney(totalEarnings))
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.choreStarTextPrimary)
@@ -176,8 +175,7 @@ struct ChildDetailCard: View {
         }
         .padding(20)
         .background(Color.choreStarCardBackground)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .contextMenu {
             Button(action: { showingEditSheet = true }) {
                 Label("Edit", systemImage: "pencil")

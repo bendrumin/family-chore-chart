@@ -8,8 +8,6 @@ struct Child: Codable, Identifiable {
     let avatarUrl: String?
     let avatarFile: String?
     let userId: UUID
-    let childPin: String?
-    let childAccessEnabled: Bool
     let createdAt: Date
     let updatedAt: Date
 
@@ -21,8 +19,6 @@ struct Child: Codable, Identifiable {
         case avatarUrl = "avatar_url"
         case avatarFile = "avatar_file"
         case userId = "user_id"
-        case childPin = "child_pin"
-        case childAccessEnabled = "child_access_enabled"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -30,10 +26,6 @@ struct Child: Codable, Identifiable {
     var initials: String {
         let names = name.components(separatedBy: " ")
         return names.compactMap { $0.first?.uppercased() }.prefix(2).joined()
-    }
-
-    var hasChildAccess: Bool {
-        return childAccessEnabled && childPin != nil && !childPin!.isEmpty
     }
 }
 
@@ -97,6 +89,34 @@ struct ChildSession: Codable {
     }
 }
 
+/// Standalone kid-mode session (kid's own device, no parent login).
+/// Mirrors the web app's `kidMode` localStorage entry.
+struct KidModeSession: Codable {
+    let childId: UUID
+    let childName: String
+    let avatarColor: String?
+    let avatarUrl: String?
+    let avatarFile: String?
+    let kidToken: String
+    let familyCode: String
+    let expiresAt: Date
+
+    /// Minimal Child for kid-mode UI (age/userId aren't known without a parent session).
+    var asChild: Child {
+        Child(
+            id: childId,
+            name: childName,
+            age: 0,
+            avatarColor: avatarColor ?? "blue",
+            avatarUrl: avatarUrl,
+            avatarFile: avatarFile,
+            userId: UUID(),
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+    }
+}
+
 struct Achievement: Codable, Identifiable {
     let id: UUID
     let childId: UUID
@@ -117,49 +137,6 @@ struct Achievement: Codable, Identifiable {
     }
 }
 
-// Badge types matching web app
-enum BadgeType: String {
-    case firstChore = "first_chore"
-    case perfectWeek = "perfect_week"
-    case dedicated = "dedicated"
-    case earlyBird = "early_bird"
-    case nightOwl = "night_owl"
-    case weekendWarrior = "weekend_warrior"
-    
-    var name: String {
-        switch self {
-        case .firstChore: return "First Step"
-        case .perfectWeek: return "Perfect Week"
-        case .dedicated: return "Dedicated Helper"
-        case .earlyBird: return "Early Bird"
-        case .nightOwl: return "Night Owl"
-        case .weekendWarrior: return "Weekend Warrior"
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .firstChore: return "Completed your first chore!"
-        case .perfectWeek: return "Completed all chores for the entire week!"
-        case .dedicated: return "Completed 10 chores total!"
-        case .earlyBird: return "Completed chores before 9 AM!"
-        case .nightOwl: return "Completed chores after 8 PM!"
-        case .weekendWarrior: return "Completed all weekend chores!"
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .firstChore: return "🎯"
-        case .perfectWeek: return "🌟"
-        case .dedicated: return "💪"
-        case .earlyBird: return "🌅"
-        case .nightOwl: return "🌙"
-        case .weekendWarrior: return "⚔️"
-        }
-    }
-}
-
 // Database row structures for Supabase queries
 struct ChildRow: Codable {
     let id: UUID
@@ -169,8 +146,6 @@ struct ChildRow: Codable {
     let avatar_url: String?
     let avatar_file: String?
     let user_id: UUID
-    let child_pin: String?
-    let child_access_enabled: Bool?
     let created_at: String
     let updated_at: String
 }

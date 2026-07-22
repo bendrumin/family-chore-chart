@@ -89,7 +89,7 @@ struct ChildMainView: View {
                             
                             StatBubble(
                                 icon: "star.fill",
-                                value: String(format: "$%.0f", totalEarnings),
+                                value: manager.formatMoney(totalEarnings),
                                 label: "Earned",
                                 color: .choreStarAccent
                             )
@@ -294,7 +294,7 @@ struct BigChoreCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "star.fill")
                             .foregroundColor(.choreStarAccent)
-                        Text("Earn \(String(format: "$%.2f", chore.reward))")
+                        Text("Earn \(manager.formatMoney(chore.reward))")
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarAccent)

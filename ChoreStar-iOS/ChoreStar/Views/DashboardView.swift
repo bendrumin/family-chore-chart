@@ -6,6 +6,8 @@ struct DashboardView: View {
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
+    @State private var showWhatsNew = false
+    @AppStorage("lastSeenChangelogVersion") private var lastSeenChangelogVersion = ""
 
     private var completedChores: Int {
         manager.chores.filter { manager.isChoreCompleted($0) }.count
@@ -34,139 +36,86 @@ struct DashboardView: View {
         }
     }
 
+    private func childProgress(_ child: Child) -> Double {
+        let childChores = manager.chores.filter { $0.childId == child.id }
+        guard !childChores.isEmpty else { return 0 }
+        let done = childChores.filter { manager.isChoreCompleted($0) }.count
+        return Double(done) / Double(childChores.count)
+    }
+
+    private func childProgressText(_ child: Child) -> String {
+        let childChores = manager.chores.filter { $0.childId == child.id }
+        let done = childChores.filter { manager.isChoreCompleted($0) }.count
+        return "\(done)/\(childChores.count)"
+    }
+
+    private var earnedTodayText: String {
+        let total = manager.children.reduce(0.0) { $0 + manager.calculateTodayEarnings(for: $1.id) }
+        return manager.formatMoney(total)
+    }
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 20) {
-                    // Header with greeting
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(greeting)
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
+                LazyVStack(spacing: 24) {
+                    // Hero: today at a glance, Activity-ring style
+                    HStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(greeting)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.choreStarTextSecondary)
+
+                            Text(totalChores == 0
+                                 ? "No chores yet"
+                                 : "\(completedChores) of \(totalChores) done")
+                                .font(.system(.title2, design: .rounded).weight(.bold))
+                                .foregroundColor(.choreStarTextPrimary)
+
+                            HStack(spacing: 5) {
+                                Image(systemName: "star.circle.fill")
+                                    .font(.subheadline)
+                                    .foregroundColor(.choreStarAccent)
+                                Text("\(earnedTodayText) earned today")
+                                    .font(.subheadline)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        ProgressRing(progress: completionPercentage, lineWidth: 11, tint: themeManager.accentColor) {
+                            if completionPercentage >= 1.0, totalChores > 0 {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 26, weight: .bold))
+                                    .foregroundColor(themeManager.accentColor)
+                            } else {
+                                Text("\(Int(completionPercentage * 100))%")
+                                    .font(.system(.title3, design: .rounded).weight(.bold))
                                     .foregroundColor(.choreStarTextPrimary)
-
-                                Text("Let's see how everyone is doing today")
-                                    .font(.subheadline)
-                                    .foregroundColor(.choreStarTextSecondary)
                             }
-                            Spacer()
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 10)
+                        .frame(width: 88, height: 88)
                     }
-
-                    // Progress Card with gradient
-                    ZStack {
-                        // Gradient background
-                        LinearGradient(
-                            colors: [themeManager.accentColor.opacity(0.1), Color.choreStarSecondary.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        
-                        VStack(spacing: 16) {
-                            HStack {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "chart.bar.fill")
-                                        .foregroundColor(themeManager.accentColor)
-                                    Text("Today's Progress")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarTextPrimary)
-                                }
-                                Spacer()
-                                HStack(alignment: .firstTextBaseline, spacing: 0) {
-                                    Text("\(completedChores)")
-                                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                                        .foregroundColor(themeManager.accentColor)
-                                    Text("/\(totalChores)")
-                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.choreStarTextSecondary)
-                                }
-                            }
-
-                            // Animated Progress Bar
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    // Background
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.choreStarBackground)
-                                        .frame(height: 16)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(themeManager.accentColor.opacity(0.1), lineWidth: 1)
-                                        )
-
-                                    // Progress fill with gradient
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(themeManager.gradient)
-                                        .frame(width: geometry.size.width * completionPercentage, height: 16)
-                                        .overlay(
-                                            // Shimmer effect
-                                            LinearGradient(
-                                                colors: [
-                                                    .clear,
-                                                    .white.opacity(0.3),
-                                                    .clear
-                                                ],
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                            .blur(radius: 3)
-                                        )
-                                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: completionPercentage)
-                                }
-                            }
-                            .frame(height: 16)
-
-                            HStack {
-                                Text("\(Int(completionPercentage * 100))% Complete")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.choreStarTextSecondary)
-                                
-                                Spacer()
-                                
-                                if completionPercentage == 1.0 {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.choreStarSuccess)
-                                        Text("Amazing!")
-                                            .font(.subheadline)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.choreStarSuccess)
-                                    }
-                                    .transition(.scale.combined(with: .opacity))
-                                }
-                            }
-                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionPercentage)
-                        }
-                        .padding(20)
-                    }
-                    .background(Color.choreStarCardBackground)
-                    .cornerRadius(20)
-                    .shadow(color: Color.choreStarPrimary.opacity(0.15), radius: 15, x: 0, y: 5)
+                    .appCard(padding: 20)
                     .padding(.horizontal, 20)
+                    .padding(.top, 4)
 
-                    // Children Cards
+                    // Family: avatar ring chips, Fitness sharing-style
                     if !manager.children.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Family Members")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.choreStarTextPrimary)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 20)
+                            AppSectionHeader(title: "Family")
+                                .padding(.horizontal, 20)
 
                             ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 16) {
-                                    ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
+                                HStack(spacing: 12) {
+                                    ForEach(manager.children) { child in
                                         NavigationLink(destination: ChildDetailView(child: child)) {
-                                            ChildCard(child: child, index: index, manager: manager)
+                                            AvatarRingChip(
+                                                child: child,
+                                                progress: childProgress(child),
+                                                detailText: childProgressText(child)
+                                            )
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                     }
@@ -179,16 +128,14 @@ struct DashboardView: View {
                     // Today's Chores
                     if !manager.chores.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Today's Chores")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.choreStarTextPrimary)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 20)
+                            AppSectionHeader(title: "Today's Chores", trailing: "\(completedChores)/\(totalChores)")
+                                .padding(.horizontal, 20)
 
-                            LazyVStack(spacing: 8) {
+                            LazyVGrid(
+                                columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 12, alignment: .top)],
+                                alignment: .center,
+                                spacing: 8
+                            ) {
                                 ForEach(manager.chores, id: \.id) { chore in
                                     ChoreCard(
                                         chore: chore,
@@ -213,8 +160,17 @@ struct DashboardView: View {
             .refreshable {
                 manager.refreshData()
             }
-            .navigationTitle("Dashboard")
+            .navigationTitle("Home")
             .navigationBarTitleDisplayMode(.large)
+        }
+        .onAppear {
+            if lastSeenChangelogVersion != Changelog.latestVersion {
+                lastSeenChangelogVersion = Changelog.latestVersion
+                showWhatsNew = true
+            }
+        }
+        .sheet(isPresented: $showWhatsNew) {
+            WhatsNewView()
         }
         .confetti(isPresented: $showConfetti)
         .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
@@ -224,119 +180,6 @@ struct DashboardView: View {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
             }
         }
-    }
-}
-
-struct ChildCard: View {
-    let child: Child
-    let index: Int
-    let manager: SupabaseManager
-    
-    private var childChores: [Chore] {
-        manager.chores.filter { $0.childId == child.id }
-    }
-    
-    private var completedChores: Int {
-        childChores.filter { manager.isChoreCompleted($0) }.count
-    }
-    
-    private var totalChores: Int {
-        childChores.count
-    }
-    
-    var body: some View {
-        VStack(spacing: 14) {
-            // Avatar with gradient ring
-            ZStack {
-                // Gradient ring
-                Circle()
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.5)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 3
-                    )
-                    .frame(width: 68, height: 68)
-                
-                // Avatar
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.8)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 60, height: 60)
-                    .overlay(
-                        Text(child.initials)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                    )
-                    .shadow(color: Color.fromString(child.avatarColor).opacity(0.4), radius: 8, x: 0, y: 4)
-            }
-            
-            // Name and progress
-            VStack(spacing: 6) {
-                Text(child.name)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.choreStarTextPrimary)
-                    .lineLimit(1)
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.caption)
-                        .foregroundColor(.choreStarSuccess)
-                    Text("\(completedChores)/\(totalChores)")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.choreStarTextSecondary)
-                }
-                
-                // Mini progress bar with gradient
-                if totalChores > 0 {
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.choreStarBackground)
-                                .frame(height: 8)
-                            
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.7)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: geometry.size.width * (Double(completedChores) / Double(totalChores)), height: 8)
-                                .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completedChores)
-                        }
-                    }
-                    .frame(height: 8)
-                }
-            }
-        }
-        .padding(18)
-        .frame(width: 150)
-        .background(
-            LinearGradient(
-                colors: [Color.choreStarCardBackground, Color.choreStarBackground.opacity(0.5)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.fromString(child.avatarColor).opacity(0.2), lineWidth: 1)
-        )
     }
 }
 
@@ -356,113 +199,70 @@ struct ChoreCard: View {
     }
     
     var body: some View {
-        HStack(spacing: 14) {
-            // Animated completion button
-            Button(action: {
-                let impact = UIImpactFeedbackGenerator(style: .medium)
-                impact.impactOccurred()
-                
-                let wasCompleted = isCompleted
-                Task {
-                    let achievements = await manager.toggleChoreCompletion(chore)
-                    // Show confetti and play sound if newly completed
-                    if !wasCompleted {
-                        SoundManager.shared.play(.success)
-                        await MainActor.run {
-                            onComplete?()
-                            
-                            // Show achievement alert if any were earned
-                            if !achievements.isEmpty {
-                                earnedAchievements = achievements
-                                showAchievementAlert = true
-                            }
+        Button(action: toggle) {
+            HStack(spacing: 14) {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 26, weight: .medium))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .contentShape(Circle())
+                    .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        if let icon = chore.icon, !icon.isEmpty {
+                            Text(icon)
+                                .font(.subheadline)
                         }
+                        Text(chore.name)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                            .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                            .lineLimit(1)
                     }
+
+                    Text(childName)
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
                 }
-            }) {
-                ZStack {
-                    // Outer ring
-                    Circle()
-                        .strokeBorder(
-                            isCompleted ? Color.choreStarSuccess : Color.choreStarTextSecondary.opacity(0.3),
-                            lineWidth: 2.5
-                        )
-                        .frame(width: 32, height: 32)
-                    
-                    // Checkmark
-                    if isCompleted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.choreStarSuccess)
-                            .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isCompleted)
+
+                Spacer()
+
+                Text(manager.formatMoney(chore.reward))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
             }
-            .buttonStyle(PlainButtonStyle())
-            
-            // Chore info
-            VStack(alignment: .leading, spacing: 6) {
-                Text(chore.name)
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
-                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                
-                HStack(spacing: 8) {
-                    // Child name with icon
-                    HStack(spacing: 4) {
-                        Image(systemName: "person.fill")
-                            .font(.caption)
-                            .foregroundColor(.choreStarTextSecondary)
-                        Text(childName)
-                            .font(.caption)
-                            .foregroundColor(.choreStarTextSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    // Reward badge
-                    HStack(spacing: 4) {
-                        Image(systemName: "dollarsign.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(Color.choreStarWarningGradient)
-                        Text(String(format: "%.2f", chore.reward))
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.choreStarWarningGradient)
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.choreStarAccent.opacity(0.15))
-                    .cornerRadius(8)
-                }
-            }
-            
-            Spacer()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .background(Color.choreStarCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .opacity(isCompleted ? 0.75 : 1.0)
         }
-        .padding(16)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.choreStarCardBackground,
-                    isCompleted ? Color.choreStarSuccess.opacity(0.05) : Color.choreStarCardBackground
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-        .cornerRadius(16)
-        .shadow(color: isCompleted ? Color.choreStarSuccess.opacity(0.1) : Color.black.opacity(0.06), radius: 8, x: 0, y: 3)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    isCompleted ? Color.choreStarSuccess.opacity(0.3) : Color.choreStarBackground,
-                    lineWidth: 1.5
-                )
-        )
-        .scaleEffect(isCompleted ? 0.98 : 1.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isCompleted)
+        .buttonStyle(PlainButtonStyle())
+    }
+
+    private func toggle() {
+        let wasCompleted = isCompleted
+        if wasCompleted {
+            Haptics.light()
+        } else {
+            Haptics.success()
+        }
+
+        Task {
+            let achievements = await manager.toggleChoreCompletion(chore)
+            if !wasCompleted {
+                SoundManager.shared.play(.success)
+                await MainActor.run {
+                    onComplete?()
+
+                    if !achievements.isEmpty {
+                        earnedAchievements = achievements
+                        showAchievementAlert = true
+                    }
+                }
+            }
+        }
     }
 }
 

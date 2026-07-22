@@ -2,6 +2,7 @@ import SwiftUI
 
 struct UpgradePromptView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var showingPaywall = false
     let limitType: LimitType
     let currentCount: Int
     let limit: Int
@@ -73,28 +74,34 @@ struct UpgradePromptView: View {
             }
             .padding(.horizontal, 32)
             
-            Text("Upgrade to Premium on chorestar.app\nfor unlimited access.")
-                .font(.subheadline)
-                .foregroundColor(.choreStarPrimary)
-                .multilineTextAlignment(.center)
-                .fontWeight(.semibold)
-            
             Spacer()
-            
-            Button(action: { dismiss() }) {
-                Text("Got It")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.choreStarGradient)
-                    .cornerRadius(14)
+
+            Button(action: { showingPaywall = true }) {
+                HStack {
+                    Image(systemName: "crown.fill")
+                    Text("See Premium Plans")
+                        .fontWeight(.bold)
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.choreStarGradient)
+                .cornerRadius(14)
             }
             .padding(.horizontal, 32)
+
+            Button(action: { dismiss() }) {
+                Text("Not Now")
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarTextSecondary)
+            }
             .padding(.bottom, 32)
         }
         .background(Color.choreStarBackground)
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
+        }
     }
     
     private func upgradeFeature(icon: String, text: String) -> some View {

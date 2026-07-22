@@ -21,7 +21,7 @@ struct AvatarPickerView: View {
     private let emojiAvatars = ["😀", "😎", "🤓", "🥳", "😇", "🤩", "😊", "🙂", "😁", "😆", "🤗", "🥰", "😍", "🤪", "😋", "😛", "🧐", "🤠", "👽", "🤖", "🎃", "👻", "🦄", "🐶", "🐱", "🐼", "🐨", "🦁", "🐯", "🐸"]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Tab selector
                 HStack(spacing: 0) {

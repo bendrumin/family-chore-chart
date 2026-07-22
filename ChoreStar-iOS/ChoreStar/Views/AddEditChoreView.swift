@@ -53,10 +53,65 @@ struct AddEditChoreView: View {
     var isEditing: Bool {
         choreToEdit != nil
     }
-    
+
+    private var suggestions: [ChoreSuggestion] {
+        guard !isEditing,
+              let childId = selectedChild,
+              let child = manager.children.first(where: { $0.id == childId }) else { return [] }
+
+        let existingNames = manager.chores
+            .filter { $0.childId == childId }
+            .map(\.name)
+        let completionRate = manager.calculateWeeklyStats(for: childId).completionRate * 100
+
+        return ChoreSuggestionEngine.suggestions(
+            childName: child.name,
+            childAge: child.age,
+            existingChoreNames: existingNames,
+            completionRate: completionRate
+        )
+    }
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
+                if !suggestions.isEmpty {
+                    Section("Suggestions") {
+                        ForEach(suggestions) { suggestion in
+                            Button {
+                                applySuggestion(suggestion)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Text(suggestion.icon)
+                                        .font(.title2)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(suggestion.name)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.choreStarTextPrimary)
+
+                                        Text(suggestion.reason)
+                                            .font(.caption)
+                                            .foregroundColor(.choreStarTextSecondary)
+                                    }
+
+                                    Spacer()
+
+                                    Text(manager.formatMoney(Double(suggestion.rewardCents) / 100.0))
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.choreStarAccent)
+
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(.choreStarPrimary)
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+
                 Section("Chore Details") {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Name")
@@ -84,7 +139,7 @@ struct AddEditChoreView: View {
                 
                 Section("Reward") {
                     HStack {
-                        Text("$")
+                        Text(manager.currencySymbol)
                             .font(.title2)
                             .foregroundColor(.choreStarAccent)
                         
@@ -96,7 +151,7 @@ struct AddEditChoreView: View {
                         Stepper("", value: $rewardDollars, in: 0...100, step: 0.25)
                     }
                     
-                    Text("Current: \(String(format: "$%.2f", rewardDollars))")
+                    Text("Current: \(manager.formatMoney(rewardDollars))")
                         .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)
                 }
@@ -181,6 +236,16 @@ struct AddEditChoreView: View {
         }
     }
     
+    private func applySuggestion(_ suggestion: ChoreSuggestion) {
+        name = suggestion.name
+        rewardDollars = Double(suggestion.rewardCents) / 100.0
+        category = suggestion.editorCategory
+        selectedIcon = suggestion.icon
+
+        let impact = UIImpactFeedbackGenerator(style: .light)
+        impact.impactOccurred()
+    }
+
     private func saveChore() {
         guard let childId = selectedChild else {
             errorMessage = "Please select a child"

@@ -9,7 +9,7 @@ struct ChildAuthView: View {
     @State private var isAuthenticating = false
     
     private var childrenWithAccess: [Child] {
-        manager.children.filter { $0.hasChildAccess }
+        manager.children.filter { manager.childHasPin($0.id) }
     }
     
     var body: some View {
@@ -50,8 +50,7 @@ struct ChildAuthView: View {
                     // Child selection
                     ScrollView {
                         LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
+                            GridItem(.adaptive(minimum: 150, maximum: 220), spacing: 20)
                         ], spacing: 20) {
                             ForEach(childrenWithAccess) { child in
                                 ChildSelectButton(child: child) {
@@ -110,9 +109,9 @@ struct ChildAuthView: View {
                                 .font(.headline)
                                 .foregroundColor(.choreStarTextSecondary)
                             
-                            // PIN dots
+                            // PIN dots (PINs are 4-6 digits)
                             HStack(spacing: 12) {
-                                ForEach(0..<4) { index in
+                                ForEach(0..<max(4, enteredPin.count), id: \.self) { index in
                                     Circle()
                                         .fill(index < enteredPin.count ? Color.choreStarPrimary : Color.choreStarBackground)
                                         .frame(width: 16, height: 16)
@@ -120,7 +119,7 @@ struct ChildAuthView: View {
                                 }
                             }
                             .padding()
-                            
+
                             // Number pad
                             VStack(spacing: 16) {
                                 ForEach(0..<3) { row in
@@ -133,7 +132,7 @@ struct ChildAuthView: View {
                                         }
                                     }
                                 }
-                                
+
                                 HStack(spacing: 20) {
                                     NumberButton(number: "", icon: "arrow.left.circle.fill") {
                                         selectedChild = nil
@@ -149,6 +148,24 @@ struct ChildAuthView: View {
                                             errorMessage = nil
                                         }
                                     }
+                                }
+
+                                if enteredPin.count >= 4 {
+                                    Button(action: {
+                                        authenticateChild()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "checkmark.circle.fill")
+                                            Text("Go!")
+                                        }
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 14)
+                                        .background(Color.choreStarGradient)
+                                        .cornerRadius(16)
+                                    }
+                                    .disabled(isAuthenticating)
                                 }
                             }
                         }
@@ -176,38 +193,37 @@ struct ChildAuthView: View {
     }
     
     private func addDigit(_ digit: String) {
-        guard enteredPin.count < 4 else { return }
-        
+        guard enteredPin.count < 6, !isAuthenticating else { return }
+
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
-        
+
         enteredPin += digit
-        
-        // Auto-submit when 4 digits entered
-        if enteredPin.count == 4 {
+        errorMessage = nil
+
+        // Auto-submit at the maximum PIN length; shorter PINs use the Go button
+        if enteredPin.count == 6 {
             authenticateChild()
         }
     }
-    
+
     private func authenticateChild() {
-        guard let child = selectedChild else { return }
-        
+        guard let child = selectedChild, !isAuthenticating else { return }
+
         isAuthenticating = true
-        
+
         Task {
-            do {
-                let success = await manager.authenticateChild(childId: child.id, pin: enteredPin)
-                
-                await MainActor.run {
-                    if !success {
-                        errorMessage = "Incorrect PIN. Try again!"
-                        enteredPin = ""
-                        
-                        let notification = UINotificationFeedbackGenerator()
-                        notification.notificationOccurred(.error)
-                    }
-                    isAuthenticating = false
+            let authError = await manager.authenticateChild(childId: child.id, pin: enteredPin)
+
+            await MainActor.run {
+                if let authError = authError {
+                    errorMessage = authError
+                    enteredPin = ""
+
+                    let notification = UINotificationFeedbackGenerator()
+                    notification.notificationOccurred(.error)
                 }
+                isAuthenticating = false
             }
         }
     }

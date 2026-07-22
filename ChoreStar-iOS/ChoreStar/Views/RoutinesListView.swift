@@ -110,27 +110,33 @@ struct RoutinesListView: View {
                                 }
                                 .padding(.horizontal, 20)
                                 
-                                ForEach(group.routines) { routine in
-                                    RoutineCardView(routine: routine, child: group.child) {
-                                        editingRoutine = routine
-                                    }
-                                    .contextMenu {
-                                        Button {
+                                LazyVGrid(
+                                    columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
+                                    alignment: .center,
+                                    spacing: 16
+                                ) {
+                                    ForEach(group.routines) { routine in
+                                        RoutineCardView(routine: routine, child: group.child) {
                                             editingRoutine = routine
-                                        } label: {
-                                            Label("Edit", systemImage: "pencil")
                                         }
-                                        
-                                        Button(role: .destructive) {
-                                            Task {
-                                                try? await manager.deleteRoutine(routineId: routine.id)
+                                        .contextMenu {
+                                            Button {
+                                                editingRoutine = routine
+                                            } label: {
+                                                Label("Edit", systemImage: "pencil")
                                             }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
+
+                                            Button(role: .destructive) {
+                                                Task {
+                                                    try? await manager.deleteRoutine(routineId: routine.id)
+                                                }
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
                                         }
                                     }
-                                    .padding(.horizontal, 20)
                                 }
+                                .padding(.horizontal, 20)
                             }
                         }
                         
@@ -201,7 +207,7 @@ struct RoutinesListView: View {
 }
 
 #Preview {
-    NavigationView {
+    NavigationStack {
         RoutinesListView()
             .environmentObject(SupabaseManager.shared)
     }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RoutineCardView: View {
+    @EnvironmentObject var manager: SupabaseManager
     let routine: Routine
     let child: Child?
     var showChild = true
@@ -51,7 +52,7 @@ struct RoutineCardView: View {
                             Image(systemName: "star.fill")
                                 .font(.caption)
                                 .foregroundColor(.choreStarAccent)
-                            Text(String(format: "$%.2f", Double(routine.rewardCents) / 100.0))
+                            Text(manager.formatMoney(Double(routine.rewardCents) / 100.0))
                                 .font(.subheadline)
                                 .fontWeight(.bold)
                                 .foregroundColor(.choreStarAccent)
@@ -118,13 +119,18 @@ struct RoutineCardView: View {
 }
 
 struct KidRoutineCard: View {
+    @EnvironmentObject var manager: SupabaseManager
     let routine: Routine
     var onStart: () -> Void
-    
+
     private var routineColor: Color {
         Color.fromHex(routine.color)
     }
-    
+
+    private var isDoneToday: Bool {
+        manager.completedRoutineIds.contains(routine.id)
+    }
+
     var body: some View {
         Button(action: onStart) {
             VStack(spacing: 16) {
@@ -133,42 +139,56 @@ struct KidRoutineCard: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(routineColor.opacity(0.15))
                             .frame(width: 60, height: 60)
-                        
+
                         Image(systemName: routine.icon)
                             .font(.title)
                             .foregroundColor(routineColor)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 6) {
                         Text(routine.name)
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarTextPrimary)
-                        
+
                         Text("\(routine.steps.count) steps · \(routine.typeDisplayName)")
                             .font(.subheadline)
                             .foregroundColor(.choreStarTextSecondary)
                     }
-                    
+
                     Spacer()
-                    
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(routineColor)
+
+                    if isDoneToday {
+                        VStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 36))
+                                .foregroundColor(.choreStarSuccess)
+                            Text("Done!")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.choreStarSuccess)
+                        }
+                    } else {
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(routineColor)
+                    }
                 }
-                
-                HStack(spacing: 6) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.choreStarAccent)
-                    Text("Earn \(String(format: "$%.2f", Double(routine.rewardCents) / 100.0))")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.choreStarAccent)
+
+                if !isDoneToday {
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.choreStarAccent)
+                        Text("Earn \(manager.formatMoney(Double(routine.rewardCents) / 100.0))")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.choreStarAccent)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.choreStarAccent.opacity(0.15))
+                    .cornerRadius(12)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.choreStarAccent.opacity(0.15))
-                .cornerRadius(12)
             }
             .padding(20)
             .background(Color.choreStarCardBackground)
@@ -176,10 +196,12 @@ struct KidRoutineCard: View {
             .shadow(color: routineColor.opacity(0.15), radius: 12, x: 0, y: 4)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(routineColor.opacity(0.3), lineWidth: 2)
+                    .strokeBorder(isDoneToday ? Color.choreStarSuccess.opacity(0.4) : routineColor.opacity(0.3), lineWidth: 2)
             )
+            .opacity(isDoneToday ? 0.75 : 1)
         }
         .buttonStyle(PlainButtonStyle())
+        .disabled(isDoneToday)
         .scaleEffect(1.0)
     }
 }
@@ -215,4 +237,5 @@ extension Color {
     }
     .padding()
     .background(Color.choreStarBackground)
+    .environmentObject(SupabaseManager.shared)
 }
