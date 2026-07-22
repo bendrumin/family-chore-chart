@@ -88,7 +88,7 @@ struct RoutineCelebrationView: View {
                 HStack(spacing: 20) {
                     statCard(icon: "checkmark.circle.fill", value: "\(stepsCompleted)/\(routine.steps.count)", label: "Steps", color: .choreStarSuccess)
                     statCard(icon: "clock.fill", value: formattedDuration, label: "Time", color: .choreStarPrimary)
-                    statCard(icon: "star.fill", value: String(format: "$%.2f", Double(pointsEarned) / 100.0), label: "Earned", color: .choreStarAccent)
+                    statCard(icon: "star.fill", value: manager.formatMoney(Double(pointsEarned) / 100.0), label: "Earned", color: .choreStarAccent)
                 }
                 .padding(.horizontal, 20)
                 .opacity(showContent ? 1 : 0)

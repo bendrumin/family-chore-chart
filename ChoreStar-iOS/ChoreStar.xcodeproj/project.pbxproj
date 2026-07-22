@@ -45,6 +45,13 @@
 		A1234567890ABCDEF12345C0 /* UpgradePromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345BF /* UpgradePromptView.swift */; };
 		A1234567890ABCDEF12345C2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345C1 /* PrivacyInfo.xcprivacy */; };
 		A1234567890ABCDEF12345D1 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345D2 /* ThemeManager.swift */; };
+		A1234567890ABCDEF12345E1 /* KidLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345E0 /* KidLoginView.swift */; };
+		A1234567890ABCDEF12345E3 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345E2 /* PaywallView.swift */; };
+		A1234567890ABCDEF12345E5 /* WhatsNewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345E4 /* WhatsNewView.swift */; };
+		A1234567890ABCDEF12345E7 /* Achievements.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345E6 /* Achievements.swift */; };
+		A1234567890ABCDEF12345E9 /* ChoreSuggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345E8 /* ChoreSuggestions.swift */; };
+		A1234567890ABCDEF12345EB /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345EA /* StoreKitManager.swift */; };
+		A1234567890ABCDEF12345ED /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345EC /* DesignSystem.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +94,13 @@
 		A1234567890ABCDEF12345BF /* UpgradePromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradePromptView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345C1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345D2 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345E0 /* KidLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidLoginView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345E2 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345E4 /* WhatsNewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345E6 /* Achievements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Achievements.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345E8 /* ChoreSuggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreSuggestions.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345EA /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345EC /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +162,8 @@
 				A1234567890ABCDEF1234571 /* Models.swift */,
 				A1234567890ABCDEF12345AF /* Routine.swift */,
 				A1234567890ABCDEF12345B1 /* Profile.swift */,
+				A1234567890ABCDEF12345E6 /* Achievements.swift */,
+				A1234567890ABCDEF12345E8 /* ChoreSuggestions.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -158,6 +174,7 @@
 				A1234567890ABCDEF1234570 /* SupabaseManager.swift */,
 				A1234567890ABCDEF12345AA /* SoundManager.swift */,
 				A1234567890ABCDEF12345D2 /* ThemeManager.swift */,
+				A1234567890ABCDEF12345EA /* StoreKitManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -188,6 +205,9 @@
 				A1234567890ABCDEF12345BB /* RoutinePlayerView.swift */,
 				A1234567890ABCDEF12345BD /* RoutinesListView.swift */,
 				A1234567890ABCDEF12345BF /* UpgradePromptView.swift */,
+				A1234567890ABCDEF12345E0 /* KidLoginView.swift */,
+				A1234567890ABCDEF12345E2 /* PaywallView.swift */,
+				A1234567890ABCDEF12345E4 /* WhatsNewView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -198,6 +218,7 @@
 				A1234567890ABCDEF123457D /* Colors.swift */,
 				A1234567890ABCDEF1234596 /* ViewModifiers.swift */,
 				A1234567890ABCDEF12345B3 /* SeasonalThemes.swift */,
+				A1234567890ABCDEF12345EC /* DesignSystem.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -313,6 +334,13 @@
 				A1234567890ABCDEF12345BC /* RoutinePlayerView.swift in Sources */,
 				A1234567890ABCDEF12345BE /* RoutinesListView.swift in Sources */,
 				A1234567890ABCDEF12345C0 /* UpgradePromptView.swift in Sources */,
+				A1234567890ABCDEF12345E1 /* KidLoginView.swift in Sources */,
+				A1234567890ABCDEF12345E3 /* PaywallView.swift in Sources */,
+				A1234567890ABCDEF12345E5 /* WhatsNewView.swift in Sources */,
+				A1234567890ABCDEF12345E7 /* Achievements.swift in Sources */,
+				A1234567890ABCDEF12345E9 /* ChoreSuggestions.swift in Sources */,
+				A1234567890ABCDEF12345EB /* StoreKitManager.swift in Sources */,
+				A1234567890ABCDEF12345ED /* DesignSystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

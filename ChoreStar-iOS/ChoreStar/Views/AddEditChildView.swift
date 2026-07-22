@@ -12,7 +12,8 @@ struct AddEditChildView: View {
     @State private var avatarUrl: String?
     @State private var avatarFile: String?
     @State private var childAccessEnabled: Bool
-    @State private var childPin: String
+    @State private var childPin: String = ""
+    @State private var hadPinOnOpen: Bool
     @State private var showingAvatarPicker = false
     @State private var isSaving = false
     @State private var errorMessage: String?
@@ -31,8 +32,9 @@ struct AddEditChildView: View {
         _selectedColor = State(initialValue: child?.avatarColor ?? "blue")
         _avatarUrl = State(initialValue: child?.avatarUrl)
         _avatarFile = State(initialValue: child?.avatarFile)
-        _childAccessEnabled = State(initialValue: child?.childAccessEnabled ?? false)
-        _childPin = State(initialValue: child?.childPin ?? "")
+        let hasPin = child.map { SupabaseManager.shared.childHasPin($0.id) } ?? false
+        _childAccessEnabled = State(initialValue: hasPin)
+        _hadPinOnOpen = State(initialValue: hasPin)
     }
     
     var isEditing: Bool {
@@ -40,7 +42,7 @@ struct AddEditChildView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Avatar") {
                     HStack {
@@ -159,24 +161,31 @@ struct AddEditChildView: View {
                     .padding(.vertical, 8)
                 }
                 
-                Section("Child Access") {
-                    Toggle("Enable Child Login", isOn: $childAccessEnabled)
-                        .tint(.choreStarPrimary)
-                    
-                    if childAccessEnabled {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("4-Digit PIN")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.choreStarTextSecondary)
-                            
-                            SecureField("Enter 4-digit PIN", text: $childPin)
-                                .keyboardType(.numberPad)
-                                .textFieldStyle(.roundedBorder)
-                            
-                            Text("This PIN lets \(name.isEmpty ? "your child" : name) access their own chore view")
-                                .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
+                if isEditing {
+                    Section("Kid Login") {
+                        Toggle("Enable Kid Login", isOn: $childAccessEnabled)
+                            .tint(.choreStarPrimary)
+
+                        if childAccessEnabled {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("PIN (4-6 digits)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.choreStarTextSecondary)
+
+                                SecureField(hadPinOnOpen ? "Enter new PIN to change it" : "Enter 4-6 digit PIN", text: $childPin)
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(.roundedBorder)
+                                    .onChange(of: childPin) { newValue in
+                                        childPin = String(newValue.filter(\.isNumber).prefix(6))
+                                    }
+
+                                Text(hadPinOnOpen && childPin.isEmpty
+                                     ? "A PIN is already set. Leave blank to keep it."
+                                     : "This PIN lets \(name.isEmpty ? "your child" : name) log in to their own chore view")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
                         }
                     }
                 }
@@ -235,17 +244,25 @@ struct AddEditChildView: View {
             do {
                 if let child = childToEdit {
                     // Update existing child
-                    let pinToSave = childAccessEnabled && childPin.count == 4 ? childPin : nil
                     try await manager.updateChild(
                         childId: child.id,
                         name: name,
                         age: age,
                         avatarColor: selectedColor,
                         avatarUrl: avatarUrl,
-                        avatarFile: avatarFile,
-                        childPin: pinToSave,
-                        childAccessEnabled: childAccessEnabled
+                        avatarFile: avatarFile
                     )
+
+                    if childAccessEnabled {
+                        if childPin.count >= 4 {
+                            try await manager.setChildPin(childId: child.id, pin: childPin)
+                        } else if !hadPinOnOpen {
+                            throw NSError(domain: "AddEditChildView", code: -1, userInfo: [NSLocalizedDescriptionKey: "Enter a 4-6 digit PIN to enable kid login"])
+                        }
+                        // Toggle on with an existing PIN and empty field: keep current PIN
+                    } else if hadPinOnOpen {
+                        try await manager.removeChildPin(childId: child.id)
+                    }
                 } else {
                     // Create new child
                     try await manager.createChild(
@@ -326,8 +343,6 @@ struct ColorOption: View {
             avatarUrl: nil,
             avatarFile: nil,
             userId: UUID(),
-            childPin: nil,
-            childAccessEnabled: false,
             createdAt: Date(),
             updatedAt: Date()
         )

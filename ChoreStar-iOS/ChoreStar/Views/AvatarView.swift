@@ -120,8 +120,6 @@ struct AvatarView: View {
                 avatarUrl: nil,
                 avatarFile: nil,
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             ),
@@ -138,8 +136,6 @@ struct AvatarView: View {
                 avatarUrl: nil,
                 avatarFile: "🤖",
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             ),
@@ -156,8 +152,6 @@ struct AvatarView: View {
                 avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Felix",
                 avatarFile: "Felix",
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             ),

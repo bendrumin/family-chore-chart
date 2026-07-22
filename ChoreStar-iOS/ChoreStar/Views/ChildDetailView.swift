@@ -80,7 +80,7 @@ struct ChildDetailView: View {
                         
                         StatCard(
                             icon: "dollarsign.circle.fill",
-                            value: String(format: "$%.2f", totalEarnings),
+                            value: manager.formatMoney(totalEarnings),
                             label: "Earned",
                             color: .choreStarAccent
                         )
@@ -212,7 +212,7 @@ struct ChildDetailView: View {
             AddEditChoreView(chore: nil, preselectedChildId: child.id)
         }
         .sheet(isPresented: $showWeekView) {
-            NavigationView {
+            NavigationStack {
                 WeekCalendarView(child: child)
                     .environmentObject(manager)
                     .toolbar {
@@ -399,7 +399,7 @@ struct EmptyChoresMessage: View {
 }
 
 #Preview {
-    NavigationView {
+    NavigationStack {
         ChildDetailView(
             child: Child(
                 id: UUID(),
@@ -409,8 +409,6 @@ struct EmptyChoresMessage: View {
                 avatarUrl: nil,
                 avatarFile: nil,
                 userId: UUID(),
-                childPin: nil,
-                childAccessEnabled: false,
                 createdAt: Date(),
                 updatedAt: Date()
             )

@@ -16,6 +16,7 @@ struct AuthView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
+    @State private var showingKidLogin = false
 
     var body: some View {
         ZStack {
@@ -59,11 +60,34 @@ struct AuthView: View {
                 .background(Color.choreStarCardBackground)
                 .cornerRadius(20)
                 .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 8)
+                .frame(maxWidth: 560)
                 .padding(.horizontal, 24)
-                
+
+                // Kid login entry — kids use a family code + PIN, no account
+                Button(action: { showingKidLogin = true }) {
+                    HStack(spacing: 8) {
+                        Text("🧒")
+                        Text("I'm a Kid!")
+                            .fontWeight(.bold)
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 14)
+                    .background(.white.opacity(0.2))
+                    .cornerRadius(24)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .strokeBorder(.white.opacity(0.5), lineWidth: 1.5)
+                    )
+                }
+
                 Spacer()
                 Spacer()
             }
+        }
+        .sheet(isPresented: $showingKidLogin) {
+            KidLoginView()
         }
         .onAppear {
             loadSavedEmail()

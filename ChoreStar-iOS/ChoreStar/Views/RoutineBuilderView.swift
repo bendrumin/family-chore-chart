@@ -40,7 +40,7 @@ struct RoutineBuilderView: View {
     ]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 if !isEditing {
                     templatesSection
@@ -98,7 +98,7 @@ struct RoutineBuilderView: View {
     
     private var templatesSection: some View {
         Section("Quick Start Templates") {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 260), spacing: 12)], spacing: 12) {
                 ForEach(RoutineTemplate.all, id: \.name) { template in
                     Button {
                         applyTemplate(template)

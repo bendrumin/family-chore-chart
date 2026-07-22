@@ -1,8 +1,51 @@
 import SwiftUI
+import Charts
 
 struct HistoryView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var selectedChild: UUID?
+
+    private struct DayCompletionCount: Identifiable {
+        let id: Int
+        let label: String
+        let count: Int
+    }
+
+    private struct ChildCompletionCount: Identifiable {
+        let id: UUID
+        let name: String
+        let color: Color
+        let count: Int
+    }
+
+    private var weeklyTrend: [DayCompletionCount] {
+        let relevantChoreIds: Set<UUID> = {
+            if let selected = selectedChild {
+                return Set(manager.chores.filter { $0.childId == selected }.map(\.id))
+            }
+            return Set(manager.chores.map(\.id))
+        }()
+
+        return (0..<7).map { day in
+            let count = manager.weekCompletions.filter {
+                $0.dayOfWeek == day && relevantChoreIds.contains($0.choreId)
+            }.count
+            return DayCompletionCount(id: day, label: dayLabels[day], count: count)
+        }
+    }
+
+    private var completionsByChild: [ChildCompletionCount] {
+        manager.children.map { child in
+            let childChoreIds = Set(manager.chores.filter { $0.childId == child.id }.map(\.id))
+            let count = manager.weekCompletions.filter { childChoreIds.contains($0.choreId) }.count
+            return ChildCompletionCount(
+                id: child.id,
+                name: child.name,
+                color: Color.fromString(child.avatarColor),
+                count: count
+            )
+        }
+    }
     
     private var stats: WeeklyStats {
         if let childId = selectedChild {
@@ -14,7 +57,7 @@ struct HistoryView: View {
     private let dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     // Child picker
@@ -31,8 +74,7 @@ struct HistoryView: View {
                     
                     // Summary cards
                     LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
+                        GridItem(.adaptive(minimum: 160, maximum: 260), spacing: 16)
                     ], spacing: 16) {
                         SummaryCard(
                             icon: "checkmark.circle.fill",
@@ -43,7 +85,7 @@ struct HistoryView: View {
                         
                         SummaryCard(
                             icon: "star.fill",
-                            value: String(format: "$%.2f", stats.totalEarnings),
+                            value: manager.formatMoney(stats.totalEarnings),
                             label: "Total Earned",
                             color: .choreStarAccent
                         )
@@ -63,6 +105,108 @@ struct HistoryView: View {
                         )
                     }
                     .padding(.horizontal, 20)
+
+                    // Weekly completion trend
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Completions This Week")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.choreStarTextPrimary)
+
+                        Chart(weeklyTrend) { item in
+                            AreaMark(
+                                x: .value("Day", item.label),
+                                y: .value("Completions", item.count)
+                            )
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.choreStarPrimary.opacity(0.25), Color.choreStarPrimary.opacity(0.02)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .interpolationMethod(.monotone)
+
+                            LineMark(
+                                x: .value("Day", item.label),
+                                y: .value("Completions", item.count)
+                            )
+                            .foregroundStyle(Color.choreStarPrimary)
+                            .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .interpolationMethod(.monotone)
+
+                            PointMark(
+                                x: .value("Day", item.label),
+                                y: .value("Completions", item.count)
+                            )
+                            .foregroundStyle(Color.choreStarPrimary)
+                            .symbolSize(36)
+                        }
+                        .chartYAxis {
+                            AxisMarks(position: .leading) { _ in
+                                AxisGridLine()
+                                    .foregroundStyle(Color.choreStarTextSecondary.opacity(0.15))
+                                AxisValueLabel()
+                                    .foregroundStyle(Color.choreStarTextSecondary)
+                            }
+                        }
+                        .chartXAxis {
+                            AxisMarks { _ in
+                                AxisValueLabel()
+                                    .foregroundStyle(Color.choreStarTextSecondary)
+                            }
+                        }
+                        .frame(height: 190)
+                    }
+                    .padding(16)
+                    .background(Color.choreStarCardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .padding(.horizontal, 20)
+
+                    // Per-child comparison (only meaningful with 2+ kids, unfiltered)
+                    if selectedChild == nil && manager.children.count > 1 {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("By Child")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.choreStarTextPrimary)
+
+                            Chart(completionsByChild) { item in
+                                BarMark(
+                                    x: .value("Child", item.name),
+                                    y: .value("Completions", item.count),
+                                    width: .ratio(0.55)
+                                )
+                                .foregroundStyle(item.color)
+                                .cornerRadius(4)
+                                .annotation(position: .top, alignment: .center) {
+                                    Text("\(item.count)")
+                                        .font(.caption2)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
+                            }
+                            .chartYAxis {
+                                AxisMarks(position: .leading) { _ in
+                                    AxisGridLine()
+                                        .foregroundStyle(Color.choreStarTextSecondary.opacity(0.15))
+                                    AxisValueLabel()
+                                        .foregroundStyle(Color.choreStarTextSecondary)
+                                }
+                            }
+                            .chartXAxis {
+                                AxisMarks { _ in
+                                    AxisValueLabel()
+                                        .foregroundStyle(Color.choreStarTextSecondary)
+                                }
+                            }
+                            .frame(height: 190)
+                        }
+                        .padding(16)
+                        .background(Color.choreStarCardBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.horizontal, 20)
+                    }
                     
                     // Perfect Days
                     VStack(alignment: .leading, spacing: 16) {
@@ -98,8 +242,7 @@ struct HistoryView: View {
                         }
                         .padding(16)
                         .background(Color.choreStarCardBackground)
-                        .cornerRadius(16)
-                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .padding(.horizontal, 20)
                         
                         if stats.perfectDays == 7 {
@@ -201,31 +344,9 @@ struct SummaryCard: View {
     let value: String
     let label: String
     let color: Color
-    
+
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title)
-                .foregroundColor(color)
-            
-            Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(.choreStarTextPrimary)
-            
-            Text(label)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(.choreStarTextSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        .background(Color.choreStarCardBackground)
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(color.opacity(0.2), lineWidth: 1)
-        )
+        StatTile(systemImage: icon, value: value, label: label, tint: color)
     }
 }
 
@@ -312,7 +433,7 @@ struct LeaderboardRow: View {
                         Image(systemName: "dollarsign.circle.fill")
                             .font(.caption)
                             .foregroundColor(.choreStarAccent)
-                        Text(String(format: "$%.2f", totalEarnings))
+                        Text(manager.formatMoney(totalEarnings))
                             .font(.subheadline)
                             .foregroundColor(.choreStarTextSecondary)
                     }
@@ -339,8 +460,7 @@ struct LeaderboardRow: View {
         }
         .padding(16)
         .background(Color.choreStarCardBackground)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(rank <= 3 ? rankColor.opacity(0.3) : Color.clear, lineWidth: 2)

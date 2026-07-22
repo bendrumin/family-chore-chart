@@ -9,6 +9,8 @@ struct SettingsView: View {
     @AppStorage("seasonalTheme") private var seasonalThemeSetting: String = "auto"
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
+    @State private var showingPaywall = false
+    @State private var showingWhatsNew = false
     
     enum DarkModePreference: String, CaseIterable {
         case light = "Light"
@@ -17,7 +19,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Appearance") {
                     Picker("Theme", selection: $darkModePreference) {
@@ -115,17 +117,27 @@ struct SettingsView: View {
                     }
                     
                     if !manager.isPremium {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Upgrade to Premium")
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.choreStarPrimary)
-                                Text("Unlimited children, chores & more")
-                                    .font(.caption)
-                                    .foregroundColor(.choreStarTextSecondary)
+                        Button(action: { showingPaywall = true }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Upgrade to Premium")
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.choreStarPrimary)
+                                    Text("Unlimited children, chores & more")
+                                        .font(.caption)
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "crown.fill")
+                                    .foregroundColor(.choreStarAccent)
                             }
-                            Spacer()
-                            Image(systemName: "arrow.up.right.circle.fill")
+                        }
+
+                        Button(action: {
+                            Task { await StoreKitManager.shared.restorePurchases() }
+                        }) {
+                            Text("Restore Purchases")
+                                .font(.subheadline)
                                 .foregroundColor(.choreStarPrimary)
                         }
                     }
@@ -171,12 +183,24 @@ struct SettingsView: View {
                         manager.refreshData()
                     }
                 }
+
+                Section("About") {
+                    Button(action: { showingWhatsNew = true }) {
+                        HStack {
+                            Text("What's New")
+                            Spacer()
+                            Image(systemName: "sparkles")
+                                .foregroundColor(.choreStarAccent)
+                        }
+                    }
+                }
                 
                 Section {
                     Button("Sign Out", role: .destructive) {
                         manager.signOut()
                     }
                 }
+                #if DEBUG
                 Section("Debug Info") {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack { 
@@ -238,10 +262,17 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
                 }
+                #endif
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showingChangePassword) {
                 ChangePasswordView()
+            }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView()
+            }
+            .sheet(isPresented: $showingWhatsNew) {
+                WhatsNewView()
             }
         }
     }
