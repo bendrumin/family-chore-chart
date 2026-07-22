@@ -64,23 +64,7 @@ struct AuthView: View {
                 .padding(.horizontal, 24)
 
                 // Kid login entry — kids use a family code + PIN, no account
-                Button(action: { showingKidLogin = true }) {
-                    HStack(spacing: 8) {
-                        Text("🧒")
-                        Text("I'm a Kid!")
-                            .fontWeight(.bold)
-                    }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 14)
-                    .background(.white.opacity(0.2))
-                    .cornerRadius(24)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .strokeBorder(.white.opacity(0.5), lineWidth: 1.5)
-                    )
-                }
+                kidLoginButton
 
                 Spacer()
                 Spacer()
@@ -92,6 +76,27 @@ struct AuthView: View {
         .onAppear {
             loadSavedEmail()
         }
+    }
+
+    private var kidLoginButton: some View {
+        Button(action: { showingKidLogin = true }) {
+            HStack(spacing: 8) {
+                Text("🧒")
+                Text("I'm a Kid!")
+                    .fontWeight(.bold)
+            }
+            .font(.headline)
+            .foregroundColor(.white)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 14)
+            .background(.white.opacity(0.2))
+            .cornerRadius(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .strokeBorder(.white.opacity(0.5), lineWidth: 1.5)
+            )
+        }
+        .accessibilityIdentifier("auth.kidLoginButton")
     }
     
     // MARK: - Sign In / Sign Up Card
@@ -120,6 +125,7 @@ struct AuthView: View {
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
+                        .accessibilityIdentifier("auth.emailField")
                         .padding()
                         .background(Color.choreStarBackground)
                         .cornerRadius(12)
@@ -128,14 +134,15 @@ struct AuthView: View {
                                 .stroke(Color.choreStarPrimary.opacity(0.2), lineWidth: 1)
                         )
                 }
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Password")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.choreStarTextSecondary)
-                    
+
                     SecureField("Enter your password", text: $password)
+                        .accessibilityIdentifier("auth.passwordField")
                         .textContentType(authMode == .signUp ? .newPassword : .password)
                         .padding()
                         .background(Color.choreStarBackground)
@@ -154,6 +161,7 @@ struct AuthView: View {
                             .foregroundColor(.choreStarTextSecondary)
                         
                         SecureField("Confirm your password", text: $confirmPassword)
+                            .accessibilityIdentifier("auth.confirmPasswordField")
                             .textContentType(.newPassword)
                             .padding()
                             .background(Color.choreStarBackground)
@@ -187,6 +195,7 @@ struct AuthView: View {
                     if isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .accessibilityIdentifier("auth.submitButtonSpinner")
                             .scaleEffect(0.8)
                     }
                     Text(authMode == .signIn ? (isLoading ? "Signing In..." : "Sign In") :
@@ -201,9 +210,10 @@ struct AuthView: View {
                 .cornerRadius(12)
                 .shadow(color: themeManager.accentColor.opacity(0.4), radius: 12, x: 0, y: 4)
             }
+            .accessibilityIdentifier("auth.submitButton")
             .disabled(!isFormValid || isLoading)
             .opacity(isFormValid ? 1.0 : 0.6)
-            
+
             if authMode == .signIn {
                 Button(action: { authMode = .forgotPassword }) {
                     Text("Forgot Password?")

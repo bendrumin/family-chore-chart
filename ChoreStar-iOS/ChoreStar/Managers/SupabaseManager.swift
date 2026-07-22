@@ -56,6 +56,20 @@ class SupabaseManager: ObservableObject {
     // All-time completion history (feeds achievement progress)
     @Published var allTimeCompletions: [HistoricalCompletion] = []
 
+    // Family sharing: if this user joined another family, that family owner's
+    // id is the "effective" id all family data hangs off (web parity:
+    // lib/utils/family.ts getEffectiveFamilyId)
+    @Published var memberOfFamilyId: UUID?
+    @Published var familyMembers: [FamilyMemberInfo] = []
+    @Published var familyJoinCode: String?
+
+    var isSharedMember: Bool { memberOfFamilyId != nil }
+
+    /// The user id that owns the family's data (own id, or the joined family's owner).
+    var effectiveUserId: String? {
+        memberOfFamilyId?.uuidString ?? debugUserId
+    }
+
     private static let kidModeSessionKey = "kid_mode_session"
     
     private static let appBaseURL = "https://chorestar.app"
@@ -757,18 +771,21 @@ class SupabaseManager: ObservableObject {
             return
         }
         
+        // Family membership decides whose data we load (own vs joined family)
+        await resolveFamilyMembership()
+
         // Load children
         do {
             let remoteChildren: [ChildRow]
-            let uid = await MainActor.run { debugUserId }
-            
+            let uid = await MainActor.run { effectiveUserId }
+
             guard let uid = uid else {
                 await MainActor.run {
                     debugLastError = "Cannot load children: no authenticated user ID"
                 }
                 return
             }
-            
+
             remoteChildren = try await client
                 .from("children")
                 .select()
@@ -861,6 +878,7 @@ class SupabaseManager: ObservableObject {
         await loadRoutines()
         await loadChildPins()
         await loadAllTimeCompletions()
+        await loadFamilySharing()
         
         let currentChildren = await MainActor.run { children }
         let currentChores = await MainActor.run { chores }
@@ -1125,8 +1143,8 @@ class SupabaseManager: ObservableObject {
     func loadFamilySettings() async {
         #if canImport(Supabase)
         guard let client = client else { return }
-        
-        let uid = await MainActor.run { debugUserId }
+
+        let uid = await MainActor.run { effectiveUserId }
         guard let uid = uid else { return }
         
         do {
@@ -1556,6 +1574,24 @@ class SupabaseManager: ObservableObject {
                 self.kidLoginCode = profiles.first?.kid_login_code
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
             }
+
+            // Shared members use the family owner's kid login code
+            // (readable once the family-sharing RLS migration is applied)
+            if let ownerId = await MainActor.run(body: { memberOfFamilyId }) {
+                let ownerProfiles: [ProfileRow] = (try? await client
+                    .from("profiles")
+                    .select("id, subscription_type, kid_login_code")
+                    .eq("id", value: ownerId.uuidString)
+                    .limit(1)
+                    .execute()
+                    .value) ?? []
+
+                if let ownerCode = ownerProfiles.first?.kid_login_code {
+                    await MainActor.run {
+                        self.kidLoginCode = ownerCode
+                    }
+                }
+            }
         } catch {
             await MainActor.run {
                 debugLastError = "Profile error: \(error.localizedDescription)"
@@ -1564,6 +1600,219 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    // MARK: - Family Sharing (family_codes join flow + family_members)
+
+    /// Resolves whether this user is a member of another family. Must run
+    /// before loading children so queries use the effective family id.
+    func resolveFamilyMembership() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        struct MembershipRow: Codable {
+            let family_id: UUID
+        }
+
+        do {
+            let rows: [MembershipRow] = try await client
+                .from("family_members")
+                .select("family_id")
+                .eq("user_id", value: uid)
+                .limit(1)
+                .execute()
+                .value
+
+            await MainActor.run {
+                memberOfFamilyId = rows.first?.family_id
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Family membership error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Loads this family's members (owner view) and the join code if one exists.
+    func loadFamilySharing() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        struct MemberRow: Codable {
+            let id: UUID
+            let user_id: UUID
+            let joined_at: String?
+        }
+
+        struct CodeRow: Codable {
+            let code: String
+        }
+
+        do {
+            let members: [MemberRow] = try await client
+                .from("family_members")
+                .select("id, user_id, joined_at")
+                .eq("family_id", value: uid)
+                .execute()
+                .value
+
+            let isoFormatter = ISO8601DateFormatter()
+            let mapped = members.map { row in
+                FamilyMemberInfo(
+                    id: row.id,
+                    userId: row.user_id,
+                    joinedAt: row.joined_at.flatMap { isoFormatter.date(from: $0) }
+                )
+            }
+
+            let codes: [CodeRow] = (try? await client
+                .from("family_codes")
+                .select("code")
+                .eq("user_id", value: uid)
+                .limit(1)
+                .execute()
+                .value) ?? []
+
+            await MainActor.run {
+                familyMembers = mapped
+                familyJoinCode = codes.first?.code
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Family sharing error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Creates (or returns) this family's shareable join code.
+    func generateFamilyJoinCode() async throws -> String {
+        #if canImport(Supabase)
+        guard let client = client else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+        }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else {
+            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not signed in"])
+        }
+
+        if let existing = await MainActor.run(body: { familyJoinCode }) {
+            return existing
+        }
+
+        let alphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+        let code = String((0..<8).map { _ in alphabet.randomElement()! })
+
+        struct NewCodeRow: Encodable {
+            let user_id: String
+            let code: String
+        }
+
+        try await client
+            .from("family_codes")
+            .insert(NewCodeRow(user_id: uid, code: code))
+            .execute()
+
+        await MainActor.run {
+            familyJoinCode = code
+        }
+        return code
+        #else
+        throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
+        #endif
+    }
+
+    /// Joins another family by code. Returns nil on success, else an error message.
+    func joinFamily(code: String) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return "Not signed in." }
+
+        struct CodeLookupRow: Codable {
+            let user_id: UUID
+        }
+
+        do {
+            let rows: [CodeLookupRow] = try await client
+                .from("family_codes")
+                .select("user_id")
+                .eq("code", value: code.lowercased().trimmingCharacters(in: .whitespaces))
+                .limit(1)
+                .execute()
+                .value
+
+            guard let owner = rows.first?.user_id else {
+                return "That code doesn't match any family. Double-check it and try again."
+            }
+
+            if owner.uuidString.lowercased() == uid.lowercased() {
+                return "That's your own family code."
+            }
+
+            struct NewMemberRow: Encodable {
+                let user_id: String
+                let family_id: String
+            }
+
+            try await client
+                .from("family_members")
+                .insert(NewMemberRow(user_id: uid, family_id: owner.uuidString))
+                .execute()
+
+            await MainActor.run {
+                memberOfFamilyId = owner
+            }
+            await loadRemoteData()
+            return nil
+        } catch let error as PostgrestError where error.code == "23505" {
+            return "You've already joined this family."
+        } catch {
+            return "Couldn't join: \(error.localizedDescription)"
+        }
+        #else
+        return "Supabase not available"
+        #endif
+    }
+
+    /// Leaves the family this user is a member of.
+    func leaveFamily() async throws {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        try await client
+            .from("family_members")
+            .delete()
+            .eq("user_id", value: uid)
+            .execute()
+
+        await MainActor.run {
+            memberOfFamilyId = nil
+        }
+        await loadRemoteData()
+        #endif
+    }
+
+    /// Removes a member from this user's family (owner action).
+    func removeFamilyMember(memberId: UUID) async throws {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+
+        try await client
+            .from("family_members")
+            .delete()
+            .eq("id", value: memberId.uuidString)
+            .execute()
+
+        await loadFamilySharing()
+        #endif
+    }
+
     /// Publishes today's progress to the shared app group for the home screen widget.
     @MainActor
     func publishWidgetSnapshot() {

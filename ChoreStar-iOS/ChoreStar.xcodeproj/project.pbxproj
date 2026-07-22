@@ -57,6 +57,8 @@
 		A1234567890ABCDEF12345ED /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345EC /* DesignSystem.swift */; };
 		A1234567890ABCDEF12345EF /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345EE /* WidgetBridge.swift */; };
 		A1234567890ABCDEF12345F1 /* RoutineActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */; };
+		A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F2 /* FamilySharingView.swift */; };
+		A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F4 /* NotificationsManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +68,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9EA025C5301135A2008215CE;
 			remoteInfo = ChoreStarWidgetsExtension;
+		};
+		9EB025C0301135A2008215C6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1234567890ABCDEF123455B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1234567890ABCDEF1234562;
+			remoteInfo = ChoreStar;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -87,6 +96,7 @@
 		9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChoreStarWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA025C8301135A2008215CE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		9EA025CA301135A2008215CE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		9EB025C0301135A2008215C1 /* ChoreStarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChoreStarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1234567890ABCDEF1234563 /* ChoreStar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChoreStar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1234567890ABCDEF1234566 /* ChoreStarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStarApp.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF1234568 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -135,6 +145,8 @@
 		A1234567890ABCDEF12345EC /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345EE /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineActivityController.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345F2 /* FamilySharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -149,6 +161,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9EA025CC301135A2008215CE /* ChoreStarWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9EA025E0301135A3008215CE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ChoreStarWidgets; sourceTree = "<group>"; };
+		9EB025C0301135A2008215C2 /* ChoreStarUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ChoreStarUITests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +171,13 @@
 			files = (
 				9EA025CB301135A2008215CE /* SwiftUI.framework in Frameworks */,
 				9EA025C9301135A2008215CE /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9EB025C0301135A2008215C4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +206,7 @@
 			children = (
 				A1234567890ABCDEF123455A /* ChoreStar */,
 				9EA025CC301135A2008215CE /* ChoreStarWidgets */,
+				9EB025C0301135A2008215C2 /* ChoreStarUITests */,
 				9EA025C7301135A2008215CE /* Frameworks */,
 				A1234567890ABCDEF1234564 /* Products */,
 			);
@@ -213,6 +234,7 @@
 			children = (
 				A1234567890ABCDEF1234563 /* ChoreStar.app */,
 				9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */,
+				9EB025C0301135A2008215C1 /* ChoreStarUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -246,6 +268,7 @@
 				A1234567890ABCDEF12345D2 /* ThemeManager.swift */,
 				A1234567890ABCDEF12345EA /* StoreKitManager.swift */,
 				A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */,
+				A1234567890ABCDEF12345F4 /* NotificationsManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -279,6 +302,7 @@
 				A1234567890ABCDEF12345E0 /* KidLoginView.swift */,
 				A1234567890ABCDEF12345E2 /* PaywallView.swift */,
 				A1234567890ABCDEF12345E4 /* WhatsNewView.swift */,
+				A1234567890ABCDEF12345F2 /* FamilySharingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -319,6 +343,29 @@
 			productReference = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		9EB025C0301135A2008215C8 /* ChoreStarUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9EB025C0301135A2008215C9 /* Build configuration list for PBXNativeTarget "ChoreStarUITests" */;
+			buildPhases = (
+				9EB025C0301135A2008215C3 /* Sources */,
+				9EB025C0301135A2008215C4 /* Frameworks */,
+				9EB025C0301135A2008215C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9EB025C0301135A2008215C7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9EB025C0301135A2008215C2 /* ChoreStarUITests */,
+			);
+			name = ChoreStarUITests;
+			packageProductDependencies = (
+			);
+			productName = ChoreStarUITests;
+			productReference = 9EB025C0301135A2008215C1 /* ChoreStarUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		A1234567890ABCDEF1234562 /* ChoreStar */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A1234567890ABCDEF1234586 /* Build configuration list for PBXNativeTarget "ChoreStar" */;
@@ -354,6 +401,10 @@
 					9EA025C5301135A2008215CE = {
 						CreatedOnToolsVersion = 26.6;
 					};
+					9EB025C0301135A2008215C8 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = A1234567890ABCDEF1234562;
+					};
 					A1234567890ABCDEF1234562 = {
 						CreatedOnToolsVersion = 15.0;
 					};
@@ -377,12 +428,20 @@
 			targets = (
 				A1234567890ABCDEF1234562 /* ChoreStar */,
 				9EA025C5301135A2008215CE /* ChoreStarWidgetsExtension */,
+				9EB025C0301135A2008215C8 /* ChoreStarUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9EA025C4301135A2008215CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9EB025C0301135A2008215C5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -403,6 +462,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		9EA025C2301135A2008215CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9EB025C0301135A2008215C3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -456,6 +522,8 @@
 				A1234567890ABCDEF12345ED /* DesignSystem.swift in Sources */,
 				A1234567890ABCDEF12345EF /* WidgetBridge.swift in Sources */,
 				A1234567890ABCDEF12345F1 /* RoutineActivityController.swift in Sources */,
+				A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */,
+				A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -466,6 +534,11 @@
 			isa = PBXTargetDependency;
 			target = 9EA025C5301135A2008215CE /* ChoreStarWidgetsExtension */;
 			targetProxy = 9EA025DA301135A3008215CE /* PBXContainerItemProxy */;
+		};
+		9EB025C0301135A2008215C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1234567890ABCDEF1234562 /* ChoreStar */;
+			targetProxy = 9EB025C0301135A2008215C6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -533,6 +606,42 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9EB025C0301135A2008215CA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5ANRA6JZC2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStarUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ChoreStar;
+			};
+			name = Debug;
+		};
+		9EB025C0301135A2008215CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5ANRA6JZC2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStarUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ChoreStar;
 			};
 			name = Release;
 		};
@@ -737,6 +846,15 @@
 			buildConfigurations = (
 				9EA025DE301135A3008215CE /* Debug */,
 				9EA025DF301135A3008215CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9EB025C0301135A2008215C9 /* Build configuration list for PBXNativeTarget "ChoreStarUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9EB025C0301135A2008215CA /* Debug */,
+				9EB025C0301135A2008215CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
