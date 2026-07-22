@@ -122,9 +122,13 @@ struct ChoresView: View {
     @ViewBuilder
     private var choresContent: some View {
         if filteredChores.isEmpty {
-            ScrollView {
-                EmptyChoresView(filter: selectedFilter)
-                    .padding(.top, 60)
+            if !searchText.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            } else {
+                ScrollView {
+                    EmptyChoresView(filter: selectedFilter)
+                        .padding(.top, 60)
+                }
             }
         } else if horizontalSizeClass == .compact {
             nativeList
