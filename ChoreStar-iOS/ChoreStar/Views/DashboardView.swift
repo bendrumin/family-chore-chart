@@ -8,6 +8,7 @@ struct DashboardView: View {
     @State private var earnedAchievements: [Achievement] = []
     @State private var showWhatsNew = false
     @State private var showingKidMode = false
+    @State private var showPerfectDay = false
     @AppStorage("lastSeenChangelogVersion") private var lastSeenChangelogVersion = ""
 
     private var completedChores: Int {
@@ -147,6 +148,11 @@ struct DashboardView: View {
                                         earnedAchievements: $earnedAchievements,
                                         showAchievementAlert: $showAchievementAlert
                                     )
+                                    .scrollTransition { content, phase in
+                                        content
+                                            .opacity(phase.isIdentity ? 1 : 0.5)
+                                            .scaleEffect(phase.isIdentity ? 1 : 0.95)
+                                    }
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -187,6 +193,21 @@ struct DashboardView: View {
         .sheet(isPresented: $showWhatsNew) {
             WhatsNewView()
         }
+        .onChange(of: completedChores) { oldValue, newValue in
+            // Celebrate crossing the finish line (not on initial load)
+            if totalChores > 0, newValue == totalChores, oldValue == totalChores - 1 {
+                showPerfectDay = true
+            }
+        }
+        .overlay {
+            if showPerfectDay {
+                PerfectDayOverlay {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        showPerfectDay = false
+                    }
+                }
+            }
+        }
         .confetti(isPresented: $showConfetti)
         .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
             Button("Awesome!", role: .cancel) { }
@@ -219,6 +240,7 @@ struct ChoreCard: View {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 26, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .symbolEffect(.bounce, value: isCompleted)
                     .contentShape(Circle())
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
 

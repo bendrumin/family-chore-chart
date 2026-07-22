@@ -4,6 +4,7 @@ import Charts
 struct HistoryView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var selectedChild: UUID?
+    @State private var scrubbedDay: String?
 
     private struct DayCompletionCount: Identifiable {
         let id: Int
@@ -141,7 +142,34 @@ struct HistoryView: View {
                             )
                             .foregroundStyle(Color.choreStarPrimary)
                             .symbolSize(36)
+
+                            // Scrub indicator + value callout
+                            if let scrubbedDay,
+                               scrubbedDay == item.label {
+                                RuleMark(x: .value("Day", scrubbedDay))
+                                    .foregroundStyle(Color.choreStarTextSecondary.opacity(0.35))
+                                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                                    .annotation(
+                                        position: .top,
+                                        overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+                                    ) {
+                                        VStack(spacing: 2) {
+                                            Text(item.label)
+                                                .font(.caption2)
+                                                .foregroundColor(.choreStarTextSecondary)
+                                            Text("\(item.count) done")
+                                                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                                .foregroundColor(.choreStarTextPrimary)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color.choreStarCardBackground)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                                    }
+                            }
                         }
+                        .chartXSelection(value: $scrubbedDay)
                         .chartYAxis {
                             AxisMarks(position: .leading) { _ in
                                 AxisGridLine()

@@ -1,4 +1,20 @@
 import SwiftUI
+import TipKit
+
+/// TipKit: teaches the swipe-to-complete gesture on first visits.
+struct SwipeToCompleteTip: Tip {
+    var title: Text {
+        Text("Swipe to complete")
+    }
+
+    var message: Text? {
+        Text("Swipe a chore to the right to check it off — or drag with a long press to reorder.")
+    }
+
+    var image: Image? {
+        Image(systemName: "hand.draw.fill")
+    }
+}
 
 struct ChoresView: View {
     @EnvironmentObject var manager: SupabaseManager
@@ -67,6 +83,12 @@ struct ChoresView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if selectedTab == .chores {
+                    if horizontalSizeClass == .compact {
+                        ToolbarItem(placement: .secondaryAction) {
+                            EditButton()
+                        }
+                    }
+
                     ToolbarItem(placement: .secondaryAction) {
                         // Reminders-style filter menu
                         Menu {
@@ -112,12 +134,32 @@ struct ChoresView: View {
     }
 
     // iPhone: native inset-grouped list with swipe actions (Reminders-style)
+    // and long-press drag reordering (persisted to chores.sort_order)
+    private var canReorder: Bool {
+        selectedFilter == .all && searchText.isEmpty
+    }
+
     private var nativeList: some View {
         List {
+            if canReorder {
+                TipView(SwipeToCompleteTip())
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+            }
+
             ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
                 Section {
                     ForEach(groupedChores[childName] ?? [], id: \.id) { chore in
                         ChoreListRow(chore: chore, manager: manager)
+                            .moveDisabled(!canReorder)
+                    }
+                    .onMove { source, destination in
+                        var sectionChores = groupedChores[childName] ?? []
+                        sectionChores.move(fromOffsets: source, toOffset: destination)
+                        Haptics.medium()
+                        Task {
+                            await manager.updateChoreOrder(sectionChores)
+                        }
                     }
                 } header: {
                     Text(childName)
@@ -171,6 +213,7 @@ struct ChoreListRow: View {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
             }
             .buttonStyle(PlainButtonStyle())
@@ -336,6 +379,7 @@ struct EnhancedChoreRow: View {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
 
                 // Chore info
