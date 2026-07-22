@@ -334,12 +334,13 @@ struct ThemeGalleryView: View {
     let onPremiumLocked: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 24) {
             themeRow(title: nil, items: [.auto, .none])
             themeRow(title: "Holidays", items: SeasonalTheme.holidayThemes.map { .theme($0) })
             themeRow(title: "Seasons", items: SeasonalTheme.seasonThemes.map { .theme($0) })
             themeRow(title: "Premium", items: SeasonalTheme.premiumThemes.map { .theme($0) })
         }
+        .padding(.vertical, 4)
     }
 
     private enum ThemeItem: Identifiable {
@@ -411,22 +412,23 @@ struct ThemeGalleryView: View {
     }
 
     private func themeRow(title: String?, items: [ThemeItem]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             if let title = title {
                 Text(title)
-                    .font(.caption)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.choreStarTextSecondary)
                     .padding(.horizontal, 20)
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 16) {
                     ForEach(items) { item in
                         themeCard(item)
                     }
                 }
                 .padding(.horizontal, 20)
+                .padding(.vertical, 4)
             }
         }
     }
@@ -510,69 +512,71 @@ private struct ThemePreviewCard: View {
                 .fill(gradient)
 
             // Miniature app screen
-            VStack(alignment: .leading, spacing: 5) {
-                // Mini hero: greeting bars + progress ring
-                HStack(spacing: 6) {
-                    VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 10) {
+                // Mini hero: greeting bar + progress ring
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Capsule()
-                            .fill(Color.primary.opacity(0.5))
-                            .frame(width: 34, height: 4)
+                            .fill(Color.primary.opacity(0.45))
+                            .frame(width: 52, height: 6)
                         Capsule()
-                            .fill(Color.primary.opacity(0.2))
-                            .frame(width: 24, height: 3)
+                            .fill(Color.primary.opacity(0.18))
+                            .frame(width: 36, height: 5)
                     }
 
                     Spacer(minLength: 0)
 
                     ZStack {
                         Circle()
-                            .stroke(primary.opacity(0.25), lineWidth: 3)
+                            .stroke(primary.opacity(0.22), lineWidth: 4.5)
                         Circle()
                             .trim(from: 0, to: 0.68)
-                            .stroke(primary, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                            .stroke(primary, style: StrokeStyle(lineWidth: 4.5, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                     }
-                    .frame(width: 18, height: 18)
+                    .frame(width: 30, height: 30)
                 }
 
-                // Mini chore rows
-                ForEach(0..<2, id: \.self) { row in
-                    HStack(spacing: 4) {
-                        Circle()
-                            .strokeBorder(row == 0 ? primary : Color.primary.opacity(0.25), lineWidth: 1.5)
-                            .background(Circle().fill(row == 0 ? primary.opacity(0.9) : Color.clear))
-                            .frame(width: 7, height: 7)
+                // One mini chore row, roomy
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(primary)
+                        .frame(width: 11, height: 11)
+                        .overlay(
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 6, weight: .black))
+                                .foregroundColor(.white)
+                        )
 
-                        Capsule()
-                            .fill(Color.primary.opacity(0.25))
-                            .frame(width: row == 0 ? 30 : 38, height: 3)
+                    Capsule()
+                        .fill(Color.primary.opacity(0.22))
+                        .frame(width: 48, height: 5)
 
-                        Spacer(minLength: 0)
+                    Spacer(minLength: 0)
 
-                        Capsule()
-                            .fill(secondary.opacity(0.55))
-                            .frame(width: 10, height: 4)
-                    }
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 4)
-                    .background(Color.primary.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    Capsule()
+                        .fill(secondary.opacity(0.6))
+                        .frame(width: 18, height: 6)
                 }
+                .padding(.horizontal, 9)
+                .padding(.vertical, 8)
+                .background(Color.primary.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .padding(7)
+            .padding(12)
             .background(Color(uiColor: .systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .shadow(color: .black.opacity(0.18), radius: 4, y: 2)
-            .padding(10)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .shadow(color: .black.opacity(0.18), radius: 5, y: 2)
+            .padding(13)
 
             // Theme emoji as a small corner charm
             Text(emoji)
-                .font(.system(size: 16))
-                .padding(4)
+                .font(.system(size: 20))
+                .padding(5)
                 .background(.thinMaterial, in: Circle())
-                .padding(6)
+                .padding(8)
         }
-        .frame(width: 128, height: 96)
+        .frame(width: 172, height: 126)
     }
 }
 
