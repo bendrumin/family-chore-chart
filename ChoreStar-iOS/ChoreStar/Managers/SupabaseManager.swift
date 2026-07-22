@@ -877,6 +877,7 @@ class SupabaseManager: ObservableObject {
         
         await MainActor.run {
             debugLastError = "Loaded \(currentChildren.count) children and \(currentChores.count) chores"
+            publishWidgetSnapshot()
         }
         #endif
     }
@@ -1046,8 +1047,12 @@ class SupabaseManager: ObservableObject {
                 }
             }
         }
+
+        await MainActor.run {
+            publishWidgetSnapshot()
+        }
         #endif
-        
+
         return newAchievements
     }
     
@@ -1559,6 +1564,32 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    /// Publishes today's progress to the shared app group for the home screen widget.
+    @MainActor
+    func publishWidgetSnapshot() {
+        let childProgress = children.map { child -> WidgetSnapshot.ChildProgress in
+            let childChores = chores.filter { $0.childId == child.id }
+            let done = childChores.filter { isChoreCompleted($0) }.count
+            return WidgetSnapshot.ChildProgress(
+                id: child.id,
+                name: child.name,
+                colorName: child.avatarColor,
+                done: done,
+                total: childChores.count
+            )
+        }
+
+        let earned = children.reduce(0.0) { $0 + calculateTodayEarnings(for: $1.id) }
+
+        WidgetSnapshot(
+            completedToday: chores.filter { isChoreCompleted($0) }.count,
+            totalToday: chores.count,
+            earnedTodayFormatted: formatMoney(earned),
+            children: childProgress,
+            generatedAt: Date()
+        ).publish()
+    }
+
     /// Persists a subscription upgrade to the user's profile (called after a
     /// verified App Store transaction — see StoreKitManager for the policy).
     func updateSubscriptionType(_ type: String) async {
