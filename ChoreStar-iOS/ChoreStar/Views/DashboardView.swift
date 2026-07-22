@@ -56,6 +56,10 @@ struct DashboardView: View {
         return manager.formatMoney(total)
     }
 
+    private var familyStreak: Int {
+        manager.calculateAggregateWeeklyStats().streak
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -63,6 +67,12 @@ struct DashboardView: View {
                     // Hero: today at a glance, Activity-ring style
                     HStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 6) {
+                            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .textCase(.uppercase)
+                                .foregroundColor(.choreStarTextSecondary.opacity(0.8))
+
                             Text(greeting)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
@@ -73,6 +83,8 @@ struct DashboardView: View {
                                  : "\(completedChores) of \(totalChores) done")
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundColor(.choreStarTextPrimary)
+                                .contentTransition(.numericText(value: Double(completedChores)))
+                                .animation(.snappy, value: completedChores)
 
                             HStack(spacing: 5) {
                                 Image(systemName: "star.circle.fill")
@@ -81,6 +93,22 @@ struct DashboardView: View {
                                 Text("\(earnedTodayText) earned today")
                                     .font(.subheadline)
                                     .foregroundColor(.choreStarTextSecondary)
+                                    .contentTransition(.numericText())
+                                    .animation(.snappy, value: earnedTodayText)
+                            }
+
+                            if familyStreak >= 2 {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "flame.fill")
+                                        .font(.subheadline)
+                                        .foregroundColor(.orange)
+                                        .symbolEffect(.pulse, options: .repeating)
+                                    Text("\(familyStreak)-day streak")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.orange)
+                                }
+                                .padding(.top, 2)
                             }
                         }
 
@@ -95,6 +123,8 @@ struct DashboardView: View {
                                 Text("\(Int(completionPercentage * 100))%")
                                     .font(.system(.title3, design: .rounded).weight(.bold))
                                     .foregroundColor(.choreStarTextPrimary)
+                                    .contentTransition(.numericText(value: completionPercentage))
+                                    .animation(.snappy, value: completionPercentage)
                             }
                         }
                         .frame(width: 88, height: 88)
@@ -104,6 +134,11 @@ struct DashboardView: View {
                         ZStack {
                             Color.choreStarCardBackground
                             themeManager.gradient.opacity(0.10)
+
+                            // Living theme: ambient particles (snow, hearts, leaves…)
+                            if let glyph = ThemeParticleOverlay.glyph(for: themeManager.activeTheme) {
+                                ThemeParticleOverlay(glyph: glyph)
+                            }
                         }
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))

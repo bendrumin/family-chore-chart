@@ -143,6 +143,75 @@ struct AvatarRingChip: View {
     }
 }
 
+// MARK: - Theme Particles (living themes)
+
+/// Ambient particles drifting over a themed surface — snow on Winter,
+/// hearts on Valentine's, leaves on Fall. Canvas + TimelineView, ~12
+/// glyphs, trivially cheap.
+struct ThemeParticleOverlay: View {
+    let glyph: String
+    var particleCount: Int = 12
+    var opacity: Double = 0.5
+
+    /// The particle glyph for a theme, or nil for themes that stay calm.
+    static func glyph(for theme: SeasonalTheme?) -> String? {
+        switch theme {
+        case .christmas, .winter: return "❄️"
+        case .valentine: return "💕"
+        case .halloween: return "🎃"
+        case .stpatricks: return "☘️"
+        case .newYear: return "🎊"
+        case .easter, .spring: return "🌸"
+        case .summer: return "✨"
+        case .fall, .thanksgiving: return "🍂"
+        case .ocean, .coral: return "🫧"
+        case .aurora: return "✦"
+        case .forest: return "🍃"
+        case .sunset: return "✨"
+        case .lavender: return "✿"
+        case .none: return nil
+        }
+    }
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+            Canvas { context, size in
+                let time = timeline.date.timeIntervalSinceReferenceDate
+
+                for i in 0..<particleCount {
+                    // Deterministic per-particle variation
+                    let seed = Double(i)
+                    let speed = 0.028 + 0.022 * pseudoRandom(seed, 1)      // fall speed
+                    let phase = pseudoRandom(seed, 2)                       // start offset
+                    let baseX = pseudoRandom(seed, 3)                       // column
+                    let driftAmp = 8.0 + 14.0 * pseudoRandom(seed, 4)       // sway
+                    let driftFreq = 0.3 + 0.5 * pseudoRandom(seed, 5)
+                    let scale = 0.6 + 0.6 * pseudoRandom(seed, 6)
+
+                    let progress = (time * speed + phase).truncatingRemainder(dividingBy: 1.0)
+                    let y = progress * (size.height + 30) - 15
+                    let x = baseX * size.width + sin(time * driftFreq + seed) * driftAmp
+
+                    var text = context.resolve(
+                        Text(glyph).font(.system(size: 13 * scale))
+                    )
+                    text.shading = .color(.white)
+
+                    context.opacity = opacity * (0.5 + 0.5 * pseudoRandom(seed, 7))
+                    context.draw(text, at: CGPoint(x: x, y: y))
+                }
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    /// Cheap deterministic hash → 0...1 (stable per particle, no RNG state)
+    private func pseudoRandom(_ seed: Double, _ salt: Double) -> Double {
+        let value = sin(seed * 127.1 + salt * 311.7) * 43758.5453
+        return value - value.rounded(.down)
+    }
+}
+
 // MARK: - Perfect Day Celebration
 
 /// Full-screen moment shown when every chore of the day is done.
