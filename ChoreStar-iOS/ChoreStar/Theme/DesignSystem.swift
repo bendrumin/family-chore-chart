@@ -56,7 +56,7 @@ struct ProgressRing<Center: View>: View {
                 animatedProgress = progress
             }
         }
-        .onChange(of: progress) { newValue in
+        .onChange(of: progress) { _, newValue in
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                 animatedProgress = newValue
             }

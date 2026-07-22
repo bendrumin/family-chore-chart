@@ -106,7 +106,7 @@ struct KidLoginView: View {
                 .padding()
                 .background(Color.choreStarBackground)
                 .cornerRadius(16)
-                .onChange(of: familyCode) { newValue in
+                .onChange(of: familyCode) { _, newValue in
                     familyCode = String(newValue.lowercased().filter { $0.isLetter || $0.isNumber }.prefix(12))
                     errorMessage = nil
                 }

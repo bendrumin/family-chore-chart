@@ -176,7 +176,7 @@ struct AddEditChildView: View {
                                 SecureField(hadPinOnOpen ? "Enter new PIN to change it" : "Enter 4-6 digit PIN", text: $childPin)
                                     .keyboardType(.numberPad)
                                     .textFieldStyle(.roundedBorder)
-                                    .onChange(of: childPin) { newValue in
+                                    .onChange(of: childPin) { _, newValue in
                                         childPin = String(newValue.filter(\.isNumber).prefix(6))
                                     }
 
