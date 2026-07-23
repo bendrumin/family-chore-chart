@@ -93,7 +93,7 @@ export function LoginForm({ next = '/dashboard' }: { next?: string }) {
             type="checkbox"
             checked={formData.rememberMe}
             onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
           />
           <span className="text-sm text-gray-600 dark:text-gray-300">
             Remember me
@@ -101,7 +101,7 @@ export function LoginForm({ next = '/dashboard' }: { next?: string }) {
         </label>
         <Link
           href="/forgot-password"
-          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+          className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
         >
           Forgot password?
         </Link>
@@ -115,7 +115,7 @@ export function LoginForm({ next = '/dashboard' }: { next?: string }) {
       {/* Sign Up Link */}
       <p className="text-center text-gray-600 dark:text-gray-300">
         Don't have an account?{' '}
-        <Link href="/signup" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold">
+        <Link href="/signup" className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-semibold">
           Create one here
         </Link>
       </p>
@@ -123,7 +123,7 @@ export function LoginForm({ next = '/dashboard' }: { next?: string }) {
       {/* Resend Confirmation Link */}
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Didn't receive your confirmation email?{' '}
-        <Link href="/resend-confirmation" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold">
+        <Link href="/resend-confirmation" className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-semibold">
           Resend it
         </Link>
       </p>
