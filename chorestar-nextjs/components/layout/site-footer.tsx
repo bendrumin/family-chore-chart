@@ -66,9 +66,9 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:hi@chorestar.app" className="text-sm hover:text-white transition-colors">
-                  Contact Support
-                </a>
+                <Link href="/support" className="text-sm hover:text-white transition-colors">
+                  Help &amp; Support
+                </Link>
               </li>
               <li>
                 <Link href="/#ios-app" className="text-sm hover:text-white transition-colors">
