@@ -10,9 +10,12 @@ dist/
 
 # Environment variables
 .env
+.env.*
+!.env.local.example
 .env.local
 .env.production
 .env.test
+*.backup
 
 # Configuration with secrets
 setup-env.sh
