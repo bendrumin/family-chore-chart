@@ -4,6 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
+import { TestFlightSignup } from '@/components/home/testflight-signup'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
 const jsonLd = {
@@ -534,6 +535,27 @@ export default async function HomePage() {
               Check out our How-To guides →
             </Link>
           </p>
+        </div>
+
+        {/* iOS App Beta */}
+        <div id="ios-app" className="max-w-3xl mx-auto mb-16">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-hidden">
+            <div className="p-8 text-center">
+              <div className="text-5xl mb-4">📱</div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                The All-New ChoreStar for iPhone &amp; iPad
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-lg mx-auto">
+                A fully native iOS app with home screen widgets, routine timers in the
+                Dynamic Island, kid mode with PIN login, seasonal themes, and confetti
+                celebrations — built for families who live on their phones.
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Now in beta. Join the TestFlight list for early access.
+              </p>
+              <TestFlightSignup compact />
+            </div>
+          </div>
         </div>
 
         {/* Final CTA */}
