@@ -21,12 +21,21 @@ struct ChoresView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedFilter: ChoreFilter = .all
     @State private var showingAddChore = false
-    @State private var selectedTab: ChoresTab = .chores
+    @State private var selectedTab: ChoresTab = ChoresView.initialSegment()
     @State private var searchText = ""
 
     enum ChoresTab: String, CaseIterable {
         case chores = "Chores"
         case routines = "Routines"
+    }
+
+    /// DEBUG-only: `-chorestar-tab routines` opens the Routines segment for
+    /// screenshot tooling (which can't tap the segmented control).
+    static func initialSegment() -> ChoresTab {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("routines") { return .routines }
+        #endif
+        return .chores
     }
 
     enum ChoreFilter: String, CaseIterable {
@@ -115,6 +124,13 @@ struct ChoresView: View {
             }
             .sheet(isPresented: $showingAddChore) {
                 AddEditChoreView()
+            }
+            .task {
+                #if DEBUG
+                if ProcessInfo.processInfo.arguments.contains("-chorestar-addchore") {
+                    showingAddChore = true
+                }
+                #endif
             }
         }
     }
@@ -243,6 +259,19 @@ struct ChoreListRow: View {
             Text(manager.formatMoney(chore.reward))
                 .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+
+            Button {
+                showingEditSheet = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarPrimary)
+                    .frame(width: 32, height: 32)
+                    .background(Color.choreStarPrimary.opacity(0.12))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Edit \(chore.name)")
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: toggle)
@@ -376,59 +405,63 @@ struct EnhancedChoreRow: View {
     }
     
     var body: some View {
-        Button(action: {
-            if isCompleted {
-                Haptics.light()
-            } else {
-                Haptics.success()
-                SoundManager.shared.play(.success)
-            }
-            Task {
-                let _ = await manager.toggleChoreCompletion(chore)
-            }
-        }) {
-            HStack(spacing: 12) {
+        HStack(spacing: 12) {
+            Button(action: toggle) {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
                     .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
-
-                AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 22)
-                    .font(.subheadline)
-                    .frame(width: 26, height: 26)
-                    .saturation(isCompleted ? 0.3 : 1)
-                    .opacity(isCompleted ? 0.5 : 1)
-
-                // Chore info
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(chore.name)
-                        .font(.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
-                        .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                        .lineLimit(1)
-
-                    if let description = chore.description, !description.isEmpty {
-                        Text(description)
-                            .font(.caption)
-                            .foregroundColor(.choreStarTextSecondary)
-                            .lineLimit(1)
-                    }
-                }
-
-                Spacer()
-
-                // Reward
-                Text(manager.formatMoney(chore.reward))
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
             }
-            .padding(.vertical, 10)
-            .contentShape(Rectangle())
-            .opacity(isCompleted ? 0.75 : 1.0)
+            .buttonStyle(.borderless)
+
+            AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 22)
+                .font(.subheadline)
+                .frame(width: 26, height: 26)
+                .saturation(isCompleted ? 0.3 : 1)
+                .opacity(isCompleted ? 0.5 : 1)
+
+            // Chore info
+            VStack(alignment: .leading, spacing: 3) {
+                Text(chore.name)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                    .lineLimit(1)
+
+                if let description = chore.description, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Reward
+            Text(manager.formatMoney(chore.reward))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+
+            Button {
+                showingEditSheet = true
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarPrimary)
+                    .frame(width: 32, height: 32)
+                    .background(Color.choreStarPrimary.opacity(0.12))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Edit \(chore.name)")
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+        .opacity(isCompleted ? 0.75 : 1.0)
+        .onTapGesture(perform: toggle)
         .contextMenu {
             Button(action: { showingEditSheet = true }) {
                 Label("Edit", systemImage: "pencil")
@@ -450,6 +483,18 @@ struct EnhancedChoreRow: View {
             }
         } message: {
             Text("This action cannot be undone.")
+        }
+    }
+
+    private func toggle() {
+        if isCompleted {
+            Haptics.light()
+        } else {
+            Haptics.success()
+            SoundManager.shared.play(.success)
+        }
+        Task {
+            let _ = await manager.toggleChoreCompletion(chore)
         }
     }
 }

@@ -82,8 +82,8 @@ struct AddEditChoreView: View {
                                 applySuggestion(suggestion)
                             } label: {
                                 HStack(spacing: 12) {
-                                    Text(suggestion.icon)
-                                        .font(.title2)
+                                    AdaptiveIcon(icon: suggestion.icon, fallbackSymbol: "checklist", tint: Color.fromString(selectedColor), iconSize: 26)
+                                        .frame(width: 30, height: 30)
 
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(suggestion.name)
@@ -316,10 +316,9 @@ struct IconOption: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.fromString(color).opacity(0.15))
                     .frame(width: 55, height: 55)
-                
-                // Display emoji
-                Text(iconName)
-                    .font(.system(size: 28))
+
+                // Line-art icon (OpenMoji), tinted to the selected color
+                AdaptiveIcon(icon: iconName, fallbackSymbol: "checklist", tint: Color.fromString(color), iconSize: 30)
                 
                 if isSelected {
                     RoundedRectangle(cornerRadius: 12)

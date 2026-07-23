@@ -288,9 +288,9 @@ struct ChoreWeekRow: View {
         HStack(spacing: 4) {
             // Chore info
             HStack(spacing: 12) {
-                Text(chore.icon ?? "📝")
-                    .font(.title)
-                
+                AdaptiveIcon(icon: chore.icon ?? "📝", fallbackSymbol: "checklist", tint: Color.fromString(chore.color ?? ""), iconSize: 28)
+                    .frame(width: 32, height: 32)
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(chore.name)
                         .font(.callout)
@@ -603,9 +603,9 @@ struct DailyChoreRow: View {
                 }
                 
                 // Chore icon
-                Text(chore.icon ?? "📝")
-                    .font(.title3)
-                
+                AdaptiveIcon(icon: chore.icon ?? "📝", fallbackSymbol: "checklist", tint: Color.fromString(chore.color ?? ""), iconSize: 24)
+                    .frame(width: 28, height: 28)
+
                 // Chore info
                 VStack(alignment: .leading, spacing: 2) {
                     Text(chore.name)
