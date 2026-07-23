@@ -1,0 +1,21 @@
+# Node
+node_modules/
+
+# Capacitor / Android build artifacts
+android/build/
+android/.gradle/
+android/app/build/
+android/captures/
+android/local.properties
+android/.idea/
+android/app/release/
+
+# Signing — NEVER commit keystores or their credentials
+*.keystore
+*.jks
+keystore.properties
+android/keystore.properties
+
+# OS / editor
+.DS_Store
+*.iml

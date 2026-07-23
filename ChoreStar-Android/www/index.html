@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ChoreStar</title>
+  <style>
+    :root { color-scheme: light dark; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+    }
+    .star {
+      font-size: 4rem;
+      line-height: 1;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    h1 { font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+    p { margin: 0; opacity: 0.85; font-size: 0.95rem; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.12); opacity: 0.75; }
+    }
+    @media (prefers-reduced-motion: reduce) { .star { animation: none; } }
+  </style>
+</head>
+<body>
+  <div class="star">⭐</div>
+  <h1>ChoreStar</h1>
+  <p>Loading your family's chores…</p>
+</body>
+</html>
