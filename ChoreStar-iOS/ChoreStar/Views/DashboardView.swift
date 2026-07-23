@@ -71,28 +71,28 @@ struct DashboardView: View {
                                 .font(.caption2)
                                 .fontWeight(.bold)
                                 .textCase(.uppercase)
-                                .foregroundColor(.choreStarTextSecondary.opacity(0.8))
+                                .foregroundColor(.white.opacity(0.75))
 
                             Text(greeting)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.choreStarTextSecondary)
+                                .foregroundColor(.white.opacity(0.92))
 
                             Text(totalChores == 0
                                  ? "No chores yet"
                                  : "\(completedChores) of \(totalChores) done")
                                 .font(.system(.title2, design: .rounded).weight(.bold))
-                                .foregroundColor(.choreStarTextPrimary)
+                                .foregroundColor(.white)
                                 .contentTransition(.numericText(value: Double(completedChores)))
                                 .animation(.snappy, value: completedChores)
 
                             HStack(spacing: 5) {
                                 Image(systemName: "star.circle.fill")
                                     .font(.subheadline)
-                                    .foregroundColor(.choreStarAccent)
+                                    .foregroundColor(.yellow)
                                 Text("\(earnedTodayText) earned today")
                                     .font(.subheadline)
-                                    .foregroundColor(.choreStarTextSecondary)
+                                    .foregroundColor(.white.opacity(0.9))
                                     .contentTransition(.numericText())
                                     .animation(.snappy, value: earnedTodayText)
                             }
@@ -101,12 +101,12 @@ struct DashboardView: View {
                                 HStack(spacing: 5) {
                                     Image(systemName: "flame.fill")
                                         .font(.subheadline)
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(.yellow)
                                         .symbolEffect(.pulse, options: .repeating)
                                     Text("\(familyStreak)-day streak")
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(.orange)
+                                        .foregroundColor(.white)
                                 }
                                 .padding(.top, 2)
                             }
@@ -114,15 +114,15 @@ struct DashboardView: View {
 
                         Spacer()
 
-                        ProgressRing(progress: completionPercentage, lineWidth: 11, tint: themeManager.accentColor) {
+                        ProgressRing(progress: completionPercentage, lineWidth: 11, tint: .white) {
                             if completionPercentage >= 1.0, totalChores > 0 {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 26, weight: .bold))
-                                    .foregroundColor(themeManager.accentColor)
+                                    .foregroundColor(.white)
                             } else {
                                 Text("\(Int(completionPercentage * 100))%")
                                     .font(.system(.title3, design: .rounded).weight(.bold))
-                                    .foregroundColor(.choreStarTextPrimary)
+                                    .foregroundColor(.white)
                                     .contentTransition(.numericText(value: completionPercentage))
                                     .animation(.snappy, value: completionPercentage)
                             }
@@ -132,8 +132,7 @@ struct DashboardView: View {
                     .padding(20)
                     .background(
                         ZStack {
-                            Color.choreStarCardBackground
-                            themeManager.gradient.opacity(0.10)
+                            themeManager.gradient
 
                             // Living theme: ambient particles (snow, hearts, leaves…)
                             if let glyph = ThemeParticleOverlay.glyph(for: themeManager.activeTheme) {
@@ -141,7 +140,12 @@ struct DashboardView: View {
                             }
                         }
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+                    .shadow(color: themeManager.accentColor.opacity(0.35), radius: 22, x: 0, y: 10)
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
 
@@ -205,7 +209,7 @@ struct DashboardView: View {
                 }
                 .padding(.top, 10)
             }
-            .background(Color.choreStarBackground)
+            .background(ThemedScreenBackground())
             .refreshable {
                 manager.refreshData()
             }
@@ -275,10 +279,14 @@ struct ChoreCard: View {
     private var childName: String {
         manager.children.first(where: { $0.id == chore.childId })?.name ?? "Unknown"
     }
-    
+
+    private var childColor: Color {
+        Color.fromString(manager.children.first(where: { $0.id == chore.childId })?.avatarColor ?? "")
+    }
+
     var body: some View {
         Button(action: toggle) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 26, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
@@ -286,19 +294,19 @@ struct ChoreCard: View {
                     .contentShape(Circle())
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
 
+                AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 26)
+                    .font(.title3)
+                    .frame(width: 30, height: 30)
+                    .saturation(isCompleted ? 0.3 : 1)
+                    .opacity(isCompleted ? 0.5 : 1)
+
                 VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        if let icon = chore.icon, !icon.isEmpty {
-                            Text(icon)
-                                .font(.subheadline)
-                        }
-                        Text(chore.name)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
-                            .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                            .lineLimit(1)
-                    }
+                    Text(chore.name)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                        .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                        .lineLimit(1)
 
                     Text(childName)
                         .font(.caption)

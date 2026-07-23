@@ -143,6 +143,134 @@ struct AvatarRingChip: View {
     }
 }
 
+// MARK: - Themed Screen Background (ambient aurora)
+
+/// The app-wide screen backdrop: the grouped background with large, blurred
+/// theme-color blobs bleeding in from the corners. Static (no animation), so
+/// the blurs render once and cost nothing while scrolling.
+struct ThemedScreenBackground: View {
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        ZStack {
+            Color.choreStarBackground
+
+            GeometryReader { geo in
+                let strength = colorScheme == .dark ? 0.30 : 0.28
+                ZStack {
+                    Circle()
+                        .fill(themeManager.primaryColor)
+                        .frame(width: geo.size.width * 0.95, height: geo.size.width * 0.95)
+                        .blur(radius: 90)
+                        .opacity(strength)
+                        .offset(x: -geo.size.width * 0.30, y: -geo.size.width * 0.35)
+
+                    Circle()
+                        .fill(themeManager.secondaryColor)
+                        .frame(width: geo.size.width * 0.85, height: geo.size.width * 0.85)
+                        .blur(radius: 100)
+                        .opacity(strength * 0.9)
+                        .offset(x: geo.size.width * 0.55, y: geo.size.height * 0.10)
+
+                    Circle()
+                        .fill(themeManager.primaryColor)
+                        .frame(width: geo.size.width * 0.75, height: geo.size.width * 0.75)
+                        .blur(radius: 110)
+                        .opacity(strength * 0.65)
+                        .offset(x: geo.size.width * 0.05, y: geo.size.height * 0.72)
+                }
+            }
+        }
+        .ignoresSafeArea()
+    }
+}
+
+// MARK: - Chore Icon Artwork (OpenMoji line art, CC BY-SA 4.0)
+
+extension String {
+    /// Bundled OpenMoji line-art asset for this emoji ("ChoreIcons/1F9F9"),
+    /// or nil when no artwork is bundled (callers fall back to the raw emoji).
+    var choreIconAssetName: String? {
+        let scalars = unicodeScalars.filter { $0.value != 0xFE0F }
+        guard !scalars.isEmpty else { return nil }
+        let name = "ChoreIcons/" + scalars.map { String(format: "%X", $0.value) }.joined(separator: "-")
+        return UIImage(named: name) != nil ? name : nil
+    }
+}
+
+// MARK: - Adaptive Icon
+
+/// Renders an icon string that may be an emoji (routines/steps created in the
+/// web app) or an SF Symbol name (created on iOS), falling back to a symbol
+/// when the string is neither.
+struct AdaptiveIcon: View {
+    let icon: String?
+    let fallbackSymbol: String
+    var tint: Color = .choreStarPrimary
+    /// Set to render bundled OpenMoji line art at this point size (resizable
+    /// images ignore .font); leave nil to use emoji/symbol rendering only.
+    var iconSize: CGFloat? = nil
+
+    private var emojiIcon: String? {
+        guard let icon, let first = icon.unicodeScalars.first else { return nil }
+        return (first.properties.isEmoji && !first.isASCII) ? icon : nil
+    }
+
+    var body: some View {
+        if let iconSize, let asset = icon?.choreIconAssetName {
+            Image(asset)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .foregroundColor(tint)
+                .frame(width: iconSize, height: iconSize)
+        } else if let emojiIcon {
+            Text(emojiIcon)
+        } else if let icon, !icon.isEmpty, UIImage(systemName: icon) != nil {
+            Image(systemName: icon)
+                .foregroundColor(tint)
+        } else {
+            Image(systemName: fallbackSymbol)
+                .foregroundColor(tint)
+        }
+    }
+}
+
+// MARK: - Chore Icon Chip
+
+/// A chore's emoji in a softly tinted rounded square, keyed to the child's
+/// avatar color — gives every row a spot of identity color.
+struct ChoreIconChip: View {
+    let icon: String?
+    let tint: Color
+    var size: CGFloat = 34
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+                .fill(tint.opacity(0.16))
+
+            if let asset = icon?.choreIconAssetName {
+                Image(asset)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(tint)
+                    .padding(size * 0.10)
+            } else if let icon, !icon.isEmpty {
+                Text(icon)
+                    .font(.system(size: size * 0.5))
+            } else {
+                Image(systemName: "star.fill")
+                    .font(.system(size: size * 0.42, weight: .semibold))
+                    .foregroundColor(tint)
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}
+
 // MARK: - Theme Particles (living themes)
 
 /// Ambient particles drifting over a themed surface — snow on Winter,
@@ -296,6 +424,13 @@ struct StatTile: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .appCard(padding: 14)
+        .padding(14)
+        .background(
+            ZStack {
+                Color.choreStarCardBackground
+                tint.opacity(0.10)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }

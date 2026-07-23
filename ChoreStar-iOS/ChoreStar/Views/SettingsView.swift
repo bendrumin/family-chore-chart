@@ -229,6 +229,17 @@ struct SettingsView: View {
                                 .foregroundColor(.choreStarAccent)
                         }
                     }
+
+                    Link(destination: URL(string: "https://openmoji.org")!) {
+                        HStack {
+                            Text("Chore icons by OpenMoji")
+                            Spacer()
+                            Text("CC BY-SA 4.0")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                    }
+                    .foregroundColor(.choreStarTextPrimary)
                 }
                 
                 Section {

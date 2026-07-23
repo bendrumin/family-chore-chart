@@ -67,6 +67,10 @@ struct Routine: Codable, Identifiable {
         }
     }
 
+    var fallbackSystemImage: String {
+        RoutineType(rawValue: type)?.systemImage ?? "list.bullet"
+    }
+
     var typeEmoji: String {
         switch type {
         case "morning": return "🌅"

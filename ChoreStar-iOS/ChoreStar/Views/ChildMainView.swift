@@ -268,13 +268,13 @@ struct BigChoreCard: View {
         }) {
             VStack(spacing: 16) {
                 HStack {
-                    // Chore icon (emoji)
-                    if let icon = chore.icon {
-                        Text(icon)
-                            .font(.system(size: 36))
-                            .frame(width: 60, height: 60)
-                            .background(Color.fromString(chore.color ?? child.avatarColor).opacity(0.15))
-                            .cornerRadius(16)
+                    // Chore icon (OpenMoji line art, falls back to emoji)
+                    if chore.icon != nil {
+                        ChoreIconChip(
+                            icon: chore.icon,
+                            tint: Color.fromString(chore.color ?? child.avatarColor),
+                            size: 60
+                        )
                     }
                     
                     VStack(alignment: .leading, spacing: 6) {

@@ -5,6 +5,7 @@ struct ContentView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @AppStorage("darkModePreference") private var darkModePreference: String = "System"
     @State private var isLoading = true
+    @State private var debugShowKidLogin = false
     
     private var preferredColorScheme: ColorScheme? {
         switch darkModePreference {
@@ -32,9 +33,37 @@ struct ContentView: View {
         .preferredColorScheme(preferredColorScheme)
         .task {
             await supabaseManager.initialize()
+            #if DEBUG
+            applyDebugLaunchOverrides()
+            #endif
             isLoading = false
         }
+        .sheet(isPresented: $debugShowKidLogin) {
+            KidLoginView()
+        }
     }
+
+    #if DEBUG
+    /// Screenshot tooling (like `-chorestar-tab`):
+    /// `-chorestar-kid [name]` jumps straight into kid mode for the named
+    /// (or first) child, bypassing the PIN; `-chorestar-kidlogin` presents
+    /// the standalone kid login sheet.
+    private func applyDebugLaunchOverrides() {
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-chorestar-kidlogin") {
+            debugShowKidLogin = true
+        } else if let idx = args.firstIndex(of: "-chorestar-kid") {
+            let name: String? = (idx + 1 < args.count && !args[idx + 1].hasPrefix("-")) ? args[idx + 1] : nil
+            let child = supabaseManager.children.first(where: { c in
+                name.map { c.name.caseInsensitiveCompare($0) == .orderedSame } ?? true
+            })
+            if let child {
+                supabaseManager.currentChild = child
+                supabaseManager.isChildSession = true
+            }
+        }
+    }
+    #endif
 }
 
 struct LoadingView: View {

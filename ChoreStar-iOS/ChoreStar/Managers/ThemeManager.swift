@@ -34,6 +34,14 @@ class ThemeManager: ObservableObject {
     var accentColor: Color {
         activeTheme?.primaryColor ?? .choreStarPrimary
     }
+
+    var primaryColor: Color {
+        activeTheme?.primaryColor ?? .choreStarPrimary
+    }
+
+    var secondaryColor: Color {
+        activeTheme?.secondaryColor ?? .choreStarPurple
+    }
     
     var gradient: LinearGradient {
         activeTheme?.gradient ?? Color.choreStarGradient
