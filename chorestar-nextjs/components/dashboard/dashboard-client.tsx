@@ -367,15 +367,17 @@ function DashboardContent({
 
               <div className="my-2 border-t" style={{ borderColor: 'hsl(var(--border))' }} />
 
-              <button
-                type="button"
-                onClick={() => { setIsFAQOpen(true); setIsNavOpen(false) }}
+              <a
+                href="/support"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsNavOpen(false)}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
                 style={{ color: 'var(--text-primary)' }}
               >
                 <HelpCircle className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
-                FAQ &amp; Help
-              </button>
+                Help &amp; FAQ
+              </a>
               <button
                 type="button"
                 onClick={() => { setIsContactOpen(true); setIsNavOpen(false) }}
