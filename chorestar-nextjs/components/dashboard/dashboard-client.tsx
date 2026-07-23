@@ -9,6 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingScreen } from '@/components/ui/loading-spinner'
 import { ChildList } from '@/components/children/child-list'
+import { ChildSwitcher } from '@/components/children/child-switcher'
+import { DashboardHero } from '@/components/dashboard/dashboard-hero'
+import { AmbientBackground } from '@/components/ui/ambient-background'
+import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
 import { SettingsMenu } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
@@ -200,6 +204,7 @@ function DashboardContent({
   isAdmin,
 }: any) {
   const { settings } = useSettings()
+  const todaySnapshot = useTodaySnapshot(children)
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&
@@ -245,7 +250,10 @@ function DashboardContent({
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-bg)' }}>
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-bg)' }}>
+      {/* Ambient aurora backdrop — theme-tinted, purely decorative */}
+      <AmbientBackground />
+
       {/* Header */}
       <header className="glass glass-border sticky top-0 z-50 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700" style={{
         boxShadow: 'var(--shadow-sm)',
@@ -403,30 +411,7 @@ function DashboardContent({
       )}
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Family Name Banner */}
-        <div className="mb-6 flex items-center gap-3">
-          <h2
-            className="text-2xl sm:text-3xl font-black tracking-tight"
-            style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            {initialProfile?.family_name || 'My Family'}
-          </h2>
-          {isSharedMember && (
-            <span
-              className="text-xs font-bold px-2 py-1 rounded-full"
-              style={{ background: 'var(--gradient-primary)', color: 'white' }}
-            >
-              Shared
-            </span>
-          )}
-        </div>
-
+      <main className="container mx-auto px-4 py-8 relative z-10">
         {children.length === 0 ? (
           <Card className="text-center animate-bounce-in">
             <CardHeader className="pb-2">
@@ -459,7 +444,30 @@ function DashboardContent({
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-7">
+            {/* Hero — today at a glance */}
+            <DashboardHero
+              familyName={initialProfile?.family_name || 'My Family'}
+              done={todaySnapshot.familyDone}
+              total={todaySnapshot.familyTotal}
+              earnedCents={todaySnapshot.earnedTodayCents}
+              isSharedMember={isSharedMember}
+            />
+
+            {/* Family — avatar-ring child switcher */}
+            <section className="space-y-3">
+              <h2 className="px-1 text-lg font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Family
+              </h2>
+              <ChildSwitcher
+                children={children}
+                selectedChildId={selectedChildId}
+                onSelectChild={setSelectedChildId}
+                onRefresh={loadChildren}
+                progress={todaySnapshot.perChild}
+              />
+            </section>
+
             {/* Weekly Stats */}
             {selectedChildId && (
               <WeeklyStats
@@ -468,19 +476,8 @@ function DashboardContent({
               />
             )}
 
-            <div className="grid lg:grid-cols-[320px,1fr] gap-6">
-              {/* Sidebar - Children List (sticky on desktop) */}
-              <div className="lg:self-start lg:sticky lg:top-20">
-                <ChildList
-                  children={children}
-                  selectedChildId={selectedChildId}
-                  onSelectChild={setSelectedChildId}
-                  onRefresh={loadChildren}
-                />
-              </div>
-
-              {/* Main - Tabbed Content */}
-              <div>
+            {/* Main - Tabbed Content */}
+            <div>
                 {selectedChildId && (
                   <div className="space-y-6">
                     {/* Professional Tab Switcher + Add Routine */}
@@ -566,7 +563,6 @@ function DashboardContent({
                 )}
               </div>
             </div>
-          </div>
         )}
       </main>
 
