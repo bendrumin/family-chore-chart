@@ -75,7 +75,7 @@ struct ChoresView: View {
                     RoutinesListView()
                 }
             }
-            .background(Color.choreStarBackground)
+            .background(ThemedScreenBackground())
             .refreshable {
                 manager.refreshData()
             }
@@ -211,6 +211,10 @@ struct ChoreListRow: View {
         manager.isChoreCompleted(chore)
     }
 
+    private var childColor: Color {
+        Color.fromString(manager.children.first(where: { $0.id == chore.childId })?.avatarColor ?? "")
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Button(action: toggle) {
@@ -222,17 +226,17 @@ struct ChoreListRow: View {
             }
             .buttonStyle(PlainButtonStyle())
 
-            HStack(spacing: 6) {
-                if let icon = chore.icon, !icon.isEmpty {
-                    Text(icon)
-                        .font(.subheadline)
-                }
-                Text(chore.name)
-                    .font(.body)
-                    .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
-                    .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                    .lineLimit(1)
-            }
+            AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 24)
+                .font(.title3)
+                .frame(width: 28, height: 28)
+                .saturation(isCompleted ? 0.3 : 1)
+                .opacity(isCompleted ? 0.5 : 1)
+
+            Text(chore.name)
+                .font(.body)
+                .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                .lineLimit(1)
 
             Spacer()
 
@@ -362,9 +366,13 @@ struct EnhancedChoreRow: View {
     @ObservedObject var manager: SupabaseManager
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
-    
+
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
+    }
+
+    private var childColor: Color {
+        Color.fromString(manager.children.first(where: { $0.id == chore.childId })?.avatarColor ?? "")
     }
     
     var body: some View {
@@ -386,20 +394,20 @@ struct EnhancedChoreRow: View {
                     .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
 
+                AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 22)
+                    .font(.subheadline)
+                    .frame(width: 26, height: 26)
+                    .saturation(isCompleted ? 0.3 : 1)
+                    .opacity(isCompleted ? 0.5 : 1)
+
                 // Chore info
                 VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        if let icon = chore.icon, !icon.isEmpty {
-                            Text(icon)
-                                .font(.subheadline)
-                        }
-                        Text(chore.name)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
-                            .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                            .lineLimit(1)
-                    }
+                    Text(chore.name)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
+                        .strikethrough(isCompleted, color: .choreStarTextSecondary)
+                        .lineLimit(1)
 
                     if let description = chore.description, !description.isEmpty {
                         Text(description)

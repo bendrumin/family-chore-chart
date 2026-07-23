@@ -20,9 +20,8 @@ struct RoutineCardView: View {
                             .fill(routineColor.opacity(0.15))
                             .frame(width: 52, height: 52)
                         
-                        Image(systemName: routine.icon)
+                        AdaptiveIcon(icon: routine.icon, fallbackSymbol: routine.fallbackSystemImage, tint: routineColor, iconSize: 28)
                             .font(.title2)
-                            .foregroundColor(routineColor)
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
@@ -140,9 +139,8 @@ struct KidRoutineCard: View {
                             .fill(routineColor.opacity(0.15))
                             .frame(width: 60, height: 60)
 
-                        Image(systemName: routine.icon)
+                        AdaptiveIcon(icon: routine.icon, fallbackSymbol: routine.fallbackSystemImage, tint: routineColor, iconSize: 32)
                             .font(.title)
-                            .foregroundColor(routineColor)
                     }
 
                     VStack(alignment: .leading, spacing: 6) {

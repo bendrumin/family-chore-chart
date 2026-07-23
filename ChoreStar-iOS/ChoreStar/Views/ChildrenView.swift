@@ -45,7 +45,7 @@ struct ChildrenView: View {
                 }
                 .padding(.top, 10)
             }
-            .background(Color.choreStarBackground)
+            .background(ThemedScreenBackground())
             .refreshable {
                 manager.refreshData()
             }

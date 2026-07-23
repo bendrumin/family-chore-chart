@@ -147,9 +147,8 @@ struct RoutinePlayerView: View {
                     .fill(routineColor.opacity(0.15))
                     .frame(width: 120, height: 120)
                 
-                Image(systemName: step.icon)
+                AdaptiveIcon(icon: step.icon, fallbackSymbol: "checkmark.circle.fill", tint: routineColor, iconSize: 56)
                     .font(.system(size: 50))
-                    .foregroundColor(routineColor)
             }
             .scaleEffect(1.0)
             .animation(.spring(response: 0.5, dampingFraction: 0.6), value: currentStepIndex)

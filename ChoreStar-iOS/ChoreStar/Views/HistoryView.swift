@@ -332,7 +332,7 @@ struct HistoryView: View {
                 }
                 .padding(.top, 10)
             }
-            .background(Color.choreStarBackground)
+            .background(ThemedScreenBackground())
             .navigationTitle("Stats & History")
             .navigationBarTitleDisplayMode(.large)
         }
