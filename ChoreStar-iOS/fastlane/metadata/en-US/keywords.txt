@@ -1,1 +1,1 @@
-chore chart,kids,allowance,family,routines,reward,responsibility,parenting,chores,bedtime
+tracker,task,responsibility,behavior,habit,family,parenting,bedtime,toddler,teen,checklist,money,job

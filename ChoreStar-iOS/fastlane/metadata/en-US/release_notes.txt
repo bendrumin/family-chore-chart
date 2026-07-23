@@ -1,10 +1,10 @@
-🎉 Welcome to ChoreStar for iPhone!
+The all-new ChoreStar for iPhone & iPad is here!
 
-• Set up family chores and routines in minutes
-• Kids log in with a PIN — no account needed
-• Track earnings, streaks, and achievements
-• Morning, bedtime & after-school routine builder with timers
-• Achievement badges that kids actually care about
-• Syncs with chorestar.app in real-time
+• Home screen Widget — your family's daily progress at a glance
+• Routine timers in the Dynamic Island & Lock Screen (Live Activities)
+• Kid Mode: kids log in with just a family code + PIN
+• 10 achievement badges, streaks, and perfect-week rewards
+• Seasonal & premium themes with ambient animations
+• Redesigned, faster, and built for both iPhone and iPad
 
-Built by a parent, for families who want less stress and more harmony.
+Questions or ideas? We'd love to hear from you at hi@chorestar.app
