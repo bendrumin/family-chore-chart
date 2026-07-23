@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { AmbientBackground } from '@/components/ui/ambient-background'
 
 interface InviteDetails {
   status: string
@@ -84,8 +85,9 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--gradient-bg)' }}>
+      <AmbientBackground />
+      <div className="relative z-10 max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-center">
           <div className="text-5xl mb-3">👨‍👩‍👧‍👦</div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AmbientBackground } from '@/components/ui/ambient-background'
 import {
   ArrowLeft,
   BarChart3,
@@ -228,8 +229,9 @@ export function AdminDashboardClient() {
   const campaignLabel = (id: string) => campaigns.find((c) => c.id === id)?.label || id
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+    <div className="relative min-h-screen" style={{ background: 'var(--gradient-bg)' }}>
+      <AmbientBackground />
+      <header className="relative z-10 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
@@ -251,7 +253,7 @@ export function AdminDashboardClient() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
         {authError && (
           <div className="mb-6 rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-900 dark:text-red-200">
             Admin API returned not found. Set <code className="text-xs px-1 rounded bg-red-100 dark:bg-red-900/40">ADMIN_EMAIL=bsiegel13@gmail.com</code> in

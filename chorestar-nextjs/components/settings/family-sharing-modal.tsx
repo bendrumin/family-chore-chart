@@ -143,7 +143,7 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
 
         <div className="space-y-6 mt-4">
           {/* Invite section */}
-          <div className="p-4 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+          <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
             <div className="flex items-center gap-2 mb-3">
               <UserPlus className="w-5 h-5" style={{ color: 'var(--primary)' }} />
               <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CheckCircle, Crown, ArrowRight, Loader2 } from 'lucide-react'
+import { AmbientBackground } from '@/components/ui/ambient-background'
 
 export default function PaymentSuccessPage() {
   return (
@@ -51,13 +52,13 @@ function PaymentSuccessContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-    }}>
+    <div className="relative min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--gradient-bg)' }}>
+      <AmbientBackground />
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-lg w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center"
+        className="relative z-10 max-w-lg w-full rounded-3xl border border-gray-200 dark:border-gray-700 p-8 text-center"
+        style={{ background: 'var(--card-bg)', boxShadow: '0 1px 2px rgba(20,20,50,0.05), 0 22px 48px -20px rgba(70,60,140,0.4)' }}
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -88,8 +89,8 @@ function PaymentSuccessContent() {
           Your payment was successful. You now have access to all premium features including unlimited children, chores, and more.
         </p>
 
-        <div className="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-8">
-          <div className="flex items-center justify-center gap-2 text-purple-700 dark:text-purple-300 font-semibold">
+        <div className="rounded-xl p-4 mb-8 bg-emerald-500/10 border border-emerald-500/30">
+          <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
             <Crown className="w-5 h-5" />
             <span>Premium features are now active</span>
           </div>
