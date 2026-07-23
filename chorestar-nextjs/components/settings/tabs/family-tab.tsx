@@ -178,7 +178,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
     <>
       <div className="space-y-5">
         {/* Family Name Section */}
-        <div className="space-y-4 p-4 rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30">
+        <div className="space-y-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <div className="flex items-center gap-2 mb-1">
             <Home className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -201,7 +201,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Reward Settings Section */}
-        <div className="space-y-4 p-4 rounded-xl border-2 border-green-200 dark:border-green-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30">
+        <div className="space-y-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -217,14 +217,14 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             <Label className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
               Reward Mode
             </Label>
-            <div className="flex rounded-xl border-2 border-green-200 dark:border-green-700 overflow-hidden">
+            <div className="flex rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
               <button
                 type="button"
                 onClick={() => setLocalRewardMode('flat')}
                 className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
                   localRewardMode === 'flat'
-                    ? 'bg-green-700 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                 }`}
               >
                 Flat Daily Rate
@@ -234,8 +234,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 onClick={() => setLocalRewardMode('per_chore')}
                 className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
                   localRewardMode === 'per_chore'
-                    ? 'bg-green-700 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                 }`}
               >
                 Per Chore
@@ -288,7 +288,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Edit All Children Section */}
-        <div className="p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -313,7 +313,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Kid Login Link Section */}
-        <div className="p-4 rounded-xl border-2 border-amber-200 dark:border-amber-700 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30">
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <div className="flex items-center gap-2 mb-2">
             <Link2 className="w-5 h-5" style={{ color: 'var(--primary)' }} />
             <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -355,7 +355,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         </div>
 
         {/* Family Sharing Section */}
-        <div className="p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -437,7 +437,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       </div>
 
       {/* Sound Settings */}
-      <div className="space-y-4 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
+      <div className="space-y-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
         <div className="flex items-center gap-2 mb-3">
           {localSoundEnabled ? (
             <Volume2 className="w-5 h-5" style={{ color: 'var(--primary)' }} />

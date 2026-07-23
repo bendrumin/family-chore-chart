@@ -398,7 +398,7 @@ export function AppearanceTab() {
           )}
           Push Notifications
         </Label>
-        <div className="p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             Get reminders for daily chores and weekly progress reports
           </p>
@@ -431,7 +431,7 @@ export function AppearanceTab() {
             Premium Themes
           </Label>
         </div>
-        <div className="p-4 rounded-xl border-2 border-yellow-200 dark:border-yellow-700/50 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             Unlock exclusive premium themes with unique color schemes and customization options!
           </p>

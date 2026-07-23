@@ -3,16 +3,17 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { XCircle, ArrowLeft, CreditCard } from 'lucide-react'
+import { AmbientBackground } from '@/components/ui/ambient-background'
 
 export default function PaymentCancelPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-    }}>
+    <div className="relative min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--gradient-bg)' }}>
+      <AmbientBackground />
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="max-w-lg w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center"
+        className="relative z-10 max-w-lg w-full rounded-3xl border border-gray-200 dark:border-gray-700 p-8 text-center"
+        style={{ background: 'var(--card-bg)', boxShadow: '0 1px 2px rgba(20,20,50,0.05), 0 22px 48px -20px rgba(70,60,140,0.4)' }}
       >
         <div className="flex justify-center mb-6">
           <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
