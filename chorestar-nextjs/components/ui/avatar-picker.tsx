@@ -27,6 +27,33 @@ const COLORS = [
   '#3D5A80', // Navy
 ]
 
+// The iOS app stores named avatar colors (e.g. "orange", "blue"); DiceBear's
+// backgroundColor param only accepts hex. Map the known names to hex so those
+// children's avatars still render (otherwise DiceBear returns a 400).
+const NAMED_HEX: Record<string, string> = {
+  red: 'FF6B6B', orange: 'F8B739', yellow: 'F7DC6F', green: '52B788',
+  teal: '4ECDC4', blue: '45B7D1', sky: '85C1E2', purple: 'BB8FCE',
+  pink: 'F178B6', indigo: '6366F1', mint: '98D8C8', coral: 'E07A5F',
+  navy: '3D5A80',
+}
+
+/** Normalize any stored color to a DiceBear-safe hex (no leading #), or '' to
+ *  omit the backgroundColor param entirely (avatar still loads). */
+function toDicebearBg(color: string): string {
+  if (!color || color === 'transparent') return ''
+  const c = color.trim().toLowerCase()
+  if (/^#?[0-9a-f]{6}$/.test(c) || /^#?[0-9a-f]{3}$/.test(c)) return c.replace('#', '')
+  return NAMED_HEX[c] ?? ''
+}
+
+/** A #-prefixed hex for the swatch selection UI, mapping named colors through. */
+function toHexColor(color?: string | null): string {
+  if (!color) return COLORS[0]
+  if (color === 'transparent') return 'transparent'
+  const bg = toDicebearBg(color)
+  return bg ? `#${bg}` : COLORS[0]
+}
+
 const ROBOT_STYLES = [
   'variant01', 'variant02', 'variant03', 'variant04', 'variant05',
   'variant06', 'variant07', 'variant08', 'variant09', 'variant10'
@@ -46,24 +73,24 @@ const FUN_EMOJIS = [
 ]
 
 export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: AvatarPickerProps) {
-  const [selectedColor, setSelectedColor] = useState(currentColor || COLORS[0])
+  const [selectedColor, setSelectedColor] = useState(toHexColor(currentColor))
   const [selectedStyle, setSelectedStyle] = useState('variant01')
 
+  const bgParam = () => {
+    const bg = toDicebearBg(selectedColor)
+    return bg ? `&backgroundColor=${bg}` : ''
+  }
+
   const generateRobotUrl = (variant: string) => {
-    const bgColor = selectedColor === 'transparent' ? '' : `&backgroundColor=${selectedColor.replace('#', '')}`
-    return `https://api.dicebear.com/7.x/bottts/svg?seed=${variant}${bgColor}`
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${variant}${bgParam()}`
   }
 
   const generateAdventurerUrl = (variant: string) => {
-    const bgColor = selectedColor === 'transparent' ? '' : `&backgroundColor=${selectedColor.replace('#', '')}`
-    return `https://api.dicebear.com/7.x/adventurer/svg?seed=${variant}${bgColor}`
+    return `https://api.dicebear.com/7.x/adventurer/svg?seed=${variant}${bgParam()}`
   }
 
   const generateEmojiUrl = (emoji: string) => {
-    // For emojis, we'll just return a data URL or use the emoji directly
-    // In production, you might want to use DiceBear's fun-emoji style
-    const bgColor = selectedColor === 'transparent' ? '' : `&backgroundColor=${selectedColor.replace('#', '')}`
-    return `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${encodeURIComponent(emoji)}${bgColor}`
+    return `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${encodeURIComponent(emoji)}${bgParam()}`
   }
 
   return (
