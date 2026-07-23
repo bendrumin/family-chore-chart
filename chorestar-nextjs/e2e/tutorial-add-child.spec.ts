@@ -19,7 +19,7 @@ test.describe('Tutorial — Add & Customize a Child', () => {
 
     // ── OPEN ADD CHILD MODAL ──────────────────────────────────────────────────
     const addChildCta = page.getByRole('button', { name: /add.*first.*child/i });
-    const addHeaderBtn = page.getByRole('button', { name: /^add$/i });
+    const addHeaderBtn = page.getByRole('button', { name: /^add( child)?$/i });
 
     if (await addChildCta.isVisible()) {
       await addChildCta.hover();
@@ -75,7 +75,7 @@ test.describe('Tutorial — Add & Customize a Child', () => {
     await page.waitForTimeout(1000);
 
     // ── OPEN EDIT MODAL ───────────────────────────────────────────────────────
-    const editBtn = page.locator('[title="Edit child"]').last();
+    const editBtn = page.getByRole('button', { name: `Edit ${CHILD_NAME}` }).first();
     await editBtn.hover();
     await page.waitForTimeout(600);
     await editBtn.click();
