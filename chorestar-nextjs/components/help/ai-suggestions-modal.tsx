@@ -7,6 +7,7 @@ import { Sparkles, RefreshCw, Plus, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { generateSuggestions, CATEGORY_LABELS, type ChoreSuggestion } from '@/lib/utils/chore-suggestions'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -217,7 +218,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
-                          <span className="text-2xl">{suggestion.icon}</span>
+                          <ChoreIcon emoji={suggestion.icon} className="w-7 h-7 text-indigo-500 dark:text-indigo-400" />
                           <div>
                             <h4 className="font-bold" style={{ color: 'var(--text-primary)' }}>
                               {suggestion.name}

@@ -7,6 +7,7 @@ import { Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { SEASONAL_THEMES_DATA, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import { useSettings } from '@/lib/contexts/settings-context'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 
@@ -141,7 +142,7 @@ export function SeasonalSuggestionsModal({
                   className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                 />
                 
-                <div className="text-4xl flex-shrink-0">{activity.icon}</div>
+                <div className="flex-shrink-0"><ChoreIcon emoji={activity.icon} className="w-10 h-10 text-indigo-500 dark:text-indigo-400" /></div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold mb-1 group-hover:text-orange-600 transition-colors" style={{ color: 'var(--text-primary)' }}>
                     {activity.name}
