@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Label } from './label'
 import { Input } from './input'
+import { ChoreIcon } from './chore-icon'
 
 interface IconPickerProps {
   currentIcon?: string | null
@@ -81,7 +82,7 @@ export function IconPicker({ currentIcon, onSelect }: IconPickerProps) {
                 : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
             }`}
           >
-            {emoji}
+            <ChoreIcon emoji={emoji} className="w-6 h-6 text-gray-700 dark:text-gray-200" />
           </button>
         ))}
       </div>
@@ -89,7 +90,7 @@ export function IconPicker({ currentIcon, onSelect }: IconPickerProps) {
       {/* Preview */}
       {currentIcon && (
         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <span className="text-4xl">{currentIcon}</span>
+          <ChoreIcon emoji={currentIcon} className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
           <div>
             <div className="text-sm font-medium">Selected Icon</div>
             <div className="text-xs text-gray-500">Click an icon to change</div>

@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Check, Edit } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
 import { CategoryBadge } from '@/components/ui/category-badge'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -141,7 +142,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1 pr-10">
               <div className="flex items-center gap-2.5 mb-1.5">
-                {chore.icon && <span className="text-2xl">{chore.icon}</span>}
+                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />}
                 <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
                   {chore.name}
                 </h3>
