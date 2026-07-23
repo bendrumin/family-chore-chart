@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Sparkles, DollarSign, FileText, Palette } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import { playSound } from '@/lib/utils/sound'
 
@@ -118,7 +119,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 {/* Icon Picker */}
                 <div className="space-y-2">
                   <Label className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                    <span>{formData.icon}</span>
+                    <ChoreIcon emoji={formData.icon} className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                     Icon
                   </Label>
                   <IconPicker
