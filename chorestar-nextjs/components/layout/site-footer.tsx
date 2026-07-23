@@ -70,6 +70,11 @@ export function SiteFooter() {
                   Contact Support
                 </a>
               </li>
+              <li>
+                <Link href="/#ios-app" className="text-sm hover:text-white transition-colors">
+                  iOS App Beta
+                </Link>
+              </li>
             </ul>
           </div>
 
