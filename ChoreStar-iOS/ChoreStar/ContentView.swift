@@ -6,6 +6,7 @@ struct ContentView: View {
     @AppStorage("darkModePreference") private var darkModePreference: String = "System"
     @State private var isLoading = true
     @State private var debugShowKidLogin = false
+    @State private var debugShowPaywall = false
     
     private var preferredColorScheme: ColorScheme? {
         switch darkModePreference {
@@ -41,6 +42,9 @@ struct ContentView: View {
         .sheet(isPresented: $debugShowKidLogin) {
             KidLoginView()
         }
+        .sheet(isPresented: $debugShowPaywall) {
+            PaywallView()
+        }
     }
 
     #if DEBUG
@@ -50,7 +54,9 @@ struct ContentView: View {
     /// the standalone kid login sheet.
     private func applyDebugLaunchOverrides() {
         let args = ProcessInfo.processInfo.arguments
-        if args.contains("-chorestar-kidlogin") {
+        if args.contains("-chorestar-paywall") {
+            debugShowPaywall = true
+        } else if args.contains("-chorestar-kidlogin") {
             debugShowKidLogin = true
         } else if let idx = args.firstIndex(of: "-chorestar-kid") {
             let name: String? = (idx + 1 < args.count && !args[idx + 1].hasPrefix("-")) ? args[idx + 1] : nil

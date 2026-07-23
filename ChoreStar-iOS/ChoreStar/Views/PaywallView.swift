@@ -51,26 +51,15 @@ struct PaywallView: View {
                     .cornerRadius(16)
 
                     // Plans
-                    if store.isLoadingProducts {
-                        ProgressView("Loading plans…")
-                            .padding(.vertical, 30)
-                    } else if store.products.isEmpty {
-                        VStack(spacing: 8) {
-                            Text("Plans aren't available right now.")
-                                .font(.subheadline)
-                                .foregroundColor(.choreStarTextSecondary)
-                            Text("You can also upgrade at chorestar.app")
-                                .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
-                        }
-                        .padding(.vertical, 20)
+                    #if DEBUG
+                    if isScreenshotMode {
+                        demoPlansSection
                     } else {
-                        VStack(spacing: 12) {
-                            ForEach(store.products, id: \.id) { product in
-                                planCard(product)
-                            }
-                        }
+                        plansSection
                     }
+                    #else
+                    plansSection
+                    #endif
 
                     // Purchase button
                     if let product = selectedProduct {
@@ -142,6 +131,107 @@ struct PaywallView: View {
             Text("Your family now has unlimited children, chores, and premium themes.")
         }
     }
+
+    @ViewBuilder
+    private var plansSection: some View {
+        if store.isLoadingProducts {
+            ProgressView("Loading plans…")
+                .padding(.vertical, 30)
+        } else if store.products.isEmpty {
+            unavailableSection
+        } else {
+            VStack(spacing: 12) {
+                ForEach(store.products, id: \.id) { product in
+                    planCard(product)
+                }
+            }
+        }
+    }
+
+    private var unavailableSection: some View {
+        VStack(spacing: 8) {
+            Text("Plans aren't available right now.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextSecondary)
+            Text("You can also upgrade at chorestar.app")
+                .font(.caption)
+                .foregroundColor(.choreStarTextSecondary)
+        }
+        .padding(.vertical, 20)
+    }
+
+    #if DEBUG
+    /// True when launched by the App Store screenshot tooling (`-chorestar-paywall`).
+    /// StoreKit test products don't load under `simctl`, so we render a static
+    /// preview of the plan cards purely so the review screenshot shows the
+    /// purchase options. Never compiled into release builds.
+    private var isScreenshotMode: Bool {
+        ProcessInfo.processInfo.arguments.contains("-chorestar-paywall")
+    }
+
+    private var demoPlansSection: some View {
+        VStack(spacing: 12) {
+            demoPlanCard(name: "Monthly", period: "Billed monthly", price: "$4.99", isBest: false, isSelected: false)
+            demoPlanCard(name: "Annual", period: "Billed yearly", price: "$49.99", isBest: true, isSelected: true)
+            demoPlanCard(name: "Lifetime", period: "One-time purchase, forever", price: "$149.99", isBest: false, isSelected: false)
+
+            Button {
+            } label: {
+                HStack {
+                    Image(systemName: "crown.fill")
+                    Text("Continue").fontWeight(.bold)
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.choreStarGradient)
+                .cornerRadius(16)
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    private func demoPlanCard(name: String, period: String, price: String, isBest: Bool, isSelected: Bool) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(name)
+                        .font(.headline)
+                        .foregroundColor(.choreStarTextPrimary)
+                    if isBest {
+                        Text("BEST VALUE")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.choreStarSuccess)
+                            .cornerRadius(8)
+                    }
+                }
+                Text(period)
+                    .font(.caption)
+                    .foregroundColor(.choreStarTextSecondary)
+            }
+            Spacer()
+            Text(price)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(.choreStarTextPrimary)
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.title3)
+                .foregroundColor(isSelected ? .choreStarPrimary : .choreStarTextSecondary.opacity(0.4))
+        }
+        .padding(16)
+        .background(Color.choreStarCardBackground)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(isSelected ? Color.choreStarPrimary : Color.clear, lineWidth: 2)
+        )
+    }
+    #endif
 
     private func planCard(_ product: Product) -> some View {
         let isSelected = product.id == selectedProduct?.id
