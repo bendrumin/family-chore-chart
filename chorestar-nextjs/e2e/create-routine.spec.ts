@@ -13,7 +13,7 @@ test.describe('Create Routine (recording flow)', () => {
     await page.waitForTimeout(800);
 
     // Click Routines tab and wait for it to render
-    await page.getByRole('button', { name: /routines/i }).click();
+    await page.getByRole('tab', { name: /^routines$/i }).click();
     await page.waitForTimeout(1000);
 
     // Click Add Routine (in tab bar) or New Routine (in content)

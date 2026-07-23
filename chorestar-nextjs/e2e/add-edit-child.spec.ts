@@ -14,7 +14,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
 
     // === ADD CHILD ===
     const addChildCta = page.getByRole('button', { name: /add.*first.*child/i });
-    const addHeaderBtn = page.getByRole('button', { name: /^add$/i });
+    const addHeaderBtn = page.getByRole('button', { name: /^add( child)?$/i });
 
     if (await addChildCta.isVisible()) {
       await addChildCta.click();
@@ -47,7 +47,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.getByRole('button', { name: `Select ${CHILD_NAME}` }).first().click();
     await page.waitForTimeout(500);
 
-    await page.locator('[title="Edit child"]').last().click();
+    await page.getByRole('button', { name: `Edit ${CHILD_NAME}` }).first().click();
     // Wait for edit modal with the Avatar & Appearance section
     await expect(page.getByRole('heading', { name: /avatar.*appearance/i })).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(500);

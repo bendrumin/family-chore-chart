@@ -21,7 +21,7 @@ test.describe('Add & Edit Chore (recording flow)', () => {
     }
 
     // Make sure we're on the Chores tab
-    await page.getByRole('button', { name: /^chores$/i }).click();
+    await page.getByRole('tab', { name: /^chores$/i }).click();
     await page.waitForTimeout(400);
 
     // === ADD CHORE ===

@@ -85,7 +85,7 @@ test.describe('Per-Chore Rewards (recording flow)', () => {
     }
 
     // Make sure we're on the Chores tab (tab may have an emoji prefix on some builds)
-    await page.getByRole('button', { name: /chores/i }).filter({ hasNotText: /add/i }).first().click();
+    await page.getByRole('tab', { name: /^chores$/i }).click();
     await page.waitForTimeout(400);
 
     // ── STEP 7: Add the demo chore (if it doesn't exist) ─────────────────────

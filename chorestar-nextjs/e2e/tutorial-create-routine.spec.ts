@@ -16,7 +16,7 @@ test.describe('Tutorial — Create a Morning Routine', () => {
     await page.waitForTimeout(1500);
 
     // ── CLICK ROUTINES TAB ────────────────────────────────────────────────────
-    const routinesTab = page.getByRole('button', { name: /routines/i });
+    const routinesTab = page.getByRole('tab', { name: /^routines$/i });
     await routinesTab.hover();
     await page.waitForTimeout(600);
     await routinesTab.click();
