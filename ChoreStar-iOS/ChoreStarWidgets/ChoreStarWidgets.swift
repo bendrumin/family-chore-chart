@@ -66,20 +66,33 @@ func widgetColor(_ name: String) -> Color {
     }
 }
 
-let brandIndigo = Color(red: 0.388, green: 0.400, blue: 0.945)
+let brandIndigo = Color(red: 0.388, green: 0.400, blue: 0.945)      // #6366f1 (light)
+let brandIndigoDark = Color(red: 0.612, green: 0.639, blue: 0.996)  // #9ca3fe (brighter, for dark)
 
 struct WidgetRing: View {
+    @Environment(\.colorScheme) private var colorScheme
     let progress: Double
     var lineWidth: CGFloat = 9
-    var tint: Color = brandIndigo
+    var tint: Color? = nil
+
+    private var ringColor: Color {
+        tint ?? (colorScheme == .dark ? brandIndigoDark : brandIndigo)
+    }
 
     var body: some View {
         ZStack {
             Circle()
-                .stroke(tint.opacity(0.18), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(ringColor.opacity(colorScheme == .dark ? 0.28 : 0.16),
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
             Circle()
                 .trim(from: 0, to: max(0.001, progress))
-                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(
+                    AngularGradient(
+                        gradient: Gradient(colors: [ringColor, ringColor.opacity(0.7), ringColor]),
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
         }
     }
@@ -89,6 +102,7 @@ struct WidgetRing: View {
 
 struct TodayRingWidgetView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.colorScheme) private var colorScheme
     let entry: TodayEntry
 
     var body: some View {
@@ -104,6 +118,25 @@ struct TodayRingWidgetView: View {
 
     private var snapshot: WidgetSnapshot { entry.snapshot ?? .empty }
 
+    /// Brighter accent in dark mode so the ring and checkmark pop on a dark surface.
+    private var accent: Color {
+        colorScheme == .dark ? brandIndigoDark : brandIndigo
+    }
+
+    /// A subtle brand-tinted gradient surface — an elevated dark gray in dark
+    /// mode (never pure black) and a faint indigo wash in light — so the widget
+    /// reads with depth instead of a flat panel.
+    @ViewBuilder private var widgetBackground: some View {
+        let base = colorScheme == .dark
+            ? Color(red: 0.11, green: 0.11, blue: 0.15)
+            : Color(uiColor: .systemBackground)
+        LinearGradient(
+            colors: [base, accent.opacity(colorScheme == .dark ? 0.18 : 0.08)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
     private var small: some View {
         VStack(spacing: 8) {
             ZStack {
@@ -111,7 +144,7 @@ struct TodayRingWidgetView: View {
                 if snapshot.totalToday > 0, snapshot.progress >= 1.0 {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(brandIndigo)
+                        .foregroundColor(accent)
                 } else {
                     VStack(spacing: 0) {
                         Text("\(snapshot.completedToday)")
@@ -130,7 +163,7 @@ struct TodayRingWidgetView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
-        .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+        .containerBackground(for: .widget) { widgetBackground }
     }
 
     private var medium: some View {
@@ -139,6 +172,7 @@ struct TodayRingWidgetView: View {
                 WidgetRing(progress: snapshot.progress)
                 Text("\(Int(snapshot.progress * 100))%")
                     .font(.system(.headline, design: .rounded).weight(.bold))
+                    .foregroundColor(accent)
             }
             .frame(width: 72, height: 72)
 
@@ -171,7 +205,7 @@ struct TodayRingWidgetView: View {
 
             Spacer(minLength: 0)
         }
-        .containerBackground(for: .widget) { Color(uiColor: .systemBackground) }
+        .containerBackground(for: .widget) { widgetBackground }
     }
 
     private var accessoryCircular: some View {
