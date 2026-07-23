@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ChoreStarLogo } from '@/components/brand/logo'
-import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/auth/login-form'
+import { AuthShell } from '@/components/auth/auth-shell'
 
 export const metadata: Metadata = {
   title: 'Sign In',
@@ -28,28 +26,12 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-4xl font-bold" style={GRADIENT_TEXT}>
-            <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
-          </Link>
-          <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome Back!
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Sign in to your account
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <LoginForm next={redirectTo} />
-        </div>
-
-        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          🔒 Your data is secure and encrypted
-        </p>
-      </div>
-    </div>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to your family dashboard"
+      footer={<>🔒 Your data is secure and encrypted</>}
+    >
+      <LoginForm next={redirectTo} />
+    </AuthShell>
   )
 }

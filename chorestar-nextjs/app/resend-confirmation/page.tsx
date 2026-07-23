@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ChoreStarLogo } from '@/components/brand/logo'
-import { GRADIENT_TEXT } from '@/lib/constants/brand'
+import { AuthShell } from '@/components/auth/auth-shell'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,21 +47,11 @@ export default function ResendConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-4xl font-bold" style={GRADIENT_TEXT}>
-            <span className="inline-flex items-center gap-2"><ChoreStarLogo size={36} /> ChoreStar</span>
-          </Link>
-          <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Resend Confirmation Email
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
-            Didn't receive your confirmation email? We'll send you a new one.
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+    <AuthShell
+      title="Resend confirmation email"
+      subtitle="Didn't receive your confirmation email? We'll send you a new one."
+      footer={<>Make sure to check your spam folder if you don't see the email within a few minutes.</>}
+    >
           <form onSubmit={handleResend} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
@@ -94,21 +83,16 @@ export default function ResendConfirmationPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-6 pt-6 border-t" style={{ borderColor: 'hsl(var(--border))' }}>
             <Link
               href="/login"
-              className="flex items-center justify-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+              className="flex items-center justify-center gap-2 text-sm font-semibold hover:underline"
+              style={{ color: 'var(--primary)' }}
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
             </Link>
           </div>
-        </div>
-
-        <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Make sure to check your spam folder if you don't see the email within a few minutes.
-        </p>
-      </div>
-    </div>
+    </AuthShell>
   )
 }
