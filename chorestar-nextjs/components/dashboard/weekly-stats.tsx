@@ -273,48 +273,54 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Total Completions */}
-          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+          {/* Total Completions — brand accent (theme-driven) */}
+          <div className="rounded-xl border p-3.5" style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}>
+            <div
+              className="w-8 h-8 rounded-lg grid place-items-center mb-2"
+              style={{ background: 'color-mix(in srgb, var(--primary) 14%, transparent)', color: 'var(--primary)' }}
+            >
+              <Star className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.totalCompletions}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
-              <Star className="w-3 h-3" />
-              Completions
-            </div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Completions</div>
           </div>
 
-          {/* Total Earnings */}
-          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          {/* Total Earnings — semantic green */}
+          <div className="rounded-xl border p-3.5" style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}>
+            <div className="w-8 h-8 rounded-lg grid place-items-center mb-2 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <DollarSign className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               ${stats.totalEarnings.toFixed(2)}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
-              <DollarSign className="w-3 h-3" />
-              Earned
-            </div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Earned</div>
           </div>
 
-          {/* Completion Rate */}
-          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          {/* Completion Rate — brand accent (theme-driven) */}
+          <div className="rounded-xl border p-3.5" style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}>
+            <div
+              className="w-8 h-8 rounded-lg grid place-items-center mb-2"
+              style={{ background: 'color-mix(in srgb, var(--primary) 14%, transparent)', color: 'var(--primary)' }}
+            >
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.completionRate}%
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
-              <TrendingUp className="w-3 h-3" />
-              Complete
-            </div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Complete</div>
           </div>
 
-          {/* Streak */}
-          <div className="text-center p-2 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+          {/* Streak — semantic amber */}
+          <div className="rounded-xl border p-3.5" style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}>
+            <div className="w-8 h-8 rounded-lg grid place-items-center mb-2 bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <Flame className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.streak}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
-              <Flame className="w-3 h-3" />
-              Day Streak
-            </div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Day Streak</div>
           </div>
         </div>
 
