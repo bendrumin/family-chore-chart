@@ -214,8 +214,8 @@ export function BillingTab() {
         </h4>
         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Questions about billing or subscriptions? Contact us at{' '}
-          <a href="mailto:support@chorestar.app" className="text-purple-600 dark:text-purple-400 hover:underline font-semibold">
-            support@chorestar.app
+          <a href="mailto:hi@chorestar.app" className="text-purple-600 dark:text-purple-400 hover:underline font-semibold">
+            hi@chorestar.app
           </a>
         </p>
       </div>

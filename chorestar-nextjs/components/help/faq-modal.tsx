@@ -260,7 +260,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
             <Button
               variant="gradient"
               size="sm"
-              onClick={() => window.open('mailto:support@chorestar.app', '_blank')}
+              onClick={() => window.open('mailto:hi@chorestar.app', '_blank')}
               className="font-bold hover-glow"
             >
               Contact Support

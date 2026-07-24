@@ -133,7 +133,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             <ResourceLink href="/how-to" label="Setting up routines" />
             <ResourceLink href="/how-to" label="Kid login with PIN" />
             <ResourceLink href="/blog/spring-cleaning-chores-for-kids" label="Spring cleanup chore ideas" />
-            <ResourceLink href="mailto:support@chorestar.app" label="Contact support" external />
+            <ResourceLink href="mailto:hi@chorestar.app" label="Contact support" external />
           </div>
         </div>
 
