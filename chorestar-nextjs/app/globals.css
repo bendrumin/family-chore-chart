@@ -340,8 +340,14 @@
     max-width: 900px !important; /* Consistent width for all settings tabs */
     max-height: calc(100vh - 2rem);
     height: auto;
-    min-height: 500px;
+    min-height: 0; /* mobile: don't force a tall box on short viewports */
     background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+  }
+
+  @media (min-width: 768px) {
+    .dialog-content-settings {
+      min-height: 500px;
+    }
   }
 
   .dark .dialog-content-settings {
@@ -420,7 +426,7 @@
 
   /* Settings Tab Styles */
   .settings-tab-button {
-    width: 100%;
+    width: auto; /* mobile: horizontal scrollable tab row — size to content */
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -433,6 +439,12 @@
     color: var(--text-secondary);
     border: none;
     cursor: pointer;
+  }
+
+  @media (min-width: 768px) {
+    .settings-tab-button {
+      width: 100%; /* desktop: full-width buttons in the left sidebar */
+    }
   }
 
   .dark .settings-tab-button {

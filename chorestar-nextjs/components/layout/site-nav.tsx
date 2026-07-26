@@ -108,7 +108,7 @@ export function SiteNav() {
               <ChoreStarLogo size={28} /> ChoreStar
             </Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isLoggedIn === false && (
               <div className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <Link href="/compare" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
@@ -138,16 +138,17 @@ export function SiteNav() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
+                  className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg text-sm font-semibold text-white whitespace-nowrap transition-all hover:opacity-90 hover:shadow-md"
                   style={{ background: GRADIENT }}
                 >
-                  Create Account
+                  <span className="sm:hidden">Sign Up</span>
+                  <span className="hidden sm:inline">Create Account</span>
                 </Link>
               </>
             )}
