@@ -34,7 +34,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
         size="sm"
         onClick={handlePrevious}
         aria-label="Previous week"
-        className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
+        className="min-h-[44px] min-w-[44px] justify-center active:bg-gray-100 dark:active:bg-gray-700"
       >
         <ChevronLeft className="w-4 h-4" />
         <span className="hidden sm:inline">Previous</span>
@@ -68,7 +68,7 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
           size="sm"
           onClick={handleNext}
           aria-label="Next week"
-          className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
+          className="min-h-[44px] min-w-[44px] justify-center active:bg-gray-100 dark:active:bg-gray-700"
         >
           <span className="hidden sm:inline">Next</span>
           <ChevronRight className="w-4 h-4" />

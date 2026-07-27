@@ -130,7 +130,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           variant="ghost"
           size="icon"
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-3 right-3 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm touch-device-visible"
+          className="absolute top-3 right-3 z-10 min-h-[44px] min-w-[44px] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm touch-device-visible"
           title="Edit chore"
           aria-label="Edit chore"
         >
@@ -142,7 +142,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1 pr-10">
               <div className="flex items-center gap-2.5 mb-1.5">
-                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />}
+                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-8 h-8" />}
                 <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
                   {chore.name}
                 </h3>
@@ -164,7 +164,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
                   onClick={() => toggleCompletion(day.dayOfWeek)}
                   aria-label={`${chore.name} ${day.dayName} — ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
-                  className={`aspect-square min-h-[52px] rounded-lg transition-all duration-300 flex flex-col items-center justify-center font-bold touch-manipulation ${
+                  className={`aspect-square min-h-[56px] rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 font-bold touch-manipulation ${
                     completed
                       ? 'text-white hover:scale-110 active:scale-95 shadow-md'
                       : 'bg-white dark:bg-gray-700 hover:scale-105 hover:shadow-md active:scale-95 border border-gray-200 dark:border-gray-600'
