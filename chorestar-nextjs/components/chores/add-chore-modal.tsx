@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useSettings } from '@/lib/contexts/settings-context'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,7 @@ interface AddChoreModalProps {
 }
 
 export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }: AddChoreModalProps) {
+  const { settings } = useSettings()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -29,6 +31,17 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     icon: '📝',
     category: 'household_chores' as ChoreCategory
   })
+
+  // New chores default to the family's configured standard reward
+  // (Settings → Reward Settings), not a hardcoded $1.
+  const defaultReward = ((settings?.daily_reward_cents ?? 100) / 100).toFixed(2)
+
+  // Reset the form each time the modal opens, seeding the reward from settings.
+  useEffect(() => {
+    if (!open) return
+    setFormData({ name: '', rewardAmount: defaultReward, icon: '📝', category: 'household_chores' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const categories = getCategoryList()
 
@@ -51,7 +64,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
       playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
-      setFormData({ name: '', rewardAmount: '1.00', icon: '📝', category: 'household_chores' })
+      setFormData({ name: '', rewardAmount: defaultReward, icon: '📝', category: 'household_chores' })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)

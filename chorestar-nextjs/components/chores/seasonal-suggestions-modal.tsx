@@ -59,7 +59,7 @@ export function SeasonalSuggestionsModal({
         name: activity.name,
         icon: activity.icon,
         category: activity.category,
-        reward_cents: 7 // Default reward (7 cents)
+        reward_cents: settings?.daily_reward_cents ?? 7, // family's configured standard reward
       })
 
       if (error) throw error
