@@ -96,7 +96,7 @@ export function SiteFooter() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-400">
             © {currentYear} ChoreStar. Made with ❤️ for families everywhere.
             {' '}Chore icons by{' '}
             <a href="https://openmoji.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300 transition-colors">
@@ -105,7 +105,7 @@ export function SiteFooter() {
             (CC BY-SA 4.0).
           </p>
           <div className="flex items-center gap-4">
-            <a href="mailto:hi@chorestar.app" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+            <a href="mailto:hi@chorestar.app" className="text-xs text-gray-400 hover:text-gray-300 transition-colors">
               hi@chorestar.app
             </a>
           </div>

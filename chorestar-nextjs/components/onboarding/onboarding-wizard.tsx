@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, ChevronLeft, CheckCircle, Users, ListChecks, Star, Trophy } from 'lucide-react'
 
@@ -179,6 +179,8 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
       <DialogContent
         className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col dialog-content-bg"
       >
+        {/* Accessible name for the modal (visible title is the styled h2 below) */}
+        <DialogTitle className="sr-only">{step.title}</DialogTitle>
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gray-200 dark:bg-gray-700">
           <div

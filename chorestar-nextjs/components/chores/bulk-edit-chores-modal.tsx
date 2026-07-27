@@ -214,7 +214,17 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
               currentChores.map((chore) => (
                 <div
                   key={chore.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                  role="checkbox"
+                  aria-checked={selectedChoreIds.has(chore.id)}
+                  aria-label={`Select ${chore.name}`}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      toggleChoreSelection(chore.id)
+                    }
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     selectedChoreIds.has(chore.id)
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
                       : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800'
@@ -222,11 +232,13 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
                   onClick={() => toggleChoreSelection(chore.id)}
                 >
                   <div className="flex items-center gap-4">
-                    <Checkbox
-                      checked={selectedChoreIds.has(chore.id)}
-                      onCheckedChange={() => toggleChoreSelection(chore.id)}
-                      className="pointer-events-none"
-                    />
+                    <span aria-hidden="true">
+                      <Checkbox
+                        checked={selectedChoreIds.has(chore.id)}
+                        onCheckedChange={() => toggleChoreSelection(chore.id)}
+                        className="pointer-events-none"
+                      />
+                    </span>
                     <div className="flex-1">
                       <div className="font-bold" style={{ color: 'var(--text-primary)' }}>
                         {chore.name}

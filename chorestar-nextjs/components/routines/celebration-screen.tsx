@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { prefersReducedMotion } from '@/lib/utils/motion';
 import { Trophy, Star, Home, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -45,18 +46,20 @@ export function CelebrationScreen({
 
       const particleCount = 50 * (timeLeft / duration);
 
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: [color, '#fbbf24', '#ef4444', '#10b981', '#8b5cf6'],
-      });
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: [color, '#fbbf24', '#ef4444', '#10b981', '#8b5cf6'],
-      });
+      if (!prefersReducedMotion()) {
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: [color, '#fbbf24', '#ef4444', '#10b981', '#8b5cf6'],
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: [color, '#fbbf24', '#ef4444', '#10b981', '#8b5cf6'],
+        });
+      }
     }, 250);
 
     // Show content after a brief delay

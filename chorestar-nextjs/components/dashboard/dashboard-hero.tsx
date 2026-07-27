@@ -44,7 +44,7 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
       />
 
       <div className="relative flex-1 min-w-0 w-full">
-        <div className="text-xs font-bold uppercase tracking-[0.1em] text-white/70">
+        <div className="text-xs font-bold uppercase tracking-[0.1em] text-white/90">
           {dateLabel} · {familyName}
           {isSharedMember && (
             <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[0.65rem] font-bold normal-case tracking-normal">

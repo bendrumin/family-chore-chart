@@ -1,4 +1,5 @@
 // Celebration utilities for React version
+import { prefersReducedMotion } from './motion'
 
 const KONAMI_CODE = [
   'ArrowUp',
@@ -107,6 +108,8 @@ export class CelebrationManager {
 
     const config = confettiConfig[type] || confettiConfig.normal
 
+    if (prefersReducedMotion()) return
+
     // Fire confetti
     window.confetti(config as any)
 
@@ -130,7 +133,7 @@ export class CelebrationManager {
   }
 
   celebrateChoreCompletion(childName: string, choreName: string) {
-    if (typeof window !== 'undefined' && typeof window.confetti !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.confetti !== 'undefined' && !prefersReducedMotion()) {
       window.confetti({
         particleCount: 30,
         spread: 50,

@@ -381,11 +381,12 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
         {/* Currency Selection */}
         <div className="space-y-2">
-        <Label className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+        <Label htmlFor="setting-currency" className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <DollarSign className="w-4 h-4" />
           Currency
         </Label>
         <select
+          id="setting-currency"
           value={localCurrencyCode}
           onChange={(e) => setLocalCurrencyCode(e.target.value)}
           className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"
@@ -400,11 +401,12 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
       {/* Date Format */}
       <div className="space-y-2">
-        <Label className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+        <Label htmlFor="setting-date-format" className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <span>📅</span>
           Date Format
         </Label>
         <select
+          id="setting-date-format"
           value={localDateFormat}
           onChange={(e) => setLocalDateFormat(e.target.value)}
           className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"
@@ -419,11 +421,12 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
       {/* Language */}
       <div className="space-y-2">
-        <Label className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+        <Label htmlFor="setting-language" className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
           <Globe className="w-4 h-4" />
           Language
         </Label>
         <select
+          id="setting-language"
           value={localLanguage}
           onChange={(e) => setLocalLanguage(e.target.value)}
           className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 hover:border-purple-300 dark:hover:border-purple-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-700 transition-all duration-200 backdrop-blur-md"

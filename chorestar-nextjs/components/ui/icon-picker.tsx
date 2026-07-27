@@ -76,6 +76,9 @@ export function IconPicker({ currentIcon, onSelect }: IconPickerProps) {
             key={`${emoji}-${index}`}
             type="button"
             onClick={() => onSelect(emoji)}
+            aria-label={emoji}
+            aria-pressed={currentIcon === emoji}
+            title={emoji}
             className={`aspect-square rounded-lg border-2 flex items-center justify-center text-2xl transition-all hover:scale-110 hover:shadow-lg ${
               currentIcon === emoji
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-300'

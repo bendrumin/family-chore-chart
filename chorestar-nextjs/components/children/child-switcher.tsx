@@ -44,27 +44,52 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
           const prog = progress[child.id] || { done: 0, total: 0 }
           const isActive = selectedChildId === child.id
           return (
-            <div
-              key={child.id}
-              className="group relative flex min-w-[132px] cursor-pointer flex-col items-center gap-2 rounded-2xl border p-4 pt-4 transition-transform duration-150 hover:-translate-y-0.5"
-              style={{
-                background: 'var(--card-bg)',
-                borderColor: isActive ? `color-mix(in srgb, ${color} 55%, transparent)` : 'hsl(var(--border))',
-                boxShadow: isActive
-                  ? `0 0 0 2px color-mix(in srgb, ${color} 32%, transparent), var(--shadow-md)`
-                  : 'var(--shadow-sm)',
-              }}
-              onClick={() => onSelectChild(child.id)}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isActive}
-              aria-label={`Select ${child.name}`}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectChild(child.id) } }}
-            >
-              {/* Edit affordance */}
+            <div key={child.id} className="group relative min-w-[132px]">
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); setEditingChild(child) }}
+                onClick={() => onSelectChild(child.id)}
+                aria-pressed={isActive}
+                aria-label={`Select ${child.name}`}
+                className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border p-4 pt-4 transition-transform duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                style={{
+                  background: 'var(--card-bg)',
+                  borderColor: isActive ? `color-mix(in srgb, ${color} 55%, transparent)` : 'hsl(var(--border))',
+                  boxShadow: isActive
+                    ? `0 0 0 2px color-mix(in srgb, ${color} 32%, transparent), var(--shadow-md)`
+                    : 'var(--shadow-sm)',
+                }}
+              >
+                <div className="relative h-[66px] w-[66px]">
+                  <Ring color={color} done={prog.done} total={prog.total} />
+                  <div
+                    className="absolute inset-[8px] grid place-items-center overflow-hidden rounded-full text-xl font-bold text-white"
+                    style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)` }}
+                  >
+                    {child.avatar_url
+                      ? <img src={child.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : child.name.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="font-bold" style={{ color: 'var(--text-primary)' }}>{child.name}</div>
+                  <div className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    {prog.done} / {prog.total} today
+                  </div>
+                </div>
+                {child.age != null && (
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[0.68rem] font-bold"
+                    style={{ color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}
+                  >
+                    Age {child.age}
+                  </span>
+                )}
+              </button>
+              {/* Edit affordance — sibling of the select button (not nested inside it) */}
+              <button
+                type="button"
+                onClick={() => setEditingChild(child)}
                 aria-label={`Edit ${child.name}`}
                 title={`Edit ${child.name}`}
                 className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
@@ -72,33 +97,6 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
-
-              <div className="relative h-[66px] w-[66px]">
-                <Ring color={color} done={prog.done} total={prog.total} />
-                <div
-                  className="absolute inset-[8px] grid place-items-center overflow-hidden rounded-full text-xl font-bold text-white"
-                  style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)` }}
-                >
-                  {child.avatar_url
-                    ? <img src={child.avatar_url} alt={child.name} className="h-full w-full object-cover" />
-                    : child.name.charAt(0).toUpperCase()}
-                </div>
-              </div>
-
-              <div className="text-center">
-                <div className="font-bold" style={{ color: 'var(--text-primary)' }}>{child.name}</div>
-                <div className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                  {prog.done} / {prog.total} today
-                </div>
-              </div>
-              {child.age != null && (
-                <span
-                  className="rounded-full px-2 py-0.5 text-[0.68rem] font-bold"
-                  style={{ color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}
-                >
-                  Age {child.age}
-                </span>
-              )}
             </div>
           )
         })}

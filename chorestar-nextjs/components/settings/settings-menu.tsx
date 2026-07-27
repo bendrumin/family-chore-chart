@@ -76,7 +76,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
                 positioning context on mobile for the scroll-hint fade. */}
             <div className="relative flex-shrink-0 md:contents">
             <div className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
-              <div className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
+              <div role="tablist" aria-label="Settings sections" className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
                 {TABS.map((tab) => {
                   const Icon = tab.icon
                   return (
@@ -85,6 +85,8 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
                       onClick={() => setActiveTab(tab.id)}
                       aria-selected={activeTab === tab.id}
                       role="tab"
+                      id={`settings-tab-${tab.id}`}
+                      aria-controls={`settings-panel-${tab.id}`}
                       className={`settings-tab-button whitespace-nowrap ${activeTab === tab.id ? 'active' : ''}`}
                     >
                       <Icon className="w-5 h-5" />
@@ -112,7 +114,13 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
             </div>
 
             {/* Tab Content - Right Panel */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0">
+            <div
+              role="tabpanel"
+              id={`settings-panel-${activeTab}`}
+              aria-labelledby={`settings-tab-${activeTab}`}
+              tabIndex={0}
+              className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0"
+            >
               {activeTab === 'family' && <FamilyTab onClose={() => setIsOpen(false)} />}
               {activeTab === 'chores' && <ChoresTab />}
               {activeTab === 'appearance' && <AppearanceTab />}

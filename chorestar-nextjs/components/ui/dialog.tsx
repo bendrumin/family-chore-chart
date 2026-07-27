@@ -109,38 +109,54 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   return createPortal(dialogContent, document.body)
 }
 
-const dialogTitleId = 'dialog-title'
+interface DialogContentContextValue {
+  titleId: string
+  registerTitle: () => void
+}
+const DialogContentContext = React.createContext<DialogContentContextValue | null>(null)
 
 const DialogContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }
->(({ className, children, onClose, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby={dialogTitleId}
-    className={cn(
-      'relative w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl mx-auto',
-      'max-w-2xl max-h-[85vh] p-5 sm:p-6',
-      // Allow className to override max-w (e.g., for settings modal)
-      className
-    )}
-    {...props}
-  >
-    {children}
-    {onClose && (
-      <button
-        onClick={onClose}
-        className="absolute right-4 top-4 z-[10002] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-white/80 dark:bg-gray-800/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
-        aria-label="Close"
+>(({ className, children, onClose, ...props }, ref) => {
+  // Each dialog gets a unique title id (safe when dialogs stack). aria-labelledby
+  // is only applied once a DialogTitle actually registers; title-less dialogs
+  // should pass an aria-label via props instead.
+  const titleId = React.useId()
+  const [hasTitle, setHasTitle] = React.useState(false)
+  const registerTitle = React.useCallback(() => setHasTitle(true), [])
+  const ctx = React.useMemo(() => ({ titleId, registerTitle }), [titleId, registerTitle])
+
+  return (
+    <DialogContentContext.Provider value={ctx}>
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={hasTitle ? titleId : undefined}
+        className={cn(
+          'relative w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl mx-auto',
+          'max-w-2xl max-h-[85vh] p-5 sm:p-6',
+          // Allow className to override max-w (e.g., for settings modal)
+          className
+        )}
+        {...props}
       >
-        <X className="h-5 w-5" />
-        <span className="sr-only">Close</span>
-      </button>
-    )}
-  </div>
-))
+        {children}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 z-[10002] rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-white/80 dark:bg-gray-800/80 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+            <span className="sr-only">Close</span>
+          </button>
+        )}
+      </div>
+    </DialogContentContext.Provider>
+  )
+})
 DialogContent.displayName = 'DialogContent'
 
 const DialogHeader = ({
@@ -160,17 +176,23 @@ DialogHeader.displayName = 'DialogHeader'
 const DialogTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h2
-    ref={ref}
-    id={dialogTitleId}
-    className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const ctx = React.useContext(DialogContentContext)
+  React.useEffect(() => {
+    ctx?.registerTitle()
+  }, [ctx])
+  return (
+    <h2
+      ref={ref}
+      id={ctx?.titleId}
+      className={cn(
+        'text-lg font-semibold leading-none tracking-tight',
+        className
+      )}
+      {...props}
+    />
+  )
+})
 DialogTitle.displayName = 'DialogTitle'
 
 const DialogDescription = React.forwardRef<

@@ -35,10 +35,46 @@ export function Tabs({ defaultValue, value: controlledValue, onValueChange, clas
 }
 
 export function TabsList({ className, children, 'aria-label': ariaLabel }: { className?: string; children: React.ReactNode; 'aria-label'?: string }) {
+  // WAI-ARIA tabs keyboard support: Arrow keys / Home / End move focus between
+  // tabs and activate them (automatic activation). Without this, the roving
+  // tabIndex on TabsTrigger makes non-selected tabs unreachable by keyboard.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const tabs = Array.from(
+      e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]:not([disabled])')
+    )
+    const currentIndex = tabs.findIndex((t) => t === document.activeElement)
+    if (currentIndex === -1) return
+
+    let nextIndex = -1
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        nextIndex = (currentIndex + 1) % tabs.length
+        break
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length
+        break
+      case 'Home':
+        nextIndex = 0
+        break
+      case 'End':
+        nextIndex = tabs.length - 1
+        break
+      default:
+        return
+    }
+    e.preventDefault()
+    const target = tabs[nextIndex]
+    target.focus()
+    target.click()
+  }
+
   return (
     <div
       role="tablist"
       aria-label={ariaLabel}
+      onKeyDown={handleKeyDown}
       className={cn(
         'inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-500 dark:text-gray-400',
         className
