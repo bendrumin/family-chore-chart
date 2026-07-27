@@ -11,7 +11,7 @@ import {
 } from '@/lib/constants/comparison'
 
 export const metadata: Metadata = {
-  title: 'ChoreStar vs the Alternatives: Chore Apps, Smart Displays & Kids Cards',
+  title: 'ChoreStar vs Chore Apps, Smart Displays & Kids Cards',
   description:
     'How ChoreStar compares to smart-display chore charts (like Skylight), kids debit-card apps (like Greenlight), and basic chore-list apps — no hardware, no bank account, and no email for your kids.',
   keywords: [

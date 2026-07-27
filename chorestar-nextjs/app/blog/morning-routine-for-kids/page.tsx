@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import type { Metadata } from 'next'
 
@@ -201,6 +202,7 @@ export default function MorningRoutinePage() {
             </div>
           </div>
         </article>
+        <BlogPostExtras slug="morning-routine-for-kids" />
       </main>
 
       <SiteFooter />

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -194,6 +195,7 @@ export default function WhyGamifyingChoresWorksPage() {
             </div>
           </div>
         </article>
+        <BlogPostExtras slug="why-gamifying-chores-works" />
       </main>
 
       <SiteFooter />

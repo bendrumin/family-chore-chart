@@ -7,13 +7,63 @@ import { ChoreStarLogo } from '@/components/brand/logo'
 import { TestFlightSignup } from '@/components/home/testflight-signup'
 import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
 
-const jsonLd = {
-  '@context': 'https://schema.org',
+const SITE_URL = 'https://chorestar.app'
+
+const FAQS = [
+  {
+    q: 'Does my child need their own account or email?',
+    a: 'No! Kids log in using a special family link and a simple PIN you set for them. No email address or account needed for kids — they just tap their name and enter their PIN.',
+  },
+  {
+    q: 'What devices does ChoreStar work on?',
+    a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. A native iPhone app is also in the works for an even smoother experience.',
+  },
+  {
+    q: 'Can I add chores that repeat daily or weekly?',
+    a: 'Yes! You can create routines with daily or weekly chores for each child. Chores reset automatically so you never have to set them up again.',
+  },
+  {
+    q: 'How does the allowance tracking work?',
+    a: 'Choose your reward mode in Settings. "Flat Daily Rate" pays a set amount for each day with any completions. "Per Chore" tallies up each chore\'s individual reward as kids complete them — so a bigger chore can be worth more than a quick one. You can also set a Full Week Bonus Reward (like "ice cream" or "movie night") that pops up as a celebration when kids complete everything all 7 days.',
+  },
+  {
+    q: 'Can two parents manage the same family?',
+    a: 'Yes — with a Premium plan, you can invite a co-parent or guardian via email. They\'ll get their own login that shows your family\'s chores and kids.',
+  },
+  {
+    q: 'Can I try Premium before paying?',
+    a: 'Absolutely. Sign up for free and you can start a trial of Premium from your dashboard at any time. No credit card required to create your account.',
+  },
+]
+
+const organizationLd = {
+  '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
+  name: 'ChoreStar',
+  url: SITE_URL,
+  logo: `${SITE_URL}/icon-512.png`,
+  sameAs: ['https://twitter.com/chorestar'],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'hi@chorestar.app',
+    contactType: 'customer support',
+  },
+}
+
+const websiteLd = {
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: 'ChoreStar',
+  publisher: { '@id': `${SITE_URL}/#organization` },
+}
+
+const softwareApplicationLd = {
   '@type': 'SoftwareApplication',
   name: 'ChoreStar',
   applicationCategory: 'LifestyleApplication',
   operatingSystem: 'Web',
-  url: 'https://chorestar.app',
+  url: SITE_URL,
   description: 'Free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility.',
   offers: [
     {
@@ -37,11 +87,21 @@ const jsonLd = {
       },
     },
   ],
-  author: {
-    '@type': 'Organization',
-    name: 'ChoreStar',
-    url: 'https://chorestar.app',
-  },
+  publisher: { '@id': `${SITE_URL}/#organization` },
+}
+
+const faqLd = {
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+}
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [organizationLd, websiteLd, softwareApplicationLd, faqLd],
 }
 
 export default async function HomePage() {
@@ -74,7 +134,7 @@ export default async function HomePage() {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
       <SiteNav />
@@ -84,12 +144,12 @@ export default async function HomePage() {
 
         {/* Header */}
         <header className="text-center mb-12">
-          <h1 className="text-6xl font-black mb-4">
-            <span className="inline-flex items-center gap-2" style={GRADIENT_TEXT}><ChoreStarLogo size={48} /> ChoreStar</span>
+          <h1 className="mb-4">
+            <span className="text-6xl font-black inline-flex items-center justify-center gap-2" style={GRADIENT_TEXT}><ChoreStarLogo size={48} /> ChoreStar</span>
+            <span className="mt-4 block text-2xl font-bold text-gray-600 dark:text-gray-300">
+              Turn Household Chores Into Family Wins — the chore chart app kids love
+            </span>
           </h1>
-          <p className="text-2xl text-gray-600 dark:text-gray-300 mb-4">
-            Turn Household Chores Into Family Wins
-          </p>
           <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
             ⭐ Join 117+ parents and kids already using ChoreStar
           </p>
@@ -489,32 +549,7 @@ export default async function HomePage() {
             Everything you need to know before getting started
           </p>
           <div className="space-y-3">
-            {[
-              {
-                q: 'Does my child need their own account or email?',
-                a: 'No! Kids log in using a special family link and a simple PIN you set for them. No email address or account needed for kids — they just tap their name and enter their PIN.',
-              },
-              {
-                q: 'What devices does ChoreStar work on?',
-                a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. A native iPhone app is also in the works for an even smoother experience.',
-              },
-              {
-                q: 'Can I add chores that repeat daily or weekly?',
-                a: 'Yes! You can create routines with daily or weekly chores for each child. Chores reset automatically so you never have to set them up again.',
-              },
-              {
-                q: 'How does the allowance tracking work?',
-                a: 'Choose your reward mode in Settings. "Flat Daily Rate" pays a set amount for each day with any completions. "Per Chore" tallies up each chore\'s individual reward as kids complete them — so a bigger chore can be worth more than a quick one. You can also set a Full Week Bonus Reward (like "ice cream" or "movie night") that pops up as a celebration when kids complete everything all 7 days.',
-              },
-              {
-                q: 'Can two parents manage the same family?',
-                a: 'Yes — with a Premium plan, you can invite a co-parent or guardian via email. They\'ll get their own login that shows your family\'s chores and kids.',
-              },
-              {
-                q: 'Can I try Premium before paying?',
-                a: 'Absolutely. Sign up for free and you can start a trial of Premium from your dashboard at any time. No credit card required to create your account.',
-              },
-            ].map(({ q, a }) => (
+            {FAQS.map(({ q, a }) => (
               <details
                 key={q}
                 className="group bg-white dark:bg-gray-800 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm overflow-hidden"

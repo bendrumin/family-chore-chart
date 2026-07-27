@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     default: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
     template: '%s | ChoreStar',
   },
-  description: 'ChoreStar is a free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility. Works on any device — no download needed.',
+  description: 'The free chore chart app that turns household chores into a game kids love — track chores, manage allowances, and reward responsibility, on any device.',
   keywords: [
     'chore chart app',
     'chore tracker for kids',

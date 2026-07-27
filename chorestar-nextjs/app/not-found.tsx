@@ -18,25 +18,25 @@ export default function NotFound() {
 
         <div className="space-y-3">
           <Link
-            href="/dashboard"
+            href="/"
             className="block w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
           >
-            Go to Dashboard
+            Back to Home
           </Link>
 
           <Link
-            href="/"
+            href="/dashboard"
             className="block w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
           >
-            Back to Home
+            Go to Dashboard
           </Link>
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Popular pages:</p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <Link href="/dashboard" className="text-xs px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-              Dashboard
+            <Link href="/blog" className="text-xs px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+              Blog
             </Link>
             <Link href="/how-to" className="text-xs px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
               How-To Guides

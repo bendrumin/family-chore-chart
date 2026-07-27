@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     url: 'https://chorestar.app/how-to',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'How-To Guides & Tutorials | ChoreStar',
     description: 'Step-by-step guides for setting up and using ChoreStar with your family.',
   },

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -258,6 +259,7 @@ export default function AgeAppropriateChoresPage() {
             </div>
           </div>
         </article>
+        <BlogPostExtras slug="age-appropriate-chores-by-age" />
       </main>
 
       <SiteFooter />

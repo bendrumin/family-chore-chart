@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: 'ChoreStar',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'ChoreStar Blog',
     description: 'Practical tips for parents on chore charts, routines, and raising responsible kids.',
   },
