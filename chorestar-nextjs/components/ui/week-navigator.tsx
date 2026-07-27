@@ -33,15 +33,16 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
         variant="outline"
         size="sm"
         onClick={handlePrevious}
+        aria-label="Previous week"
         className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
       >
         <ChevronLeft className="w-4 h-4" />
-        Previous
+        <span className="hidden sm:inline">Previous</span>
       </Button>
 
-      <div className="flex items-center gap-2">
-        <Calendar className="w-4 h-4 text-gray-500" />
-        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+      <div className="flex items-center gap-2 min-w-0">
+        <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
+        <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
           {weekInfo.displayText}
         </span>
         {isCurrent && (
@@ -66,9 +67,10 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
           variant="outline"
           size="sm"
           onClick={handleNext}
+          aria-label="Next week"
           className="min-h-[44px] active:bg-gray-100 dark:active:bg-gray-700"
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>

@@ -2,14 +2,15 @@ import { choreIconFile } from '@/lib/constants/chore-icon-manifest'
 
 interface ChoreIconProps {
   emoji: string | null | undefined
-  /** Size + color via Tailwind, e.g. "w-7 h-7 text-indigo-500 dark:text-indigo-400".
-   *  The line art is tinted with the current text color. */
+  /** Size via Tailwind, e.g. "w-7 h-7". OpenMoji color art carries its own
+   *  colors, so any text-color classes passed in are simply ignored. */
   className?: string
 }
 
 /**
- * Renders a chore's emoji as OpenMoji line art (tinted with currentColor via
- * CSS mask), falling back to the native emoji when we have no artwork for it.
+ * Renders a chore's emoji as a full-color OpenMoji icon, falling back to the
+ * native emoji when we have no artwork for it. (Switched from line art —
+ * thin strokes didn't read at small sizes on mobile.)
  * Artwork: OpenMoji (openmoji.org), CC BY-SA 4.0.
  */
 export function ChoreIcon({ emoji, className = 'w-6 h-6' }: ChoreIconProps) {
@@ -20,22 +21,14 @@ export function ChoreIcon({ emoji, className = 'w-6 h-6' }: ChoreIconProps) {
     return <span className={`inline-flex items-center justify-center leading-none ${className}`}>{emoji}</span>
   }
 
-  const url = `url(/icons/chores/${file}.svg)`
   return (
-    <span
-      role="img"
+    // eslint-disable-next-line @next/next/no-img-element -- tiny inline SVG icon; next/image adds no value and needs extra config for SVG
+    <img
+      src={`/icons/chores-color/${file}.svg`}
+      alt=""
       aria-hidden="true"
-      className={`inline-block shrink-0 bg-current ${className}`}
-      style={{
-        WebkitMaskImage: url,
-        maskImage: url,
-        WebkitMaskSize: 'contain',
-        maskSize: 'contain',
-        WebkitMaskRepeat: 'no-repeat',
-        maskRepeat: 'no-repeat',
-        WebkitMaskPosition: 'center',
-        maskPosition: 'center',
-      }}
+      draggable={false}
+      className={`inline-block shrink-0 object-contain ${className}`}
     />
   )
 }
