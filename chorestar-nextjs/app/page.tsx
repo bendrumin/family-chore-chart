@@ -107,7 +107,7 @@ export default async function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device - no app download required<br/>
+            📱 Works on any device — no download required. Native iPhone app coming soon!<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
@@ -228,7 +228,7 @@ export default async function HomePage() {
               { icon: '⚡', title: 'Set Up in Minutes', desc: 'No complicated setup. Add your kids, assign chores, and you\'re done. Start seeing results today, not next week.' },
               { icon: '🎮', title: 'Kids Actually Use It', desc: 'Colorful, fun interface that feels like a game. Kids love checking off tasks and watching their earnings grow.' },
               { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Flat daily rate or per-chore rewards — you choose. Bigger chores can earn more. ChoreStar tallies it all automatically.' },
-              { icon: '📱', title: 'Works Everywhere', desc: 'Phone, tablet, computer - no app download needed. Everyone in the family stays synced in real-time.' },
+              { icon: '📱', title: 'Works Everywhere', desc: 'Phone, tablet, computer — no download needed, and everyone stays synced in real time. A native iPhone app is on the way, too.' },
               { icon: '👨‍👩‍👧‍👦', title: 'Built for Real Families', desc: 'Multiple kids? Different chores per child? Various reward amounts? We\'ve got you covered.' },
               { icon: '🔒', title: 'Safe & Private', desc: 'Your family data is secure and private. We never share or sell your information. Period.' },
             ].map(({ icon, title, desc }) => (
@@ -496,7 +496,7 @@ export default async function HomePage() {
               },
               {
                 q: 'What devices does ChoreStar work on?',
-                a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required. Just bookmark the page and it works like an app on any device.',
+                a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. A native iPhone app is also in the works for an even smoother experience.',
               },
               {
                 q: 'Can I add chores that repeat daily or weekly?',

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut, Loader2 } from 'lucide-react'
+import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut, Loader2, ChevronRight } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
@@ -71,7 +71,10 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
 
           {/* Body - Scrollable */}
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
-            {/* Tab Navigation - Top on mobile, left sidebar on desktop */}
+            {/* Tab Navigation - Top on mobile, left sidebar on desktop.
+                Wrapper is display:contents on desktop (no layout impact) and a
+                positioning context on mobile for the scroll-hint fade. */}
+            <div className="relative flex-shrink-0 md:contents">
             <div className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
               <div className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
                 {TABS.map((tab) => {
@@ -101,6 +104,11 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
                   </button>
                 </div>
               )}
+            </div>
+              {/* Mobile-only scroll hint so people know the tab row swipes */}
+              <div className="md:hidden pointer-events-none absolute inset-y-0 right-0 w-14 flex items-center justify-end pr-1 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent">
+                <ChevronRight className="w-5 h-5 text-indigo-500 dark:text-indigo-300 animate-pulse" aria-hidden="true" />
+              </div>
             </div>
 
             {/* Tab Content - Right Panel */}
