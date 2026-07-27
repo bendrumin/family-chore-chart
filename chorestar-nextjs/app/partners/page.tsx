@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     'ChoreStar brand assets',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'ChoreStar Affiliate & Partner Program',
     description: 'Promote a free-to-start chore chart app parents can use instantly on any device. Brand assets, approved copy, testimonials, and a partner inquiry form.',
     url: 'https://chorestar.app/partners',

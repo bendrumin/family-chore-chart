@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     'family organization',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'ChoreStar Blog',
     description: 'Practical tips for parents on chore charts, morning routines, allowance systems, and raising responsible kids.',
     url: 'https://chorestar.app/blog',

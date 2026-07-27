@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     'per chore reward',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'Teaching Kids About Money With a Chore Reward System',
     description: 'How to set up allowance tracking that teaches financial responsibility.',
     url: 'https://chorestar.app/blog/chore-reward-system-kids-money',

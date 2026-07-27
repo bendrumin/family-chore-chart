@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     'family spring cleanup',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
     description: 'Turn spring cleanup into kid-friendly chores with yard work, litter pickup, gardening, and Earth Day tasks families can actually keep up with.',
     url: 'https://chorestar.app/blog/spring-cleaning-chores-for-kids',

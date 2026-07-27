@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     'chores for teenagers',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
     description: 'A practical guide to matching chores with your child\'s age — 85+ chore ideas organized by category.',
     url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     'greenlight vs chorestar',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'The Best Greenlight Alternative for Chores & Allowance',
     description:
       'Chores and allowance tracking without a debit card, bank account, or monthly fee. Free to start.',

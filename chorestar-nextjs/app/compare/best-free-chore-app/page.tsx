@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     'free chore chart app no ads',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'The Best Free Chore App for Kids (2026)',
     description:
       'What actually makes a free chore app worth using — and how ChoreStar’s free plan stacks up.',

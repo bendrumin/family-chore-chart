@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     'kids chores no school',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
     description: 'Keep summer fun and productive with age-appropriate outdoor chores kids can actually finish.',
     url: 'https://chorestar.app/blog/summer-chores-for-kids',

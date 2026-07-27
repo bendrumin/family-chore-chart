@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     'summer screen time rules',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
     description:
       'Survive the first two weeks of summer break with a light daily rhythm — before you worry about chore charts.',

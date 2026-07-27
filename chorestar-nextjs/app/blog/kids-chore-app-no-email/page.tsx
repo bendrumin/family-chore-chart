@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     'family chore app kids login',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'How to Give Kids Their Own Chore App — No Email Required',
     description: 'How ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
     url: 'https://chorestar.app/blog/kids-chore-app-no-email',

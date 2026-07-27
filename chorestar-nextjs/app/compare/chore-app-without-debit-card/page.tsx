@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     'chore and allowance app no debit card',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'A Kids Chore & Allowance App With No Debit Card',
     description:
       'Track chores and allowance with no bank account and no card for your child. You stay in control of real money.',

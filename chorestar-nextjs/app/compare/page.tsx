@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     'greenlight alternative for chores',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'ChoreStar vs the Alternatives',
     description:
       'Compare ChoreStar to smart displays, kids debit-card apps, and basic chore apps. No hardware, no bank account, no email for kids.',

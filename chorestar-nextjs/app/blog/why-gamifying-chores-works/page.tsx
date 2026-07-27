@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     'motivate kids to do chores',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
     description: 'Achievements, streaks, confetti, and progress bars tap into psychology that makes kids want to level up.',
     url: 'https://chorestar.app/blog/why-gamifying-chores-works',

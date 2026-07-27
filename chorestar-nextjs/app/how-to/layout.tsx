@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     'how to use ChoreStar',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'How-To Guides & Tutorials | ChoreStar',
     description: 'Step-by-step guides for setting up and using ChoreStar with your family.',
     url: 'https://chorestar.app/how-to',

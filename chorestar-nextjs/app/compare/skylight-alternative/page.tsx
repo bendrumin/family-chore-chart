@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     'family chore app no hardware',
   ],
   openGraph: {
+    images: ['/og-image.png'],
     title: 'The Best Skylight Chore Chart Alternative',
     description:
       'Skylight-style chore tracking without buying a wall device. ChoreStar runs on the devices you already own — free to start.',
