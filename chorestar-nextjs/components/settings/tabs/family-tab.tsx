@@ -289,7 +289,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
         {/* Edit All Children Section */}
         <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5" style={{ color: 'var(--primary)' }} />
@@ -305,7 +305,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
               variant="gradient"
               size="lg"
               onClick={() => setIsEditChildrenPageOpen(true)}
-              className="font-bold hover-glow whitespace-nowrap"
+              className="font-bold hover-glow whitespace-nowrap w-full sm:w-auto"
             >
               Open Editor
             </Button>
@@ -356,7 +356,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
         {/* Family Sharing Section */}
         <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Share2 className="w-5 h-5" style={{ color: 'var(--primary)' }} />
@@ -372,7 +372,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
               variant="gradient"
               size="lg"
               onClick={() => setIsFamilySharingOpen(true)}
-              className="font-bold hover-glow whitespace-nowrap"
+              className="font-bold hover-glow whitespace-nowrap w-full sm:w-auto"
             >
               Manage Sharing
             </Button>

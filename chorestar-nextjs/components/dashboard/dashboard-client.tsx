@@ -523,16 +523,18 @@ function DashboardContent({
                           Routines
                         </button>
                       </div>
-                      <Button
-                        onClick={handleAddRoutine}
-                        size="sm"
-                        variant="outline"
-                        className="gap-2 font-semibold"
-                        style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add Routine
-                      </Button>
+                      {activeTab === 'routines' && (
+                        <Button
+                          onClick={handleAddRoutine}
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 font-semibold"
+                          style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add Routine
+                        </Button>
+                      )}
                     </div>
 
                     {/* Tab Content */}
