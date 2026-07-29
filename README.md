@@ -84,6 +84,8 @@ npm run eval:ai                     # AI-suggestion evals (needs ANTHROPIC_API_K
 
 The AI suggestions feature needs `ANTHROPIC_API_KEY` (get one at [console.anthropic.com](https://console.anthropic.com)); without it, the app falls back to the local rule-based engine automatically.
 
+A [`gitleaks`](https://github.com/gitleaks/gitleaks) pre-commit hook (in [`.githooks/`](.githooks)) blocks accidental secret commits. After cloning, enable it once: `brew install gitleaks && git config core.hooksPath .githooks`.
+
 iOS: open `ChoreStar-iOS/ChoreStar.xcodeproj` in Xcode (Supabase creds in `Info.plist`).
 Android: `cd ChoreStar-Android && npm install && npx cap open android` (needs Android Studio).
 

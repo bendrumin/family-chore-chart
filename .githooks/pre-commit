@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Pre-commit secret scan via gitleaks — blocks commits that contain secrets.
+#
+# Enable once per clone:   git config core.hooksPath .githooks
+# Requires gitleaks:       brew install gitleaks
+# Emergency bypass (rare): git commit --no-verify
+#
+# This exists because API keys / PII were repeatedly pasted into scratch docs
+# and committed. Catch them here, before they ever reach history.
+
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --staged --redact --no-banner; then
+    echo ""
+    echo "❌ gitleaks detected a potential secret in your staged changes — commit blocked."
+    echo "   Move the secret into .env.local / an environment variable, then re-stage."
+    echo "   Emergency bypass (use sparingly): git commit --no-verify"
+    exit 1
+  fi
+else
+  echo "⚠️  gitleaks not installed; skipping secret scan. Install with: brew install gitleaks"
+fi
