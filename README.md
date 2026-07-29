@@ -25,6 +25,16 @@ Routines turn the app from a checkbox list into something kids run on their own:
 ### 3. One backend, three clients
 A single Supabase (Postgres + RLS) instance backs the web app, the native iOS app, and the Android wrapper. RLS is on every table; the service-role key is used **only** server-side for the kid/admin paths that must bypass it. The Android app is a **Capacitor shell** around the live web app — a deliberate call to avoid maintaining a third from-scratch native codebase while still shipping to the Play Store with native billing/push.
 
+### 4. AI chore suggestions — cheap by design, with a graceful fallback
+"Smart Chore Suggestions" calls **Claude Haiku 4.5** to generate age-appropriate, non-duplicate chore ideas personalized to each child (age, existing chores, completion rate, season). The interesting part is the engineering around the call, not the call itself:
+
+- **One request, structured output.** A single call returns the whole set as JSON constrained by a schema (`output_config.format`) and re-validated with Zod server-side — no per-suggestion calls, no fragile string parsing.
+- **Not call-heavy.** The model runs only on an explicit user action, and the result is cached in component state. The call hits Anthropic, not Supabase, so it adds zero database load — and Haiku 4.5 keeps a refresh well under a cent.
+- **Graceful degradation.** With no API key or an unreachable/rate-limited API, the endpoint returns `503` and the UI silently falls back to a deterministic rule-based engine ([`lib/utils/chore-suggestions.ts`](chorestar-nextjs/lib/utils/chore-suggestions.ts)). The feature never breaks; it just gets less personalized.
+- **Evals.** [`evals/suggest-chores.eval.ts`](chorestar-nextjs/evals/suggest-chores.eval.ts) runs representative child profiles through the real model and asserts the output is correctly shaped, deduped against existing chores, using known categories, and within reward bounds — `npm run eval:ai`.
+
+Key files: [`lib/ai/suggest-chores.ts`](chorestar-nextjs/lib/ai/suggest-chores.ts), [`app/api/ai/suggest-chores/`](chorestar-nextjs/app/api/ai/suggest-chores), [`evals/`](chorestar-nextjs/evals).
+
 ---
 
 ## Architecture
@@ -39,7 +49,7 @@ family-chore-chart/
 └── frontend/             # Legacy vanilla-JS app (archived; 301-redirected)
 ```
 
-**Web stack:** Next.js 15 App Router · React 19 · TypeScript (strict) · Tailwind · Supabase (Postgres + Auth + RLS) · Stripe · TanStack Query (server state) · Zod · Framer Motion · Playwright (E2E).
+**Web stack:** Next.js 15 App Router · React 19 · TypeScript (strict) · Tailwind · Supabase (Postgres + Auth + RLS) · Stripe · Anthropic SDK (Claude Haiku 4.5) · TanStack Query (server state) · Zod · Framer Motion · Playwright (E2E).
 
 **iOS stack:** SwiftUI (iOS 16+) · Supabase Swift SDK · StoreKit 2 · WidgetKit + ActivityKit (home-screen widget + Dynamic Island).
 
@@ -57,6 +67,7 @@ family-chore-chart/
 - **Optimistic UI + TanStack Query** — checking off a chore updates instantly and reconciles with the server, which matters for the kid-facing flows.
 - **Capacitor for Android, native for iOS** — iOS gets a first-class SwiftUI app (widgets, Live Activities, StoreKit); Android reuses the web app to avoid a third parallel codebase, trading some native polish for velocity.
 - **Dual monetization** — Stripe on web, StoreKit 2 on iOS, entitlement synced upgrade-only (Stripe stays source of truth for downgrades).
+- **AI as an enhancement, not a dependency** — the Claude-powered suggestions sit behind a `503`-triggered fallback to a local rule-based engine, so the feature still works (just less personalized) with no API key or a rate-limited API. One cheap, cached, schema-validated model call per refresh — chosen over a "call on every keystroke" design to keep token cost negligible.
 
 ---
 
@@ -65,10 +76,13 @@ family-chore-chart/
 ```bash
 cd chorestar-nextjs
 npm install
-cp .env.local.example .env.local   # fill in Supabase / Stripe / Resend keys
+cp .env.local.example .env.local   # fill in Supabase / Stripe / Resend / Anthropic keys
 npm run dev                         # http://localhost:3000
 npm run test:e2e                    # Playwright E2E
+npm run eval:ai                     # AI-suggestion evals (needs ANTHROPIC_API_KEY; skips without)
 ```
+
+The AI suggestions feature needs `ANTHROPIC_API_KEY` (get one at [console.anthropic.com](https://console.anthropic.com)); without it, the app falls back to the local rule-based engine automatically.
 
 iOS: open `ChoreStar-iOS/ChoreStar.xcodeproj` in Xcode (Supabase creds in `Info.plist`).
 Android: `cd ChoreStar-Android && npm install && npx cap open android` (needs Android Studio).

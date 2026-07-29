@@ -29,6 +29,8 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
   const [suggestions, setSuggestions] = useState<ChoreSuggestion[]>([])
   const [addedChores, setAddedChores] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuggesting, setIsSuggesting] = useState(false)
+  const [source, setSource] = useState<'ai' | 'local' | null>(null)
   const [isAdding, setIsAdding] = useState<string | null>(null)
 
   // Load family data when modal opens
@@ -40,6 +42,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
       setSuggestions([])
       setAddedChores(new Set())
       setSelectedChild(null)
+      setSource(null)
     }
   }, [open, user])
 
@@ -76,7 +79,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
     }
   }
 
-  const refreshSuggestions = () => {
+  const refreshSuggestions = async () => {
     if (!selectedChild) return
 
     const child = children.find(c => c.id === selectedChild)
@@ -93,14 +96,39 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
       ? Math.round((childCompletions.length / totalPossible) * 100)
       : 0
 
-    const results = generateSuggestions({
+    const req = {
       childName: child.name,
       childAge: child.age,
       existingChoreNames: childChores.map(c => c.name),
       completionRate,
-    })
+    }
 
-    setSuggestions(results)
+    // Try the real AI endpoint (Claude Haiku 4.5) first; fall back to the local
+    // rule-based engine on any failure so the feature degrades gracefully — e.g.
+    // when no ANTHROPIC_API_KEY is set, or the API is rate-limited/unreachable.
+    setIsSuggesting(true)
+    try {
+      const res = await fetch('/api/ai/suggest-chores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+          setSuggestions(data.suggestions as ChoreSuggestion[])
+          setSource('ai')
+          return
+        }
+      }
+      setSuggestions(generateSuggestions(req))
+      setSource('local')
+    } catch {
+      setSuggestions(generateSuggestions(req))
+      setSource('local')
+    } finally {
+      setIsSuggesting(false)
+    }
   }
 
   const handleAddChore = async (suggestion: ChoreSuggestion) => {
@@ -174,10 +202,12 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           )}
 
           {/* Loading state */}
-          {isLoading && (
+          {(isLoading || isSuggesting) && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🤖</div>
-              <p className="text-gray-600 dark:text-gray-400 font-medium">Analyzing your family's chores...</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">
+                {isSuggesting ? 'Thinking up chores for your family...' : "Analyzing your family's chores..."}
+              </p>
             </div>
           )}
 
@@ -195,10 +225,15 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           )}
 
           {/* Suggestions */}
-          {!isLoading && suggestions.length > 0 && selectedChildData && (
+          {!isLoading && !isSuggesting && suggestions.length > 0 && selectedChildData && (
             <>
               <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700">
                 <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {source === 'ai' && (
+                    <span className="inline-flex items-center gap-1 font-bold mr-1" style={{ color: 'var(--primary)' }}>
+                      <Sparkles className="w-3.5 h-3.5" /> AI-personalized ·
+                    </span>
+                  )}
                   Suggestions for <strong style={{ color: 'var(--text-primary)' }}>{selectedChildData.name}</strong>
                   {selectedChildData.age ? ` (age ${selectedChildData.age})` : ''} based on their current chores and activity.
                 </p>
@@ -259,6 +294,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
                 <Button
                   variant="outline"
                   onClick={refreshSuggestions}
+                  disabled={isSuggesting}
                   className="font-bold gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -269,7 +305,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           )}
 
           {/* No suggestions available */}
-          {!isLoading && suggestions.length === 0 && children.length > 0 && selectedChild && (
+          {!isLoading && !isSuggesting && suggestions.length === 0 && children.length > 0 && selectedChild && (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">🎉</div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>

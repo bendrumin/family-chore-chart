@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     title: 'ChoreStar Affiliate & Partner Program',
     description: 'Promote a free-to-start chore chart app parents can use instantly on any device. Brand assets, approved copy, testimonials, and a partner inquiry form.',
     url: 'https://chorestar.app/partners',
-    images: ['/og-image.png'],
   },
   twitter: {
     card: 'summary_large_image',

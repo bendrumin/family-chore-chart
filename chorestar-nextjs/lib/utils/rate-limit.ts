@@ -225,6 +225,7 @@ export const RATE_LIMITS = {
   PASSWORD_RESET: { interval: 60 * 60 * 1000, maxAttempts: 3 }, // 3 attempts per hour
   EMAIL_RESEND: { interval: 60 * 60 * 1000, maxAttempts: 3 }, // 3 per hour
   CONTACT_FORM: { interval: 60 * 60 * 1000, maxAttempts: 3 }, // 3 per hour
+  AI_SUGGESTIONS: { interval: 60 * 60 * 1000, maxAttempts: 40 }, // 40 AI suggestion refreshes per hour (per user) — caps token spend/abuse
 } as const;
 
 /**
