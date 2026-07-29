@@ -89,6 +89,10 @@ Android: `cd ChoreStar-Android && npm install && npx cap open android` (needs An
 
 Secrets are never committed — see [`chorestar-nextjs/.env.local.example`](chorestar-nextjs/.env.local.example) for the required variable names. Deeper architecture notes live in [`CLAUDE.md`](CLAUDE.md).
 
+## Origins
+
+ChoreStar grew out of a much simpler chore chart I first built for my own kids — the original is still live at [chorechart.siegelcreates.com](https://chorechart.siegelcreates.com). This repo is what it became: one Supabase backend shared across a Next.js web app, a native iOS app, and an Android build, with email-free kid login, a routines engine, and AI-assisted chore suggestions. Most of the architecture decisions above trace back to that growth — from a single-purpose web page to a multi-platform product.
+
 ## License
 
 MIT
