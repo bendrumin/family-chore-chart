@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.6.1'
+export const LATEST_CHANGELOG_VERSION = '2026.7.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.7.0': {
+    version: '2026.7.0',
+    date: 'July 2026',
+    title: 'Smarter Chore Suggestions',
+    features: [
+      {
+        icon: '✨',
+        title: 'AI-Powered Suggestions',
+        description: 'Smart Chore Suggestions now use AI to tailor ideas to each child — their age, the chores they already have, how they\'ve been doing lately, and the time of year. Open Smart Suggestions and look for the "AI-personalized" badge.',
+      },
+      {
+        icon: '🎯',
+        title: 'Personal, and Always Instant',
+        description: 'Ideas come back in a tap, and if the AI is ever unavailable we fall back to our built-in suggestions automatically — so you never wait and never hit a dead end.',
+      },
+    ],
+  },
   '2026.6.1': {
     version: '2026.6.1',
     date: 'June 2026',

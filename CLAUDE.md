@@ -241,7 +241,7 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 - **Allowance tracking** with configurable reward modes (per-chore or daily)
 - **Dark mode** and **seasonal themes** (auto-detected by date)
 - **Family sharing** with invite links and role-based access
-- **Smart chore suggestions** — rule-based engine in `lib/utils/chore-suggestions.ts` (age-filtered, seasonal, category-diverse)
+- **Smart chore suggestions** — AI-powered via Claude Haiku 4.5 (`lib/ai/suggest-chores.ts`, API route `app/api/ai/suggest-chores/`), with structured (Zod-validated) output and a graceful fallback to the rule-based engine in `lib/utils/chore-suggestions.ts` (age-filtered, seasonal, category-diverse) whenever the AI is unavailable. Requires `ANTHROPIC_API_KEY`. Evals in `evals/suggest-chores.eval.ts` (`npm run eval:ai`).
 - **Analytics charts** (Recharts) — weekly completion trend line + per-child bar chart on the Insights tab
 - **Printable weekly templates** (jsPDF) — themed PDFs (Stars/Rainbow/Minimal) on the Downloads tab
 - **How-to guides** — timeline-style tutorials on `/how-to`
