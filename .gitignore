@@ -34,6 +34,12 @@ Thumbs.db
 # Admin analysis output (contains user emails)
 chorestar-nextjs/scripts/output/
 
+# User-data exports (PII — never commit)
+/all-users-emails.txt
+/chorestar-emails.csv
+/chorestar-users.csv
+/chorestar-users.json
+
 # Logs
 *.log
 
