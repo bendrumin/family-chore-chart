@@ -133,7 +133,7 @@ export default function PrivacyPage() {
             <p className="text-gray-700 dark:text-gray-300 mt-3">
               If you believe we have inadvertently collected personal information from a child under 13 without
               verifiable parental consent, please contact us at{' '}
-              <a href="mailto:privacy@chorestar.app" className="text-indigo-600 hover:underline">privacy@chorestar.app</a>{' '}
+              <a href="mailto:hi@chorestar.app" className="text-indigo-600 hover:underline">hi@chorestar.app</a>{' '}
               and we will delete it promptly.
             </p>
           </Section>
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-gray-700 dark:text-gray-300 mt-3">
               To exercise any of these rights, email us at{' '}
-              <a href="mailto:privacy@chorestar.app" className="text-indigo-600 hover:underline">privacy@chorestar.app</a>.
+              <a href="mailto:hi@chorestar.app" className="text-indigo-600 hover:underline">hi@chorestar.app</a>.
               We will respond within 30 days.
             </p>
           </Section>
@@ -191,7 +191,7 @@ export default function PrivacyPage() {
               If you have questions about this Privacy Policy or how your data is handled:
             </p>
             <ul className="list-none mt-3 space-y-1 text-gray-700 dark:text-gray-300">
-              <li>📧 <a href="mailto:privacy@chorestar.app" className="text-indigo-600 hover:underline">privacy@chorestar.app</a></li>
+              <li>📧 <a href="mailto:hi@chorestar.app" className="text-indigo-600 hover:underline">hi@chorestar.app</a></li>
               <li>🌐 <a href="https://chorestar.app" className="text-indigo-600 hover:underline">chorestar.app</a></li>
             </ul>
           </Section>
