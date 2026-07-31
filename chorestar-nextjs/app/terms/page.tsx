@@ -71,7 +71,7 @@ export default function TermsPage() {
               <li>You are responsible for keeping your login credentials and family PINs secure.</li>
               <li>You are responsible for all activity that occurs under your account.</li>
               <li>You agree to provide accurate account information and to keep it up to date.</li>
-              <li>Notify us promptly at <a href="mailto:support@chorestar.app" className="text-indigo-600 hover:underline">support@chorestar.app</a> if you suspect unauthorized use of your account.</li>
+              <li>Notify us promptly at <a href="mailto:hi@chorestar.com" className="text-indigo-600 hover:underline">hi@chorestar.com</a> if you suspect unauthorized use of your account.</li>
             </ul>
           </Section>
 
@@ -199,7 +199,7 @@ export default function TermsPage() {
               Questions about these Terms?
             </p>
             <ul className="list-none mt-3 space-y-1 text-gray-700 dark:text-gray-300">
-              <li>📧 <a href="mailto:support@chorestar.app" className="text-indigo-600 hover:underline">support@chorestar.app</a></li>
+              <li>📧 <a href="mailto:hi@chorestar.com" className="text-indigo-600 hover:underline">hi@chorestar.com</a></li>
               <li>🌐 <a href="https://chorestar.app" className="text-indigo-600 hover:underline">chorestar.app</a></li>
             </ul>
           </Section>

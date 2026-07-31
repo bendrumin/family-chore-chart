@@ -103,11 +103,22 @@ struct PaywallView: View {
                     .font(.subheadline)
                     .foregroundColor(.choreStarPrimary)
 
-                    Text("Subscriptions renew automatically until cancelled in Settings. Web subscriptions are managed at chorestar.app.")
+                    // Legal — Apple-required auto-renewal disclosure + functional links
+                    VStack(spacing: 10) {
+                        Text("Auto-renewable subscriptions renew automatically unless cancelled at least 24 hours before the end of the current period. Payment is charged to your Apple ID at confirmation of purchase, and renewal is charged within 24 hours before the current period ends. Manage or cancel anytime in your App Store account settings. Web subscriptions are managed at chorestar.app.")
+                            .font(.caption2)
+                            .foregroundColor(.choreStarTextSecondary)
+                            .multilineTextAlignment(.center)
+
+                        HStack(spacing: 6) {
+                            Link("Terms of Use", destination: URL(string: "https://chorestar.app/terms")!)
+                            Text("·").foregroundColor(.choreStarTextSecondary)
+                            Link("Privacy Policy", destination: URL(string: "https://chorestar.app/privacy")!)
+                        }
                         .font(.caption2)
-                        .foregroundColor(.choreStarTextSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.bottom, 20)
+                        .tint(.choreStarPrimary)
+                    }
+                    .padding(.bottom, 20)
                 }
                 .frame(maxWidth: 560)
                 .frame(maxWidth: .infinity)
