@@ -61,8 +61,9 @@ struct PaywallView: View {
                     plansSection
                     #endif
 
-                    // Purchase button
-                    if let product = selectedProduct {
+                    // Purchase button (suppressed in screenshot mode — the demo
+                    // plan section provides its own Continue for the review capture)
+                    if let product = selectedProduct, !isScreenshotMode {
                         Button {
                             Task {
                                 let success = await store.purchase(product)
@@ -171,15 +172,19 @@ struct PaywallView: View {
         .padding(.vertical, 20)
     }
 
-    #if DEBUG
-    /// True when launched by the App Store screenshot tooling (`-chorestar-paywall`).
-    /// StoreKit test products don't load under `simctl`, so we render a static
-    /// preview of the plan cards purely so the review screenshot shows the
-    /// purchase options. Never compiled into release builds.
+    /// True only in DEBUG when launched by the App Store screenshot tooling
+    /// (`-chorestar-paywall`); always false in release builds. The demo plan
+    /// section renders a static preview so the review screenshot shows the
+    /// purchase options even when StoreKit products are slow to load.
     private var isScreenshotMode: Bool {
-        ProcessInfo.processInfo.arguments.contains("-chorestar-paywall")
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-chorestar-paywall")
+        #else
+        return false
+        #endif
     }
 
+    #if DEBUG
     private var demoPlansSection: some View {
         VStack(spacing: 12) {
             demoPlanCard(name: "Monthly", period: "Billed monthly", price: "$4.99", isBest: false, isSelected: false)
