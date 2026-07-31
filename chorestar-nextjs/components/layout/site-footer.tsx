@@ -90,6 +90,11 @@ export function SiteFooter() {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link href="/terms" className="text-sm hover:text-white transition-colors">
+                  Terms of Use
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
