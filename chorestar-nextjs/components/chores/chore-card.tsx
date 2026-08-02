@@ -139,22 +139,22 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
 
         <div className="p-4 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-2.5 pb-2.5 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1 pr-10">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-8 h-8" />}
-                <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
-                  {chore.name}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
+              <div className="flex items-center gap-2.5">
+                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-7 h-7 shrink-0" />}
+                <div className="flex items-center gap-x-3 gap-y-0.5 flex-wrap min-w-0">
+                  <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
+                    {chore.name}
+                  </h3>
+                  <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
+                </div>
               </div>
             </div>
           </div>
 
           {/* 7-Day Grid - Professional */}
-          <div className="grid grid-cols-7 gap-1.5 mb-3">
+          <div className="grid grid-cols-7 gap-1.5 mb-2.5">
             {days.map((day, index) => {
               const completed = optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek)
 
@@ -164,7 +164,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
                   onClick={() => toggleCompletion(day.dayOfWeek)}
                   aria-label={`${chore.name} ${day.dayName} — ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
-                  className={`aspect-square min-h-[56px] rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 font-bold touch-manipulation ${
+                  className={`h-14 sm:h-16 rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 font-bold touch-manipulation ${
                     completed
                       ? 'text-white hover:scale-110 active:scale-95 shadow-md'
                       : 'bg-white dark:bg-gray-700 hover:scale-105 hover:shadow-md active:scale-95 border border-gray-200 dark:border-gray-600'
@@ -187,7 +187,7 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           </div>
 
           {/* Stats */}
-          <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="pt-2.5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               <span className="font-bold text-lg mr-1 text-gray-900 dark:text-gray-100">
                 {choreCompletions.length}

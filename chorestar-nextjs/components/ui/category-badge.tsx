@@ -1,4 +1,4 @@
-import { getCategoryInfo, type ChoreCategory } from '@/lib/constants/categories'
+import { getCategoryInfo } from '@/lib/constants/categories'
 
 interface CategoryBadgeProps {
   category: string
@@ -10,32 +10,29 @@ interface CategoryBadgeProps {
 export function CategoryBadge({ category, size = 'md', showLabel = true, className = '' }: CategoryBadgeProps) {
   const categoryInfo = getCategoryInfo(category)
 
-  const sizeClasses = {
-    sm: 'text-xs px-2 py-1',
-    md: 'text-sm px-3 py-1.5',
-    lg: 'text-base px-4 py-2'
+  const textSizes = {
+    sm: 'text-[11px]',
+    md: 'text-xs',
+    lg: 'text-sm'
   }
 
-  const iconSizes = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg'
+  const dotSizes = {
+    sm: 'w-1.5 h-1.5',
+    md: 'w-2 h-2',
+    lg: 'w-2.5 h-2.5'
   }
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 rounded-full font-semibold transition-all duration-200 hover:scale-105 ${sizeClasses[size]} ${className}`}
-      style={{
-        backgroundColor: categoryInfo.bgColor,
-        color: categoryInfo.color,
-        border: `1px solid ${categoryInfo.color}30`
-      }}
+      className={`inline-flex items-center gap-1.5 font-medium text-gray-500 dark:text-gray-400 ${textSizes[size]} ${className}`}
       title={categoryInfo.description}
     >
-      <span className={iconSizes[size]} aria-hidden="true">
-        {categoryInfo.icon}
-      </span>
-      {showLabel && <span>{categoryInfo.label}</span>}
+      <span
+        className={`shrink-0 rounded-full ${dotSizes[size]}`}
+        style={{ backgroundColor: categoryInfo.color }}
+        aria-hidden="true"
+      />
+      <span className={showLabel ? undefined : 'sr-only'}>{categoryInfo.label}</span>
     </div>
   )
 }
