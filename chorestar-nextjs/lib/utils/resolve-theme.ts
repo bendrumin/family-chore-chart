@@ -7,6 +7,13 @@ import {
   TIME_THEME_ID_PREFIX,
   getCurrentTimeTheme,
 } from '@/lib/constants/time-themes'
+import {
+  ensureReadable,
+  accessiblePair,
+  shiftAwayFrom,
+  SURFACE_LIGHT,
+  SURFACE_DARK,
+} from '@/lib/utils/contrast'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 
 export type ThemeSource = 'manual' | 'auto-seasonal' | 'auto-time'
@@ -83,16 +90,48 @@ export function resolveActiveTheme(
  * --primary and --gradient-primary are referenced ~90 times across the UI while
  * --seasonal-accent is referenced a handful, so setting only the latter left the
  * bulk of the interface indigo/purple regardless of the active theme.
+ *
+ * Contrast is handled by splitting the accent into three tokens, because one
+ * color cannot serve both roles. --primary is used as a *text* color 43 times
+ * versus 3 times as a fill, so --primary is the contrast-corrected value (a raw
+ * accent like summer's #ffd700 gold is invisible as text on white) while
+ * --primary-fill keeps the true hue for filled surfaces, paired with
+ * --primary-foreground for whatever sits on top of it.
  */
 export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<string, string> {
   const { primary, secondary } = isDark ? colors.dark : colors.light
-  const gradient = `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`
+  const surface = isDark ? SURFACE_DARK : SURFACE_LIGHT
+
+  // Fills are corrected so the fill/ink pair is guaranteed to clear AA, rather
+  // than merely using whichever ink happens to be the better of the two.
+  const primaryPair = accessiblePair(primary)
+  const secondaryPair = accessiblePair(secondary)
+
+  // Themed surfaces get a single-hue gradient — the second stop is the fill
+  // pushed further from its own ink, so both ends are at least as legible as
+  // the first. The old two-hue ramp (accent → a different accent) is what made
+  // Halloween orange land next to brand purple, and for 8 of 21 themes no
+  // single ink cleared AA across both of its stops.
+  const gradient = `linear-gradient(135deg, ${primaryPair.fill} 0%, ${shiftAwayFrom(
+    primaryPair.fill,
+    primaryPair.foreground,
+    0.14
+  )} 100%)`
+
   return {
-    '--primary': primary,
-    '--secondary': secondary,
+    // Safe as text on the page surface — most usages are text.
+    '--primary': ensureReadable(primary, surface),
+    '--secondary': ensureReadable(secondary, surface),
+    // True hue for filled surfaces, contrast-corrected.
+    '--primary-fill': primaryPair.fill,
+    '--secondary-fill': secondaryPair.fill,
+    // What to put on top of those fills.
+    '--primary-foreground': primaryPair.foreground,
+    '--secondary-foreground': secondaryPair.foreground,
     '--gradient-primary': gradient,
-    '--seasonal-accent': primary,
-    '--seasonal-secondary': secondary,
+    '--gradient-foreground': primaryPair.foreground,
+    '--seasonal-accent': ensureReadable(primary, surface),
+    '--seasonal-secondary': ensureReadable(secondary, surface),
     '--seasonal-gradient': gradient,
   }
 }

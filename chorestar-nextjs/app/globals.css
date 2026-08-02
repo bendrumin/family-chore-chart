@@ -93,6 +93,17 @@
     --radius-lg: 1rem;        /* 16px */
     --radius-xl: 1.5rem;      /* 24px */
 
+    /* Accent contrast tokens. --primary is used as a text color far more often
+       than as a fill, so it must stay readable on the page surface; -fill keeps
+       the true hue for filled surfaces and -foreground is what sits on top of
+       it. A theme overrides all of these together (lib/utils/resolve-theme.ts),
+       computing them from its own accent via lib/utils/contrast.ts. */
+    --primary-fill: #6366f1;
+    --primary-foreground: #ffffff;
+    --secondary-fill: #8b5cf6;
+    --secondary-foreground: #ffffff;
+    --gradient-foreground: #ffffff;
+
     /* Professional Gradients */
     --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
@@ -114,6 +125,13 @@
     --primary: #818cf8;
     --primary-dark: #6366f1;
     --primary-light: #a5b4fc;
+
+    /* The dark-mode accent is light, so ink — not white — reads on top of it
+       (#818cf8 is 2.98:1 against white but 5.95:1 against #111827). */
+    --primary-fill: #818cf8;
+    --primary-foreground: #111827;
+    --secondary-fill: #a5b4fc;
+    --secondary-foreground: #111827;
 
     --bg-primary: #1f2937;
     --bg-secondary: #111827;

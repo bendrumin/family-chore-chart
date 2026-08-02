@@ -175,14 +175,26 @@ group('css variables')
 
 t('a theme drives the brand variables, not just --seasonal-*', () => {
   const vars = themeCssVars(SEASONAL_THEMES_DATA.halloween.colors, false)
-  assert.equal(vars['--primary'], '#ff6600')
-  assert.ok(vars['--gradient-primary'].includes('#ff6600'))
-  assert.equal(vars['--seasonal-accent'], '#ff6600')
+  // Halloween orange is 2.94:1 on white, so --primary is the corrected value
+  // rather than the raw accent — assert the contract, not a literal.
+  for (const token of ['--primary', '--secondary', '--primary-fill', '--gradient-primary', '--seasonal-accent']) {
+    assert.ok(vars[token], `${token} not set`)
+  }
+  assert.ok(vars['--gradient-primary'].includes(vars['--primary-fill']))
+  assert.equal(vars['--seasonal-accent'], vars['--primary'])
 })
 
-t('dark mode uses the dark pair', () => {
-  const vars = themeCssVars(SEASONAL_THEMES_DATA.halloween.colors, true)
-  assert.equal(vars['--primary'], '#ff8c42')
+t('the corrected accent keeps its hue — halloween stays orange', () => {
+  const vars = themeCssVars(SEASONAL_THEMES_DATA.halloween.colors, false)
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(vars['--primary'].slice(i, i + 2), 16))
+  assert.ok(r > g && g > b, `expected red>green>blue, got ${vars['--primary']}`)
+})
+
+t('dark mode uses the dark pair as its basis', () => {
+  const light = themeCssVars(SEASONAL_THEMES_DATA.halloween.colors, false)
+  const dark = themeCssVars(SEASONAL_THEMES_DATA.halloween.colors, true)
+  assert.notEqual(light['--primary'], dark['--primary'])
+  assert.equal(dark['--primary-fill'], '#ff8c42')
 })
 
 t('the clear list covers everything the setter sets', () => {
