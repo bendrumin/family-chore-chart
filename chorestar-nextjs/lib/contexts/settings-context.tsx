@@ -9,12 +9,62 @@ import {
   setStoredThemeMode,
   type ThemeMode,
 } from '@/lib/utils/theme-mode'
-import {
-  resolveActiveTheme,
-  themeCssVars,
-  THEME_CSS_VAR_NAMES,
-} from '@/lib/utils/resolve-theme'
-import { msUntilNextTimeTheme } from '@/lib/constants/time-themes'
+
+// Seasonal theme colors with dark mode support
+const SEASONAL_THEME_COLORS: Record<string, { light: { primary: string; secondary: string }, dark: { primary: string; secondary: string } }> = {
+  christmas: {
+    light: { primary: '#c41e3a', secondary: '#165b33' },
+    dark: { primary: '#ff4757', secondary: '#2ed573' }
+  },
+  halloween: {
+    light: { primary: '#ff6600', secondary: '#1a1a1a' },
+    dark: { primary: '#ff8c42', secondary: '#7b68ee' }
+  },
+  spring: {
+    light: { primary: '#ff69b4', secondary: '#90ee90' },
+    dark: { primary: '#ff85c1', secondary: '#98fb98' }
+  },
+  summer: {
+    light: { primary: '#ffd700', secondary: '#87ceeb' },
+    dark: { primary: '#ffe135', secondary: '#4fc3f7' }
+  },
+  fall: {
+    light: { primary: '#d2691e', secondary: '#8b4513' },
+    dark: { primary: '#ff8c42', secondary: '#cd853f' }
+  },
+  winter: {
+    light: { primary: '#4682b4', secondary: '#b0c4de' },
+    dark: { primary: '#64b5f6', secondary: '#90caf9' }
+  },
+  valentine: {
+    light: { primary: '#ff1493', secondary: '#ff69b4' },
+    dark: { primary: '#ff4081', secondary: '#f48fb1' }
+  },
+  easter: {
+    light: { primary: '#9370db', secondary: '#ffb6c1' },
+    dark: { primary: '#ba68c8', secondary: '#f8bbd0' }
+  },
+  thanksgiving: {
+    light: { primary: '#d2691e', secondary: '#cd853f' },
+    dark: { primary: '#ff8c42', secondary: '#daa520' }
+  },
+  newYear: {
+    light: { primary: '#ffd700', secondary: '#4169e1' },
+    dark: { primary: '#ffe135', secondary: '#5e92f3' }
+  },
+  stPatricks: {
+    light: { primary: '#228b22', secondary: '#90ee90' },
+    dark: { primary: '#4caf50', secondary: '#81c784' }
+  },
+  ocean: {
+    light: { primary: '#006994', secondary: '#17c0eb' },
+    dark: { primary: '#0288d1', secondary: '#29b6f6' }
+  },
+  sunset: {
+    light: { primary: '#f97316', secondary: '#fb923c' },
+    dark: { primary: '#f97316', secondary: '#fdba74' }
+  },
+}
 
 type FamilySettings = Database['public']['Tables']['family_settings']['Row']
 
@@ -100,40 +150,30 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
 
     const theme = isDark ? 'dark' : 'light'
 
-    // Exactly one theme is in effect — explicit pick, else auto-seasonal, else
-    // auto-time-of-day. See lib/utils/resolve-theme.ts.
-    const active = resolveActiveTheme(customTheme)
-
     // Remove any existing seasonal theme classes from both html and body
     const seasonalClasses = document.body.className.split(' ').filter(c => c.startsWith('seasonal-'))
     seasonalClasses.forEach(c => {
       document.body.classList.remove(c)
       document.documentElement.classList.remove(c)
     })
-    document.documentElement.removeAttribute('data-time-theme')
 
-    if (active) {
-      // Only seasonal ids have matching CSS in globals.css; time themes are
-      // driven purely by the custom properties below.
-      if (active.seasonalId) {
-        const seasonalClass = `seasonal-${active.seasonalId}`
-        document.body.classList.add(seasonalClass)
-        document.documentElement.classList.add(seasonalClass)
-        document.documentElement.setAttribute('data-seasonal-theme', active.seasonalId)
-      } else {
-        document.documentElement.removeAttribute('data-seasonal-theme')
-        document.documentElement.setAttribute('data-time-theme', active.id)
-      }
+    // Apply seasonal theme if present to BOTH html and body (like original version)
+    if (customTheme?.seasonalTheme) {
+      const seasonalClass = `seasonal-${customTheme.seasonalTheme}`
 
-      {
-        const modeColors = theme === 'dark' ? active.colors.dark : active.colors.light
+      // Apply the seasonal class to both html and body
+      document.body.classList.add(seasonalClass)
+      document.documentElement.classList.add(seasonalClass)
+      document.documentElement.setAttribute('data-seasonal-theme', customTheme.seasonalTheme)
 
-        // Drive the brand variables too, not just --seasonal-*, so the active
-        // theme replaces the indigo/purple palette instead of sitting beside it.
-        const vars = themeCssVars(active.colors, isDark)
-        for (const [name, value] of Object.entries(vars)) {
-          document.documentElement.style.setProperty(name, value)
-        }
+      // Get theme colors based on current mode (light/dark)
+      const themeColors = SEASONAL_THEME_COLORS[customTheme.seasonalTheme]
+      if (themeColors) {
+        const modeColors = theme === 'dark' ? themeColors.dark : themeColors.light
+
+        // Apply colors as CSS variables for use throughout the app
+        document.documentElement.style.setProperty('--seasonal-accent', modeColors.primary)
+        document.documentElement.style.setProperty('--seasonal-secondary', modeColors.secondary)
 
         // Wait for CSS to load, then apply additional theme styling
         setTimeout(() => {
@@ -172,10 +212,8 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       }
     } else {
       document.documentElement.removeAttribute('data-seasonal-theme')
-      // Clear every property a theme can set so the brand palette returns.
-      THEME_CSS_VAR_NAMES.forEach(name => {
-        document.documentElement.style.removeProperty(name)
-      })
+      document.documentElement.style.removeProperty('--seasonal-accent')
+      document.documentElement.style.removeProperty('--seasonal-secondary')
 
       // Reset header
       const header = document.querySelector('header.glass')
@@ -236,33 +274,6 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       loadSettings()
     }
   }, [userId])
-
-  const customTheme = (settings?.custom_theme ?? null) as CustomTheme | null
-  const autoSeasonal = customTheme?.autoSeasonal ?? false
-  const autoTimeOfDay = customTheme?.autoTimeOfDay ?? false
-
-  // An auto theme is a function of the current time, so it has to be
-  // re-evaluated as the clock moves — otherwise a tab left open overnight keeps
-  // yesterday's palette. Re-apply at each time-window boundary (and hourly as a
-  // backstop against a suspended timer or a clock change).
-  useEffect(() => {
-    if (!autoSeasonal && !autoTimeOfDay) return
-
-    let timer: ReturnType<typeof setTimeout>
-
-    const schedule = () => {
-      const untilBoundary = msUntilNextTimeTheme()
-      const wait = Math.min(untilBoundary, 60 * 60 * 1000) + 1000
-      timer = setTimeout(() => {
-        applyTheme((settings?.custom_theme ?? null) as CustomTheme | null)
-        schedule()
-      }, wait)
-    }
-    schedule()
-
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSeasonal, autoTimeOfDay, settings?.custom_theme])
 
   return (
     <SettingsContext.Provider value={{ settings, isLoading, updateSettings, refreshSettings }}>

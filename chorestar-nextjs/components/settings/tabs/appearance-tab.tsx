@@ -3,11 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff, Clock } from 'lucide-react'
+import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
-import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
-import { TIME_THEMES, getCurrentTimeTheme } from '@/lib/constants/time-themes'
-import { ChoreIcon } from '@/components/ui/chore-icon'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
 import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
@@ -15,24 +12,161 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { useAuth } from '@/lib/hooks/use-auth'
 import { notificationManager } from '@/lib/utils/notifications'
 
-/**
- * Pickable themes, derived from the canonical tables so the picker can't drift
- * from what actually gets applied. This list used to be a fourth hand-kept copy
- * of the colors; four of its entries (forest, aurora, coral, lavender) existed
- * only here, so choosing them applied no accent at all.
- */
 const SEASONAL_THEMES = [
-  ...Object.values(SEASONAL_THEMES_DATA),
-  ...Object.values(ACCENT_THEMES),
-].map(t => ({ id: t.id, name: t.name, emoji: t.icon, colors: t.colors }))
-
-/** 14 -> "2pm", 0 -> "12am" */
-function formatHour(hour: number): string {
-  const h = ((hour % 24) + 24) % 24
-  const suffix = h < 12 ? 'am' : 'pm'
-  const display = h % 12 === 0 ? 12 : h % 12
-  return `${display}${suffix}`
-}
+  {
+    id: 'christmas',
+    name: 'Christmas',
+    emoji: '🎄',
+    colors: {
+      light: { primary: '#c41e3a', secondary: '#165b33' },
+      dark: { primary: '#ff4757', secondary: '#2ed573' }
+    }
+  },
+  {
+    id: 'halloween',
+    name: 'Halloween',
+    emoji: '🎃',
+    colors: {
+      light: { primary: '#ff6600', secondary: '#1a1a1a' },
+      dark: { primary: '#ff8c42', secondary: '#7b68ee' }
+    }
+  },
+  {
+    id: 'spring',
+    name: 'Spring',
+    emoji: '🌸',
+    colors: {
+      light: { primary: '#ff69b4', secondary: '#90ee90' },
+      dark: { primary: '#ff85c1', secondary: '#98fb98' }
+    }
+  },
+  {
+    id: 'summer',
+    name: 'Summer',
+    emoji: '☀️',
+    colors: {
+      light: { primary: '#ffd700', secondary: '#87ceeb' },
+      dark: { primary: '#ffe135', secondary: '#4fc3f7' }
+    }
+  },
+  {
+    id: 'fall',
+    name: 'Fall',
+    emoji: '🍂',
+    colors: {
+      light: { primary: '#d2691e', secondary: '#8b4513' },
+      dark: { primary: '#ff8c42', secondary: '#cd853f' }
+    }
+  },
+  {
+    id: 'winter',
+    name: 'Winter',
+    emoji: '❄️',
+    colors: {
+      light: { primary: '#4682b4', secondary: '#b0c4de' },
+      dark: { primary: '#64b5f6', secondary: '#90caf9' }
+    }
+  },
+  {
+    id: 'valentine',
+    name: 'Valentine',
+    emoji: '💕',
+    colors: {
+      light: { primary: '#ff1493', secondary: '#ff69b4' },
+      dark: { primary: '#ff4081', secondary: '#f48fb1' }
+    }
+  },
+  {
+    id: 'easter',
+    name: 'Easter',
+    emoji: '🐰',
+    colors: {
+      light: { primary: '#9370db', secondary: '#ffb6c1' },
+      dark: { primary: '#ba68c8', secondary: '#f8bbd0' }
+    }
+  },
+  {
+    id: 'thanksgiving',
+    name: 'Thanksgiving',
+    emoji: '🦃',
+    colors: {
+      light: { primary: '#d2691e', secondary: '#cd853f' },
+      dark: { primary: '#ff8c42', secondary: '#daa520' }
+    }
+  },
+  {
+    id: 'newYear',
+    name: 'New Year',
+    emoji: '🎉',
+    colors: {
+      light: { primary: '#ffd700', secondary: '#4169e1' },
+      dark: { primary: '#ffe135', secondary: '#5e92f3' }
+    }
+  },
+  {
+    id: 'stPatricks',
+    name: "St. Patrick's",
+    emoji: '☘️',
+    colors: {
+      light: { primary: '#228b22', secondary: '#90ee90' },
+      dark: { primary: '#4caf50', secondary: '#81c784' }
+    }
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    emoji: '🌅',
+    colors: {
+      light: { primary: '#f97316', secondary: '#fb923c' },
+      dark: { primary: '#f97316', secondary: '#fdba74' }
+    }
+  },
+  {
+    id: 'ocean',
+    name: 'Ocean',
+    emoji: '🌊',
+    colors: {
+      light: { primary: '#006994', secondary: '#17c0eb' },
+      dark: { primary: '#0288d1', secondary: '#29b6f6' }
+    }
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    emoji: '🌲',
+    colors: {
+      light: { primary: '#2d5016', secondary: '#4a7c59' },
+      dark: { primary: '#166534', secondary: '#22c55e' }
+    }
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    emoji: '🌌',
+    colors: {
+      light: { primary: '#4a148c', secondary: '#7b2cbf' },
+      dark: { primary: '#6d28d9', secondary: '#8b5cf6' }
+    }
+  },
+  {
+    id: 'coral',
+    name: 'Coral',
+    emoji: '🪸',
+    colors: {
+      light: { primary: '#ff6b6b', secondary: '#ee5a6f' },
+      dark: { primary: '#ef4444', secondary: '#f87171' }
+    }
+  },
+  {
+    id: 'lavender',
+    name: 'Lavender',
+    emoji: '💜',
+    colors: {
+      light: { primary: '#9b59b6', secondary: '#8e44ad' },
+      dark: { primary: '#a78bfa', secondary: '#c4b5fd' }
+    }
+  },
+]
 
 export function AppearanceTab() {
   const { settings, updateSettings } = useSettings()
@@ -40,7 +174,6 @@ export function AppearanceTab() {
   const [localTheme, setLocalTheme] = useState<'light' | 'dark' | 'auto'>('auto')
   const [seasonalTheme, setSeasonalTheme] = useState<string | null>(null)
   const [autoSeasonalEnabled, setAutoSeasonalEnabled] = useState(false)
-  const [autoTimeOfDayEnabled, setAutoTimeOfDayEnabled] = useState(false)
   const [isPremiumThemesOpen, setIsPremiumThemesOpen] = useState(false)
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
@@ -51,9 +184,8 @@ export function AppearanceTab() {
       setLocalTheme(customTheme.mode || 'auto')
       setSeasonalTheme(customTheme.seasonalTheme || null)
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
-      setAutoTimeOfDayEnabled(customTheme.autoTimeOfDay || false)
     }
-
+    
     // Check notification permission
     if (typeof window !== 'undefined') {
       setNotificationsEnabled(notificationManager.isEnabled())
@@ -123,34 +255,6 @@ export function AppearanceTab() {
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
     }
   }
-
-  const handleAutoTimeOfDayToggle = async () => {
-    try {
-      const newValue = !autoTimeOfDayEnabled
-      setAutoTimeOfDayEnabled(newValue)
-      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
-      const newCustomTheme = { ...currentCustomTheme, autoTimeOfDay: newValue }
-      await updateSettings({ custom_theme: newCustomTheme })
-      toast.success(newValue ? 'Time of day themes enabled!' : 'Time of day themes disabled!')
-    } catch (error) {
-      console.error('Error updating auto time of day:', error)
-      toast.error('Failed to update time of day setting')
-      const customTheme = (settings?.custom_theme as CustomTheme) || {}
-      setAutoTimeOfDayEnabled(customTheme.autoTimeOfDay || false)
-    }
-  }
-
-  // What each auto mode would pick right now, for the explanatory copy below.
-  const activeSeasonal = getCurrentSeasonalTheme()
-  const activeTimeTheme = getCurrentTimeTheme()
-
-  // An explicit pick outranks both auto modes, and seasonal outranks time —
-  // mirror resolveActiveTheme() so the UI explains what's actually in effect.
-  const overriddenBy = seasonalTheme
-    ? 'a theme you picked'
-    : autoSeasonalEnabled && activeSeasonal
-      ? `the ${activeSeasonal.name} theme`
-      : null
 
   return (
     <>
@@ -254,7 +358,7 @@ export function AppearanceTab() {
                 borderColor: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : undefined
               }}
             >
-              <ChoreIcon emoji={theme.emoji} className="w-7 h-7 mx-auto mb-1" />
+              <div className="text-2xl mb-1">{theme.emoji}</div>
               <div className="text-xs font-bold" style={{
                 color: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : 'var(--text-primary)'
               }}>
@@ -265,13 +369,9 @@ export function AppearanceTab() {
         </div>
 
         <p className="text-xs text-center px-4" style={{ color: 'var(--text-secondary)' }}>
-          {seasonalTheme
-            ? 'A theme you picked stays until you choose None.'
-            : autoSeasonalEnabled
-              ? activeSeasonal
-                ? `Auto is on — today is in the ${activeSeasonal.name} window.`
-                : 'Auto is on — no season is active today, so no seasonal accent is applied.'
-              : 'Enable auto mode to have themes change automatically throughout the year.'}
+          {autoSeasonalEnabled
+            ? '🔄 Themes automatically change with holidays and seasons'
+            : '💡 Enable auto mode to have themes change automatically throughout the year'}
         </p>
         {seasonalTheme && (
           <div className="mt-4 text-center">
@@ -286,68 +386,6 @@ export function AppearanceTab() {
             </Button>
           </div>
         )}
-      </div>
-
-      {/* Time of Day Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Clock className="w-5 h-5" />
-            <span>Time of Day</span>
-          </Label>
-          <Button
-            variant={autoTimeOfDayEnabled ? 'default' : 'outline'}
-            size="sm"
-            onClick={handleAutoTimeOfDayToggle}
-            className="text-xs font-bold"
-          >
-            {autoTimeOfDayEnabled ? 'On' : 'Off'}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-2 p-2 bg-gray-50/50 dark:bg-gray-900/50 rounded-xl">
-          {Object.values(TIME_THEMES).map((slot) => {
-            const isNow = autoTimeOfDayEnabled && slot.id === activeTimeTheme.id && !overriddenBy
-            const accent = localTheme === 'dark' ? slot.colors.dark : slot.colors.light
-            return (
-              <div
-                key={slot.id}
-                className={`rounded-lg border-2 p-3 text-center transition-all duration-200 ${
-                  isNow
-                    ? 'border-transparent shadow-lg'
-                    : 'border-gray-200 bg-white/80 dark:border-gray-700 dark:bg-gray-800/80'
-                }`}
-                style={
-                  isNow
-                    ? {
-                        background: `linear-gradient(135deg, ${accent.primary}15, ${accent.secondary}15)`,
-                        borderColor: accent.primary,
-                      }
-                    : undefined
-                }
-              >
-                <ChoreIcon emoji={slot.icon} className="w-7 h-7 mx-auto mb-1" />
-                <div
-                  className="text-xs font-bold"
-                  style={{ color: isNow ? accent.primary : 'var(--text-primary)' }}
-                >
-                  {slot.name}
-                </div>
-                <div className="text-[10px] tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                  {formatHour(slot.startHour)}–{formatHour(slot.endHour)}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        <p className="text-xs text-center px-4" style={{ color: 'var(--text-secondary)' }}>
-          {!autoTimeOfDayEnabled
-            ? 'Turn this on to shift the accent color through the day.'
-            : overriddenBy
-              ? `Currently overridden by ${overriddenBy} — a season always replaces the time of day palette rather than mixing with it.`
-              : `Following the clock — it's ${activeTimeTheme.name.toLowerCase()} right now.`}
-        </p>
       </div>
 
       {/* Notifications Section */}

@@ -111,7 +111,7 @@ export function SeasonalSuggestionsModal({
             backgroundClip: 'text'
           }}>
             <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
-            <ChoreIcon emoji={currentTheme.icon} className="w-8 h-8" /> {currentTheme.name} Activity Suggestions
+            <span style={{ WebkitTextFillColor: 'initial' }}>{currentTheme.icon}</span> {currentTheme.name} Activity Suggestions
           </DialogTitle>
         </DialogHeader>
 
@@ -121,7 +121,7 @@ export function SeasonalSuggestionsModal({
             background: 'linear-gradient(135deg, #f59e0b, #f97316)',
             color: 'white'
           }}>
-            <ChoreIcon emoji={currentTheme.icon} className="w-14 h-14 mx-auto mb-3" />
+            <div className="text-5xl mb-3">{currentTheme.icon}</div>
             <h3 className="text-2xl font-bold mb-2">
               {currentTheme.name} Activity Suggestions
             </h3>

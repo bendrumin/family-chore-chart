@@ -9,12 +9,8 @@ export type Json =
 /** Shape of the `custom_theme` JSONB column in `family_settings`. */
 export interface CustomTheme {
   mode?: 'light' | 'dark' | 'auto'
-  /** An explicit theme pick. Outranks both auto modes below. */
   seasonalTheme?: string | null
-  /** Follow the calendar: apply whichever seasonal window today falls in. */
   autoSeasonal?: boolean
-  /** Follow the clock: dawn / daylight / dusk / night accent palette. */
-  autoTimeOfDay?: boolean
 }
 
 export interface Database {
