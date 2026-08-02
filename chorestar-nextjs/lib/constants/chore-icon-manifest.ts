@@ -1,5 +1,5 @@
 // Generated from OpenMoji 15.1.0 (CC BY-SA 4.0) — https://openmoji.org
-// Filenames of the bundled line-art chore icons under public/icons/chores/.
+// Filenames of the bundled full-color chore icons under public/icons/chores-color/.
 const CHORE_ICON_FILES = new Set<string>([
   '1F30E',
   '1F319',
@@ -187,6 +187,7 @@ const CHORE_ICON_FILES = new Set<string>([
   '1FAE7',
   '23F3',
   '267B',
+  '2699',
   '26BD',
   '26BE',
   '26F3',
@@ -195,6 +196,7 @@ const CHORE_ICON_FILES = new Set<string>([
   '2712',
   '2728',
   '2744',
+  '2764',
   '2B50',
 ])
 

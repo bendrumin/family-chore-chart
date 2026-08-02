@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { WeekNavigator } from '@/components/ui/week-navigator'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import { Plus, Filter } from 'lucide-react'
 import { toast } from 'sonner'
 import { AddChoreModal } from './add-chore-modal'
@@ -206,24 +207,27 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                   Filter by Category
                 </span>
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-1.5 flex-wrap">
                 {/* All Categories Button */}
                 <button
                   onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-105 ${
+                  aria-pressed={selectedCategory === 'all'}
+                  className={`inline-flex items-center gap-1.5 rounded-full border pl-3 pr-1.5 py-1.5 text-sm font-semibold transition-colors duration-150 ${
                     selectedCategory === 'all'
-                      ? 'shadow-lg scale-105'
-                      : 'hover:shadow-md'
+                      ? 'border-transparent bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800'
                   }`}
-                  style={{
-                    background: selectedCategory === 'all'
-                      ? 'var(--gradient-primary)'
-                      : 'rgba(107, 114, 128, 0.1)',
-                    color: selectedCategory === 'all' ? 'white' : 'var(--text-secondary)',
-                    border: selectedCategory === 'all' ? 'none' : '1px solid rgba(107, 114, 128, 0.2)'
-                  }}
                 >
-                  All ({categoryCounts.all || 0})
+                  <span>All</span>
+                  <span
+                    className={`min-w-[1.375rem] rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums ${
+                      selectedCategory === 'all'
+                        ? 'bg-white/20 text-white dark:bg-gray-900/15 dark:text-gray-900'
+                        : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                    }`}
+                  >
+                    {categoryCounts.all || 0}
+                  </span>
                 </button>
 
                 {/* Category Buttons */}
@@ -231,26 +235,36 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                   const count = categoryCounts[category.id] || 0
                   if (count === 0) return null // Hide categories with no chores
 
+                  const isSelected = selectedCategory === category.id
+
                   return (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-105 flex items-center gap-2 ${
-                        selectedCategory === category.id
-                          ? 'shadow-lg scale-105'
-                          : 'hover:shadow-md bg-white/50 dark:bg-gray-800/50'
+                      aria-pressed={isSelected}
+                      className={`inline-flex items-center gap-1.5 rounded-full border pl-2 pr-1.5 py-1.5 text-sm font-semibold transition-colors duration-150 ${
+                        isSelected
+                          ? 'text-gray-900 dark:text-gray-50'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800'
                       }`}
-                      style={{
-                        background: selectedCategory === category.id
-                          ? category.bgColor
-                          : undefined,
-                        color: selectedCategory === category.id ? category.color : 'var(--text-secondary)',
-                        border: `1px solid ${selectedCategory === category.id ? category.color : 'rgba(107, 114, 128, 0.2)'}`
-                      }}
+                      style={isSelected ? {
+                        // Category hue drives only the tint and ring — text stays
+                        // theme-aware above so contrast holds in both modes.
+                        backgroundColor: `${category.color}1f`,
+                        borderColor: category.color
+                      } : undefined}
                     >
-                      <span>{category.icon}</span>
+                      <ChoreIcon emoji={category.icon} className="w-[18px] h-[18px]" />
                       <span>{category.label}</span>
-                      <span className="ml-1 opacity-70">({count})</span>
+                      <span
+                        className={`min-w-[1.375rem] rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums ${
+                          isSelected
+                            ? 'bg-white/70 text-gray-700 dark:bg-gray-900/40 dark:text-gray-200'
+                            : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                        }`}
+                      >
+                        {count}
+                      </span>
                     </button>
                   )
                 })}

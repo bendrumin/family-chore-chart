@@ -188,7 +188,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                         }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl">{category.icon}</span>
+                          <ChoreIcon emoji={category.icon} className="w-7 h-7" />
                           <div className="flex-1">
                             <div className="font-bold text-sm" style={{
                               color: formData.category === category.id ? category.color : 'var(--text-primary)'
