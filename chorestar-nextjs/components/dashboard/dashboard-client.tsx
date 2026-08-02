@@ -204,7 +204,7 @@ function DashboardContent({
   isAdmin,
 }: any) {
   const { settings } = useSettings()
-  const todaySnapshot = useTodaySnapshot(children)
+  const todaySnapshot = useTodaySnapshot(children, settings)
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&

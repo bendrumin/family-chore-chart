@@ -9,6 +9,8 @@ import { checkAchievements, checkForNewAchievements, loadEarnedAchievements, typ
 import { AchievementsDisplay } from '@/components/achievements/achievements-display'
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
+import { childWeekEarningsCents } from '@/lib/utils/earnings'
+import { getWeekStart } from '@/lib/utils/date-helpers'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 import {
@@ -76,14 +78,14 @@ export function InsightsTab() {
         supabase.from('children').select('*').eq('user_id', user!.id),
         supabase.from('chores').select('*').eq('is_active', true),
         supabase.from('chore_completions').select('*'),
-        supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user!.id).single()
+        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', user!.id).single()
       ])
 
       const children = childrenRes.data || []
       const chores = choresRes.data || []
       const completions = completionsRes.data || []
-      const dailyRewardCents = familySettingsRes.data?.daily_reward_cents || 7
-      const weeklyBonusCents = familySettingsRes.data?.weekly_bonus_cents || 0
+      const familySettings = familySettingsRes.data
+      const currentWeekStart = getWeekStart()
 
       if (children.length === 0 || chores.length === 0 || completions.length === 0) {
         setMetrics({ ...metrics, isLoading: false })
@@ -138,23 +140,28 @@ export function InsightsTab() {
           ? Math.round((childCompletions.length / totalPossible) * 100)
           : 0
 
-        const completionsPerDay = new Map<number, number>()
-        childCompletions.forEach(comp => {
-          const day = comp.day_of_week
-          if (day != null) {
-            completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
-          }
-        })
+        // Earnings are scoped to the current week to match the card's
+        // "Total earned this week" label, and follow the family's reward mode
+        // via the shared rules in lib/utils/earnings.ts.
+        const { earnedCents } = childWeekEarningsCents(
+          childChores,
+          childCompletions.filter(c => c.week_start === currentWeekStart),
+          familySettings
+        )
 
+        // Perfect days are all-time, but counted week by week — bucketing every
+        // completion by weekday would let one Monday's chores be credited again
+        // by the next Monday's.
         let perfectDayPattern = 0
-        for (let day = 0; day < 7; day++) {
-          const completionsForDay = completionsPerDay.get(day) || 0
-          if (completionsForDay >= childChores.length && childChores.length > 0) {
-            perfectDayPattern++
-          }
+        for (const ws of new Set(childCompletions.map(c => c.week_start))) {
+          perfectDayPattern += childWeekEarningsCents(
+            childChores,
+            childCompletions.filter(c => c.week_start === ws),
+            familySettings
+          ).perfectDays
         }
 
-        const totalEarnings = 0
+        const totalEarnings = earnedCents
         const streak = calculateStreak(childCompletions)
 
         return { totalEarnings, completionRate, perfectDays: perfectDayPattern, streak }

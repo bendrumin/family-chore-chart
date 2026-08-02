@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Trophy, Star, TrendingUp, DollarSign, Flame } from 'lucide-react'
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
+import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -131,39 +132,14 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         .eq('user_id', user?.user?.id ?? '')
         .single()
 
-      // Calculate total earnings using family settings
-      // Count days with any completions
-      const completionsPerDay = new Map<number, number>()
-      completions?.forEach(comp => {
-        const day = comp.day_of_week
-        if (day !== null) {
-          completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
-        }
-      })
-
-      // Count perfect days (days where ALL chores are completed)
-      let perfectDays = 0
-      for (let day = 0; day < 7; day++) {
-        const completionsForDay = completionsPerDay.get(day) || 0
-        if (completionsForDay >= chores.length) {
-          perfectDays++
-        }
-      }
-
-      // Calculate earnings based on reward mode
-      let totalEarnings: number
-      if (familySettings?.reward_mode === 'per_chore') {
-        const choreRewardMap = new Map(chores.map(c => [c.id, c.reward_cents || 0]))
-        totalEarnings = completions?.reduce((sum, comp) => {
-          return sum + (choreRewardMap.get(comp.chore_id) || 0)
-        }, 0) ?? 0
-      } else {
-        const dailyRewardCents = familySettings?.daily_reward_cents || 7
-        const weeklyBonusCents = familySettings?.weekly_bonus_cents || 0
-        const daysWithAnyCompletions = completionsPerDay.size
-        totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
-          (perfectDays === 7 ? weeklyBonusCents : 0)
-      }
+      // Earnings and perfect days both come from the shared rules so this card
+      // can't disagree with the dashboard hero. See lib/utils/earnings.ts.
+      const { earnedCents, perfectDays } = childWeekEarningsCents(
+        chores,
+        completions ?? [],
+        familySettings
+      )
+      const totalEarnings = earnedCents
 
       // Calculate completion rate based on perfect days (matching Vanilla JS logic)
       const completionRate = Math.round((perfectDays / 7) * 100)

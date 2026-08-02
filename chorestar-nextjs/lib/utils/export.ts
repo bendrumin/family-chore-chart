@@ -4,6 +4,7 @@
  */
 
 import type { Database } from '@/lib/supabase/database.types'
+import { childWeekEarningsCents } from '@/lib/utils/earnings'
 
 type Child = Database['public']['Tables']['children']['Row']
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -20,6 +21,7 @@ interface ExportOptions {
   endDate?: Date
   dailyRewardCents?: number
   weeklyBonusCents?: number
+  rewardMode?: string | null
 }
 
 /**
@@ -132,7 +134,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
  * Note: Requires jsPDF library to be loaded
  */
 export async function exportFamilyReportPDF(options: ExportOptions) {
-  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
+  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0, rewardMode = null } = options
 
   // Dynamically import jsPDF
   let jsPDF: any
@@ -213,32 +215,30 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
       childChores.some(chore => chore.id === c.chore_id)
     )
 
-    // Calculate earnings using family settings (matching Vanilla JS logic)
-    const completionsPerDay = new Map<number, number>()
-    childCompletions.forEach(comp => {
-      const day = comp.day_of_week
-      // Skip completions with null/undefined day_of_week
-      if (day != null) {
-        completionsPerDay.set(day, (completionsPerDay.get(day) || 0) + 1)
-      }
-    })
-
-    // Count perfect days (days where ALL chores are completed)
+    // Earnings and perfect days come from the shared rules so the PDF agrees
+    // with the dashboard, and honor reward_mode. See lib/utils/earnings.ts.
+    // Summed per week, since an export range can span several.
+    const rewardSettings = {
+      reward_mode: rewardMode ?? null,
+      daily_reward_cents: dailyRewardCents,
+      weekly_bonus_cents: weeklyBonusCents,
+    }
+    const weeksCovered = new Set(childCompletions.map(c => c.week_start))
+    let totalEarnings = 0
     let perfectDays = 0
-    for (let day = 0; day < 7; day++) {
-      const completionsForDay = completionsPerDay.get(day) || 0
-      if (completionsForDay >= childChores.length) {
-        perfectDays++
-      }
+    for (const ws of weeksCovered) {
+      const week = childWeekEarningsCents(
+        childChores,
+        childCompletions.filter(c => c.week_start === ws),
+        rewardSettings
+      )
+      totalEarnings += week.earnedCents
+      perfectDays += week.perfectDays
     }
 
-    // Calculate earnings: (days with any completions × daily_reward_cents) + weekly bonus if perfect week
-    const daysWithAnyCompletions = completionsPerDay.size
-    const totalEarnings = (daysWithAnyCompletions * dailyRewardCents) +
-      (perfectDays === 7 ? weeklyBonusCents : 0)
-
-    // Calculate completion rate based on perfect days (matching Vanilla JS logic)
-    const completionRate = Math.round((perfectDays / 7) * 100)
+    // Completion rate is perfect days out of the days the export covers.
+    const daysCovered = Math.max(1, weeksCovered.size) * 7
+    const completionRate = Math.round((perfectDays / daysCovered) * 100)
 
     // Child header
     doc.setFontSize(14)

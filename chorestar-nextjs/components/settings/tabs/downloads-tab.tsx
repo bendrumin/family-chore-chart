@@ -43,7 +43,7 @@ export function DownloadsTab() {
         supabase.from('children').select('*').eq('user_id', user.id),
         supabase.from('chores').select('*'),
         supabase.from('chore_completions').select('*'),
-        supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
+        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -58,6 +58,7 @@ export function DownloadsTab() {
         currencySymbol: getCurrencySymbol(),
         dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
         weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
+        rewardMode: familySettingsRes.data?.reward_mode ?? null,
       })
 
       toast.success('PDF exported successfully!')
@@ -84,7 +85,7 @@ export function DownloadsTab() {
         supabase.from('children').select('*').eq('user_id', user.id),
         supabase.from('chores').select('*'),
         supabase.from('chore_completions').select('*'),
-        supabase.from('family_settings').select('daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
+        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -99,6 +100,7 @@ export function DownloadsTab() {
         currencySymbol: getCurrencySymbol(),
         dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
         weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
+        rewardMode: familySettingsRes.data?.reward_mode ?? null,
       })
 
       toast.success('CSV exported successfully!')
