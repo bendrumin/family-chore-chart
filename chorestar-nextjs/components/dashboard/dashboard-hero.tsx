@@ -1,6 +1,7 @@
 'use client'
 
 import { Star, Flame } from 'lucide-react'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 
 interface DashboardHeroProps {
   familyName: string
@@ -10,15 +11,21 @@ interface DashboardHeroProps {
   isSharedMember?: boolean
 }
 
-function greeting(): string {
+/**
+ * Time-of-day greeting. The icons run sunrise → sun → sunset → moon so each
+ * slot is distinguishable at a glance; the old evening icon was 🌆 (cityscape
+ * at dusk), which renders as a dark skyline and read as night.
+ */
+function greeting(): { text: string; icon: string } {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning! ☀️'
-  if (h < 17) return 'Good afternoon! 👋'
-  if (h < 21) return 'Good evening! 🌆'
-  return 'Good night! 🌙'
+  if (h < 12) return { text: 'Good morning!', icon: '🌅' }
+  if (h < 17) return { text: 'Good afternoon!', icon: '☀️' }
+  if (h < 21) return { text: 'Good evening!', icon: '🌇' }
+  return { text: 'Good night!', icon: '🌙' }
 }
 
 export function DashboardHero({ familyName, done, total, earnedCents, isSharedMember }: DashboardHeroProps) {
+  const { text: greetingText, icon: greetingIcon } = greeting()
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
   const R = 52
   const C = 2 * Math.PI * R
@@ -52,7 +59,10 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
             </span>
           )}
         </div>
-        <div className="mt-0.5 text-base font-semibold text-white/90">{greeting()}</div>
+        <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold text-white/90">
+          <ChoreIcon emoji={greetingIcon} className="w-5 h-5" />
+          <span>{greetingText}</span>
+        </div>
 
         <div className="mt-2 text-4xl font-extrabold tracking-tight tabular-nums">
           {total === 0 ? (

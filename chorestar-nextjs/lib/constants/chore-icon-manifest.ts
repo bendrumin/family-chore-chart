@@ -1,6 +1,8 @@
 // Generated from OpenMoji 15.1.0 (CC BY-SA 4.0) — https://openmoji.org
 // Filenames of the bundled full-color chore icons under public/icons/chores-color/.
 const CHORE_ICON_FILES = new Set<string>([
+  '1F305',
+  '1F307',
   '1F30E',
   '1F319',
   '1F31F',
@@ -186,6 +188,7 @@ const CHORE_ICON_FILES = new Set<string>([
   '1FAD9',
   '1FAE7',
   '23F3',
+  '2600',
   '267B',
   '2699',
   '26BD',
