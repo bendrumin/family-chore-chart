@@ -7,8 +7,10 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          'border-transparent bg-blue-600 text-white hover:bg-blue-700',
+        // Follows the active theme. --primary-fill carries the accent hue and
+        // --primary-foreground the ink that's guaranteed to read on it, so a
+        // pale accent gets dark text rather than unreadable white.
+        default: 'border-transparent badge-accent',
         secondary:
           'border-transparent bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100',
         destructive:

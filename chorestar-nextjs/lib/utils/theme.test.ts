@@ -3,6 +3,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   THEME_COLORS,
   SEASONAL_THEMES_DATA,
@@ -297,6 +298,49 @@ t('every holiday declares at least 3 decorations, so all slots fill', () => {
 t('seasons declare no decorations', () => {
   for (const theme of Object.values(SEASONAL_THEMES_DATA).filter(x => !x.isHoliday)) {
     assert.equal(theme.decorativeIcons, undefined, `${theme.id} should have none`)
+  }
+})
+
+group('the accent fill pair is wired up and readable')
+
+t('the globals.css defaults clear AA, and match what is committed', () => {
+  // Read from the stylesheet so this fails if the defaults are edited to
+  // something unreadable, rather than trusting a copy of them here.
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  const pairs = [...css.matchAll(/--primary-fill:\s*(#[0-9a-f]{6});[\s\S]{0,120}?--primary-foreground:\s*(#[0-9a-f]{6});/gi)]
+  assert.equal(pairs.length, 2, `expected a light and a dark default, found ${pairs.length}`)
+  for (const [, fill, fg] of pairs) {
+    const r = contrastRatio(fill, fg)
+    assert.ok(r >= AA_NORMAL, `default ${fill} on ${fg} is only ${r.toFixed(2)}`)
+  }
+})
+
+t('the accent utility classes exist for the components that use them', () => {
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  for (const cls of ['.badge-accent', '.accent-fill']) {
+    assert.ok(css.includes(cls), `${cls} missing from globals.css`)
+  }
+  // Both must set the pair together — a fill with no ink is the original bug.
+  for (const block of ['.badge-accent {', '.accent-fill {']) {
+    const start = css.indexOf(block)
+    const body = css.slice(start, css.indexOf('}', start))
+    assert.ok(body.includes('var(--primary-fill)'), `${block} missing the fill`)
+    assert.ok(body.includes('var(--primary-foreground)'), `${block} missing the ink`)
+  }
+})
+
+t('components consuming the pair actually reference it', () => {
+  const files = [
+    '../../components/ui/badge.tsx',
+    '../../components/ui/checkbox.tsx',
+    '../../components/dashboard/dashboard-client.tsx',
+  ]
+  for (const f of files) {
+    const src = readFileSync(new URL(f, import.meta.url), 'utf8')
+    assert.ok(
+      /badge-accent|accent-fill|--primary-fill/.test(src),
+      `${f} no longer consumes the accent pair`
+    )
   }
 })
 

@@ -63,6 +63,17 @@
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --primary-light: #818cf8;
+
+    /* Accent fill + the ink that goes on it. Split from --primary because one
+       color can't serve both roles: --primary is used as a *text* color on the
+       page (43 usages) and must stay dark enough to read, while a filled chip
+       needs the true hue plus a matching foreground. A theme overrides both
+       together via lib/utils/resolve-theme.ts, which guarantees the pair clears
+       WCAG AA — pale accents like summer's #ffd700 get dark ink instead of
+       white. These defaults are the brand indigo, nudged until white text
+       passes 4.5:1 (#6366f1 was 4.47). */
+    --primary-fill: #5e61e5;
+    --primary-foreground: #ffffff;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
@@ -115,6 +126,11 @@
     --primary-dark: #6366f1;
     --primary-light: #a5b4fc;
 
+    /* Deeper than the dark-mode --primary so white ink still reads: #818cf8 is
+       only 2.98:1 against white, #4f46e5 is 6.29:1. */
+    --primary-fill: #4f46e5;
+    --primary-foreground: #ffffff;
+
     --bg-primary: #1f2937;
     --bg-secondary: #111827;
     --card-bg: rgba(31, 41, 55, 0.95);
@@ -153,6 +169,22 @@
 
   html {
     background-color: hsl(var(--background));
+  }
+
+  /* Accent-filled small elements — badges, checked boxes, active tab pills.
+     These follow the active theme via --primary-fill / --primary-foreground.
+     Kept as classes rather than inline styles so hover states work. */
+  .badge-accent {
+    background: var(--primary-fill);
+    color: var(--primary-foreground);
+  }
+  .badge-accent:hover {
+    filter: brightness(0.92);
+  }
+
+  .accent-fill {
+    background: var(--primary-fill);
+    color: var(--primary-foreground);
   }
 
   /* Glassmorphism utilities */

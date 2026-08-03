@@ -498,10 +498,9 @@ function DashboardContent({
                           onClick={() => setActiveTab('chores')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'chores'
-                              ? 'text-white shadow-md'
+                              ? 'accent-fill shadow-md'
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
-                          style={activeTab === 'chores' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
                           <ListTodo className="w-4 h-4" aria-hidden="true" />
                           Chores
@@ -514,10 +513,9 @@ function DashboardContent({
                           onClick={() => setActiveTab('routines')}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold text-sm transition-all ${
                             activeTab === 'routines'
-                              ? 'text-white shadow-md'
+                              ? 'accent-fill shadow-md'
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
-                          style={activeTab === 'routines' ? { background: 'var(--gradient-primary)' } : undefined}
                         >
                           <Repeat className="w-4 h-4" aria-hidden="true" />
                           Routines
