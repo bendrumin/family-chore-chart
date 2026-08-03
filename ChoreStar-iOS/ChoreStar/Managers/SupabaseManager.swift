@@ -671,33 +671,76 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func signUp(email: String, password: String) async throws {
-        #if canImport(Supabase)
-        guard let client = client else {
-            throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
+    private struct SignUpResponse: Codable {
+        let success: Bool?
+        let error: String?
+    }
+
+    /// Creates a parent account through the web API instead of calling Supabase
+    /// directly.
+    ///
+    /// The `profiles` row must be inserted with the service-role key, which
+    /// cannot ship in the app: right after signUp there is no session yet
+    /// (email confirmation is required), so a client-side insert is rejected by
+    /// the profiles `auth.uid() = id` policy with 42501. Calling
+    /// `client.auth.signUp` from the app therefore created an auth user with NO
+    /// profile — no family name, no `kid_login_code`, so kid login could never
+    /// work for that family. Four accounts were left in that state before this
+    /// was caught. POST /api/auth/signup creates the auth user and the profile
+    /// together, and adds server-side email/password validation, signup rate
+    /// limiting, and user-facing error messages.
+    ///
+    /// Never returns a session — the address has to be confirmed by email
+    /// first, so callers should prompt the user to check their inbox.
+    func signUp(email: String, password: String, familyName: String) async throws {
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/auth/signup") else {
+            throw NSError(domain: "SupabaseManager", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "Something went wrong. Please try again."])
         }
-        
-        let result = try await client.auth.signUp(
-            email: email,
-            password: password
-        )
-        
-        if let session = result.session {
-            await MainActor.run {
-                self.debugUserId = session.user.id.uuidString
-                self.currentUserEmail = session.user.email ?? email
-                self.isAuthenticated = true
-                debugLastError = "Sign-up successful, user ID: \(session.user.id.uuidString)"
-            }
-            await loadRemoteData()
-        } else {
-            await MainActor.run {
-                debugLastError = "Sign-up successful — check your email to confirm your account."
-            }
+
+        let trimmedFamily = familyName.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONEncoder().encode([
+            "email": email,
+            "password": password,
+            // The route falls back to "My Family" when this is blank.
+            "familyName": trimmedFamily,
+        ])
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw NSError(domain: "SupabaseManager", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "Couldn't reach ChoreStar. Check your connection."])
         }
-        #else
-        throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Supabase not available"])
-        #endif
+
+        guard let http = response as? HTTPURLResponse else {
+            throw NSError(domain: "SupabaseManager", code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "Couldn't reach ChoreStar. Check your connection."])
+        }
+
+        let decoded = try? JSONDecoder().decode(SignUpResponse.self, from: data)
+
+        guard http.statusCode == 200, decoded?.success == true else {
+            let message: String
+            if http.statusCode == 429 {
+                message = "Too many signup attempts. Please wait a while and try again."
+            } else {
+                message = decoded?.error ?? "Unable to create your account. Please try again."
+            }
+            await MainActor.run { debugLastError = "Sign-up failed: \(message)" }
+            throw NSError(domain: "SupabaseManager", code: http.statusCode,
+                          userInfo: [NSLocalizedDescriptionKey: message])
+        }
+
+        await MainActor.run {
+            debugLastError = "Sign-up successful — check your email to confirm your account."
+        }
     }
     
     func resetPassword(email: String) async throws {

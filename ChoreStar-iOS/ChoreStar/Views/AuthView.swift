@@ -12,6 +12,7 @@ struct AuthView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
+    @State private var familyName: String = ""
     @State private var authMode: AuthMode = .signIn
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -170,6 +171,38 @@ struct AuthView: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.choreStarPrimary.opacity(0.2), lineWidth: 1)
                             )
+
+                        // Stated up front rather than after a failed submit —
+                        // these are the server's rules (lib/utils/validation.ts).
+                        Text("At least 8 characters, with an uppercase letter, a lowercase letter, and a number.")
+                            .font(.caption)
+                            .foregroundColor(.choreStarTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 4) {
+                            Text("Family Name")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.choreStarTextSecondary)
+                            Text("(optional)")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary.opacity(0.7))
+                        }
+
+                        // Web parity: this is what the dashboard header shows.
+                        // iOS never collected it, so every iOS family was unnamed.
+                        TextField("e.g. The Smith Family", text: $familyName)
+                            .textContentType(.organizationName)
+                            .accessibilityIdentifier("auth.familyNameField")
+                            .padding()
+                            .background(Color.choreStarBackground)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.choreStarPrimary.opacity(0.2), lineWidth: 1)
+                            )
                     }
                 }
             }
@@ -307,10 +340,26 @@ struct AuthView: View {
     
     // MARK: - Helpers
     
+    /// Mirrors validatePassword in lib/utils/validation.ts. The server rejects
+    /// anything weaker, so accepting it here only produced a round-trip failure.
+    private func passwordProblem(_ value: String) -> String? {
+        if value.count < 8 { return "Password must be at least 8 characters." }
+        if value.range(of: "[A-Z]", options: .regularExpression) == nil {
+            return "Password must contain an uppercase letter."
+        }
+        if value.range(of: "[a-z]", options: .regularExpression) == nil {
+            return "Password must contain a lowercase letter."
+        }
+        if value.range(of: "[0-9]", options: .regularExpression) == nil {
+            return "Password must contain a number."
+        }
+        return nil
+    }
+
     private var isFormValid: Bool {
         guard !email.isEmpty, !password.isEmpty else { return false }
         if authMode == .signUp {
-            return !confirmPassword.isEmpty && password == confirmPassword && password.count >= 6
+            return !confirmPassword.isEmpty && password == confirmPassword && passwordProblem(password) == nil
         }
         return true
     }
@@ -324,8 +373,8 @@ struct AuthView: View {
                 errorMessage = "Passwords don't match."
                 return
             }
-            guard password.count >= 6 else {
-                errorMessage = "Password must be at least 6 characters."
+            if let problem = passwordProblem(password) {
+                errorMessage = problem
                 return
             }
         }
@@ -344,12 +393,12 @@ struct AuthView: View {
                 }
             } else {
                 do {
-                    try await manager.signUp(email: email, password: password)
+                    try await manager.signUp(email: email, password: password, familyName: familyName)
                     await MainActor.run {
-                        if !manager.isAuthenticated {
-                            successMessage = "Account created! Check your email to confirm, then sign in."
-                            authMode = .signIn
-                        }
+                        // Signup never returns a session — the address has to be
+                        // confirmed first — so always send them to the inbox.
+                        successMessage = "Account created! Check your email to confirm, then sign in."
+                        authMode = .signIn
                         isLoading = false
                     }
                 } catch {
