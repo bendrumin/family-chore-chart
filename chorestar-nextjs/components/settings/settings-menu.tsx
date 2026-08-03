@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, LogOut, Loader2, ChevronRight } from 'lucide-react'
+import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, UserCog, LogOut, Loader2, ChevronRight } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
@@ -16,10 +16,11 @@ import { ChoresTab } from '@/components/settings/tabs/chores-tab'
 import { AppearanceTab } from '@/components/settings/tabs/appearance-tab'
 import { DownloadsTab } from '@/components/settings/tabs/downloads-tab'
 import { BillingTab } from '@/components/settings/tabs/billing-tab'
+import { AccountTab } from '@/components/settings/tabs/account-tab'
 
 const InsightsTab = lazy(() => import('@/components/settings/tabs/insights-tab').then(m => ({ default: m.InsightsTab })))
 
-type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads' | 'billing'
+type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads' | 'billing' | 'account'
 
 const TABS = [
   { id: 'family' as SettingsTab, label: 'Family', icon: Users },
@@ -28,6 +29,9 @@ const TABS = [
   { id: 'insights' as SettingsTab, label: 'Insights', icon: BarChart3 },
   { id: 'downloads' as SettingsTab, label: 'Downloads', icon: FileDown },
   { id: 'billing' as SettingsTab, label: 'Billing', icon: CreditCard },
+  // Account deletion lives here. The sidebar Sign Out button is hidden on
+  // mobile, so a tab is the only placement reachable on every screen size.
+  { id: 'account' as SettingsTab, label: 'Account', icon: UserCog },
 ]
 
 interface SettingsMenuProps {
@@ -131,6 +135,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
               )}
               {activeTab === 'downloads' && <DownloadsTab />}
               {activeTab === 'billing' && <BillingTab />}
+              {activeTab === 'account' && <AccountTab />}
             </div>
           </div>
         </DialogContent>

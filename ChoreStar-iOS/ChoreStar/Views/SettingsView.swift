@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
     @State private var showingWhatsNew = false
+    @State private var showingDeleteAccount = false
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
 
@@ -157,8 +158,19 @@ struct SettingsView: View {
                                 .foregroundColor(.choreStarPrimary)
                         }
                     }
+
+                    // App Store Guideline 5.1.1(v) requires account deletion to be
+                    // reachable inside the app. It lives here, in Account, because
+                    // that's the first place anyone (including a reviewer) looks.
+                    Button(role: .destructive, action: { showingDeleteAccount = true }) {
+                        HStack {
+                            Text("Delete Account")
+                            Spacer()
+                            Image(systemName: "trash")
+                        }
+                    }
                 }
-                
+
                 Section("Family") {
                     NavigationLink {
                         FamilySharingView()
@@ -257,6 +269,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingWhatsNew) {
                 WhatsNewView()
+            }
+            .sheet(isPresented: $showingDeleteAccount) {
+                DeleteAccountView()
             }
         }
     }
@@ -532,4 +547,225 @@ private struct ThemePreviewCard: View {
     SettingsView()
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
+}
+
+/// Permanent account deletion — App Store Guideline 5.1.1(v).
+///
+/// Apple requires deletion to be available in-app and says that "only offering
+/// to temporarily deactivate or disable an account is insufficient", so this
+/// really destroys the account. It does allow confirmation steps to prevent
+/// accidents, which is what the typed word below is for: the whole family's
+/// chore history goes with it, and there is no undo.
+struct DeleteAccountView: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.dismiss) private var dismiss
+
+    /// Must be typed exactly. Autocorrect and auto-capitalization are disabled
+    /// on the field so iOS can't "helpfully" fill this in for the user.
+    private static let confirmWord = "DELETE"
+
+    @State private var confirmation = ""
+    @State private var isDeleting = false
+    @State private var errorMessage: String?
+    @State private var billingWarning = false
+
+    private var canDelete: Bool {
+        confirmation.trimmingCharacters(in: .whitespaces).uppercased() == Self.confirmWord && !isDeleting
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    header
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("What gets deleted")
+                            .font(.headline)
+                            .foregroundColor(.choreStarTextPrimary)
+
+                        ForEach(Self.deletedItems, id: \.self) { item in
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.footnote)
+                                    .foregroundColor(.choreStarDanger)
+                                    .padding(.top, 2)
+                                Text(item)
+                                    .font(.subheadline)
+                                    .foregroundColor(.choreStarTextSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+
+                    if manager.isPremium {
+                        noticeBox(
+                            icon: "creditcard",
+                            text: "Your ChoreStar subscription will be cancelled. You won't be billed again."
+                        )
+                    }
+
+                    if manager.familyMembers.count > 1 || manager.isSharedMember {
+                        noticeBox(
+                            icon: "person.2",
+                            text: manager.isSharedMember
+                                ? "You'll be removed from the family you joined. The family's own data stays with its owner."
+                                : "Anyone sharing this family loses access to its children, chores, and routines."
+                        )
+                    }
+
+                    confirmField
+
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.choreStarDanger)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    deleteButton
+
+                    Button("Keep My Account") {
+                        dismiss()
+                    }
+                    .font(.headline)
+                    .foregroundColor(.choreStarPrimary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .disabled(isDeleting)
+                }
+                .padding(24)
+            }
+            .background(Color.choreStarBackground.ignoresSafeArea())
+            .navigationTitle("Delete Account")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .disabled(isDeleting)
+                }
+            }
+            .interactiveDismissDisabled(isDeleting)
+            .alert("Account deleted", isPresented: $billingWarning) {
+                Button("OK") { dismiss() }
+            } message: {
+                Text("Your account is gone, but we couldn't confirm your subscription was cancelled. Please email hi@chorestar.app so we can check your billing.")
+            }
+        }
+    }
+
+    private static let deletedItems = [
+        "Your login and profile",
+        "Every child, including their avatars and PINs",
+        "All chores and your family's completion history",
+        "All routines and their step-by-step history",
+        "Allowance and earnings totals",
+        "Achievement badges and streaks",
+        "Family sharing and your kid login code",
+    ]
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 34))
+                .foregroundColor(.choreStarDanger)
+
+            Text("This permanently deletes your account")
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.choreStarTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Your family's chore data is erased from our servers and can't be recovered. There's no way to undo this.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func noticeBox(icon: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .foregroundColor(.choreStarAccent)
+                .padding(.top, 2)
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.choreStarCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var confirmField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Type \(Self.confirmWord) to confirm")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.choreStarTextPrimary)
+
+            TextField(Self.confirmWord, text: $confirmation)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+                .textFieldStyle(.plain)
+                .padding(14)
+                .background(Color.choreStarCardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(canDelete ? Color.choreStarDanger : Color.choreStarTextSecondary.opacity(0.25), lineWidth: 1.5)
+                )
+                .disabled(isDeleting)
+                .accessibilityLabel("Type \(Self.confirmWord) to confirm account deletion")
+        }
+    }
+
+    private var deleteButton: some View {
+        Button(action: performDelete) {
+            HStack(spacing: 8) {
+                if isDeleting {
+                    ProgressView()
+                        .tint(.white)
+                }
+                Text(isDeleting ? "Deleting…" : "Delete My Account")
+                    .font(.headline)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            // White on #dc2626 rather than the lighter #ef4444, which falls
+            // short of 4.5:1 as a filled button.
+            .foregroundColor(.white)
+            .background(canDelete ? Color.choreStarDangerStrong : Color.choreStarTextSecondary.opacity(0.35))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .disabled(!canDelete)
+    }
+
+    private func performDelete() {
+        guard canDelete else { return }
+        isDeleting = true
+        errorMessage = nil
+
+        Task {
+            let result = await manager.deleteAccount(confirmation: Self.confirmWord)
+            await MainActor.run {
+                isDeleting = false
+                switch result {
+                case .deleted(let billingCleanupFailed):
+                    if billingCleanupFailed {
+                        // Hold the sheet open so this can't be missed.
+                        billingWarning = true
+                    } else {
+                        // The manager already cleared auth state, so dismissing
+                        // drops the user back on the sign-in screen.
+                        dismiss()
+                    }
+                case .failure(let message):
+                    errorMessage = message
+                }
+            }
+        }
+    }
 }

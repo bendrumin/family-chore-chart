@@ -741,7 +741,89 @@ class SupabaseManager: ObservableObject {
         debugLastError = "Supabase not available for sign out"
         #endif
     }
-    
+
+    // MARK: - Account Deletion
+
+    /// Outcome of a delete request, mirroring PinVerifyOutcome above.
+    /// `billingCleanupFailed` means the account is gone but a Stripe subscription
+    /// may still be live, so the user needs to be told rather than left to find
+    /// out on their next statement.
+    enum AccountDeletionOutcome {
+        case deleted(billingCleanupFailed: Bool)
+        case failure(String)
+    }
+
+    private struct AccountDeleteResponse: Codable {
+        let success: Bool?
+        let billingCleanupFailed: Bool?
+        let error: String?
+    }
+
+    /// Permanently deletes the signed-in account and all of its family data.
+    ///
+    /// Required by App Store Guideline 5.1.1(v). Deletion runs server-side
+    /// (POST /api/account/delete) because removing an auth user needs the
+    /// service-role key, which must never ship in the app binary. The user's
+    /// access token is sent as a bearer token so the server can prove who is
+    /// asking; the same endpoint backs the web app's Settings flow.
+    ///
+    /// Signs out locally on success. Returns `.deleted` with a billing warning
+    /// flag, or `.failure` with a user-facing message.
+    func deleteAccount(confirmation: String) async -> AccountDeletionOutcome {
+        #if canImport(Supabase)
+        guard let client = client else {
+            return .failure("Something went wrong. Please try again.")
+        }
+
+        let accessToken: String
+        do {
+            accessToken = try await client.auth.session.accessToken
+        } catch {
+            return .failure("Your session expired. Please sign in again and retry.")
+        }
+
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/account/delete") else {
+            return .failure("Something went wrong. Please try again.")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONEncoder().encode(["confirm": confirmation])
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure("Couldn't reach ChoreStar. Check your connection.")
+            }
+
+            let decoded = try? JSONDecoder().decode(AccountDeleteResponse.self, from: data)
+
+            guard httpResponse.statusCode == 200, decoded?.success == true else {
+                if httpResponse.statusCode == 429 {
+                    return .failure("Too many attempts. Please wait a few minutes and try again.")
+                }
+                return .failure(decoded?.error ?? "We couldn't delete your account. Please try again.")
+            }
+
+            await MainActor.run {
+                debugLastError = "Account deleted"
+            }
+
+            // The auth user no longer exists, so signOut() throwing is expected
+            // and harmless — the local state reset below is what matters.
+            signOut()
+
+            return .deleted(billingCleanupFailed: decoded?.billingCleanupFailed == true)
+        } catch {
+            return .failure("Couldn't reach ChoreStar. Check your connection.")
+        }
+        #else
+        return .failure("Supabase not available.")
+        #endif
+    }
+
     func changePassword(newPassword: String) async throws {
         #if canImport(Supabase)
         guard let client = client else {

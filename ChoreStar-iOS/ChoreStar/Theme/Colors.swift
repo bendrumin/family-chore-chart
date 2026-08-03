@@ -10,6 +10,10 @@ extension Color {
     static let choreStarSuccess = Color(red: 0.063, green: 0.725, blue: 0.506)      // #10b981 (Emerald)
     static let choreStarWarning = Color(red: 0.961, green: 0.620, blue: 0.043)      // #f59e0b (Amber)
     static let choreStarDanger = Color(red: 0.937, green: 0.267, blue: 0.267)       // #ef4444 (Red)
+    /// Darker red for destructive buttons that carry white text. #ef4444 is only
+    /// 3.76:1 against white — fine for a tinted label, short of WCAG AA (4.5:1)
+    /// for a filled button. This one is 4.83:1.
+    static let choreStarDangerStrong = Color(red: 0.863, green: 0.149, blue: 0.149) // #dc2626 (Red 600)
 
     // UI colors (adapt automatically to dark mode)
     static let choreStarBackground = Color(UIColor.systemGroupedBackground)

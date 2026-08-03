@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.7.0'
+export const LATEST_CHANGELOG_VERSION = '2026.8.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.8.0': {
+    version: '2026.8.0',
+    date: 'August 2026',
+    title: 'Your Colors, Your Account',
+    features: [
+      {
+        icon: '🎨',
+        title: 'Pick Any Accent Color',
+        description: 'Settings › Appearance now has a full color picker. Whatever you choose recolors the whole dashboard — header, buttons, progress ring, and the day checkboxes on every chore. Seasonal themes each bring their own color too, and every one is contrast-checked so text stays readable.',
+      },
+      {
+        icon: '⚙️',
+        title: 'New Account Tab',
+        description: 'Your sign-in email and account controls now live together under Settings › Account — including the option to permanently delete your account and all of your family\'s data, if you ever want to.',
+      },
+    ],
+  },
   '2026.7.0': {
     version: '2026.7.0',
     date: 'July 2026',

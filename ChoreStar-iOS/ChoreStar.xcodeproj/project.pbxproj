@@ -551,7 +551,7 @@
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChoreStarWidgets/Info.plist;
@@ -563,7 +563,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStar.ChoreStarWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -584,7 +584,7 @@
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChoreStarWidgets/Info.plist;
@@ -596,7 +596,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStar.ChoreStarWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -776,7 +776,7 @@
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoreStar/Preview Content\"";
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
 				ENABLE_PREVIEWS = YES;
@@ -793,7 +793,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -811,7 +811,7 @@
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"ChoreStar/Preview Content\"";
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
 				ENABLE_PREVIEWS = YES;
@@ -828,7 +828,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
