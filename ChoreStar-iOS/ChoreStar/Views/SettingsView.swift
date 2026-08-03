@@ -734,10 +734,11 @@ struct DeleteAccountView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            // White on #dc2626 rather than the lighter #ef4444, which falls
-            // short of 4.5:1 as a filled button.
-            .foregroundColor(.white)
-            .background(canDelete ? Color.choreStarDangerStrong : Color.choreStarTextSecondary.opacity(0.35))
+            // Enabled: white on #dc2626 rather than the lighter #ef4444, which
+            // falls short of 4.5:1 as a filled button. Disabled: dark ink on a
+            // pale fill — white on mid-grey was unreadable.
+            .foregroundColor(canDelete ? .white : .choreStarTextSecondary)
+            .background(canDelete ? Color.choreStarDangerStrong : Color.choreStarTextSecondary.opacity(0.14))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .disabled(!canDelete)
