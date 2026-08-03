@@ -166,18 +166,18 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
                   aria-pressed={completed}
                   className={`h-14 sm:h-16 rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 font-bold touch-manipulation ${
                     completed
-                      ? 'text-white hover:scale-110 active:scale-95 shadow-md'
+                      ? 'accent-fill hover:scale-110 active:scale-95 shadow-md'
                       : 'bg-white dark:bg-gray-700 hover:scale-105 hover:shadow-md active:scale-95 border border-gray-200 dark:border-gray-600'
                   }`}
-                  style={{
-                    ...(completed ? {
-                      background: 'var(--gradient-success)',
-                      boxShadow: 'var(--shadow-md)'
-                    } : {})
-                  }}
+                  style={completed ? { boxShadow: 'var(--shadow-md)' } : undefined}
                   title={`${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`}
                 >
-                  <div className={`text-xs font-bold ${completed ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                  {/* A completed cell is the theme accent, via .accent-fill. The
+                      old fixed green was only 3.77:1 against its hardcoded white
+                      text, and clashed with warm themes. currentColor here means
+                      the label and tick follow --primary-foreground, so they stay
+                      readable on a pale accent where white would vanish. */}
+                  <div className={`text-xs font-bold ${completed ? '' : 'text-gray-700 dark:text-gray-300'}`}>
                     {day.dayName}
                   </div>
                   {completed && <Check className="w-4 h-4 stroke-[2.5]" />}

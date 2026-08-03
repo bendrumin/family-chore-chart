@@ -127,10 +127,10 @@
     /* Solid accent surfaces. These kept their --gradient-* names so the ~47
        existing call sites didn't all need editing, but they are no longer
        gradients: a solid fill has a computable readable foreground, a two-hue
-       ramp does not. Pair --gradient-primary with --primary-foreground. */
+       ramp does not. Pair --gradient-primary with --primary-foreground.
+       --gradient-success/-warning are gone: the only consumer was the completed
+       day cell, which now follows the theme accent instead of a fixed green. */
     --gradient-primary: var(--primary-fill);
-    --gradient-success: #059669;
-    --gradient-warning: #b45309;
     --gradient-bg: #ffffff;
 
     /* Tailwind Compatibility */

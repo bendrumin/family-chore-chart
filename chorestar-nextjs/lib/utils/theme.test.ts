@@ -639,5 +639,20 @@ t('the hero derives its ink instead of hardcoding white', () => {
   assert.ok(code.includes("color: 'var(--primary-foreground)'"), 'hero ink is not derived')
 })
 
+t('a completed day cell follows the theme, with no hardcoded green or white', () => {
+  const raw = readFileSync(new URL('../../components/chores/chore-card.tsx', import.meta.url), 'utf8')
+  const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  assert.ok(!src.includes('gradient-success'), 'still uses the fixed green')
+  assert.ok(!/text-white/.test(src), 'still hardcodes white on the completed cell')
+  assert.ok(src.includes('accent-fill'), 'completed cell is not on the accent pair')
+})
+
+t('the retired success/warning vars are gone from globals.css', () => {
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  for (const dead of ['--gradient-success:', '--gradient-warning:']) {
+    assert.ok(!css.includes(dead), `${dead} is still defined but nothing reads it`)
+  }
+})
+
 console.log(`\n${passed} passed, ${failed} failed\n`)
 if (failed > 0) process.exit(1)
