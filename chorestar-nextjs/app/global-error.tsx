@@ -27,8 +27,8 @@ export default function GlobalError({
           justifyContent: 'center',
           padding: '1rem',
           background: isDark
-            ? 'linear-gradient(135deg, #111827 0%, #1f2937 100%)'
-            : 'linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%)',
+            ? 'linear-gradient(180deg, #111827 0%, #1f2937 100%)'
+            : 'linear-gradient(180deg, #eef2ff 0%, #faf5ff 100%)',
           fontFamily: 'system-ui, -apple-system, sans-serif'
         }}>
           <div style={{
@@ -63,7 +63,7 @@ export default function GlobalError({
               style={{
                 width: '100%',
                 padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)',
                 color: 'white',
                 fontWeight: '600',
                 borderRadius: '0.5rem',

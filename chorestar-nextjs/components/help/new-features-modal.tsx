@@ -95,7 +95,7 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
                 {/* Version Header with Gradient Intro */}
                 <div className="mb-6 pb-6">
                   <div className="text-center p-6 rounded-xl mb-6 relative overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, var(--primary), #8b5cf6)',
+                    background: 'linear-gradient(180deg, var(--primary), #8b5cf6)',
                     color: 'white'
                   }}>
                     <div className="inline-block px-4 py-2 mb-3 rounded-full text-sm font-semibold" style={{
@@ -135,7 +135,7 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
                         <div 
                           className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
                           style={{
-                            background: 'linear-gradient(90deg, var(--primary), #8b5cf6)'
+                            background: 'linear-gradient(180deg, var(--primary), #8b5cf6)'
                           }}
                         />
                         

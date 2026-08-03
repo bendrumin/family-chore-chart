@@ -101,14 +101,25 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     const root = document.documentElement
     const active = resolveActiveTheme(customTheme)
 
-    // Drop any seasonal class from a previous theme, on both html and body.
+    // The `seasonal-<id>` class is deliberately NOT applied.
+    //
+    // globals.css carries a second, entirely CSS-driven seasonal system keyed on
+    // that class, and it paints full-bleed surfaces with !important:
+    //   html.seasonal-summer      { background: var(--seasonal-bg) !important }
+    //   html[class*="seasonal-"]  { --header-gradient: var(--seasonal-gradient) }
+    //   header.glass              { background: var(--header-gradient) !important }
+    // With summer's #fffbeb page tint and #f59e0b header, that is what turned the
+    // dashboard yellow. Making the JS accent-only wasn't enough while the class
+    // was still being applied, because the CSS path is independent of it.
+    //
+    // Removing the class leaves those selectors unmatched, so all of it is inert.
+    // Themes now reach the UI solely through the inline accent properties below.
     for (const c of document.body.className.split(' ').filter(c => c.startsWith('seasonal-'))) {
       document.body.classList.remove(c)
       root.classList.remove(c)
     }
 
-    // A theme never paints a full-bleed surface, so clear anything an older
-    // build left behind and never set these again.
+    // Strip any surface property an older build wrote, and never set them again.
     for (const name of RETIRED_THEMED_SURFACE_VARS) root.style.removeProperty(name)
 
     if (!active) {
@@ -117,8 +128,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       return
     }
 
-    document.body.classList.add(`seasonal-${active.id}`)
-    root.classList.add(`seasonal-${active.id}`)
+    // Inert marker — no CSS matches it. Useful for inspecting the active theme.
     root.setAttribute('data-seasonal-theme', active.id)
 
     for (const [name, value] of Object.entries(themeCssVars(active.colors, isDark))) {

@@ -63,7 +63,7 @@ export async function POST(request: Request) {
           subject: `📱 New iOS TestFlight Signup: ${name || email}`,
           html: `
 <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+  <div style="background: linear-gradient(180deg, #6366f1, #8b5cf6); color: white; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
     <h1 style="margin: 0; font-size: 22px;">📱 New TestFlight Signup</h1>
   </div>
   <div style="background: #f8f9fa; padding: 24px; border-radius: 0 0 12px 12px;">

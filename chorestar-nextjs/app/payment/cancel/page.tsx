@@ -33,7 +33,7 @@ export default function PaymentCancelPage() {
           <Link
             href="/dashboard"
             className="flex items-center justify-center gap-2 w-full px-6 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+            style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Dashboard

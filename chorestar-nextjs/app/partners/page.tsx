@@ -299,7 +299,7 @@ export default function PartnersPage() {
                 <div className="mt-4 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/20">
                   <p className="text-xs text-gray-600 dark:text-gray-300">
                     <strong>Gradient:</strong>{' '}
-                    <code className="bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded text-xs">linear-gradient(135deg, #6366f1, #8b5cf6)</code>
+                    <code className="bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded text-xs">linear-gradient(180deg, #6366f1, #8b5cf6)</code>
                   </p>
                 </div>
               </div>

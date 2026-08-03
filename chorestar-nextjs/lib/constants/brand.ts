@@ -1,4 +1,4 @@
-export const GRADIENT = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+export const GRADIENT = 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
 
 export const GRADIENT_TEXT = {
   background: GRADIENT,

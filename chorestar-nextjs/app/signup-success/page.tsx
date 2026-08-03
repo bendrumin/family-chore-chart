@@ -66,7 +66,7 @@ export default function SignupSuccessPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+      background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
     }}>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -122,7 +122,7 @@ export default function SignupSuccessPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full mb-4 px-6 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg hover:opacity-90 text-center"
-            style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+            style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             Open {emailProvider === 'gmail' ? 'Gmail' : emailProvider === 'outlook' ? 'Outlook' : emailProvider === 'yahoo' ? 'Yahoo Mail' : 'iCloud Mail'}
           </a>

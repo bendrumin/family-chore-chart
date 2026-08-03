@@ -94,9 +94,9 @@
     --radius-xl: 1.5rem;      /* 24px */
 
     /* Professional Gradients */
-    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    --gradient-primary: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
+    --gradient-success: linear-gradient(180deg, #10b981 0%, #06b6d4 100%);
+    --gradient-warning: linear-gradient(180deg, #f59e0b 0%, #f97316 100%);
     --gradient-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 
     /* Tailwind Compatibility */
@@ -126,7 +126,7 @@
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
 
-    --gradient-bg: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    --gradient-bg: linear-gradient(180deg, #111827 0%, #1f2937 100%);
 
     /* Tailwind Dark */
     --background: 222.2 84% 4.9%;
@@ -322,17 +322,9 @@
     }
   }
 
-  /* Respect user's motion preferences for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
+  /* Reduced-motion handling lives in the single @media block near the end of
+     this file — see "Reduced Motion Support". This block held a byte-identical
+     copy of the same universal rule. */
 }
 
   /* Dialog Content Styles */
@@ -341,7 +333,7 @@
     max-height: calc(100vh - 2rem);
     height: auto;
     min-height: 0; /* mobile: don't force a tall box on short viewports */
-    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
   }
 
   @media (min-width: 768px) {
@@ -351,27 +343,27 @@
   }
 
   .dark .dialog-content-settings {
-    background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
   }
 
   /* Dialog Content Background - Common modal background */
   .dialog-content-bg {
-    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   .dark .dialog-content-bg {
-    background: linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
   }
 
   /* Card Background - Glass effect */
   .card-bg-glass {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%);
   }
 
   .dark .card-bg-glass {
-    background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%);
+    background: linear-gradient(180deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%);
   }
 
   /* Input Background - Glass effect */
@@ -515,119 +507,119 @@ html.seasonal-christmas,
 body.seasonal-christmas {
   --seasonal-bg: #fef2f2;
   --seasonal-accent: #dc2626;
-  --seasonal-gradient: linear-gradient(135deg, #dc2626, #b91c1c);
+  --seasonal-gradient: linear-gradient(180deg, #dc2626, #b91c1c);
 }
 
 html.seasonal-halloween,
 body.seasonal-halloween {
   --seasonal-bg: #fffbeb;
   --seasonal-accent: #d97706;
-  --seasonal-gradient: linear-gradient(135deg, #ea580c, #f97316);
+  --seasonal-gradient: linear-gradient(180deg, #ea580c, #f97316);
 }
 
 html.seasonal-easter,
 body.seasonal-easter {
   --seasonal-bg: #fdf2f8;
   --seasonal-accent: #ec4899;
-  --seasonal-gradient: linear-gradient(135deg, #ec4899, #f472b6);
+  --seasonal-gradient: linear-gradient(180deg, #ec4899, #f472b6);
 }
 
 html.seasonal-summer,
 body.seasonal-summer {
   --seasonal-bg: #fffbeb;
   --seasonal-accent: #f59e0b;
-  --seasonal-gradient: linear-gradient(135deg, #f59e0b, #fbbf24);
+  --seasonal-gradient: linear-gradient(180deg, #f59e0b, #fbbf24);
 }
 
 html.seasonal-spring,
 body.seasonal-spring {
   --seasonal-bg: #f0fdf4;
   --seasonal-accent: #22c55e;
-  --seasonal-gradient: linear-gradient(135deg, #22c55e, #4ade80);
+  --seasonal-gradient: linear-gradient(180deg, #22c55e, #4ade80);
 }
 
 html.seasonal-fall,
 body.seasonal-fall {
   --seasonal-bg: #fffbeb;
   --seasonal-accent: #ea580c;
-  --seasonal-gradient: linear-gradient(135deg, #ea580c, #fb923c);
+  --seasonal-gradient: linear-gradient(180deg, #ea580c, #fb923c);
 }
 
 html.seasonal-winter,
 body.seasonal-winter {
   --seasonal-bg: #eff6ff;
   --seasonal-accent: #3b82f6;
-  --seasonal-gradient: linear-gradient(135deg, #3b82f6, #60a5fa);
+  --seasonal-gradient: linear-gradient(180deg, #3b82f6, #60a5fa);
 }
 
 html.seasonal-valentine,
 body.seasonal-valentine {
   --seasonal-bg: #fdf2f8;
   --seasonal-accent: #ec4899;
-  --seasonal-gradient: linear-gradient(135deg, #ec4899, #f472b6);
+  --seasonal-gradient: linear-gradient(180deg, #ec4899, #f472b6);
 }
 
 html.seasonal-stPatricks,
 body.seasonal-stPatricks {
   --seasonal-bg: #f0fdf4;
   --seasonal-accent: #059669;
-  --seasonal-gradient: linear-gradient(135deg, #059669, #10b981);
+  --seasonal-gradient: linear-gradient(180deg, #059669, #10b981);
 }
 
 html.seasonal-thanksgiving,
 body.seasonal-thanksgiving {
   --seasonal-bg: #fffbeb;
   --seasonal-accent: #ea580c;
-  --seasonal-gradient: linear-gradient(135deg, #ea580c, #fb923c);
+  --seasonal-gradient: linear-gradient(180deg, #ea580c, #fb923c);
 }
 
 html.seasonal-newYear,
 body.seasonal-newYear {
   --seasonal-bg: #faf5ff;
   --seasonal-accent: #8b5cf6;
-  --seasonal-gradient: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  --seasonal-gradient: linear-gradient(180deg, #8b5cf6, #a78bfa);
 }
 
 html.seasonal-ocean,
 body.seasonal-ocean {
   --seasonal-bg: #ecfeff;
   --seasonal-accent: #0891b2;
-  --seasonal-gradient: linear-gradient(135deg, #0891b2, #06b6d4);
+  --seasonal-gradient: linear-gradient(180deg, #0891b2, #06b6d4);
 }
 
 html.seasonal-sunset,
 body.seasonal-sunset {
   --seasonal-bg: #fff7ed;
   --seasonal-accent: #f97316;
-  --seasonal-gradient: linear-gradient(135deg, #f97316, #fb923c);
+  --seasonal-gradient: linear-gradient(180deg, #f97316, #fb923c);
 }
 
 html.seasonal-forest,
 body.seasonal-forest {
   --seasonal-bg: #f0fdf4;
   --seasonal-accent: #2d5016;
-  --seasonal-gradient: linear-gradient(135deg, #2d5016, #4a7c59);
+  --seasonal-gradient: linear-gradient(180deg, #2d5016, #4a7c59);
 }
 
 html.seasonal-aurora,
 body.seasonal-aurora {
   --seasonal-bg: #faf5ff;
   --seasonal-accent: #4a148c;
-  --seasonal-gradient: linear-gradient(135deg, #4a148c, #7b2cbf);
+  --seasonal-gradient: linear-gradient(180deg, #4a148c, #7b2cbf);
 }
 
 html.seasonal-coral,
 body.seasonal-coral {
   --seasonal-bg: #fff5f5;
   --seasonal-accent: #ff6b6b;
-  --seasonal-gradient: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  --seasonal-gradient: linear-gradient(180deg, #ff6b6b, #ee5a6f);
 }
 
 html.seasonal-lavender,
 body.seasonal-lavender {
   --seasonal-bg: #faf5ff;
   --seasonal-accent: #9b59b6;
-  --seasonal-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
+  --seasonal-gradient: linear-gradient(180deg, #9b59b6, #8e44ad);
 }
 
 /* Apply seasonal backgrounds - using both body and html for maximum compatibility */
@@ -949,7 +941,7 @@ body.seasonal-lavender[data-theme="dark"] {
 .seasonal-aurora .glass:not(header),
 .seasonal-coral .glass:not(header),
 .seasonal-lavender .glass:not(header) {
-  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9)) !important;
   background-blend-mode: overlay;
 }
 
@@ -1022,7 +1014,7 @@ html[data-theme="dark"] header.glass {
 
 /* Kid Mode Background */
 .kid-mode-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   background-size: 200% 200%;
   animation: gradient-shift 10s ease infinite;
 }

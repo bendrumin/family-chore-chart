@@ -67,7 +67,7 @@ export default function SupportPage() {
               <a
                 href="mailto:hi@chorestar.app"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity"
-                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
               >
                 <Mail className="w-5 h-5" />
                 hi@chorestar.app

@@ -211,7 +211,7 @@ export function AppearanceTab() {
               }`}
               style={{
                 background: seasonalTheme === theme.id
-                  ? `linear-gradient(135deg, ${localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary}15, ${localTheme === 'dark' ? theme.colors.dark.secondary : theme.colors.light.secondary}15)`
+                  ? `linear-gradient(180deg, ${localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary}15, ${localTheme === 'dark' ? theme.colors.dark.secondary : theme.colors.light.secondary}15)`
                   : undefined,
                 borderColor: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : undefined
               }}

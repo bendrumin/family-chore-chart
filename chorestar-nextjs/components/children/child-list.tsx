@@ -97,8 +97,8 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                     style={{
                       backgroundColor: child.avatar_color || '#6366f1',
                       background: child.avatar_color
-                        ? `linear-gradient(135deg, ${child.avatar_color} 0%, ${child.avatar_color}dd 100%)`
-                        : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                        ? `linear-gradient(180deg, ${child.avatar_color} 0%, ${child.avatar_color}dd 100%)`
+                        : 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
                     }}
                   >
                     {child.avatar_url ? (

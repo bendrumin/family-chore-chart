@@ -112,7 +112,7 @@ export default function AcceptInvitePage() {
               <Link
                 href="/dashboard"
                 className="inline-block text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all"
-                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
               >
                 Go to Dashboard
               </Link>
@@ -131,7 +131,7 @@ export default function AcceptInvitePage() {
                     onClick={handleAccept}
                     disabled={accepting}
                     className="w-full text-white py-3 rounded-lg font-semibold disabled:opacity-60 transition-all hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                    style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
                   >
                     {accepting ? 'Joining...' : '✓ Accept Invitation'}
                   </button>
@@ -150,7 +150,7 @@ export default function AcceptInvitePage() {
                   <Link
                     href={`/login?next=/family/accept/${code}`}
                     className="block w-full text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all text-center"
-                    style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                    style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
                   >
                     Sign In to Accept
                   </Link>

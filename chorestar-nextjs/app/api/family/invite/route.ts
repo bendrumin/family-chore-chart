@@ -95,7 +95,7 @@ export async function POST(request: Request) {
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-    <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:36px 32px;text-align:center;">
+    <div style="background:linear-gradient(180deg,#6366f1,#8b5cf6);padding:36px 32px;text-align:center;">
       <div style="font-size:48px;margin-bottom:12px;">👨‍👩‍👧‍👦</div>
       <h1 style="color:#fff;margin:0;font-size:24px;font-weight:700;">You're invited to join ChoreStar!</h1>
     </div>

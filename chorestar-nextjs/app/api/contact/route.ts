@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
+    .header { background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
     .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
     .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
     .field { margin-bottom: 20px; }

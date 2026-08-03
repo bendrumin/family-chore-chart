@@ -72,7 +72,7 @@ export const RoutineCard = memo(function RoutineCard({
     <Card
       className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-200 dark:border-gray-700 shadow-md rounded-xl"
       style={{
-        background: `linear-gradient(135deg, ${routine.color}15 0%, ${routine.color}08 50%, white 100%)`,
+        background: `linear-gradient(180deg, ${routine.color}15 0%, ${routine.color}08 50%, white 100%)`,
       }}
     >
       {/* Completed Badge */}
@@ -92,7 +92,7 @@ export const RoutineCard = memo(function RoutineCard({
           <div
             className="flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
             style={{
-              background: `linear-gradient(135deg, ${routine.color} 0%, ${routine.color}dd 100%)`,
+              background: `linear-gradient(180deg, ${routine.color} 0%, ${routine.color}dd 100%)`,
             }}
           >
             {IconComponent && <IconComponent className="w-8 h-8 text-white" />}
@@ -168,7 +168,7 @@ export const RoutineCard = memo(function RoutineCard({
                 style={{
                   background: completedToday
                     ? undefined
-                    : `linear-gradient(135deg, ${routine.color} 0%, ${routine.color}dd 100%)`,
+                    : `linear-gradient(180deg, ${routine.color} 0%, ${routine.color}dd 100%)`,
                   color: 'white',
                 }}
               >

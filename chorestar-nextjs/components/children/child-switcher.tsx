@@ -63,7 +63,7 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
                   <Ring color={color} done={prog.done} total={prog.total} />
                   <div
                     className="absolute inset-[8px] grid place-items-center overflow-hidden rounded-full text-xl font-bold text-white"
-                    style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)` }}
+                    style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
                   >
                     {child.avatar_url
                       ? <img src={child.avatar_url} alt="" className="h-full w-full object-cover" />

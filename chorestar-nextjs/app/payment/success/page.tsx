@@ -11,7 +11,7 @@ export default function PaymentSuccessPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+        background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
       }}>
         <div className="text-center text-white">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
@@ -41,7 +41,7 @@ function PaymentSuccessContent() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+        background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
       }}>
         <div className="text-center text-white">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
@@ -99,7 +99,7 @@ function PaymentSuccessContent() {
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2 px-8 py-3 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+          style={{ background: 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)' }}
         >
           Go to Dashboard
           <ArrowRight className="w-5 h-5" />

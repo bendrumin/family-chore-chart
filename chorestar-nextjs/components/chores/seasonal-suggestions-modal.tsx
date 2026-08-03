@@ -118,7 +118,7 @@ export function SeasonalSuggestionsModal({
         <div className="space-y-6 mt-6">
           {/* Header */}
           <div className="p-6 rounded-xl text-center relative overflow-hidden" style={{
-            background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+            background: 'linear-gradient(180deg, #f59e0b, #f97316)',
             color: 'white'
           }}>
             <div className="text-5xl mb-3">{currentTheme.icon}</div>
