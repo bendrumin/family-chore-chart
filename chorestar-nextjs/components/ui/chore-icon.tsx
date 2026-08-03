@@ -5,6 +5,8 @@ interface ChoreIconProps {
   /** Size via Tailwind, e.g. "w-7 h-7". OpenMoji color art carries its own
    *  colors, so any text-color classes passed in are simply ignored. */
   className?: string
+  /** For positioning/opacity that can't be expressed as a utility class. */
+  style?: React.CSSProperties
 }
 
 /**
@@ -13,12 +15,12 @@ interface ChoreIconProps {
  * thin strokes didn't read at small sizes on mobile.)
  * Artwork: OpenMoji (openmoji.org), CC BY-SA 4.0.
  */
-export function ChoreIcon({ emoji, className = 'w-6 h-6' }: ChoreIconProps) {
+export function ChoreIcon({ emoji, className = 'w-6 h-6', style }: ChoreIconProps) {
   const file = choreIconFile(emoji)
 
   if (!file) {
     if (!emoji) return null
-    return <span className={`inline-flex items-center justify-center leading-none ${className}`}>{emoji}</span>
+    return <span className={`inline-flex items-center justify-center leading-none ${className}`} style={style}>{emoji}</span>
   }
 
   return (
@@ -29,6 +31,7 @@ export function ChoreIcon({ emoji, className = 'w-6 h-6' }: ChoreIconProps) {
       aria-hidden="true"
       draggable={false}
       className={`inline-block shrink-0 object-contain ${className}`}
+      style={style}
     />
   )
 }

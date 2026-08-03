@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
+import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
+import { ChoreIcon } from '@/components/ui/chore-icon'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
 import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
@@ -12,161 +14,16 @@ import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestio
 import { useAuth } from '@/lib/hooks/use-auth'
 import { notificationManager } from '@/lib/utils/notifications'
 
+/**
+ * Pickable themes, derived from the canonical tables so the picker can't drift
+ * from what actually gets applied. This was a hand-kept fourth copy of the
+ * colors; four of its entries (forest, aurora, coral, lavender) existed only
+ * here, so choosing them applied no accent at all.
+ */
 const SEASONAL_THEMES = [
-  {
-    id: 'christmas',
-    name: 'Christmas',
-    emoji: '🎄',
-    colors: {
-      light: { primary: '#c41e3a', secondary: '#165b33' },
-      dark: { primary: '#ff4757', secondary: '#2ed573' }
-    }
-  },
-  {
-    id: 'halloween',
-    name: 'Halloween',
-    emoji: '🎃',
-    colors: {
-      light: { primary: '#ff6600', secondary: '#1a1a1a' },
-      dark: { primary: '#ff8c42', secondary: '#7b68ee' }
-    }
-  },
-  {
-    id: 'spring',
-    name: 'Spring',
-    emoji: '🌸',
-    colors: {
-      light: { primary: '#ff69b4', secondary: '#90ee90' },
-      dark: { primary: '#ff85c1', secondary: '#98fb98' }
-    }
-  },
-  {
-    id: 'summer',
-    name: 'Summer',
-    emoji: '☀️',
-    colors: {
-      light: { primary: '#ffd700', secondary: '#87ceeb' },
-      dark: { primary: '#ffe135', secondary: '#4fc3f7' }
-    }
-  },
-  {
-    id: 'fall',
-    name: 'Fall',
-    emoji: '🍂',
-    colors: {
-      light: { primary: '#d2691e', secondary: '#8b4513' },
-      dark: { primary: '#ff8c42', secondary: '#cd853f' }
-    }
-  },
-  {
-    id: 'winter',
-    name: 'Winter',
-    emoji: '❄️',
-    colors: {
-      light: { primary: '#4682b4', secondary: '#b0c4de' },
-      dark: { primary: '#64b5f6', secondary: '#90caf9' }
-    }
-  },
-  {
-    id: 'valentine',
-    name: 'Valentine',
-    emoji: '💕',
-    colors: {
-      light: { primary: '#ff1493', secondary: '#ff69b4' },
-      dark: { primary: '#ff4081', secondary: '#f48fb1' }
-    }
-  },
-  {
-    id: 'easter',
-    name: 'Easter',
-    emoji: '🐰',
-    colors: {
-      light: { primary: '#9370db', secondary: '#ffb6c1' },
-      dark: { primary: '#ba68c8', secondary: '#f8bbd0' }
-    }
-  },
-  {
-    id: 'thanksgiving',
-    name: 'Thanksgiving',
-    emoji: '🦃',
-    colors: {
-      light: { primary: '#d2691e', secondary: '#cd853f' },
-      dark: { primary: '#ff8c42', secondary: '#daa520' }
-    }
-  },
-  {
-    id: 'newYear',
-    name: 'New Year',
-    emoji: '🎉',
-    colors: {
-      light: { primary: '#ffd700', secondary: '#4169e1' },
-      dark: { primary: '#ffe135', secondary: '#5e92f3' }
-    }
-  },
-  {
-    id: 'stPatricks',
-    name: "St. Patrick's",
-    emoji: '☘️',
-    colors: {
-      light: { primary: '#228b22', secondary: '#90ee90' },
-      dark: { primary: '#4caf50', secondary: '#81c784' }
-    }
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset',
-    emoji: '🌅',
-    colors: {
-      light: { primary: '#f97316', secondary: '#fb923c' },
-      dark: { primary: '#f97316', secondary: '#fdba74' }
-    }
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean',
-    emoji: '🌊',
-    colors: {
-      light: { primary: '#006994', secondary: '#17c0eb' },
-      dark: { primary: '#0288d1', secondary: '#29b6f6' }
-    }
-  },
-  {
-    id: 'forest',
-    name: 'Forest',
-    emoji: '🌲',
-    colors: {
-      light: { primary: '#2d5016', secondary: '#4a7c59' },
-      dark: { primary: '#166534', secondary: '#22c55e' }
-    }
-  },
-  {
-    id: 'aurora',
-    name: 'Aurora',
-    emoji: '🌌',
-    colors: {
-      light: { primary: '#4a148c', secondary: '#7b2cbf' },
-      dark: { primary: '#6d28d9', secondary: '#8b5cf6' }
-    }
-  },
-  {
-    id: 'coral',
-    name: 'Coral',
-    emoji: '🪸',
-    colors: {
-      light: { primary: '#ff6b6b', secondary: '#ee5a6f' },
-      dark: { primary: '#ef4444', secondary: '#f87171' }
-    }
-  },
-  {
-    id: 'lavender',
-    name: 'Lavender',
-    emoji: '💜',
-    colors: {
-      light: { primary: '#9b59b6', secondary: '#8e44ad' },
-      dark: { primary: '#a78bfa', secondary: '#c4b5fd' }
-    }
-  },
-]
+  ...Object.values(SEASONAL_THEMES_DATA),
+  ...Object.values(ACCENT_THEMES),
+].map(t => ({ id: t.id, name: t.name, emoji: t.icon, colors: t.colors }))
 
 export function AppearanceTab() {
   const { settings, updateSettings } = useSettings()
@@ -255,6 +112,9 @@ export function AppearanceTab() {
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
     }
   }
+
+  // What auto-seasonal would pick right now, for the explanatory copy.
+  const activeSeasonal = getCurrentSeasonalTheme()
 
   return (
     <>
@@ -358,7 +218,7 @@ export function AppearanceTab() {
                 borderColor: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : undefined
               }}
             >
-              <div className="text-2xl mb-1">{theme.emoji}</div>
+              <ChoreIcon emoji={theme.emoji} className="w-7 h-7 mx-auto mb-1" />
               <div className="text-xs font-bold" style={{
                 color: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : 'var(--text-primary)'
               }}>
@@ -369,9 +229,13 @@ export function AppearanceTab() {
         </div>
 
         <p className="text-xs text-center px-4" style={{ color: 'var(--text-secondary)' }}>
-          {autoSeasonalEnabled
-            ? '🔄 Themes automatically change with holidays and seasons'
-            : '💡 Enable auto mode to have themes change automatically throughout the year'}
+          {seasonalTheme
+            ? 'A theme you picked stays until you choose None.'
+            : autoSeasonalEnabled
+              ? activeSeasonal
+                ? `Auto is on — today falls in the ${activeSeasonal.name} window.`
+                : 'Auto is on — no season is active today, so no accent is applied.'
+              : 'Enable auto mode to have themes change automatically throughout the year.'}
         </p>
         {seasonalTheme && (
           <div className="mt-4 text-center">

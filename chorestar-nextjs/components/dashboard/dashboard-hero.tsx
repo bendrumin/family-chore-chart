@@ -2,6 +2,7 @@
 
 import { Star, Flame } from 'lucide-react'
 import { ChoreIcon } from '@/components/ui/chore-icon'
+import { HolidayStickers } from '@/components/dashboard/holiday-stickers'
 
 interface DashboardHeroProps {
   familyName: string
@@ -49,6 +50,9 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
             'radial-gradient(120px 120px at 82% 18%, rgba(255,255,255,0.16), transparent 70%), radial-gradient(90px 90px at 92% 82%, rgba(255,255,255,0.10), transparent 70%)',
         }}
       />
+
+      {/* Holiday art — right strip only, so it never sits under the text. */}
+      <HolidayStickers />
 
       <div className="relative flex-1 min-w-0 w-full">
         <div className="text-xs font-bold uppercase tracking-[0.1em] text-white/90">
