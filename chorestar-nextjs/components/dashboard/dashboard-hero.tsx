@@ -35,10 +35,13 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl px-7 py-7 text-white flex items-center gap-6 flex-col sm:flex-row sm:items-center"
+      className="relative overflow-hidden rounded-3xl px-7 py-7 flex items-center gap-6 flex-col sm:flex-row sm:items-center"
       style={{
-        background: 'var(--gradient-primary)',
-        boxShadow: '0 20px 44px -18px rgba(99, 80, 220, 0.6)',
+        background: 'var(--primary-fill)',
+        // Not text-white. The accent behind this can be pale, and white on it is
+        // unreadable — this is what put white text on a yellow hero.
+        color: 'var(--primary-foreground)',
+        boxShadow: '0 20px 44px -18px rgba(15, 23, 42, 0.32)',
       }}
     >
       {/* soft highlights */}
@@ -47,7 +50,7 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(120px 120px at 82% 18%, rgba(255,255,255,0.16), transparent 70%), radial-gradient(90px 90px at 92% 82%, rgba(255,255,255,0.10), transparent 70%)',
+            'radial-gradient(120px 120px at 82% 18%, color-mix(in srgb, currentColor 14%, transparent), transparent 70%), radial-gradient(90px 90px at 92% 82%, color-mix(in srgb, currentColor 9%, transparent), transparent 70%)',
         }}
       />
 
@@ -55,37 +58,40 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
       <HolidayStickers />
 
       <div className="relative flex-1 min-w-0 w-full">
-        <div className="text-xs font-bold uppercase tracking-[0.1em] text-white/90">
+        <div className="text-xs font-bold uppercase tracking-[0.1em] opacity-90">
           {dateLabel} · {familyName}
           {isSharedMember && (
-            <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[0.65rem] font-bold normal-case tracking-normal">
+            <span className="ml-2 rounded-full px-2 py-0.5 text-[0.65rem] font-bold normal-case tracking-normal"
+              style={{ background: 'color-mix(in srgb, currentColor 20%, transparent)' }}>
               Shared
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold text-white/90">
+        <div className="mt-0.5 flex items-center gap-1.5 text-base font-semibold opacity-90">
           <ChoreIcon emoji={greetingIcon} className="w-5 h-5" />
           <span>{greetingText}</span>
         </div>
 
         <div className="mt-2 text-4xl font-extrabold tracking-tight tabular-nums">
           {total === 0 ? (
-            <span className="text-2xl font-bold text-white/85">No chores yet today</span>
+            <span className="text-2xl font-bold opacity-[0.85]">No chores yet today</span>
           ) : (
             <>
               {done}{' '}
-              <span className="text-2xl font-semibold text-white/75">of {total} chores done today</span>
+              <span className="text-2xl font-semibold opacity-75">of {total} chores done today</span>
             </>
           )}
         </div>
 
         {total > 0 && (
           <div className="mt-4 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/16 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold backdrop-blur-sm"
+              style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}>
               <Star className="h-4 w-4 text-yellow-300" fill="currentColor" />
               ${(earnedCents / 100).toFixed(2)} earned today
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/16 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold backdrop-blur-sm"
+              style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}>
               <Flame className="h-4 w-4 text-orange-300" fill="currentColor" />
               {pct}% complete
             </span>
@@ -96,9 +102,9 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
       {/* Progress ring */}
       <div className="relative h-[118px] w-[118px] flex-none">
         <svg width="118" height="118" viewBox="0 0 118 118" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="59" cy="59" r={R} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="11" />
+          <circle cx="59" cy="59" r={R} fill="none" stroke="color-mix(in srgb, currentColor 25%, transparent)" strokeWidth="11" />
           <circle
-            cx="59" cy="59" r={R} fill="none" stroke="#fff" strokeWidth="11" strokeLinecap="round"
+            cx="59" cy="59" r={R} fill="none" stroke="currentColor" strokeWidth="11" strokeLinecap="round"
             strokeDasharray={C} strokeDashoffset={offset}
             style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
           />

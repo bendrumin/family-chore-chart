@@ -1,3 +1,5 @@
+import { accentScale } from '@/lib/utils/accent-scale'
+
 export interface SeasonalActivity {
   name: string
   icon: string
@@ -8,6 +10,27 @@ export interface SeasonalActivity {
 export interface ThemeColors {
   light: { primary: string; secondary: string }
   dark: { primary: string; secondary: string }
+}
+
+/**
+ * Derives a theme's four color slots from a single accent.
+ *
+ * Every accent is deliberately deep enough that white text clears 4.5:1 on it.
+ * That matters because ~38 elements put hardcoded `text-white` on an accent
+ * background, and no amount of downstream correction can help those — the old
+ * palette had 12 of 17 themes failing there, summer's #ffd700 at 1.40:1 being
+ * the "white text on yellow" case. Picking calmer, deeper accents fixes it at
+ * the source rather than papering over it.
+ *
+ * Light secondary and both dark slots come off the accent's own ramp, so a theme
+ * can never be an unrelated pair of hues.
+ */
+function paletteFrom(accent: string): ThemeColors {
+  const ramp = accentScale(accent)
+  return {
+    light: { primary: accent, secondary: ramp[700] },
+    dark: { primary: ramp[400], secondary: ramp[300] },
+  }
 }
 
 export interface SeasonalTheme {
@@ -41,10 +64,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎄',
     startDate: '12-01',
     endDate: '12-31',
-    colors: {
-      light: { primary: '#c41e3a', secondary: '#165b33' },
-      dark: { primary: '#ff4757', secondary: '#2ed573' }
-    },
+    colors: paletteFrom('#c41e3a'),
     decorativeIcons: ['🎄', '🎁', '🧦', '🍪', '⭐', '❄️'],
     isHoliday: true,
     seasonalActivities: [
@@ -62,10 +82,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🦃',
     startDate: '11-20',
     endDate: '11-30',
-    colors: {
-      light: { primary: '#d2691e', secondary: '#cd853f' },
-      dark: { primary: '#ff8c42', secondary: '#daa520' }
-    },
+    colors: paletteFrom('#a3541b'),
     decorativeIcons: ['🦃', '🍁', '🥧', '🌽', '🍂'],
     isHoliday: true,
     seasonalActivities: [
@@ -82,10 +99,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎃',
     startDate: '10-01',
     endDate: '10-31',
-    colors: {
-      light: { primary: '#ff6600', secondary: '#1a1a1a' },
-      dark: { primary: '#ff8c42', secondary: '#7b68ee' }
-    },
+    colors: paletteFrom('#c2410c'),
     decorativeIcons: ['🎃', '👻', '🕷️', '🍬', '🍭', '🧙‍♀️'],
     isHoliday: true,
     seasonalActivities: [
@@ -103,10 +117,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🐰',
     startDate: '04-01',
     endDate: '04-30',
-    colors: {
-      light: { primary: '#9370db', secondary: '#ffb6c1' },
-      dark: { primary: '#ba68c8', secondary: '#f8bbd0' }
-    },
+    colors: paletteFrom('#7e22ce'),
     decorativeIcons: ['🐰', '🥚', '🌷', '🧺', '🌸'],
     isHoliday: true,
     seasonalActivities: [
@@ -124,10 +135,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '💝',
     startDate: '02-10',
     endDate: '02-14',
-    colors: {
-      light: { primary: '#ff1493', secondary: '#ff69b4' },
-      dark: { primary: '#ff4081', secondary: '#f48fb1' }
-    },
+    colors: paletteFrom('#be185d'),
     decorativeIcons: ['💝', '💌', '💖', '🌹', '💕'],
     isHoliday: true,
     seasonalActivities: [
@@ -144,10 +152,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '☘️',
     startDate: '03-15',
     endDate: '03-17',
-    colors: {
-      light: { primary: '#228b22', secondary: '#90ee90' },
-      dark: { primary: '#4caf50', secondary: '#81c784' }
-    },
+    colors: paletteFrom('#15803d'),
     decorativeIcons: ['☘️', '🍀', '🌈', '🎩'],
     isHoliday: true,
     seasonalActivities: [
@@ -163,10 +168,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '☀️',
     startDate: '06-01',
     endDate: '08-31',
-    colors: {
-      light: { primary: '#ffd700', secondary: '#87ceeb' },
-      dark: { primary: '#ffe135', secondary: '#4fc3f7' }
-    },
+    colors: paletteFrom('#b45309'),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Water Plants', icon: '💧', category: 'physical_activity' },
@@ -183,10 +185,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🌸',
     startDate: '03-20',
     endDate: '06-20',
-    colors: {
-      light: { primary: '#ff69b4', secondary: '#90ee90' },
-      dark: { primary: '#ff85c1', secondary: '#98fb98' }
-    },
+    colors: paletteFrom('#db2777'),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Spring Cleaning', icon: '🧹', category: 'household_chores' },
@@ -202,10 +201,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🍁',
     startDate: '09-22',
     endDate: '12-20',
-    colors: {
-      light: { primary: '#d2691e', secondary: '#8b4513' },
-      dark: { primary: '#ff8c42', secondary: '#cd853f' }
-    },
+    colors: paletteFrom('#9a3412'),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Rake Leaves', icon: '🍂', category: 'physical_activity' },
@@ -221,10 +217,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '❄️',
     startDate: '12-21',
     endDate: '03-19',
-    colors: {
-      light: { primary: '#4682b4', secondary: '#b0c4de' },
-      dark: { primary: '#64b5f6', secondary: '#90caf9' }
-    },
+    colors: paletteFrom('#0369a1'),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Shovel Snow', icon: '❄️', category: 'physical_activity' },
@@ -240,10 +233,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎉',
     startDate: '12-28',
     endDate: '01-05',
-    colors: {
-      light: { primary: '#ffd700', secondary: '#4169e1' },
-      dark: { primary: '#ffe135', secondary: '#5e92f3' }
-    },
+    colors: paletteFrom('#a16207'),
     decorativeIcons: ['🎉', '🎊', '✨', '🎆', '⭐'],
     isHoliday: true,
     seasonalActivities: [
@@ -264,55 +254,37 @@ export const ACCENT_THEMES: Record<string, { id: string; name: string; icon: str
     id: 'sunset',
     name: 'Sunset',
     icon: '🌅',
-    colors: {
-      light: { primary: '#f97316', secondary: '#fb923c' },
-      dark: { primary: '#f97316', secondary: '#fdba74' }
-    }
+    colors: paletteFrom('#b91c1c')
   },
   ocean: {
     id: 'ocean',
     name: 'Ocean',
     icon: '🌊',
-    colors: {
-      light: { primary: '#006994', secondary: '#17c0eb' },
-      dark: { primary: '#0288d1', secondary: '#29b6f6' }
-    }
+    colors: paletteFrom('#006994')
   },
   forest: {
     id: 'forest',
     name: 'Forest',
     icon: '🌲',
-    colors: {
-      light: { primary: '#2d5016', secondary: '#4a7c59' },
-      dark: { primary: '#166534', secondary: '#22c55e' }
-    }
+    colors: paletteFrom('#2d5016')
   },
   aurora: {
     id: 'aurora',
     name: 'Aurora',
     icon: '🌌',
-    colors: {
-      light: { primary: '#4a148c', secondary: '#7b2cbf' },
-      dark: { primary: '#6d28d9', secondary: '#8b5cf6' }
-    }
+    colors: paletteFrom('#4a148c')
   },
   coral: {
     id: 'coral',
     name: 'Coral',
     icon: '🪸',
-    colors: {
-      light: { primary: '#ff6b6b', secondary: '#ee5a6f' },
-      dark: { primary: '#ef4444', secondary: '#f87171' }
-    }
+    colors: paletteFrom('#e11d48')
   },
   lavender: {
     id: 'lavender',
     name: 'Lavender',
     icon: '💜',
-    colors: {
-      light: { primary: '#9b59b6', secondary: '#8e44ad' },
-      dark: { primary: '#a78bfa', secondary: '#c4b5fd' }
-    }
+    colors: paletteFrom('#9b59b6')
   }
 }
 

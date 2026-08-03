@@ -584,5 +584,60 @@ t('the only linear-gradients left in globals.css are the functional ones', () =>
   }
 })
 
+group('every theme accent is deep enough for hardcoded white text')
+
+t('white text clears AA at every ramp step that carries it', () => {
+  // ~38 elements put `text-white` directly on bg-indigo-500/600/700/900. Those
+  // bypass --primary-foreground entirely, so the accent itself has to be dark
+  // enough. The old palette failed for 12 of 17 themes; summer's #ffd700 was
+  // 1.40:1, which is the white-on-yellow hero.
+  const WHITE_TEXT_STEPS = [500, 600, 700, 900] as const
+  const failures: string[] = []
+  for (const [id, colors] of Object.entries(THEME_COLORS)) {
+    const ramp = accentScale(colors.light.primary)
+    for (const step of WHITE_TEXT_STEPS) {
+      const r = contrastRatio(ramp[step], '#ffffff')
+      if (r < AA_NORMAL) failures.push(`${id}@${step}=${ramp[step]} ${r.toFixed(2)}`)
+    }
+  }
+  assert.deepEqual(failures, [], `white text unreadable on: ${failures.join(', ')}`)
+})
+
+t('pale accents are rejected outright by the palette, not corrected later', () => {
+  // A regression guard: if anyone reintroduces a bright yellow accent, the test
+  // above fails. Confirm the check actually catches one.
+  const bad = accentScale('#ffd700')
+  assert.ok(contrastRatio(bad[500], '#ffffff') < AA_NORMAL, 'the guard would not catch #ffd700')
+})
+
+t('each theme is a single hue — light and dark slots share the accent ramp', () => {
+  for (const [id, colors] of Object.entries(THEME_COLORS)) {
+    const ramp = accentScale(colors.light.primary)
+    assert.equal(colors.light.secondary, ramp[700], `${id} light secondary is off-ramp`)
+    assert.equal(colors.dark.primary, ramp[400], `${id} dark primary is off-ramp`)
+    assert.equal(colors.dark.secondary, ramp[300], `${id} dark secondary is off-ramp`)
+  }
+})
+
+t('the ambient backdrop draws every blob from the ramp', () => {
+  const raw = readFileSync(new URL('../../components/ui/ambient-background.tsx', import.meta.url), 'utf8')
+  // Strip comments — the file documents the old bug by name.
+  const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  assert.ok(!/var\(--primary-light\)|var\(--primary-dark\)/.test(src),
+    'a blob still uses an unthemed variable, which is what mixed yellow with indigo')
+  const blobs = src.match(/background: '[^']*'/g) ?? []
+  assert.ok(blobs.length >= 3, 'expected three blobs')
+  for (const b of blobs) {
+    assert.ok(b.includes('var(--accent-'), `blob not on the ramp: ${b}`)
+  }
+})
+
+t('the hero derives its ink instead of hardcoding white', () => {
+  const src = readFileSync(new URL('../../components/dashboard/dashboard-hero.tsx', import.meta.url), 'utf8')
+  const code = src.split('\n').filter(l => !l.trim().startsWith('//')).join('\n')
+  assert.ok(!/text-white|bg-white|stroke="#fff"/.test(code), 'hero still hardcodes white')
+  assert.ok(code.includes("color: 'var(--primary-foreground)'"), 'hero ink is not derived')
+})
+
 console.log(`\n${passed} passed, ${failed} failed\n`)
 if (failed > 0) process.exit(1)
