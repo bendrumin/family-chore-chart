@@ -967,11 +967,17 @@ class SupabaseManager: ObservableObject {
         let currentChildren = await MainActor.run { children }
         let currentChores = await MainActor.run { chores }
         
+        // Demo data is opt-in via `-chorestar-demo`, matching the other
+        // screenshot launch args. It used to fire automatically whenever a user
+        // had no children AND no chores — which is exactly the state a brand-new
+        // account is in, so every first-time signup was greeted by fake children
+        // named Emma and Liam. That made the real first-run experience
+        // impossible to see, and looked like a data leak from another family.
         #if DEBUG
-        if currentChildren.isEmpty && currentChores.isEmpty {
-            let uid = await MainActor.run { debugUserId }
+        if ProcessInfo.processInfo.arguments.contains("-chorestar-demo"),
+           currentChildren.isEmpty, currentChores.isEmpty {
             await MainActor.run {
-                debugLastError = "No remote data found for user \(uid ?? "unknown"), loading demo data"
+                debugLastError = "Loading demo data (-chorestar-demo)"
                 loadSampleData()
             }
         }
