@@ -12,12 +12,14 @@ import {
   seasonalWindowLength,
   isWithinSeasonalWindow,
 } from '@/lib/constants/seasonal-themes'
-import { resolveActiveTheme, themeCssVars, THEME_CSS_VAR_NAMES } from './resolve-theme'
+import { resolveActiveTheme, themeCssVars, colorsFromAccent, THEME_CSS_VAR_NAMES } from './resolve-theme'
 import {
   contrastRatio,
   ensureReadable,
   bestForeground,
   relativeLuminance,
+  isValidHex,
+  normalizeHex,
   SURFACE_LIGHT,
   SURFACE_DARK,
   AA_NORMAL,
@@ -342,6 +344,69 @@ t('components consuming the pair actually reference it', () => {
       `${f} no longer consumes the accent pair`
     )
   }
+})
+
+group('custom accent color')
+
+t('a custom accent outranks a named theme and auto-seasonal', () => {
+  const r = resolveActiveTheme(
+    { accentColor: '#0ea5e9', seasonalTheme: 'halloween', autoSeasonal: true },
+    HALLOWEEN
+  )
+  assert.equal(r?.source, 'custom')
+  assert.equal(r?.id, '#0ea5e9')
+})
+
+t('hex is normalized — shorthand and missing hash both work', () => {
+  assert.equal(normalizeHex('#ABC'), '#aabbcc')
+  assert.equal(normalizeHex('0ea5e9'), '#0ea5e9')
+  assert.equal(normalizeHex('  #0EA5E9  '), '#0ea5e9')
+})
+
+t('a malformed stored accent is ignored rather than breaking the theme', () => {
+  for (const bad of ['', 'red', '#12', '#12345', 'rgb(1,2,3)', null, undefined, 42]) {
+    assert.equal(isValidHex(bad), false, `${String(bad)} should be invalid`)
+    const r = resolveActiveTheme({ accentColor: bad as never, seasonalTheme: 'ocean' }, AUGUST)
+    assert.equal(r?.id, 'ocean', `${String(bad)} should fall through to the named theme`)
+  }
+})
+
+t('any picked color comes out readable in both modes', () => {
+  // Includes deliberately awful picks: near-white, near-black, neon.
+  const picks = ['#ffffff', '#000000', '#ffff00', '#00ff00', '#fefefe', '#0a0a0a', '#ff00ff', '#6366f1']
+  for (const hex of picks) {
+    for (const isDark of [false, true]) {
+      const vars = themeCssVars(colorsFromAccent(hex), isDark)
+      const surface = isDark ? SURFACE_DARK : SURFACE_LIGHT
+      const textRatio = contrastRatio(vars['--primary'], surface)
+      const fillRatio = contrastRatio(vars['--primary-fill'], vars['--primary-foreground'])
+      assert.ok(textRatio >= AA_NORMAL, `${hex} ${isDark ? 'dark' : 'light'}: text ${textRatio.toFixed(2)}`)
+      assert.ok(fillRatio >= AA_NORMAL, `${hex} ${isDark ? 'dark' : 'light'}: fill ${fillRatio.toFixed(2)}`)
+    }
+  }
+})
+
+t('white and black picks are pushed into a usable range, not left as-is', () => {
+  const white = themeCssVars(colorsFromAccent('#ffffff'), false)
+  assert.notEqual(white['--primary'], '#ffffff')
+  const black = themeCssVars(colorsFromAccent('#000000'), true)
+  assert.notEqual(black['--primary'], '#000000')
+})
+
+group('"None" clears every source of a theme')
+
+t('no accent, no pick, no auto resolves to null', () => {
+  const cleared = { seasonalTheme: null, accentColor: null, autoSeasonal: false }
+  assert.equal(resolveActiveTheme(cleared, HALLOWEEN), null)
+  assert.equal(resolveActiveTheme(cleared, AUGUST), null)
+})
+
+t('clearing only the named pick is NOT enough while auto is on', () => {
+  // This was the bug: None cleared seasonalTheme, then auto-seasonal
+  // immediately re-resolved the current season, so nothing appeared to change.
+  const halfCleared = { seasonalTheme: null, autoSeasonal: true }
+  assert.notEqual(resolveActiveTheme(halfCleared, AUGUST), null)
+  assert.equal(resolveActiveTheme(halfCleared, AUGUST)?.id, 'summer')
 })
 
 console.log(`\n${passed} passed, ${failed} failed\n`)

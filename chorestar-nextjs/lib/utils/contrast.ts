@@ -21,6 +21,19 @@ export const AA_NORMAL = 4.5
 /** WCAG AA for large text and UI components. */
 export const AA_LARGE = 3
 
+/** A 3- or 6-digit hex color, with or without the leading '#'. */
+export function isValidHex(value: unknown): value is string {
+  return typeof value === 'string' && /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
+}
+
+/** Normalizes to lowercase 6-digit '#rrggbb'. Returns null if unparseable. */
+export function normalizeHex(value: unknown): string | null {
+  if (!isValidHex(value)) return null
+  const h = value.trim().replace('#', '')
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+  return `#${full.toLowerCase()}`
+}
+
 function parseHex(hex: string): [number, number, number] {
   const h = hex.replace('#', '').trim()
   const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h

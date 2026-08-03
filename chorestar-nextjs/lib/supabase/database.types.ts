@@ -9,8 +9,17 @@ export type Json =
 /** Shape of the `custom_theme` JSONB column in `family_settings`. */
 export interface CustomTheme {
   mode?: 'light' | 'dark' | 'auto'
+  /** A named theme the user picked. Outranked by accentColor. */
   seasonalTheme?: string | null
+  /** Follow the calendar: apply whichever seasonal window today falls in. */
   autoSeasonal?: boolean
+  /**
+   * A hand-picked accent color, '#rrggbb'. Highest precedence of the three.
+   * Any value is safe to store: it's run through the contrast rules per mode
+   * before it reaches the UI, so a color too pale for light mode is darkened
+   * and one too dark for dark mode is lightened.
+   */
+  accentColor?: string | null
 }
 
 export interface Database {

@@ -6,12 +6,13 @@ import {
 import {
   ensureReadable,
   accessiblePair,
+  normalizeHex,
   SURFACE_LIGHT,
   SURFACE_DARK,
 } from '@/lib/utils/contrast'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 
-export type ThemeSource = 'manual' | 'auto-seasonal'
+export type ThemeSource = 'custom' | 'manual' | 'auto-seasonal'
 
 export interface ResolvedTheme {
   id: string
@@ -21,16 +22,40 @@ export interface ResolvedTheme {
 }
 
 /**
+ * Builds a theme palette from one accent color.
+ *
+ * The same hex is used for both modes and for both slots; themeCssVars then runs
+ * it through the contrast rules per mode, so a color that's too pale for light
+ * mode gets darkened and one too dark for dark mode gets lightened. That's what
+ * makes an arbitrary user-picked color safe to accept.
+ */
+export function colorsFromAccent(hex: string): ThemeColors {
+  return {
+    light: { primary: hex, secondary: hex },
+    dark: { primary: hex, secondary: hex },
+  }
+}
+
+/**
  * Decides which single theme is in effect.
  *
- * An explicit pick outranks auto-seasonal, and exactly one wins — themes are
- * never blended, since mixing two palettes is what produced Halloween orange
- * sitting next to brand purple.
+ * Precedence, highest first:
+ *   1. a custom accent color — the most deliberate choice a user can make
+ *   2. a named theme they picked
+ *   3. auto-seasonal, by today's date
+ *
+ * Exactly one wins; themes are never blended, since mixing two palettes is what
+ * produced Halloween orange sitting next to brand purple.
  */
 export function resolveActiveTheme(
   customTheme: CustomTheme | null | undefined,
   now: Date = new Date()
 ): ResolvedTheme | null {
+  const custom = normalizeHex(customTheme?.accentColor)
+  if (custom) {
+    return { id: custom, name: 'Custom', source: 'custom', colors: colorsFromAccent(custom) }
+  }
+
   const manualId = customTheme?.seasonalTheme
   if (manualId) {
     const colors = THEME_COLORS[manualId]

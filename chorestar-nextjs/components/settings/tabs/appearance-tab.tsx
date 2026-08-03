@@ -30,6 +30,8 @@ export function AppearanceTab() {
   const [localTheme, setLocalTheme] = useState<'light' | 'dark' | 'auto'>('auto')
   const [seasonalTheme, setSeasonalTheme] = useState<string | null>(null)
   const [autoSeasonalEnabled, setAutoSeasonalEnabled] = useState(false)
+  const [accentColor, setAccentColor] = useState<string | null>(null)
+  const [draftAccent, setDraftAccent] = useState('#6366f1')
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
@@ -39,6 +41,8 @@ export function AppearanceTab() {
       setLocalTheme(customTheme.mode || 'auto')
       setSeasonalTheme(customTheme.seasonalTheme || null)
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
+      setAccentColor(customTheme.accentColor || null)
+      setDraftAccent(customTheme.accentColor || '#6366f1')
     }
     
     // Check notification permission
@@ -83,14 +87,51 @@ export function AppearanceTab() {
     try {
       setSeasonalTheme(themeId)
       const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
-      const newCustomTheme = { ...currentCustomTheme, seasonalTheme: themeId }
+
+      // "None" has to clear every source of a theme, not just the named pick.
+      // Clearing seasonalTheme alone let auto-seasonal immediately re-resolve
+      // today's season, so the accent never went away and None looked broken.
+      const newCustomTheme = themeId
+        ? { ...currentCustomTheme, seasonalTheme: themeId, accentColor: null }
+        : { ...currentCustomTheme, seasonalTheme: null, accentColor: null, autoSeasonal: false }
+
+      if (!themeId) {
+        setAutoSeasonalEnabled(false)
+        setAccentColor(null)
+        setDraftAccent('#6366f1')
+      } else {
+        setAccentColor(null)
+        setDraftAccent('#6366f1')
+      }
 
       await updateSettings({ custom_theme: newCustomTheme })
-      toast.success(themeId ? `${SEASONAL_THEMES.find(t => t.id === themeId)?.emoji} Theme applied!` : '✨ Theme removed!')
+      toast.success(themeId ? `${SEASONAL_THEMES.find(t => t.id === themeId)?.emoji} Theme applied!` : 'Back to the default accent')
     } catch (error) {
       console.error('Error updating seasonal theme:', error)
       toast.error('Failed to update seasonal theme')
       const customTheme = (settings?.custom_theme as CustomTheme) || {}
+      setSeasonalTheme(customTheme.seasonalTheme || null)
+      setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
+      setAccentColor(customTheme.accentColor || null)
+      setDraftAccent(customTheme.accentColor || '#6366f1')
+    }
+  }
+
+  const handleAccentColorChange = async (hex: string | null) => {
+    try {
+      setAccentColor(hex)
+      // A custom accent replaces a named theme rather than layering on it.
+      if (hex) setSeasonalTheme(null)
+      const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
+      await updateSettings({
+        custom_theme: { ...currentCustomTheme, accentColor: hex, seasonalTheme: hex ? null : currentCustomTheme.seasonalTheme ?? null },
+      })
+      toast.success(hex ? 'Accent color applied' : 'Custom accent cleared')
+    } catch (error) {
+      console.error('Error updating accent color:', error)
+      toast.error('Failed to update accent color')
+      const customTheme = (settings?.custom_theme as CustomTheme) || {}
+      setAccentColor(customTheme.accentColor || null)
       setSeasonalTheme(customTheme.seasonalTheme || null)
     }
   }
@@ -108,6 +149,8 @@ export function AppearanceTab() {
       toast.error('Failed to update auto seasonal setting')
       const customTheme = (settings?.custom_theme as CustomTheme) || {}
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
+      setAccentColor(customTheme.accentColor || null)
+      setDraftAccent(customTheme.accentColor || '#6366f1')
     }
   }
 
@@ -248,6 +291,58 @@ export function AppearanceTab() {
             </Button>
           </div>
         )}
+
+        {/* Custom accent */}
+        <div className="mt-5 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <Label htmlFor="accent-color" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                Custom accent color
+              </Label>
+              <p className="mt-0.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {accentColor
+                  ? 'Overrides the themes above.'
+                  : 'Pick any color — it\'s adjusted automatically to stay readable.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="accent-color"
+                type="color"
+                value={draftAccent}
+                // A color input fires change continuously while the picker is
+                // dragged, so only the local draft tracks that; the write and
+                // the toast happen once, on blur.
+                onChange={(e) => setDraftAccent(e.target.value)}
+                onBlur={() => {
+                  if (draftAccent.toLowerCase() !== (accentColor ?? '').toLowerCase()) {
+                    handleAccentColorChange(draftAccent)
+                  }
+                }}
+                aria-label="Custom accent color"
+                className="h-10 w-14 cursor-pointer rounded-lg border border-gray-300 bg-transparent p-1 dark:border-gray-600"
+              />
+              {accentColor && (
+                <>
+                  <span
+                    className="rounded-full px-2.5 py-1 text-xs font-bold tabular-nums accent-fill"
+                    title="Preview — this is how a badge will look"
+                  >
+                    {accentColor}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setDraftAccent('#6366f1'); handleAccentColorChange(null) }}
+                    className="font-bold"
+                  >
+                    Clear
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Notifications Section */}
