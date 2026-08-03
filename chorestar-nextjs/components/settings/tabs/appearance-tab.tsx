@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Monitor, Sparkles, Star, Calendar, Bell, BellOff } from 'lucide-react'
+import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
-import { PremiumThemesModal } from '@/components/themes/premium-themes-modal'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { notificationManager } from '@/lib/utils/notifications'
@@ -31,7 +30,6 @@ export function AppearanceTab() {
   const [localTheme, setLocalTheme] = useState<'light' | 'dark' | 'auto'>('auto')
   const [seasonalTheme, setSeasonalTheme] = useState<string | null>(null)
   const [autoSeasonalEnabled, setAutoSeasonalEnabled] = useState(false)
-  const [isPremiumThemesOpen, setIsPremiumThemesOpen] = useState(false)
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
 
@@ -287,37 +285,7 @@ export function AppearanceTab() {
         </div>
       </div>
 
-      {/* Premium Themes Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Star className="w-5 h-5" />
-            Premium Themes
-          </Label>
-        </div>
-        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Unlock exclusive premium themes with unique color schemes and customization options!
-          </p>
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={() => setIsPremiumThemesOpen(true)}
-            className="font-bold hover-glow w-full"
-          >
-            <Star className="w-5 h-5 mr-2" />
-            Browse Premium Themes
-          </Button>
-        </div>
-      </div>
-
     </div>
-
-    {/* Premium Themes Modal */}
-    <PremiumThemesModal
-      open={isPremiumThemesOpen}
-      onOpenChange={setIsPremiumThemesOpen}
-    />
 
     {/* Seasonal Suggestions Modal */}
     {user && (
