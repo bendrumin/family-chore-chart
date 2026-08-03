@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { PartnerForm } from './partner-form'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
-import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
+import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 export const metadata: Metadata = {
   title: 'ChoreStar Affiliate & Partner Program for Parenting Creators',
@@ -270,7 +270,7 @@ export default function PartnersPage() {
                   href="/icon.svg"
                   download="chorestar-logo.svg"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: GRADIENT }}
+                  style={ACCENT_SURFACE_STYLE}
                 >
                   Download Logo (SVG)
                 </a>
@@ -391,7 +391,7 @@ export default function PartnersPage() {
           <section className="max-w-3xl mx-auto mb-16">
             <div
               className="rounded-2xl shadow-2xl p-8 md:p-12 text-white"
-              style={{ background: GRADIENT }}
+              style={ACCENT_SURFACE_STYLE}
             >
               <h2 className="text-3xl font-bold text-center mb-3">
                 Interested in Partnering?

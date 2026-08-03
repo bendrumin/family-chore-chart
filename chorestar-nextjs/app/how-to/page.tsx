@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
-import { GRADIENT } from '@/lib/constants/brand'
+import { GRADIENT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 import {
   UserPlus, Shuffle, Palette, Sun, ListChecks, PenLine,
   PlusCircle, Key, Link2, Smartphone, Play, CheckCircle2,
@@ -205,7 +205,7 @@ export default function HowToPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-12 rounded-2xl shadow-2xl p-10 text-center text-white" style={{ background: GRADIENT }}>
+        <div className="mt-12 rounded-2xl shadow-2xl p-10 text-center text-white" style={ACCENT_SURFACE_STYLE}>
           <h3 className="text-2xl font-bold mb-3">
             Ready to Get Started?
           </h3>

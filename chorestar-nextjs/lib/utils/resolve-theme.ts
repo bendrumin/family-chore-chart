@@ -7,9 +7,11 @@ import {
   ensureReadable,
   accessiblePair,
   normalizeHex,
+  ON_ACCENT_LIGHT,
   SURFACE_LIGHT,
   SURFACE_DARK,
 } from '@/lib/utils/contrast'
+import { accentScaleCssVars, ACCENT_SCALE_VAR_NAMES } from '@/lib/utils/accent-scale'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 
 export type ThemeSource = 'custom' | 'manual' | 'auto-seasonal'
@@ -19,6 +21,16 @@ export interface ResolvedTheme {
   name: string
   source: ThemeSource
   colors: ThemeColors
+  /**
+   * Whether this theme may repaint the whole interface (the Tailwind accent
+   * ramp, the header, titles) or only small accent-sized elements.
+   *
+   * True for a theme the user chose outright — they picked the color, so a full
+   * repaint is the point. False for auto-seasonal, which picks *for* them: that
+   * is how an August visit silently turned the dashboard school-bus yellow,
+   * summer's accent being #ffd700.
+   */
+  fullReach: boolean
 }
 
 /**
@@ -53,13 +65,13 @@ export function resolveActiveTheme(
 ): ResolvedTheme | null {
   const custom = normalizeHex(customTheme?.accentColor)
   if (custom) {
-    return { id: custom, name: 'Custom', source: 'custom', colors: colorsFromAccent(custom) }
+    return { id: custom, name: 'Custom', source: 'custom', colors: colorsFromAccent(custom), fullReach: true }
   }
 
   const manualId = customTheme?.seasonalTheme
   if (manualId) {
     const colors = THEME_COLORS[manualId]
-    if (colors) return { id: manualId, name: manualId, source: 'manual', colors }
+    if (colors) return { id: manualId, name: manualId, source: 'manual', colors, fullReach: true }
     // An unknown stored id (a renamed or removed theme) falls through to auto
     // rather than leaving the UI with no accent at all.
   }
@@ -72,6 +84,7 @@ export function resolveActiveTheme(
         name: seasonal.name,
         source: 'auto-seasonal',
         colors: seasonal.colors,
+        fullReach: false,
       }
     }
   }
@@ -113,10 +126,31 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
   }
 }
 
-/** Every property themeCssVars can set, for clearing back to the brand default. */
-export const THEME_CSS_VAR_NAMES = Object.keys(
-  themeCssVars({ light: { primary: '', secondary: '' }, dark: { primary: '', secondary: '' } }, false)
-)
+/**
+ * Every property a resolved theme can set, for clearing back to the defaults.
+ * Includes the Tailwind accent ramp, which only full-reach themes write.
+ */
+export const THEME_CSS_VAR_NAMES = [
+  ...Object.keys(
+    themeCssVars({ light: { primary: '', secondary: '' }, dark: { primary: '', secondary: '' } }, false)
+  ),
+  ...ACCENT_SCALE_VAR_NAMES,
+]
+
+/**
+ * All custom properties to apply for a resolved theme.
+ *
+ * A full-reach theme additionally rewrites the Tailwind accent ramp, which is
+ * what carries the accent into the ~400 compiled indigo/purple utility classes,
+ * the header and the titles. An accent-only theme leaves the ramp at its default
+ * indigo so it can't repaint the interface.
+ */
+export function themeVarsFor(theme: ResolvedTheme, isDark: boolean): Record<string, string> {
+  const base = themeCssVars(theme.colors, isDark)
+  if (!theme.fullReach) return base
+  const accent = isDark ? theme.colors.dark.primary : theme.colors.light.primary
+  return { ...base, ...accentScaleCssVars(accent) }
+}
 
 /**
  * Surface properties an earlier build wrote to the document. Stripped on every
@@ -128,3 +162,44 @@ export const RETIRED_THEMED_SURFACE_VARS = [
   '--seasonal-gradient',
   '--header-gradient',
 ]
+
+export interface HeaderInk {
+  /** Color for the header title and icon buttons. */
+  color: string
+  /** Which logo asset reads on the header background. */
+  logo: 'white' | 'default'
+}
+
+/**
+ * The ink for the app header.
+ *
+ * In light mode the header is filled with the accent, so its ink has to be the
+ * accent's guaranteed-readable foreground — hardcoding white made the title
+ * vanish on a pale accent like yellow. In dark mode the header stays neutral
+ * (--card-bg), so the accent itself is used as the text color instead.
+ *
+ * The logo is a static image with only a white and a dark variant, so it can't
+ * inherit currentColor and has to be chosen here too.
+ */
+export function resolveHeaderInk(
+  customTheme: CustomTheme | null | undefined,
+  isDark: boolean,
+  now: Date = new Date()
+): HeaderInk {
+  if (isDark) {
+    // Neutral dark header: the accent reads as text, and the white logo works.
+    return { color: 'var(--primary)', logo: 'white' }
+  }
+
+  const active = resolveActiveTheme(customTheme, now)
+  if (!active || !active.fullReach) {
+    // Brand indigo fill, white ink — the long-standing look.
+    return { color: 'var(--primary-foreground)', logo: 'white' }
+  }
+
+  const { foreground } = accessiblePair(active.colors.light.primary)
+  return {
+    color: 'var(--primary-foreground)',
+    logo: foreground === ON_ACCENT_LIGHT ? 'white' : 'default',
+  }
+}

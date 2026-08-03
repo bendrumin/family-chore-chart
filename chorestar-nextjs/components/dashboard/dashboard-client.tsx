@@ -29,7 +29,8 @@ import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { GRADIENT_TEXT } from '@/lib/constants/brand'
+import { resolveHeaderInk } from '@/lib/utils/resolve-theme'
+import type { CustomTheme } from '@/lib/supabase/database.types'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
 import { applyThemeMode, clearStoredThemeMode } from '@/lib/utils/theme-mode'
@@ -227,7 +228,11 @@ function DashboardContent({
     ocean: '🌊', sunset: '🌅',
   }
 
-  const customTheme = settings?.custom_theme as { seasonalTheme?: string; mode?: string } | null
+  const customTheme = settings?.custom_theme as CustomTheme | null
+
+  // The header is filled with the accent in light mode, so its ink is derived
+  // rather than hardcoded white — see resolveHeaderInk.
+  const headerInk = resolveHeaderInk(customTheme, headerTextColor === 'gradient')
   const headerEmoji = customTheme?.seasonalTheme
     ? (THEME_EMOJIS[customTheme.seasonalTheme] ?? '⭐')
     : '⭐'
@@ -268,19 +273,16 @@ function DashboardContent({
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
                 className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/20 active:bg-white/30"
-                style={{ color: buttonColor === 'white' ? 'white' : 'var(--text-primary)' }}
+                style={{ color: headerInk.color }}
               >
                 <Menu className="w-5 h-5" />
               </button>
               <h1 className="text-2xl font-bold tracking-tight flex items-center">
                 {customTheme?.seasonalTheme
                   ? <span className="mr-1">{headerEmoji}</span>
-                  : <ChoreStarLogo size={28} className="mr-1" variant={headerTextColor === 'white' ? 'white' : 'default'} />
+                  : <ChoreStarLogo size={28} className="mr-1" variant={headerInk.logo} />
                 }
-                <span
-                  className="text-white"
-                  style={headerTextColor !== 'white' ? GRADIENT_TEXT : undefined}
-                >
+                <span style={{ color: headerInk.color }}>
                   ChoreStar
                 </span>
               </h1>

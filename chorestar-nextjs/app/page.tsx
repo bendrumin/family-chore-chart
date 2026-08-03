@@ -5,7 +5,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { TestFlightSignup } from '@/components/home/testflight-signup'
-import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
+import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 const SITE_URL = 'https://chorestar.app'
 
@@ -183,7 +183,7 @@ export default async function HomePage() {
             <Link
               href="/signup"
               className="px-8 py-4 rounded-xl font-bold text-lg text-white text-center shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-              style={{ background: GRADIENT }}
+              style={ACCENT_SURFACE_STYLE}
             >
               Start Free Today →
             </Link>
@@ -234,7 +234,7 @@ export default async function HomePage() {
               >
                 <div
                   className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-black shadow-md"
-                  style={{ background: GRADIENT }}
+                  style={ACCENT_SURFACE_STYLE}
                 >
                   {step}
                 </div>
@@ -464,7 +464,7 @@ export default async function HomePage() {
               <Link
                 href="/signup"
                 className="block w-full px-6 py-3 rounded-xl font-semibold text-center text-white transition-all hover:opacity-90 hover:shadow-md"
-                style={{ background: GRADIENT }}
+                style={ACCENT_SURFACE_STYLE}
               >
                 Start Free
               </Link>
@@ -474,7 +474,7 @@ export default async function HomePage() {
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 shadow-2xl border-2 border-indigo-400 relative">
               <div
                 className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-1 rounded-full text-sm font-bold"
-                style={{ background: GRADIENT }}
+                style={ACCENT_SURFACE_STYLE}
               >
                 BEST VALUE
               </div>
@@ -506,7 +506,7 @@ export default async function HomePage() {
               <Link
                 href="/signup"
                 className="block w-full px-6 py-3 rounded-xl font-bold text-center text-white transition-all hover:opacity-90 shadow-lg hover:shadow-xl"
-                style={{ background: GRADIENT }}
+                style={ACCENT_SURFACE_STYLE}
               >
                 Start Free, Upgrade Anytime
               </Link>
@@ -528,7 +528,7 @@ export default async function HomePage() {
                 <Link
                   href="/signup"
                   className="px-6 py-2 rounded-xl font-bold text-white transition-all hover:opacity-90 hover:shadow-md"
-                  style={{ background: GRADIENT }}
+                  style={ACCENT_SURFACE_STYLE}
                 >
                   Get Lifetime
                 </Link>
@@ -596,7 +596,7 @@ export default async function HomePage() {
         {/* Final CTA */}
         <div
           className="max-w-4xl mx-auto rounded-2xl shadow-2xl p-12 text-center text-white mb-16"
-          style={{ background: GRADIENT }}
+          style={ACCENT_SURFACE_STYLE}
         >
           <h2 className="text-3xl font-bold mb-4">
             Ready to Transform Chore Time?

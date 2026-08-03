@@ -12,7 +12,22 @@ import {
   seasonalWindowLength,
   isWithinSeasonalWindow,
 } from '@/lib/constants/seasonal-themes'
-import { resolveActiveTheme, themeCssVars, colorsFromAccent, THEME_CSS_VAR_NAMES } from './resolve-theme'
+import {
+  resolveActiveTheme,
+  themeCssVars,
+  themeVarsFor,
+  colorsFromAccent,
+  resolveHeaderInk,
+  THEME_CSS_VAR_NAMES,
+} from './resolve-theme'
+import {
+  accentScale,
+  accentScaleCssVars,
+  hexToRgbTriplet,
+  ACCENT_STEPS,
+  ACCENT_SCALE_VAR_NAMES,
+  DEFAULT_ACCENT,
+} from './accent-scale'
 import {
   contrastRatio,
   ensureReadable,
@@ -65,13 +80,19 @@ t('summer no longer produces a school-bus-yellow surface anywhere', () => {
   assert.ok(contrastRatio(vars['--primary'], SURFACE_LIGHT) >= AA_NORMAL)
 })
 
-t('only accent-sized tokens are exposed', () => {
+t('the exposed tokens are accents and the ramp — never a surface', () => {
   assert.deepEqual(new Set(THEME_CSS_VAR_NAMES), new Set([
     '--primary', '--secondary',
     '--primary-fill', '--secondary-fill',
     '--primary-foreground', '--secondary-foreground',
     '--seasonal-accent', '--seasonal-secondary',
+    ...ACCENT_SCALE_VAR_NAMES,
   ]))
+  // The ramp reaches compiled utility classes, but no full-bleed surface
+  // property is ever themed directly.
+  for (const banned of ['--gradient-primary', '--header-gradient', '--gradient-bg', '--seasonal-gradient']) {
+    assert.ok(!THEME_CSS_VAR_NAMES.includes(banned), `${banned} must not be themed`)
+  }
 })
 
 group('precedence')
@@ -407,6 +428,160 @@ t('clearing only the named pick is NOT enough while auto is on', () => {
   const halfCleared = { seasonalTheme: null, autoSeasonal: true }
   assert.notEqual(resolveActiveTheme(halfCleared, AUGUST), null)
   assert.equal(resolveActiveTheme(halfCleared, AUGUST)?.id, 'summer')
+})
+
+group('accent ramp')
+
+t('the ramp covers every Tailwind step, monotonically light to dark', () => {
+  const scale = accentScale('#0ea5e9')
+  assert.equal(Object.keys(scale).length, 10)
+  let prev = Infinity
+  for (const step of ACCENT_STEPS) {
+    const lum = relativeLuminance(scale[step])
+    assert.ok(lum < prev, `step ${step} is not darker than the previous`)
+    prev = lum
+  }
+})
+
+t('500 is exactly the picked color', () => {
+  assert.equal(accentScale('#0ea5e9')[500], '#0ea5e9')
+  assert.equal(accentScale('#ff6600')[500], '#ff6600')
+})
+
+t('the default ramp is close to real Tailwind indigo', () => {
+  // Not identical — globals.css ships Tailwind's exact values as the default so
+  // an unthemed app is pixel-identical. This just guards against drift.
+  const gen = accentScale(DEFAULT_ACCENT)
+  const dist = (a: string, b: string) => {
+    const px = (h: string) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16))
+    const [x, y] = [px(a), px(b)]
+    return Math.sqrt(x.reduce((sum, v, i) => sum + (v - y[i]) ** 2, 0))
+  }
+  assert.ok(dist(gen[500], '#6366f1') === 0)
+  assert.ok(dist(gen[400], '#818cf8') < 45, 'ramp shape drifted from indigo')
+  assert.ok(dist(gen[700], '#4338ca') < 45, 'ramp shape drifted from indigo')
+})
+
+t('a malformed accent falls back to the default ramp', () => {
+  for (const bad of ['', 'nope', '#12345']) {
+    assert.equal(accentScale(bad)[500], DEFAULT_ACCENT)
+  }
+})
+
+t('css vars are RGB triplets, as Tailwind alpha syntax needs', () => {
+  assert.equal(hexToRgbTriplet('#6366f1'), '99 102 241')
+  const vars = accentScaleCssVars('#0ea5e9')
+  assert.deepEqual(Object.keys(vars).sort(), [...ACCENT_SCALE_VAR_NAMES].sort())
+  for (const [name, value] of Object.entries(vars)) {
+    assert.match(value, /^\d{1,3} \d{1,3} \d{1,3}$/, `${name} is not an RGB triplet`)
+  }
+})
+
+t('the tailwind config points both palettes at the ramp', () => {
+  const cfg = readFileSync(new URL('../../tailwind.config.ts', import.meta.url), 'utf8')
+  for (const palette of ['indigo:', 'purple:']) {
+    assert.ok(cfg.includes(palette), `${palette} not remapped`)
+  }
+  for (const step of ACCENT_STEPS) {
+    assert.ok(
+      cfg.includes(`rgb(var(--accent-${step}) / <alpha-value>)`),
+      `step ${step} missing from the config`
+    )
+  }
+})
+
+t('globals.css defines a default for every ramp step', () => {
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  for (const step of ACCENT_STEPS) {
+    assert.match(
+      css,
+      new RegExp(`--accent-${step}:\\s*\\d{1,3} \\d{1,3} \\d{1,3};`),
+      `--accent-${step} has no default, so the class would render nothing`
+    )
+  }
+})
+
+group('reach: a picked theme repaints, an automatic one does not')
+
+t('a custom accent and a named pick are full reach', () => {
+  assert.equal(resolveActiveTheme({ accentColor: '#0ea5e9' }, AUGUST)?.fullReach, true)
+  assert.equal(resolveActiveTheme({ seasonalTheme: 'halloween' }, AUGUST)?.fullReach, true)
+})
+
+t('auto-seasonal is NOT full reach — this is the yellow-August guard', () => {
+  const auto = resolveActiveTheme({ autoSeasonal: true }, AUGUST)
+  assert.equal(auto?.id, 'summer')
+  assert.equal(auto?.fullReach, false)
+})
+
+t('only a full-reach theme writes the accent ramp', () => {
+  const picked = resolveActiveTheme({ accentColor: '#0ea5e9' }, AUGUST)!
+  const auto = resolveActiveTheme({ autoSeasonal: true }, AUGUST)!
+  const pickedVars = themeVarsFor(picked, false)
+  const autoVars = themeVarsFor(auto, false)
+  for (const name of ACCENT_SCALE_VAR_NAMES) {
+    assert.ok(pickedVars[name], `picked theme should set ${name}`)
+    assert.equal(autoVars[name], undefined, `auto theme must not set ${name}`)
+  }
+})
+
+t('clearing covers the ramp too, so switching reach leaves nothing behind', () => {
+  for (const name of ACCENT_SCALE_VAR_NAMES) {
+    assert.ok(THEME_CSS_VAR_NAMES.includes(name), `${name} would be left stranded`)
+  }
+})
+
+group('header ink')
+
+t('light mode uses the accent foreground, never hardcoded white', () => {
+  const ink = resolveHeaderInk({ accentColor: '#ffd700' }, false)
+  assert.equal(ink.color, 'var(--primary-foreground)')
+  // Gold needs a dark logo; white would vanish.
+  assert.equal(ink.logo, 'default')
+})
+
+t('a deep accent keeps the white logo', () => {
+  assert.equal(resolveHeaderInk({ accentColor: '#312e81' }, false).logo, 'white')
+})
+
+t('dark mode keeps a neutral header with accent text', () => {
+  const ink = resolveHeaderInk({ accentColor: '#ffd700' }, true)
+  assert.equal(ink.color, 'var(--primary)')
+  assert.equal(ink.logo, 'white')
+})
+
+t('an accent-only theme does not restyle the header', () => {
+  const ink = resolveHeaderInk({ autoSeasonal: true }, false, AUGUST)
+  assert.equal(ink.logo, 'white')
+})
+
+group('no gradients remain in the brand tokens')
+
+t('brand.ts exposes solid colors, not gradients', () => {
+  const src = readFileSync(new URL('../constants/brand.ts', import.meta.url), 'utf8')
+  assert.ok(!/linear-gradient/.test(src), 'brand.ts still defines a gradient')
+  assert.ok(src.includes("color: 'var(--primary)'"), 'GRADIENT_TEXT is not a solid color')
+})
+
+t('an accent surface always ships its ink alongside the fill', () => {
+  const src = readFileSync(new URL('../constants/brand.ts', import.meta.url), 'utf8')
+  const start = src.indexOf('ACCENT_SURFACE_STYLE = {')
+  const body = src.slice(start, src.indexOf('}', start))
+  assert.ok(body.includes('--primary-fill'))
+  assert.ok(body.includes('--primary-foreground'))
+})
+
+t('the only linear-gradients left in globals.css are the functional ones', () => {
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  const found = css.match(/linear-gradient\([^)]*/g) ?? []
+  // shimmer sweep (90deg), checkerboard x2 (45deg), kid-mode background.
+  assert.ok(found.length <= 4, `${found.length} gradients remain: ${found.join(' | ')}`)
+  for (const g of found) {
+    assert.ok(
+      /90deg|45deg|#667eea/.test(g),
+      `unexpected decorative gradient survived: ${g}`
+    )
+  }
 })
 
 console.log(`\n${passed} passed, ${failed} failed\n`)

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Smartphone, CheckCircle2, Loader2 } from 'lucide-react'
-import { GRADIENT } from '@/lib/constants/brand'
+import { GRADIENT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState('')
@@ -72,7 +72,7 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
           type="submit"
           disabled={status === 'loading'}
           className="px-5 py-2.5 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-70 hover:opacity-90 transition-opacity whitespace-nowrap"
-          style={{ background: GRADIENT }}
+          style={ACCENT_SURFACE_STYLE}
         >
           {status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Get Early Access
@@ -122,7 +122,7 @@ export function TestFlightSignup({ compact = false }: { compact?: boolean }) {
         type="submit"
         disabled={status === 'loading'}
         className="w-full px-6 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70 hover:opacity-90 transition-opacity"
-        style={{ background: GRADIENT }}
+        style={ACCENT_SURFACE_STYLE}
       >
         {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Smartphone className="w-5 h-5" />}
         Request TestFlight Access

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { GRADIENT, GRADIENT_TEXT } from '@/lib/constants/brand'
+import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 import {
   Menu, X, Home, LayoutDashboard, BookOpen, Handshake,
   HelpCircle, Mail, Sparkles, LogOut,
@@ -129,7 +129,7 @@ export function SiteNav() {
               <Link
                 href="/dashboard"
                 className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
-                style={{ background: GRADIENT }}
+                style={ACCENT_SURFACE_STYLE}
               >
                 Dashboard →
               </Link>
@@ -145,7 +145,7 @@ export function SiteNav() {
                 <Link
                   href="/signup"
                   className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg text-sm font-semibold text-white whitespace-nowrap transition-all hover:opacity-90 hover:shadow-md"
-                  style={{ background: GRADIENT }}
+                  style={ACCENT_SURFACE_STYLE}
                 >
                   <span className="sm:hidden">Sign Up</span>
                   <span className="hidden sm:inline">Create Account</span>

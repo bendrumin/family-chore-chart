@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { GRADIENT } from '@/lib/constants/brand'
+import { GRADIENT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
@@ -93,7 +93,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         {!isPremium && (
           <div
             className="rounded-2xl p-8 text-white text-center mb-10"
-            style={{ background: GRADIENT }}
+            style={ACCENT_SURFACE_STYLE}
           >
             <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
             <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>

@@ -72,6 +72,26 @@
        WCAG AA — pale accents like summer's #ffd700 get dark ink instead of
        white. These defaults are the brand indigo, nudged until white text
        passes 4.5:1 (#6366f1 was 4.47). */
+
+    /* Accent ramp. Tailwind's indigo and purple palettes are remapped to these
+       (see tailwind.config.ts), because ~400 compiled utility classes hardcode
+       those colors and a utility class can't read a variable — remapping is the
+       only way a picked accent reaches them. Space-separated RGB so Tailwind's
+       <alpha-value> syntax keeps working for things like bg-indigo-900/20.
+       These defaults are Tailwind's exact indigo, so an unthemed app is
+       pixel-identical to before; a theme overrides them with a ramp generated
+       from its accent (lib/utils/accent-scale.ts). */
+    --accent-50: 238 242 255;   /* #eef2ff */
+    --accent-100: 224 231 255;   /* #e0e7ff */
+    --accent-200: 199 210 254;   /* #c7d2fe */
+    --accent-300: 165 180 252;   /* #a5b4fc */
+    --accent-400: 129 140 248;   /* #818cf8 */
+    --accent-500: 99 102 241;   /* #6366f1 */
+    --accent-600: 79 70 229;   /* #4f46e5 */
+    --accent-700: 67 56 202;   /* #4338ca */
+    --accent-800: 55 48 163;   /* #3730a3 */
+    --accent-900: 49 46 129;   /* #312e81 */
+
     --primary-fill: #5e61e5;
     --primary-foreground: #ffffff;
     --success: #10b981;
@@ -104,11 +124,14 @@
     --radius-lg: 1rem;        /* 16px */
     --radius-xl: 1.5rem;      /* 24px */
 
-    /* Professional Gradients */
-    --gradient-primary: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
-    --gradient-success: linear-gradient(180deg, #10b981 0%, #06b6d4 100%);
-    --gradient-warning: linear-gradient(180deg, #f59e0b 0%, #f97316 100%);
-    --gradient-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    /* Solid accent surfaces. These kept their --gradient-* names so the ~47
+       existing call sites didn't all need editing, but they are no longer
+       gradients: a solid fill has a computable readable foreground, a two-hue
+       ramp does not. Pair --gradient-primary with --primary-foreground. */
+    --gradient-primary: var(--primary-fill);
+    --gradient-success: #059669;
+    --gradient-warning: #b45309;
+    --gradient-bg: #ffffff;
 
     /* Tailwind Compatibility */
     --background: 0 0% 100%;
@@ -142,7 +165,7 @@
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
 
-    --gradient-bg: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+    --gradient-bg: #111827;
 
     /* Tailwind Dark */
     --background: 222.2 84% 4.9%;
@@ -365,7 +388,7 @@
     max-height: calc(100vh - 2rem);
     height: auto;
     min-height: 0; /* mobile: don't force a tall box on short viewports */
-    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    background: rgba(255,255,255,0.98);
   }
 
   @media (min-width: 768px) {
@@ -375,27 +398,27 @@
   }
 
   .dark .dialog-content-settings {
-    background: linear-gradient(180deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+    background: rgba(31,41,55,0.98);
   }
 
   /* Dialog Content Background - Common modal background */
   .dialog-content-bg {
-    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    background: rgba(255,255,255,0.98);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   .dark .dialog-content-bg {
-    background: linear-gradient(180deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+    background: rgba(31,41,55,0.98);
   }
 
   /* Card Background - Glass effect */
   .card-bg-glass {
-    background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%);
+    background: rgba(255,255,255,0.9);
   }
 
   .dark .card-bg-glass {
-    background: linear-gradient(180deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%);
+    background: rgba(31,41,55,0.9);
   }
 
   /* Input Background - Glass effect */

@@ -11,7 +11,7 @@ import {
 } from '@/lib/utils/theme-mode'
 import {
   resolveActiveTheme,
-  themeCssVars,
+  themeVarsFor,
   THEME_CSS_VAR_NAMES,
   RETIRED_THEMED_SURFACE_VARS,
 } from '@/lib/utils/resolve-theme'
@@ -121,9 +121,13 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
 
     // Strip any surface property an older build wrote, and never set them again.
     for (const name of RETIRED_THEMED_SURFACE_VARS) root.style.removeProperty(name)
+    // Clear every theme property first, so switching from a full-reach theme to
+    // an accent-only one can't leave the previous accent ramp in place.
+    for (const name of THEME_CSS_VAR_NAMES) root.style.removeProperty(name)
 
     if (!active) {
       root.removeAttribute('data-seasonal-theme')
+      root.removeAttribute('data-theme-reach')
       for (const name of THEME_CSS_VAR_NAMES) root.style.removeProperty(name)
       return
     }
@@ -131,9 +135,12 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     // Inert marker — no CSS matches it. Useful for inspecting the active theme.
     root.setAttribute('data-seasonal-theme', active.id)
 
-    for (const [name, value] of Object.entries(themeCssVars(active.colors, isDark))) {
+    // A full-reach theme also rewrites the Tailwind accent ramp, which is what
+    // carries the accent into the compiled indigo/purple utility classes.
+    for (const [name, value] of Object.entries(themeVarsFor(active, isDark))) {
       root.style.setProperty(name, value)
     }
+    root.setAttribute('data-theme-reach', active.fullReach ? 'full' : 'accent')
   }
 
   const updateSettings = async (updates: Partial<FamilySettings>) => {
