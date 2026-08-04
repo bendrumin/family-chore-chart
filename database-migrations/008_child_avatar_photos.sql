@@ -78,6 +78,22 @@ create policy "child avatars: owner can delete"
   );
 
 -- ---------------------------------------------------------------------------
+-- OPERATIONAL WARNING: deleting a user outside the app orphans their photos
+-- ---------------------------------------------------------------------------
+-- The auth.users cascade removes every database row but CANNOT touch Storage —
+-- a foreign key cannot see into the object store. Only POST /api/account/delete
+-- sweeps the objects (it walks {user_id}/{child_id}/ and reports filesRemoved).
+--
+-- So deleting a user from the Supabase dashboard, or with a direct
+-- auth.admin.deleteUser() call, leaves that family's child photographs on disk
+-- with nothing pointing at them. Confirmed in testing — two orphans were created
+-- exactly that way and had to be swept by hand.
+--
+-- Delete accounts through the API. To find orphans, list the bucket's top-level
+-- folders and compare them against live auth.users ids; any folder whose name is
+-- not a current user id is orphaned.
+
+-- ---------------------------------------------------------------------------
 -- No schema migration needed
 -- ---------------------------------------------------------------------------
 -- children.avatar_url and children.avatar_file already exist and already render
