@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { CHILD_AVATAR_BUCKET } from '@/lib/constants/storage'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -111,6 +112,12 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
     try {
       const supabase = createClient()
 
+      // Choosing a preset must retire an uploaded photo: the photo sits above
+      // the preset in the resolution order (photo -> preset -> emoji -> initial),
+      // so leaving its path in place means the new choice never shows and the
+      // picker looks broken. Same bug existed on iOS.
+      const replacingPhoto = Boolean(child.avatar_photo_path && formData.avatarUrl)
+
       const { error } = await supabase
         .from('children')
         .update({
@@ -118,10 +125,17 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
           age: formData.age ? parseInt(formData.age) : null,
           avatar_color: formData.avatarColor,
           avatar_url: formData.avatarUrl,
+          ...(replacingPhoto ? { avatar_photo_path: null } : {}),
         })
         .eq('id', child.id)
 
       if (error) throw error
+
+      if (replacingPhoto && child.avatar_photo_path) {
+        // Best-effort: the row no longer references the object, so a failure
+        // here leaves an orphan, not a broken avatar. Owner RLS permits this.
+        void supabase.storage.from(CHILD_AVATAR_BUCKET).remove([child.avatar_photo_path])
+      }
 
       toast.success('Child updated successfully!')
       onSuccess()

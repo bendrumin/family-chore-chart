@@ -329,8 +329,16 @@ struct PhotoAvatarPicker: View {
     @State private var showingCamera = false
     @State private var libraryItem: PhotosPickerItem?
     @State private var isUploading = false
+    @State private var isRemoving = false
     @State private var errorMessage: String?
     @State private var preview: UIImage?
+
+    /// Whether this child currently has an uploaded photo. Read from the manager
+    /// rather than tracked locally, so it survives reopening the picker.
+    private var hasExistingPhoto: Bool {
+        guard let childId else { return false }
+        return manager.children.first(where: { $0.id == childId })?.avatarPhotoPath != nil
+    }
     /// Square-cropped and awaiting props. Set between picking and uploading, so
     /// the editor works on exactly the pixels that will be stored.
     @State private var pendingImage: UIImage?
@@ -395,6 +403,18 @@ struct PhotoAvatarPicker: View {
                 }
                 .padding(.horizontal, 24)
 
+                if hasExistingPhoto {
+                    Button(role: .destructive) {
+                        removePhoto()
+                    } label: {
+                        Label("Remove Current Photo", systemImage: "trash")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    .disabled(isUploading || isRemoving)
+                    .padding(.top, 2)
+                }
+
                 Text("Stored privately. Only your family can see it, and you can remove it any time.")
                     .font(.caption)
                     .multilineTextAlignment(.center)
@@ -402,10 +422,11 @@ struct PhotoAvatarPicker: View {
                     .padding(.horizontal, 32)
             }
 
-            if isUploading {
+            if isUploading || isRemoving {
                 HStack(spacing: 8) {
                     ProgressView()
-                    Text("Uploading…").font(.subheadline).foregroundColor(.choreStarTextSecondary)
+                    Text(isRemoving ? "Removing…" : "Uploading…")
+                        .font(.subheadline).foregroundColor(.choreStarTextSecondary)
                 }
             }
 
@@ -452,6 +473,27 @@ struct PhotoAvatarPicker: View {
                     await MainActor.run { pendingImage = SupabaseManager.squareAvatarImage(image) }
                 } else {
                     await MainActor.run { errorMessage = "That image couldn't be read. Try another." }
+                }
+            }
+        }
+    }
+
+    private func removePhoto() {
+        guard let childId else { return }
+        isRemoving = true
+        errorMessage = nil
+        Task {
+            let failure = await manager.removeChildAvatarPhoto(childId: childId)
+            await MainActor.run {
+                isRemoving = false
+                preview = nil
+                if let failure {
+                    errorMessage = failure
+                } else {
+                    Haptics.success()
+                    // Same callback as an upload: the row changed, so the edit
+                    // screen re-reads its state from the manager.
+                    onUploaded()
                 }
             }
         }

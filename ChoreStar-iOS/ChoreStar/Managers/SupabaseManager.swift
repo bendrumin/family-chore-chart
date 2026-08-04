@@ -956,7 +956,9 @@ class SupabaseManager: ObservableObject {
     }
 
     /// Point a child row at an uploaded photo (or clear it with nil).
-    private func updateChildAvatarPhoto(childId: UUID, photoPath: String?) async throws {
+    /// `keepAvatarUrl` leaves avatar_url untouched — used when retiring a photo
+    /// right after updateChild wrote a fresh preset there.
+    private func updateChildAvatarPhoto(childId: UUID, photoPath: String?, keepAvatarUrl: Bool = false) async throws {
         #if canImport(Supabase)
         guard let client = client else { return }
 
@@ -974,12 +976,22 @@ class SupabaseManager: ObservableObject {
                 case avatar_photo_path, avatar_url, updated_at
             }
 
+            let keepAvatarUrl: Bool
+
+            enum SkipUrlKeys: String, CodingKey { case avatar_photo_path, updated_at }
+
             func encode(to encoder: Encoder) throws {
-                var c = encoder.container(keyedBy: CodingKeys.self)
-                // encode, not encodeIfPresent — nil must reach Postgres as null.
-                try c.encode(avatar_photo_path, forKey: .avatar_photo_path)
-                try c.encode(avatar_url, forKey: .avatar_url)
-                try c.encode(updated_at, forKey: .updated_at)
+                if keepAvatarUrl {
+                    var c = encoder.container(keyedBy: SkipUrlKeys.self)
+                    try c.encode(avatar_photo_path, forKey: .avatar_photo_path)
+                    try c.encode(updated_at, forKey: .updated_at)
+                } else {
+                    var c = encoder.container(keyedBy: CodingKeys.self)
+                    // encode, not encodeIfPresent — nil must reach Postgres as null.
+                    try c.encode(avatar_photo_path, forKey: .avatar_photo_path)
+                    try c.encode(avatar_url, forKey: .avatar_url)
+                    try c.encode(updated_at, forKey: .updated_at)
+                }
             }
         }
 
@@ -988,7 +1000,8 @@ class SupabaseManager: ObservableObject {
             .update(AvatarPhotoUpdate(
                 avatar_photo_path: photoPath,
                 avatar_url: nil,
-                updated_at: ISO8601DateFormatter().string(from: Date())
+                updated_at: ISO8601DateFormatter().string(from: Date()),
+                keepAvatarUrl: keepAvatarUrl
             ))
             .eq("id", value: childId.uuidString)
             .execute()
@@ -1639,6 +1652,25 @@ class SupabaseManager: ObservableObject {
             .update(update)
             .eq("id", value: childId.uuidString)
             .execute()
+
+        // Actively choosing a preset or emoji must also retire an uploaded photo.
+        // The photo sits ABOVE both in the resolution order (photo -> preset ->
+        // emoji -> initials), so leaving its path in place means the new choice
+        // never becomes visible — the picker looks broken. Only on an explicit
+        // choice: a name-or-age-only save passes nil for both and must not
+        // touch the photo (ChildUpdate's synthesized encoder omits nils).
+        if avatarUrl != nil || avatarFile != nil {
+            let previousPath = await MainActor.run {
+                children.first(where: { $0.id == childId })?.avatarPhotoPath
+            }
+            if let previousPath {
+                try await updateChildAvatarPhoto(childId: childId, photoPath: nil, keepAvatarUrl: true)
+                _ = try? await client.storage
+                    .from(SupabaseManager.childAvatarBucket)
+                    .remove(paths: [previousPath])
+                await MainActor.run { signedAvatarURLs[previousPath] = nil }
+            }
+        }
         
         await MainActor.run {
             debugLastError = "Child updated: \(childId)"
