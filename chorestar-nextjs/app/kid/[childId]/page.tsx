@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Play, LogOut, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRoutines } from '@/lib/hooks/useRoutines';
+import { KidChores } from '@/components/kid/kid-chores';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 
 interface ChildData {
@@ -23,6 +24,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   const { childId } = use(params);
   const router = useRouter();
   const [child, setChild] = useState<ChildData | null>(null);
+  const [kidToken, setKidToken] = useState<string | null>(null);
 
   const { data: routines, isLoading } = useRoutines(childId);
 
@@ -51,6 +53,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         }
       }
 
+      if (sessionData.kidToken) setKidToken(sessionData.kidToken);
       const childData = sessionData.child || sessionData; // Support both new and old format
       if (childData.id !== childId) {
         const familyCode = sessionData.familyCode;
@@ -171,6 +174,11 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           </Button>
         </motion.div>
       </div>
+
+      {/* Today's chores — the half of kid mode that was missing entirely.
+          Routines had kid-token endpoints; chores did not, so a kid on their
+          own device could never check off the things earning their allowance. */}
+      {kidToken && <KidChores kidToken={kidToken} />}
 
       {/* Routines Grid */}
       <div className="max-w-6xl mx-auto">

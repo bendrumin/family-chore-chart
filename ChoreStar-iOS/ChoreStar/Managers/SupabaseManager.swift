@@ -476,6 +476,7 @@ class SupabaseManager: ObservableObject {
             }
 
             await loadKidModeRoutines()
+            await loadKidModeChores()
             return nil
         }
     }
@@ -500,6 +501,7 @@ class SupabaseManager: ObservableObject {
         }
 
         await loadKidModeRoutines()
+            await loadKidModeChores()
         return true
     }
 
@@ -528,6 +530,170 @@ class SupabaseManager: ObservableObject {
     }
 
     /// Loads the kid's active routines through the web API (Bearer kid token bypasses RLS server-side).
+    private struct KidChoreRow: Codable {
+        let id: UUID
+        let name: String
+        let icon: String?
+        let category: String?
+        let reward_cents: Int?
+        let sort_order: Int?
+    }
+
+    private struct KidChoreCompletionRow: Codable {
+        let chore_id: UUID
+        let day_of_week: Int?
+    }
+
+    private struct KidChoresResponse: Codable {
+        let chores: [KidChoreRow]
+        let completions: [KidChoreCompletionRow]
+    }
+
+    /// The family's local Sunday, yyyy-MM-dd — the same convention the web
+    /// dashboard writes. Computed explicitly rather than via
+    /// .yearForWeekOfYear, whose first weekday follows the device locale and
+    /// lands on Monday for much of the world.
+    static func kidWeekStartString(for date: Date = Date()) -> String {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: date)   // Sunday = 1
+        let sunday = calendar.date(byAdding: .day, value: -(weekday - 1),
+                                   to: calendar.startOfDay(for: date)) ?? date
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: sunday)
+    }
+
+    /**
+     Loads the kid's chores through the web API.
+
+     Standalone kid mode showed an EMPTY chore list: ChildMainView renders
+     manager.chores, but only a parent session ever loaded those, and no
+     kid-token chores endpoint existed on any platform. Routines had one, so
+     kids could run routines while the chores earning their allowance were
+     invisible. This is the other half.
+     */
+    func loadKidModeChores() async {
+        guard let session = await MainActor.run(body: { kidModeSession }) else { return }
+
+        let weekStart = SupabaseManager.kidWeekStartString()
+        guard var components = URLComponents(string: "\(SupabaseManager.appBaseURL)/api/kid/chores") else { return }
+        components.queryItems = [URLQueryItem(name: "weekStart", value: weekStart)]
+        guard let url = components.url else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                await MainActor.run {
+                    debugLastError = "Kid chores fetch failed: HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+                }
+                return
+            }
+
+            let decoded = try JSONDecoder().decode(KidChoresResponse.self, from: data)
+            let today = Calendar.current.component(.weekday, from: Date()) - 1
+
+            // Mirrors the parent-mode ChoreRow mapping — reward is DOLLARS
+            // (cents / 100), matching loadRemoteData's conversion.
+            let mapped = decoded.chores.map { row in
+                Chore(
+                    id: row.id,
+                    name: row.name,
+                    childId: session.childId,
+                    reward: Double(row.reward_cents ?? 0) / 100.0,
+                    description: nil,
+                    category: row.category,
+                    icon: row.icon,
+                    color: nil,
+                    notes: nil,
+                    sortOrder: row.sort_order ?? 0,
+                    createdAt: Date(),
+                    updatedAt: Date()
+                )
+            }
+
+            let week = decoded.completions.compactMap { c -> (choreId: UUID, dayOfWeek: Int)? in
+                guard let d = c.day_of_week else { return nil }
+                return (choreId: c.chore_id, dayOfWeek: d)
+            }
+            let todayDone = Dictionary(uniqueKeysWithValues:
+                week.filter { $0.dayOfWeek == today }.map { ($0.choreId, Date()) })
+
+            await MainActor.run {
+                self.chores = mapped
+                self.weekCompletions = week
+                self.choreCompletions = todayDone
+                debugLastError = "Kid chores loaded: \(mapped.count)"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Kid chores error: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    /// Kid-token chore toggle. Kids have no Supabase JWT, so the direct client
+    /// write the parent path uses is impossible — the API validates the kid
+    /// session and writes with the service role.
+    private func toggleChoreViaKidAPI(_ chore: Chore, forDay dayOfWeek: Int, session: KidModeSession) async -> [Achievement] {
+        let wasCompleted = isChoreCompleted(chore, forDay: dayOfWeek)
+
+        // Optimistic flip; reverted below if the request fails.
+        await MainActor.run {
+            objectWillChange.send()
+            if wasCompleted {
+                weekCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                choreCompletions.removeValue(forKey: chore.id)
+            } else {
+                weekCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek))
+                choreCompletions[chore.id] = Date()
+            }
+        }
+
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/kid/chores/toggle") else { return [] }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+
+        struct ToggleBody: Encodable {
+            let choreId: String
+            let dayOfWeek: Int
+            let weekStart: String
+            let completed: Bool
+        }
+        request.httpBody = try? JSONEncoder().encode(ToggleBody(
+            choreId: chore.id.uuidString.lowercased(),
+            dayOfWeek: dayOfWeek,
+            weekStart: SupabaseManager.kidWeekStartString(),
+            completed: !wasCompleted
+        ))
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw URLError(.badServerResponse)
+            }
+            return []
+        } catch {
+            // Revert the optimistic flip.
+            await MainActor.run {
+                objectWillChange.send()
+                if wasCompleted {
+                    weekCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek))
+                    choreCompletions[chore.id] = Date()
+                } else {
+                    weekCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                    choreCompletions.removeValue(forKey: chore.id)
+                }
+                debugLastError = "Kid chore toggle failed: \(error.localizedDescription)"
+            }
+            return []
+        }
+    }
+
     func loadKidModeRoutines() async {
         guard let session = await MainActor.run(body: { kidModeSession }) else { return }
 
@@ -1358,6 +1524,11 @@ class SupabaseManager: ObservableObject {
     // Toggle completion for a specific day
     func toggleChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int) async -> [Achievement] {
         #if canImport(Supabase)
+        // Standalone kid session: no Supabase JWT, so the direct write below
+        // would fail RLS. Route through the kid API instead.
+        if let session = await MainActor.run(body: { kidModeSession }) {
+            return await toggleChoreViaKidAPI(chore, forDay: dayOfWeek, session: session)
+        }
         guard let client = client else { return [] }
         
         let isCompleted = isChoreCompleted(chore, forDay: dayOfWeek)
