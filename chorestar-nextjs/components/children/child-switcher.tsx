@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ChildAvatarContent } from '@/components/children/child-avatar-content'
 import { Plus, Pencil } from 'lucide-react'
 import { AddChildModal } from './add-child-modal'
 import { EditChildModal } from './edit-child-modal'
@@ -65,9 +66,7 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
                     className="absolute inset-[8px] grid place-items-center overflow-hidden rounded-full text-xl font-bold text-white"
                     style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
                   >
-                    {child.avatar_url
-                      ? <img src={child.avatar_url} alt="" className="h-full w-full object-cover" />
-                      : child.name.charAt(0).toUpperCase()}
+                    <ChildAvatarContent child={child} name={child.name} />
                   </div>
                 </div>
 

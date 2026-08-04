@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
 }
 
-const LAST_UPDATED = 'February 24, 2026'
+const LAST_UPDATED = 'August 4, 2026'
 
 export default function PrivacyPage() {
   return (
@@ -58,18 +58,53 @@ export default function PrivacyPage() {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Family data (entered by parents)</h3>
             <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300">
               <li>Children&apos;s names and ages</li>
-              <li>Avatar colors and images (if uploaded)</li>
+              <li>Avatar colors, preset avatar images, and optional profile photos (see below)</li>
               <li>Chore names, descriptions, and reward amounts</li>
               <li>Routine names and steps</li>
               <li>Chore and routine completion history</li>
               <li>Achievement badges earned</li>
             </ul>
 
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Profile photos (optional)</h3>
+            <p className="text-gray-700 dark:text-gray-300">
+              A parent may optionally add a profile photo for a child, taken with the camera or chosen
+              from their device. Photos are entirely optional — every avatar option other than this one
+              is a drawing, an emoji, or a colour, and the app works exactly the same without a photo.
+            </p>
+            <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300 mt-2">
+              <li>
+                <strong>Stored privately.</strong> Photos live in a private storage bucket, not on the
+                public internet. There is no public link. Each image is served only through a
+                short-lived, signed URL that expires within the hour.
+              </li>
+              <li>
+                <strong>Only your family can see them.</strong> Access is restricted at the storage
+                layer to the account that uploaded the photo and the children in that family. Other
+                ChoreStar accounts cannot read, list, or link to your photos.
+              </li>
+              <li>
+                <strong>Uploaded by a parent, never by a child.</strong> Only the signed-in account
+                holder can add or change a photo — this is the parental-consent model, and children
+                cannot upload anything.
+              </li>
+              <li>
+                <strong>Never used for anything else.</strong> Photos are shown in your own app only.
+                They are never sold, shared, published, used for advertising, used to train any model,
+                or analysed by facial recognition of any kind.
+              </li>
+              <li>
+                <strong>Deletable at any time.</strong> Removing a photo, or replacing it, deletes the
+                stored image. Deleting a child or your account deletes their photos with it.
+              </li>
+            </ul>
+
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Data we do NOT collect from children</h3>
             <p className="text-gray-700 dark:text-gray-300">
               Children do not create accounts or provide personal information. They access the app through a
               family-specific link and a numeric PIN set by a parent. We do not collect names, emails,
-              or any personal data directly from children.
+              or any personal data directly from children. Anything about a child in ChoreStar — their
+              name, age, avatar, and any optional profile photo — is entered by their parent, not by
+              them.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Usage data</h3>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ChildAvatarContent } from '@/components/children/child-avatar-content'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -101,15 +102,7 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
                         : 'linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%)'
                     }}
                   >
-                    {child.avatar_url ? (
-                      <img
-                        src={child.avatar_url}
-                        alt={child.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      child.name.charAt(0).toUpperCase()
-                    )}
+                    <ChildAvatarContent child={child} name={child.name} />
                   </div>
 
                   {/* Info */}

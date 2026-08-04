@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
+import { CHILD_AVATAR_BUCKET } from '@/lib/constants/storage'
 
 /**
  * Resolving a child's uploaded photo for kid mode.
@@ -13,7 +14,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
  * behind it.
  */
 
-export const CHILD_AVATAR_BUCKET = 'child-avatars'
+export { CHILD_AVATAR_BUCKET } from '@/lib/constants/storage'
 
 /**
  * How long a kid-facing avatar URL stays valid.
