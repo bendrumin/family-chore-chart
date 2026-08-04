@@ -7,6 +7,9 @@ struct Child: Codable, Identifiable {
     let avatarColor: String
     let avatarUrl: String?
     let avatarFile: String?
+    /// Object path in the private child-avatars bucket. Resolved to a short-lived
+    /// signed URL for display; never stores the URL itself, since those expire.
+    let avatarPhotoPath: String?
     let userId: UUID
     let createdAt: Date
     let updatedAt: Date
@@ -18,6 +21,7 @@ struct Child: Codable, Identifiable {
         case avatarColor = "avatar_color"
         case avatarUrl = "avatar_url"
         case avatarFile = "avatar_file"
+        case avatarPhotoPath = "avatar_photo_path"
         case userId = "user_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -119,6 +123,10 @@ struct KidModeSession: Codable {
             avatarColor: avatarColor ?? "blue",
             avatarUrl: avatarUrl,
             avatarFile: avatarFile,
+            // Kid mode does not carry a photo path yet — the kid endpoints would
+            // have to mint the signed URL server-side, since kids are not
+            // authenticated Supabase users and RLS cannot serve them.
+            avatarPhotoPath: nil,
             userId: UUID(),
             createdAt: Date(),
             updatedAt: Date()
@@ -154,6 +162,7 @@ struct ChildRow: Codable {
     let avatar_color: String?
     let avatar_url: String?
     let avatar_file: String?
+    let avatar_photo_path: String?
     let user_id: UUID
     let created_at: String
     let updated_at: String

@@ -1,13 +1,20 @@
 import SwiftUI
+import PhotosUI
 
 struct AvatarPickerView: View {
     @Environment(\.dismiss) var dismiss
     let onSelect: (String, String) -> Void // (avatarUrl, avatarFile)
+    /// Nil for a child that has not been saved yet — an object path needs an id.
+    var childId: UUID? = nil
+    /// Called after a photo upload, which writes the row itself rather than
+    /// going through onSelect.
+    var onPhotoUploaded: (() -> Void)? = nil
     
     @State private var selectedTab: AvatarStyle = .robots
     @State private var selectedSeed: String?
     
     enum AvatarStyle: String, CaseIterable {
+        case photo = "Photo"
         case robots = "Robots"
         case adventurers = "Adventurers"
         case funEmojis = "Fun Emojis"
@@ -51,12 +58,23 @@ struct AvatarPickerView: View {
                 .cornerRadius(12)
                 .padding()
                 
+                if selectedTab == .photo {
+                    PhotoAvatarPicker(childId: childId) {
+                        onPhotoUploaded?()
+                        dismiss()
+                    }
+                } else {
+
                 // Avatar grid
                 ScrollView {
                     LazyVGrid(columns: [
                         GridItem(.adaptive(minimum: 70), spacing: 16)
                     ], spacing: 16) {
                         switch selectedTab {
+                        case .photo:
+                            // Handled above — the photo tab is a single pane, not a grid.
+                            EmptyView()
+
                         case .robots:
                             ForEach(robotSeeds, id: \.self) { seed in
                                 DiceBearAvatarOption(
@@ -95,6 +113,8 @@ struct AvatarPickerView: View {
                     }
                     .padding()
                 }
+
+                } // end non-photo tabs
             }
             .navigationTitle("Choose Avatar")
             .navigationBarTitleDisplayMode(.inline)
@@ -105,6 +125,8 @@ struct AvatarPickerView: View {
                     }
                 }
                 
+                // Hidden on the Photo tab: an upload commits the moment it
+                // finishes, so there is nothing to confirm.
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Select") {
                         if let seed = selectedSeed {
@@ -125,6 +147,8 @@ struct AvatarPickerView: View {
                         }
                         dismiss()
                     }
+                    .disabled(selectedSeed == nil)
+                    .opacity(selectedTab == .photo ? 0 : 1)
                     .disabled(selectedSeed == nil)
                     .fontWeight(.semibold)
                 }
@@ -230,3 +254,194 @@ struct EmojiAvatarOption: View {
     }
 }
 
+
+// MARK: - Photo Avatars
+
+/**
+ Camera capture for an avatar.
+
+ `PhotosPicker` cannot take a photo — it only browses what already exists — so
+ capture needs UIImagePickerController. That is also why Info.plist now carries
+ NSCameraUsageDescription: unlike PhotosPicker, which runs out-of-process and
+ needs no permission at all, the camera prompts.
+ */
+struct CameraPicker: UIViewControllerRepresentable {
+    let onCapture: (UIImage) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.cameraDevice = .front          // a child photographing themselves
+        picker.allowsEditing = true           // free framing before we square-crop
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ picker: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        private let parent: CameraPicker
+        init(_ parent: CameraPicker) { self.parent = parent }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            // .editedImage when allowsEditing cropped it, else the original.
+            if let image = (info[.editedImage] ?? info[.originalImage]) as? UIImage {
+                parent.onCapture(image)
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
+/**
+ The "Photo" tab: take a new photo or choose an existing one, then upload.
+
+ Kept in this file rather than a new one because the app target is not a
+ file-system-synchronized group — a new .swift file would need hand-editing
+ project.pbxproj in four places.
+ */
+struct PhotoAvatarPicker: View {
+    @EnvironmentObject var manager: SupabaseManager
+    let childId: UUID?
+    let onUploaded: () -> Void
+
+    @State private var showingCamera = false
+    @State private var libraryItem: PhotosPickerItem?
+    @State private var isUploading = false
+    @State private var errorMessage: String?
+    @State private var preview: UIImage?
+
+    private var cameraAvailable: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            if let preview {
+                Image(uiImage: preview)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 140, height: 140)
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(Color.choreStarPrimary.opacity(0.3), lineWidth: 3))
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(Color.choreStarPrimary.opacity(0.1))
+                        .frame(width: 140, height: 140)
+                    Image(systemName: "person.crop.circle.badge.plus")
+                        .font(.system(size: 52))
+                        .foregroundColor(.choreStarPrimary)
+                }
+            }
+
+            if childId == nil {
+                // Uploading needs a child id for the object path, and a brand-new
+                // child does not have one until it is saved.
+                Text("Save this child first, then add a photo from their edit screen.")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .padding(.horizontal, 32)
+            } else {
+                VStack(spacing: 12) {
+                    if cameraAvailable {
+                        Button(action: { showingCamera = true }) {
+                            Label("Take a Photo", systemImage: "camera.fill")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 15)
+                                .foregroundColor(.white)
+                                .background(Color.choreStarPrimary)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .disabled(isUploading)
+                    }
+
+                    PhotosPicker(selection: $libraryItem, matching: .images, photoLibrary: .shared()) {
+                        Label("Choose from Library", systemImage: "photo.on.rectangle")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 15)
+                            .foregroundColor(.choreStarPrimary)
+                            .background(Color.choreStarPrimary.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .disabled(isUploading)
+                }
+                .padding(.horizontal, 24)
+
+                Text("Stored privately. Only your family can see it, and you can remove it any time.")
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .padding(.horizontal, 32)
+            }
+
+            if isUploading {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text("Uploading…").font(.subheadline).foregroundColor(.choreStarTextSecondary)
+                }
+            }
+
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarDanger)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.top, 24)
+        .fullScreenCover(isPresented: $showingCamera) {
+            CameraPicker { image in
+                preview = image
+                upload(image)
+            }
+            .ignoresSafeArea()
+        }
+        .onChange(of: libraryItem) { _, item in
+            guard let item else { return }
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    await MainActor.run { preview = image }
+                    upload(image)
+                } else {
+                    await MainActor.run { errorMessage = "That image couldn't be read. Try another." }
+                }
+            }
+        }
+    }
+
+    private func upload(_ image: UIImage) {
+        guard let childId else { return }
+        isUploading = true
+        errorMessage = nil
+        Task {
+            let failure = await manager.uploadChildAvatar(childId: childId, image: image)
+            await MainActor.run {
+                isUploading = false
+                if let failure {
+                    errorMessage = failure
+                } else {
+                    Haptics.success()
+                    onUploaded()
+                }
+            }
+        }
+    }
+}

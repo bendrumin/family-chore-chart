@@ -17,13 +17,81 @@ extension String {
     }
 }
 
+/**
+ An uploaded photo, resolved from a private Storage path to a signed URL.
+
+ The path cannot be rendered directly — the bucket is private, so a URL has to be
+ minted per session. SupabaseManager caches them, so this does not re-sign on
+ every redraw of a scrolling list.
+ */
+struct PhotoAvatarImage: View {
+    @EnvironmentObject var manager: SupabaseManager
+    let path: String
+    let child: Child
+    let size: CGFloat
+
+    @State private var url: URL?
+
+    var body: some View {
+        Group {
+            if let url {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: size, height: size)
+                            .clipShape(Circle())
+                    } else {
+                        InitialsAvatar(child: child, size: size)
+                    }
+                }
+            } else {
+                // Initials while the URL is being signed — never a spinner, which
+                // would flash on every cell of a list.
+                InitialsAvatar(child: child, size: size)
+            }
+        }
+        .task(id: path) {
+            url = await manager.signedAvatarURL(for: path)
+        }
+    }
+}
+
+/// The colour-plus-initials fallback, shared by every avatar path.
+struct InitialsAvatar: View {
+    let child: Child
+    let size: CGFloat
+
+    var body: some View {
+        Circle()
+            .fill(
+                LinearGradient(
+                    colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: size, height: size)
+            .overlay(
+                Text(child.initials)
+                    .font(.system(size: size * 0.4, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+            )
+    }
+}
+
 struct AvatarView: View {
     let child: Child
     let size: CGFloat
     
     var body: some View {
         Group {
-            if let avatarUrl = child.avatarUrl, !avatarUrl.isEmpty {
+            // Resolution order: uploaded photo -> preset URL -> emoji -> initials.
+            if let photoPath = child.avatarPhotoPath, !photoPath.isEmpty {
+                PhotoAvatarImage(path: photoPath, child: child, size: size)
+
+            } else if let avatarUrl = child.avatarUrl, !avatarUrl.isEmpty {
                 // DiceBear avatar from URL (convert SVG to PNG for iOS)
                 let pngUrl = avatarUrl.convertDiceBearToPNG(size: Int(size * 2))
                 AsyncImage(url: URL(string: pngUrl)) { phase in
@@ -119,6 +187,7 @@ struct AvatarView: View {
                 avatarColor: "pink",
                 avatarUrl: nil,
                 avatarFile: nil,
+                avatarPhotoPath: nil,
                 userId: UUID(),
                 createdAt: Date(),
                 updatedAt: Date()
@@ -135,6 +204,7 @@ struct AvatarView: View {
                 avatarColor: "blue",
                 avatarUrl: nil,
                 avatarFile: "🤖",
+                avatarPhotoPath: nil,
                 userId: UUID(),
                 createdAt: Date(),
                 updatedAt: Date()
@@ -151,6 +221,7 @@ struct AvatarView: View {
                 avatarColor: "purple",
                 avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Felix",
                 avatarFile: "Felix",
+                avatarPhotoPath: nil,
                 userId: UUID(),
                 createdAt: Date(),
                 updatedAt: Date()

@@ -18,6 +18,8 @@
 	<string>1.3</string>
 	<key>CFBundleVersion</key>
 	<string>3</string>
+	<key>NSCameraUsageDescription</key>
+	<string>ChoreStar uses the camera so you can take a profile photo for your child's avatar. Photos are stored privately for your family and can be removed at any time.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>

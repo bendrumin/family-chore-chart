@@ -11,6 +11,7 @@ struct AddEditChildView: View {
     @State private var selectedColor: String
     @State private var avatarUrl: String?
     @State private var avatarFile: String?
+    @State private var avatarPhotoPath: String?
     @State private var childAccessEnabled: Bool
     @State private var childPin: String = ""
     @State private var hadPinOnOpen: Bool
@@ -32,6 +33,7 @@ struct AddEditChildView: View {
         _selectedColor = State(initialValue: child?.avatarColor ?? "blue")
         _avatarUrl = State(initialValue: child?.avatarUrl)
         _avatarFile = State(initialValue: child?.avatarFile)
+        _avatarPhotoPath = State(initialValue: child?.avatarPhotoPath)
         let hasPin = child.map { SupabaseManager.shared.childHasPin($0.id) } ?? false
         _childAccessEnabled = State(initialValue: hasPin)
         _hadPinOnOpen = State(initialValue: hasPin)
@@ -50,7 +52,10 @@ struct AddEditChildView: View {
                         
                         VStack(spacing: 12) {
                             // Avatar preview
-                            if let avatarUrl = avatarUrl, !avatarUrl.isEmpty {
+                            if let photoPath = avatarPhotoPath, !photoPath.isEmpty, let editing = childToEdit {
+                                // Uploaded photo — private object, so signed on demand.
+                                PhotoAvatarImage(path: photoPath, child: editing, size: 100)
+                            } else if let avatarUrl = avatarUrl, !avatarUrl.isEmpty {
                                 let pngUrl = avatarUrl.convertDiceBearToPNG(size: 200)
                                 AsyncImage(url: URL(string: pngUrl)) { phase in
                                     switch phase {
@@ -201,10 +206,19 @@ struct AddEditChildView: View {
             .navigationTitle(isEditing ? "Edit Child" : "Add Child")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingAvatarPicker) {
-                AvatarPickerView { url, file in
+                AvatarPickerView(onSelect: { url, file in
                     avatarUrl = url.isEmpty ? nil : url
                     avatarFile = file.isEmpty ? nil : file
-                }
+                }, childId: childToEdit?.id, onPhotoUploaded: {
+                    // uploadChildAvatar already wrote the row and refreshed
+                    // manager.children, so read the real path back rather than
+                    // inventing one locally.
+                    if let id = childToEdit?.id {
+                        avatarPhotoPath = manager.children.first(where: { $0.id == id })?.avatarPhotoPath
+                    }
+                    avatarUrl = nil
+                    avatarFile = nil
+                })
             }
             .sheet(isPresented: $showingUpgradePrompt) {
                 UpgradePromptView(
@@ -342,6 +356,7 @@ struct ColorOption: View {
             avatarColor: "pink",
             avatarUrl: nil,
             avatarFile: nil,
+            avatarPhotoPath: nil,
             userId: UUID(),
             createdAt: Date(),
             updatedAt: Date()

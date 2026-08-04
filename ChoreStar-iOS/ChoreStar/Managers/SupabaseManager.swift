@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import SwiftUI
 import CryptoKit
 
@@ -794,6 +795,204 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
+    // MARK: - Child Photo Avatars
+
+    /// Private Storage bucket holding uploaded child photos.
+    ///
+    /// Private on purpose — these are photographs of children, so every read goes
+    /// through a short-lived signed URL rather than a permanent public link.
+    /// Policies (migration 008) scope a parent to `{their uid}/…` only.
+    private static let childAvatarBucket = "child-avatars"
+
+    /// Signed URLs, keyed by object path. They expire, so they are cached in
+    /// memory for the app session only and never written to the database.
+    private var signedAvatarURLs: [String: (url: URL, expires: Date)] = [:]
+
+    /// Longest edge of a stored avatar. A face in a 44pt circle needs nothing
+    /// larger, and it keeps uploads well inside the bucket's 2 MB ceiling.
+    private static let avatarPixelSize: CGFloat = 512
+
+    /**
+     Downscale and square-crop an image, then JPEG-encode it.
+
+     Centre-cropped to a square first so the circular avatar mask never lops off
+     someone's chin, then drawn at 512x512.
+     */
+    static func prepareAvatarJPEG(_ image: UIImage) -> Data? {
+        let side = min(image.size.width, image.size.height)
+        let cropRect = CGRect(
+            x: (image.size.width - side) / 2,
+            y: (image.size.height - side) / 2,
+            width: side,
+            height: side
+        )
+
+        // Normalize orientation by rendering through a context — a photo straight
+        // from the camera usually carries an EXIF rotation that cgImage ignores,
+        // which is how avatars end up sideways.
+        let target = CGSize(width: avatarPixelSize, height: avatarPixelSize)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: target, format: format)
+
+        let squared = renderer.image { _ in
+            guard let cg = image.cgImage?.cropping(to: cropRect.applying(
+                CGAffineTransform(scaleX: image.scale, y: image.scale)
+            )) else {
+                // No cgImage (e.g. a CIImage-backed UIImage): fall back to drawing
+                // the whole thing, accepting the aspect squeeze over failing.
+                image.draw(in: CGRect(origin: .zero, size: target))
+                return
+            }
+            UIImage(cgImage: cg, scale: 1, orientation: image.imageOrientation)
+                .draw(in: CGRect(origin: .zero, size: target))
+        }
+
+        return squared.jpegData(compressionQuality: 0.82)
+    }
+
+    /**
+     Upload a photo as a child's avatar and point the child row at it.
+
+     Returns nil on success, or a user-facing message.
+
+     The object path is `{user_id}/{child_id}/{uuid}.jpg`. The leading user id is
+     what the Storage RLS policy keys on, and the uuid means a replacement never
+     collides with a cached signed URL for the old image.
+     */
+    func uploadChildAvatar(childId: UUID, image: UIImage) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong. Please try again." }
+        guard let jpeg = SupabaseManager.prepareAvatarJPEG(image) else {
+            return "That photo couldn't be processed. Try another one."
+        }
+
+        // Must be the signed-in owner's uid, not effectiveUserId: a shared family
+        // member's uid would not satisfy the storage policy on the owner's folder.
+        let ownerId: String
+        do {
+            ownerId = try await client.auth.session.user.id.uuidString
+        } catch {
+            return "Your session expired. Please sign in again."
+        }
+
+        let previousPath = await MainActor.run {
+            children.first(where: { $0.id == childId })?.avatarPhotoPath
+        }
+
+        let path = "\(ownerId)/\(childId.uuidString)/\(UUID().uuidString).jpg"
+
+        do {
+            _ = try await client.storage
+                .from(SupabaseManager.childAvatarBucket)
+                .upload(path, data: jpeg, options: FileOptions(contentType: "image/jpeg", upsert: true))
+
+            // Point the row at the new object and clear the preset, so avatar
+            // resolution order (photo -> preset -> emoji -> initials) lands on it.
+            try await updateChildAvatarPhoto(childId: childId, photoPath: path)
+
+            // Only now remove the old object. Doing it first would leave the child
+            // with no avatar at all if the upload then failed.
+            if let previousPath, previousPath != path {
+                _ = try? await client.storage
+                    .from(SupabaseManager.childAvatarBucket)
+                    .remove(paths: [previousPath])
+                await MainActor.run { signedAvatarURLs[previousPath] = nil }
+            }
+
+            await loadRemoteData()
+            await MainActor.run { debugLastError = "Avatar photo uploaded for \(childId)" }
+            return nil
+        } catch {
+            await MainActor.run { debugLastError = "Avatar upload failed: \(error.localizedDescription)" }
+            return "Couldn't upload that photo. Check your connection and try again."
+        }
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
+    /// Point a child row at an uploaded photo (or clear it with nil).
+    private func updateChildAvatarPhoto(childId: UUID, photoPath: String?) async throws {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+
+        struct AvatarPhotoUpdate: Encodable {
+            let avatar_photo_path: String?
+            // Cleared so the resolution order actually reaches the photo, and so
+            // removing the photo falls back to initials rather than a stale preset.
+            let avatar_url: String?
+            let updated_at: String
+        }
+
+        try await client
+            .from("children")
+            .update(AvatarPhotoUpdate(
+                avatar_photo_path: photoPath,
+                avatar_url: nil,
+                updated_at: ISO8601DateFormatter().string(from: Date())
+            ))
+            .eq("id", value: childId.uuidString)
+            .execute()
+        #endif
+    }
+
+    /// Remove a child's uploaded photo — the object and the column.
+    func removeChildAvatarPhoto(childId: UUID) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let path = await MainActor.run { children.first(where: { $0.id == childId })?.avatarPhotoPath }
+
+        do {
+            try await updateChildAvatarPhoto(childId: childId, photoPath: nil)
+            if let path {
+                _ = try? await client.storage
+                    .from(SupabaseManager.childAvatarBucket)
+                    .remove(paths: [path])
+                await MainActor.run { signedAvatarURLs[path] = nil }
+            }
+            await loadRemoteData()
+            return nil
+        } catch {
+            return "Couldn't remove the photo. Please try again."
+        }
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
+    /**
+     Resolve a storage path to a displayable signed URL.
+
+     Cached per session and refreshed a minute before expiry, so scrolling a list
+     of children doesn't mint a URL per cell per redraw.
+     */
+    func signedAvatarURL(for path: String) async -> URL? {
+        #if canImport(Supabase)
+        if let hit = await MainActor.run(body: { signedAvatarURLs[path] }),
+           hit.expires > Date().addingTimeInterval(60) {
+            return hit.url
+        }
+        guard let client = client else { return nil }
+
+        let ttl = 3600
+        do {
+            let url = try await client.storage
+                .from(SupabaseManager.childAvatarBucket)
+                .createSignedURL(path: path, expiresIn: ttl)
+            await MainActor.run {
+                signedAvatarURLs[path] = (url, Date().addingTimeInterval(Double(ttl)))
+            }
+            return url
+        } catch {
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
+
     // MARK: - Account Deletion
 
     /// Outcome of a delete request, mirroring PinVerifyOutcome above.
@@ -939,6 +1138,7 @@ class SupabaseManager: ObservableObject {
                     avatarColor: row.avatar_color ?? "blue",
                     avatarUrl: row.avatar_url,
                     avatarFile: row.avatar_file,
+                    avatarPhotoPath: row.avatar_photo_path,
                     userId: row.user_id,
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
                     updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()

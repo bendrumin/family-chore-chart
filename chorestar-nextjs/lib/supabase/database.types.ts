@@ -64,6 +64,7 @@ export interface Database {
           avatar_color: string | null
           avatar_url: string | null
           avatar_file: string | null
+          avatar_photo_path: string | null
           child_pin: string | null
           child_access_enabled: boolean
           created_at: string
@@ -77,6 +78,7 @@ export interface Database {
           avatar_color?: string | null
           avatar_url?: string | null
           avatar_file?: string | null
+          avatar_photo_path?: string | null
           child_pin?: string | null
           child_access_enabled?: boolean
           created_at?: string
@@ -90,6 +92,7 @@ export interface Database {
           avatar_color?: string | null
           avatar_url?: string | null
           avatar_file?: string | null
+          avatar_photo_path?: string | null
           child_pin?: string | null
           child_access_enabled?: boolean
           created_at?: string

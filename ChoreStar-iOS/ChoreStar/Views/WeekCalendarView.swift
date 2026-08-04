@@ -666,6 +666,7 @@ struct EmptyWeekView: View {
                 avatarColor: "pink",
                 avatarUrl: nil,
                 avatarFile: nil,
+                avatarPhotoPath: nil,
                 userId: UUID(),
                 createdAt: Date(),
                 updatedAt: Date()
