@@ -16,6 +16,8 @@ import {
   type DayCompletion,
   type EarningsSettings,
 } from './earnings'
+import { formatAmount, formatMoney, currencySymbol, findCurrency } from '@/lib/constants/currencies'
+import { DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
 
 const FLAT: EarningsSettings = { reward_mode: 'flat', daily_reward_cents: 8, weekly_bonus_cents: 1 }
 const PER: EarningsSettings = { reward_mode: 'per_chore', daily_reward_cents: 8, weekly_bonus_cents: 1 }
@@ -149,6 +151,59 @@ t('absent settings fall back to the schema default rate', () => {
 t('rows with a null day_of_week are ignored', () => {
   const rows: DayCompletion[] = levi.map(c => ({ chore_id: c.id, day_of_week: null }))
   assert.equal(childWeekEarningsCents(levi, rows, FLAT).earnedCents, 0)
+})
+
+
+// ---------------------------------------------------------------------------
+// Currency formatting — added when the chore reward input was rebuilt.
+// ---------------------------------------------------------------------------
+
+group('currency formatting')
+
+t('formats minor units without float drift', () => {
+  assert.equal(formatAmount(8, 'USD'), '0.08')
+  assert.equal(formatAmount(800, 'USD'), '8.00')
+  assert.equal(formatAmount(25, 'USD'), '0.25')
+  assert.equal(formatAmount(0, 'USD'), '0.00')
+  // The three amounts actually found in production, which is how this got noticed.
+  assert.equal(formatMoney(8, 'USD'), '$0.08')
+  assert.equal(formatMoney(100, 'USD'), '$1.00')
+  assert.equal(formatMoney(800, 'USD'), '$8.00')
+})
+
+t('zero-decimal currencies do not show a fractional part', () => {
+  // ¥1.00 and ₩1.00 are meaningless — these have no minor unit.
+  assert.equal(findCurrency('JPY').decimals, 0)
+  assert.equal(formatAmount(12000, 'JPY'), '120')
+  assert.equal(formatMoney(12000, 'JPY'), '¥120')
+  assert.equal(formatMoney(500000, 'KRW'), '₩5000')
+})
+
+t('an unknown or missing currency falls back to USD rather than throwing', () => {
+  assert.equal(currencySymbol(null), '$')
+  assert.equal(currencySymbol(undefined), '$')
+  assert.equal(currencySymbol('NOPE'), '$')
+  assert.equal(formatMoney(150, 'GBP'), '£1.50')
+})
+
+t('a new chore is NOT defaulted from the flat daily rate', () => {
+  // The bug: the per-chore default was read from daily_reward_cents, so a
+  // family on an 8c daily rate got every new chore defaulted to $0.08.
+  // These are unrelated quantities that merely share a unit.
+  assert.equal(DEFAULT_CHORE_REWARD_CENTS, 25)
+  assert.notEqual(DEFAULT_CHORE_REWARD_CENTS, DEFAULT_DAILY_REWARD_CENTS)
+})
+
+t('flat mode ignores per-chore amounts entirely', () => {
+  // Why the chore form now says so out loud. These wildly different per-chore
+  // values produce the same earnings under the flat rate.
+  const flat = { reward_mode: 'flat', daily_reward_cents: 8, weekly_bonus_cents: 0 }
+  const chores = [{ id: 'a', reward_cents: 800 }, { id: 'b', reward_cents: 8 }]
+  const allDone = new Set(['a', 'b'])
+  assert.equal(childDayEarningsCents(chores, allDone, flat), 8)
+
+  const cheap = [{ id: 'a', reward_cents: 1 }, { id: 'b', reward_cents: 1 }]
+  assert.equal(childDayEarningsCents(cheap, allDone, flat), 8, 'flat earnings must not depend on chore amounts')
 })
 
 console.log(`\n${passed} passed, ${failed} failed\n`)

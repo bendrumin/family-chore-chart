@@ -154,6 +154,21 @@ struct AddEditChoreView: View {
                     Text("Current: \(manager.formatMoney(rewardDollars))")
                         .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)
+
+                    // Web parity. Without this the form implies the amount is
+                    // paid per completion, which is false on the flat daily
+                    // rate — where every chore's amount is ignored and the child
+                    // earns the daily rate for finishing the whole list.
+                    if !manager.isPerChoreRewardMode {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.choreStarAccent)
+                            Text("Your family is on the Flat Daily Rate, so this amount isn't used yet. It's saved, and applies if you switch to Per Chore in Settings.")
+                                .font(.caption)
+                                .foregroundColor(.choreStarTextSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                 }
                 
                 Section("Category") {
@@ -262,7 +277,11 @@ struct AddEditChoreView: View {
         
         Task {
             do {
-                let rewardCents = Int(rewardDollars * 100)
+                // .rounded() before Int(). Int() truncates, and 0.29 * 100 is
+                // 28.999999999999996 in binary floating point — so the old
+                // Int(rewardDollars * 100) silently stored 28 cents. Same for
+                // 0.57 -> 56 and 1.15 -> 114.
+                let rewardCents = Int((rewardDollars * 100).rounded())
                 
                 if let chore = choreToEdit {
                     // Update existing chore

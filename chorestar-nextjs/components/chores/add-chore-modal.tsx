@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSettings } from '@/lib/contexts/settings-context'
+import { RewardAmountInput, DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
+import { isPerChoreMode } from '@/lib/utils/earnings'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,20 +29,19 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
-    rewardAmount: '1.00',
+    rewardCents: DEFAULT_CHORE_REWARD_CENTS,
     icon: '📝',
     category: 'household_chores' as ChoreCategory
   })
 
-  // New chores default to the family's configured standard reward
-  // (Settings → Reward Settings), not a hardcoded $1.
-  const defaultReward = ((settings?.daily_reward_cents ?? 100) / 100).toFixed(2)
-
-  // Reset the form each time the modal opens, seeding the reward from settings.
+  // Deliberately NOT seeded from settings.daily_reward_cents. That field is the
+  // flat DAILY rate for finishing every chore — a different quantity from what
+  // one chore pays. Seeding from it meant a family with an 8¢ daily rate got
+  // every new chore defaulted to $0.08, which is how three of one child's chores
+  // ended up at 8 cents while another's sat at $8.00.
   useEffect(() => {
     if (!open) return
-    setFormData({ name: '', rewardAmount: defaultReward, icon: '📝', category: 'household_chores' })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setFormData({ name: '', rewardCents: DEFAULT_CHORE_REWARD_CENTS, icon: '📝', category: 'household_chores' })
   }, [open])
 
   const categories = getCategoryList()
@@ -54,7 +55,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
       const { error } = await supabase.from('chores').insert({
         child_id: childId,
         name: formData.name,
-        reward_cents: Math.round(parseFloat(formData.rewardAmount) * 100),
+        reward_cents: formData.rewardCents,
         is_active: true,
         icon: formData.icon,
         category: formData.category,
@@ -64,7 +65,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
       playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
-      setFormData({ name: '', rewardAmount: defaultReward, icon: '📝', category: 'household_chores' })
+      setFormData({ name: '', rewardCents: DEFAULT_CHORE_REWARD_CENTS, icon: '📝', category: 'household_chores' })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)
@@ -199,23 +200,13 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 <Label htmlFor="reward" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                   Reward Amount
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-500 dark:text-gray-400">$</span>
-                  <Input
-                    id="reward"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={formData.rewardAmount}
-                    onChange={(e) => setFormData({ ...formData, rewardAmount: e.target.value })}
-                    required
-                    className="h-14 pl-10 text-xl font-bold border-2 rounded-xl focus:ring-2 focus:ring-green-200 transition-all input-bg-glass"
-                  />
-                </div>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  Child earns this amount for each completion
-                </p>
+                <RewardAmountInput
+                  id="reward"
+                  valueCents={formData.rewardCents}
+                  onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
+                  currencyCode={settings?.currency_code}
+                  affectsEarnings={isPerChoreMode(settings)}
+                />
               </div>
             </div>
           </div>

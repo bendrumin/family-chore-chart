@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useSettings } from '@/lib/contexts/settings-context'
+import { RewardAmountInput } from '@/components/chores/reward-amount-input'
+import { isPerChoreMode } from '@/lib/utils/earnings'
 import { Edit3, DollarSign, Trash2, FileText, Palette } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
@@ -24,12 +27,13 @@ interface EditChoreModalProps {
 }
 
 export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditChoreModalProps) {
+  const { settings } = useSettings()
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState({
     name: chore.name,
-    rewardAmount: (chore.reward_cents / 100).toFixed(2),
+    rewardCents: chore.reward_cents ?? 0,
     icon: chore.icon || '📝',
     category: (chore.category || 'household_chores') as ChoreCategory
   })
@@ -40,7 +44,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
   useEffect(() => {
     setFormData({
       name: chore.name,
-      rewardAmount: (chore.reward_cents / 100).toFixed(2),
+      rewardCents: chore.reward_cents ?? 0,
       icon: chore.icon || '📝',
       category: (chore.category || 'household_chores') as ChoreCategory
     })
@@ -56,7 +60,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         .from('chores')
         .update({
           name: formData.name,
-          reward_cents: Math.round(parseFloat(formData.rewardAmount) * 100),
+          reward_cents: formData.rewardCents,
           icon: formData.icon,
           category: formData.category,
         })
@@ -220,23 +224,13 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 <Label htmlFor="edit-reward" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                   Reward Amount
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-gray-500 dark:text-gray-400">$</span>
-                  <Input
-                    id="edit-reward"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={formData.rewardAmount}
-                    onChange={(e) => setFormData({ ...formData, rewardAmount: e.target.value })}
-                    required
-                    className="h-14 pl-10 text-xl font-bold border-2 rounded-xl focus:ring-2 focus:ring-green-200 transition-all input-bg-glass"
-                  />
-                </div>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  Child earns this amount for each completion
-                </p>
+                <RewardAmountInput
+                  id="edit-reward"
+                  valueCents={formData.rewardCents}
+                  onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
+                  currencyCode={settings?.currency_code}
+                  affectsEarnings={isPerChoreMode(settings)}
+                />
               </div>
             </div>
           </div>

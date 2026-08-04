@@ -11,21 +11,8 @@ import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
 import { toast } from 'sonner'
+import { CURRENCIES, currencySymbol } from '@/lib/constants/currencies'
 
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', flag: '🇺🇸', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', flag: '🇪🇺', name: 'Euro' },
-  { code: 'GBP', symbol: '£', flag: '🇬🇧', name: 'British Pound' },
-  { code: 'JPY', symbol: '¥', flag: '🇯🇵', name: 'Japanese Yen' },
-  { code: 'CAD', symbol: '$', flag: '🇨🇦', name: 'Canadian Dollar' },
-  { code: 'AUD', symbol: '$', flag: '🇦🇺', name: 'Australian Dollar' },
-  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'Swiss Franc' },
-  { code: 'CNY', symbol: '¥', flag: '🇨🇳', name: 'Chinese Yuan' },
-  { code: 'INR', symbol: '₹', flag: '🇮🇳', name: 'Indian Rupee' },
-  { code: 'MXN', symbol: '$', flag: '🇲🇽', name: 'Mexican Peso' },
-  { code: 'BRL', symbol: 'R$', flag: '🇧🇷', name: 'Brazilian Real' },
-  { code: 'KRW', symbol: '₩', flag: '🇰🇷', name: 'South Korean Won' },
-]
 
 const DATE_FORMATS = [
   { id: 'auto', label: 'Auto (Based on Locale)' },
@@ -169,10 +156,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
     }
   }
 
-  const getCurrencySymbol = (code: string) => {
-    const currency = CURRENCIES.find(c => c.code === code)
-    return currency?.symbol || '$'
-  }
+  const getCurrencySymbol = (code: string) => currencySymbol(code)
 
   return (
     <>

@@ -30,6 +30,15 @@ class SupabaseManager: ObservableObject {
     // Family's currency symbol (falls back to $ until settings load)
     var currencySymbol: String { familySettings?.currencySymbol ?? "$" }
 
+    /// Whether per-chore reward amounts actually affect earnings.
+    ///
+    /// False on the flat daily rate, where a chore's own amount is ignored
+    /// entirely and the child earns `dailyRewardCents` for finishing their whole
+    /// list. Forms that let you set a per-chore amount need to say so, or you get
+    /// an $8.00 chore next to an $0.08 one and totals that reflect neither.
+    /// Defaults to false to match the schema default of 'flat'.
+    var isPerChoreRewardMode: Bool { familySettings?.isPerChoreMode ?? false }
+
     /// Formats a dollar amount using the family's currency, e.g. "£2.50".
     func formatMoney(_ amount: Double) -> String {
         String(format: "%@%.2f", currencySymbol, amount)
@@ -1010,21 +1019,6 @@ class SupabaseManager: ObservableObject {
         let currentChildren = await MainActor.run { children }
         let currentChores = await MainActor.run { chores }
         
-        // Demo data is opt-in via `-chorestar-demo`, matching the other
-        // screenshot launch args. It used to fire automatically whenever a user
-        // had no children AND no chores — which is exactly the state a brand-new
-        // account is in, so every first-time signup was greeted by fake children
-        // named Emma and Liam. That made the real first-run experience
-        // impossible to see, and looked like a data leak from another family.
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-chorestar-demo"),
-           currentChildren.isEmpty, currentChores.isEmpty {
-            await MainActor.run {
-                debugLastError = "Loading demo data (-chorestar-demo)"
-                loadSampleData()
-            }
-        }
-        #endif
         
         await MainActor.run {
             debugLastError = "Loaded \(currentChildren.count) children and \(currentChores.count) chores"
@@ -2485,65 +2479,4 @@ class SupabaseManager: ObservableObject {
         )
     }
     
-    // Demo data for testing
-    @MainActor
-    func loadSampleData() {
-        children = [
-            Child(
-                id: UUID(),
-                name: "Emma",
-                age: 8,
-                avatarColor: "pink",
-                avatarUrl: nil,
-                avatarFile: nil,
-                userId: UUID(),
-                createdAt: Date(),
-                updatedAt: Date()
-            ),
-            Child(
-                id: UUID(),
-                name: "Liam",
-                age: 6,
-                avatarColor: "blue",
-                avatarUrl: nil,
-                avatarFile: nil,
-                userId: UUID(),
-                createdAt: Date(),
-                updatedAt: Date()
-            )
-        ]
-        
-        chores = [
-            Chore(
-                id: UUID(),
-                name: "Make bed",
-                childId: children[0].id,
-                reward: 1.0,
-                description: "Make your bed neatly",
-                category: "Bedroom",
-                icon: "bed.double",
-                color: "blue",
-                notes: nil,
-                sortOrder: 0,
-                createdAt: Date(),
-                updatedAt: Date()
-            ),
-            Chore(
-                id: UUID(),
-                name: "Feed the dog",
-                childId: children[1].id,
-                reward: 2.0,
-                description: "Give the dog food and water",
-                category: "Pets",
-                icon: "pawprint",
-                color: "green",
-                notes: nil,
-                sortOrder: 1,
-                createdAt: Date(),
-                updatedAt: Date()
-            )
-        ]
-        
-        debugLastError = "Loaded demo data: \(children.count) children, \(chores.count) chores"
-    }
 }
