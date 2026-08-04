@@ -1,7 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { Minus, Plus, Info } from 'lucide-react'
-import { currencySymbol, formatAmount, findCurrency } from '@/lib/constants/currencies'
+import {
+  currencySymbol,
+  formatAmount,
+  sanitizeAmountInput,
+  amountToCents,
+} from '@/lib/constants/currencies'
 
 /**
  * Reward amount picker for a single chore.
@@ -66,10 +72,23 @@ export function RewardAmountInput({
   id = 'reward',
 }: RewardAmountInputProps) {
   const symbol = currencySymbol(currencyCode)
-  const { decimals } = findCurrency(currencyCode)
+
+  /**
+   * The text currently being typed, or null when not editing.
+   *
+   * Needed because the field's canonical text comes from `valueCents`, and
+   * formatting that on every keystroke would rewrite "0.0" to "0.00" mid-type,
+   * making "0.08" impossible to reach.
+   */
+  const [draft, setDraft] = useState<string | null>(null)
 
   const clamp = (c: number) => Math.max(0, Math.min(MAX_CENTS, Math.round(c)))
-  const bump = (delta: number) => onChange(clamp(valueCents + delta))
+  // Stepper and presets are canonical values, so they drop any in-progress text.
+  const commit = (cents: number) => {
+    setDraft(null)
+    onChange(clamp(cents))
+  }
+  const bump = (delta: number) => commit(valueCents + delta)
 
   return (
     <div className="space-y-3">
@@ -91,15 +110,26 @@ export function RewardAmountInput({
           </span>
           <input
             id={id}
-            type="number"
+            /* type="text", NOT type="number". A number input reports
+               e.target.value as "" for an intermediate value like "0.", so the
+               decimal point is swallowed and 0 . 0 8 arrives as "008" = $8.00. */
+            type="text"
             inputMode="decimal"
-            step={decimals === 0 ? 1 : 0.01}
-            min={0}
-            max={MAX_CENTS / 100}
-            value={formatAmount(valueCents, currencyCode)}
+            autoComplete="off"
+            value={draft ?? formatAmount(valueCents, currencyCode)}
             onChange={(e) => {
-              const next = parseFloat(e.target.value)
-              onChange(Number.isFinite(next) ? clamp(next * 100) : 0)
+              const clean = sanitizeAmountInput(e.target.value)
+              // Hold the raw text while typing. Re-deriving it from cents on
+              // every keystroke reformats to 2dp under the cursor, which makes
+              // "0.0" unreachable and so "0.08" impossible to type at all.
+              setDraft(clean)
+              const cents = amountToCents(clean)
+              if (cents !== null) onChange(clamp(cents))
+            }}
+            /* Snap back to canonical formatting only once they're done. */
+            onBlur={() => {
+              if (draft !== null && amountToCents(draft) === null) onChange(0)
+              setDraft(null)
             }}
             className="h-14 w-full rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-10 text-xl font-bold text-gray-900 dark:text-gray-100 transition-all focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800"
           />
@@ -124,7 +154,7 @@ export function RewardAmountInput({
             <button
               key={cents}
               type="button"
-              onClick={() => onChange(cents)}
+              onClick={() => commit(cents)}
               aria-pressed={selected}
               className={`rounded-full px-3.5 py-1.5 text-sm font-bold transition-all border-2 ${
                 selected

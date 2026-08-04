@@ -16,7 +16,14 @@ import {
   type DayCompletion,
   type EarningsSettings,
 } from './earnings'
-import { formatAmount, formatMoney, currencySymbol, findCurrency } from '@/lib/constants/currencies'
+import {
+  formatAmount,
+  formatMoney,
+  currencySymbol,
+  findCurrency,
+  sanitizeAmountInput,
+  amountToCents,
+} from '@/lib/constants/currencies'
 import { DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
 
 const FLAT: EarningsSettings = { reward_mode: 'flat', daily_reward_cents: 8, weekly_bonus_cents: 1 }
@@ -205,6 +212,58 @@ t('flat mode ignores per-chore amounts entirely', () => {
   const cheap = [{ id: 'a', reward_cents: 1 }, { id: 'b', reward_cents: 1 }]
   assert.equal(childDayEarningsCents(cheap, allDone, flat), 8, 'flat earnings must not depend on chore amounts')
 })
+
+
+group('typing a money amount')
+
+/** Replay a literal keystroke sequence through the input's onChange logic. */
+function typeAmount(keys: string): { shown: string; cents: number } {
+  let draft = ''
+  let cents = 0
+  for (const k of keys) {
+    draft = sanitizeAmountInput(draft + k)
+    const c = amountToCents(draft)
+    if (c !== null) cents = c
+  }
+  return { shown: draft, cents }
+}
+
+t('typing "0.08" gives 8 cents — it used to give $8.00', () => {
+  // The reported bug. A controlled <input type="number"> reports e.target.value
+  // as "" for the intermediate "0.", so the decimal was swallowed and the
+  // keystrokes landed as "08" = 800 cents.
+  assert.equal(typeAmount('0.08').cents, 8)
+  assert.equal(typeAmount('0.08').shown, '0.08')
+  // Every intermediate state must survive, or the next keystroke can't happen.
+  assert.equal(typeAmount('0').shown, '0')
+  assert.equal(typeAmount('0.').shown, '0.')
+  assert.equal(typeAmount('0.0').shown, '0.0')
+})
+
+t('string math avoids the float truncation that ate a cent', () => {
+  // parseFloat('0.29') * 100 is 28.999999999999996; Int()/floor gives 28.
+  assert.equal(typeAmount('0.29').cents, 29)
+  assert.equal(typeAmount('0.57').cents, 57)
+  assert.equal(typeAmount('1.15').cents, 115)
+  assert.equal(Math.trunc(parseFloat('0.29') * 100), 28, 'sanity: the naive path really does lose it')
+})
+
+t('handles the awkward inputs a real keyboard produces', () => {
+  assert.equal(typeAmount('8').cents, 800)
+  assert.equal(typeAmount('.08').cents, 8)      // leading dot
+  assert.equal(typeAmount('00.08').cents, 8)    // leading zeros collapsed
+  assert.equal(typeAmount('1.2.3').cents, 123)  // second dot ignored
+  assert.equal(typeAmount('5abc').cents, 500)   // letters stripped
+  assert.equal(typeAmount('12.3456').cents, 1234) // capped at 2 decimals
+})
+
+t('an incomplete amount parses as null rather than zero', () => {
+  // So the field can hold "" or "." mid-type without snapping the value to 0.
+  assert.equal(amountToCents(''), null)
+  assert.equal(amountToCents('.'), null)
+  assert.equal(amountToCents('0'), 0)
+})
+
 
 console.log(`\n${passed} passed, ${failed} failed\n`)
 if (failed > 0) process.exit(1)
