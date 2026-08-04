@@ -32,38 +32,39 @@ struct AvatarPickerView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Tab selector.
+                // Tab selector — four equal columns spanning the full width, like
+                // a native segmented control.
                 //
-                // Scrollable, single-line, and non-shrinking. A plain HStack made
-                // the four labels wrap to two lines; lineLimit alone would have
-                // truncated them instead on a narrow phone or at a large Dynamic
-                // Type size, so the row scrolls when it genuinely cannot fit.
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
-                        ForEach(AvatarStyle.allCases, id: \.self) { style in
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedTab = style
-                                }
-                            }) {
-                                Text(style.rawValue)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .lineLimit(1)
-                                    .fixedSize(horizontal: true, vertical: false)
-                                    .foregroundColor(selectedTab == style ? .white : .choreStarTextSecondary)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(selectedTab == style ? Color.choreStarPrimary : Color.clear)
-                                    )
+                // Previously a fixed-width HStack, which overflowed with four tabs
+                // and wrapped the labels onto two lines. Distributing the width
+                // instead of sizing to content means the row always fits exactly,
+                // with no scrolling and no dead space on the right.
+                HStack(spacing: 4) {
+                    ForEach(AvatarStyle.allCases, id: \.self) { style in
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedTab = style
                             }
-                            .buttonStyle(PlainButtonStyle())
+                        }) {
+                            Text(style.rawValue)
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                                .lineLimit(1)
+                                // Shrinks rather than truncating or wrapping at
+                                // large Dynamic Type sizes.
+                                .minimumScaleFactor(0.75)
+                                .foregroundColor(selectedTab == style ? .white : .choreStarTextSecondary)
+                                .padding(.vertical, 10)
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 9)
+                                        .fill(selectedTab == style ? Color.choreStarPrimary : Color.clear)
+                                )
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .padding(6)
                 }
+                .padding(5)
                 .background(Color.choreStarSecondary.opacity(0.15))
                 .cornerRadius(12)
                 .padding()
