@@ -38,6 +38,67 @@ const CONFIRM_WORD = 'DELETE'
 const EMAIL_KEYED_TABLES = ['testflight_waitlist', 'outreach_sent_log'] as const
 
 /**
+ * Storage buckets holding per-user objects under a `{user_id}/…` prefix.
+ *
+ * Storage objects are NOT reached by the auth.users cascade — a foreign key
+ * cannot see into the object store. Left alone, deleting an account would
+ * remove every database row while quietly keeping photographs of that family's
+ * children on disk, which is both a broken promise and the worst possible thing
+ * to leave behind.
+ */
+const USER_PREFIXED_BUCKETS = ['child-avatars'] as const
+
+/**
+ * Remove every stored object under this user's folder.
+ *
+ * Best-effort, like the Stripe cleanup: a Storage outage must not block a
+ * deletion Apple requires to work. Failures are logged loudly with the user id so
+ * the objects can be swept by hand.
+ */
+async function deleteStorageObjects(
+  admin: ReturnType<typeof createServiceRoleClient>,
+  userId: string
+): Promise<{ removed: number; failed: boolean }> {
+  let removed = 0
+  let failed = false
+
+  for (const bucket of USER_PREFIXED_BUCKETS) {
+    try {
+      // Objects live at {user_id}/{child_id}/{uuid}.jpg, so the child folders
+      // have to be walked — list() is not recursive.
+      const { data: childFolders, error: listErr } = await admin.storage.from(bucket).list(userId)
+      if (listErr) {
+        // A bucket that doesn't exist yet is not an error worth flagging.
+        if (!/not found|does not exist/i.test(listErr.message)) throw listErr
+        continue
+      }
+
+      const paths: string[] = []
+      for (const entry of childFolders ?? []) {
+        // A folder placeholder has no id; a file has one.
+        if (entry.id) {
+          paths.push(`${userId}/${entry.name}`)
+          continue
+        }
+        const { data: files } = await admin.storage.from(bucket).list(`${userId}/${entry.name}`)
+        for (const f of files ?? []) paths.push(`${userId}/${entry.name}/${f.name}`)
+      }
+
+      if (paths.length > 0) {
+        const { error: rmErr } = await admin.storage.from(bucket).remove(paths)
+        if (rmErr) throw rmErr
+        removed += paths.length
+      }
+    } catch (error) {
+      failed = true
+      console.error(`[account/delete] Failed to clear ${bucket} for ${userId}:`, error)
+    }
+  }
+
+  return { removed, failed }
+}
+
+/**
  * Resolve the caller from either auth style.
  *
  * Returns the cookie-backed client too (when that's how they authenticated) so
@@ -175,6 +236,11 @@ export async function POST(request: Request) {
       }
     }
 
+    // Storage objects, which no foreign key can reach. Must happen BEFORE
+    // deleteUser: once the auth user is gone, so is the user id needed to find
+    // the folder, and the objects would be orphaned with no way to attribute them.
+    const storageResult = await deleteStorageObjects(admin, user.id)
+
     // NOTE: contact_submissions is deliberately left alone. Its user_id FK is
     // ON DELETE SET NULL, which detaches the ticket from the deleted account
     // while preserving support correspondence — including any thread that's
@@ -206,6 +272,8 @@ export async function POST(request: Request) {
       // Surfaced so the client can tell someone to check their billing rather
       // than silently leaving a live subscription behind.
       billingCleanupFailed: stripeResult.failed,
+      filesRemoved: storageResult.removed,
+      storageCleanupFailed: storageResult.failed,
     })
   } catch (error) {
     console.error('[account/delete] Unexpected error:', error)
