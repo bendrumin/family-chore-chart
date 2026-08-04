@@ -819,12 +819,15 @@ class SupabaseManager: ObservableObject {
     private static let avatarPixelSize: CGFloat = 512
 
     /**
-     Downscale and square-crop an image, then JPEG-encode it.
+     Centre-cropped, orientation-corrected 512x512 image — the exact pixels that
+     get stored.
 
-     Centre-cropped to a square first so the circular avatar mask never lops off
-     someone's chin, then drawn at 512x512.
+     Squared BEFORE downscaling so the circular avatar mask never lops off
+     someone's chin. Exposed separately from the JPEG encode so the sticker
+     editor can place props on the FINAL framing: positioning a moustache on the
+     original and cropping afterwards would slide it off the face.
      */
-    static func prepareAvatarJPEG(_ image: UIImage) -> Data? {
+    static func squareAvatarImage(_ image: UIImage) -> UIImage {
         let side = min(image.size.width, image.size.height)
         let cropRect = CGRect(
             x: (image.size.width - side) / 2,
@@ -842,7 +845,7 @@ class SupabaseManager: ObservableObject {
         format.opaque = true
         let renderer = UIGraphicsImageRenderer(size: target, format: format)
 
-        let squared = renderer.image { _ in
+        return renderer.image { _ in
             guard let cg = image.cgImage?.cropping(to: cropRect.applying(
                 CGAffineTransform(scaleX: image.scale, y: image.scale)
             )) else {
@@ -854,9 +857,17 @@ class SupabaseManager: ObservableObject {
             UIImage(cgImage: cg, scale: 1, orientation: image.imageOrientation)
                 .draw(in: CGRect(origin: .zero, size: target))
         }
-
-        return squared.jpegData(compressionQuality: 0.82)
     }
+
+    /// Square-crop, downscale, and JPEG-encode. Idempotent for an image that has
+    /// already been through squareAvatarImage (the sticker editor's output).
+    static func prepareAvatarJPEG(_ image: UIImage) -> Data? {
+        squareAvatarImage(image).jpegData(compressionQuality: 0.82)
+    }
+
+    /// Canvas edge length for composited avatars, in points. Matches the stored
+    /// pixel size so the editor is WYSIWYG.
+    static var avatarCanvasSize: CGFloat { avatarPixelSize }
 
     /**
      Upload a photo as a child's avatar and point the child row at it.
