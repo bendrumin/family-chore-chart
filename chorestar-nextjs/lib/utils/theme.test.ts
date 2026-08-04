@@ -3,7 +3,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import {
   THEME_COLORS,
   SEASONAL_THEMES_DATA,
@@ -33,6 +33,8 @@ import {
   contrastRatio,
   ensureReadable,
   bestForeground,
+  accessiblePair,
+  hoverFill,
   relativeLuminance,
   isValidHex,
   normalizeHex,
@@ -87,6 +89,7 @@ t('the exposed tokens are accents and the ramp — never a surface', () => {
     '--primary-fill', '--secondary-fill',
     '--primary-foreground', '--secondary-foreground',
     '--seasonal-accent', '--seasonal-secondary',
+    '--primary-fill-hover',
     ...THEME_PALETTE_VAR_NAMES,
     ...ACCENT_SCALE_VAR_NAMES,
   ]))
@@ -340,7 +343,7 @@ t('the globals.css defaults clear AA, and match what is committed', () => {
   // Read from the stylesheet so this fails if the defaults are edited to
   // something unreadable, rather than trusting a copy of them here.
   const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
-  const pairs = [...css.matchAll(/--primary-fill:\s*(#[0-9a-f]{6});[\s\S]{0,120}?--primary-foreground:\s*(#[0-9a-f]{6});/gi)]
+  const pairs = [...css.matchAll(/--primary-fill:\s*(#[0-9a-f]{6});[\s\S]{0,400}?--primary-foreground:\s*(#[0-9a-f]{6});/gi)]
   assert.equal(pairs.length, 2, `expected a light and a dark default, found ${pairs.length}`)
   for (const [, fill, fg] of pairs) {
     const r = contrastRatio(fill, fg)
@@ -594,30 +597,102 @@ t('the only linear-gradients left in globals.css are the functional ones', () =>
   }
 })
 
-group('every theme accent is deep enough for hardcoded white text')
+group('accent fills derive their ink, so any palette color is usable')
 
-t('white text clears AA at every ramp step that carries it', () => {
-  // ~38 elements put `text-white` directly on bg-indigo-500/600/700/900. Those
-  // bypass --primary-foreground entirely, so the accent itself has to be dark
-  // enough. The old palette failed for 12 of 17 themes; summer's #ffd700 was
-  // 1.40:1, which is the white-on-yellow hero.
-  const WHITE_TEXT_STEPS = [500, 600, 700, 900] as const
+t('no hardcoded white sits on an accent fill', () => {
+  // This replaces an older rule that every accent must be dark enough for white
+  // text. That rule was only necessary because elements hardcoded `text-white`
+  // on bg-indigo-500 — a literal class no downstream correction can reach — and
+  // it forced every photo-derived palette color to be darkened away from what
+  // the designer picked. The classes are gone, so the constraint is gone with
+  // them. Guard it here, since one careless `text-white bg-indigo-500` would
+  // silently reintroduce the whole problem.
+  const roots = ['../../app', '../../components']
+  const offenders: string[] = []
+  // Excludes an opacity modifier: bg-indigo-900/20 is a subtle wash behind
+  // page-colored text, not a fill the text sits on.
+  const ACCENT_BG = /bg-(indigo|purple)-(400|500|600|700|800|900)(?![\d/])/
+  const walk = (dir: URL) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const child = new URL(`${entry.name}${entry.isDirectory() ? '/' : ''}`, dir)
+      if (entry.isDirectory()) { walk(child); continue }
+      if (!/\.tsx?$/.test(entry.name)) continue
+      const src = readFileSync(child, 'utf8')
+      src.split('\n').forEach((line, i) => {
+        if (line.trim().startsWith('//') || line.trim().startsWith('*')) return
+        if (ACCENT_BG.test(line) && /text-white/.test(line)) {
+          offenders.push(`${entry.name}:${i + 1}`)
+        }
+      })
+    }
+  }
+  for (const r of roots) walk(new URL(r + '/', import.meta.url))
+  assert.deepEqual(offenders, [],
+    `hardcoded white on an accent fill — use .accent-fill so the ink is derived: ${offenders.join(', ')}`)
+})
+
+t('every ramp step ships an ink that passes, whatever the accent', () => {
+  // The real invariant now: not "white works" but "SOMETHING works". Every step
+  // of every theme's ramp must have a readable pair available.
   const failures: string[] = []
   for (const [id, colors] of Object.entries(THEME_COLORS)) {
     const ramp = accentScale(colors.light.primary)
-    for (const step of WHITE_TEXT_STEPS) {
-      const r = contrastRatio(ramp[step], '#ffffff')
-      if (r < AA_NORMAL) failures.push(`${id}@${step}=${ramp[step]} ${r.toFixed(2)}`)
+    for (const step of ACCENT_STEPS) {
+      const pair = accessiblePair(ramp[step])
+      const r = contrastRatio(pair.fill, pair.foreground)
+      if (r < AA_NORMAL) failures.push(`${id}@${step} ${r.toFixed(2)}`)
     }
   }
-  assert.deepEqual(failures, [], `white text unreadable on: ${failures.join(', ')}`)
+  assert.deepEqual(failures, [], `no readable ink for: ${failures.join(', ')}`)
 })
 
-t('pale accents are rejected outright by the palette, not corrected later', () => {
-  // A regression guard: if anyone reintroduces a bright yellow accent, the test
-  // above fails. Confirm the check actually catches one.
-  const bad = accentScale('#ffd700')
-  assert.ok(contrastRatio(bad[500], '#ffffff') < AA_NORMAL, 'the guard would not catch #ffd700')
+t('the true palette colors survive undarkened, because the ink is derived', () => {
+  // The point of the whole change: #3a9aa3 is 3.32:1 on white — it would have
+  // been rejected before — but 5.35:1 with the ink actually used.
+  for (const [id, expected] of [['paradise', '#3a9aa3'], ['blossom', '#ee3c6b']] as const) {
+    assert.equal(THEME_COLORS[id].light.primary, expected,
+      `${id} anchor was altered away from the designer's color`)
+    const pair = accessiblePair(expected)
+    assert.ok(contrastRatio(pair.fill, pair.foreground) >= AA_NORMAL)
+    assert.ok(contrastRatio(expected, '#ffffff') < AA_NORMAL,
+      `${id} would have passed the old white-text rule, so it proves nothing`)
+  }
+})
+
+t('a hover fill moves away from its ink, so contrast never drops', () => {
+  for (const base of ['#5e61e5', '#f1c8c1', '#3a9aa3', '#ffd700', '#1a22b0']) {
+    const pair = accessiblePair(base)
+    const hover = hoverFill(pair.fill, pair.foreground)
+    const atRest = contrastRatio(pair.fill, pair.foreground)
+    const onHover = contrastRatio(hover, pair.foreground)
+    assert.ok(onHover >= atRest - 0.01, `${base}: hover ${onHover.toFixed(2)} < rest ${atRest.toFixed(2)}`)
+    assert.ok(onHover >= AA_NORMAL, `${base}: hover only ${onHover.toFixed(2)}:1`)
+    assert.notEqual(hover.toLowerCase(), pair.fill.toLowerCase(), `${base}: hover is not visually distinct`)
+  }
+})
+
+t('the globals.css hover defaults match hoverFill of each mode fill', () => {
+  const css = readFileSync(new URL('../../app/globals.css', import.meta.url), 'utf8')
+  for (const [fill, expectedVar] of [['#5e61e5', 0], ['#4f46e5', 1]] as const) {
+    const pair = accessiblePair(fill)
+    const want = hoverFill(pair.fill, pair.foreground).toLowerCase()
+    const found = [...css.matchAll(/--primary-fill-hover:\s*(#[0-9a-fA-F]{6})/g)].map(m => m[1].toLowerCase())
+    assert.ok(found[expectedVar] === want,
+      `--primary-fill-hover #${expectedVar} is ${found[expectedVar]}, expected ${want} for base ${fill}`)
+  }
+})
+
+t('even a bright yellow accent gets a readable pair now', () => {
+  // #ffd700 is the color that produced the white-on-yellow hero. It is still
+  // 1.40:1 against white — but it no longer has to take white, and the derived
+  // ink handles it. This is what makes the new rule strictly stronger than the
+  // old "only allow deep accents" one.
+  const ramp = accentScale('#ffd700')
+  assert.ok(contrastRatio(ramp[500], '#ffffff') < AA_NORMAL, 'sanity: yellow still fails white')
+  for (const step of ACCENT_STEPS) {
+    const pair = accessiblePair(ramp[step])
+    assert.ok(contrastRatio(pair.fill, pair.foreground) >= AA_NORMAL, `yellow@${step} has no readable ink`)
+  }
 })
 
 t('every FILL role is a single hue — light and dark slots share the accent ramp', () => {

@@ -34,7 +34,7 @@ export default function DashboardError({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 accent-fill accent-fill-hover font-semibold rounded-xl transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             Try Again

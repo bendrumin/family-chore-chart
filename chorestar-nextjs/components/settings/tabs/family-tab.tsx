@@ -223,7 +223,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 onClick={() => setLocalRewardMode('flat')}
                 className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
                   localRewardMode === 'flat'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'accent-fill'
                     : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                 }`}
               >
@@ -234,7 +234,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 onClick={() => setLocalRewardMode('per_chore')}
                 className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
                   localRewardMode === 'per_chore'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'accent-fill'
                     : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
                 }`}
               >

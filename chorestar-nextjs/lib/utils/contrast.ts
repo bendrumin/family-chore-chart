@@ -120,3 +120,17 @@ export function accessiblePair(fill: string, target: number = AA_NORMAL): Access
   const foreground = bestForeground(fill)
   return { fill: ensureReadable(fill, foreground, target), foreground }
 }
+
+/**
+ * A hover fill that always moves AWAY from its ink, so contrast can only improve.
+ *
+ * Darkening on hover is the obvious choice and is what `hover:bg-indigo-600` did,
+ * but it is only correct when the ink is white. On a pale accent the ink is dark,
+ * and darkening the fill moves it TOWARD the ink — a button that passes at rest
+ * can fail the moment it is hovered. Steering by the ink instead makes the
+ * direction correct for either case.
+ */
+export function hoverFill(fill: string, ink: string, amount = 0.1): string {
+  const inkIsLight = normalizeHex(ink)?.toLowerCase() === ON_ACCENT_LIGHT
+  return mix(fill, inkIsLight ? ON_ACCENT_DARK : ON_ACCENT_LIGHT, amount)
+}

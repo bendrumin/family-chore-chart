@@ -6,6 +6,7 @@ import {
 import {
   ensureReadable,
   accessiblePair,
+  hoverFill,
   normalizeHex,
   ON_ACCENT_LIGHT,
   SURFACE_LIGHT,
@@ -121,6 +122,8 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
     '--secondary-fill': secondaryPair.fill,
     '--primary-foreground': primaryPair.foreground,
     '--secondary-foreground': secondaryPair.foreground,
+    // Steered by the ink, not simply darkened — see hoverFill.
+    '--primary-fill-hover': hoverFill(primaryPair.fill, primaryPair.foreground),
     '--seasonal-accent': ensureReadable(primary, surface),
     '--seasonal-secondary': ensureReadable(secondary, surface),
   }

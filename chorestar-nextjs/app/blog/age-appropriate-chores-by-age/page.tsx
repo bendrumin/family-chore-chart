@@ -253,7 +253,7 @@ export default function AgeAppropriateChoresPage() {
               </p>
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold accent-fill accent-fill-hover transition-colors"
               >
                 Get Started Free →
               </Link>

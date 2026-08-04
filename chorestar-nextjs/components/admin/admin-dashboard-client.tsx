@@ -282,7 +282,7 @@ export function AdminDashboardClient() {
               onClick={() => setTab(id)}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 tab === id
-                  ? 'bg-indigo-500 text-white'
+                  ? 'accent-fill'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >

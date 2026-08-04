@@ -39,12 +39,20 @@ export interface PaletteRoles {
 /**
  * Derives a theme's four color slots from a single accent.
  *
- * Every accent is deliberately deep enough that white text clears 4.5:1 on it.
- * That matters because ~38 elements put hardcoded `text-white` on an accent
- * background, and no amount of downstream correction can help those — the old
- * palette had 12 of 17 themes failing there, summer's #ffd700 at 1.40:1 being
- * the "white text on yellow" case. Picking calmer, deeper accents fixes it at
- * the source rather than papering over it.
+ * Accents no longer have to be dark enough for white text. They used to, because
+ * elements hardcoded `text-white` on an accent background and no downstream
+ * correction can help a literal class — the old palette had 12 of 17 themes
+ * failing there, summer's #ffd700 at 1.40:1 being the "white text on yellow"
+ * case. The fix at the time was to pick only deep accents, which also meant
+ * every photo-derived palette color had to be darkened away from what the
+ * designer chose.
+ *
+ * Those hardcoded classes are gone; accent fills derive their ink through
+ * .accent-fill / --primary-foreground, which resolves to dark on a pale accent
+ * and white on a deep one. So a true palette color is now usable as-is: the
+ * paradise teal is 3.32:1 against white but 5.35:1 against dark ink. The
+ * remaining constraint is narrow — a color that fails against BOTH inks (a band
+ * around 4.36:1, e.g. #e7206b) still gets nudged by accessiblePair.
  *
  * Light secondary and both dark slots come off the accent's own ramp, so a theme
  * can never be an unrelated pair of hues.
@@ -330,19 +338,22 @@ export const ACCENT_THEMES: Record<string, { id: string; name: string; icon: str
     id: 'blossom',
     name: 'Cherry Blossom',
     icon: '🌸',
-    // Raspberry #ee3c6b was 3.82:1 on white — darkened a shade to 4.61:1.
-    // Tint is the sky from the photograph: pink blossom against powder blue is
-    // the whole image, and no single-hue ramp can produce it.
-    colors: paletteFrom('#d63660', { tint: '#c5d8eb', highlight: '#e7206b' })
+    // The palette's true raspberry. It is 3.82:1 against white, which is why
+    // nothing hardcodes white on it any more — accent-500 derives its ink and
+    // resolves to dark there (4.64:1). Tint is the sky from the photograph:
+    // pink blossom against powder blue is the whole image, and no single-hue
+    // ramp can produce it.
+    colors: paletteFrom('#ee3c6b', { tint: '#c5d8eb', highlight: '#e7206b' })
   },
   paradise: {
     id: 'paradise',
     name: 'Edge of Paradise',
     icon: '🦩',
-    // Deep teal #3a9aa3 was 3.32:1 — darkened to 4.92:1. Blush #f1c8c1 is
-    // 1.52:1 against white and could never be a fill, but reads at 11.63:1
-    // with dark ink, which is what makes it safe as a wash.
-    colors: paletteFrom('#2e7b82', { tint: '#f1c8c1', highlight: '#ed706f' })
+    // The palette's true teal, undarkened. 3.32:1 against white but 5.35:1
+    // against dark ink, which is what the derived foreground picks. Blush
+    // #f1c8c1 reads at 11.63:1 with dark ink — pale colors are not unusable,
+    // they simply cannot take white.
+    colors: paletteFrom('#3a9aa3', { tint: '#f1c8c1', highlight: '#ed706f' })
   },
   ember: {
     id: 'ember',
