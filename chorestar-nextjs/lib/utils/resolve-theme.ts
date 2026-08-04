@@ -128,18 +128,34 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
     '--seasonal-secondary': ensureReadable(secondary, surface),
   }
 
-  // The optional second hue. Emitted as an RGB triplet, not a hex, so consumers
-  // can use it with an alpha — `rgb(var(--accent-tint) / 0.4)` — which is the
-  // only way these pale palette colors are safe: as translucent decoration
-  // rather than as anything text sits on. The paired ink is emitted alongside
-  // for the rare wash that does carry a label, following the same fill+ink rule
-  // as .accent-fill: a fill without its ink inherits whatever came before,
-  // which is how white text ended up on a pale surface once already.
-  // accessiblePair rather than bestForeground: bestForeground returns the
-  // *better* of the two inks, which is not necessarily a *passing* one. Cherry
-  // Blossom's #e7206b tops out at 4.36:1 against either ink — close, but under
-  // AA — so the pair darkens the fill a shade until it clears. Pale washes come
-  // back untouched, since dark ink already reads on them at 11:1 or better.
+  return vars
+}
+
+/**
+ * The optional second-hue properties, for a FULL-REACH theme only.
+ *
+ * Deliberately not part of themeCssVars. An accent-only theme (auto-seasonal)
+ * does not rewrite the Tailwind ramp, so the backdrop's other blobs stay brand
+ * indigo — emitting a tint there would put one blush blob beside two indigo
+ * ones. That is precisely the "themed next to unthemed" mismatch this file
+ * already warns about, and it would arrive silently on the first day of a
+ * season, which is how the yellow dashboard happened. The second hue only
+ * appears when the user picked the theme outright and the whole ramp moved with
+ * it.
+ *
+ * Emitted as an RGB triplet, not a hex, so consumers can use it with an alpha —
+ * `rgb(var(--accent-tint) / 0.4)` — which is the only way these pale palette
+ * colors are safe: translucent decoration, never something text sits on. The
+ * paired ink ships alongside for the rare wash that carries a label, following
+ * the same fill+ink rule as .accent-fill.
+ *
+ * accessiblePair rather than bestForeground: bestForeground returns the *better*
+ * of the two inks, which is not necessarily a *passing* one. Cherry Blossom's
+ * #e7206b tops out at 4.36:1 against either, so the pair nudges the fill until
+ * it clears. Pale washes come back untouched, already at 11:1 or better.
+ */
+export function paletteRoleVars(colors: ThemeColors): Record<string, string> {
+  const vars: Record<string, string> = {}
   if (colors.tint) {
     const pair = accessiblePair(colors.tint)
     vars['--accent-tint'] = hexToRgbTriplet(pair.fill)
@@ -150,7 +166,6 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
     vars['--accent-highlight'] = hexToRgbTriplet(pair.fill)
     vars['--accent-highlight-ink'] = pair.foreground
   }
-
   return vars
 }
 
@@ -193,7 +208,7 @@ export function themeVarsFor(theme: ResolvedTheme, isDark: boolean): Record<stri
   const base = themeCssVars(theme.colors, isDark)
   if (!theme.fullReach) return base
   const accent = isDark ? theme.colors.dark.primary : theme.colors.light.primary
-  return { ...base, ...accentScaleCssVars(accent) }
+  return { ...base, ...accentScaleCssVars(accent), ...paletteRoleVars(theme.colors) }
 }
 
 /**

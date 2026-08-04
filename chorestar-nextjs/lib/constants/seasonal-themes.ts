@@ -202,7 +202,9 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '☀️',
     startDate: '06-01',
     endDate: '08-31',
-    colors: paletteFrom('#b45309'),
+    // Edge of Paradise. True teal, 3.32:1 on white but 5.35:1 with the derived
+    // ink. Tint is the flamingo blush at 11.63:1 with dark ink.
+    colors: paletteFrom('#3a9aa3', { tint: '#f1c8c1', highlight: '#ed706f' }),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Water Plants', icon: '💧', category: 'physical_activity' },
@@ -219,7 +221,9 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🌸',
     startDate: '03-20',
     endDate: '06-20',
-    colors: paletteFrom('#db2777'),
+    // Cherry Blossom. Tint is the sky from the photograph — pink blossom against
+    // powder blue is the whole image, and no single-hue ramp can produce it.
+    colors: paletteFrom('#ee3c6b', { tint: '#c5d8eb', highlight: '#e7206b' }),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Spring Cleaning', icon: '🧹', category: 'household_chores' },
@@ -235,7 +239,8 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🍁',
     startDate: '09-22',
     endDate: '12-20',
-    colors: paletteFrom('#9a3412'),
+    // Autumn Ember. Firebrick needed no correction at all — 6.75:1 on white.
+    colors: paletteFrom('#b31e11', { tint: '#ee9c15', highlight: '#fa6a18' }),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Rake Leaves', icon: '🍂', category: 'physical_activity' },
@@ -251,7 +256,10 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '❄️',
     startDate: '12-21',
     endDate: '03-19',
-    colors: paletteFrom('#0369a1'),
+    // Winter Frost. The source palette's navies measured 1.05–1.33:1 against the
+    // dark-mode surface and would vanish, so the anchor stops at royal blue and
+    // paletteFrom lifts dark mode to ramp[400].
+    colors: paletteFrom('#1a22b0', { tint: '#a9adb1', highlight: '#2f7cc6' }),
     isHoliday: false,
     seasonalActivities: [
       { name: 'Shovel Snow', icon: '❄️', category: 'physical_activity' },
@@ -319,57 +327,6 @@ export const ACCENT_THEMES: Record<string, { id: string; name: string; icon: str
     name: 'Lavender',
     icon: '💜',
     colors: paletteFrom('#9b59b6')
-  },
-
-  // ---------------------------------------------------------------------------
-  // Photo-derived seasonal palettes — the first themes to declare a second hue.
-  //
-  // Each anchor is the deepest color in its source palette, darkened only if it
-  // could not carry white text (the measured ratio is noted). The pale color
-  // becomes `tint` and reaches the UI purely as decoration; the bright one
-  // becomes `highlight`. Nothing that carries text ever uses either.
-  //
-  // Kept as hand-pickable accent themes rather than wired into the dated
-  // spring/summer/fall/winter windows, so auto-seasonal behavior is untouched
-  // while the look is being judged.
-  // ---------------------------------------------------------------------------
-
-  blossom: {
-    id: 'blossom',
-    name: 'Cherry Blossom',
-    icon: '🌸',
-    // The palette's true raspberry. It is 3.82:1 against white, which is why
-    // nothing hardcodes white on it any more — accent-500 derives its ink and
-    // resolves to dark there (4.64:1). Tint is the sky from the photograph:
-    // pink blossom against powder blue is the whole image, and no single-hue
-    // ramp can produce it.
-    colors: paletteFrom('#ee3c6b', { tint: '#c5d8eb', highlight: '#e7206b' })
-  },
-  paradise: {
-    id: 'paradise',
-    name: 'Edge of Paradise',
-    icon: '🦩',
-    // The palette's true teal, undarkened. 3.32:1 against white but 5.35:1
-    // against dark ink, which is what the derived foreground picks. Blush
-    // #f1c8c1 reads at 11.63:1 with dark ink — pale colors are not unusable,
-    // they simply cannot take white.
-    colors: paletteFrom('#3a9aa3', { tint: '#f1c8c1', highlight: '#ed706f' })
-  },
-  ember: {
-    id: 'ember',
-    name: 'Autumn Ember',
-    icon: '🍁',
-    // Firebrick needed no correction — 6.75:1 on white as-is.
-    colors: paletteFrom('#b31e11', { tint: '#ee9c15', highlight: '#fa6a18' })
-  },
-  frost: {
-    id: 'frost',
-    name: 'Winter Frost',
-    icon: '❄️',
-    // Royal blue is 11.05:1 on white. The palette's darker navies measured
-    // 1.05–1.33:1 against the dark-mode surface — they would vanish entirely —
-    // so the anchor stops here and paletteFrom lifts dark mode to ramp[400].
-    colors: paletteFrom('#1a22b0', { tint: '#a9adb1', highlight: '#2f7cc6' })
   }
 }
 

@@ -21,8 +21,8 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
     features: [
       {
         icon: '🌸',
-        title: 'Photo-Inspired Seasonal Themes',
-        description: 'Four new themes drawn from real photographs — Cherry Blossom, Edge of Paradise, Autumn Ember, and Winter Frost. Each one pairs two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Find them under Settings › Appearance.',
+        title: 'Spring, Summer, Fall & Winter Got Repainted',
+        description: 'Each season now uses a palette drawn from a real photograph — cherry blossom, flamingos at the water\'s edge, autumn maple, a frozen valley. They pair two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Pick a season any time of year under Settings › Appearance.',
       },
     ],
   },

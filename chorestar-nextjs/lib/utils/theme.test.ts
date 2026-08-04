@@ -140,7 +140,7 @@ t('every theme id resolves to a valid color pair', () => {
   ]
   // Count is asserted so a theme added to one table but not THEME_COLORS is
   // caught; bump it deliberately when adding themes.
-  assert.equal(ids.length, 21)
+  assert.equal(ids.length, 17)
   for (const id of ids) {
     const colors = THEME_COLORS[id]
     assert.ok(colors, `${id} has no colors`)
@@ -649,7 +649,7 @@ t('every ramp step ships an ink that passes, whatever the accent', () => {
 t('the true palette colors survive undarkened, because the ink is derived', () => {
   // The point of the whole change: #3a9aa3 is 3.32:1 on white — it would have
   // been rejected before — but 5.35:1 with the ink actually used.
-  for (const [id, expected] of [['paradise', '#3a9aa3'], ['blossom', '#ee3c6b']] as const) {
+  for (const [id, expected] of [['summer', '#3a9aa3'], ['spring', '#ee3c6b']] as const) {
     assert.equal(THEME_COLORS[id].light.primary, expected,
       `${id} anchor was altered away from the designer's color`)
     const pair = accessiblePair(expected)
@@ -713,7 +713,10 @@ t('a declared tint never becomes a fill, and always ships readable ink', () => {
 
   for (const [id, colors] of tinted) {
     for (const isDark of [false, true]) {
-      const vars = themeCssVars(colors, isDark)
+      // Via themeVarsFor with fullReach — the roles are deliberately absent from
+      // themeCssVars, see paletteRoleVars.
+      const vars = themeVarsFor(
+        { id, name: id, source: 'manual', colors, fullReach: true }, isDark)
       const fills = [vars['--primary-fill'], vars['--secondary-fill'], vars['--primary'], vars['--secondary']]
 
       for (const role of ['tint', 'highlight'] as const) {
@@ -741,12 +744,40 @@ t('a declared tint never becomes a fill, and always ships readable ink', () => {
   }
 })
 
+t('auto-seasonal emits NO second hue, so the backdrop cannot go half-themed', () => {
+  // An accent-only theme leaves the Tailwind ramp on brand indigo. Emitting a
+  // tint there would paint one blush blob beside two indigo ones — the exact
+  // "themed next to unthemed" mismatch, arriving unannounced on the first day of
+  // a season. That silent-on-a-date failure mode is how the yellow dashboard
+  // happened, so the second hue is reserved for a theme the user picked.
+  const summer = THEME_COLORS['summer']
+  assert.ok(summer.tint, 'summer should declare a tint for this test to mean anything')
+
+  for (const isDark of [false, true]) {
+    const auto = themeVarsFor(
+      { id: 'summer', name: 'Summer', source: 'auto-seasonal', colors: summer, fullReach: false }, isDark)
+    for (const name of THEME_PALETTE_VAR_NAMES) {
+      assert.ok(!(name in auto), `auto-seasonal leaked ${name}`)
+    }
+    // And nothing rewrote the ramp either.
+    for (const name of ACCENT_SCALE_VAR_NAMES) {
+      assert.ok(!(name in auto), `auto-seasonal leaked ${name}`)
+    }
+
+    // Picked by hand, the same theme does bring its second hue.
+    const picked = themeVarsFor(
+      { id: 'summer', name: 'Summer', source: 'manual', colors: summer, fullReach: true }, isDark)
+    assert.ok('--accent-tint' in picked, 'a hand-picked theme should carry its tint')
+  }
+})
+
 t('an untinted theme emits no palette roles at all', () => {
   // Otherwise the clear-then-set cycle would paint a stale or default tint.
   const plain = THEME_COLORS['ocean']
   assert.ok(plain && !plain.tint, 'expected ocean to be untinted')
   for (const isDark of [false, true]) {
-    const vars = themeCssVars(plain, isDark)
+    const vars = themeVarsFor(
+      { id: 'ocean', name: 'ocean', source: 'manual', colors: plain, fullReach: true }, isDark)
     for (const name of THEME_PALETTE_VAR_NAMES) {
       assert.ok(!(name in vars), `untinted theme still emitted ${name}`)
     }
