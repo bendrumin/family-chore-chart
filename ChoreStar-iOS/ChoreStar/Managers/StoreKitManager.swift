@@ -13,7 +13,15 @@ final class StoreKitManager: ObservableObject {
 
     enum ProductID {
         static let monthly = "com.chorestar.premium.monthly"
-        static let annual = "com.chorestar.premium.annual"
+        /// NOT "com.chorestar.premium.annual". That id was created in a second
+        /// subscription group by mistake during the 1.0 submission; deleting it
+        /// burned the id permanently — Apple reserves deleted product ids
+        /// forever. The replacement must be created in App Store Connect INSIDE
+        /// the existing "ChoreStar Premium" group (subs can't move between
+        /// groups). PaywallView only renders products that actually load, so
+        /// shipping this before the ASC product exists shows Monthly+Lifetime,
+        /// exactly as today.
+        static let annual = "com.chorestar.premium.yearly"
         static let lifetime = "com.chorestar.premium.lifetime"
         static let all: [String] = [monthly, annual, lifetime]
     }
