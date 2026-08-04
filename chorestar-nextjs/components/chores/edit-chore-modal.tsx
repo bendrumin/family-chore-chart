@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { RewardAmountInput } from '@/components/chores/reward-amount-input'
-import { isPerChoreMode } from '@/lib/utils/earnings'
+import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
 import { Edit3, DollarSign, Trash2, FileText, Palette } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
@@ -230,6 +230,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                   onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
                   currencyCode={settings?.currency_code}
                   affectsEarnings={isPerChoreMode(settings)}
+                  dailyRateCents={dailyRewardCents(settings)}
                 />
               </div>
             </div>

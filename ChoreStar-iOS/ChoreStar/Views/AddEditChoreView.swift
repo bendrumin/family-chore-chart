@@ -43,7 +43,10 @@ struct AddEditChoreView: View {
         self.choreToEdit = chore
         _name = State(initialValue: chore?.name ?? "")
         _selectedChild = State(initialValue: chore?.childId ?? preselectedChildId)
-        _rewardDollars = State(initialValue: chore?.reward ?? 1.0)
+        // A new chore starts at -1 as a sentinel; the real default depends on the
+        // family's reward mode, and `manager` is an @EnvironmentObject that is not
+        // reachable from init. Resolved in .onAppear below.
+        _rewardDollars = State(initialValue: chore?.reward ?? -1)
         _category = State(initialValue: chore?.category ?? "General")
         _selectedIcon = State(initialValue: chore?.icon ?? "📝")
         _selectedColor = State(initialValue: chore?.color ?? "blue")
@@ -225,6 +228,19 @@ struct AddEditChoreView: View {
                 }
             }
             .navigationTitle(isEditing ? "Edit Chore" : "Add Chore")
+            .onAppear {
+                // Web parity (add-chore-modal). On the flat daily rate a chore's own
+                // amount does not affect earnings, so there is no meaningful
+                // per-chore figure — matching the family's daily number keeps chores
+                // consistent with what they actually think in. In Per Chore mode the
+                // amount does matter and the daily rate is the wrong quantity to
+                // copy, so a plain default is used.
+                if rewardDollars < 0 {
+                    rewardDollars = manager.isPerChoreRewardMode
+                        ? 0.25
+                        : Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingUpgradePrompt) {
                 UpgradePromptView(

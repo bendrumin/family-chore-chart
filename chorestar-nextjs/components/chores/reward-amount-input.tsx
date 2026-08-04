@@ -7,6 +7,7 @@ import {
   formatAmount,
   sanitizeAmountInput,
   amountToCents,
+  formatMoney,
 } from '@/lib/constants/currencies'
 
 /**
@@ -32,12 +33,13 @@ import {
 const PRESET_CENTS = [10, 25, 50, 100, 200, 500]
 
 /**
- * Default for a brand-new chore, in cents.
+ * Default for a brand-new chore in PER-CHORE mode, in cents.
  *
- * A fixed value on purpose. This used to be read from
- * `settings.daily_reward_cents`, which is the flat daily rate for completing an
- * entire list — not what a single chore is worth. The two are unrelated
- * quantities that happen to share a unit.
+ * Only used when the amount actually affects earnings. On the flat daily rate the
+ * caller seeds from `daily_reward_cents` instead — not because the two are the
+ * same quantity (they are not), but because no per-chore figure is meaningful
+ * there, and matching the family's daily number is less arbitrary than inventing
+ * a different one.
  */
 export const DEFAULT_CHORE_REWARD_CENTS = 25
 
@@ -61,6 +63,12 @@ interface RewardAmountInputProps {
    * plainly that it isn't being used.
    */
   affectsEarnings: boolean
+  /**
+   * The family's flat daily rate, in cents. Named in the flat-mode notice so the
+   * figure can't be misread as additive — three chores showing 8¢ each invites
+   * "24¢ a day", when the day pays 8¢ total however many chores there are.
+   */
+  dailyRateCents?: number
   id?: string
 }
 
@@ -69,6 +77,7 @@ export function RewardAmountInput({
   onChange,
   currencyCode,
   affectsEarnings,
+  dailyRateCents,
   id = 'reward',
 }: RewardAmountInputProps) {
   const symbol = currencySymbol(currencyCode)
@@ -180,10 +189,16 @@ export function RewardAmountInput({
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/30 p-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
-            Your family is on the <strong>Flat Daily Rate</strong>, so this amount
-            isn&apos;t used — each child earns the daily rate for finishing all of
-            their chores. Saved anyway, and it applies if you switch to{' '}
-            <strong>Per Chore</strong> in Settings&nbsp;›&nbsp;Family.
+            Your family is on the <strong>Flat Daily Rate</strong>
+            {dailyRateCents !== undefined && (
+              <>
+                : each child earns{' '}
+                <strong>{formatMoney(dailyRateCents, currencyCode)} per day</strong> for
+                finishing <em>all</em> of their chores — not per chore
+              </>
+            )}
+            . This amount isn&apos;t used yet, but it&apos;s saved and applies if you
+            switch to <strong>Per Chore</strong> in Settings&nbsp;›&nbsp;Family.
           </p>
         </div>
       )}

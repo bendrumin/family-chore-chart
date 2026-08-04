@@ -11,6 +11,7 @@ import {
   childWeekEarningsCents,
   isPerfectDay,
   dailyRewardCents,
+  isPerChoreMode,
   DEFAULT_DAILY_REWARD_CENTS,
   type ChoreReward,
   type DayCompletion,
@@ -193,12 +194,33 @@ t('an unknown or missing currency falls back to USD rather than throwing', () =>
   assert.equal(formatMoney(150, 'GBP'), '£1.50')
 })
 
-t('a new chore is NOT defaulted from the flat daily rate', () => {
-  // The bug: the per-chore default was read from daily_reward_cents, so a
-  // family on an 8c daily rate got every new chore defaulted to $0.08.
-  // These are unrelated quantities that merely share a unit.
-  assert.equal(DEFAULT_CHORE_REWARD_CENTS, 25)
-  assert.notEqual(DEFAULT_CHORE_REWARD_CENTS, DEFAULT_DAILY_REWARD_CENTS)
+t('the new-chore default follows the reward mode', () => {
+  // In per-chore mode the amount affects earnings, so it gets its own default
+  // rather than copying the daily rate (an unrelated quantity).
+  const perChore: EarningsSettings = { reward_mode: 'per_chore', daily_reward_cents: 8, weekly_bonus_cents: 0 }
+  const defaultFor = (s: EarningsSettings) =>
+    isPerChoreMode(s) ? DEFAULT_CHORE_REWARD_CENTS : dailyRewardCents(s)
+  assert.equal(defaultFor(perChore), 25)
+
+  // On the flat rate no per-chore figure is meaningful, so it matches the number
+  // the family actually thinks in.
+  const flat8: EarningsSettings = { reward_mode: 'flat', daily_reward_cents: 8, weekly_bonus_cents: 0 }
+  assert.equal(defaultFor(flat8), 8)
+  const flat50: EarningsSettings = { reward_mode: 'flat', daily_reward_cents: 50, weekly_bonus_cents: 0 }
+  assert.equal(defaultFor(flat50), 50)
+
+  // Absent settings fall back to the schema default, not to 25.
+  assert.equal(defaultFor({ reward_mode: null, daily_reward_cents: null, weekly_bonus_cents: null }), DEFAULT_DAILY_REWARD_CENTS)
+})
+
+t('the flat daily rate is per day, not per chore — however many chores there are', () => {
+  // The reason the notice names the amount: showing 8c on each of three chores
+  // invites reading it as 24c a day.
+  const flat: EarningsSettings = { reward_mode: 'flat', daily_reward_cents: 8, weekly_bonus_cents: 0 }
+  const one = [{ id: 'a', reward_cents: 8 }]
+  const three = [{ id: 'a', reward_cents: 8 }, { id: 'b', reward_cents: 8 }, { id: 'c', reward_cents: 8 }]
+  assert.equal(childDayEarningsCents(one, new Set(['a']), flat), 8)
+  assert.equal(childDayEarningsCents(three, new Set(['a', 'b', 'c']), flat), 8, 'three chores must still pay 8c, not 24c')
 })
 
 t('flat mode ignores per-chore amounts entirely', () => {

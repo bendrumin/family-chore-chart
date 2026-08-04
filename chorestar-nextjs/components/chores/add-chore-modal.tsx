@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { RewardAmountInput, DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
-import { isPerChoreMode } from '@/lib/utils/earnings'
+import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,15 +34,23 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     category: 'household_chores' as ChoreCategory
   })
 
-  // Deliberately NOT seeded from settings.daily_reward_cents. That field is the
-  // flat DAILY rate for finishing every chore — a different quantity from what
-  // one chore pays. Seeding from it meant a family with an 8¢ daily rate got
-  // every new chore defaulted to $0.08, which is how three of one child's chores
-  // ended up at 8 cents while another's sat at $8.00.
+  // The default follows the family's reward mode.
+  //
+  // On the flat daily rate, a chore's own amount does not affect earnings, so
+  // there is no meaningful per-chore figure to invent — seeding from the daily
+  // rate at least keeps every chore consistent with the number the family
+  // actually thinks in, and gives sensible values if they later switch to Per
+  // Chore. In Per Chore mode the amount does matter, and the daily rate is the
+  // wrong quantity to copy, so a plain default is used instead.
+  const defaultRewardCents = isPerChoreMode(settings)
+    ? DEFAULT_CHORE_REWARD_CENTS
+    : dailyRewardCents(settings)
+
   useEffect(() => {
     if (!open) return
-    setFormData({ name: '', rewardCents: DEFAULT_CHORE_REWARD_CENTS, icon: '📝', category: 'household_chores' })
-  }, [open])
+    setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultRewardCents])
 
   const categories = getCategoryList()
 
@@ -65,7 +73,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
       playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
-      setFormData({ name: '', rewardCents: DEFAULT_CHORE_REWARD_CENTS, icon: '📝', category: 'household_chores' })
+      setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores' })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)
@@ -206,6 +214,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                   onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
                   currencyCode={settings?.currency_code}
                   affectsEarnings={isPerChoreMode(settings)}
+                  dailyRateCents={dailyRewardCents(settings)}
                 />
               </div>
             </div>
