@@ -7,6 +7,18 @@
  * together. This previously mixed var(--primary) (themed) with
  * var(--primary-light) (not themed), which left one blob following the accent
  * and another stuck on brand indigo — a yellow smear next to a purple wash.
+ *
+ * The middle blob prefers a theme's optional second hue, --accent-tint, falling
+ * back to the ramp when there isn't one. This is where a photo-derived palette
+ * gets to be itself: pink blossom against blue sky, blush against teal. It is
+ * also the only place those colors are safe, since none of them is dark enough
+ * to carry text — here they are blurred 100px, under 40% opacity, aria-hidden,
+ * and nothing is ever read off them.
+ *
+ * The fallback matters: an undefined var() invalidates the whole declaration at
+ * computed-value time and the property is dropped, so a themed-but-untinted
+ * palette would lose this blob's color entirely. Falling back to --accent-200
+ * keeps untinted themes rendering exactly as before.
  */
 export function AmbientBackground({ className = '' }: { className?: string }) {
   return (
@@ -29,7 +41,7 @@ export function AmbientBackground({ className = '' }: { className?: string }) {
           height: '40vw',
           right: '-12vw',
           top: '8vh',
-          background: 'rgb(var(--accent-200))',
+          background: 'rgb(var(--accent-tint, var(--accent-200)))',
           filter: 'blur(100px)',
         }}
       />

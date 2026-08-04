@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.8.0'
+export const LATEST_CHANGELOG_VERSION = '2026.8.1'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.8.1': {
+    version: '2026.8.1',
+    date: 'August 2026',
+    title: 'Four Seasons, Four Palettes',
+    features: [
+      {
+        icon: '🌸',
+        title: 'Photo-Inspired Seasonal Themes',
+        description: 'Four new themes drawn from real photographs — Cherry Blossom, Edge of Paradise, Autumn Ember, and Winter Frost. Each one pairs two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Find them under Settings › Appearance.',
+      },
+    ],
+  },
   '2026.8.0': {
     version: '2026.8.0',
     date: 'August 2026',

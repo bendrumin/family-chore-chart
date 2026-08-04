@@ -11,7 +11,7 @@ import {
   SURFACE_LIGHT,
   SURFACE_DARK,
 } from '@/lib/utils/contrast'
-import { accentScaleCssVars, ACCENT_SCALE_VAR_NAMES } from '@/lib/utils/accent-scale'
+import { accentScaleCssVars, ACCENT_SCALE_VAR_NAMES, hexToRgbTriplet } from '@/lib/utils/accent-scale'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 
 export type ThemeSource = 'custom' | 'manual' | 'auto-seasonal'
@@ -114,7 +114,7 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
   const primaryPair = accessiblePair(primary)
   const secondaryPair = accessiblePair(secondary)
 
-  return {
+  const vars: Record<string, string> = {
     '--primary': ensureReadable(primary, surface),
     '--secondary': ensureReadable(secondary, surface),
     '--primary-fill': primaryPair.fill,
@@ -124,7 +124,47 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
     '--seasonal-accent': ensureReadable(primary, surface),
     '--seasonal-secondary': ensureReadable(secondary, surface),
   }
+
+  // The optional second hue. Emitted as an RGB triplet, not a hex, so consumers
+  // can use it with an alpha — `rgb(var(--accent-tint) / 0.4)` — which is the
+  // only way these pale palette colors are safe: as translucent decoration
+  // rather than as anything text sits on. The paired ink is emitted alongside
+  // for the rare wash that does carry a label, following the same fill+ink rule
+  // as .accent-fill: a fill without its ink inherits whatever came before,
+  // which is how white text ended up on a pale surface once already.
+  // accessiblePair rather than bestForeground: bestForeground returns the
+  // *better* of the two inks, which is not necessarily a *passing* one. Cherry
+  // Blossom's #e7206b tops out at 4.36:1 against either ink — close, but under
+  // AA — so the pair darkens the fill a shade until it clears. Pale washes come
+  // back untouched, since dark ink already reads on them at 11:1 or better.
+  if (colors.tint) {
+    const pair = accessiblePair(colors.tint)
+    vars['--accent-tint'] = hexToRgbTriplet(pair.fill)
+    vars['--accent-tint-ink'] = pair.foreground
+  }
+  if (colors.highlight) {
+    const pair = accessiblePair(colors.highlight)
+    vars['--accent-highlight'] = hexToRgbTriplet(pair.fill)
+    vars['--accent-highlight-ink'] = pair.foreground
+  }
+
+  return vars
 }
+
+/**
+ * The optional palette-role properties.
+ *
+ * Listed explicitly rather than derived from a themeCssVars() call, because
+ * those keys only appear when a theme actually declares them. Deriving the clear
+ * list from a stub with no tint would omit them, and switching from a tinted
+ * theme to an untinted one would leave the previous tint painted on the backdrop.
+ */
+export const THEME_PALETTE_VAR_NAMES = [
+  '--accent-tint',
+  '--accent-tint-ink',
+  '--accent-highlight',
+  '--accent-highlight-ink',
+]
 
 /**
  * Every property a resolved theme can set, for clearing back to the defaults.
@@ -134,6 +174,7 @@ export const THEME_CSS_VAR_NAMES = [
   ...Object.keys(
     themeCssVars({ light: { primary: '', secondary: '' }, dark: { primary: '', secondary: '' } }, false)
   ),
+  ...THEME_PALETTE_VAR_NAMES,
   ...ACCENT_SCALE_VAR_NAMES,
 ]
 

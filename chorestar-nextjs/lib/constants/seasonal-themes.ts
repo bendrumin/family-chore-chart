@@ -10,6 +10,30 @@ export interface SeasonalActivity {
 export interface ThemeColors {
   light: { primary: string; secondary: string }
   dark: { primary: string; secondary: string }
+  /**
+   * An optional pale SECOND hue, for decoration only — the ambient backdrop
+   * blobs and similar washes. Never a fill under text.
+   *
+   * This exists because a single accent can only ever produce a monochrome ramp.
+   * The character of a designer's palette usually lives in the relationship
+   * between two hues — pink blossom against blue sky, blush against teal — and
+   * that is exactly what one hue cannot express. Photo-derived palette colors
+   * are also almost never dark enough to carry white text (of the five in
+   * "Edge of Paradise", none clear 4.5:1), so they can only be safe in a role
+   * where no text lands on them.
+   */
+  tint?: string
+  /**
+   * An optional saturated second hue for celebration-sized accents — badges,
+   * streak flames, confetti. Small or dark-inked, never a large fill.
+   */
+  highlight?: string
+}
+
+/** Extra palette roles a theme may declare beyond its single accent. */
+export interface PaletteRoles {
+  tint?: string
+  highlight?: string
 }
 
 /**
@@ -25,11 +49,13 @@ export interface ThemeColors {
  * Light secondary and both dark slots come off the accent's own ramp, so a theme
  * can never be an unrelated pair of hues.
  */
-function paletteFrom(accent: string): ThemeColors {
+function paletteFrom(accent: string, roles: PaletteRoles = {}): ThemeColors {
   const ramp = accentScale(accent)
   return {
     light: { primary: accent, secondary: ramp[700] },
     dark: { primary: ramp[400], secondary: ramp[300] },
+    ...(roles.tint ? { tint: roles.tint } : {}),
+    ...(roles.highlight ? { highlight: roles.highlight } : {}),
   }
 }
 
@@ -285,6 +311,54 @@ export const ACCENT_THEMES: Record<string, { id: string; name: string; icon: str
     name: 'Lavender',
     icon: '💜',
     colors: paletteFrom('#9b59b6')
+  },
+
+  // ---------------------------------------------------------------------------
+  // Photo-derived seasonal palettes — the first themes to declare a second hue.
+  //
+  // Each anchor is the deepest color in its source palette, darkened only if it
+  // could not carry white text (the measured ratio is noted). The pale color
+  // becomes `tint` and reaches the UI purely as decoration; the bright one
+  // becomes `highlight`. Nothing that carries text ever uses either.
+  //
+  // Kept as hand-pickable accent themes rather than wired into the dated
+  // spring/summer/fall/winter windows, so auto-seasonal behavior is untouched
+  // while the look is being judged.
+  // ---------------------------------------------------------------------------
+
+  blossom: {
+    id: 'blossom',
+    name: 'Cherry Blossom',
+    icon: '🌸',
+    // Raspberry #ee3c6b was 3.82:1 on white — darkened a shade to 4.61:1.
+    // Tint is the sky from the photograph: pink blossom against powder blue is
+    // the whole image, and no single-hue ramp can produce it.
+    colors: paletteFrom('#d63660', { tint: '#c5d8eb', highlight: '#e7206b' })
+  },
+  paradise: {
+    id: 'paradise',
+    name: 'Edge of Paradise',
+    icon: '🦩',
+    // Deep teal #3a9aa3 was 3.32:1 — darkened to 4.92:1. Blush #f1c8c1 is
+    // 1.52:1 against white and could never be a fill, but reads at 11.63:1
+    // with dark ink, which is what makes it safe as a wash.
+    colors: paletteFrom('#2e7b82', { tint: '#f1c8c1', highlight: '#ed706f' })
+  },
+  ember: {
+    id: 'ember',
+    name: 'Autumn Ember',
+    icon: '🍁',
+    // Firebrick needed no correction — 6.75:1 on white as-is.
+    colors: paletteFrom('#b31e11', { tint: '#ee9c15', highlight: '#fa6a18' })
+  },
+  frost: {
+    id: 'frost',
+    name: 'Winter Frost',
+    icon: '❄️',
+    // Royal blue is 11.05:1 on white. The palette's darker navies measured
+    // 1.05–1.33:1 against the dark-mode surface — they would vanish entirely —
+    // so the anchor stops here and paletteFrom lifts dark mode to ramp[400].
+    colors: paletteFrom('#1a22b0', { tint: '#a9adb1', highlight: '#2f7cc6' })
   }
 }
 

@@ -19,6 +19,7 @@ import {
   colorsFromAccent,
   resolveHeaderInk,
   THEME_CSS_VAR_NAMES,
+  THEME_PALETTE_VAR_NAMES,
 } from './resolve-theme'
 import {
   accentScale,
@@ -86,8 +87,15 @@ t('the exposed tokens are accents and the ramp — never a surface', () => {
     '--primary-fill', '--secondary-fill',
     '--primary-foreground', '--secondary-foreground',
     '--seasonal-accent', '--seasonal-secondary',
+    ...THEME_PALETTE_VAR_NAMES,
     ...ACCENT_SCALE_VAR_NAMES,
   ]))
+  // The palette roles must be in the clear list even though themeCssVars only
+  // emits them for themes that declare one. Leaving them out would strand a
+  // previous theme's tint on the backdrop after switching to an untinted theme.
+  for (const name of THEME_PALETTE_VAR_NAMES) {
+    assert.ok(THEME_CSS_VAR_NAMES.includes(name), `${name} would never be cleared`)
+  }
   // The ramp reaches compiled utility classes, but no full-bleed surface
   // property is ever themed directly.
   for (const banned of ['--gradient-primary', '--header-gradient', '--gradient-bg', '--seasonal-gradient']) {
@@ -122,12 +130,14 @@ t('an unknown stored id falls through to auto', () => {
 
 group('every pickable theme actually applies a color')
 
-t('all 17 ids resolve to a valid color pair', () => {
+t('every theme id resolves to a valid color pair', () => {
   const ids = [
     ...Object.values(SEASONAL_THEMES_DATA).map(x => x.id),
     ...Object.values(ACCENT_THEMES).map(x => x.id),
   ]
-  assert.equal(ids.length, 17)
+  // Count is asserted so a theme added to one table but not THEME_COLORS is
+  // caught; bump it deliberately when adding themes.
+  assert.equal(ids.length, 21)
   for (const id of ids) {
     const colors = THEME_COLORS[id]
     assert.ok(colors, `${id} has no colors`)
@@ -610,12 +620,73 @@ t('pale accents are rejected outright by the palette, not corrected later', () =
   assert.ok(contrastRatio(bad[500], '#ffffff') < AA_NORMAL, 'the guard would not catch #ffd700')
 })
 
-t('each theme is a single hue — light and dark slots share the accent ramp', () => {
+t('every FILL role is a single hue — light and dark slots share the accent ramp', () => {
+  // Themes may now declare a decorative second hue, but nothing that carries
+  // text is allowed off the accent's own ramp. That was the invariant broken by
+  // Halloween orange sitting next to brand purple.
   for (const [id, colors] of Object.entries(THEME_COLORS)) {
     const ramp = accentScale(colors.light.primary)
     assert.equal(colors.light.secondary, ramp[700], `${id} light secondary is off-ramp`)
     assert.equal(colors.dark.primary, ramp[400], `${id} dark primary is off-ramp`)
     assert.equal(colors.dark.secondary, ramp[300], `${id} dark secondary is off-ramp`)
+  }
+})
+
+t('a declared tint never becomes a fill, and always ships readable ink', () => {
+  const tinted = Object.entries(THEME_COLORS).filter(([, c]) => c.tint || c.highlight)
+  assert.ok(tinted.length > 0, 'no theme declares a palette role — this test is vacuous')
+
+  for (const [id, colors] of tinted) {
+    for (const isDark of [false, true]) {
+      const vars = themeCssVars(colors, isDark)
+      const fills = [vars['--primary-fill'], vars['--secondary-fill'], vars['--primary'], vars['--secondary']]
+
+      for (const role of ['tint', 'highlight'] as const) {
+        const hex = colors[role]
+        if (!hex) continue
+        assert.ok(normalizeHex(hex), `${id} ${role} is not a valid hex: ${hex}`)
+        // The whole point of the role: decoration only.
+        for (const fill of fills) {
+          assert.notEqual(fill?.toLowerCase(), hex.toLowerCase(),
+            `${id} ${role} leaked into a fill role — palette colors are too pale to carry text`)
+        }
+        // Emitted as a space-separated RGB triplet so `rgb(var(...) / 0.4)` works.
+        const triplet = vars[`--accent-${role}`]
+        assert.match(triplet, /^\d{1,3} \d{1,3} \d{1,3}$/, `${id} --accent-${role} is not an RGB triplet: ${triplet}`)
+        // Fill and ink travel together, same rule as .accent-fill. Compare the
+        // EMITTED fill, not the declared hex — accessiblePair may have darkened
+        // a borderline color to make the pair pass.
+        const ink = vars[`--accent-${role}-ink`]
+        const [r, g, b] = triplet.split(' ').map(Number)
+        const emitted = `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`
+        assert.ok(contrastRatio(emitted, ink) >= AA_NORMAL,
+          `${id} ${role} pair only reaches ${contrastRatio(emitted, ink).toFixed(2)}:1`)
+      }
+    }
+  }
+})
+
+t('an untinted theme emits no palette roles at all', () => {
+  // Otherwise the clear-then-set cycle would paint a stale or default tint.
+  const plain = THEME_COLORS['ocean']
+  assert.ok(plain && !plain.tint, 'expected ocean to be untinted')
+  for (const isDark of [false, true]) {
+    const vars = themeCssVars(plain, isDark)
+    for (const name of THEME_PALETTE_VAR_NAMES) {
+      assert.ok(!(name in vars), `untinted theme still emitted ${name}`)
+    }
+  }
+})
+
+t('the tinted blob falls back to the ramp, so untinted themes keep their color', () => {
+  const raw = readFileSync(new URL('../../components/ui/ambient-background.tsx', import.meta.url), 'utf8')
+  const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  const tintUse = src.match(/var\(--accent-tint[^)]*\)/g) ?? []
+  assert.ok(tintUse.length > 0, 'no blob uses the tint')
+  for (const use of tintUse) {
+    // An undefined var() invalidates the declaration and drops the property
+    // entirely — the blob would lose its background, not fall back to a default.
+    assert.ok(use.includes(','), `--accent-tint used with no fallback: ${use}`)
   }
 })
 
