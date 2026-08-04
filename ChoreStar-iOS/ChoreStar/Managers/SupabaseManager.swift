@@ -819,6 +819,19 @@ class SupabaseManager: ObservableObject {
     private static let avatarPixelSize: CGFloat = 512
 
     /**
+     Object path for a child's avatar: `{user_id}/{child_id}/{uuid}.jpg`.
+
+     Every component is lowercased. Storage object names are case-SENSITIVE, and
+     the RLS policy from migration 008 compares the leading folder against
+     `auth.uid()::text`, which Postgres renders lowercase. Foundation's
+     UUID.uuidString is uppercase, so building this by interpolation produced a
+     path the policy rejected outright.
+     */
+    static func avatarObjectPath(ownerId: String, childId: UUID) -> String {
+        "\(ownerId.lowercased())/\(childId.uuidString.lowercased())/\(UUID().uuidString.lowercased()).jpg"
+    }
+
+    /**
      Centre-cropped, orientation-corrected 512x512 image — the exact pixels that
      get stored.
 
@@ -898,7 +911,13 @@ class SupabaseManager: ObservableObject {
             children.first(where: { $0.id == childId })?.avatarPhotoPath
         }
 
-        let path = "\(ownerId)/\(childId.uuidString)/\(UUID().uuidString).jpg"
+        // LOWERCASED, and this is not cosmetic. Foundation's UUID.uuidString is
+        // UPPERCASE; Postgres renders auth.uid()::text LOWERCASE. The storage
+        // policy compares (storage.foldername(name))[1] against auth.uid()::text,
+        // so an uppercase folder fails it and every upload came back as "new row
+        // violates row-level security policy". Web never hit this because
+        // JavaScript UUIDs are already lowercase.
+        let path = SupabaseManager.avatarObjectPath(ownerId: ownerId, childId: childId)
 
         do {
             _ = try await client.storage
@@ -923,7 +942,13 @@ class SupabaseManager: ObservableObject {
             return nil
         } catch {
             await MainActor.run { debugLastError = "Avatar upload failed: \(error.localizedDescription)" }
+            #if DEBUG
+            // The generic message hid an RLS rejection behind "check your
+            // connection", which sent me looking at the network for a policy bug.
+            return "Upload failed: \(error.localizedDescription)"
+            #else
             return "Couldn't upload that photo. Check your connection and try again."
+            #endif
         }
         #else
         return "Supabase not available."
@@ -935,12 +960,27 @@ class SupabaseManager: ObservableObject {
         #if canImport(Supabase)
         guard let client = client else { return }
 
+        // Explicit encode(to:) because the SYNTHESIZED one uses encodeIfPresent
+        // for Optionals, which omits a nil key entirely rather than sending null.
+        // That silently broke two things: avatar_url was never actually cleared,
+        // and removeChildAvatarPhoto (which passes photoPath: nil) sent only
+        // updated_at — so removing a photo did nothing at all.
         struct AvatarPhotoUpdate: Encodable {
             let avatar_photo_path: String?
-            // Cleared so the resolution order actually reaches the photo, and so
-            // removing the photo falls back to initials rather than a stale preset.
             let avatar_url: String?
             let updated_at: String
+
+            enum CodingKeys: String, CodingKey {
+                case avatar_photo_path, avatar_url, updated_at
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                // encode, not encodeIfPresent — nil must reach Postgres as null.
+                try c.encode(avatar_photo_path, forKey: .avatar_photo_path)
+                try c.encode(avatar_url, forKey: .avatar_url)
+                try c.encode(updated_at, forKey: .updated_at)
+            }
         }
 
         try await client
