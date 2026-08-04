@@ -1,0 +1,134 @@
+import 'server-only'
+import { createSign, createPrivateKey } from 'node:crypto'
+import { connect } from 'node:http2'
+
+/**
+ * Minimal APNs client — direct HTTP/2 to Apple, no SDK.
+ *
+ * The design decision (docs/push-notifications-plan.md) was native and direct:
+ * no OneSignal, no Firebase. APNs speaks HTTP/2 with an ES256 JWT, both of
+ * which Node has built in, so this adds zero dependencies.
+ *
+ * Wholly env-gated: without APNS_TEAM_ID / APNS_KEY_ID / APNS_PRIVATE_KEY the
+ * module reports itself unconfigured and every send is a cheap no-op. Push is
+ * decoration on top of the product — it must never be able to break the
+ * endpoint that triggered it.
+ */
+
+const TEAM_ID = process.env.APNS_TEAM_ID?.trim()
+const KEY_ID = process.env.APNS_KEY_ID?.trim()
+// Vercel stores multi-line secrets with literal \n sometimes — normalize.
+const PRIVATE_KEY = process.env.APNS_PRIVATE_KEY?.replace(/\\n/g, '\n').trim()
+const TOPIC = process.env.APNS_TOPIC?.trim() || 'com.chorestar.ChoreStar'
+
+export function apnsConfigured(): boolean {
+  return Boolean(TEAM_ID && KEY_ID && PRIVATE_KEY)
+}
+
+/**
+ * Provider JWT, cached. Apple rejects tokens older than an hour and throttles
+ * refreshes more frequent than ~20 minutes, so one token is reused for 40.
+ */
+let cachedJwt: { token: string; issuedAt: number } | null = null
+
+function base64url(input: Buffer | string): string {
+  return Buffer.from(input).toString('base64url')
+}
+
+function providerJwt(): string {
+  const now = Math.floor(Date.now() / 1000)
+  if (cachedJwt && now - cachedJwt.issuedAt < 40 * 60) return cachedJwt.token
+
+  const header = base64url(JSON.stringify({ alg: 'ES256', kid: KEY_ID }))
+  const payload = base64url(JSON.stringify({ iss: TEAM_ID, iat: now }))
+  const signingInput = `${header}.${payload}`
+
+  const sign = createSign('SHA256')
+  sign.update(signingInput)
+  // ieee-p1363: JWT ES256 wants raw r||s, not ASN.1 DER.
+  const signature = sign.sign({
+    key: createPrivateKey(PRIVATE_KEY as string),
+    dsaEncoding: 'ieee-p1363',
+  })
+
+  const token = `${signingInput}.${base64url(signature)}`
+  cachedJwt = { token, issuedAt: now }
+  return token
+}
+
+export interface ApnsSendResult {
+  ok: boolean
+  /** True when APNs says this token is dead and the row should be deleted. */
+  tokenGone: boolean
+  status: number
+}
+
+/**
+ * Send one alert to one device token.
+ *
+ * `environment` picks the gateway: Xcode installs get sandbox tokens, TestFlight
+ * and App Store get production ones, and the two are mutually invalid.
+ */
+export async function sendApnsAlert(
+  deviceToken: string,
+  environment: 'development' | 'production',
+  title: string,
+  body: string
+): Promise<ApnsSendResult> {
+  if (!apnsConfigured()) return { ok: false, tokenGone: false, status: 0 }
+
+  const host =
+    environment === 'development'
+      ? 'https://api.sandbox.push.apple.com'
+      : 'https://api.push.apple.com'
+
+  const payload = JSON.stringify({
+    aps: { alert: { title, body }, sound: 'default' },
+  })
+
+  return new Promise<ApnsSendResult>((resolve) => {
+    const client = connect(host)
+    // A hung HTTP/2 session must not pin a serverless invocation.
+    const bail = setTimeout(() => {
+      client.close()
+      resolve({ ok: false, tokenGone: false, status: 0 })
+    }, 8000)
+
+    client.on('error', () => {
+      clearTimeout(bail)
+      resolve({ ok: false, tokenGone: false, status: 0 })
+    })
+
+    const req = client.request({
+      ':method': 'POST',
+      ':path': `/3/device/${deviceToken}`,
+      authorization: `bearer ${providerJwt()}`,
+      'apns-topic': TOPIC,
+      'apns-push-type': 'alert',
+      'apns-priority': '10',
+      'content-type': 'application/json',
+    })
+
+    let status = 0
+    let responseBody = ''
+    req.on('response', (headers) => {
+      status = Number(headers[':status'] ?? 0)
+    })
+    req.on('data', (chunk) => { responseBody += chunk })
+    req.on('end', () => {
+      clearTimeout(bail)
+      client.close()
+      // 410 = token expired; 400 BadDeviceToken = wrong gateway or dead token.
+      const tokenGone =
+        status === 410 || (status === 400 && responseBody.includes('BadDeviceToken'))
+      resolve({ ok: status === 200, tokenGone, status })
+    })
+    req.on('error', () => {
+      clearTimeout(bail)
+      client.close()
+      resolve({ ok: false, tokenGone: false, status: 0 })
+    })
+
+    req.end(payload)
+  })
+}

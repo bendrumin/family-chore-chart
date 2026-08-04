@@ -1,6 +1,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { validateKidToken } from '@/lib/utils/kid-auth'
+import { notifyIfAllChoresDone } from '@/lib/push/notify'
 
 /**
  * POST /api/kid/chores/toggle — a kid checks a chore off (or un-checks it).
@@ -83,6 +84,12 @@ export async function POST(request: Request) {
         console.error('[kid/chores/toggle] delete failed:', error.message)
         return NextResponse.json({ error: 'Failed to save' }, { status: 500 })
       }
+    }
+
+    if (completed) {
+      // Fire-and-forget: if this tap finished the whole list, the parent's
+      // phone buzzes. A push failure must never fail the toggle.
+      void notifyIfAllChoresDone(session.childId, weekStart, dayOfWeek)
     }
 
     return NextResponse.json({ success: true, completed })

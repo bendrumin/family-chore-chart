@@ -1,5 +1,6 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { notifyRoutineCompleted } from '@/lib/push/notify';
 import { z } from 'zod';
 import { validateKidToken } from '@/lib/utils/kid-auth';
 
@@ -133,6 +134,10 @@ export async function POST(
       // Don't expose database error details to client
       return NextResponse.json({ error: 'Failed to record completion' }, { status: 500 });
     }
+
+    // Fire-and-forget: the flagship push. A send failure must never fail the
+    // completion the kid just earned.
+    void notifyRoutineCompleted(childId, (routine as { name?: string }).name || 'their routine')
 
     return NextResponse.json({
       success: true,

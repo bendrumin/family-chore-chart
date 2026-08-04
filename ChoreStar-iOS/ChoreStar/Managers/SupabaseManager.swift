@@ -167,6 +167,7 @@ class SupabaseManager: ObservableObject {
                 self.isAuthenticated = true
                 debugLastError = "User authenticated: \(user.email ?? "no email")"
             }
+            await registerForPushNotifications()
         } catch {
             await MainActor.run {
                 self.isAuthenticated = false
@@ -964,6 +965,66 @@ class SupabaseManager: ObservableObject {
         }
         #else
         debugLastError = "Supabase not available for sign out"
+        #endif
+    }
+
+    // MARK: - Push Notifications
+
+    /**
+     Ask for notification permission and request an APNs token.
+
+     Called after a parent authenticates. The two steps are independent: the
+     device token arrives regardless of the permission answer (permission only
+     governs whether alerts are DISPLAYED), so registration proceeds even if
+     they decline — flipping permission on later in iOS Settings then works
+     without another sign-in.
+     */
+    func registerForPushNotifications() async {
+        let center = UNUserNotificationCenter.current()
+        _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
+        await MainActor.run {
+            UIApplication.shared.registerForRemoteNotifications()
+        }
+    }
+
+    /// Upserts this device's APNs token, called from PushDelegate.
+    func registerPushToken(_ hexToken: String) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        guard let uid = try? await client.auth.session.user.id.uuidString.lowercased() else { return }
+
+        // Xcode installs get sandbox tokens; TestFlight/App Store get production
+        // ones. The two APNs gateways reject each other's tokens, so the server
+        // picks its gateway from this column.
+        #if DEBUG
+        let environment = "development"
+        #else
+        let environment = "production"
+        #endif
+
+        struct TokenRow: Encodable {
+            let user_id: String
+            let token: String
+            let platform: String
+            let environment: String
+            let updated_at: String
+        }
+
+        do {
+            try await client
+                .from("device_push_tokens")
+                .upsert(TokenRow(
+                    user_id: uid,
+                    token: hexToken,
+                    platform: "ios",
+                    environment: environment,
+                    updated_at: ISO8601DateFormatter().string(from: Date())
+                ), onConflict: "token")
+                .execute()
+            await MainActor.run { debugLastError = "Push token registered" }
+        } catch {
+            await MainActor.run { debugLastError = "Push token save failed: \(error.localizedDescription)" }
+        }
         #endif
     }
 
