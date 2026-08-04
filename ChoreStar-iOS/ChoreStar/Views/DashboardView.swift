@@ -56,6 +56,19 @@ struct DashboardView: View {
         return manager.formatMoney(total)
     }
 
+    /**
+     Whole family, whole week — the running total a parent actually pays out.
+
+     Summed per child from calculateWeeklyStats, which already applies the
+     canonical rules (flat mode pays the daily rate only on a perfect day; the
+     weekly bonus needs 7/7), so this figure always agrees with the Stats tab
+     and the web dashboard rather than being a fourth reimplementation.
+     */
+    private var earnedThisWeekText: String {
+        let total = manager.children.reduce(0.0) { $0 + manager.calculateWeeklyStats(for: $1.id).totalEarnings }
+        return manager.formatMoney(total)
+    }
+
     private var familyStreak: Int {
         manager.calculateAggregateWeeklyStats().streak
     }
@@ -90,11 +103,21 @@ struct DashboardView: View {
                                 Image(systemName: "star.circle.fill")
                                     .font(.subheadline)
                                     .foregroundColor(.yellow)
-                                Text("\(earnedTodayText) earned today")
+                                Text("\(earnedTodayText) today")
                                     .font(.subheadline)
                                     .foregroundColor(.white.opacity(0.9))
                                     .contentTransition(.numericText())
                                     .animation(.snappy, value: earnedTodayText)
+
+                                Text("·")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.55))
+
+                                Text("\(earnedThisWeekText) this week")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                                    .contentTransition(.numericText())
+                                    .animation(.snappy, value: earnedThisWeekText)
                             }
 
                             if familyStreak >= 2 {

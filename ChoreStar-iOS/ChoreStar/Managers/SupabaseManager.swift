@@ -980,11 +980,16 @@ class SupabaseManager: ObservableObject {
      without another sign-in.
      */
     func registerForPushNotifications() async {
+        // The simulator cannot talk to APNs, so the permission prompt there is
+        // pure nag — it blocked every cold launch during screenshot runs.
+        // Real devices still prompt once at first parent sign-in.
+        #if !targetEnvironment(simulator)
         let center = UNUserNotificationCenter.current()
         _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge])
         await MainActor.run {
             UIApplication.shared.registerForRemoteNotifications()
         }
+        #endif
     }
 
     /// Upserts this device's APNs token, called from PushDelegate.
