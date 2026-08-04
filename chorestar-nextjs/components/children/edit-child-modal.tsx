@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PhotoAvatarUpload } from '@/components/children/photo-avatar-upload'
 import { AvatarPicker } from '@/components/ui/avatar-picker'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { toast } from 'sonner'
@@ -248,6 +249,12 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
               <div className="flex items-center gap-2 mb-4">
                 <Palette className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Avatar & Appearance</h4>
+              </div>
+
+              {/* Photo upload — web capture parity with iOS. onChanged closes over
+                  onSuccess so the parent list refetches and shows the new photo. */}
+              <div className="mb-4">
+                <PhotoAvatarUpload child={child} onChanged={onSuccess} />
               </div>
 
               <AvatarPicker

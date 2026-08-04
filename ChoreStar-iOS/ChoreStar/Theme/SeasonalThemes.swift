@@ -74,10 +74,10 @@ enum SeasonalTheme: String, CaseIterable, Identifiable {
         case .valentine: return Color(red: 0.93, green: 0.27, blue: 0.55) // #ec4899
         case .stpatricks: return Color(red: 0.13, green: 0.72, blue: 0.31) // #22b84e
         case .newYear: return Color(red: 0.39, green: 0.40, blue: 0.95) // #6366f1
-        case .spring: return Color(red: 0.93, green: 0.47, blue: 0.62) // #ec789e
-        case .summer: return Color(red: 0.96, green: 0.62, blue: 0.04) // #f59e0b
-        case .fall: return Color(red: 0.92, green: 0.53, blue: 0.07) // #ea8811
-        case .winter: return Color(red: 0.23, green: 0.51, blue: 0.96) // #3b82f6
+        case .spring: return Color(red: 0.93, green: 0.24, blue: 0.42) // #ee3c6b cherry blossom (web parity)
+        case .summer: return Color(red: 0.23, green: 0.60, blue: 0.64) // #3a9aa3 flamingo teal (web parity)
+        case .fall: return Color(red: 0.70, green: 0.12, blue: 0.07) // #b31e11 autumn ember (web parity)
+        case .winter: return Color(red: 0.10, green: 0.13, blue: 0.69) // #1a22b0 frozen valley (web parity)
         case .ocean: return Color(red: 0.02, green: 0.52, blue: 0.84) // #0284c7
         case .sunset: return Color(red: 0.92, green: 0.30, blue: 0.14) // #ea4c23
         case .forest: return Color(red: 0.08, green: 0.53, blue: 0.32) // #158750
@@ -96,10 +96,10 @@ enum SeasonalTheme: String, CaseIterable, Identifiable {
         case .valentine: return Color(red: 0.85, green: 0.18, blue: 0.38)
         case .stpatricks: return Color(red: 0.08, green: 0.53, blue: 0.22)
         case .newYear: return Color(red: 0.55, green: 0.36, blue: 0.97)    // purple accent
-        case .spring: return Color(red: 0.66, green: 0.33, blue: 0.97)     // purple accent
-        case .summer: return Color(red: 0.97, green: 0.45, blue: 0.09)     // orange accent
-        case .fall: return Color(red: 0.72, green: 0.30, blue: 0.05)
-        case .winter: return Color(red: 0.36, green: 0.28, blue: 0.84)     // indigo accent
+        case .spring: return Color(red: 0.91, green: 0.13, blue: 0.42)     // #e7206b blossom highlight
+        case .summer: return Color(red: 0.93, green: 0.44, blue: 0.44)     // #ed706f flamingo coral
+        case .fall: return Color(red: 0.98, green: 0.42, blue: 0.09)       // #fa6a18 vivid orange
+        case .winter: return Color(red: 0.18, green: 0.49, blue: 0.78)     // #2f7cc6 glacier blue
         case .ocean: return Color(red: 0.04, green: 0.36, blue: 0.65)
         case .sunset: return Color(red: 0.96, green: 0.62, blue: 0.04)     // amber accent
         case .forest: return Color(red: 0.05, green: 0.38, blue: 0.22)

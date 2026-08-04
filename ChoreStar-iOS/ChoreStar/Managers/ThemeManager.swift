@@ -29,22 +29,46 @@ class ThemeManager: ObservableObject {
         }
     }
     
+    /**
+     Custom accent, synced with web through family_settings.custom_theme.
+
+     Highest precedence, matching web's resolveActiveTheme: custom accent >
+     named theme > auto-seasonal. Published by SupabaseManager after settings
+     load and after the picker writes.
+     */
+    @Published var customAccentHex: String?
+
+    @MainActor
+    func applyCustomAccent(_ hex: String?) {
+        customAccentHex = hex
+    }
+
+    private var customAccent: Color? {
+        customAccentHex.flatMap { Color(hexString: $0) }
+    }
+
     // MARK: - Themed Colors
     
     var accentColor: Color {
-        activeTheme?.primaryColor ?? .choreStarPrimary
+        customAccent ?? activeTheme?.primaryColor ?? .choreStarPrimary
     }
 
     var primaryColor: Color {
-        activeTheme?.primaryColor ?? .choreStarPrimary
+        customAccent ?? activeTheme?.primaryColor ?? .choreStarPrimary
     }
 
     var secondaryColor: Color {
-        activeTheme?.secondaryColor ?? .choreStarPurple
+        customAccent ?? activeTheme?.secondaryColor ?? .choreStarPurple
     }
     
     var gradient: LinearGradient {
-        activeTheme?.gradient ?? Color.choreStarGradient
+        // A custom accent renders as a solid fill — the professional look the
+        // web landed on — via a single-color "gradient" so every consumer of
+        // this property keeps working unchanged.
+        if let c = customAccent {
+            return LinearGradient(colors: [c, c], startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
+        return activeTheme?.gradient ?? Color.choreStarGradient
     }
     
     var themeEmoji: String? {

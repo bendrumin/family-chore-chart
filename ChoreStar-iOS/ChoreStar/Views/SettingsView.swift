@@ -12,6 +12,8 @@ struct SettingsView: View {
     @State private var showingPaywall = false
     @State private var showingWhatsNew = false
     @State private var showingDeleteAccount = false
+    @State private var customAccent: Color = .choreStarPrimary
+    @State private var accentSaveTask: Task<Void, Never>?
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
 
@@ -64,9 +66,43 @@ struct SettingsView: View {
                 } header: {
                     Text("Theme")
                 } footer: {
-                    if let activeTheme = themeManager.activeTheme {
+                    if themeManager.customAccentHex != nil {
+                        Text("Custom accent overrides the theme colours.")
+                    } else if let activeTheme = themeManager.activeTheme {
                         Text("Active: \(activeTheme.emoji) \(activeTheme.displayName)")
                     }
+                }
+
+                Section {
+                    ColorPicker(selection: $customAccent, supportsOpacity: false) {
+                        HStack {
+                            Image(systemName: "paintpalette.fill")
+                                .foregroundColor(themeManager.accentColor)
+                            Text("Custom Accent")
+                        }
+                    }
+                    .onChange(of: customAccent) { _, newValue in
+                        // ColorPicker fires continuously while dragging; debounce
+                        // so we save the colour they settle on, not 60 writes/sec.
+                        accentSaveTask?.cancel()
+                        guard let hex = newValue.hexRGBString else { return }
+                        accentSaveTask = Task {
+                            try? await Task.sleep(nanoseconds: 700_000_000)
+                            guard !Task.isCancelled else { return }
+                            _ = await manager.setCustomAccentColor(hex)
+                        }
+                    }
+
+                    if themeManager.customAccentHex != nil {
+                        Button("Reset to Theme Colours") {
+                            accentSaveTask?.cancel()
+                            Task { _ = await manager.setCustomAccentColor(nil) }
+                        }
+                    }
+                } header: {
+                    Text("Accent Colour")
+                } footer: {
+                    Text("Synced with the web app — pick a colour once and every device follows.")
                 }
                 
                 Section("Audio") {
@@ -258,6 +294,11 @@ struct SettingsView: View {
                     Button("Sign Out", role: .destructive) {
                         manager.signOut()
                     }
+                }
+            }
+            .onAppear {
+                if let hex = themeManager.customAccentHex, let c = Color(hexString: hex) {
+                    customAccent = c
                 }
             }
             .navigationTitle("Settings")

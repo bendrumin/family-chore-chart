@@ -206,6 +206,22 @@ struct AchievementBadgeRow: Codable {
     let earned_at: String
 }
 
+/**
+ The slice of family_settings.custom_theme iOS reads.
+
+ custom_theme is a JSONB column — an OBJECT over the wire — but this model
+ declared it `String?`, so for every family that had ever touched web themes the
+ whole FamilySettings decode THREW and iOS silently ran on defaults: $ instead
+ of their currency, flat-rate assumptions, default reward. The web app writes
+ keys iOS doesn't care about (whatsNewSeenVersion etc.); unknown keys are
+ ignored on decode, and writes go through a read-merge-write so they survive.
+ */
+struct CustomThemePayload: Codable {
+    var accentColor: String?
+    var seasonalTheme: String?
+    var autoSeasonal: Bool?
+}
+
 struct FamilySettings: Codable {
     let id: UUID
     let userId: UUID
@@ -217,7 +233,7 @@ struct FamilySettings: Codable {
     let locale: String?
     let dateFormat: String?
     let language: String?
-    let customTheme: String?
+    let customTheme: CustomThemePayload?
     let weeklyBonusLabel: String?
     
     var isPerChoreMode: Bool { rewardMode == "per_chore" }

@@ -132,3 +132,31 @@ extension Color {
         Color(red: 0.31, green: 0.78, blue: 0.47)  // emerald
     ]
 }
+
+
+// MARK: - Hex round-trip (custom accent sync with web)
+
+extension Color {
+    /// Parses "#rrggbb" (case-insensitive, # optional). The custom accent is
+    /// stored as hex in family_settings.custom_theme so web and iOS share it.
+    init?(hexString: String) {
+        var v = hexString.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if v.hasPrefix("#") { v.removeFirst() }
+        guard v.count == 6, let n = UInt32(v, radix: 16) else { return nil }
+        self.init(
+            red: Double((n >> 16) & 0xff) / 255.0,
+            green: Double((n >> 8) & 0xff) / 255.0,
+            blue: Double(n & 0xff) / 255.0
+        )
+    }
+
+    /// "#rrggbb" for storage. sRGB-converted first, since a ColorPicker can
+    /// hand back Display-P3 values whose components exceed 0...1.
+    var hexRGBString: String? {
+        let ui = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard ui.getRed(&r, green: &g, blue: &b, alpha: &a) else { return nil }
+        let clamp = { (x: CGFloat) in Int((min(max(x, 0), 1) * 255).rounded()) }
+        return String(format: "#%02x%02x%02x", clamp(r), clamp(g), clamp(b))
+    }
+}

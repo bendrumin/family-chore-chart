@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import {
   checkRateLimit,
   recordAttempt,
@@ -20,10 +20,25 @@ export async function POST(request: Request) {
   try {
     // Require an authenticated parent. Kids never hit this endpoint, and gating
     // on a real session stops anonymous callers from burning Anthropic tokens.
+    // Two auth styles, like /api/account/delete: web sends its session cookie,
+    // iOS sends `Authorization: Bearer <access token>`.
     const supabase = await createClient()
-    const {
+    let {
       data: { user },
     } = await supabase.auth.getUser()
+    if (!user) {
+      const authHeader = request.headers.get('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.slice(7).trim()
+        if (token) {
+          // getUser(jwt) validates against Supabase's /auth/v1/user rather than
+          // trusting anything decoded locally.
+          const admin = createServiceRoleClient()
+          const { data: tokenAuth } = await admin.auth.getUser(token)
+          user = tokenAuth?.user ?? null
+        }
+      }
+    }
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }

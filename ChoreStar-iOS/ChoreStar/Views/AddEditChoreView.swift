@@ -57,6 +57,13 @@ struct AddEditChoreView: View {
         choreToEdit != nil
     }
 
+    /// Claude-personalized suggestions, when the API is reachable. The computed
+    /// `suggestions` below is the rule-based fallback; whichever is shown, the
+    /// UI is identical.
+    @State private var aiSuggestions: [ChoreSuggestion]?
+
+    private var displayedSuggestions: [ChoreSuggestion] { aiSuggestions ?? suggestions }
+
     private var suggestions: [ChoreSuggestion] {
         guard !isEditing,
               let childId = selectedChild,
@@ -78,9 +85,9 @@ struct AddEditChoreView: View {
     var body: some View {
         NavigationStack {
             Form {
-                if !suggestions.isEmpty {
-                    Section("Suggestions") {
-                        ForEach(suggestions) { suggestion in
+                if !displayedSuggestions.isEmpty {
+                    Section(aiSuggestions != nil ? "Suggestions · personalized" : "Suggestions") {
+                        ForEach(displayedSuggestions) { suggestion in
                             Button {
                                 applySuggestion(suggestion)
                             } label: {
@@ -228,6 +235,20 @@ struct AddEditChoreView: View {
                 }
             }
             .navigationTitle(isEditing ? "Edit Chore" : "Add Chore")
+            .task(id: selectedChild) {
+                aiSuggestions = nil
+                guard !isEditing,
+                      let childId = selectedChild,
+                      let child = manager.children.first(where: { $0.id == childId }) else { return }
+                let existing = manager.chores.filter { $0.childId == childId }.map(\.name)
+                let rate = manager.calculateWeeklyStats(for: childId).completionRate * 100
+                aiSuggestions = await manager.fetchAISuggestions(
+                    childName: child.name,
+                    childAge: child.age,
+                    existingChoreNames: existing,
+                    completionRate: rate
+                )
+            }
             .onAppear {
                 // Web parity (add-chore-modal). On the flat daily rate a chore's own
                 // amount does not affect earnings, so there is no meaningful

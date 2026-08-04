@@ -967,6 +967,78 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
+    // MARK: - AI Chore Suggestions
+
+    private struct AISuggestionRow: Codable {
+        let name: String
+        let category: String
+        let icon: String
+        let rewardCents: Int
+        let reason: String
+    }
+
+    private struct AISuggestionsResponse: Codable {
+        let suggestions: [AISuggestionRow]
+    }
+
+    /**
+     Claude-personalized chore suggestions via the web API.
+
+     Web has had these since July; iOS silently shipped only the rule-based
+     port, so the same family saw smarter ideas in a browser than in the app.
+     The endpoint takes the same bearer token as account deletion and applies a
+     per-user rate limit server-side.
+
+     Returns nil when the AI path is unavailable for any reason — no session,
+     offline, 503 from a missing key, rate limit — and the caller falls back to
+     the local ChoreSuggestionEngine. The feature degrades; it never breaks.
+     */
+    func fetchAISuggestions(
+        childName: String,
+        childAge: Int?,
+        existingChoreNames: [String],
+        completionRate: Double
+    ) async -> [ChoreSuggestion]? {
+        #if canImport(Supabase)
+        guard let client = client else { return nil }
+        guard let accessToken = try? await client.auth.session.accessToken else { return nil }
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/ai/suggest-chores") else { return nil }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        struct Body: Encodable {
+            let childName: String
+            let childAge: Int?
+            let existingChoreNames: [String]
+            let completionRate: Double
+        }
+        request.httpBody = try? JSONEncoder().encode(Body(
+            childName: childName,
+            childAge: childAge,
+            existingChoreNames: existingChoreNames,
+            completionRate: min(max(completionRate, 0), 100)
+        ))
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return nil }
+            let decoded = try JSONDecoder().decode(AISuggestionsResponse.self, from: data)
+            guard !decoded.suggestions.isEmpty else { return nil }
+            return decoded.suggestions.map {
+                ChoreSuggestion(name: $0.name, category: $0.category, icon: $0.icon,
+                                rewardCents: $0.rewardCents, reason: $0.reason)
+            }
+        } catch {
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
+
     // MARK: - Child Photo Avatars
 
     /// Private Storage bucket holding uploaded child photos.
@@ -1726,6 +1798,9 @@ class SupabaseManager: ObservableObject {
             
             await MainActor.run {
                 self.familySettings = settings.first
+                // The custom accent lives in family_settings.custom_theme, shared
+                // with web — a colour picked on either platform shows up on both.
+                ThemeManager.shared.applyCustomAccent(settings.first?.customTheme?.accentColor)
                 if let settings = settings.first {
                     debugLastError = "Loaded settings: \(settings.dailyRewardCents)¢ per day"
                 }
@@ -1738,6 +1813,56 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    /**
+     Sets (or clears, with nil) the family's custom accent colour.
+
+     Written into family_settings.custom_theme — the SAME field the web accent
+     picker uses, so the colour follows the family across platforms. The write
+     is read-merge-write on the raw JSON: the web app keeps unrelated keys in
+     that object (whatsNewSeenVersion and friends), and replacing the object
+     wholesale would wipe them.
+     */
+    func setCustomAccentColor(_ hex: String?) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return "Not signed in." }
+
+        struct RawThemeRow: Codable { let custom_theme: [String: AnyJSON]? }
+
+        do {
+            let rows: [RawThemeRow] = try await client
+                .from("family_settings")
+                .select("custom_theme")
+                .eq("user_id", value: uid)
+                .limit(1)
+                .execute()
+                .value
+
+            var merged = rows.first?.custom_theme ?? [:]
+            merged["accentColor"] = hex.map { AnyJSON.string($0) } ?? .null
+
+            try await client
+                .from("family_settings")
+                .update(["custom_theme": AnyJSON.object(merged)])
+                .eq("user_id", value: uid)
+                .execute()
+
+            await MainActor.run {
+                ThemeManager.shared.applyCustomAccent(hex)
+                debugLastError = "Custom accent \(hex ?? "cleared")"
+            }
+            await loadFamilySettings()
+            return nil
+        } catch {
+            await MainActor.run { debugLastError = "Accent save failed: \(error.localizedDescription)" }
+            return "Couldn't save that colour. Please try again."
+        }
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
     func refreshData() {
         Task {
             await loadRemoteData()
