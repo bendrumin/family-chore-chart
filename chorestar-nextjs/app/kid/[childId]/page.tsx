@@ -14,6 +14,9 @@ interface ChildData {
   avatar_color: string | null;
   avatar_url: string | null;
   avatar_file: string | null;
+  /** Short-lived signed URL for an uploaded photo. Minted server-side, since the
+   *  bucket is private and kids are not authenticated Supabase users. */
+  avatar_signed_url?: string | null;
 }
 
 export default function KidDashboardPage({ params }: { params: Promise<{ childId: string }> }) {
@@ -55,6 +58,24 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         return;
       }
       setChild(childData);
+
+      // A signed URL captured at login expires well before the session does, so
+      // re-mint on every load. Authorized by the kid token, not by childId.
+      void (async () => {
+        try {
+          const kidToken = sessionData.kidToken
+          if (!kidToken) return
+          const res = await fetch('/api/kid/child', {
+            headers: { Authorization: `Bearer ${kidToken}` },
+            cache: 'no-store',
+          })
+          if (!res.ok) return
+          const fresh = await res.json()
+          if (fresh?.child?.id === childId) setChild(fresh.child)
+        } catch {
+          // Decoration only — keep whatever the session already had.
+        }
+      })()
     } catch (error) {
       // Invalid session data, clear and redirect
       localStorage.removeItem('kidMode');
@@ -96,18 +117,27 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           animate={{ scale: 1 }}
           transition={{ type: 'spring', duration: 0.6, bounce: 0.5 }}
         >
-          {/* Avatar */}
-          <div
-            className="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-5xl font-black text-white shadow-2xl"
-            style={{
-              backgroundColor: child.avatar_color || '#6366f1',
-              backgroundImage: child.avatar_url || child.avatar_file ? `url(${child.avatar_url || child.avatar_file})` : undefined,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            {!child.avatar_url && !child.avatar_file && child.name.charAt(0).toUpperCase()}
-          </div>
+          {/* Avatar — photo, then preset image, then emoji, then initial.
+              avatar_file holds a single EMOJI, not a URL. It was previously fed
+              into url(), which rendered nothing AND suppressed the initial, so an
+              emoji avatar showed up here as an empty coloured circle. */}
+          {(() => {
+            const imageUrl = child.avatar_signed_url || child.avatar_url
+            const emoji = !imageUrl && child.avatar_file ? child.avatar_file : null
+            return (
+              <div
+                className="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-5xl font-black text-white shadow-2xl"
+                style={{
+                  backgroundColor: child.avatar_color || '#6366f1',
+                  backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {emoji ?? (!imageUrl ? child.name.charAt(0).toUpperCase() : null)}
+              </div>
+            )
+          })()}
 
           {/* Welcome Message */}
           <motion.h1

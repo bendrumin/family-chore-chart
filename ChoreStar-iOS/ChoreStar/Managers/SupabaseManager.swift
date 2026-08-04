@@ -268,6 +268,11 @@ class SupabaseManager: ObservableObject {
         let avatar_color: String?
         let avatar_url: String?
         let avatar_file: String?
+        /// Short-lived signed URL for an uploaded photo. Minted by the web API with
+        /// the service role, because the bucket is private and a kid holds a
+        /// kid_sessions token rather than a Supabase JWT — Storage RLS keys on
+        /// auth.uid(), which is null for a kid.
+        let avatar_signed_url: String?
     }
 
     private enum PinVerifyOutcome {
@@ -453,6 +458,7 @@ class SupabaseManager: ObservableObject {
                 avatarColor: apiChild.avatar_color,
                 avatarUrl: apiChild.avatar_url,
                 avatarFile: apiChild.avatar_file,
+                avatarSignedUrl: apiChild.avatar_signed_url,
                 kidToken: kidToken,
                 familyCode: familyCode,
                 expiresAt: Date().addingTimeInterval(8 * 60 * 60)

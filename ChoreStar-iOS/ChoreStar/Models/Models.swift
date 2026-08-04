@@ -110,6 +110,9 @@ struct KidModeSession: Codable {
     let avatarColor: String?
     let avatarUrl: String?
     let avatarFile: String?
+    /// Signed URL for an uploaded photo, minted server-side at PIN verify.
+    /// Expires — refreshed by re-verifying, not persisted as a permanent avatar.
+    let avatarSignedUrl: String?
     let kidToken: String
     let familyCode: String
     let expiresAt: Date
@@ -121,11 +124,13 @@ struct KidModeSession: Codable {
             name: childName,
             age: 0,
             avatarColor: avatarColor ?? "blue",
-            avatarUrl: avatarUrl,
+            // A server-minted signed URL renders exactly like a preset image URL,
+            // so it slots into avatarUrl and needs no client-side signing. That is
+            // the whole point of minting it server-side: the kid never touches
+            // Storage, and avatarPhotoPath stays nil because a kid could not sign
+            // a path even if it had one.
+            avatarUrl: avatarSignedUrl ?? avatarUrl,
             avatarFile: avatarFile,
-            // Kid mode does not carry a photo path yet — the kid endpoints would
-            // have to mint the signed URL server-side, since kids are not
-            // authenticated Supabase users and RLS cannot serve them.
             avatarPhotoPath: nil,
             userId: UUID(),
             createdAt: Date(),

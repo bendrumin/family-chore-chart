@@ -24,6 +24,9 @@ interface VerifyPinResponse {
     avatar_color: string | null;
     avatar_url: string | null;
     avatar_file: string | null;
+    /** Short-lived signed URL for an uploaded photo; minted server-side because
+     *  kids are not authenticated Supabase users. */
+    avatar_signed_url?: string | null;
   };
   kidToken?: string;
 }

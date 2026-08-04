@@ -1,6 +1,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { signChildAvatarForChild } from '@/lib/utils/child-avatar';
 import {
   checkRateLimit,
   recordAttempt,
@@ -191,9 +192,20 @@ export async function POST(request: Request) {
 
     const kidToken = sessionError ? null : (session as { token?: string } | null)?.token;
 
+    // Sign the avatar so the kid sees their photo the instant they log in, rather
+    // than waiting for the dashboard's refresh call.
+    //
+    // Deliberately a SEPARATE query, not a column on the join above. That join is
+    // what authenticates the PIN, and selecting a column PostgREST cannot resolve
+    // fails the whole query — which would turn "this family added photos" into
+    // "nobody in this family can log in". An avatar must never be able to break
+    // authentication, so this runs after the match is already established and any
+    // failure degrades to no photo.
+    const avatarSignedUrl = await signChildAvatarForChild(matchedPinRecord.child_id);
+
     return NextResponse.json({
       success: true,
-      child: matchedChild,
+      child: { ...(matchedChild as Record<string, unknown>), avatar_signed_url: avatarSignedUrl },
       kidToken: kidToken || undefined,
     });
   } catch (error) {
