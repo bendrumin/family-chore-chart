@@ -62,10 +62,13 @@ tmp/
 temp/
 .vercel
 
-# fastlane — credentials and run artifacts
+# fastlane — credentials and run artifacts.
+# Patterns need **/ : a slash anywhere in a pattern anchors it to THIS file's
+# directory, so a bare fastlane/... would miss ChoreStar-iOS/fastlane/...
 **/AuthKey_*.p8
 *.p8
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/test_output/
-fastlane/screenshots/**/*.png
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/test_output/
+# Staged copies of appstore-screenshots/, which is the committed source of truth.
+**/fastlane/screenshots/
