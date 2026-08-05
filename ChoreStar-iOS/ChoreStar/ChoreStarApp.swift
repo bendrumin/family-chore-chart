@@ -41,7 +41,26 @@ struct ChoreStarApp: App {
  token are separate steps — a token is issued even before the user answers the
  permission prompt; permission only governs whether alerts are shown.
  */
-final class PushDelegate: NSObject, UIApplicationDelegate {
+final class PushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        // Without a delegate, iOS SILENTLY DROPS notifications that arrive while
+        // the app is foregrounded — a parent watching the dashboard when their
+        // kid finishes would see nothing at all, which is the exact moment the
+        // buzz matters most.
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        [.banner, .sound, .badge]
+    }
+
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
