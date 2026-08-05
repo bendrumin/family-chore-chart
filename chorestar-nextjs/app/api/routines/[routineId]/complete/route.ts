@@ -1,5 +1,5 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { notifyRoutineCompleted } from '@/lib/push/notify';
 import { z } from 'zod';
 import { validateKidToken } from '@/lib/utils/kid-auth';
@@ -135,9 +135,10 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to record completion' }, { status: 500 });
     }
 
-    // Fire-and-forget: the flagship push. A send failure must never fail the
-    // completion the kid just earned.
-    void notifyRoutineCompleted(childId, (routine as { name?: string }).name || 'their routine')
+    // after(), not a bare void promise: Vercel freezes the invocation once the
+    // response goes out, killing an in-flight APNs send. A send failure still
+    // can't fail the completion the kid just earned — this runs post-response.
+    after(() => notifyRoutineCompleted(childId, (routine as { name?: string }).name || 'their routine'))
 
     return NextResponse.json({
       success: true,

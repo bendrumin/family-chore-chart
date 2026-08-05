@@ -25,7 +25,10 @@ export async function sendPushToUser(userId: string, title: string, body: string
       .select('token, environment')
       .eq('user_id', userId)) as { data: { token: string; environment: string }[] | null }
 
-    if (!tokens || tokens.length === 0) return
+    if (!tokens || tokens.length === 0) {
+      console.log(`[push] no device tokens registered for user ${userId}`)
+      return
+    }
 
     for (const t of tokens) {
       const env = t.environment === 'development' ? 'development' : 'production'
@@ -44,7 +47,10 @@ export async function sendPushToUser(userId: string, title: string, body: string
 
 /** "🎉 Bayla finished Morning Routine!" — the flagship trigger. */
 export async function notifyRoutineCompleted(childId: string, routineName: string): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!apnsConfigured()) {
+    console.log('[push] APNs env not configured; skipping notify')
+    return
+  }
   try {
     const admin = createServiceRoleClient()
     const { data: child } = await admin
@@ -70,7 +76,10 @@ export async function notifyIfAllChoresDone(
   weekStart: string,
   dayOfWeek: number
 ): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!apnsConfigured()) {
+    console.log('[push] APNs env not configured; skipping notify')
+    return
+  }
   try {
     const admin = createServiceRoleClient()
 

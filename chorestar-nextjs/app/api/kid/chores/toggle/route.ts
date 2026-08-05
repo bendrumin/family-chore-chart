@@ -1,5 +1,5 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { validateKidToken } from '@/lib/utils/kid-auth'
 import { notifyIfAllChoresDone } from '@/lib/push/notify'
 
@@ -87,9 +87,10 @@ export async function POST(request: Request) {
     }
 
     if (completed) {
-      // Fire-and-forget: if this tap finished the whole list, the parent's
-      // phone buzzes. A push failure must never fail the toggle.
-      void notifyIfAllChoresDone(session.childId, weekStart, dayOfWeek)
+      // after(), not a bare void promise: Vercel freezes the invocation once
+      // the response goes out, killing an in-flight APNs send. A push failure
+      // still can't fail the toggle — this runs post-response.
+      after(() => notifyIfAllChoresDone(session.childId, weekStart, dayOfWeek))
     }
 
     return NextResponse.json({ success: true, completed })

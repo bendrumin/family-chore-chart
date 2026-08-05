@@ -91,11 +91,13 @@ export async function sendApnsAlert(
     // A hung HTTP/2 session must not pin a serverless invocation.
     const bail = setTimeout(() => {
       client.close()
+      console.error(`[push] apns timeout env=${environment} token=${deviceToken.slice(0, 8)}…`)
       resolve({ ok: false, tokenGone: false, status: 0 })
     }, 8000)
 
-    client.on('error', () => {
+    client.on('error', (err) => {
       clearTimeout(bail)
+      console.error(`[push] apns connect error env=${environment}: ${err.message}`)
       resolve({ ok: false, tokenGone: false, status: 0 })
     })
 
@@ -121,11 +123,16 @@ export async function sendApnsAlert(
       // 410 = token expired; 400 BadDeviceToken = wrong gateway or dead token.
       const tokenGone =
         status === 410 || (status === 400 && responseBody.includes('BadDeviceToken'))
+      // Token prefix only — enough to correlate with a device_push_tokens row.
+      const line = `[push] apns status=${status} env=${environment} token=${deviceToken.slice(0, 8)}…${responseBody ? ` body=${responseBody}` : ''}`
+      if (status === 200) console.log(line)
+      else console.error(line)
       resolve({ ok: status === 200, tokenGone, status })
     })
-    req.on('error', () => {
+    req.on('error', (err) => {
       clearTimeout(bail)
       client.close()
+      console.error(`[push] apns request error env=${environment}: ${err.message}`)
       resolve({ ok: false, tokenGone: false, status: 0 })
     })
 
