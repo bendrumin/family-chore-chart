@@ -1,10 +1,9 @@
-The all-new ChoreStar for iPhone & iPad is here!
+Meet ChoreStar 1.4 — our biggest family update yet!
 
-• Home screen Widget — your family's daily progress at a glance
-• Routine timers in the Dynamic Island & Lock Screen (Live Activities)
-• Kid Mode: kids log in with just a family code + PIN
-• 10 achievement badges, streaks, and perfect-week rewards
-• Seasonal & premium themes with ambient animations
-• Redesigned, faster, and built for both iPhone and iPad
+• Photo avatars — snap a photo and decorate it with 42 fun stickers (hats, moustaches, dinos, and more)
+• Push notifications — get a buzz the moment your child finishes every chore or completes a routine
+• Chores in Kid Mode — children can now check chores off themselves after signing in with their PIN
+• Custom accent colors that sync between iPhone and chorestar.app
+• Fixes: daily-rate families see the correct day's earnings, and alerts now appear while the app is open
 
 Questions or ideas? We'd love to hear from you at hi@chorestar.app
