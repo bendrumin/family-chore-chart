@@ -50,9 +50,19 @@ struct ChildMainView: View {
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
                                     .foregroundColor(.choreStarTextPrimary)
                                 
-                                Text("Let's get some chores done!")
-                                    .font(.headline)
-                                    .foregroundColor(.choreStarTextSecondary)
+                                // Flat rate: the whole-day deal, stated once, kid-sized.
+                                // familySettings is nil in STANDALONE kid sessions (no parent
+                                // client), so this shows on a parent's device and hides rather
+                                // than guessing a wrong number when the rate is unknown.
+                                if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
+                                    Text("Finish ALL your chores to earn \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) today! 🌟")
+                                        .font(.headline)
+                                        .foregroundColor(.choreStarAccent)
+                                } else {
+                                    Text("Let's get some chores done!")
+                                        .font(.headline)
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
                             }
                             
                             Spacer()
@@ -314,7 +324,10 @@ struct BigChoreCard: View {
                     .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isCompleted)
                 }
                 
-                // Reward
+                // Reward — per-chore mode only. On the flat rate, promising a kid
+                // "Earn $0.08" PER CHORE is a promise the math won't keep; the day
+                // banner up top carries the real deal instead.
+                if manager.isPerChoreRewardMode {
                 HStack {
                     Spacer()
                     HStack(spacing: 6) {
@@ -329,6 +342,7 @@ struct BigChoreCard: View {
                     .padding(.vertical, 10)
                     .background(Color.choreStarAccent.opacity(0.15))
                     .cornerRadius(12)
+                }
                 }
             }
             .padding(20)

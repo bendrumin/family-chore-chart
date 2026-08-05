@@ -202,6 +202,15 @@ struct DashboardView: View {
                             AppSectionHeader(title: "Today's Chores", trailing: "\(completedChores)/\(totalChores)")
                                 .padding(.horizontal, 20)
 
+                            // Flat rate: say what the day is worth, since the rows
+                            // deliberately carry no per-chore amounts.
+                            if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
+                                Text("Each child earns \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) for finishing all of their chores today.")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                                    .padding(.horizontal, 20)
+                            }
+
                             LazyVGrid(
                                 columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 12, alignment: .top)],
                                 alignment: .center,
@@ -338,9 +347,15 @@ struct ChoreCard: View {
 
                 Spacer()
 
-                Text(manager.formatMoney(chore.reward))
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+                // Per-chore money is only real in per-chore mode. On the flat
+                // daily rate these amounts are ignored by the earnings math, and
+                // stamping them on every row is exactly what made a family think
+                // three 8c chores paid 24c. Web hides them the same way.
+                if manager.isPerChoreRewardMode {
+                    Text(manager.formatMoney(chore.reward))
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)

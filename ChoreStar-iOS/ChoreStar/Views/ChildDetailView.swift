@@ -312,7 +312,9 @@ struct ChildChoreCard: View {
             
             Spacer()
             
-            // Reward
+            // Reward — hidden on the flat rate, where per-chore amounts are
+            // ignored by the earnings math.
+            if manager.isPerChoreRewardMode {
             HStack(spacing: 4) {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.caption)
@@ -326,6 +328,7 @@ struct ChildChoreCard: View {
             .padding(.vertical, 6)
             .background(Color.choreStarAccent.opacity(0.15))
             .cornerRadius(8)
+            }
         }
         .padding(14)
         .background(

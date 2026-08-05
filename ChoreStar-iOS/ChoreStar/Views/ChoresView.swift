@@ -256,9 +256,11 @@ struct ChoreListRow: View {
 
             Spacer()
 
-            Text(manager.formatMoney(chore.reward))
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+            if manager.isPerChoreRewardMode {
+                Text(manager.formatMoney(chore.reward))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+            }
 
             Button {
                 showingEditSheet = true
@@ -441,9 +443,11 @@ struct EnhancedChoreRow: View {
             Spacer()
 
             // Reward
-            Text(manager.formatMoney(chore.reward))
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+            if manager.isPerChoreRewardMode {
+                Text(manager.formatMoney(chore.reward))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+            }
 
             Button {
                 showingEditSheet = true
