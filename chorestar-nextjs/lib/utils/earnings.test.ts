@@ -200,7 +200,7 @@ t('the new-chore default follows the reward mode', () => {
   const perChore: EarningsSettings = { reward_mode: 'per_chore', daily_reward_cents: 8, weekly_bonus_cents: 0 }
   const defaultFor = (s: EarningsSettings) =>
     isPerChoreMode(s) ? DEFAULT_CHORE_REWARD_CENTS : dailyRewardCents(s)
-  assert.equal(defaultFor(perChore), 25)
+  assert.equal(defaultFor(perChore), 10)
 
   // On the flat rate no per-chore figure is meaningful, so it matches the number
   // the family actually thinks in.

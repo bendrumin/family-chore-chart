@@ -41,7 +41,7 @@ const PRESET_CENTS = [10, 25, 50, 100, 200, 500]
  * there, and matching the family's daily number is less arbitrary than inventing
  * a different one.
  */
-export const DEFAULT_CHORE_REWARD_CENTS = 25
+export const DEFAULT_CHORE_REWARD_CENTS = 10
 
 /** Step by 5¢ under a unit, 25¢ above — so small amounts stay reachable. */
 function stepFor(cents: number): number {

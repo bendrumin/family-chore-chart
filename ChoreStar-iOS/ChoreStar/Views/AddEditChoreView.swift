@@ -258,7 +258,7 @@ struct AddEditChoreView: View {
                 // copy, so a plain default is used.
                 if rewardDollars < 0 {
                     rewardDollars = manager.isPerChoreRewardMode
-                        ? 0.25
+                        ? 0.10
                         : Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0
                 }
             }
