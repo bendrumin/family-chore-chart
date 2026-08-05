@@ -528,25 +528,64 @@ struct PhotoAvatarPicker: View {
  moustache — 🥸 is a whole disguised face, not a prop you can put on someone.
  */
 enum AvatarProp: String, CaseIterable, Identifiable {
-    case moustache, glasses, sunglasses, tophat, crown, cap, bow, star, sparkles, rainbow, unicorn, party
+    // On the face / head — declared first so they lead the palette.
+    case moustache, glasses, sunglasses, tophat, crown, cap, gradcap, sunhat, headphones
+    // Celebration
+    case party, bow, balloon, confetti, gift, star, sparkles, fire, bolt, hundred
+    // Hearts
+    case heart, sparkleheart
+    // Nature
+    case rainbow, unicorn, butterfly, bee, ladybug, flower, snowflake, sun, moon
+    // Fun & games
+    case soccer, basketball, pizza, icecream, lollipop, donut, rocket, dino, robot, gem, wand, music
 
     var id: String { rawValue }
 
     /// Emoji for every prop except the drawn one.
     var glyph: String {
         switch self {
-        case .moustache:  return "〰️"
-        case .glasses:    return "👓"
-        case .sunglasses: return "🕶️"
-        case .tophat:     return "🎩"
-        case .crown:      return "👑"
-        case .cap:        return "🧢"
-        case .bow:        return "🎀"
-        case .star:       return "⭐"
-        case .sparkles:   return "✨"
-        case .rainbow:    return "🌈"
-        case .unicorn:    return "🦄"
-        case .party:      return "🥳"
+        case .moustache:    return "〰️"
+        case .glasses:      return "👓"
+        case .sunglasses:   return "🕶️"
+        case .tophat:       return "🎩"
+        case .crown:        return "👑"
+        case .cap:          return "🧢"
+        case .gradcap:      return "🎓"
+        case .sunhat:       return "👒"
+        case .headphones:   return "🎧"
+        case .party:        return "🥳"
+        case .bow:          return "🎀"
+        case .balloon:      return "🎈"
+        case .confetti:     return "🎊"
+        case .gift:         return "🎁"
+        case .star:         return "⭐"
+        case .sparkles:     return "✨"
+        case .fire:         return "🔥"
+        case .bolt:         return "⚡"
+        case .hundred:      return "💯"
+        case .heart:        return "❤️"
+        case .sparkleheart: return "💖"
+        case .rainbow:      return "🌈"
+        case .unicorn:      return "🦄"
+        case .butterfly:    return "🦋"
+        case .bee:          return "🐝"
+        case .ladybug:      return "🐞"
+        case .flower:       return "🌸"
+        case .snowflake:    return "❄️"
+        case .sun:          return "☀️"
+        case .moon:         return "🌙"
+        case .soccer:       return "⚽"
+        case .basketball:   return "🏀"
+        case .pizza:        return "🍕"
+        case .icecream:     return "🍦"
+        case .lollipop:     return "🍭"
+        case .donut:        return "🍩"
+        case .rocket:       return "🚀"
+        case .dino:         return "🦖"
+        case .robot:        return "🤖"
+        case .gem:          return "💎"
+        case .wand:         return "🪄"
+        case .music:        return "🎵"
         }
     }
 
@@ -556,20 +595,22 @@ enum AvatarProp: String, CaseIterable, Identifiable {
     /// moustache goes where a moustache goes — so one tap usually lands it right.
     var defaultUnitCenter: CGPoint {
         switch self {
-        case .moustache:            return CGPoint(x: 0.5, y: 0.62)
-        case .glasses, .sunglasses: return CGPoint(x: 0.5, y: 0.45)
-        case .tophat, .crown, .cap: return CGPoint(x: 0.5, y: 0.16)
-        default:                    return CGPoint(x: 0.5, y: 0.5)
+        case .moustache:                              return CGPoint(x: 0.5, y: 0.62)
+        case .glasses, .sunglasses:                   return CGPoint(x: 0.5, y: 0.45)
+        case .headphones:                             return CGPoint(x: 0.5, y: 0.40)
+        case .tophat, .crown, .cap, .gradcap, .sunhat: return CGPoint(x: 0.5, y: 0.16)
+        default:                                      return CGPoint(x: 0.5, y: 0.5)
         }
     }
 
     /// Fraction of the canvas edge the prop spans by default.
     var defaultWidthFraction: CGFloat {
         switch self {
-        case .moustache:            return 0.42
-        case .glasses, .sunglasses: return 0.55
-        case .tophat, .crown, .cap: return 0.50
-        default:                    return 0.30
+        case .moustache:                              return 0.42
+        case .glasses, .sunglasses:                   return 0.55
+        case .headphones:                             return 0.60
+        case .tophat, .crown, .cap, .gradcap, .sunhat: return 0.50
+        default:                                      return 0.30
         }
     }
 }
@@ -761,8 +802,12 @@ struct AvatarStickerEditor: View {
                     .foregroundColor(.choreStarTextSecondary)
                     .padding(.top, 14)
 
+                // Two rows, not one: with 40+ props a single row hid all but the
+                // first screenful and nothing said "scroll me". Two rows double
+                // the visible set and the half-cut column at the edge is its own
+                // scroll hint.
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 14) {
+                    LazyHGrid(rows: [GridItem(.fixed(58)), GridItem(.fixed(58))], spacing: 14) {
                         ForEach(AvatarProp.allCases) { prop in
                             Button {
                                 Haptics.light()
