@@ -72,3 +72,6 @@ temp/
 **/fastlane/test_output/
 # Staged copies of appstore-screenshots/, which is the committed source of truth.
 **/fastlane/screenshots/
+# `deliver download_metadata` writes the Apple-review demo login here. This repo
+# is PUBLIC — these are real credentials and must never be committed.
+**/fastlane/metadata/review_information/

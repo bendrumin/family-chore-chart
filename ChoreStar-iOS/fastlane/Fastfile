@@ -22,7 +22,7 @@ LOCALE = "en-US"
 
 # The API key keeps credentials out of the repo: point ASC_KEY_PATH at the .p8
 # you downloaded from App Store Connect and export the two ids alongside it.
-def asc_api_key
+def asc_credentials
   key_path = ENV["ASC_KEY_PATH"]
   key_id = ENV["ASC_KEY_ID"]
   issuer_id = ENV["ASC_ISSUER_ID"]
@@ -40,22 +40,55 @@ def asc_api_key
   expanded = File.expand_path(key_path)
   UI.user_error!("ASC_KEY_PATH does not exist: #{expanded}") unless File.exist?(expanded)
 
+  { key_id: key_id, issuer_id: issuer_id, key_path: expanded }
+end
+
+def asc_api_key
+  creds = asc_credentials
   app_store_connect_api_key(
-    key_id: key_id,
-    issuer_id: issuer_id,
-    key_filepath: expanded,
+    key_id: creds[:key_id],
+    issuer_id: creds[:issuer_id],
+    key_filepath: creds[:key_path],
     in_house: false
   )
+end
+
+# deliver's download modes are CLI-only, and a `sh` sub-process does NOT inherit
+# the in-process token that app_store_connect_api_key installs. So the
+# credentials are handed to it as a short-lived JSON key file (0600, deleted in
+# an ensure block) rather than being re-typed on the command line.
+def with_temp_api_key_file
+  require "json"
+  require "tempfile"
+
+  creds = asc_credentials
+  file = Tempfile.new(["asc_api_key", ".json"])
+  begin
+    File.chmod(0o600, file.path)
+    file.write(JSON.pretty_generate(
+      key_id: creds[:key_id],
+      issuer_id: creds[:issuer_id],
+      key: File.read(creds[:key_path]),
+      in_house: false
+    ))
+    file.close
+    yield file.path
+  ensure
+    file.close unless file.closed?
+    file.unlink
+  end
 end
 
 platform :ios do
   desc "Download the CURRENTLY LIVE metadata and screenshots from App Store Connect."
   desc "Run this before your first upload, then `git diff` to see where local text has drifted."
   lane :pull do
-    asc_api_key
-    sh("fastlane deliver download_metadata --force")
-    sh("fastlane deliver download_screenshots --force")
-    UI.important("Live values pulled. Review with `git diff` BEFORE running `fastlane metadata`.")
+    require "shellwords"
+    with_temp_api_key_file do |key_file|
+      sh("fastlane deliver download_metadata --api_key_path #{key_file.shellescape} --force")
+    end
+    UI.important("Live metadata pulled. Review with `git diff` BEFORE running `fastlane ios metadata`.")
+    UI.message("Screenshots: use `fastlane deliver download_screenshots` if you need the live set too.")
   end
 
   desc "Copy captured screenshots into the flat layout deliver expects."
@@ -89,7 +122,12 @@ platform :ios do
 
   desc "Scan the metadata for common App Store rejection reasons before submitting."
   lane :check do
-    precheck(api_key: asc_api_key)
+    precheck(
+      api_key: asc_api_key,
+      # Precheck cannot read IAPs over the API key (it hard-errors), and IAPs
+      # are managed in ASC by hand anyway — see SETUP.md.
+      include_in_app_purchases: false
+    )
   end
 
   desc "Upload metadata (and staged screenshots) to App Store Connect. No binary."
