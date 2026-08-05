@@ -1,42 +1,40 @@
-Stop nagging. Start rewarding. ChoreStar is the chore and allowance tracker parents use to run a happier household — and it turns chores into a game your children actually enjoy.
+ChoreStar helps parents organize household chores, build daily routines, and keep track of allowance for the whole family. You set each child up once, and from then on they can check off their own tasks while you keep an overview of what has been done and what has been earned.
 
-Now native on iPhone and iPad, with home screen widgets and routine timers right in the Dynamic Island.
+Now native on iPhone and iPad, with a home screen widget and routine timers in the Dynamic Island.
 
-🌟 FOR PARENTS — YOU'RE IN CHARGE
-• Add each child with a colorful avatar
-• Assign daily & weekly chores with custom reward amounts
+For parents
+• Add each child with a color avatar or a photo
+• Assign daily and weekly chores, each with its own reward amount
 • Build morning, bedtime, and after-school routines
-• Track earnings, streaks, and history at a glance
-• Manage several kids, each with their own schedule
-• Share with a co-parent so you're both in sync
+• Review earnings, streaks, and history at a glance
+• Manage several children, each with a separate schedule
+• Share access with a co-parent so you both stay in sync
 
-⭐ A SIMPLE MODE FOR YOUR CHILDREN (no account needed)
-• Log in with a simple 4-digit PIN — no email, ever
-• Check off chores and watch earnings grow in real time
-• Follow step-by-step routines with countdown timers
-• Unlock achievement badges for streaks and perfect weeks
-• Confetti celebrations for every finish
+A simple view for your children
+• They sign in with a 4-digit PIN, so no email address is required
+• Chores can be checked off as they are finished
+• Routines guide them through one step at a time, with optional countdown timers
+• Badges are awarded for streaks and for completing a full week
 
-💰 ALLOWANCE MADE EASY
-Set a per-chore or daily reward. ChoreStar tallies earnings automatically as chores get done — no more "did I get paid?" arguments.
+Allowance tracking
+Choose a reward per chore, or a flat rate for the day. ChoreStar totals earnings automatically as chores are completed, so there is no tally to keep by hand.
 
-🗓 ROUTINES THAT RUN THEMSELVES
-Drag-and-drop routine builder with named steps, optional timers, and icons. Kids follow along on their own; the current step's timer even lives on the Lock Screen and Dynamic Island.
+Routines that run themselves
+Build a routine from named steps with icons and optional timers, ordered by drag and drop. Children can then work through it independently, and the timer for the current step appears on the Lock Screen and in the Dynamic Island.
 
-🎨 MAKE IT YOURS
-Home screen widget with today's family progress ring, plus seasonal and premium themes — it literally snows in Winter.
+Make it your own
+A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, and a custom accent color carries across your devices.
 
-📱 SYNCS WITH CHORESTAR.APP
-Pairs with chorestar.app so your family data syncs instantly across web, iPhone, and iPad.
+Works with chorestar.app
+Family data syncs between the web app, iPhone, and iPad, so everyone sees the same information.
 
-🔒 PRIVATE & SAFE
-Your family data is private — never shared or sold. Kids sign in with a PIN, so no child ever provides an email or personal info.
+Privacy
+Family data is never shared or sold. Because children sign in with a PIN, no child provides an email address or any personal information.
 
-FREE & PREMIUM
-• Free: up to 3 kids, 20 chores, badges, and routines
-• Premium: unlimited kids & chores, premium themes, and co-parent family sharing
+Free and Premium
+• Free: up to 3 children, 20 chores, badges, and routines
+• Premium: unlimited children and chores, premium themes, and co-parent sharing
 
-Built by a parent, for families who want less nagging and more harmony.
-
+Built by a parent, for families who would like less nagging and more cooperation.
 
 https://www.apple.com/legal/internet-services/itunes/dev/stdeula/

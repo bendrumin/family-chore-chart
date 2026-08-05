@@ -1,9 +1,10 @@
-Meet ChoreStar 1.4 — our biggest family update yet!
+Version 1.4 adds photo avatars, push notifications, and chores for children to check off themselves.
 
-• Photo avatars — snap a photo and decorate it with 42 fun stickers (hats, moustaches, dinos, and more)
-• Push notifications — get a buzz the moment your child finishes every chore or completes a routine
-• Chores in Kid Mode — children can now check chores off themselves after signing in with their PIN
-• Custom accent colors that sync between iPhone and chorestar.app
-• Fixes: daily-rate families see the correct day's earnings, and alerts now appear while the app is open
+• Photo avatars: take or choose a photo for a child, then decorate it with any of 42 stickers
+• Push notifications: you are notified when a child finishes all of their chores for the day, or completes a routine
+• Children can now check off their own chores after signing in with their PIN
+• A custom accent color now syncs between iPhone and chorestar.app
+• Fixed: families using a flat daily rate now see the correct amount for the day
+• Fixed: notifications now appear while the app is open
 
-Questions or ideas? We'd love to hear from you at hi@chorestar.app
+Questions or feedback are welcome at hi@chorestar.app
