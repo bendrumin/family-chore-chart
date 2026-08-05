@@ -75,3 +75,6 @@ temp/
 # `deliver download_metadata` writes the Apple-review demo login here. This repo
 # is PUBLIC — these are real credentials and must never be committed.
 **/fastlane/metadata/review_information/
+
+# Xcode per-user UI state — churns on every launch, means nothing to a build
+**/xcuserdata/
