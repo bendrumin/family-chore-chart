@@ -17,8 +17,27 @@ import { connect } from 'node:http2'
 
 const TEAM_ID = process.env.APNS_TEAM_ID?.trim()
 const KEY_ID = process.env.APNS_KEY_ID?.trim()
-// Vercel stores multi-line secrets with literal \n sometimes — normalize.
-const PRIVATE_KEY = process.env.APNS_PRIVATE_KEY?.replace(/\\n/g, '\n').trim()
+
+/**
+ * Rebuild a clean PEM no matter how the paste into Vercel mangled it: literal
+ * "\n" escapes, wrapping quotes, CRLF, or the whole key flattened onto one
+ * line all still contain the same base64 body — extract it and re-wrap.
+ * (A dashboard paste of the .p8 produced error:1E08010C:DECODER
+ * routines::unsupported from createPrivateKey until normalized this way.)
+ */
+function normalizePem(raw: string | undefined): string | undefined {
+  if (!raw) return undefined
+  let s = raw.replace(/\\n/g, '\n').replace(/\r/g, '').trim()
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim()
+  }
+  const m = s.match(/-----BEGIN ([A-Z0-9 ]+)-----([\s\S]*?)-----END \1-----/)
+  if (!m) return s
+  const body = m[2].replace(/\s+/g, '')
+  return `-----BEGIN ${m[1]}-----\n${(body.match(/.{1,64}/g) ?? []).join('\n')}\n-----END ${m[1]}-----\n`
+}
+
+const PRIVATE_KEY = normalizePem(process.env.APNS_PRIVATE_KEY)
 const TOPIC = process.env.APNS_TOPIC?.trim() || 'com.chorestar.ChoreStar'
 
 export function apnsConfigured(): boolean {
