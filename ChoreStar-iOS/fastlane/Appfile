@@ -1,0 +1,7 @@
+app_identifier "com.chorestar.ChoreStar"
+team_id "5ANRA6JZC2"
+
+# apple_id is only needed for password-based login. The Fastfile authenticates
+# with an App Store Connect API key instead (see fastlane/README.md), which
+# avoids 2FA prompts entirely — so it is deliberately left unset.
+# apple_id ENV["FASTLANE_APPLE_ID"]

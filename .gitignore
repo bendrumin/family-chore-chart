@@ -61,3 +61,11 @@ coverage/
 tmp/
 temp/
 .vercel
+
+# fastlane — credentials and run artifacts
+**/AuthKey_*.p8
+*.p8
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+fastlane/screenshots/**/*.png

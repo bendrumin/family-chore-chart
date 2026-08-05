@@ -1,0 +1,121 @@
+# ChoreStar — App Store Connect metadata & screenshots.
+#
+# Nothing here uploads a binary. Builds are still archived from Xcode; these
+# lanes only manage the store LISTING (text + screenshots), which is the part
+# that was previously edited by hand in two places and drifted out of sync.
+#
+# Setup and the safe first-run order are documented in fastlane/SETUP.md.
+# Short version: run `fastlane pull` before your first `fastlane metadata`, so
+# you can diff local text against what is actually live before overwriting it.
+
+default_platform(:ios)
+
+# Screenshots captured into appstore-screenshots/ (grouped by device, which is
+# how a human wants to browse them) get staged into the flat per-locale layout
+# deliver requires. Device family is inferred by deliver from pixel dimensions,
+# so only sort order matters in the filename — hence the 01-, 02- prefixes.
+SCREENSHOT_SOURCES = {
+  "iphone-6.9-1320x2868" => "6.9-inch iPhone (required)",
+}.freeze
+
+LOCALE = "en-US"
+
+# The API key keeps credentials out of the repo: point ASC_KEY_PATH at the .p8
+# you downloaded from App Store Connect and export the two ids alongside it.
+def asc_api_key
+  key_path = ENV["ASC_KEY_PATH"]
+  key_id = ENV["ASC_KEY_ID"]
+  issuer_id = ENV["ASC_ISSUER_ID"]
+
+  if key_path.nil? || key_id.nil? || issuer_id.nil?
+    UI.user_error!(
+      "Missing App Store Connect API credentials. Export these first:\n" \
+      "  export ASC_KEY_ID=XXXXXXXXXX\n" \
+      "  export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\n" \
+      "  export ASC_KEY_PATH=~/.appstoreconnect/private_keys/AuthKey_XXXXXXXXXX.p8\n" \
+      "See fastlane/SETUP.md for where to generate the key."
+    )
+  end
+
+  expanded = File.expand_path(key_path)
+  UI.user_error!("ASC_KEY_PATH does not exist: #{expanded}") unless File.exist?(expanded)
+
+  app_store_connect_api_key(
+    key_id: key_id,
+    issuer_id: issuer_id,
+    key_filepath: expanded,
+    in_house: false
+  )
+end
+
+platform :ios do
+  desc "Download the CURRENTLY LIVE metadata and screenshots from App Store Connect."
+  desc "Run this before your first upload, then `git diff` to see where local text has drifted."
+  lane :pull do
+    asc_api_key
+    sh("fastlane deliver download_metadata --force")
+    sh("fastlane deliver download_screenshots --force")
+    UI.important("Live values pulled. Review with `git diff` BEFORE running `fastlane metadata`.")
+  end
+
+  desc "Copy captured screenshots into the flat layout deliver expects."
+  lane :stage_screenshots do
+    root = File.expand_path("..", __dir__)
+    dest = File.join(root, "fastlane", "screenshots", LOCALE)
+    FileUtils.mkdir_p(dest)
+
+    staged = 0
+    SCREENSHOT_SOURCES.each do |dir, label|
+      src = File.join(root, "appstore-screenshots", dir)
+      unless Dir.exist?(src)
+        UI.important("Skipping #{label}: #{src} not found")
+        next
+      end
+      Dir.glob(File.join(src, "*.png")).sort.each do |file|
+        FileUtils.cp(file, File.join(dest, "#{dir}-#{File.basename(file)}"))
+        staged += 1
+      end
+      UI.success("Staged #{label}")
+    end
+
+    UI.user_error!("No screenshots staged — nothing to upload.") if staged.zero?
+    UI.success("#{staged} screenshots staged in fastlane/screenshots/#{LOCALE}/")
+    UI.important(
+      "iPad screenshots are NOT staged: the set in appstore-screenshots/ipad-13 " \
+      "is from the 1.3 design and would look inconsistent next to these. " \
+      "Recapture it before any run with overwrite:true."
+    )
+  end
+
+  desc "Scan the metadata for common App Store rejection reasons before submitting."
+  lane :check do
+    precheck(api_key: asc_api_key)
+  end
+
+  desc "Upload metadata (and staged screenshots) to App Store Connect. No binary."
+  desc "Options: overwrite:true replaces ALL screenshots; force:true skips the HTML preview."
+  lane :metadata do |options|
+    # overwrite defaults to FALSE on purpose. A true overwrite deletes every
+    # screenshot currently live for every device family — including the iPad
+    # ones that are not staged here — so it is only safe with a complete set.
+    overwrite = options.fetch(:overwrite, false)
+    skip_screenshots = options.fetch(:skip_screenshots, false)
+
+    if overwrite
+      UI.important("overwrite:true — ALL live screenshots will be replaced by what is staged.")
+    end
+
+    deliver(
+      api_key: asc_api_key,
+      skip_binary_upload: true,
+      skip_app_version_update: true,
+      skip_screenshots: skip_screenshots,
+      overwrite_screenshots: overwrite,
+      # force:false opens an HTML preview and waits for confirmation — the right
+      # default when a mistake edits a public listing.
+      force: options.fetch(:force, false),
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end
