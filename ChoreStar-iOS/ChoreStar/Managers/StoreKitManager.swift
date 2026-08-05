@@ -101,6 +101,24 @@ final class StoreKitManager: ObservableObject {
         }
     }
 
+    /**
+     Whether this Apple ID has an active AUTO-RENEWING ChoreStar subscription.
+
+     Used by account deletion to pick honest copy. We can cancel a Stripe
+     subscription server-side; no developer can cancel an Apple one — only the
+     user can, in Settings → Apple ID → Subscriptions. Lifetime is excluded on
+     purpose: it's a non-consumable, there is nothing recurring to cancel.
+     */
+    func hasActiveAppleSubscription() async -> Bool {
+        for await entitlement in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = entitlement,
+                  ProductID.all.contains(transaction.productID),
+                  transaction.productID != ProductID.lifetime else { continue }
+            return true
+        }
+        return false
+    }
+
     /// Checks current entitlements and pushes an upgrade to the profile if needed.
     func syncEntitlement() async {
         var entitledType: String?

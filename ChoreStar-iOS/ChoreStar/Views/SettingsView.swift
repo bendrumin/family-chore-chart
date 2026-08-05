@@ -607,6 +607,10 @@ struct DeleteAccountView: View {
 
     @State private var confirmation = ""
     @State private var isDeleting = false
+    /// True when the active subscription is an Apple auto-renewal — resolved
+    /// async from StoreKit entitlements; defaults false so the Stripe copy shows
+    /// until proven otherwise.
+    @State private var billedThroughApple = false
     @State private var errorMessage: String?
     @State private var billingWarning = false
 
@@ -640,10 +644,23 @@ struct DeleteAccountView: View {
                     }
 
                     if manager.isPremium {
-                        noticeBox(
-                            icon: "creditcard",
-                            text: "Your ChoreStar subscription will be cancelled. You won't be billed again."
-                        )
+                        // Honest per-rail copy. Stripe subscriptions ARE cancelled
+                        // by the deletion endpoint; an Apple subscription cannot be
+                        // cancelled by any developer — only the user can, in
+                        // Settings — and deleting the account does NOT stop Apple
+                        // billing. Telling an Apple-billed user "you won't be
+                        // billed again" would be false.
+                        if billedThroughApple {
+                            noticeBox(
+                                icon: "exclamationmark.circle",
+                                text: "Your subscription is billed by Apple, and deleting your account does not cancel it. Cancel it in Settings → your name → Subscriptions to stop future charges."
+                            )
+                        } else {
+                            noticeBox(
+                                icon: "creditcard",
+                                text: "Your ChoreStar subscription will be cancelled. You won't be billed again."
+                            )
+                        }
                     }
 
                     if manager.familyMembers.count > 1 || manager.isSharedMember {
@@ -687,6 +704,9 @@ struct DeleteAccountView: View {
                 }
             }
             .interactiveDismissDisabled(isDeleting)
+            .task {
+                billedThroughApple = await StoreKitManager.shared.hasActiveAppleSubscription()
+            }
             .alert("Account deleted", isPresented: $billingWarning) {
                 Button("OK") { dismiss() }
             } message: {
