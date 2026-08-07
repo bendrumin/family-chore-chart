@@ -189,7 +189,6 @@ struct PaywallView: View {
         VStack(spacing: 12) {
             demoPlanCard(name: "Monthly", period: "Billed monthly", price: "$4.99", isBest: false, isSelected: false)
             demoPlanCard(name: "Annual", period: "Billed yearly", price: "$49.99", isBest: true, isSelected: true)
-            demoPlanCard(name: "Lifetime", period: "One-time purchase, forever", price: "$149.99", isBest: false, isSelected: false)
 
             Button {
             } label: {
@@ -306,15 +305,11 @@ struct PaywallView: View {
         switch productID {
         case StoreKitManager.ProductID.monthly: return "Monthly"
         case StoreKitManager.ProductID.annual: return "Annual"
-        case StoreKitManager.ProductID.lifetime: return "Lifetime"
         default: return "Premium"
         }
     }
 
     private func planPeriodText(_ product: Product) -> String {
-        if product.id == StoreKitManager.ProductID.lifetime {
-            return "One-time purchase, forever"
-        }
         if let period = product.subscription?.subscriptionPeriod {
             switch period.unit {
             case .year: return "Billed yearly"

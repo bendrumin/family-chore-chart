@@ -27,5 +27,4 @@ export const stripe = new Proxy({} as Stripe, {
 export const STRIPE_PRICE_IDS = {
   monthly: process.env.STRIPE_PRICE_MONTHLY || '',
   annual: process.env.STRIPE_PRICE_ANNUAL || '',
-  lifetime: process.env.STRIPE_PRICE_LIFETIME || '',
 } as const

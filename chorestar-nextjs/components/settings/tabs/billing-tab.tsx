@@ -176,11 +176,6 @@ export function BillingTab() {
               onUpgrade={() => handleUpgrade('annual')}
               isLoading={upgradingPlan === 'annual'}
             />
-            <PricingCard
-              planType="lifetime"
-              onUpgrade={() => handleUpgrade('lifetime')}
-              isLoading={upgradingPlan === 'lifetime'}
-            />
           </div>
         </>
       )}

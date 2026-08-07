@@ -53,7 +53,7 @@ const faqs = [
   },
   {
     q: 'How much does a debit-card app cost versus ChoreStar?',
-    a: 'Debit-card apps charge a monthly subscription — for example, Acorns Early (formerly GoHenry in the US) is about $8/month for up to four kids as of mid-2026, and others are similar. ChoreStar is free for up to 3 children and 20 chores, with optional Premium at $4.99/month, $49.99/year, or a one-time $149.99 lifetime.',
+    a: 'Debit-card apps charge a monthly subscription — for example, Acorns Early (formerly GoHenry in the US) is about $8/month for up to four kids as of mid-2026, and others are similar. ChoreStar is free for up to 3 children and 20 chores, with optional Premium at $4.99/month or $49.99/year.',
   },
   {
     q: 'Does ChoreStar teach kids about money without a card?',

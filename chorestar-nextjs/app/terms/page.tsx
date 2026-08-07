@@ -80,7 +80,7 @@ export default function TermsPage() {
               ChoreStar offers a free tier and optional paid subscriptions (&quot;ChoreStar Premium&quot;) that unlock
               additional features. Subscription options, billing periods, and current prices are shown on the purchase
               screen before you confirm. We currently offer monthly and annual auto-renewable subscriptions and, where
-              available, a one-time lifetime purchase.
+              available.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Purchases through the Apple App Store</h3>

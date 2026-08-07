@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     const { planType } = (await request.json()) as { planType: PlanType }
 
-    if (!planType || !['monthly', 'annual', 'lifetime'].includes(planType)) {
+    if (!planType || !['monthly', 'annual'].includes(planType)) {
       return NextResponse.json({ error: 'Invalid plan type' }, { status: 400 })
     }
 

@@ -38,7 +38,7 @@ const rows = [
   { feature: 'Kid login', chorestar: 'Family code + 4-digit PIN', them: 'Tap the shared screen (no personal login)' },
   { feature: 'Chore chart & rewards', chorestar: 'Yes — points, badges, streaks', them: 'Yes — chore chart with stars' },
   { feature: 'Step-by-step routines with timers', chorestar: 'Yes — a core feature', them: 'Not its focus' },
-  { feature: 'Ongoing cost', chorestar: 'Free, or $4.99/mo · $49.99/yr · $149.99 lifetime', them: 'Optional subscription ~$39/yr for advanced features' },
+  { feature: 'Ongoing cost', chorestar: 'Free, or $4.99/mo · $49.99/yr', them: 'Optional subscription ~$39/yr for advanced features' },
 ]
 
 const faqs = [
@@ -56,7 +56,7 @@ const faqs = [
   },
   {
     q: 'How much does ChoreStar cost compared to Skylight?',
-    a: 'ChoreStar is free for up to 3 children and 20 chores. Premium is $4.99/month or $49.99/year, with a one-time $149.99 lifetime option. Skylight requires buying the device first (about $160+ as of mid-2026), with an optional ~$39/year subscription for advanced features.',
+    a: 'ChoreStar is free for up to 3 children and 20 chores. Premium is $4.99/month or $49.99/year. Skylight requires buying the device first (about $160+ as of mid-2026), with an optional ~$39/year subscription for advanced features.',
   },
 ]
 

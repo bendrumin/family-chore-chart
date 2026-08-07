@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium' | 'lifetime') {
+async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium') {
   const supabase = createServiceRoleClient()
   const { error } = await (supabase as any)
     .from('profiles')
@@ -81,9 +81,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
-  if (planType === 'lifetime') {
-    await updateSubscriptionTier(userId, 'lifetime')
-  } else if (session.mode === 'subscription') {
+  if (session.mode === 'subscription') {
     await updateSubscriptionTier(userId, 'premium')
   }
 }

@@ -89,7 +89,7 @@ const TALKING_POINTS = [
   },
   {
     headline: 'Premium Upsell Built In',
-    detail: 'Free plan converts naturally to Premium ($4.99/mo) as families grow. Lifetime option ($149.99) for committed users.',
+    detail: 'Free plan converts naturally to Premium ($4.99/mo or $49.99/yr) as families grow.',
   },
 ]
 
@@ -208,7 +208,7 @@ export default function PartnersPage() {
                 </div>
                 <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
                   <div className="font-semibold text-gray-900 dark:text-white mb-1">Pricing</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">Free plan · Premium $4.99/mo · Lifetime $149.99</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Free plan · Premium $4.99/mo · $49.99/yr</div>
                 </div>
                 <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">
                   <div className="font-semibold text-gray-900 dark:text-white mb-1">URL</div>

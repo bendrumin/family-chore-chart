@@ -136,10 +136,6 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     feature: 'Works on phone, tablet & computer',
     values: { chorestar: 'Yes', smartDisplay: 'Its own screen', debitCard: 'App', basicApp: 'App' },
   },
-  {
-    feature: 'One-time / lifetime option',
-    values: { chorestar: 'Yes — $149.99', smartDisplay: '—', debitCard: 'No', basicApp: 'Sometimes' },
-  },
 ]
 
 /** Values that should render as a positive (green check-styled) cell. */

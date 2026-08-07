@@ -49,7 +49,7 @@ enum Changelog {
                 Feature(
                     icon: "👑",
                     title: "Premium in the App",
-                    description: "Upgrade to ChoreStar Premium right from Settings — monthly, annual, or lifetime."
+                    description: "Upgrade to ChoreStar Premium right from Settings — monthly or annual."
                 ),
                 Feature(
                     icon: "📱",

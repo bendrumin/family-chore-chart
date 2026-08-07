@@ -20,7 +20,7 @@ Live at: https://chorestar.app
 
 - **Web App**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Supabase (PostgreSQL + Auth + RLS), Stripe, TanStack Query, Framer Motion
 - **Database**: Supabase PostgreSQL with Row-Level Security on all tables
-- **Payments**: Stripe (monthly, annual, lifetime plans + webhooks)
+- **Payments**: Stripe (monthly and annual plans + webhooks)
 - **Deployment**: Vercel
 
 ## Public Pages

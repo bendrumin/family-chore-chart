@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     q: 'Is ChoreStar really free?',
-    a: 'Yes. The free plan is free forever for up to 3 children and 20 chores, with no credit card required to start. If you need unlimited children and chores, family sharing, or premium themes, Premium is $4.99/month or $49.99/year, with a one-time $149.99 lifetime option — but you never have to upgrade.',
+    a: 'Yes. The free plan is free forever for up to 3 children and 20 chores, with no credit card required to start. If you need unlimited children and chores, family sharing, or premium themes, Premium is $4.99/month or $49.99/year — but you never have to upgrade.',
   },
   {
     q: 'Do free chore apps require a debit card or bank account?',

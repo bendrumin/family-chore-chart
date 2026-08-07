@@ -30,21 +30,11 @@ const PLAN_FEATURES = {
     'Advanced analytics',
     'Export reports (PDF/CSV)',
   ],
-  lifetime: [
-    'Everything forever!',
-    'One-time payment',
-    'No recurring fees',
-    'Unlimited children',
-    'Unlimited chores',
-    'All premium features',
-    'Lifetime updates',
-  ],
 }
 
 const PLAN_TITLES = {
   monthly: 'Premium Monthly',
   annual: 'Premium Annual',
-  lifetime: 'Lifetime Access',
 }
 
 export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading = false }: PricingCardProps) {

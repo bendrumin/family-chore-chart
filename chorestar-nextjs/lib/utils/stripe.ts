@@ -1,9 +1,8 @@
-export type PlanType = 'monthly' | 'annual' | 'lifetime'
+export type PlanType = 'monthly' | 'annual'
 
 export const PLAN_PRICES = {
   monthly: { amount: 4.99, label: 'Monthly' },
   annual: { amount: 49.99, label: 'Annual' },
-  lifetime: { amount: 149.99, label: 'Lifetime' },
 } as const
 
 export async function createCheckoutSession(planType: PlanType): Promise<string> {
@@ -51,8 +50,6 @@ export function getPlanSavings(planType: PlanType): string | null {
     const monthlyCost = PLAN_PRICES.monthly.amount * 12
     const savings = monthlyCost - PLAN_PRICES.annual.amount
     return `Save $${savings.toFixed(2)}/year`
-  } else if (planType === 'lifetime') {
-    return 'One-time payment'
   }
   return null
 }

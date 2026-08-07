@@ -10,6 +10,8 @@ struct Profile: Codable {
     }
 
     var isPremium: Bool {
+        // "lifetime" is still honored: the tier was withdrawn before it ever
+        // sold, but reading it costs nothing and never strands a purchaser.
         subscriptionType == "premium" || subscriptionType == "lifetime"
     }
 }

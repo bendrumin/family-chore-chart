@@ -516,28 +516,6 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Lifetime Option */}
-          <div className="mt-8 max-w-3xl mx-auto">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border-2 border-purple-300 dark:border-purple-700 text-center">
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <div>
-                  <span className="text-2xl">🎉</span>
-                  <span className="text-xl font-bold text-gray-900 dark:text-white ml-2">Lifetime Access</span>
-                </div>
-                <div className="text-3xl font-black text-purple-600 dark:text-purple-400">$149.99</div>
-                <Link
-                  href="/signup"
-                  className="px-6 py-2 rounded-xl font-bold text-white transition-all hover:opacity-90 hover:shadow-md"
-                  style={ACCENT_SURFACE_STYLE}
-                >
-                  Get Lifetime
-                </Link>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                One-time payment • All premium features forever • Best for large families
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* FAQ */}

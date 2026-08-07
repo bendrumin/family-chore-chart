@@ -4,9 +4,9 @@ import StoreKit
 /// StoreKit 2 purchases for ChoreStar Premium.
 ///
 /// Entitlement sync is upgrade-only: a verified App Store transaction can move
-/// `profiles.subscription_type` from "free" to "premium"/"lifetime", but this
-/// manager never downgrades — web subscriptions run through Stripe, and its
-/// webhook stays the source of truth for cancellations.
+/// `profiles.subscription_type` from "free" to "premium", but this manager
+/// never downgrades — web subscriptions run through Stripe, and its webhook
+/// stays the source of truth for cancellations.
 @MainActor
 final class StoreKitManager: ObservableObject {
     static let shared = StoreKitManager()
@@ -18,12 +18,13 @@ final class StoreKitManager: ObservableObject {
         /// burned the id permanently — Apple reserves deleted product ids
         /// forever. The replacement must be created in App Store Connect INSIDE
         /// the existing "ChoreStar Premium" group (subs can't move between
-        /// groups). PaywallView only renders products that actually load, so
-        /// shipping this before the ASC product exists shows Monthly+Lifetime,
-        /// exactly as today.
+        /// groups). PaywallView only renders products that actually load.
         static let annual = "com.chorestar.premium.yearly"
-        static let lifetime = "com.chorestar.premium.lifetime"
-        static let all: [String] = [monthly, annual, lifetime]
+        // A one-time "lifetime" non-consumable was withdrawn before it ever
+        // sold (App Review queried the $149.99 price; nobody had purchased it).
+        // Premium is subscription-only now. Deleting the product id in App
+        // Store Connect burns it permanently, so it can never be revived.
+        static let all: [String] = [monthly, annual]
     }
 
     @Published var products: [Product] = []
@@ -106,14 +107,12 @@ final class StoreKitManager: ObservableObject {
 
      Used by account deletion to pick honest copy. We can cancel a Stripe
      subscription server-side; no developer can cancel an Apple one — only the
-     user can, in Settings → Apple ID → Subscriptions. Lifetime is excluded on
-     purpose: it's a non-consumable, there is nothing recurring to cancel.
+     user can, in Settings → Apple ID → Subscriptions.
      */
     func hasActiveAppleSubscription() async -> Bool {
         for await entitlement in Transaction.currentEntitlements {
             guard case .verified(let transaction) = entitlement,
-                  ProductID.all.contains(transaction.productID),
-                  transaction.productID != ProductID.lifetime else { continue }
+                  ProductID.all.contains(transaction.productID) else { continue }
             return true
         }
         return false
@@ -121,27 +120,21 @@ final class StoreKitManager: ObservableObject {
 
     /// Checks current entitlements and pushes an upgrade to the profile if needed.
     func syncEntitlement() async {
-        var entitledType: String?
+        var isEntitled = false
 
         for await entitlement in Transaction.currentEntitlements {
             guard case .verified(let transaction) = entitlement,
                   ProductID.all.contains(transaction.productID) else { continue }
-
-            if transaction.productID == ProductID.lifetime {
-                entitledType = "lifetime"
-                break
-            }
-            entitledType = "premium"
+            isEntitled = true
+            break
         }
 
-        guard let entitledType = entitledType else { return }
+        guard isEntitled else { return }
 
         let manager = SupabaseManager.shared
-        // Upgrade-only: lifetime beats premium, premium beats free; never downgrade
-        let current = manager.subscriptionType
-        let shouldUpdate = (current == "free") || (current == "premium" && entitledType == "lifetime")
-        if shouldUpdate {
-            await manager.updateSubscriptionType(entitledType)
+        // Upgrade-only: never downgrade. Stripe's webhook owns cancellations.
+        if manager.subscriptionType == "free" {
+            await manager.updateSubscriptionType("premium")
         }
     }
 
