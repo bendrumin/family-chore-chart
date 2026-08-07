@@ -387,18 +387,25 @@ struct AuthView: View {
                 await manager.signIn(email: email, password: password)
                 await MainActor.run {
                     if !manager.isAuthenticated {
-                        errorMessage = manager.debugLastError ?? "Sign in failed. Check your credentials."
+                        // Never surface debugLastError here — it holds engineering
+                        // detail, not something a parent should read.
+                        errorMessage = manager.authErrorMessage ?? "Sign in failed. Please try again."
                     }
                     isLoading = false
                 }
             } else {
                 do {
                     try await manager.signUp(email: email, password: password, familyName: familyName)
+                    // The signup route confirms the address server-side, so the
+                    // account is usable immediately — sign straight in rather
+                    // than bouncing a brand new user to a "check your inbox"
+                    // dead end (which is what App Review ran into).
+                    await manager.signIn(email: email, password: password)
                     await MainActor.run {
-                        // Signup never returns a session — the address has to be
-                        // confirmed first — so always send them to the inbox.
-                        successMessage = "Account created! Check your email to confirm, then sign in."
-                        authMode = .signIn
+                        if !manager.isAuthenticated {
+                            authMode = .signIn
+                            successMessage = "Account created! Please sign in."
+                        }
                         isLoading = false
                     }
                 } catch {

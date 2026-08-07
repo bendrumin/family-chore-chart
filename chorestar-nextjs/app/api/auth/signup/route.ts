@@ -74,6 +74,25 @@ export async function POST(request: Request) {
         family_name: normalizedFamilyName,
       })
 
+      // Mark the address confirmed so the account works the moment it is
+      // created. Supabase requires confirmation by default, which meant a brand
+      // new account could sign up and then be refused at sign-in with "Email
+      // not confirmed" until a link was clicked — App Review hit exactly that
+      // and rejected 1.4 under guideline 2.1(a).
+      //
+      // The tradeoff is deliberate: no proof the address is owned by the person
+      // signing up. It is the same tradeoff most consumer apps make, and the
+      // address is only used for password reset, which is itself a
+      // proof-of-ownership challenge.
+      const { error: confirmError } = await admin.auth.admin.updateUserById(data.user.id, {
+        email_confirm: true,
+      })
+      if (confirmError) {
+        // Not fatal: the account exists and the confirmation email still went
+        // out, so the user can confirm the slow way.
+        console.error('Failed to auto-confirm email after signup:', confirmError)
+      }
+
       // Ignore duplicate (already exists); otherwise roll back the auth user so
       // this email isn't left in a broken half-created state.
       if (profileError && profileError.code !== '23505') {

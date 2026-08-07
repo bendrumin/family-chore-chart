@@ -89,6 +89,11 @@ class SupabaseManager: ObservableObject {
     @Published var debugHasKey = false
     @Published var debugUserId: String?
     @Published var debugLastError: String?
+    /// A message safe to put in front of a user. `debugLastError` carries
+    /// engineering detail ("Delayed session check: nil") and must never be
+    /// shown — App Review saw "❌ Auth error: Email not confirmed" and filed it
+    /// as a bug under guideline 2.1(a).
+    @Published var authErrorMessage: String?
     
     private var client: SupabaseClient?
     
@@ -842,6 +847,7 @@ class SupabaseManager: ObservableObject {
         } catch {
             await MainActor.run {
                 debugLastError = "❌ Auth error: \(error.localizedDescription)"
+                self.authErrorMessage = Self.friendlySignInMessage(for: error)
                 self.isAuthenticated = false
                 self.currentUserEmail = nil
                 self.debugUserId = nil
@@ -850,8 +856,28 @@ class SupabaseManager: ObservableObject {
         #else
         await MainActor.run {
             debugLastError = "Supabase not available for sign in"
+            authErrorMessage = "Sign in isn't available in this build."
         }
         #endif
+    }
+
+    /// Turns a raw auth error into something worth showing a parent.
+    static func friendlySignInMessage(for error: Error) -> String {
+        let raw = error.localizedDescription.lowercased()
+        if raw.contains("not confirmed") || raw.contains("not_confirmed") {
+            return "Please confirm your email address first — check your inbox for the link we sent."
+        }
+        if raw.contains("invalid login") || raw.contains("invalid_credentials") || raw.contains("credentials") {
+            return "That email and password don't match. Please try again."
+        }
+        if raw.contains("offline") || raw.contains("internet") || raw.contains("network")
+            || raw.contains("timed out") || raw.contains("connection") {
+            return "Couldn't reach ChoreStar. Check your connection and try again."
+        }
+        if raw.contains("rate") || raw.contains("too many") {
+            return "Too many attempts. Please wait a moment and try again."
+        }
+        return "Sign in failed. Please try again."
     }
     
     private struct SignUpResponse: Codable {
