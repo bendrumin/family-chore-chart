@@ -96,6 +96,50 @@ export interface WeekEarnings {
   perfectDays: number
 }
 
+/** A completion that also knows which week it belongs to. */
+export interface DatedCompletion extends DayCompletion {
+  week_start: string | null
+}
+
+/**
+ * Everything a child has earned across every week they have completions for.
+ *
+ * The weekly bonus is per-week, so completions have to be bucketed by
+ * `week_start` and run through the normal week calculation rather than being
+ * treated as one long stretch of days — otherwise seven perfect days spread
+ * across two weeks would wrongly pay the bonus.
+ */
+export function childTotalEarningsCents(
+  chores: ChoreReward[],
+  completions: DatedCompletion[],
+  settings?: EarningsSettings | null
+): number {
+  if (chores.length === 0) return 0
+
+  const byWeek = new Map<string, DayCompletion[]>()
+  for (const c of completions) {
+    if (!c.week_start) continue
+    const list = byWeek.get(c.week_start) ?? []
+    list.push(c)
+    byWeek.set(c.week_start, list)
+  }
+
+  let total = 0
+  for (const weekCompletions of byWeek.values()) {
+    total += childWeekEarningsCents(chores, weekCompletions, settings).earnedCents
+  }
+  return total
+}
+
+/**
+ * What is still owed: everything ever earned, minus everything already handed
+ * over. Derived on read so a late-ticked chore from last month simply raises
+ * the balance, and never goes negative if rewards are lowered after a payout.
+ */
+export function owedCents(totalEarnedCents: number, totalPaidCents: number): number {
+  return Math.max(0, totalEarnedCents - totalPaidCents)
+}
+
 /** Earnings in cents for ONE child across one week, plus its perfect-day count. */
 export function childWeekEarningsCents(
   chores: ChoreReward[],

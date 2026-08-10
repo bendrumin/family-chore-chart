@@ -9,12 +9,15 @@ import assert from 'node:assert/strict'
 import {
   childDayEarningsCents,
   childWeekEarningsCents,
+  childTotalEarningsCents,
+  owedCents,
   isPerfectDay,
   dailyRewardCents,
   isPerChoreMode,
   DEFAULT_DAILY_REWARD_CENTS,
   type ChoreReward,
   type DayCompletion,
+  type DatedCompletion,
   type EarningsSettings,
 } from './earnings'
 import {
@@ -284,6 +287,60 @@ t('an incomplete amount parses as null rather than zero', () => {
   assert.equal(amountToCents(''), null)
   assert.equal(amountToCents('.'), null)
   assert.equal(amountToCents('0'), 0)
+})
+
+
+// --- Running allowance balance ------------------------------------------------
+
+const dated = (choreId: string, day: number, week: string): DatedCompletion =>
+  ({ chore_id: choreId, day_of_week: day, week_start: week })
+
+t('total earnings add up across several weeks', () => {
+  const chores = [chore('a', 100)]
+  const total = childTotalEarningsCents(chores, [
+    dated('a', 1, '2026-08-02'),
+    dated('a', 2, '2026-08-02'),
+    dated('a', 1, '2026-08-09'),
+  ], PER)
+  assert.equal(total, 300)
+})
+
+t('the weekly bonus is NOT paid for 7 perfect days split across two weeks', () => {
+  // The whole reason totals are bucketed by week_start instead of being treated
+  // as one long run of days: this would otherwise look like a perfect week.
+  const chores = [chore('a', 10)]
+  const spread: DatedCompletion[] = [
+    ...[0, 1, 2, 3].map((d) => dated('a', d, '2026-08-02')),
+    ...[0, 1, 2].map((d) => dated('a', d, '2026-08-09')),
+  ]
+  // 7 completions x 10c, and NO 1c bonus for either partial week.
+  assert.equal(childTotalEarningsCents(chores, spread, PER), 70)
+})
+
+t('a genuinely perfect week still earns its bonus inside the total', () => {
+  const chores = [chore('a', 10)]
+  const week: DatedCompletion[] = [0, 1, 2, 3, 4, 5, 6].map((d) => dated('a', d, '2026-08-02'))
+  assert.equal(childTotalEarningsCents(chores, week, PER), 70 + 1)
+})
+
+t('completions with no week_start are ignored rather than crashing', () => {
+  const chores = [chore('a', 100)]
+  const total = childTotalEarningsCents(chores, [
+    { chore_id: 'a', day_of_week: 1, week_start: null },
+    dated('a', 1, '2026-08-02'),
+  ], PER)
+  assert.equal(total, 100)
+})
+
+t('owed is earned minus paid, and never goes negative', () => {
+  assert.equal(owedCents(500, 200), 300)
+  assert.equal(owedCents(500, 500), 0)
+  // Rewards lowered after a payout must not show a debt owed BY the child.
+  assert.equal(owedCents(100, 500), 0)
+})
+
+t('a child with no chores is owed nothing', () => {
+  assert.equal(childTotalEarningsCents([], [dated('a', 1, '2026-08-02')], PER), 0)
 })
 
 

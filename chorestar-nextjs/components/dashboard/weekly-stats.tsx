@@ -4,7 +4,8 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Trophy, Star, TrendingUp, DollarSign, Flame } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Trophy, Star, TrendingUp, DollarSign, Flame, Wallet } from 'lucide-react'
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
@@ -30,6 +31,51 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     weeklyBonusLabel: '',
     isLoading: true,
   })
+  // Running allowance balance: everything earned across all weeks minus
+  // everything paid out. Separate from the weekly figures above because it
+  // deliberately does NOT reset on Sunday — that reset is what used to make
+  // unpaid allowance disappear.
+  const [balance, setBalance] = useState<{ owedCents: number; paidCents: number } | null>(null)
+  const [balanceUnavailable, setBalanceUnavailable] = useState(false)
+  const [payingOut, setPayingOut] = useState(false)
+
+  const loadBalance = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/allowance?childId=${child.id}`)
+      if (!res.ok) throw new Error(String(res.status))
+      const data = await res.json()
+      setBalance({ owedCents: data.owedCents ?? 0, paidCents: data.paidCents ?? 0 })
+      setBalanceUnavailable(false)
+    } catch {
+      // Most likely migration 011 hasn't been applied yet — hide the section
+      // rather than showing a broken tile.
+      setBalanceUnavailable(true)
+    }
+  }, [child.id])
+
+  useEffect(() => { loadBalance() }, [loadBalance, stats.totalEarnings])
+
+  const handlePayOut = async () => {
+    if (!balance || balance.owedCents <= 0) return
+    setPayingOut(true)
+    try {
+      const res = await fetch('/api/allowance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childId: child.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error || 'failed')
+      playSound('success')
+      toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)}`)
+      await loadBalance()
+    } catch {
+      toast.error('Could not record the payout')
+    } finally {
+      setPayingOut(false)
+    }
+  }
+
   const previousPerfectDays = useRef(0)
   const hasShownPerfectWeek = useRef(false)
   const hasInitiallyLoaded = useRef(false)
@@ -299,6 +345,39 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Day Streak</div>
           </div>
         </div>
+
+        {/* Unpaid allowance — accumulates across weeks until it's handed over */}
+        {!balanceUnavailable && balance && (
+          <div
+            className="p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg grid place-items-center bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
+                <Wallet className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
+                  ${(balance.owedCents / 100).toFixed(2)}
+                </div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  {balance.owedCents > 0
+                    ? `Owed to ${child.name} · keeps adding up until paid`
+                    : 'All paid up'}
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePayOut}
+              disabled={payingOut || balance.owedCents <= 0}
+              className="font-semibold"
+            >
+              {payingOut ? 'Recording…' : 'Paid Out'}
+            </Button>
+          </div>
+        )}
 
         {/* Perfect Days Stars - Compact */}
         <div className="p-3 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
