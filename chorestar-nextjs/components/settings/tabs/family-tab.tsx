@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, Monitor, RefreshCw } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
@@ -51,9 +51,6 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
   const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
   const [kidLoginError, setKidLoginError] = useState(false)
-  const [displayUrl, setDisplayUrl] = useState<string | null>(null)
-  const [displayError, setDisplayError] = useState(false)
-  const [rotatingDisplay, setRotatingDisplay] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -88,34 +85,6 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       })
       .catch(() => setKidLoginError(true))
   }, [])
-
-  useEffect(() => {
-    fetch('/api/display-code')
-      .then((r) => {
-        if (!r.ok) throw new Error(`${r.status}`)
-        return r.json()
-      })
-      .then((data) => {
-        if (data?.code) setDisplayUrl(`${window.location.origin}/display/${data.code}`)
-        else setDisplayError(true)
-      })
-      .catch(() => setDisplayError(true))
-  }, [])
-
-  const rotateDisplayCode = async () => {
-    setRotatingDisplay(true)
-    try {
-      const res = await fetch('/api/display-code', { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok || !data?.code) throw new Error(data?.error || 'failed')
-      setDisplayUrl(`${window.location.origin}/display/${data.code}`)
-      toast.success('New display link created. The old one no longer works.')
-    } catch {
-      toast.error('Could not create a new display link')
-    } finally {
-      setRotatingDisplay(false)
-    }
-  }
 
   useEffect(() => {
     if (settings) {
@@ -361,63 +330,6 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
           ) : kidLoginError ? (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               Kid login link is not available yet. Please ensure the database migration for kid login codes has been applied.
-            </p>
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Loading...
-            </p>
-          )}
-        </div>
-
-        {/* Fridge Display Section */}
-        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-          <div className="flex items-center gap-2 mb-2">
-            <Monitor className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-            <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-              Fridge Display
-            </h5>
-          </div>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Open this link on a kitchen screen, smart fridge, or an old tablet to show today&apos;s
-            chores. It&apos;s read-only, needs no sign-in, and refreshes on its own — built as plain
-            HTML so it works on very old browsers. Anyone with the link can see it, so create a new
-            one if you ever need to.
-          </p>
-          {displayUrl ? (
-            <>
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  value={displayUrl}
-                  className="flex-1 font-mono text-sm bg-white dark:bg-gray-800"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(displayUrl)
-                    toast.success('Link copied!')
-                  }}
-                  className="shrink-0"
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy
-                </Button>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={rotateDisplayCode}
-                disabled={rotatingDisplay}
-                className="mt-3"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {rotatingDisplay ? 'Creating…' : 'Create a new link'}
-              </Button>
-            </>
-          ) : displayError ? (
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Fridge display isn&apos;t available yet. Apply database migration 011 to enable it.
             </p>
           ) : (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
