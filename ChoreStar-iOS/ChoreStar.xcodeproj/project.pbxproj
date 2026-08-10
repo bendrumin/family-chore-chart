@@ -93,6 +93,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9E8D645C30260BE3008767EC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChoreStarWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA025C8301135A2008215CE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		9EA025CA301135A2008215CE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -204,6 +205,7 @@
 		A1234567890ABCDEF1234559 = {
 			isa = PBXGroup;
 			children = (
+				9E8D645C30260BE3008767EC /* Products.storekit */,
 				A1234567890ABCDEF123455A /* ChoreStar */,
 				9EA025CC301135A2008215CE /* ChoreStarWidgets */,
 				9EB025C0301135A2008215C2 /* ChoreStarUITests */,
