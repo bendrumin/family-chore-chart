@@ -38,6 +38,35 @@ struct AddEditChoreView: View {
     ]
     
     private let colors = ["blue", "green", "orange", "purple", "pink", "red", "yellow", "teal", "indigo", "mint"]
+
+    /// One-tap reward amounts, in cents. Same set as the web input
+    /// (components/chores/reward-amount-input.tsx) so a family that sets a chore
+    /// on one platform finds the same choices on the other.
+    private let presetCents = [10, 25, 50, 100, 200, 500]
+
+    /// Hard ceiling, matching the web input's MAX_CENTS.
+    private let maxRewardCents = 10_000
+
+    /// The amount as integer cents. Reward math is done in cents rather than on
+    /// the Double, because 0.29 * 100 is 28.999999999999996 in binary floating
+    /// point — the same trap that used to store 28¢ on save.
+    private var rewardCents: Int {
+        Int((rewardDollars * 100).rounded())
+    }
+
+    /// 5¢ under a unit, 25¢ above — small pocket-change amounts stay reachable
+    /// while larger ones move quickly. Mirrors `stepFor` on the web.
+    private func stepCents(for cents: Int) -> Int {
+        cents < 100 ? 5 : 25
+    }
+
+    /// Step the reward one notch. Takes the step from the CURRENT value, so
+    /// stepping down from $1.00 lands on $0.75 exactly as it does on the web.
+    private func bumpReward(_ direction: Int) {
+        let current = rewardCents
+        let next = current + direction * stepCents(for: current)
+        rewardDollars = Double(min(maxRewardCents, max(0, next))) / 100.0
+    }
     
     init(chore: Chore? = nil, preselectedChildId: UUID? = nil) {
         self.choreToEdit = chore
@@ -157,10 +186,45 @@ struct AddEditChoreView: View {
                             .keyboardType(.decimalPad)
                             .font(.title2)
                             .fontWeight(.semibold)
-                        
-                        Stepper("", value: $rewardDollars, in: 0...100, step: 0.25)
+
+                        // Explicit increment/decrement rather than Stepper's
+                        // fixed `step:`, so the size can depend on the current
+                        // amount the way the web input does.
+                        Stepper(
+                            "",
+                            onIncrement: { bumpReward(1) },
+                            onDecrement: { bumpReward(-1) }
+                        )
                     }
-                    
+
+                    // One-tap presets, matching the web chips.
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(presetCents, id: \.self) { cents in
+                                let isSelected = rewardCents == cents
+                                Button {
+                                    rewardDollars = Double(cents) / 100.0
+                                } label: {
+                                    Text(manager.formatMoney(Double(cents) / 100.0))
+                                        .font(.subheadline)
+                                        .fontWeight(.bold)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 7)
+                                        .background(
+                                            Capsule().fill(
+                                                isSelected
+                                                    ? Color.choreStarAccent
+                                                    : Color.choreStarAccent.opacity(0.12)
+                                            )
+                                        )
+                                        .foregroundColor(isSelected ? .white : .choreStarAccent)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+
                     Text("Current: \(manager.formatMoney(rewardDollars))")
                         .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)

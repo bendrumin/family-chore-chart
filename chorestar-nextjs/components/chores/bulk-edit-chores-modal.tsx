@@ -10,6 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { playSound } from '@/lib/utils/sound'
 import { ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
+import { RewardAmountInput, DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
+import { useSettings } from '@/lib/contexts/settings-context'
+import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -28,9 +31,10 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
   const [selectedChoreIds, setSelectedChoreIds] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const { settings } = useSettings()
   const [bulkAction, setBulkAction] = useState<'category' | 'reward' | 'delete' | null>(null)
   const [newCategory, setNewCategory] = useState('household_chores')
-  const [newReward, setNewReward] = useState('5')
+  const [newRewardCents, setNewRewardCents] = useState(DEFAULT_CHORE_REWARD_CENTS)
 
   const choresPerPage = 10
   const totalPages = Math.ceil(chores.length / choresPerPage)
@@ -122,7 +126,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
       } else if (bulkAction === 'reward') {
         const { error } = await supabase
           .from('chores')
-          .update({ reward_cents: parseInt(newReward) })
+          .update({ reward_cents: newRewardCents })
           .in('id', choreIds)
 
         if (error) throw error
@@ -339,15 +343,14 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
 
               {bulkAction === 'reward' && (
                 <div className="space-y-2">
-                  <Label htmlFor="bulk-reward">New Reward (cents)</Label>
-                  <Input
+                  <Label htmlFor="bulk-reward">New Reward Amount</Label>
+                  <RewardAmountInput
                     id="bulk-reward"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newReward}
-                    onChange={(e) => setNewReward(e.target.value)}
-                    className="h-12"
+                    valueCents={newRewardCents}
+                    onChange={setNewRewardCents}
+                    currencyCode={settings?.currency_code}
+                    affectsEarnings={isPerChoreMode(settings)}
+                    dailyRateCents={dailyRewardCents(settings)}
                   />
                 </div>
               )}
