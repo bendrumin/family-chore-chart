@@ -128,6 +128,29 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
               </div>
             </div>
 
+            {/* Reward Section - Green accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-green-200 bg-green-50/30 dark:border-green-800 dark:bg-green-900/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2 mb-4">
+                <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Reward
+                </h4>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reward" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Reward Amount
+                </Label>
+                <RewardAmountInput
+                  id="reward"
+                  valueCents={formData.rewardCents}
+                  onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
+                  currencyCode={settings?.currency_code}
+                  affectsEarnings={isPerChoreMode(settings)}
+                  dailyRateCents={dailyRewardCents(settings)}
+                />
+              </div>
+            </div>
             {/* Appearance Section - Purple accent */}
             <div className="p-4 sm:p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-900/20 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2 mb-4">
@@ -195,29 +218,6 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
               </div>
             </div>
 
-            {/* Reward Section - Green accent */}
-            <div className="p-4 sm:p-5 rounded-2xl border-2 border-green-200 bg-green-50/30 dark:border-green-800 dark:bg-green-900/20 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                  Reward
-                </h4>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reward" className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
-                  Reward Amount
-                </Label>
-                <RewardAmountInput
-                  id="reward"
-                  valueCents={formData.rewardCents}
-                  onChange={(rewardCents) => setFormData({ ...formData, rewardCents })}
-                  currencyCode={settings?.currency_code}
-                  affectsEarnings={isPerChoreMode(settings)}
-                  dailyRateCents={dailyRewardCents(settings)}
-                />
-              </div>
-            </div>
           </div>
 
           <DialogFooter className="gap-3">
