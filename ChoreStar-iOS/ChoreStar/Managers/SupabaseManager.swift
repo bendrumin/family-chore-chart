@@ -872,7 +872,10 @@ class SupabaseManager: ObservableObject {
             return "Please confirm your email address first — check your inbox for the link we sent."
         }
         if raw.contains("invalid login") || raw.contains("invalid_credentials") || raw.contains("credentials") {
-            return "That email and password don't match. Please try again."
+            // Supabase intentionally returns the same error for a wrong
+            // password and a nonexistent account (email enumeration defense),
+            // so the copy has to cover both without claiming to know which.
+            return "We couldn't find an account matching that email and password. Double-check them, or tap Sign Up to create a new account."
         }
         if raw.contains("offline") || raw.contains("internet") || raw.contains("network")
             || raw.contains("timed out") || raw.contains("connection") {
