@@ -23,7 +23,28 @@ struct AuthView: View {
         ZStack {
             themeManager.gradient
                 .ignoresSafeArea()
-            
+
+            // Scrollable so the keyboard can be dismissed by dragging —
+            // otherwise the only way out of a field is the return key. The
+            // min-height frame keeps the layout vertically centered exactly
+            // as the old fixed VStack did.
+            GeometryReader { geo in
+                ScrollView(showsIndicators: false) {
+                    authContent
+                        .frame(maxWidth: .infinity, minHeight: geo.size.height)
+                }
+                .scrollDismissesKeyboard(.immediately)
+            }
+        }
+        .sheet(isPresented: $showingKidLogin) {
+            KidLoginView()
+        }
+        .onAppear {
+            loadSavedEmail()
+        }
+    }
+
+    private var authContent: some View {
             VStack(spacing: 32) {
                 Spacer()
                 
@@ -70,13 +91,6 @@ struct AuthView: View {
                 Spacer()
                 Spacer()
             }
-        }
-        .sheet(isPresented: $showingKidLogin) {
-            KidLoginView()
-        }
-        .onAppear {
-            loadSavedEmail()
-        }
     }
 
     private var kidLoginButton: some View {
@@ -171,6 +185,26 @@ struct AuthView: View {
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.choreStarPrimary.opacity(0.2), lineWidth: 1)
                             )
+
+                        // Live feedback — a silently disabled Create button
+                        // reads as broken; say WHY it's disabled instead.
+                        if !confirmPassword.isEmpty && password != confirmPassword {
+                            HStack(spacing: 6) {
+                                Image(systemName: "xmark.circle.fill")
+                                Text("Passwords don't match yet")
+                            }
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
+                        } else if !confirmPassword.isEmpty && password == confirmPassword {
+                            HStack(spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Passwords match")
+                            }
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                        }
 
                         // Stated up front rather than after a failed submit —
                         // these are the server's rules (lib/utils/validation.ts).

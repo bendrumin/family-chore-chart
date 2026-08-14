@@ -44,12 +44,16 @@ struct FamilySharingView: View {
     private var kidLoginSection: some View {
         Section {
             if let code = manager.kidLoginCode, !code.isEmpty {
-                HStack {
+                HStack(spacing: 16) {
                     Text(code)
                         .font(.system(.title3, design: .monospaced).weight(.bold))
                         .textSelection(.enabled)
 
                     Spacer()
+
+                    // Copy puts the bare code on the clipboard; Share carries
+                    // the friendly sentence. Never mix the two.
+                    CopyCodeButton(code: code)
 
                     ShareLink(
                         item: URL(string: "https://chorestar.app/kid-login/\(code)")!,
@@ -75,12 +79,14 @@ struct FamilySharingView: View {
     private var shareSection: some View {
         Section {
             if let code = manager.familyJoinCode {
-                HStack {
+                HStack(spacing: 16) {
                     Text(code)
                         .font(.system(.title3, design: .monospaced).weight(.bold))
                         .textSelection(.enabled)
 
                     Spacer()
+
+                    CopyCodeButton(code: code)
 
                     ShareLink(
                         item: "Join our family on ChoreStar! Open the app, tap Settings → Family Sharing → Join a Family, and enter code: \(code)"
@@ -262,5 +268,29 @@ struct FamilySharingView: View {
     NavigationStack {
         FamilySharingView()
             .environmentObject(SupabaseManager.shared)
+    }
+}
+
+/// Copies exactly the code — no surrounding sentence — and flashes a
+/// checkmark so the tap visibly landed.
+struct CopyCodeButton: View {
+    let code: String
+    @State private var justCopied = false
+
+    var body: some View {
+        Button {
+            UIPasteboard.general.string = code
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation { justCopied = true }
+            Task {
+                try? await Task.sleep(for: .seconds(2))
+                withAnimation { justCopied = false }
+            }
+        } label: {
+            Image(systemName: justCopied ? "checkmark" : "doc.on.doc")
+                .foregroundColor(justCopied ? .green : .accentColor)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(justCopied ? "Copied" : "Copy code")
     }
 }
