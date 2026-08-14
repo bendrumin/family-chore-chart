@@ -61,6 +61,8 @@ struct ChildrenView: View {
                             .font(.title2)
                             .foregroundStyle(Color.choreStarGradient)
                     }
+                    .accessibilityLabel("Add Child")
+                    .accessibilityIdentifier("family.addChildButton")
                 }
             }
             .sheet(isPresented: $showingAddChild) {

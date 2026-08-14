@@ -3,6 +3,7 @@ import SwiftUI
 struct RoutinesListView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var showingBuilder = false
+    @State private var showingStarters = false
     @State private var editingRoutine: Routine?
     @State private var filterType: RoutineFilterType = .all
     
@@ -147,7 +148,18 @@ struct RoutinesListView: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            Button(action: { showingBuilder = true }) {
+            Menu {
+                Button {
+                    showingBuilder = true
+                } label: {
+                    Label("Build Your Own", systemImage: "square.and.pencil")
+                }
+                Button {
+                    showingStarters = true
+                } label: {
+                    Label("Starter Routines", systemImage: "sparkles")
+                }
+            } label: {
                 Image(systemName: "plus")
                     .font(.title2)
                     .fontWeight(.bold)
@@ -162,6 +174,9 @@ struct RoutinesListView: View {
         }
         .sheet(isPresented: $showingBuilder) {
             RoutineBuilderView()
+        }
+        .sheet(isPresented: $showingStarters) {
+            StarterRoutinesView()
         }
         .sheet(item: $editingRoutine) { routine in
             RoutineBuilderView(existingRoutine: routine)
@@ -186,10 +201,10 @@ struct RoutinesListView: View {
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)
             
-            Button(action: { showingBuilder = true }) {
+            Button(action: { showingStarters = true }) {
                 HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Create Routine")
+                    Image(systemName: "sparkles")
+                    Text("Try a Starter Routine")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -199,7 +214,17 @@ struct RoutinesListView: View {
                 .cornerRadius(14)
             }
             .padding(.top, 8)
-            
+
+            Button(action: { showingBuilder = true }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Build Your Own")
+                }
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.choreStarPrimary)
+            }
+
             Spacer()
         }
         .padding(40)

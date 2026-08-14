@@ -6,10 +6,11 @@ struct DashboardView: View {
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
-    @State private var showWhatsNew = false
+    // What's New no longer auto-presents — it fought the onboarding cover
+    // for the modal slot on first launch, and interrupts everyone else.
+    // It lives behind Settings → About → What's New instead.
     @State private var showingKidMode = false
     @State private var showPerfectDay = false
-    @AppStorage("lastSeenChangelogVersion") private var lastSeenChangelogVersion = ""
 
     private var completedChores: Int {
         manager.chores.filter { manager.isChoreCompleted($0) }.count
@@ -172,6 +173,14 @@ struct DashboardView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
 
+                    // New families see a self-dismissing setup checklist; it
+                    // disappears forever once a child, a chore, and a routine
+                    // all exist.
+                    if manager.children.isEmpty || manager.chores.isEmpty || manager.routines.isEmpty {
+                        gettingStartedCard
+                            .padding(.horizontal, 20)
+                    }
+
                     // Family: avatar ring chips, Fitness sharing-style
                     if !manager.children.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -262,15 +271,6 @@ struct DashboardView: View {
                 ChildAuthView()
             }
         }
-        .onAppear {
-            if lastSeenChangelogVersion != Changelog.latestVersion {
-                lastSeenChangelogVersion = Changelog.latestVersion
-                showWhatsNew = true
-            }
-        }
-        .sheet(isPresented: $showWhatsNew) {
-            WhatsNewView()
-        }
         .onChange(of: completedChores) { oldValue, newValue in
             // Celebrate crossing the finish line (not on initial load)
             if totalChores > 0, newValue == totalChores, oldValue == totalChores - 1 {
@@ -293,6 +293,65 @@ struct DashboardView: View {
             if let first = earnedAchievements.first {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
             }
+        }
+    }
+
+    // MARK: - Getting started checklist
+
+    private var gettingStartedCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: "flag.checkered")
+                    .foregroundColor(.choreStarPrimary)
+                Text("Getting Started")
+                    .font(.headline)
+                    .foregroundColor(.choreStarTextPrimary)
+            }
+
+            gettingStartedRow(
+                done: !manager.children.isEmpty,
+                title: "Add your first child",
+                hint: "Family tab → the + button"
+            )
+            gettingStartedRow(
+                done: !manager.chores.isEmpty,
+                title: "Create a chore",
+                hint: "Chores tab → New Chore"
+            )
+            gettingStartedRow(
+                done: !manager.routines.isEmpty,
+                title: "Set up a routine",
+                hint: "Chores tab → Routines → Starter Routines"
+            )
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.choreStarCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Color.choreStarPrimary.opacity(0.25), lineWidth: 1)
+        )
+    }
+
+    private func gettingStartedRow(done: Bool, title: String, hint: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                .font(.title3)
+                .foregroundColor(done ? .green : .choreStarTextSecondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.choreStarTextPrimary)
+                    .strikethrough(done, color: .choreStarTextSecondary)
+                if !done {
+                    Text(hint)
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+            }
+            Spacer()
         }
     }
 }

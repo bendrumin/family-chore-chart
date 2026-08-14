@@ -241,49 +241,49 @@ struct RoutineTemplate {
     static let morning = RoutineTemplate(
         name: "Morning Routine",
         type: .morning,
-        icon: "sunrise.fill",
+        icon: "🌟",
         steps: [
-            ("Wake Up & Stretch", "figure.walk", 60),
-            ("Brush Teeth", "mouth.fill", 120),
-            ("Get Dressed", "tshirt.fill", 180),
-            ("Eat Breakfast", "fork.knife", 600),
-            ("Pack Backpack", "backpack.fill", 120),
+            ("Wake Up & Stretch", "🌟", 60),
+            ("Brush Teeth", "🪥", 120),
+            ("Get Dressed", "👕", 180),
+            ("Eat Breakfast", "🍽️", 600),
+            ("Pack Backpack", "🎒", 120),
         ]
     )
 
     static let bedtime = RoutineTemplate(
         name: "Bedtime Routine",
         type: .bedtime,
-        icon: "moon.stars.fill",
+        icon: "🌙",
         steps: [
-            ("Take a Bath/Shower", "shower.fill", 600),
-            ("Brush Teeth", "mouth.fill", 120),
-            ("Put on Pajamas", "tshirt.fill", 120),
-            ("Read a Book", "book.fill", 600),
-            ("Lights Out", "light.max", nil),
+            ("Take a Bath/Shower", "🚿", 600),
+            ("Brush Teeth", "🪥", 120),
+            ("Put on Pajamas", "👕", 120),
+            ("Read a Book", "📖", 600),
+            ("Lights Out", "💡", nil),
         ]
     )
 
     static let afterSchool = RoutineTemplate(
         name: "After School Routine",
         type: .afterschool,
-        icon: "backpack.fill",
+        icon: "🎒",
         steps: [
-            ("Unpack Backpack", "backpack.fill", 120),
-            ("Have a Snack", "carrot.fill", 300),
-            ("Do Homework", "book.fill", 1800),
-            ("Free Time", "gamecontroller.fill", nil),
+            ("Unpack Backpack", "🎒", 120),
+            ("Have a Snack", "🥨", 300),
+            ("Do Homework", "📚", 1800),
+            ("Free Time", "🎮", nil),
         ]
     )
 
     static let quickHygiene = RoutineTemplate(
         name: "Quick Hygiene",
         type: .custom,
-        icon: "hands.sparkles.fill",
+        icon: "🧼",
         steps: [
-            ("Wash Hands", "hands.sparkles.fill", 30),
-            ("Brush Teeth", "mouth.fill", 120),
-            ("Comb Hair", "comb.fill", 60),
+            ("Wash Hands", "🧼", 30),
+            ("Brush Teeth", "🪥", 120),
+            ("Comb Hair", "💇", 60),
         ]
     )
 

@@ -104,9 +104,7 @@ struct RoutineBuilderView: View {
                         applyTemplate(template)
                     } label: {
                         VStack(spacing: 8) {
-                            Image(systemName: template.icon)
-                                .font(.title2)
-                                .foregroundColor(Color.fromHex(template.type.defaultColor))
+                            AdaptiveIcon(icon: template.icon, fallbackSymbol: "list.bullet", tint: Color.fromHex(template.type.defaultColor), iconSize: 26)
                             
                             Text(template.name)
                                 .font(.caption)
@@ -247,9 +245,7 @@ struct RoutineBuilderView: View {
                         .font(.subheadline)
                         
                         HStack {
-                            Image(systemName: steps[index].icon)
-                                .font(.caption)
-                                .foregroundColor(.choreStarTextSecondary)
+                            AdaptiveIcon(icon: steps[index].icon, fallbackSymbol: "circle", tint: .choreStarTextSecondary, iconSize: 14)
                             
                             if let minutes = steps[index].durationMinutes, minutes > 0 {
                                 Text("\(minutes) min")
@@ -277,7 +273,7 @@ struct RoutineBuilderView: View {
             }
             
             Button {
-                steps.append(EditableStep(id: UUID(), title: "", icon: "circle", durationMinutes: nil))
+                steps.append(EditableStep(id: UUID(), title: "", icon: "📝", durationMinutes: nil))
             } label: {
                 Label("Add Step", systemImage: "plus.circle.fill")
                     .foregroundColor(.choreStarPrimary)

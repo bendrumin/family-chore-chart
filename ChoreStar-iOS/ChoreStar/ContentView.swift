@@ -54,6 +54,83 @@ struct ContentView: View {
     /// the standalone kid login sheet.
     private func applyDebugLaunchOverrides() {
         let args = ProcessInfo.processInfo.arguments
+        // `-chorestar-fresh` — first-run state for UI tests: forget that
+        // onboarding was ever shown. Must run before MainTabs mounts, which
+        // is guaranteed here because signin below is what authenticates.
+        // `-chorestar-fresh` — drop any restored session so MainTabs
+        // re-evaluates for the test login (onboarding flags are per-user-id
+        // now, so fresh accounts start clean by construction).
+        // `-chorestar-signin email password` — deterministic login for UI
+        // tests; typing into the auth form is unreliable (remembered emails,
+        // keyboard layouts, autocorrect).
+        //
+        // One Task, strictly ordered: signOut() is internally fire-and-forget,
+        // so running signIn in a sibling task raced it — the sign-out could
+        // land AFTER the sign-in and wipe the fresh session.
+        // Launch-arg shapes differ by driver: XCUITest sends "-name value…",
+        // Maestro sends "name=value" or "name value" (no dash, one value per
+        // key — credentials ride space-joined).
+        func flagSet(_ name: String) -> Bool {
+            args.contains { arg in
+                let stripped = arg.hasPrefix("-") ? String(arg.dropFirst()) : arg
+                return stripped == name || stripped.hasPrefix("\(name)=")
+            }
+        }
+        func argValues(_ name: String) -> [String] {
+            for (i, raw) in args.enumerated() {
+                let stripped = raw.hasPrefix("-") ? String(raw.dropFirst()) : raw
+                if stripped.hasPrefix("\(name)=") {
+                    let value = String(stripped.dropFirst(name.count + 1))
+                    return value.split(separator: " ", maxSplits: 1).map(String.init)
+                }
+                if stripped == name, i + 1 < args.count {
+                    if args[i + 1].contains(" ") {
+                        return args[i + 1].split(separator: " ", maxSplits: 1).map(String.init)
+                    }
+                    return Array(args[(i + 1)...].prefix(2))
+                }
+            }
+            return []
+        }
+
+        let freshRequested = flagSet("chorestar-fresh")
+        var credentials: (email: String, password: String)?
+        let signinParts = argValues("chorestar-signin")
+        if signinParts.count == 2 {
+            credentials = (signinParts[0], signinParts[1])
+        }
+        if let credentials {
+            Task {
+                if freshRequested {
+                    supabaseManager.signOut()
+                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                }
+                await supabaseManager.signIn(email: credentials.email, password: credentials.password)
+            }
+        } else if freshRequested {
+            supabaseManager.signOut()
+        }
+        // `-chorestar-editsmoke` — reproduce the edit-save path without the
+        // (untappable-under-XCUITest) category menu: rewrite the first
+        // chore's category through the same updateChore call the editor uses.
+        if args.contains("-chorestar-editsmoke") {
+            Task {
+                while !supabaseManager.initialDataLoaded {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
+                guard let chore = supabaseManager.chores.first else { return }
+                try? await supabaseManager.updateChore(
+                    choreId: chore.id,
+                    name: chore.name,
+                    childId: chore.childId,
+                    rewardCents: Int((chore.reward * 100).rounded()),
+                    category: ChoreCategory.reading.rawValue,
+                    icon: chore.icon,
+                    color: chore.color,
+                    notes: chore.notes
+                )
+            }
+        }
         if args.contains("-chorestar-paywall") {
             debugShowPaywall = true
         } else if args.contains("-chorestar-kidlogin") {
@@ -196,6 +273,24 @@ struct MainTabs: View {
     @EnvironmentObject var themeManager: ThemeManager
     @State private var selectedTab: Int = MainTabs.initialTab()
 
+    // First-run wizard: shown once per ACCOUNT (keyed by user id, not per
+    // device — a brand-new family on a phone that saw the wizard before must
+    // still get it), and only evaluated after loadRemoteData finishes so the
+    // children check runs against real data, not a not-yet-loaded [].
+    @State private var showOnboarding = false
+
+    private var onboardingSeenKey: String? {
+        manager.debugUserId.map { "hasSeenParentOnboarding.\($0)" }
+    }
+
+    private func evaluateOnboarding() {
+        guard manager.initialDataLoaded,
+              let key = onboardingSeenKey,
+              !UserDefaults.standard.bool(forKey: key),
+              manager.children.isEmpty else { return }
+        showOnboarding = true
+    }
+
     /// DEBUG-only: allows UI verification tooling to open a specific tab, e.g.
     /// `simctl launch <device> com.chorestar.ChoreStar -chorestar-tab chores`
     static func initialTab() -> Int {
@@ -247,6 +342,21 @@ struct MainTabs: View {
                 .tag(4)
         }
         .tint(themeManager.accentColor)
+        .onAppear { evaluateOnboarding() }
+        .onChange(of: manager.initialDataLoaded) { _, loaded in
+            if loaded { evaluateOnboarding() }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView { goToFamily in
+                if let key = onboardingSeenKey {
+                    UserDefaults.standard.set(true, forKey: key)
+                }
+                showOnboarding = false
+                if goToFamily {
+                    selectedTab = 1
+                }
+            }
+        }
     }
 }
 
