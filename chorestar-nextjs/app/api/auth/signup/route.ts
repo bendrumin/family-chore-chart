@@ -2,6 +2,8 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { checkRateLimit, recordAttempt, RATE_LIMITS, getClientIp, createRateLimitResponse } from '@/lib/utils/rate-limit'
 import { validatePassword } from '@/lib/utils/validation'
+import crypto from 'crypto'
+import type { PostgrestError } from '@supabase/supabase-js'
 
 export async function POST(request: Request) {
   try {
@@ -68,11 +70,29 @@ export async function POST(request: Request) {
       // policy (error 42501) — which previously triggered the rollback below and
       // deleted the freshly created account.
       const admin = createServiceRoleClient()
-      const { error: profileError } = await admin.from('profiles').insert({
-        id: data.user.id,
-        email: data.user.email || normalizedEmail,
-        family_name: normalizedFamilyName,
-      })
+      // The kid login code is seeded at signup so kid mode works from the
+      // first minute. It used to be generated lazily by /api/kid-login-code,
+      // which only the web settings page called — a family created on iOS
+      // had no code at all, and every code typed at kid login read "invalid".
+      let profileError: PostgrestError | null = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { error } = await admin.from('profiles').insert({
+          id: data.user.id,
+          email: data.user.email || normalizedEmail,
+          family_name: normalizedFamilyName,
+          kid_login_code: crypto.randomBytes(4).toString('hex'),
+        })
+        profileError = error
+        if (!error || error.code !== '23505') break
+        // 23505 is either "profile already exists" (keep original semantics,
+        // handled below) or a code collision — only the latter retries.
+        const { data: existing } = await admin
+          .from('profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .maybeSingle()
+        if (existing) break
+      }
 
       // Mark the address confirmed so the account works the moment it is
       // created. Supabase requires confirmation by default, which meant a brand

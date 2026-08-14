@@ -7,16 +7,48 @@ function generateCode(): string {
   return crypto.randomBytes(4).toString('hex');
 }
 
+/**
+ * Serves both clients, like /api/account/delete:
+ *   - web  — Supabase session cookie
+ *   - iOS  — `Authorization: Bearer <supabase access token>`
+ */
+async function resolveUser(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) return user;
+
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice(7).trim();
+    if (token) {
+      const admin = createServiceRoleClient();
+      const { data: tokenAuth } = await admin.auth.getUser(token);
+      if (tokenAuth?.user) return tokenAuth.user;
+    }
+  }
+
+  return null;
+}
+
 // GET /api/kid-login-code - Get or create the family's kid login code
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const user = await resolveUser(request);
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: profile, error: profileError } = await supabase
+    // The service-role client reads and writes here: Bearer-authenticated
+    // requests have no cookie session, so RLS would block the anon client.
+    // Every query is scoped to the resolved user's id.
+    let admin;
+    try {
+      admin = createServiceRoleClient();
+    } catch {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const { data: profile, error: profileError } = await admin
       .from('profiles')
       .select('kid_login_code')
       .eq('id', user.id)
@@ -30,12 +62,6 @@ export async function GET(request: Request) {
 
     // Generate code if missing
     if (!code) {
-      let admin;
-      try {
-        admin = createServiceRoleClient();
-      } catch {
-        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-      }
       for (let attempt = 0; attempt < 5; attempt++) {
         code = generateCode();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase service role update type inference
