@@ -23,6 +23,10 @@ class SupabaseManager: ObservableObject {
     @Published var currentChild: Child?
     @Published var routines: [Routine] = []
     @Published var subscriptionType: String = "free"
+    /// Flips true when loadRemoteData finishes a full pass — gates decisions
+    /// that must not run against a half-loaded account (e.g. first-run
+    /// onboarding, which reads `children`). Reset on sign-out.
+    @Published var initialDataLoaded = false
     
     var isPremium: Bool { subscriptionType == "premium" || subscriptionType == "lifetime" }
     var childLimit: Int { isPremium ? Int.max : 3 }
@@ -979,6 +983,7 @@ class SupabaseManager: ObservableObject {
                 isAuthenticated = false
                 currentUserEmail = nil
                 debugUserId = nil
+                initialDataLoaded = false
                 children = []
                 chores = []
                 choreCompletions = [:]
@@ -1622,6 +1627,7 @@ class SupabaseManager: ObservableObject {
         
         await MainActor.run {
             debugLastError = "Loaded \(currentChildren.count) children and \(currentChores.count) chores"
+            initialDataLoaded = true
             publishWidgetSnapshot()
         }
         #endif
@@ -2090,29 +2096,29 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Chores Management
     
-    func createChore(name: String, childId: UUID, rewardCents: Int, description: String?, category: String?, icon: String?, color: String?, notes: String?) async throws {
+    // `chores` has no `description` column anymore, and `category` is the
+    // Postgres enum `activity_category` — only ChoreCategory raw values insert.
+    func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+
         struct NewChoreRow: Encodable {
             let name: String
             let child_id: String
             let reward_cents: Int
-            let description: String?
             let category: String?
             let icon: String?
             let color: String?
             let notes: String?
         }
-        
+
         let newChore = NewChoreRow(
             name: name,
             child_id: childId.uuidString,
             reward_cents: rewardCents,
-            description: description,
-            category: category,
+            category: category.map { ChoreCategory.normalize($0).rawValue },
             icon: icon,
             color: color,
             notes: notes
@@ -2131,30 +2137,28 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, description: String?, category: String?, icon: String?, color: String?, notes: String?) async throws {
+    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, category: String?, icon: String?, color: String?, notes: String?) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+
         struct ChoreUpdate: Encodable {
             let name: String?
             let child_id: String?
             let reward_cents: Int?
-            let description: String?
             let category: String?
             let icon: String?
             let color: String?
             let notes: String?
             let updated_at: String
         }
-        
+
         let update = ChoreUpdate(
             name: name,
             child_id: childId?.uuidString,
             reward_cents: rewardCents,
-            description: description,
-            category: category,
+            category: category.map { ChoreCategory.normalize($0).rawValue },
             icon: icon,
             color: color,
             notes: notes,
@@ -2394,6 +2398,32 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Profile & Subscription
     
+    /// GET /api/kid-login-code — fetch-or-create this family's kid login code.
+    /// Bearer-authenticated, so it works without a web session.
+    private func materializeKidLoginCode() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        guard let token = try? await client.auth.session.accessToken else { return }
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/kid-login-code") else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        struct CodeResponse: Decodable { let code: String? }
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let decoded = try? JSONDecoder().decode(CodeResponse.self, from: data),
+              let code = decoded.code, !code.isEmpty else {
+            return
+        }
+
+        await MainActor.run {
+            self.kidLoginCode = code
+            debugLastError = "Kid login code generated"
+        }
+        #endif
+    }
+
     func loadProfile() async {
         #if canImport(Supabase)
         guard let client = client else { return }
@@ -2413,6 +2443,15 @@ class SupabaseManager: ObservableObject {
                 self.subscriptionType = profiles.first?.subscription_type ?? "free"
                 self.kidLoginCode = profiles.first?.kid_login_code
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
+            }
+
+            // Accounts created before signup seeded kid_login_code have none,
+            // which made kid login impossible from an iOS-only family. The
+            // endpoint mints one on demand (owners only — shared members use
+            // the owner's code, handled below).
+            if profiles.first?.kid_login_code == nil,
+               await MainActor.run(body: { memberOfFamilyId }) == nil {
+                await materializeKidLoginCode()
             }
 
             // Shared members use the family owner's kid login code

@@ -13,18 +13,14 @@ struct ChoreSuggestion: Identifiable {
 
     var id: String { name }
 
-    /// Maps the catalogue category onto the iOS chore editor's category list.
+    /// Maps the catalogue category onto the database's `activity_category`
+    /// enum values (see ChoreCategory) — anything else fails the insert.
     var editorCategory: String {
         switch category {
-        case "self-care": return "Personal"
-        case "tidying": return "Bedroom"
-        case "kitchen": return "Kitchen"
-        case "laundry": return "General"
-        case "pets": return "Pets"
-        case "outdoor": return "Outdoor"
-        case "household": return "General"
-        case "learning": return "Homework"
-        default: return "General"
+        case "learning": return ChoreCategory.learningEducation.rawValue
+        case "outdoor": return ChoreCategory.physicalActivity.rawValue
+        // self-care, tidying, kitchen, laundry, pets, household
+        default: return ChoreCategory.householdChores.rawValue
         }
     }
 }

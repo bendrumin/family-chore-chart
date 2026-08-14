@@ -5,6 +5,9 @@ struct ChildDetailView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.dismiss) var dismiss
     @State private var showingAddChore = false
+    // Presented at this level rather than inside ChildChoreCard — see
+    // ChoresView.editingChore for why row-owned sheets crash on save.
+    @State private var editingChore: Chore?
     @State private var showWeekView = false
     
     private var childChores: [Chore] {
@@ -157,7 +160,7 @@ struct ChildDetailView: View {
                                     .padding(.horizontal, 20)
                                 
                                 ForEach(pendingChores) { chore in
-                                    ChildChoreCard(chore: chore, manager: manager)
+                                    ChildChoreCard(chore: chore, manager: manager, onEdit: { editingChore = chore })
                                         .padding(.horizontal, 20)
                                 }
                             }
@@ -172,7 +175,7 @@ struct ChildDetailView: View {
                                     .padding(.horizontal, 20)
                                 
                                 ForEach(completedChores) { chore in
-                                    ChildChoreCard(chore: chore, manager: manager)
+                                    ChildChoreCard(chore: chore, manager: manager, onEdit: { editingChore = chore })
                                         .padding(.horizontal, 20)
                                 }
                             }
@@ -209,7 +212,10 @@ struct ChildDetailView: View {
             }
         }
         .sheet(isPresented: $showingAddChore) {
-            AddEditChoreView(chore: nil, preselectedChildId: child.id)
+            AddChoreWizardView(preselectedChildId: child.id)
+        }
+        .sheet(item: $editingChore) { chore in
+            AddEditChoreView(chore: chore)
         }
         .sheet(isPresented: $showWeekView) {
             NavigationStack {
@@ -259,7 +265,7 @@ struct StatCard: View {
 struct ChildChoreCard: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
-    @State private var showingEditSheet = false
+    let onEdit: () -> Void
     @State private var showingDeleteAlert = false
     
     private var isCompleted: Bool {
@@ -353,16 +359,13 @@ struct ChildChoreCard: View {
         .scaleEffect(isCompleted ? 0.98 : 1.0)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isCompleted)
         .contextMenu {
-            Button(action: { showingEditSheet = true }) {
+            Button(action: { onEdit() }) {
                 Label("Edit", systemImage: "pencil")
             }
             
             Button(role: .destructive, action: { showingDeleteAlert = true }) {
                 Label("Delete", systemImage: "trash")
             }
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            AddEditChoreView(chore: chore)
         }
         .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }

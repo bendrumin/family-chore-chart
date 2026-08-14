@@ -21,6 +21,11 @@ struct ChoresView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedFilter: ChoreFilter = .all
     @State private var showingAddChore = false
+    // Chore being edited. Presented from the LIST, not from inside a row:
+    // a row-owned sheet dies with its row when loadRemoteData() replaces
+    // the chores array after saving, which intermittently crashed mid-
+    // dismissal. sheet(item:) at this level survives any list rebuild.
+    @State private var editingChore: Chore?
     @State private var selectedTab: ChoresTab = ChoresView.initialSegment()
     @State private var searchText = ""
 
@@ -123,7 +128,10 @@ struct ChoresView: View {
                 }
             }
             .sheet(isPresented: $showingAddChore) {
-                AddEditChoreView()
+                AddChoreWizardView()
+            }
+            .sheet(item: $editingChore) { chore in
+                AddEditChoreView(chore: chore)
             }
             .task {
                 #if DEBUG
@@ -170,7 +178,7 @@ struct ChoresView: View {
             ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
                 Section {
                     ForEach(groupedChores[childName] ?? [], id: \.id) { chore in
-                        ChoreListRow(chore: chore, manager: manager)
+                        ChoreListRow(chore: chore, manager: manager, onEdit: { editingChore = chore })
                             .moveDisabled(!canReorder)
                     }
                     .onMove { source, destination in
@@ -203,7 +211,8 @@ struct ChoresView: View {
                         ChoreGroupCard(
                             childName: childName,
                             chores: groupedChores[childName] ?? [],
-                            manager: manager
+                            manager: manager,
+                            onEditChore: { editingChore = $0 }
                         )
                     }
                 }
@@ -220,7 +229,7 @@ struct ChoresView: View {
 struct ChoreListRow: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
-    @State private var showingEditSheet = false
+    let onEdit: () -> Void
     @State private var showingDeleteAlert = false
 
     private var isCompleted: Bool {
@@ -263,7 +272,7 @@ struct ChoreListRow: View {
             }
 
             Button {
-                showingEditSheet = true
+                onEdit()
             } label: {
                 Image(systemName: "pencil")
                     .font(.subheadline.weight(.semibold))
@@ -292,14 +301,11 @@ struct ChoreListRow: View {
             }
 
             Button {
-                showingEditSheet = true
+                onEdit()
             } label: {
                 Label("Edit", systemImage: "pencil")
             }
             .tint(.blue)
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            AddEditChoreView(chore: chore)
         }
         .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -330,6 +336,7 @@ struct ChoreGroupCard: View {
     let childName: String
     let chores: [Chore]
     let manager: SupabaseManager
+    let onEditChore: (Chore) -> Void
     
     private var child: Child? {
         manager.children.first { $0.name == childName }
@@ -379,7 +386,7 @@ struct ChoreGroupCard: View {
             // Chores list
             VStack(spacing: 2) {
                 ForEach(chores, id: \.id) { chore in
-                    EnhancedChoreRow(chore: chore, manager: manager)
+                    EnhancedChoreRow(chore: chore, manager: manager, onEdit: { onEditChore(chore) })
 
                     if chore.id != chores.last?.id {
                         Divider()
@@ -395,7 +402,7 @@ struct ChoreGroupCard: View {
 struct EnhancedChoreRow: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
-    @State private var showingEditSheet = false
+    let onEdit: () -> Void
     @State private var showingDeleteAlert = false
 
     private var isCompleted: Bool {
@@ -450,7 +457,7 @@ struct EnhancedChoreRow: View {
             }
 
             Button {
-                showingEditSheet = true
+                onEdit()
             } label: {
                 Image(systemName: "pencil")
                     .font(.subheadline.weight(.semibold))
@@ -467,16 +474,13 @@ struct EnhancedChoreRow: View {
         .opacity(isCompleted ? 0.75 : 1.0)
         .onTapGesture(perform: toggle)
         .contextMenu {
-            Button(action: { showingEditSheet = true }) {
+            Button(action: { onEdit() }) {
                 Label("Edit", systemImage: "pencil")
             }
             
             Button(role: .destructive, action: { showingDeleteAlert = true }) {
                 Label("Delete", systemImage: "trash")
             }
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            AddEditChoreView(chore: chore)
         }
         .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }

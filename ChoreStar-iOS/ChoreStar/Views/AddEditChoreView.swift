@@ -17,25 +17,8 @@ struct AddEditChoreView: View {
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
     
-    private let categories = ["Bedroom", "Kitchen", "Bathroom", "Pets", "Homework", "General", "Outdoor", "Personal"]
-    
-    // Emojis matching web app
-    private let icons = [
-        // Household
-        "📝", "🛏️", "🧹", "🧺", "🍽️", "🚿", "🧽", "🗑️", "🚪", "🪟",
-        // Personal
-        "👕", "👖", "👟", "🎒", "🧸",
-        // School
-        "📚", "📖", "✏️", "🎨", "🧠",
-        // Tech
-        "📱", "💻", "🎮",
-        // Pets
-        "🐕", "🐱", "🐦", "🐠", "🐹",
-        // Nature
-        "🌱", "🌺", "🌳", "🌿", "🍃",
-        // Transport
-        "🚗", "🚲", "🛴", "🏠"
-    ]
+    // One canonical catalog shared with the web picker — see ChoreIconCatalog.
+    private let icons = ChoreIconCatalog.all
     
     private let colors = ["blue", "green", "orange", "purple", "pink", "red", "yellow", "teal", "indigo", "mint"]
 
@@ -76,7 +59,7 @@ struct AddEditChoreView: View {
         // family's reward mode, and `manager` is an @EnvironmentObject that is not
         // reachable from init. Resolved in .onAppear below.
         _rewardDollars = State(initialValue: chore?.reward ?? -1)
-        _category = State(initialValue: chore?.category ?? "General")
+        _category = State(initialValue: ChoreCategory.normalize(chore?.category).rawValue)
         _selectedIcon = State(initialValue: chore?.icon ?? "📝")
         _selectedColor = State(initialValue: chore?.color ?? "blue")
         _notes = State(initialValue: chore?.notes ?? "")
@@ -247,8 +230,8 @@ struct AddEditChoreView: View {
                 
                 Section("Category") {
                     Picker("Category", selection: $category) {
-                        ForEach(categories, id: \.self) { cat in
-                            Text(cat).tag(cat)
+                        ForEach(ChoreCategory.allCases) { cat in
+                            Text("\(cat.emoji) \(cat.label)").tag(cat.rawValue)
                         }
                     }
                     .pickerStyle(.menu)
@@ -391,7 +374,6 @@ struct AddEditChoreView: View {
                         name: name,
                         childId: childId,
                         rewardCents: rewardCents,
-                        description: nil,
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
@@ -403,7 +385,6 @@ struct AddEditChoreView: View {
                         name: name,
                         childId: childId,
                         rewardCents: rewardCents,
-                        description: nil,
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
@@ -437,8 +418,12 @@ struct IconOption: View {
                     .fill(Color.fromString(color).opacity(0.15))
                     .frame(width: 55, height: 55)
 
-                // Line-art icon (OpenMoji), tinted to the selected color
-                AdaptiveIcon(icon: iconName, fallbackSymbol: "checklist", tint: Color.fromString(color), iconSize: 30)
+                // The PICKER shows the full-color emoji: a color-tinted line
+                // glyph on a same-color tinted tile is too low-contrast to
+                // scan (yellow-on-yellow). Displayed chores still render the
+                // OpenMoji line art everywhere else.
+                Text(iconName)
+                    .font(.system(size: 28))
                 
                 if isSelected {
                     RoundedRectangle(cornerRadius: 12)
@@ -509,7 +494,7 @@ struct SmallColorOption: View {
             childId: UUID(),
             reward: 1.5,
             description: "Make your bed neatly",
-            category: "Bedroom",
+            category: "household_chores",
             icon: "bed.double",
             color: "blue",
             notes: "Fold the corners nicely",

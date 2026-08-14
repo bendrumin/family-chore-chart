@@ -302,7 +302,7 @@ struct ChoreWeekRow: View {
                         HStack(spacing: 4) {
                             Image(systemName: "tag.fill")
                                 .font(.system(size: 8))
-                            Text(category)
+                            Text(ChoreCategory.label(for: category))
                                 .font(.caption)
                         }
                         .foregroundColor(.choreStarTextSecondary)
@@ -615,7 +615,7 @@ struct DailyChoreRow: View {
                         .strikethrough(isCompleted, color: .choreStarTextSecondary)
                     
                     if let category = chore.category {
-                        Text(category)
+                        Text(ChoreCategory.label(for: category))
                             .font(.caption2)
                             .foregroundColor(.choreStarTextSecondary)
                     }
