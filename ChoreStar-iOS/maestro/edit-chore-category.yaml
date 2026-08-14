@@ -1,0 +1,47 @@
+# Repro for the reported crash: edit an existing chore, change its category,
+# save. Run: maestro test maestro/edit-chore-category.yaml
+# Assumes a throwaway test account with the chore "Water the plants" and a
+# session pre-seeded as described below.
+appId: com.chorestar.ChoreStar
+---
+# Maestro cannot pass iOS launch arguments, so the session is pre-seeded
+# before this flow runs:
+#   xcrun simctl launch <sim> com.chorestar.ChoreStar -chorestar-signin <email> <password>
+# The app persists the session; this plain launch restores it.
+- launchApp
+
+# Dismiss onboarding if it appears.
+- runFlow:
+    when:
+      visible: "Welcome to ChoreStar!"
+    commands:
+      - tapOn: "Skip"
+
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 30000
+- tapOn: "Chores"
+- assertVisible: "Water the plants"
+
+# Swipe the row left to reveal Edit.
+- swipe:
+    from:
+      text: "Water the plants"
+    direction: LEFT
+- tapOn: "Edit"
+- assertVisible: "Edit Chore"
+
+# The moment of truth: open the category menu and pick a different value.
+# The menu picker exposes only its "Category" label (index 0 is the section
+# header); tapping the row label opens the menu.
+# Tap the value/chevron side of the Category row to open the menu.
+# (Maestro text matching is whole-string regex — include the emoji.)
+- tapOn:
+    point: "76%,81%"
+- assertVisible: ".*Reading.*"
+- tapOn: "📖 Reading"
+- tapOn: "Save"
+
+# Surviving the save is the point.
+- assertVisible: "Water the plants"
+- assertVisible: "Chores"

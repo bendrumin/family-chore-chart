@@ -59,6 +59,10 @@
 		A1234567890ABCDEF12345F1 /* RoutineActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */; };
 		A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F2 /* FamilySharingView.swift */; };
 		A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F4 /* NotificationsManager.swift */; };
+		C0DEC0DE0000000000000002 /* ChoreCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000001 /* ChoreCategory.swift */; };
+		C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000003 /* OnboardingView.swift */; };
+		C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */; };
+		C0DEC0DE000000000000000A /* StarterRoutinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +152,10 @@
 		A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineActivityController.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F2 /* FamilySharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
+		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
+		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreWizardView.swift; sourceTree = "<group>"; };
+		C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterRoutinesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -257,6 +265,7 @@
 				A1234567890ABCDEF12345B1 /* Profile.swift */,
 				A1234567890ABCDEF12345E6 /* Achievements.swift */,
 				A1234567890ABCDEF12345E8 /* ChoreSuggestions.swift */,
+				C0DEC0DE0000000000000001 /* ChoreCategory.swift */,
 				A1234567890ABCDEF12345EE /* WidgetBridge.swift */,
 			);
 			path = Models;
@@ -305,6 +314,9 @@
 				A1234567890ABCDEF12345E2 /* PaywallView.swift */,
 				A1234567890ABCDEF12345E4 /* WhatsNewView.swift */,
 				A1234567890ABCDEF12345F2 /* FamilySharingView.swift */,
+				C0DEC0DE0000000000000003 /* OnboardingView.swift */,
+				C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */,
+				C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -520,6 +532,10 @@
 				A1234567890ABCDEF12345E5 /* WhatsNewView.swift in Sources */,
 				A1234567890ABCDEF12345E7 /* Achievements.swift in Sources */,
 				A1234567890ABCDEF12345E9 /* ChoreSuggestions.swift in Sources */,
+				C0DEC0DE0000000000000002 /* ChoreCategory.swift in Sources */,
+				C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */,
+				C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */,
+				C0DEC0DE000000000000000A /* StarterRoutinesView.swift in Sources */,
 				A1234567890ABCDEF12345EB /* StoreKitManager.swift in Sources */,
 				A1234567890ABCDEF12345ED /* DesignSystem.swift in Sources */,
 				A1234567890ABCDEF12345EF /* WidgetBridge.swift in Sources */,
@@ -548,6 +564,7 @@
 		9EA025DE301135A3008215CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -581,6 +598,7 @@
 		9EA025DF301135A3008215CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -614,6 +632,7 @@
 		9EB025C0301135A2008215CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -632,6 +651,7 @@
 		9EB025C0301135A2008215CB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -651,7 +671,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 4;
+				APP_BUILD = 14;
 				APP_VERSION = 1.4;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -720,7 +740,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 4;
+				APP_BUILD = 14;
 				APP_VERSION = 1.4;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -781,6 +801,7 @@
 		A1234567890ABCDEF1234589 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
@@ -816,6 +837,7 @@
 		A1234567890ABCDEF123458A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_BUILD = 14;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
