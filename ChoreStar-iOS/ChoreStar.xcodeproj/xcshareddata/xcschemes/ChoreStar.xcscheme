@@ -40,6 +40,16 @@
                ReferencedContainer = "container:ChoreStar.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7B2C1F676375AAC5BA6E3956"
+               BuildableName = "ChoreStarTests.xctest"
+               BlueprintName = "ChoreStarTests"
+               ReferencedContainer = "container:ChoreStar.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

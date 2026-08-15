@@ -15,6 +15,17 @@ extension Color {
     /// for a filled button. This one is 4.83:1.
     static let choreStarDangerStrong = Color(red: 0.863, green: 0.149, blue: 0.149) // #dc2626 (Red 600)
 
+    /// Indigo for tappable text links on app backgrounds. choreStarPrimary
+    /// (#6366f1) is 4.46:1 on white — just under WCAG AA — and ~2.2:1 on dark
+    /// backgrounds. One Tailwind step deeper than the web's indigo-600/400 so
+    /// links stay above 4.5:1 even when a colored button glow tints the
+    /// surface behind them.
+    static let choreStarLink = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.647, green: 0.706, blue: 0.988, alpha: 1) // #a5b4fc (Indigo 300)
+            : UIColor(red: 0.263, green: 0.220, blue: 0.792, alpha: 1) // #4338ca (Indigo 700)
+    })
+
     // UI colors (adapt automatically to dark mode)
     static let choreStarBackground = Color(UIColor.systemGroupedBackground)
     static let choreStarCardBackground = Color(UIColor.secondarySystemGroupedBackground)

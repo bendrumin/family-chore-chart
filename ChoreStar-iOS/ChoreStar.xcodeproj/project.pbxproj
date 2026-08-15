@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */; };
+		4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */; };
 		9EA025C9301135A2008215CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025C8301135A2008215CE /* WidgetKit.framework */; };
 		9EA025CB301135A2008215CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025CA301135A2008215CE /* SwiftUI.framework */; };
 		9EA025DC301135A3008215CE /* ChoreStarWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -63,9 +65,18 @@
 		C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000003 /* OnboardingView.swift */; };
 		C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */; };
 		C0DEC0DE000000000000000A /* StarterRoutinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */; };
+		E36B27BB0D14F23EB4E6E42A /* RewardMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01697ED45FA707F298E64E20 /* RewardMath.swift */; };
+		E9A3EA979E04544D53ACE8A0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A39725F7A81983AC08C2BD8A /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7AED91FEAC83EBFBE75A6EAE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1234567890ABCDEF123455B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1234567890ABCDEF1234562;
+			remoteInfo = ChoreStar;
+		};
 		9EA025DA301135A3008215CE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A1234567890ABCDEF123455B /* Project object */;
@@ -97,6 +108,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01697ED45FA707F298E64E20 /* RewardMath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMath.swift; sourceTree = "<group>"; };
+		21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChoreStarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarPathTests.swift; sourceTree = "<group>"; };
+		26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMathTests.swift; sourceTree = "<group>"; };
 		9E8D645C30260BE3008767EC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChoreStarWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA025C8301135A2008215CE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -152,6 +167,7 @@
 		A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineActivityController.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F2 /* FamilySharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
+		A39725F7A81983AC08C2BD8A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreWizardView.swift; sourceTree = "<group>"; };
@@ -159,7 +175,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9EA025E0301135A3008215CE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		9EA025E0301135A3008215CE /* Exceptions for "ChoreStarWidgets" folder in "ChoreStarWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -169,11 +185,40 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		9EA025CC301135A2008215CE /* ChoreStarWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (9EA025E0301135A3008215CE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ChoreStarWidgets; sourceTree = "<group>"; };
-		9EB025C0301135A2008215C2 /* ChoreStarUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ChoreStarUITests; sourceTree = "<group>"; };
+		9EA025CC301135A2008215CE /* ChoreStarWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9EA025E0301135A3008215CE /* Exceptions for "ChoreStarWidgets" folder in "ChoreStarWidgetsExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = ChoreStarWidgets;
+			sourceTree = "<group>";
+		};
+		9EB025C0301135A2008215C2 /* ChoreStarUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = ChoreStarUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		566F2D15839677B1298E12A8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9A3EA979E04544D53ACE8A0 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9EA025C3301135A2008215CE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -201,11 +246,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		777195665B227CB9778969D4 /* ChoreStarTests */ = {
+			isa = PBXGroup;
+			children = (
+				26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */,
+				264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */,
+			);
+			name = ChoreStarTests;
+			path = ChoreStarTests;
+			sourceTree = "<group>";
+		};
+		84DEA49881C681A544093B8B /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A39725F7A81983AC08C2BD8A /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		9EA025C7301135A2008215CE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				9EA025C8301135A2008215CE /* WidgetKit.framework */,
 				9EA025CA301135A2008215CE /* SwiftUI.framework */,
+				84DEA49881C681A544093B8B /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -219,6 +283,7 @@
 				9EB025C0301135A2008215C2 /* ChoreStarUITests */,
 				9EA025C7301135A2008215CE /* Frameworks */,
 				A1234567890ABCDEF1234564 /* Products */,
+				777195665B227CB9778969D4 /* ChoreStarTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -235,6 +300,7 @@
 				A1234567890ABCDEF123456A /* Assets.xcassets */,
 				A1234567890ABCDEF1234581 /* Info.plist */,
 				A1234567890ABCDEF123456C /* Preview Content */,
+				FD5C4A47D33D172A27E212BC /* Logic */,
 			);
 			path = ChoreStar;
 			sourceTree = "<group>";
@@ -245,6 +311,7 @@
 				A1234567890ABCDEF1234563 /* ChoreStar.app */,
 				9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */,
 				9EB025C0301135A2008215C1 /* ChoreStarUITests.xctest */,
+				21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -332,9 +399,36 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		FD5C4A47D33D172A27E212BC /* Logic */ = {
+			isa = PBXGroup;
+			children = (
+				01697ED45FA707F298E64E20 /* RewardMath.swift */,
+			);
+			name = Logic;
+			path = Logic;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7B2C1F676375AAC5BA6E3956 /* ChoreStarTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2B029C1AA5C31638650B6FF /* Build configuration list for PBXNativeTarget "ChoreStarTests" */;
+			buildPhases = (
+				9913F3898233A15C8F71161B /* Sources */,
+				566F2D15839677B1298E12A8 /* Frameworks */,
+				0896E74BD7AFCC1BE818690B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				68D399CB04D7AE85914C599B /* PBXTargetDependency */,
+			);
+			name = ChoreStarTests;
+			productName = ChoreStarTests;
+			productReference = 21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		9EA025C5301135A2008215CE /* ChoreStarWidgetsExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9EA025E1301135A3008215CE /* Build configuration list for PBXNativeTarget "ChoreStarWidgetsExtension" */;
@@ -351,8 +445,6 @@
 				9EA025CC301135A2008215CE /* ChoreStarWidgets */,
 			);
 			name = ChoreStarWidgetsExtension;
-			packageProductDependencies = (
-			);
 			productName = ChoreStarWidgetsExtension;
 			productReference = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -374,8 +466,6 @@
 				9EB025C0301135A2008215C2 /* ChoreStarUITests */,
 			);
 			name = ChoreStarUITests;
-			packageProductDependencies = (
-			);
 			productName = ChoreStarUITests;
 			productReference = 9EB025C0301135A2008215C1 /* ChoreStarUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -443,11 +533,19 @@
 				A1234567890ABCDEF1234562 /* ChoreStar */,
 				9EA025C5301135A2008215CE /* ChoreStarWidgetsExtension */,
 				9EB025C0301135A2008215C8 /* ChoreStarUITests */,
+				7B2C1F676375AAC5BA6E3956 /* ChoreStarTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0896E74BD7AFCC1BE818690B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9EA025C4301135A2008215CE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -475,6 +573,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9913F3898233A15C8F71161B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */,
+				4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9EA025C2301135A2008215CE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -542,12 +649,19 @@
 				A1234567890ABCDEF12345F1 /* RoutineActivityController.swift in Sources */,
 				A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */,
 				A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */,
+				E36B27BB0D14F23EB4E6E42A /* RewardMath.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		68D399CB04D7AE85914C599B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ChoreStar;
+			target = A1234567890ABCDEF1234562 /* ChoreStar */;
+			targetProxy = 7AED91FEAC83EBFBE75A6EAE /* PBXContainerItemProxy */;
+		};
 		9EA025DB301135A3008215CE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9EA025C5301135A2008215CE /* ChoreStarWidgetsExtension */;
@@ -561,10 +675,45 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		33E21286CBD06BCB2AFB584C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStarTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChoreStar.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChoreStar";
+			};
+			name = Debug;
+		};
+		72999D92244D4DC26C1AC148 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chorestar.ChoreStarTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChoreStar.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChoreStar";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		9EA025DE301135A3008215CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -598,7 +747,7 @@
 		9EA025DF301135A3008215CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -632,7 +781,7 @@
 		9EB025C0301135A2008215CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -651,7 +800,7 @@
 		9EB025C0301135A2008215CB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -671,7 +820,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				APP_VERSION = 1.4;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -740,7 +889,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				APP_VERSION = 1.4;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -801,7 +950,7 @@
 		A1234567890ABCDEF1234589 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
@@ -837,7 +986,7 @@
 		A1234567890ABCDEF123458A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 15;
+				APP_BUILD = 16;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
@@ -905,6 +1054,15 @@
 			buildConfigurations = (
 				A1234567890ABCDEF1234589 /* Debug */,
 				A1234567890ABCDEF123458A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2B029C1AA5C31638650B6FF /* Build configuration list for PBXNativeTarget "ChoreStarTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72999D92244D4DC26C1AC148 /* Release */,
+				33E21286CBD06BCB2AFB584C /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

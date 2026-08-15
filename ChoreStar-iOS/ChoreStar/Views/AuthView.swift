@@ -19,6 +19,10 @@ struct AuthView: View {
     @State private var successMessage: String?
     @State private var showingKidLogin = false
 
+    /// Fixed-size fonts don't respond to Dynamic Type; scaling the hero title
+    /// relative to .largeTitle keeps the lockup while honoring the user's size.
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 42
+
     var body: some View {
         ZStack {
             themeManager.gradient
@@ -61,13 +65,18 @@ struct AuthView: View {
                         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                     
                     Text("ChoreStar")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .font(.system(size: titleSize, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                    
+
+                    // Headline-bold qualifies as large text (3:1 contrast bar);
+                    // subheadline at 90% white failed the audit on the lighter
+                    // seasonal gradients.
                     Text("Make chores fun!")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.35), radius: 2, x: 0, y: 1)
                 }
                 .padding(.bottom, 20)
                 
@@ -97,6 +106,7 @@ struct AuthView: View {
         Button(action: { showingKidLogin = true }) {
             HStack(spacing: 8) {
                 Text("🧒")
+                    .accessibilityHidden(true)
                 Text("I'm a Kid!")
                     .fontWeight(.bold)
             }
@@ -104,7 +114,9 @@ struct AuthView: View {
             .foregroundColor(.white)
             .padding(.horizontal, 28)
             .padding(.vertical, 14)
-            .background(.white.opacity(0.2))
+            // Dark glass instead of white glass: white text over a white tint
+            // on the lighter seasonal gradients failed the contrast audit.
+            .background(.black.opacity(0.22))
             .cornerRadius(24)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
@@ -134,7 +146,7 @@ struct AuthView: View {
                     Text("Email")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.choreStarTextSecondary)
+                        .foregroundColor(.choreStarTextPrimary)
                     
                     TextField("you@example.com", text: $email)
                         .textContentType(.emailAddress)
@@ -154,7 +166,7 @@ struct AuthView: View {
                     Text("Password")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(.choreStarTextSecondary)
+                        .foregroundColor(.choreStarTextPrimary)
 
                     SecureField("Enter your password", text: $password)
                         .accessibilityIdentifier("auth.passwordField")
@@ -173,7 +185,7 @@ struct AuthView: View {
                         Text("Confirm Password")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(.choreStarTextSecondary)
+                            .foregroundColor(.choreStarTextPrimary)
                         
                         SecureField("Confirm your password", text: $confirmPassword)
                             .accessibilityIdentifier("auth.confirmPasswordField")
@@ -219,7 +231,7 @@ struct AuthView: View {
                             Text("Family Name")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.choreStarTextSecondary)
+                                .foregroundColor(.choreStarTextPrimary)
                             Text("(optional)")
                                 .font(.caption)
                                 .foregroundColor(.choreStarTextSecondary.opacity(0.7))
@@ -272,7 +284,9 @@ struct AuthView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(themeManager.gradient)
+                // The darkening overlay keeps white text readable on the
+                // lighter seasonal gradients (summer coral failed the audit).
+                .background(themeManager.gradient.overlay(Color.black.opacity(0.15)))
                 .foregroundColor(.white)
                 .cornerRadius(12)
                 .shadow(color: themeManager.accentColor.opacity(0.4), radius: 12, x: 0, y: 4)
@@ -285,8 +299,16 @@ struct AuthView: View {
                 Button(action: { authMode = .forgotPassword }) {
                     Text("Forgot Password?")
                         .font(.subheadline)
-                        .foregroundColor(themeManager.accentColor)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.choreStarLink)
+                        // A bare text row is ~20pt tall; pad to the 44pt
+                        // minimum hit target.
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
+                // Out from under the submit button's glow, which tints the
+                // card behind the link enough to sink its contrast.
+                .padding(.top, 8)
             }
         }
     }

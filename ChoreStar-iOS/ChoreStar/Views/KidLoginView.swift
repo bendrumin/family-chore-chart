@@ -12,6 +12,10 @@ struct KidLoginView: View {
     @State private var isVerifying = false
     @State private var step: Step
 
+    /// Fixed-size fonts don't respond to Dynamic Type; scale the title
+    /// relative to .largeTitle so it honors the user's text size.
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 36
+
     private enum Step {
         case familyCode
         case pin
@@ -67,7 +71,8 @@ struct KidLoginView: View {
                             Text("Back to Parent Login")
                         }
                         .font(.subheadline)
-                        .foregroundColor(.choreStarPrimary)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.choreStarLink)
                         .padding()
                     }
                 }
@@ -82,16 +87,19 @@ struct KidLoginView: View {
         VStack(spacing: 12) {
             Text("⭐")
                 .font(.system(size: 64))
+                .accessibilityHidden(true)
 
             Text("Kid Login")
-                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .font(.system(size: titleSize, weight: .bold, design: .rounded))
                 .foregroundColor(.choreStarTextPrimary)
 
+            // Primary label here: secondaryLabel sits on the tinted gradient
+            // backdrop, not a card, and lands just under the contrast bar.
             Text(step == .familyCode
                  ? "Ask a parent for your family code"
                  : "Enter your secret PIN")
                 .font(.headline)
-                .foregroundColor(.choreStarTextSecondary)
+                .foregroundColor(.choreStarTextPrimary)
         }
     }
 
@@ -148,13 +156,17 @@ struct KidLoginView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "house.fill")
                         .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                    // Primary label: secondaryLabel on the grouped-background
+                    // pill lands just under the contrast bar.
                     Text(familyCode)
                         .font(.system(.subheadline, design: .monospaced))
                         .fontWeight(.bold)
+                        .foregroundColor(.choreStarTextPrimary)
                     Image(systemName: "pencil")
                         .font(.caption2)
+                        .foregroundColor(.choreStarTextSecondary)
                 }
-                .foregroundColor(.choreStarTextSecondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(Color.choreStarBackground)

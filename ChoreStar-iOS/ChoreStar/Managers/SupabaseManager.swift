@@ -1852,31 +1852,26 @@ class SupabaseManager: ObservableObject {
         return allCompleted
     }
     
-    // Calculate earnings for a child for a specific day
+    // Calculate earnings for a child for a specific day.
+    // The math itself lives in RewardMath so it's unit-testable.
     func calculateDayEarnings(for childId: UUID, dayOfWeek: Int) -> Double {
         let childChores = chores.filter { $0.childId == childId }
-        guard !childChores.isEmpty else { return 0.0 }
-        
-        if familySettings?.isPerChoreMode == true {
-            // Per-chore mode: sum reward_cents for each completed chore
-            let completedChores = childChores.filter { isChoreCompleted($0, forDay: dayOfWeek) }
-            let totalCents = completedChores.reduce(0) { $0 + Int(round($1.reward * 100)) }
-            return Double(totalCents) / 100.0
-        } else {
-            // Daily mode: flat daily reward when ALL chores are completed
-            if isPerfectDay(for: childId, dayOfWeek: dayOfWeek) {
-                let dailyRewardCents = familySettings?.dailyRewardCents ?? 7
-                return Double(dailyRewardCents) / 100.0
-            }
-            return 0.0
-        }
+        let completedRewards = childChores
+            .filter { isChoreCompleted($0, forDay: dayOfWeek) }
+            .map(\.reward)
+        let cents = RewardMath.dayEarningsCents(
+            completedRewards: completedRewards,
+            totalChoreCount: childChores.count,
+            isPerChoreMode: familySettings?.isPerChoreMode == true,
+            dailyRewardCents: familySettings?.dailyRewardCents
+        )
+        return Double(cents) / 100.0
     }
-    
+
     // Calculate earnings for a child based on today's completions
     // Money is only earned when ALL chores for the day are completed
     func calculateTodayEarnings(for childId: UUID) -> Double {
-        let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
-        return calculateDayEarnings(for: childId, dayOfWeek: currentDay)
+        return calculateDayEarnings(for: childId, dayOfWeek: RewardMath.dayIndex(of: Date()))
     }
     
     // MARK: - Family Settings
