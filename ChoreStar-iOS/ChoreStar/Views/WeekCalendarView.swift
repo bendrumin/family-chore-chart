@@ -92,7 +92,9 @@ struct WeekCalendarView: View {
                         HStack(spacing: 16) {
                             VStack(spacing: 4) {
                                 Text("\(weekCompletionStats.perfectDays)")
-                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
                                     .foregroundStyle(Color.choreStarGradient)
                                 Image(systemName: "star.fill")
                                     .font(.caption)
@@ -107,8 +109,13 @@ struct WeekCalendarView: View {
                                 .frame(height: 60)
                             
                             VStack(spacing: 4) {
+                                // Amounts like "$12.50" overflow the narrow
+                                // column at a fixed 36pt and wrapped to two
+                                // lines; scale down instead of wrapping.
                                 Text(manager.formatMoney(weekCompletionStats.earnings))
-                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
                                     .foregroundStyle(Color.choreStarWarningGradient)
                                 Image(systemName: "dollarsign.circle.fill")
                                     .font(.caption)
@@ -124,7 +131,9 @@ struct WeekCalendarView: View {
                             
                             VStack(spacing: 4) {
                                 Text("\(weekCompletionStats.percentage)%")
-                                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
                                     .foregroundStyle(Color.choreStarSuccessGradient)
                                 Image(systemName: "chart.bar.fill")
                                     .font(.caption)
