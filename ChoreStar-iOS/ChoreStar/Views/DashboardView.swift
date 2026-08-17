@@ -1,8 +1,10 @@
 import SwiftUI
+import StoreKit
 
 struct DashboardView: View {
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.requestReview) private var requestReview
     @State private var showConfetti = false
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
@@ -282,6 +284,14 @@ struct DashboardView: View {
                 PerfectDayOverlay {
                     withAnimation(.easeOut(duration: 0.3)) {
                         showPerfectDay = false
+                    }
+                    // Happiest parent-side moment in the app — the only place
+                    // we ever ask for a rating (never in kid mode). The gate
+                    // in ReviewPrompter keeps it to engaged families, rarely.
+                    if ReviewPrompter.recordPerfectDayAndCheck() {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            requestReview()
+                        }
                     }
                 }
             }

@@ -15,6 +15,7 @@ struct ChoreStarApp: App {
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault),
         ])
+        ReviewPrompter.recordLaunch()
     }
 
     var body: some Scene {
