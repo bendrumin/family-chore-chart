@@ -564,10 +564,67 @@ export default async function HomePage() {
                 celebrations — built for families who live on their phones.
               </p>
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-6">
-                Now live on the App Store — free to download.
+                Now live on the App Store — free to download. Same family account as the
+                web app, synced instantly: set up chores on your laptop, kids check them
+                off on the iPad.
               </p>
               <AppStoreBadge />
             </div>
+          </div>
+        </div>
+
+        {/* Comparison vs. typical App Store chore apps */}
+        <div id="compare" className="max-w-4xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+            Dozens of Chore Apps. Here&apos;s the Difference.
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Search &ldquo;chore app&rdquo; on the App Store and you&apos;ll find pages of them.
+            Most are a phone-only checklist with a surprise paywall. ChoreStar was built
+            differently.
+          </p>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-x-auto">
+            <table className="w-full min-w-[36rem] text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-semibold"></th>
+                  <th className="text-left p-4 text-indigo-600 dark:text-indigo-400 font-bold">ChoreStar</th>
+                  <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-semibold">Typical chore app</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-700 dark:text-gray-300">
+                <tr className="border-b border-gray-100 dark:border-gray-700/60">
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">Where it works</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Full web app + native iPhone &amp; iPad app — one account, synced instantly</td>
+                  <td className="p-4">Phone-only. No web version for the family computer.</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700/60">
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">How kids log in</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Family code + secret PIN — no email, no account, works on any device</td>
+                  <td className="p-4">A profile inside the parent&apos;s app, on the parent&apos;s phone.</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700/60">
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">Routines</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Step-by-step morning &amp; bedtime routines with timers and confetti</td>
+                  <td className="p-4">A repeating to-do list, at best.</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700/60">
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">Allowance</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Transparent earnings you pay out your way — no bank linking, no kid debit card</td>
+                  <td className="p-4">Points with no money meaning, or a full fintech signup.</td>
+                </tr>
+                <tr className="border-b border-gray-100 dark:border-gray-700/60">
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">Privacy</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ No ads, no third-party trackers — kids never enter personal info</td>
+                  <td className="p-4">&ldquo;Free&rdquo; apps supported by ads and data.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-gray-900 dark:text-white">Pricing</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ A free plan that stays free — 3 kids, 20 chores, routines &amp; badges included</td>
+                  <td className="p-4">Free to download, paywall by day two.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
