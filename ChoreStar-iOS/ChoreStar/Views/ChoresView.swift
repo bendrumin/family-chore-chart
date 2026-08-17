@@ -28,10 +28,14 @@ struct ChoresView: View {
     @State private var editingChore: Chore?
     @State private var selectedTab: ChoresTab = ChoresView.initialSegment()
     @State private var searchText = ""
+    // Week segment: which child's week is showing. Falls back to the first
+    // child, so it self-heals if the selected child is deleted.
+    @State private var selectedWeekChildId: UUID?
 
     enum ChoresTab: String, CaseIterable {
         case chores = "Chores"
         case routines = "Routines"
+        case week = "Week"
     }
 
     /// DEBUG-only: `-chorestar-tab routines` opens the Routines segment for
@@ -39,6 +43,7 @@ struct ChoresView: View {
     static func initialSegment() -> ChoresTab {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("routines") { return .routines }
+        if ProcessInfo.processInfo.arguments.contains("week") { return .week }
         #endif
         return .chores
     }
@@ -47,6 +52,86 @@ struct ChoresView: View {
         case all = "All"
         case pending = "Pending"
         case completed = "Completed"
+    }
+
+    private var navigationTitle: String {
+        switch selectedTab {
+        case .chores: return "Chores"
+        case .routines: return "Routines"
+        case .week: return "This Week"
+        }
+    }
+
+    // MARK: - Week segment
+
+    private var weekChild: Child? {
+        manager.children.first(where: { $0.id == selectedWeekChildId }) ?? manager.children.first
+    }
+
+    private var weekContent: some View {
+        VStack(spacing: 0) {
+            if let child = weekChild {
+                if manager.children.count > 1 {
+                    childSwitcher(selected: child)
+                }
+                WeekCalendarView(child: child)
+                    // Fresh view state (mode picker, celebrations) per child
+                    .id(child.id)
+            } else {
+                weekEmptyState
+            }
+        }
+    }
+
+    private func childSwitcher(selected: Child) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(manager.children) { child in
+                    let isSelected = child.id == selected.id
+                    Button {
+                        selectedWeekChildId = child.id
+                    } label: {
+                        Text(child.name)
+                            .font(.subheadline)
+                            .fontWeight(isSelected ? .bold : .semibold)
+                            .foregroundColor(isSelected ? .choreStarLink : .choreStarTextPrimary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(isSelected ? Color.choreStarLink.opacity(0.15) : Color.choreStarCardBackground)
+                            )
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(isSelected ? Color.choreStarLink : Color.choreStarTextSecondary.opacity(0.2), lineWidth: 1.5)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 4)
+        }
+    }
+
+    private var weekEmptyState: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Image(systemName: "calendar.badge.exclamationmark")
+                .font(.system(size: 48))
+                .foregroundColor(.choreStarTextSecondary)
+            Text("No children yet")
+                .font(.headline)
+                .foregroundColor(.choreStarTextPrimary)
+            Text("Add your first child on the Family tab to see their week here.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var filteredChores: [Chore] {
@@ -82,18 +167,21 @@ struct ChoresView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
                 
-                if selectedTab == .chores {
+                switch selectedTab {
+                case .chores:
                     choresContent
                         .searchable(text: $searchText, prompt: "Search chores")
-                } else {
+                case .routines:
                     RoutinesListView()
+                case .week:
+                    weekContent
                 }
             }
             .background(ThemedScreenBackground())
             .refreshable {
                 manager.refreshData()
             }
-            .navigationTitle(selectedTab == .chores ? "Chores" : "Routines")
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if selectedTab == .chores {

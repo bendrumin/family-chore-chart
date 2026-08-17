@@ -299,7 +299,7 @@ struct MainTabs: View {
         if let idx = args.firstIndex(of: "-chorestar-tab"), idx + 1 < args.count {
             switch args[idx + 1] {
             case "family": return 1
-            case "chores", "routines": return 2
+            case "chores", "routines", "week": return 2
             case "stats": return 3
             case "settings": return 4
             default: return 0
