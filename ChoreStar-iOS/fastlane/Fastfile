@@ -16,6 +16,7 @@ default_platform(:ios)
 # so only sort order matters in the filename — hence the 01-, 02- prefixes.
 SCREENSHOT_SOURCES = {
   "iphone-6.9-1320x2868" => "6.9-inch iPhone (required)",
+  "ipad-13" => "13-inch iPad",
 }.freeze
 
 LOCALE = "en-US"
@@ -113,11 +114,6 @@ platform :ios do
 
     UI.user_error!("No screenshots staged — nothing to upload.") if staged.zero?
     UI.success("#{staged} screenshots staged in fastlane/screenshots/#{LOCALE}/")
-    UI.important(
-      "iPad screenshots are NOT staged: the set in appstore-screenshots/ipad-13 " \
-      "is from the 1.3 design and would look inconsistent next to these. " \
-      "Recapture it before any run with overwrite:true."
-    )
   end
 
   desc "Scan the metadata for common App Store rejection reasons before submitting."
