@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     'per chore reward',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-03-28',
     images: ['/og-image.png'],
     title: 'Teaching Kids About Money With a Chore Reward System',
     description: 'How to set up allowance tracking that teaches financial responsibility.',
@@ -36,6 +38,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Teaching Kids About Money With a Chore Reward System',
+  image: 'https://chorestar.app/og-image.png',
   description: 'How to set up allowance tracking that teaches financial responsibility.',
   url: 'https://chorestar.app/blog/chore-reward-system-kids-money',
   datePublished: '2026-03-28',

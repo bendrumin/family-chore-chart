@@ -19,6 +19,8 @@ export const metadata: Metadata = {
     'summer screen time rules',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-06-08',
     images: ['/og-image.png'],
     title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
     description:
@@ -39,6 +41,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
+  image: 'https://chorestar.app/og-image.png',
   description:
     'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores.',
   url: 'https://chorestar.app/blog/schools-out-summer-plan',

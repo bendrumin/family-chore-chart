@@ -27,6 +27,7 @@ export function getSitemapEntries(): SitemapEntry[] {
     { path: '/compare', lastModified: fresh, changeFrequency: 'monthly', priority: '0.8' },
     { path: '/partners', lastModified: '2026-05-16', changeFrequency: 'monthly', priority: '0.6' },
     { path: '/privacy', lastModified: '2026-03-28', changeFrequency: 'yearly', priority: '0.3' },
+    { path: '/terms', lastModified: '2026-07-31', changeFrequency: 'yearly', priority: '0.3' },
   ]
 
   const blogRoutes: SitemapEntry[] = BLOG_POSTS.map((post) => ({

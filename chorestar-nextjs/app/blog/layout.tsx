@@ -3,7 +3,9 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: {
     template: '%s | ChoreStar Blog',
-    default: 'Blog | ChoreStar',
+    // The root layout's '%s | ChoreStar' template wraps this — a full
+    // 'Blog | ChoreStar' here would render 'Blog | ChoreStar | ChoreStar'.
+    default: 'Blog',
   },
   description: 'Practical tips for parents on chore charts, morning routines, allowance systems, and raising responsible kids.',
   keywords: [

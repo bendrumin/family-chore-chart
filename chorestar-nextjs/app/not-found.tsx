@@ -1,4 +1,13 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+// Without this the 404 inherits the homepage title, the root canonical, and
+// `index, follow` — alongside Next's own auto-noindex, a contradiction.
+export const metadata: Metadata = {
+  title: 'Page Not Found',
+  robots: { index: false, follow: false },
+  alternates: { canonical: null },
+};
 
 export default function NotFound() {
   return (

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
@@ -9,6 +10,12 @@ import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@
 
 const SITE_URL = 'https://chorestar.app'
 
+// The homepage canonical lives here, not in the root layout, so that auth
+// flows, kid mode, and the 404 don't inherit a canonical claiming to be `/`.
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+}
+
 const FAQS = [
   {
     q: 'Does my child need their own account or email?',
@@ -16,7 +23,7 @@ const FAQS = [
   },
   {
     q: 'What devices does ChoreStar work on?',
-    a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. A native iPhone app is also in the works for an even smoother experience.',
+    a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. There\'s also a native iPhone and iPad app on the App Store, synced to the same family account.',
   },
   {
     q: 'Can I add chores that repeat daily or weekly?',
@@ -42,7 +49,7 @@ const organizationLd = {
   name: 'ChoreStar',
   url: SITE_URL,
   logo: `${SITE_URL}/icon-512.png`,
-  sameAs: ['https://twitter.com/chorestar'],
+  sameAs: ['https://twitter.com/chorestar', APP_STORE_URL],
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'hi@chorestar.app',
@@ -62,7 +69,8 @@ const softwareApplicationLd = {
   '@type': 'SoftwareApplication',
   name: 'ChoreStar',
   applicationCategory: 'LifestyleApplication',
-  operatingSystem: 'Web',
+  operatingSystem: 'Web, iOS',
+  installUrl: APP_STORE_URL,
   url: SITE_URL,
   description: 'Free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility.',
   offers: [

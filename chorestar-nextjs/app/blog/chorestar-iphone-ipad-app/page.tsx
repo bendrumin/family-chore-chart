@@ -20,6 +20,8 @@ export const metadata: Metadata = {
     'chore app with web version',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-08-17',
     images: ['/og-image.png'],
     title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
     description:
@@ -41,6 +43,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
+  image: 'https://chorestar.app/og-image.png',
   description:
     'ChoreStar is now on the App Store — PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
   url: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',

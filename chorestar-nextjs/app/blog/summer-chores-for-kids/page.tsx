@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     'kids chores no school',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-06-07',
     images: ['/og-image.png'],
     title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
     description: 'Keep summer fun and productive with age-appropriate outdoor chores kids can actually finish.',
@@ -37,6 +39,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
+  image: 'https://chorestar.app/og-image.png',
   description: 'A practical summer chore list for kids — watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
   url: 'https://chorestar.app/blog/summer-chores-for-kids',
   datePublished: '2026-06-07',

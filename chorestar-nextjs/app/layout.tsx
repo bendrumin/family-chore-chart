@@ -22,6 +22,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chorestar.app'),
+  // Safari's native Smart App Banner — links iOS visitors to the App Store listing.
+  itunes: { appId: '6761279049' },
   title: {
     default: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
     template: '%s | ChoreStar',
@@ -89,15 +91,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon.ico', sizes: '16x16' },
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
   manifest: '/manifest.json',
-  alternates: {
-    canonical: 'https://chorestar.app/',
-  },
+  // No `alternates` here on purpose: a root canonical is inherited by every
+  // route that doesn't override it (404, auth flows, kid mode), making them
+  // all claim to canonically be the homepage. The homepage sets its own.
   category: 'Family & Parenting',
 }
 

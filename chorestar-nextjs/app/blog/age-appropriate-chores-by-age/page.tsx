@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     'chores for teenagers',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-03-28',
     images: ['/og-image.png'],
     title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
     description: 'A practical guide to matching chores with your child\'s age — 85+ chore ideas organized by category.',
@@ -37,6 +39,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
+  image: 'https://chorestar.app/og-image.png',
   description: 'A practical guide to matching chores with your child\'s age — from simple self-care at 3 to full household responsibilities at 15.',
   url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',
   datePublished: '2026-03-28',

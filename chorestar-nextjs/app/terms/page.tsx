@@ -9,11 +9,13 @@ export const metadata: Metadata = {
     title: 'Terms of Use | ChoreStar',
     description: 'The terms that govern your use of ChoreStar, including subscription and auto-renewal terms.',
     url: 'https://chorestar.app/terms',
+    images: ['/og-image.png'],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Terms of Use | ChoreStar',
     description: 'The terms that govern your use of ChoreStar, including subscription and auto-renewal terms.',
+    images: ['/og-image.png'],
   },
   alternates: {
     canonical: 'https://chorestar.app/terms',

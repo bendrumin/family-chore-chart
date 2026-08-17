@@ -245,10 +245,9 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 - **Analytics charts** (Recharts) — weekly completion trend line + per-child bar chart on the Insights tab
 - **Printable weekly templates** (jsPDF) — themed PDFs (Stars/Rainbow/Minimal) on the Downloads tab
 - **How-to guides** — timeline-style tutorials on `/how-to`
-- **TestFlight waitlist** — email signup stored in `testflight_waitlist`, admin notified via Resend
 
 ## Known Gotchas
 
-- The `testflight_waitlist` table is **not** in the auto-generated Supabase types (`database.types.ts`). The API route casts the client with `as any`. If you regenerate types, this table will still be absent unless you add it manually or run `npx supabase gen types` against the live database.
+- The `testflight_waitlist` table is **not** in the auto-generated Supabase types (`database.types.ts`). The signup route was removed after the iOS launch, but the table still exists and holds emails — the account-delete purge casts the client with `as any` to reach it. If you regenerate types, this table will still be absent unless you add it manually or run `npx supabase gen types` against the live database.
 - Kid-mode pages (`/kid/*`, `/kid-login/*`) intentionally use light-only `bg-white` buttons on gradient backgrounds — this is by design, not a dark mode gap.
 - `@supabase/ssr` must stay compatible with `@supabase/supabase-js`. Version 0.9.0 pairs with 2.97.0. Mismatched versions cause cascading `never` type errors across every Supabase query.

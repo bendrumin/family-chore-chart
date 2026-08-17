@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     'children morning schedule',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-03-28',
     images: ['/og-image.png'],
     title: 'How to Build a Morning Routine for Kids That Actually Sticks',
     description: 'A step-by-step guide to creating morning routines kids follow independently.',
@@ -36,6 +38,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: 'How to Build a Morning Routine for Kids That Actually Sticks',
+  image: 'https://chorestar.app/og-image.png',
   description: 'A step-by-step guide to creating morning routines kids follow independently — with timers, progress tracking, and celebrations built in.',
   url: 'https://chorestar.app/blog/morning-routine-for-kids',
   datePublished: '2026-03-28',

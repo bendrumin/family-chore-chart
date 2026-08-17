@@ -9,11 +9,13 @@ export const metadata: Metadata = {
     title: 'Privacy Policy | ChoreStar',
     description: 'Learn how ChoreStar collects, uses, and protects your family\'s data. We never sell your data or run ads.',
     url: 'https://chorestar.app/privacy',
+    images: ['/og-image.png'],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Privacy Policy | ChoreStar',
     description: 'Learn how ChoreStar collects, uses, and protects your family\'s data.',
+    images: ['/og-image.png'],
   },
   alternates: {
     canonical: 'https://chorestar.app/privacy',

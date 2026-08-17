@@ -19,6 +19,7 @@ Live at: https://chorestar.app
 ## Tech Stack
 
 - **Web App**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Supabase (PostgreSQL + Auth + RLS), Stripe, TanStack Query, Framer Motion
+- **iOS App**: Native SwiftUI app for iPhone and iPad, same family account as the web — https://apps.apple.com/app/id6761279049
 - **Database**: Supabase PostgreSQL with Row-Level Security on all tables
 - **Payments**: Stripe (monthly and annual plans + webhooks)
 - **Deployment**: Vercel
@@ -28,15 +29,18 @@ Live at: https://chorestar.app
 - [Home](https://chorestar.app) — Marketing homepage with feature overview and mobile-friendly web app positioning
 - [How-To Guides](https://chorestar.app/how-to) — Step-by-step tutorials for parents
 - [Blog](https://chorestar.app/blog) — Parenting tips and chore strategies
+- [Compare](https://chorestar.app/compare) — How ChoreStar compares to other chore and allowance apps
+- [Support](https://chorestar.app/support) — Help center with FAQs and contact options
 - [Partners](https://chorestar.app/partners) — Partnership information
 - [Privacy Policy](https://chorestar.app/privacy) — Data handling and privacy practices
+- [Terms of Use](https://chorestar.app/terms) — Terms, subscription, and billing policies
 
 ## Key Differentiators
 
 1. **Kid login without email** — Kids use a family code + PIN, not email accounts
 2. **Step-by-step routines** — Not just a checklist, but a guided workflow with timers and celebrations
 3. **Gamification** — Points, badges, confetti, and sound effects make chores feel like a game
-4. **No app download needed** — Works in the browser on phones, tablets, and computers
+4. **Works everywhere** — In the browser on phones, tablets, and computers, plus a native iPhone/iPad app on the App Store
 
 ## Contact
 

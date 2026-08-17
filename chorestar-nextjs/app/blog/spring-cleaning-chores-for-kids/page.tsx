@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     'family spring cleanup',
   ],
   openGraph: {
+    type: 'article',
+    publishedTime: '2026-05-02',
     images: ['/og-image.png'],
     title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
     description: 'Turn spring cleanup into kid-friendly chores with yard work, litter pickup, gardening, and Earth Day tasks families can actually keep up with.',
@@ -37,6 +39,7 @@ const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
+  image: 'https://chorestar.app/og-image.png',
   description: 'A practical spring cleaning chore list for kids, including age-appropriate yard work, dog poop cleanup, litter pickup, gardening, and Earth Day family cleanup ideas.',
   url: 'https://chorestar.app/blog/spring-cleaning-chores-for-kids',
   datePublished: '2026-05-02',

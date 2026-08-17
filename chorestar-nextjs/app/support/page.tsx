@@ -11,6 +11,13 @@ export const metadata: Metadata = {
     title: 'Support & Help | ChoreStar',
     description: 'Get help with ChoreStar — contact support, how-to guides, and answers to common questions.',
     url: 'https://chorestar.app/support',
+    images: ['/og-image.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Support & Help | ChoreStar',
+    description: 'Get help with ChoreStar — contact support, how-to guides, and answers to common questions.',
+    images: ['/og-image.png'],
   },
   alternates: { canonical: 'https://chorestar.app/support' },
 }
@@ -45,6 +52,20 @@ const FAQS = [
 export default function SupportPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQS.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a },
+            })),
+          }),
+        }}
+      />
       <SiteNav />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
