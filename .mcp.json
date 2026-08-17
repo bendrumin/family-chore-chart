@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "appscreen": {
+      "command": "npx",
+      "args": ["-y", "@appsolves/appscreen-mcp"],
+      "env": {
+        "APPSCREEN_URL": "https://appsolves.github.io/appscreen-mcp/"
+      }
+    }
+  }
+}

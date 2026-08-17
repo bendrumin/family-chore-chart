@@ -45,6 +45,13 @@ struct AuthView: View {
         }
         .onAppear {
             loadSavedEmail()
+            #if DEBUG
+            // Screenshot tooling: `-chorestar-kidlogin` opens the kid login
+            // sheet without tap simulation (same pattern as -chorestar-tab).
+            if ProcessInfo.processInfo.arguments.contains("-chorestar-kidlogin") {
+                showingKidLogin = true
+            }
+            #endif
         }
     }
 
