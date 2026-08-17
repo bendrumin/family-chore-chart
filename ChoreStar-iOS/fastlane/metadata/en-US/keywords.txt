@@ -1,1 +1,1 @@
-tracker,task,responsibility,behavior,habit,family,parenting,bedtime,toddler,teen,checklist,money,job
+kids,tracker,task,habit,bedtime,morning,toddler,teen,checklist,money,schedule,star,visual,parenting
