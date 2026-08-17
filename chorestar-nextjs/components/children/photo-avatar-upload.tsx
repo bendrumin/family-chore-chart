@@ -77,8 +77,15 @@ async function prepareAvatarJpeg(file: File): Promise<Blob | null> {
 export function PhotoAvatarUpload({ child, onChanged }: PhotoAvatarUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState<'upload' | 'remove' | null>(null)
-  const { imageUrl } = useChildAvatar(child)
-  const hasPhoto = Boolean(child.avatar_photo_path)
+  // The modal holds `child` frozen from when it opened, and uploading must NOT
+  // close the modal — so the row's new path is tracked locally to keep the
+  // preview live until the parent list refetches.
+  const [pathOverride, setPathOverride] = useState<string | null | undefined>(undefined)
+  const currentPath = pathOverride === undefined ? (child.avatar_photo_path ?? null) : pathOverride
+  const { imageUrl } = useChildAvatar(
+    pathOverride === undefined ? child : { ...child, avatar_photo_path: pathOverride }
+  )
+  const hasPhoto = Boolean(currentPath)
 
   const handleFile = async (file: File) => {
     setBusy('upload')
@@ -107,10 +114,11 @@ export function PhotoAvatarUpload({ child, onChanged }: PhotoAvatarUploadProps) 
 
       // Old object last: removing it first would leave the child with no
       // avatar at all if the upload failed. Best-effort.
-      if (child.avatar_photo_path && child.avatar_photo_path !== path) {
-        void supabase.storage.from(CHILD_AVATAR_BUCKET).remove([child.avatar_photo_path])
+      if (currentPath && currentPath !== path) {
+        void supabase.storage.from(CHILD_AVATAR_BUCKET).remove([currentPath])
       }
 
+      setPathOverride(path)
       toast.success(`📸 New photo for ${child.name}!`)
       onChanged()
     } catch (error) {
@@ -122,7 +130,7 @@ export function PhotoAvatarUpload({ child, onChanged }: PhotoAvatarUploadProps) 
   }
 
   const handleRemove = async () => {
-    if (!child.avatar_photo_path) return
+    if (!currentPath) return
     setBusy('remove')
     try {
       const supabase = createClient()
@@ -131,7 +139,8 @@ export function PhotoAvatarUpload({ child, onChanged }: PhotoAvatarUploadProps) 
         .update({ avatar_photo_path: null })
         .eq('id', child.id)
       if (error) throw error
-      void supabase.storage.from(CHILD_AVATAR_BUCKET).remove([child.avatar_photo_path])
+      void supabase.storage.from(CHILD_AVATAR_BUCKET).remove([currentPath])
+      setPathOverride(null)
       toast.success('Photo removed')
       onChanged()
     } catch (error) {

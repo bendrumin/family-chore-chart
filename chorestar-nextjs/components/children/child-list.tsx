@@ -155,6 +155,7 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
             setEditingChild(null)
             onRefresh()
           }}
+          onRefresh={onRefresh}
         />
       )}
     </>

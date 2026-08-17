@@ -22,9 +22,11 @@ interface EditChildModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
+  /** Refetch the children list WITHOUT closing the modal (photo changes). */
+  onRefresh: () => void
 }
 
-export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChildModalProps) {
+export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh }: EditChildModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -251,10 +253,10 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess }: EditChi
                 <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Avatar & Appearance</h4>
               </div>
 
-              {/* Photo upload — web capture parity with iOS. onChanged closes over
-                  onSuccess so the parent list refetches and shows the new photo. */}
+              {/* Photo upload — web capture parity with iOS. onChanged must NOT
+                  close the modal (onSuccess would), only refetch the list. */}
               <div className="mb-4">
-                <PhotoAvatarUpload child={child} onChanged={onSuccess} />
+                <PhotoAvatarUpload child={child} onChanged={onRefresh} />
               </div>
 
               <AvatarPicker

@@ -41,7 +41,9 @@ test.describe('Add & Edit Chore (recording flow)', () => {
     await page.waitForTimeout(400);
 
     // Set reward amount if visible
-    const rewardInput = page.getByLabel(/reward/i);
+    // The reward field has +/- stepper buttons whose aria-labels also mention
+    // "reward" — target the textbox role so strict mode resolves to one element.
+    const rewardInput = page.getByRole('textbox', { name: /reward/i });
     if (await rewardInput.isVisible()) {
       await rewardInput.clear();
       await rewardInput.fill('2.00');

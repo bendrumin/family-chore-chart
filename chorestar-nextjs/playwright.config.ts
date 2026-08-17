@@ -72,6 +72,12 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'photo-avatar',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /photo-avatar\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    {
       name: 'family-settings',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /family-settings\.spec\.ts/,

@@ -127,6 +127,7 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
           open={!!editingChild}
           onOpenChange={(open) => !open && setEditingChild(null)}
           onSuccess={() => { setEditingChild(null); onRefresh() }}
+          onRefresh={onRefresh}
         />
       )}
     </>
