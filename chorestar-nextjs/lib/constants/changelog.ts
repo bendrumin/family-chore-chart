@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.8.1'
+export const LATEST_CHANGELOG_VERSION = '2026.8.2'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.8.2': {
+    version: '2026.8.2',
+    date: 'August 2026',
+    title: 'ChoreStar is on the App Store! 🎉',
+    features: [
+      {
+        icon: '📱',
+        title: 'The iPhone & iPad App Is Live',
+        description: 'After months in the making, the fully native ChoreStar app is out of beta and on the App Store — home screen widgets, kid mode with PIN login, step-by-step routine timers in the Dynamic Island, seasonal themes, and confetti celebrations. Your same family account works everywhere: set up chores on the web, and the kids can check them off from the iPad. Search "ChoreStar" on the App Store or grab it from the link on the home page.',
+      },
+    ],
+  },
   '2026.8.1': {
     version: '2026.8.1',
     date: 'August 2026',

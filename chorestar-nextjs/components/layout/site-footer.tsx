@@ -72,7 +72,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link href="/#ios-app" className="text-sm hover:text-white transition-colors">
-                  iOS App Beta
+                  iPhone &amp; iPad App
                 </Link>
               </li>
             </ul>

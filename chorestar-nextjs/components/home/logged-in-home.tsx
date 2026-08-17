@@ -4,7 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { TestFlightSignup } from '@/components/home/testflight-signup'
+import { AppStoreBadge } from '@/components/home/app-store-badge'
 import {
   LayoutDashboard,
   BookOpen,
@@ -110,17 +110,18 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           </div>
         )}
 
-        {/* iOS App Beta */}
+        {/* iOS App — live on the App Store */}
         <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-10">
           <div className="flex items-start gap-4">
-            <div className="text-3xl shrink-0">📱</div>
+            <div className="text-3xl shrink-0">🎉</div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">The all-new ChoreStar for iPhone &amp; iPad</h3>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone &amp; iPad is live!</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Native app with home screen widgets, kid mode, routine timers in the Dynamic
-                Island, and seasonal themes. Now in beta — join the TestFlight list for early access.
+                The native app is out of beta and on the App Store — home screen widgets,
+                kid mode, routine timers in the Dynamic Island, and seasonal themes. Your
+                same account works everywhere.
               </p>
-              <TestFlightSignup compact />
+              <AppStoreBadge />
             </div>
           </div>
         </div>

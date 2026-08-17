@@ -4,7 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { TestFlightSignup } from '@/components/home/testflight-signup'
+import { AppStoreBadge, APP_STORE_URL } from '@/components/home/app-store-badge'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 const SITE_URL = 'https://chorestar.app'
@@ -167,7 +167,7 @@ export default async function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device — no download required. Native iPhone app coming soon!<br/>
+            📱 Works on any device — and the native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">now on the App Store</a>!<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
@@ -550,23 +550,23 @@ export default async function HomePage() {
           </p>
         </div>
 
-        {/* iOS App Beta */}
+        {/* iOS App — live on the App Store */}
         <div id="ios-app" className="max-w-3xl mx-auto mb-16">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-indigo-100 dark:border-indigo-900 overflow-hidden">
             <div className="p-8 text-center">
-              <div className="text-5xl mb-4">📱</div>
+              <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                The All-New ChoreStar for iPhone &amp; iPad
+                ChoreStar for iPhone &amp; iPad is Here
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-lg mx-auto">
                 A fully native iOS app with home screen widgets, routine timers in the
                 Dynamic Island, kid mode with PIN login, seasonal themes, and confetti
                 celebrations — built for families who live on their phones.
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Now in beta. Join the TestFlight list for early access.
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-6">
+                Now live on the App Store — free to download.
               </p>
-              <TestFlightSignup compact />
+              <AppStoreBadge />
             </div>
           </div>
         </div>
