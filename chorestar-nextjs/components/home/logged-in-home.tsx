@@ -89,6 +89,31 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           </div>
         </div>
 
+        {/* iOS App — live on the App Store */}
+        <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 p-6 mb-10 shadow-lg">
+          <div className="flex items-start gap-4">
+            <div className="text-4xl shrink-0">🎉</div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone &amp; iPad is live!</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                The native app is on the App Store — home screen widgets, kid mode with PIN
+                login, routine timers in the Dynamic Island, and seasonal themes. It syncs
+                instantly with everything you do here: set up chores on the web, kids check
+                them off on the iPad.
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <AppStoreBadge />
+                <Link
+                  href="/blog/chorestar-iphone-ipad-app"
+                  className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  See everything it can do →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Upgrade Banner (free users only) */}
         {!isPremium && (
           <div
@@ -109,22 +134,6 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             </Link>
           </div>
         )}
-
-        {/* iOS App — live on the App Store */}
-        <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-10">
-          <div className="flex items-start gap-4">
-            <div className="text-3xl shrink-0">🎉</div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone &amp; iPad is live!</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                The native app is out of beta and on the App Store — home screen widgets,
-                kid mode, routine timers in the Dynamic Island, and seasonal themes. Your
-                same account works everywhere.
-              </p>
-              <AppStoreBadge />
-            </div>
-          </div>
-        </div>
 
         {/* Helpful Links */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-10">

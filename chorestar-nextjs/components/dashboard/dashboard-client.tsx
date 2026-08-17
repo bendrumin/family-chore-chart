@@ -11,6 +11,7 @@ import { LoadingScreen } from '@/components/ui/loading-spinner'
 import { ChildList } from '@/components/children/child-list'
 import { ChildSwitcher } from '@/components/children/child-switcher'
 import { DashboardHero } from '@/components/dashboard/dashboard-hero'
+import { IosAppBanner } from '@/components/dashboard/ios-app-banner'
 import { AmbientBackground } from '@/components/ui/ambient-background'
 import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
@@ -416,6 +417,7 @@ function DashboardContent({
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 relative z-10">
+        <IosAppBanner />
         {children.length === 0 ? (
           <Card className="text-center animate-bounce-in">
             <CardHeader className="pb-2">

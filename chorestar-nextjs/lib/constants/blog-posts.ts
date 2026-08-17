@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'chorestar-iphone-ipad-app',
+    title: 'ChoreStar for iPhone & iPad Is Here — The Chore App Your Kid Can Run Themselves',
+    description:
+      'The native ChoreStar app is live on the App Store: PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
+    date: 'August 17, 2026',
+    isoDate: '2026-08-17',
+    readTime: '6 min read',
+    emoji: '📱',
+    category: 'Announcements',
+  },
+  {
     slug: 'schools-out-summer-plan',
     title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
     description:
