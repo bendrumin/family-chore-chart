@@ -1,0 +1,25 @@
+# Run Maya's Morning Routine start-to-confetti. Assumes a kid session is
+# already active (run kid-login-nav.yaml first). Used for App Preview capture.
+appId: com.chorestar.ChoreStar
+---
+# App is already foregrounded on the kid dashboard — do NOT relaunch here;
+# this flow runs while simctl recordVideo is rolling.
+- extendedWaitUntil:
+    visible: "Morning Routine"
+    timeout: 20000
+
+- tapOn: "Morning Routine"
+
+# 7 intermediate steps ("Done!"), then the final step ("All Done!")
+- repeat:
+    times: 7
+    commands:
+      - extendedWaitUntil:
+          visible: "Done!"
+          timeout: 10000
+      - tapOn: "Done!"
+
+- extendedWaitUntil:
+    visible: "All Done!"
+    timeout: 10000
+- tapOn: "All Done!"

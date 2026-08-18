@@ -1,0 +1,34 @@
+# Navigate to the kid dashboard via kid login (demo family The Smiths).
+# Used to stage the app for App Preview recording — does NOT start a routine.
+# Run: maestro test maestro/kid-login-nav.yaml
+appId: com.chorestar.ChoreStar
+---
+- launchApp:
+    stopApp: true
+
+- extendedWaitUntil:
+    visible: ".*I'm a Kid.*"
+    timeout: 15000
+- tapOn: ".*I'm a Kid.*"
+
+- extendedWaitUntil:
+    visible: "Family code"
+    timeout: 10000
+- tapOn: "Family code"
+- inputText: "b5aceec8"
+- tapOn: ".*Next.*"
+
+# PIN pad: 1-2-3-4
+- extendedWaitUntil:
+    visible: "Enter your secret PIN"
+    timeout: 15000
+- tapOn: "1"
+- tapOn: "2"
+- tapOn: "3"
+- tapOn: "4"
+- tapOn: ".*Go.*"
+
+# Kid dashboard shows a greeting; wait for it to load.
+- extendedWaitUntil:
+    visible: ".*Hi.*"
+    timeout: 20000
