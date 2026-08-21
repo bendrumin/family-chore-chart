@@ -26,6 +26,11 @@ struct ChoresView: View {
     // the chores array after saving, which intermittently crashed mid-
     // dismissal. sheet(item:) at this level survives any list rebuild.
     @State private var editingChore: Chore?
+    // Delete confirmation is lifted for the same reason — a row-owned alert
+    // dies (or re-binds to a NEIGHBORING row, deleting the wrong chore) when
+    // the array refreshes underneath it.
+    @State private var choreToDelete: Chore?
+    @State private var deleteErrorText: String?
     @State private var selectedTab: ChoresTab = ChoresView.initialSegment()
     @State private var searchText = ""
     // Week segment: which child's week is showing. Falls back to the first
@@ -221,6 +226,40 @@ struct ChoresView: View {
             .sheet(item: $editingChore) { chore in
                 AddEditChoreView(chore: chore)
             }
+            .alert(
+                "Delete \(choreToDelete?.name ?? "this chore")?",
+                isPresented: Binding(
+                    get: { choreToDelete != nil },
+                    set: { if !$0 { choreToDelete = nil } }
+                ),
+                presenting: choreToDelete
+            ) { chore in
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    Task {
+                        do {
+                            try await manager.deleteChore(choreId: chore.id)
+                        } catch {
+                            await MainActor.run {
+                                deleteErrorText = "Couldn't delete \(chore.name). Please try again."
+                            }
+                        }
+                    }
+                }
+            } message: { _ in
+                Text("This action cannot be undone.")
+            }
+            .alert(
+                "Delete Failed",
+                isPresented: Binding(
+                    get: { deleteErrorText != nil },
+                    set: { if !$0 { deleteErrorText = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(deleteErrorText ?? "")
+            }
             .task {
                 #if DEBUG
                 if ProcessInfo.processInfo.arguments.contains("-chorestar-addchore") {
@@ -266,8 +305,13 @@ struct ChoresView: View {
             ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
                 Section {
                     ForEach(groupedChores[childName] ?? [], id: \.id) { chore in
-                        ChoreListRow(chore: chore, manager: manager, onEdit: { editingChore = chore })
-                            .moveDisabled(!canReorder)
+                        ChoreListRow(
+                            chore: chore,
+                            manager: manager,
+                            onEdit: { editingChore = chore },
+                            onDelete: { choreToDelete = chore }
+                        )
+                        .moveDisabled(!canReorder)
                     }
                     .onMove { source, destination in
                         var sectionChores = groupedChores[childName] ?? []
@@ -300,7 +344,8 @@ struct ChoresView: View {
                             childName: childName,
                             chores: groupedChores[childName] ?? [],
                             manager: manager,
-                            onEditChore: { editingChore = $0 }
+                            onEditChore: { editingChore = $0 },
+                            onDeleteChore: { choreToDelete = $0 }
                         )
                     }
                 }
@@ -318,7 +363,7 @@ struct ChoreListRow: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
     let onEdit: () -> Void
-    @State private var showingDeleteAlert = false
+    let onDelete: () -> Void
 
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
@@ -381,12 +426,19 @@ struct ChoreListRow: View {
             }
             .tint(isCompleted ? .orange : .choreStarSuccess)
         }
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                showingDeleteAlert = true
+        // allowsFullSwipe: false + NO .destructive role on the swipe button.
+        // Both make the List "helpfully" remove the row before any
+        // confirmation: full swipe executes the button, and a destructive-
+        // role swipe action removes the row optimistically on tap. The row
+        // then detaches, its alert re-binds to a neighbor, and the WRONG
+        // chore gets deleted (or nothing does, and the row pops back).
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                onDelete()
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+            .tint(.red)
 
             Button {
                 onEdit()
@@ -394,16 +446,6 @@ struct ChoreListRow: View {
                 Label("Edit", systemImage: "pencil")
             }
             .tint(.blue)
-        }
-        .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                Task {
-                    try? await manager.deleteChore(choreId: chore.id)
-                }
-            }
-        } message: {
-            Text("This action cannot be undone.")
         }
     }
 
@@ -425,6 +467,7 @@ struct ChoreGroupCard: View {
     let chores: [Chore]
     let manager: SupabaseManager
     let onEditChore: (Chore) -> Void
+    let onDeleteChore: (Chore) -> Void
     
     private var child: Child? {
         manager.children.first { $0.name == childName }
@@ -474,7 +517,12 @@ struct ChoreGroupCard: View {
             // Chores list
             VStack(spacing: 2) {
                 ForEach(chores, id: \.id) { chore in
-                    EnhancedChoreRow(chore: chore, manager: manager, onEdit: { onEditChore(chore) })
+                    EnhancedChoreRow(
+                        chore: chore,
+                        manager: manager,
+                        onEdit: { onEditChore(chore) },
+                        onDelete: { onDeleteChore(chore) }
+                    )
 
                     if chore.id != chores.last?.id {
                         Divider()
@@ -491,7 +539,7 @@ struct EnhancedChoreRow: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
     let onEdit: () -> Void
-    @State private var showingDeleteAlert = false
+    let onDelete: () -> Void
 
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
@@ -565,20 +613,10 @@ struct EnhancedChoreRow: View {
             Button(action: { onEdit() }) {
                 Label("Edit", systemImage: "pencil")
             }
-            
-            Button(role: .destructive, action: { showingDeleteAlert = true }) {
+
+            Button(role: .destructive, action: { onDelete() }) {
                 Label("Delete", systemImage: "trash")
             }
-        }
-        .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                Task {
-                    try? await manager.deleteChore(choreId: chore.id)
-                }
-            }
-        } message: {
-            Text("This action cannot be undone.")
         }
     }
 

@@ -8,6 +8,11 @@ struct ChildDetailView: View {
     // Presented at this level rather than inside ChildChoreCard — see
     // ChoresView.editingChore for why row-owned sheets crash on save.
     @State private var editingChore: Chore?
+    // Lifted like editingChore: a card-owned alert dies (or re-binds to a
+    // neighboring card, deleting the wrong chore) when the refetch replaces
+    // the chores array underneath it.
+    @State private var choreToDelete: Chore?
+    @State private var deleteErrorText: String?
     @State private var showWeekView = false
     
     private var childChores: [Chore] {
@@ -160,8 +165,13 @@ struct ChildDetailView: View {
                                     .padding(.horizontal, 20)
                                 
                                 ForEach(pendingChores) { chore in
-                                    ChildChoreCard(chore: chore, manager: manager, onEdit: { editingChore = chore })
-                                        .padding(.horizontal, 20)
+                                    ChildChoreCard(
+                                        chore: chore,
+                                        manager: manager,
+                                        onEdit: { editingChore = chore },
+                                        onDelete: { choreToDelete = chore }
+                                    )
+                                    .padding(.horizontal, 20)
                                 }
                             }
                         }
@@ -175,8 +185,13 @@ struct ChildDetailView: View {
                                     .padding(.horizontal, 20)
                                 
                                 ForEach(completedChores) { chore in
-                                    ChildChoreCard(chore: chore, manager: manager, onEdit: { editingChore = chore })
-                                        .padding(.horizontal, 20)
+                                    ChildChoreCard(
+                                        chore: chore,
+                                        manager: manager,
+                                        onEdit: { editingChore = chore },
+                                        onDelete: { choreToDelete = chore }
+                                    )
+                                    .padding(.horizontal, 20)
                                 }
                             }
                         }
@@ -216,6 +231,40 @@ struct ChildDetailView: View {
         }
         .sheet(item: $editingChore) { chore in
             AddEditChoreView(chore: chore)
+        }
+        .alert(
+            "Delete \(choreToDelete?.name ?? "this chore")?",
+            isPresented: Binding(
+                get: { choreToDelete != nil },
+                set: { if !$0 { choreToDelete = nil } }
+            ),
+            presenting: choreToDelete
+        ) { chore in
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task {
+                    do {
+                        try await manager.deleteChore(choreId: chore.id)
+                    } catch {
+                        await MainActor.run {
+                            deleteErrorText = "Couldn't delete \(chore.name). Please try again."
+                        }
+                    }
+                }
+            }
+        } message: { _ in
+            Text("This action cannot be undone.")
+        }
+        .alert(
+            "Delete Failed",
+            isPresented: Binding(
+                get: { deleteErrorText != nil },
+                set: { if !$0 { deleteErrorText = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(deleteErrorText ?? "")
         }
         .sheet(isPresented: $showWeekView) {
             NavigationStack {
@@ -266,7 +315,7 @@ struct ChildChoreCard: View {
     let chore: Chore
     @ObservedObject var manager: SupabaseManager
     let onEdit: () -> Void
-    @State private var showingDeleteAlert = false
+    let onDelete: () -> Void
     
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
@@ -362,20 +411,10 @@ struct ChildChoreCard: View {
             Button(action: { onEdit() }) {
                 Label("Edit", systemImage: "pencil")
             }
-            
-            Button(role: .destructive, action: { showingDeleteAlert = true }) {
+
+            Button(role: .destructive, action: { onDelete() }) {
                 Label("Delete", systemImage: "trash")
             }
-        }
-        .alert("Delete \(chore.name)?", isPresented: $showingDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                Task {
-                    try? await manager.deleteChore(choreId: chore.id)
-                }
-            }
-        } message: {
-            Text("This action cannot be undone.")
         }
     }
 }

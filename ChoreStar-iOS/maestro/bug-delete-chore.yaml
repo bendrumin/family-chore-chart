@@ -1,0 +1,33 @@
+# Verify the chore-delete fix: swipe reveals buttons (no auto-execute),
+# alert names the RIGHT chore, confirm deletes it, list refreshes.
+appId: com.chorestar.ChoreStar
+---
+- tapOn: "Chores"
+- extendedWaitUntil:
+    visible: "Week"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Demo Chore One"
+    timeout: 10000
+- swipe:
+    from:
+      text: "Demo Chore One"
+    direction: LEFT
+- extendedWaitUntil:
+    visible: "Delete"
+    timeout: 5000
+- tapOn: "Delete"
+# THE assertion that failed pre-fix: alert must name the swiped chore
+- extendedWaitUntil:
+    visible: "Delete Demo Chore One?"
+    timeout: 5000
+- extendedWaitUntil:
+    visible: "This action cannot be undone."
+    timeout: 3000
+- tapOn:
+    text: "Delete"
+    index: 0
+- extendedWaitUntil:
+    notVisible: "Demo Chore One"
+    timeout: 15000
+- assertVisible: "Demo Chore Two"
