@@ -1,7 +1,6 @@
-Version 1.5 adds a Week view to the Chores tab and improves accessibility throughout the app.
+Version 1.6 fixes chore deletion.
 
-• Week at a glance: a new Week segment on the Chores tab shows each child's full week of chores, with a quick switcher between children
-• Accessibility: better VoiceOver support, larger touch targets, Dynamic Type on titles, and higher-contrast text in both light and dark mode
-• Fixed: weekly summary stats no longer wrap onto two lines
+• Fixed: deleting a chore could remove the wrong chore from the list, leave a "deleted" chore that came back, or crash the app — deletes now always confirm the chore you picked and remove exactly that one
+• Fixed: if a delete fails (for example, while offline), the app now tells you instead of failing silently
 
 Questions or feedback are welcome at hi@chorestar.app
