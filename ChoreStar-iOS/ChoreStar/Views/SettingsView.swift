@@ -907,7 +907,7 @@ struct FamilyRewardsSettingsView: View {
                        : "Kids earn the daily amount when they finish every chore for the day.")
             }
 
-            Section("Amounts (cents)") {
+            Section {
                 HStack {
                     Text(rewardMode == "per_chore" ? "Default chore" : "Daily reward")
                     Spacer()
@@ -928,6 +928,8 @@ struct FamilyRewardsSettingsView: View {
                     Text("¢")
                         .foregroundColor(.choreStarTextSecondary)
                 }
+            } header: {
+                Text("Amounts (cents)")
             } footer: {
                 Text("Enter amounts in cents — e.g. 100 = \(manager.formatMoney(1.0)). Synced with the web app.")
             }
