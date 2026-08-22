@@ -2,7 +2,7 @@ import Foundation
 import UserNotifications
 
 /// Local notifications: a configurable daily "check today's chores" reminder.
-/// (Remote APNs pushes are a future, server-side feature.)
+/// Remote APNs activity alerts are handled separately (PushDelegate + server).
 final class NotificationsManager {
     static let shared = NotificationsManager()
 

@@ -1,0 +1,11 @@
+{
+  "aps": {
+    "alert": {
+      "title": "🎉 Routine complete!",
+      "body": "Emma finished Morning Routine!"
+    },
+    "sound": "default"
+  },
+  "type": "routine_complete",
+  "childId": "00000000-0000-4000-8000-000000000001"
+}

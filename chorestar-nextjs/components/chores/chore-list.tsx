@@ -21,9 +21,11 @@ type ChoreCompletion = Database['public']['Tables']['chore_completions']['Row']
 interface ChoreListProps {
   childId: string
   userId: string
+  /** Child avatar color — passed through to tint chore icons like iOS. */
+  iconTint?: string | null
 }
 
-export function ChoreList({ childId, userId }: ChoreListProps) {
+export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
   const { settings } = useSettings()
   const rewardMode = (settings?.reward_mode as 'flat' | 'per_chore') || 'flat'
   const [chores, setChores] = useState<Chore[]>([])
@@ -304,6 +306,7 @@ export function ChoreList({ childId, userId }: ChoreListProps) {
                   weekStart={weekStart}
                   rewardMode={rewardMode}
                   onRefresh={handleRefresh}
+                  iconTint={iconTint}
                 />
               ))}
             </div>

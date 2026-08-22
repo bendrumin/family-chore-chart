@@ -1,118 +1,60 @@
-# Photo Profile Avatars — Design & Implementation Plan
+# Photo Profile Avatars — Shipped
 
-**Status:** planned for v1.1 (alongside push, after App Store acceptance)
-**Decision:** **private Supabase Storage bucket + RLS + signed URLs.** Correct &
-private by default — these are photographs of children.
-**Native:** iOS upload via SwiftUI `PhotosPicker` (PhotosUI). No third-party SDKs.
+**Status:** shipped (iOS + web)
+**Storage:** private Supabase bucket `child-avatars` + column `children.avatar_photo_path`
+**Native:** iOS `PhotosPicker` / camera via `AvatarPickerView`; web via `photo-avatar-upload.tsx`
 
----
-
-## What already exists (most of this is done)
-
-- `children.avatar_url` and `children.avatar_file` columns already exist.
-- Those already **render as images** everywhere: kid page
-  ([kid/[childId]/page.tsx](../../chorestar-nextjs/app/kid/[childId]/page.tsx)),
-  child list, iOS avatar views.
-- Today `avatar_url` only ever holds **external DiceBear** URLs (generated robot/
-  adventurer avatars) or presets — there is **no photo upload** and **no Storage
-  bucket** on either platform.
-
-**So the only missing piece is: pick a photo → upload to Storage → resolve it for
-display.** Everything downstream already handles an image.
-
-> ⚠️ Open item: confirm how `avatar_file` is currently written (the iOS
-> `AvatarPickerView.onSelect` passes `(avatarUrl, avatarFile)`). We repurpose
-> `avatar_file` to hold the **private storage object path** for uploaded photos —
-> verify that doesn't collide with an existing emoji/preset use before wiring.
+This doc supersedes the older “planned for v1.1” draft. Upload + signed display are live.
 
 ---
 
-## Storage design (private)
+## Resolution order
 
-- **Bucket:** `child-avatars`, **private** (not public).
-- **Path convention:** `{user_id}/{child_id}/{uuid}.jpg` — the leading `user_id`
-  folder is what the RLS policy keys on.
-- **RLS on `storage.objects`** (authenticated users touch only their own folder):
+1. **`avatar_photo_path`** — private Storage object path → short-lived signed URL at render time  
+2. **`avatar_url`** — DiceBear / preset URL  
+3. **`avatar_file`** — emoji (iOS)  
+4. Color + initials fallback  
 
-  ```sql
-  -- SELECT / INSERT / UPDATE / DELETE, one policy each, same USING/WITH CHECK:
-  (bucket_id = 'child-avatars'
-   AND (storage.foldername(name))[1] = auth.uid()::text)
-  ```
-
-- **Source of truth:** store the object **path** in `children.avatar_file`
-  (e.g. `child-avatars/{uid}/{cid}/{uuid}.jpg`). Leave `avatar_url` for the
-  preset/DiceBear case. Never persist a signed URL in the DB (they expire).
-
-## Signed URLs (how a private photo gets displayed)
-
-- Generate at render time: `storage.from('child-avatars').createSignedUrl(path, ttl)`.
-- **Parent (authenticated) contexts:** the authed Supabase client (web) / Swift SDK
-  (`storage.from(bucket).createSignedURL(path:expiresIn:)`) mints the URL directly.
-- **Kid-mode (kids are NOT authed Supabase users):** the existing service-role kid
-  APIs already return child data — `/api/child-pin/verify`, `/api/routines`,
-  `kid/[childId]`. Have those endpoints mint a fresh short-lived signed avatar URL
-  server-side and include it in the response. Fits the current kid-mode data flow
-  (service role bypasses RLS) — no client secret exposure.
-- TTL: short-ish (e.g. 1h) and regenerated per load; optionally use Storage image
-  transforms (width/height) to serve a downscaled render.
-
-## Rendering change (both platforms)
-
-Avatar resolution becomes: **`avatar_file` (storage path) → signed URL → image**;
-else **`avatar_url` (preset/DiceBear) → image**; else **color + initial** fallback.
-- iOS: small async resolver that turns a path into a signed URL (cache it), then
-  `AsyncImage`.
-- Web: resolve server-side in server components / the kid APIs; pass the URL down.
+Never persist a signed URL in the database (they expire).
 
 ---
 
-## iOS upload flow (native, no permission prompt)
+## Path convention
 
-1. SwiftUI **`PhotosPicker`** → `PhotosPickerItem` → load `Data`.
-   (`PhotosPicker` is out-of-process → **no `NSPhotoLibraryUsageDescription`** and no
-   photo-access prompt.)
-2. Downscale/crop to a **512×512 square JPEG** (~0.8 quality) on-device.
-3. `supabase.storage.from("child-avatars").upload(path, data, options: .init(
-   contentType: "image/jpeg", upsert: true))` at `{uid}/{cid}/{uuid}.jpg`.
-4. On success: set `avatar_file = path`, clear `avatar_url`, refresh.
-5. Add a **"Photo"** option to `AvatarPickerView` (new tab beside Robots/Emojis) and
-   surface it in `AddEditChildView`.
+`{owner_user_id}/{child_id}/{uuid}.jpg` (all lowercase)
 
-Web parity (later): a file input / drop zone in the add/edit-child modal → browser
-Supabase client upload → same path convention + cleanup.
-
-## Cleanup (no orphans, honor deletion)
-
-- On photo **replace**: delete the previous `avatar_file` object.
-- On **child delete** / **account delete**: delete that child's/user's avatar objects.
+- Folder `[1]` is **`children.user_id`** (family owner), not the signed-in co-parent’s uid.
+- Storage RLS (migrations `008` + `013`) allows the owner **or** a `family_members` row for that family to read/write that folder.
+- iOS and web both build paths from `child.user_id` / `Child.userId`.
 
 ---
 
-## Privacy & compliance checklist (the "keep it correct" part)
+## Key files
 
-- [ ] Bucket **private**, RLS scoped to the owner's folder.
-- [ ] Photos uploaded by the **parent** (account holder) of **their own** children —
-      the parental-consent model. No child ever uploads under their own identity.
-- [ ] **Privacy policy** ([/privacy](../../chorestar-nextjs/app/privacy/page.tsx)):
-      add a clause — optional profile photos are stored privately, never shared or
-      sold, and are deletable by the parent at any time.
-- [ ] Photos are **deletable** (remove object + null the column) and purged on child/
-      account deletion.
-- [ ] Kid-mode reads use a **short-lived service-role-minted signed URL** — no public
-      object, no long-lived link.
-
-## DB / migration
-
-Columns already exist (`avatar_url`, `avatar_file`) — **no schema migration needed**.
-Only the Storage bucket + RLS policies are new (SQL, run once).
-
-## Rough effort
-
-| Work | Est. |
+| Piece | Path |
 |---|---|
-| Bucket + RLS policies (SQL) | ~1h |
-| iOS `PhotosPicker` upload + downscale + save + cleanup | ~½ day |
-| Signed-URL rendering resolver (iOS + kid APIs) | ~½ day |
-| Privacy-policy clause | ~15 min |
-| Web upload parity | later, ~½ day |
+| Bucket + original owner RLS | `database-migrations/008_child_avatar_photos.sql` |
+| Column (not `avatar_file`) | `database-migrations/009_child_avatar_photo_path.sql` |
+| Co-parent storage RLS | `database-migrations/013_child_avatar_family_member_storage.sql` |
+| iOS picker / upload | `ChoreStar/Views/AvatarPickerView.swift`, `SupabaseManager.uploadChildAvatar` |
+| iOS display | `ChoreStar/Views/AvatarView.swift` |
+| Web upload | `chorestar-nextjs/components/children/photo-avatar-upload.tsx` |
+| Web signed display | `chorestar-nextjs/lib/hooks/useChildAvatar.ts` |
+| Kid-mode signing | `chorestar-nextjs/lib/utils/child-avatar.ts` |
+| Bucket constant | `chorestar-nextjs/lib/constants/storage.ts` |
+
+---
+
+## Privacy
+
+Photographs of children stay in a **private** bucket. Kid mode mints signed URLs server-side with the service role. Account deletion sweeps `{user_id}/` prefixes via `POST /api/account/delete`.
+
+Widgets intentionally do **not** show photos (no network / signing in the extension).
+
+---
+
+## Remaining polish (optional)
+
+- Mid-session kid signed-URL refresh after 1h TTL  
+- Align web emoji tab with iOS `avatar_file` storage  
+- Ops orphan sweep if anyone deletes users outside the account-delete API  

@@ -1,6 +1,7 @@
-Version 1.6 fixes chore deletion.
+Version 1.7 helps you feel progress without opening the app.
 
-• Fixed: deleting a chore could remove the wrong chore from the list, leave a "deleted" chore that came back, or crash the app — deletes now always confirm the chore you picked and remove exactly that one
-• Fixed: if a delete fails (for example, while offline), the app now tells you instead of failing silently
+• Activity alerts: tap a push when a kid finishes all chores or a routine to jump straight to their page — turn these on or off in Settings
+• Widget deep links: tap Today's Progress (or a child on the medium widget) to open the right place in ChoreStar
+• New Lock Screen rectangular widget shows who's ahead on today's chores
 
 Questions or feedback are welcome at hi@chorestar.app

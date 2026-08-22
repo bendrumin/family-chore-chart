@@ -12,7 +12,7 @@ type Child = Database['public']['Tables']['children']['Row']
 interface ChildSwitcherProps {
   children: Child[]
   selectedChildId: string | null
-  onSelectChild: (id: string) => void
+  onSelectChild: (id: string | null) => void
   onRefresh: () => void
   progress?: Record<string, { done: number; total: number }>
 }
@@ -40,6 +40,37 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
   return (
     <>
       <div className="flex flex-wrap gap-3.5">
+        {/* Everyone — family overview (iOS Home parity) */}
+        <button
+          type="button"
+          onClick={() => onSelectChild(null)}
+          aria-pressed={selectedChildId === null}
+          aria-label="Show everyone"
+          className="flex min-w-[132px] cursor-pointer flex-col items-center gap-2 rounded-2xl border p-4 pt-4 transition-transform duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          style={{
+            background: 'var(--card-bg)',
+            borderColor: selectedChildId === null
+              ? 'color-mix(in srgb, var(--primary) 55%, transparent)'
+              : 'hsl(var(--border))',
+            boxShadow: selectedChildId === null
+              ? '0 0 0 2px color-mix(in srgb, var(--primary) 32%, transparent), var(--shadow-md)'
+              : 'var(--shadow-sm)',
+          }}
+        >
+          <div
+            className="grid h-[66px] w-[66px] place-items-center rounded-full text-2xl font-black text-white"
+            style={{ background: 'var(--gradient-primary)' }}
+          >
+            ⭐
+          </div>
+          <div className="text-center">
+            <div className="font-bold" style={{ color: 'var(--text-primary)' }}>Everyone</div>
+            <div className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+              Family overview
+            </div>
+          </div>
+        </button>
+
         {children.map((child) => {
           const color = child.avatar_color || '#6366f1'
           const prog = progress[child.id] || { done: 0, total: 0 }

@@ -15,6 +15,7 @@ import { IosAppBanner } from '@/components/dashboard/ios-app-banner'
 import { AmbientBackground } from '@/components/ui/ambient-background'
 import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
+import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { SettingsMenu } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import dynamic from 'next/dynamic'
@@ -114,9 +115,8 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
         setChildren([])
       } else {
         setChildren(data || [])
-        if (data && data.length > 0 && !selectedChildId) {
-          setSelectedChildId(data[0].id)
-        }
+        // Stay on family overview (Everyone) by default — matches iOS Home.
+        // Parents tap a child ring to drill into week grid / routines / stats.
       }
     } catch (error: any) {
       clientLogger.error('💥 Error loading children:', error)
@@ -474,7 +474,7 @@ function DashboardContent({
               />
             </section>
 
-            {/* Weekly Stats */}
+            {/* Weekly Stats — per-child drill-in only */}
             {selectedChildId && (
               <WeeklyStats
                 child={children.find((c: Child) => c.id === selectedChildId)!}
@@ -482,9 +482,11 @@ function DashboardContent({
               />
             )}
 
-            {/* Main - Tabbed Content */}
+            {/* Main — family overview OR selected-child tabs */}
             <div>
-                {selectedChildId && (
+                {!selectedChildId ? (
+                  <FamilyTodayChores children={children} />
+                ) : (
                   <div className="space-y-6">
                     {/* Professional Tab Switcher + Add Routine */}
                     <div className="flex items-center gap-3 flex-wrap">
@@ -549,6 +551,7 @@ function DashboardContent({
                       <ChoreList
                         childId={selectedChildId}
                         userId={effectiveUserId}
+                        iconTint={children.find((c: Child) => c.id === selectedChildId)?.avatar_color}
                       />
                     </div>
                     <div

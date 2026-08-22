@@ -207,6 +207,7 @@ export interface Database {
           date_format: string | null
           language: string | null
           custom_theme: Json | null
+          activity_push_enabled: boolean
           created_at: string
           updated_at: string
         }
@@ -223,6 +224,7 @@ export interface Database {
           date_format?: string | null
           language?: string | null
           custom_theme?: Json | null
+          activity_push_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -239,6 +241,7 @@ export interface Database {
           date_format?: string | null
           language?: string | null
           custom_theme?: Json | null
+          activity_push_enabled?: boolean
           created_at?: string
           updated_at?: string
         }

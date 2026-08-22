@@ -178,7 +178,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       {/* Today's chores — the half of kid mode that was missing entirely.
           Routines had kid-token endpoints; chores did not, so a kid on their
           own device could never check off the things earning their allowance. */}
-      {kidToken && <KidChores kidToken={kidToken} />}
+      {kidToken && <KidChores kidToken={kidToken} iconTint={child.avatar_color} />}
 
       {/* Routines Grid */}
       <div className="max-w-6xl mx-auto">

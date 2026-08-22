@@ -6,6 +6,7 @@ import UserNotifications
 struct ChoreStarApp: App {
     @StateObject private var supabaseManager = SupabaseManager.shared
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var deepLinks = DeepLinkRouter.shared
     // SwiftUI apps have no AppDelegate by default, but APNs delivers the device
     // token only through UIApplicationDelegate callbacks.
     @UIApplicationDelegateAdaptor(PushDelegate.self) private var pushDelegate
@@ -23,7 +24,74 @@ struct ChoreStarApp: App {
             ContentView()
                 .environmentObject(supabaseManager)
                 .environmentObject(themeManager)
+                .environmentObject(deepLinks)
+                .onOpenURL { url in
+                    deepLinks.handle(url)
+                }
         }
+    }
+}
+
+
+// MARK: - Deep links (push taps + widget taps)
+
+/**
+ Shared router for `chorestar://` URLs and APNs custom payloads.
+
+ Kept in this file (not a new .swift) because the app target is not a
+ file-system-synchronized group — new files mean hand-editing project.pbxproj.
+ */
+@MainActor
+final class DeepLinkRouter: ObservableObject {
+    static let shared = DeepLinkRouter()
+
+    /// Switch MainTabs to Home.
+    @Published var wantToday = false
+    /// Present ChildDetailView for this id when the parent is signed in.
+    @Published var pendingChildId: UUID?
+
+    private init() {}
+
+    func handle(_ url: URL) {
+        guard url.scheme?.lowercased() == "chorestar" else { return }
+        let host = (url.host ?? "").lowercased()
+        let parts = url.pathComponents.filter { $0 != "/" }
+
+        if host == "today" || (host.isEmpty && parts.first?.lowercased() == "today") {
+            wantToday = true
+            pendingChildId = nil
+            return
+        }
+
+        if host == "child", let idString = parts.first, let id = UUID(uuidString: idString) {
+            pendingChildId = id
+            return
+        }
+
+        if host.isEmpty,
+           parts.first?.lowercased() == "child",
+           parts.count >= 2,
+           let id = UUID(uuidString: parts[1]) {
+            pendingChildId = id
+        }
+    }
+
+    func handlePushUserInfo(_ userInfo: [AnyHashable: Any]) {
+        if let childId = userInfo["childId"] as? String, let id = UUID(uuidString: childId) {
+            pendingChildId = id
+            return
+        }
+        wantToday = true
+    }
+
+    func consumeWantToday() {
+        wantToday = false
+    }
+
+    func consumePendingChildId() -> UUID? {
+        let id = pendingChildId
+        pendingChildId = nil
+        return id
     }
 }
 
@@ -60,6 +128,16 @@ final class PushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCen
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         [.banner, .sound, .badge]
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        let userInfo = response.notification.request.content.userInfo
+        await MainActor.run {
+            DeepLinkRouter.shared.handlePushUserInfo(userInfo)
+        }
     }
 
     func application(

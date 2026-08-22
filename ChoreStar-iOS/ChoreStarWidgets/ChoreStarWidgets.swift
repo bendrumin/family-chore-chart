@@ -69,6 +69,13 @@ func widgetColor(_ name: String) -> Color {
 let brandIndigo = Color(red: 0.388, green: 0.400, blue: 0.945)      // #6366f1 (light)
 let brandIndigoDark = Color(red: 0.612, green: 0.639, blue: 0.996)  // #9ca3fe (brighter, for dark)
 
+func chorestarURL(today: Bool = false, childId: UUID? = nil) -> URL {
+    if let childId {
+        return URL(string: "chorestar://child/\(childId.uuidString.lowercased())")!
+    }
+    return URL(string: "chorestar://today")!
+}
+
 struct WidgetRing: View {
     @Environment(\.colorScheme) private var colorScheme
     let progress: Double
@@ -109,6 +116,8 @@ struct TodayRingWidgetView: View {
         switch family {
         case .accessoryCircular:
             accessoryCircular
+        case .accessoryRectangular:
+            accessoryRectangular
         case .systemMedium:
             medium
         default:
@@ -164,17 +173,20 @@ struct TodayRingWidgetView: View {
                 .lineLimit(1)
         }
         .containerBackground(for: .widget) { widgetBackground }
+        .widgetURL(chorestarURL(today: true))
     }
 
     private var medium: some View {
         HStack(spacing: 16) {
-            ZStack {
-                WidgetRing(progress: snapshot.progress)
-                Text("\(Int(snapshot.progress * 100))%")
-                    .font(.system(.headline, design: .rounded).weight(.bold))
-                    .foregroundColor(accent)
+            Link(destination: chorestarURL(today: true)) {
+                ZStack {
+                    WidgetRing(progress: snapshot.progress)
+                    Text("\(Int(snapshot.progress * 100))%")
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundColor(accent)
+                }
+                .frame(width: 72, height: 72)
             }
-            .frame(width: 72, height: 72)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Today's Chores")
@@ -187,17 +199,20 @@ struct TodayRingWidgetView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(snapshot.children.prefix(3)) { child in
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(widgetColor(child.colorName))
-                                .frame(width: 8, height: 8)
-                            Text(child.name)
-                                .font(.caption)
-                                .lineLimit(1)
-                            Spacer()
-                            Text("\(child.done)/\(child.total)")
-                                .font(.system(.caption, design: .rounded).weight(.semibold))
-                                .foregroundStyle(.secondary)
+                        Link(destination: chorestarURL(childId: child.id)) {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(widgetColor(child.colorName))
+                                    .frame(width: 8, height: 8)
+                                Text(child.name)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Text("\(child.done)/\(child.total)")
+                                    .font(.system(.caption, design: .rounded).weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -217,6 +232,36 @@ struct TodayRingWidgetView: View {
         }
         .gaugeStyle(.accessoryCircular)
         .containerBackground(for: .widget) { Color.clear }
+        .widgetURL(chorestarURL(today: true))
+    }
+
+    private var accessoryRectangular: some View {
+        HStack(spacing: 10) {
+            WidgetRing(progress: snapshot.progress, lineWidth: 5)
+                .frame(width: 28, height: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("ChoreStar")
+                    .font(.headline)
+                    .widgetAccentable()
+                if let top = snapshot.children.first {
+                    Text("\(top.name) · \(top.done)/\(top.total)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                } else {
+                    Text("\(snapshot.completedToday) of \(snapshot.totalToday) today")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .containerBackground(for: .widget) { Color.clear }
+        .widgetURL(
+            snapshot.children.first.map { chorestarURL(childId: $0.id) } ?? chorestarURL(today: true)
+        )
     }
 }
 
@@ -231,7 +276,7 @@ struct TodayRingWidget: Widget {
         }
         .configurationDisplayName("Today's Progress")
         .description("Your family's chore ring for today.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }
 
@@ -242,6 +287,12 @@ struct TodayRingWidget: Widget {
 }
 
 #Preview(as: .systemMedium) {
+    TodayRingWidget()
+} timeline: {
+    TodayEntry(date: .now, snapshot: .preview)
+}
+
+#Preview(as: .accessoryRectangular) {
     TodayRingWidget()
 } timeline: {
     TodayEntry(date: .now, snapshot: .preview)

@@ -1067,6 +1067,34 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
+    /// Parent-mode completion writes skip the kid API — ping the server so it
+    /// can fire the same "all chores done" APNs alert kid-mode already gets.
+    /// Failures are silent: the chore is already saved.
+    private func notifyParentIfAllChoresDone(childId: UUID, weekStart: String, dayOfWeek: Int) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        guard let accessToken = try? await client.auth.session.accessToken else { return }
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/push/chores-done") else { return }
+
+        struct Body: Encodable {
+            let childId: String
+            let weekStart: String
+            let dayOfWeek: Int
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONEncoder().encode(Body(
+            childId: childId.uuidString.lowercased(),
+            weekStart: weekStart,
+            dayOfWeek: dayOfWeek
+        ))
+        _ = try? await URLSession.shared.data(for: request)
+        #endif
+    }
+
     // MARK: - AI Chore Suggestions
 
     private struct AISuggestionRow: Codable {
@@ -1236,13 +1264,21 @@ class SupabaseManager: ObservableObject {
             return "That photo couldn't be processed. Try another one."
         }
 
-        // Must be the signed-in owner's uid, not effectiveUserId: a shared family
-        // member's uid would not satisfy the storage policy on the owner's folder.
+        // Path folder must be the FAMILY OWNER's uid (children.user_id), not the
+        // signed-in member's. Web already does this; co-parents writing under
+        // their own uid left photos the owner couldn't sign. Storage RLS
+        // (migration 013) lets family members write into the owner's folder.
         let ownerId: String
-        do {
-            ownerId = try await client.auth.session.user.id.uuidString
-        } catch {
-            return "Your session expired. Please sign in again."
+        if let childOwner = await MainActor.run(body: {
+            children.first(where: { $0.id == childId })?.userId.uuidString
+        }) {
+            ownerId = childOwner
+        } else {
+            do {
+                ownerId = try await client.auth.session.user.id.uuidString
+            } catch {
+                return "Your session expired. Please sign in again."
+            }
         }
 
         let previousPath = await MainActor.run {
@@ -1778,6 +1814,13 @@ class SupabaseManager: ObservableObject {
                     .insert(completion)
                     .execute()
                 
+                // Parent-path write — ask the server to buzz if this finished the day.
+                await notifyParentIfAllChoresDone(
+                    childId: chore.childId,
+                    weekStart: weekStartString,
+                    dayOfWeek: dayOfWeek
+                )
+
                 // Check for achievements if it's today
                 let currentDay = calendar.component(.weekday, from: now) - 1
                 if dayOfWeek == currentDay {
@@ -1956,6 +1999,28 @@ class SupabaseManager: ObservableObject {
         }
         #else
         return "Supabase not available."
+        #endif
+    }
+
+    /// Persist the family preference for APNs activity alerts.
+    func setActivityPushEnabled(_ enabled: Bool) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+
+        do {
+            try await client
+                .from("family_settings")
+                .update(["activity_push_enabled": enabled])
+                .eq("user_id", value: uid)
+                .execute()
+            await loadFamilySettings()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Activity push pref failed: \(error.localizedDescription)"
+            }
+        }
         #endif
     }
 

@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var accentSaveTask: Task<Void, Never>?
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
+    @State private var activityPushEnabled = true
 
     private var reminderTimeBinding: Binding<Date> {
         Binding(
@@ -220,6 +221,17 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $activityPushEnabled) {
+                        HStack {
+                            Image(systemName: "iphone.radiowaves.left.and.right")
+                                .foregroundColor(activityPushEnabled ? .choreStarPrimary : .choreStarTextSecondary)
+                            Text("Activity Alerts")
+                        }
+                    }
+                    .onChange(of: activityPushEnabled) { _, enabled in
+                        Task { await manager.setActivityPushEnabled(enabled) }
+                    }
+
                     Toggle(isOn: $reminderEnabled) {
                         HStack {
                             Image(systemName: "bell.badge.fill")
@@ -259,7 +271,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Notifications")
                 } footer: {
-                    Text("A gentle nudge to check off today's chores.")
+                    Text("Activity alerts buzz when a kid finishes all chores or a routine. The daily reminder is a local nudge on this device.")
                 }
 
                 Section("Data") {
@@ -299,6 +311,12 @@ struct SettingsView: View {
             .onAppear {
                 if let hex = themeManager.customAccentHex, let c = Color(hexString: hex) {
                     customAccent = c
+                }
+                activityPushEnabled = manager.familySettings?.activityPushOn ?? true
+            }
+            .onChange(of: manager.familySettings?.activityPushOn) { _, enabled in
+                if let enabled {
+                    activityPushEnabled = enabled
                 }
             }
             .navigationTitle("Settings")

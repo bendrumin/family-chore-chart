@@ -1,0 +1,11 @@
+{
+  "aps": {
+    "alert": {
+      "title": "🌟 All chores done!",
+      "body": "Emma finished every chore for today!"
+    },
+    "sound": "default"
+  },
+  "type": "all_chores_done",
+  "childId": "00000000-0000-4000-8000-000000000001"
+}

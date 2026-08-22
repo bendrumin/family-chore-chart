@@ -82,6 +82,12 @@ export interface ApnsSendResult {
   status: number
 }
 
+/** Custom keys delivered beside `aps` so the app can deep-link on tap. */
+export type ApnsCustomData = {
+  type?: string
+  childId?: string
+}
+
 /**
  * Send one alert to one device token.
  *
@@ -92,7 +98,8 @@ export async function sendApnsAlert(
   deviceToken: string,
   environment: 'development' | 'production',
   title: string,
-  body: string
+  body: string,
+  custom?: ApnsCustomData
 ): Promise<ApnsSendResult> {
   if (!apnsConfigured()) return { ok: false, tokenGone: false, status: 0 }
 
@@ -103,6 +110,8 @@ export async function sendApnsAlert(
 
   const payload = JSON.stringify({
     aps: { alert: { title, body }, sound: 'default' },
+    ...(custom?.type ? { type: custom.type } : {}),
+    ...(custom?.childId ? { childId: custom.childId } : {}),
   })
 
   return new Promise<ApnsSendResult>((resolve) => {

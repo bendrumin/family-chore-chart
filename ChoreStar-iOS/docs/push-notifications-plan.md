@@ -1,10 +1,10 @@
 # iOS Push Notifications — Design & Implementation Plan
 
-**Status:** planned for v1.1 (after the current App Store submission is accepted)
-**Decision:** direct APNs, **iOS only** — no OneSignal/Firebase, no cross-platform sender.
-**Author context:** ChoreStar iOS (SwiftUI) + shared Supabase backend. The app already
-has *local* notifications ([NotificationsManager.swift](../ChoreStar/Managers/NotificationsManager.swift),
-daily reminders via `UNCalendarNotificationTrigger`). This adds *remote* push.
+**Status:** Phases 1–2 shipped; 1.7 adds deep links, prefs, and parent-path coverage.
+**Decision:** direct APNs via Next.js (`lib/push/apns.ts`), **iOS only** — no OneSignal/Firebase.
+**Author context:** ChoreStar iOS (SwiftUI) + shared Supabase backend. Local daily reminders remain in `NotificationsManager.swift`.
+
+See also: iOS 1.7 work (custom APNs payload `type`/`childId`, `chorestar://` deep links, `POST /api/push/chores-done`, `family_settings.activity_push_enabled`).
 
 ---
 

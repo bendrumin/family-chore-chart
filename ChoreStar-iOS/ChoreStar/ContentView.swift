@@ -271,7 +271,9 @@ struct LoadingView: View {
 struct MainTabs: View {
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var deepLinks: DeepLinkRouter
     @State private var selectedTab: Int = MainTabs.initialTab()
+    @State private var deepLinkChild: Child?
 
     // First-run wizard: shown once per ACCOUNT (keyed by user id, not per
     // device — a brand-new family on a phone that saw the wizard before must
@@ -289,6 +291,20 @@ struct MainTabs: View {
               !UserDefaults.standard.bool(forKey: key),
               manager.children.isEmpty else { return }
         showOnboarding = true
+    }
+
+    private func applyDeepLinks() {
+        if deepLinks.wantToday {
+            selectedTab = 0
+            deepLinks.consumeWantToday()
+        }
+        if let id = deepLinks.pendingChildId {
+            deepLinks.consumePendingChildId()
+            if let child = manager.children.first(where: { $0.id == id }) {
+                selectedTab = 0
+                deepLinkChild = child
+            }
+        }
     }
 
     /// DEBUG-only: allows UI verification tooling to open a specific tab, e.g.
@@ -342,9 +358,26 @@ struct MainTabs: View {
                 .tag(4)
         }
         .tint(themeManager.accentColor)
-        .onAppear { evaluateOnboarding() }
+        .onAppear {
+            evaluateOnboarding()
+            applyDeepLinks()
+        }
         .onChange(of: manager.initialDataLoaded) { _, loaded in
-            if loaded { evaluateOnboarding() }
+            if loaded {
+                evaluateOnboarding()
+                applyDeepLinks()
+            }
+        }
+        .onChange(of: deepLinks.wantToday) { _, want in
+            if want { applyDeepLinks() }
+        }
+        .onChange(of: deepLinks.pendingChildId) { _, id in
+            if id != nil { applyDeepLinks() }
+        }
+        .sheet(item: $deepLinkChild) { child in
+            NavigationStack {
+                ChildDetailView(child: child)
+            }
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView { goToFamily in
@@ -364,4 +397,5 @@ struct MainTabs: View {
     ContentView()
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
+        .environmentObject(DeepLinkRouter.shared)
 }

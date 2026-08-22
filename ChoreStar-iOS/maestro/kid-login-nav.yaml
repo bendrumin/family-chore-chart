@@ -1,20 +1,36 @@
 # Navigate to the kid dashboard via kid login (demo family The Smiths).
 # Used to stage the app for App Preview recording — does NOT start a routine.
-# Run: maestro test maestro/kid-login-nav.yaml
+# Run: JAVA_HOME="$(brew --prefix openjdk)/libexec/openjdk.jdk/Contents/Home" maestro test maestro/kid-login-nav.yaml
 appId: com.chorestar.ChoreStar
 ---
 - launchApp:
     stopApp: true
+    clearState: true
 
 - extendedWaitUntil:
     visible: ".*I'm a Kid.*"
     timeout: 15000
 - tapOn: ".*I'm a Kid.*"
 
+# If a code was remembered, we're already on PIN — tap the house/code pill to edit.
+- runFlow:
+    when:
+      visible: "Enter your secret PIN"
+    commands:
+      - tapOn: ".*pencil.*"
+      # Fallback: tap the monospaced family-code chip if pencil isn't labeled
+      - runFlow:
+          when:
+            visible: "Enter your secret PIN"
+          commands:
+            - tapOn:
+                point: "50%,38%"
+
 - extendedWaitUntil:
     visible: "Family code"
     timeout: 10000
 - tapOn: "Family code"
+- eraseText
 - inputText: "b5aceec8"
 - tapOn: ".*Next.*"
 

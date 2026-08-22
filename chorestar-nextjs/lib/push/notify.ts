@@ -1,6 +1,6 @@
 import 'server-only'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { apnsConfigured, sendApnsAlert } from '@/lib/push/apns'
+import { apnsConfigured, sendApnsAlert, type ApnsCustomData } from '@/lib/push/apns'
 
 /**
  * Domain-level push notifications.
@@ -11,11 +11,36 @@ import { apnsConfigured, sendApnsAlert } from '@/lib/push/apns'
  * a routine has completed the routine; the parent's phone buzzing is a bonus.
  */
 
+async function isActivityPushEnabled(userId: string): Promise<boolean> {
+  try {
+    const admin = createServiceRoleClient()
+    const { data } = await admin
+      .from('family_settings')
+      .select('activity_push_enabled')
+      .eq('user_id', userId)
+      .maybeSingle()
+    // Missing row or pre-migration DB → keep buzzing (default-on).
+    return data?.activity_push_enabled !== false
+  } catch {
+    return true
+  }
+}
+
 /** Send an alert to every registered device of one parent account. */
-export async function sendPushToUser(userId: string, title: string, body: string): Promise<void> {
+export async function sendPushToUser(
+  userId: string,
+  title: string,
+  body: string,
+  custom?: ApnsCustomData
+): Promise<void> {
   if (!apnsConfigured()) return
 
   try {
+    if (!(await isActivityPushEnabled(userId))) {
+      console.log(`[push] activity push disabled for user ${userId}`)
+      return
+    }
+
     const admin = createServiceRoleClient()
     // Not in the generated types (same as testflight_waitlist) — cast, per the
     // established pattern.
@@ -32,7 +57,7 @@ export async function sendPushToUser(userId: string, title: string, body: string
 
     for (const t of tokens) {
       const env = t.environment === 'development' ? 'development' : 'production'
-      const result = await sendApnsAlert(t.token, env, title, body)
+      const result = await sendApnsAlert(t.token, env, title, body, custom)
       if (result.tokenGone) {
         // Dead tokens accumulate forever otherwise — every future send would
         // retry them. APNs told us it's gone; believe it.
@@ -59,7 +84,12 @@ export async function notifyRoutineCompleted(childId: string, routineName: strin
       .eq('id', childId)
       .maybeSingle()
     if (!child) return
-    await sendPushToUser(child.user_id, '🎉 Routine complete!', `${child.name} finished ${routineName}!`)
+    await sendPushToUser(
+      child.user_id,
+      '🎉 Routine complete!',
+      `${child.name} finished ${routineName}!`,
+      { type: 'routine_complete', childId }
+    )
   } catch (error) {
     console.error('[push] notifyRoutineCompleted failed:', error)
   }
@@ -112,7 +142,8 @@ export async function notifyIfAllChoresDone(
     await sendPushToUser(
       child.user_id,
       '🌟 All chores done!',
-      `${child.name} finished every chore for today!`
+      `${child.name} finished every chore for today!`,
+      { type: 'all_chores_done', childId }
     )
   } catch (error) {
     console.error('[push] notifyIfAllChoresDone failed:', error)

@@ -34,6 +34,7 @@ export function AppearanceTab() {
   const [draftAccent, setDraftAccent] = useState('#6366f1')
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [activityPushEnabled, setActivityPushEnabled] = useState(true)
 
   useEffect(() => {
     if (settings) {
@@ -43,6 +44,7 @@ export function AppearanceTab() {
       setAutoSeasonalEnabled(customTheme.autoSeasonal || false)
       setAccentColor(customTheme.accentColor || null)
       setDraftAccent(customTheme.accentColor || '#6366f1')
+      setActivityPushEnabled(settings.activity_push_enabled !== false)
     }
     
     // Check notification permission
@@ -64,6 +66,19 @@ export function AppearanceTab() {
       } else {
         toast.error('Notification permission denied')
       }
+    }
+  }
+
+  const handleActivityPushToggle = async () => {
+    const next = !activityPushEnabled
+    setActivityPushEnabled(next)
+    try {
+      await updateSettings({ activity_push_enabled: next })
+      toast.success(next ? 'Activity alerts on' : 'Activity alerts off')
+    } catch (error) {
+      console.error('Error updating activity push:', error)
+      setActivityPushEnabled(!next)
+      toast.error('Failed to update activity alerts')
     }
   }
 
@@ -355,28 +370,53 @@ export function AppearanceTab() {
           )}
           Push Notifications
         </Label>
-        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Get reminders for daily chores and weekly progress reports
-          </p>
-          <Button
-            variant={notificationsEnabled ? 'outline' : 'gradient'}
-            size="lg"
-            onClick={handleNotificationToggle}
-            className="font-bold hover-glow w-full"
-          >
-            {notificationsEnabled ? (
-              <>
-                <BellOff className="w-5 h-5 mr-2" />
-                Disable Notifications
-              </>
-            ) : (
-              <>
-                <Bell className="w-5 h-5 mr-2" />
-                Enable Notifications
-              </>
-            )}
-          </Button>
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 space-y-4">
+          <div>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+              Activity alerts buzz on the iOS app when a kid finishes all chores or a routine. Shared with the whole family.
+            </p>
+            <Button
+              variant={activityPushEnabled ? 'outline' : 'gradient'}
+              size="lg"
+              onClick={handleActivityPushToggle}
+              className="font-bold hover-glow w-full"
+            >
+              {activityPushEnabled ? (
+                <>
+                  <BellOff className="w-5 h-5 mr-2" />
+                  Turn Off Activity Alerts
+                </>
+              ) : (
+                <>
+                  <Bell className="w-5 h-5 mr-2" />
+                  Turn On Activity Alerts
+                </>
+              )}
+            </Button>
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+              Browser reminders for daily chores and weekly progress (this device only).
+            </p>
+            <Button
+              variant={notificationsEnabled ? 'outline' : 'gradient'}
+              size="lg"
+              onClick={handleNotificationToggle}
+              className="font-bold hover-glow w-full"
+            >
+              {notificationsEnabled ? (
+                <>
+                  <BellOff className="w-5 h-5 mr-2" />
+                  Disable Browser Notifications
+                </>
+              ) : (
+                <>
+                  <Bell className="w-5 h-5 mr-2" />
+                  Enable Browser Notifications
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 

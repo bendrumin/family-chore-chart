@@ -29,9 +29,11 @@ interface KidChore {
 
 interface KidChoresProps {
   kidToken: string
+  /** Child avatar color — tints icons like the parent app. */
+  iconTint?: string | null
 }
 
-export function KidChores({ kidToken }: KidChoresProps) {
+export function KidChores({ kidToken, iconTint }: KidChoresProps) {
   const [chores, setChores] = useState<KidChore[] | null>(null)
   const [doneToday, setDoneToday] = useState<Set<string>>(new Set())
   const [pending, setPending] = useState<Set<string>>(new Set())
@@ -144,7 +146,13 @@ export function KidChores({ kidToken }: KidChoresProps) {
                 done ? 'bg-white/70' : 'bg-white'
               }`}
             >
-              {chore.icon && <ChoreIcon emoji={chore.icon} className="w-10 h-10 shrink-0" />}
+              {chore.icon && (
+                <ChoreIcon
+                  emoji={chore.icon}
+                  className="w-10 h-10 shrink-0"
+                  tint={iconTint || undefined}
+                />
+              )}
               <span
                 className={`flex-1 text-xl font-bold ${
                   done ? 'text-gray-400 line-through' : 'text-gray-900'

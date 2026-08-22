@@ -21,9 +21,21 @@ interface ChoreCardProps {
   weekStart: string
   rewardMode?: 'flat' | 'per_chore'
   onRefresh: () => void
+  /** Child avatar color — tints the chore icon like iOS. */
+  iconTint?: string | null
+  /** Shown under the title in family overview mode. */
+  childName?: string | null
 }
 
-export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart, rewardMode = 'flat', onRefresh }: ChoreCardProps) {
+export const ChoreCard = memo(function ChoreCard({
+  chore,
+  completions,
+  weekStart,
+  rewardMode = 'flat',
+  onRefresh,
+  iconTint,
+  childName,
+}: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   // Optimistic overrides so the grid responds instantly, before the DB round-trip
   const [optimistic, setOptimistic] = useState<Record<number, boolean>>({})
@@ -102,6 +114,18 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           })
 
         if (error) throw error
+
+        // Parent-path completions skip the kid API — ask the server whether
+        // this filled the day's list so APNs can buzz the parent's phone.
+        void fetch('/api/push/chores-done', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            childId: chore.child_id,
+            weekStart,
+            dayOfWeek,
+          }),
+        }).catch(() => {})
       }
 
       onRefresh()
@@ -142,11 +166,24 @@ export const ChoreCard = memo(function ChoreCard({ chore, completions, weekStart
           <div className="flex items-center justify-between mb-2.5 pb-2.5 border-b border-gray-200 dark:border-gray-700">
             <div className="flex-1 pr-10">
               <div className="flex items-center gap-2.5">
-                {chore.icon && <ChoreIcon emoji={chore.icon} className="w-7 h-7 shrink-0" />}
+                {chore.icon && (
+                  <ChoreIcon
+                    emoji={chore.icon}
+                    className="w-7 h-7 shrink-0"
+                    tint={iconTint || undefined}
+                  />
+                )}
                 <div className="flex items-center gap-x-3 gap-y-0.5 flex-wrap min-w-0">
-                  <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
-                    {chore.name}
-                  </h3>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
+                      {chore.name}
+                    </h3>
+                    {childName && (
+                      <p className="text-xs font-semibold mt-0.5" style={{ color: iconTint || 'var(--text-secondary)' }}>
+                        {childName}
+                      </p>
+                    )}
+                  </div>
                   <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
                 </div>
               </div>

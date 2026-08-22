@@ -235,8 +235,12 @@ struct FamilySettings: Codable {
     let language: String?
     let customTheme: CustomThemePayload?
     let weeklyBonusLabel: String?
+    /// APNs activity alerts (all-chores-done / routine-complete). Default on.
+    let activityPushEnabled: Bool?
     
     var isPerChoreMode: Bool { rewardMode == "per_chore" }
+    /// nil (pre-migration row) means enabled.
+    var activityPushOn: Bool { activityPushEnabled != false }
     var currencySymbol: String {
         switch currencyCode {
         case "GBP": return "£"
@@ -260,5 +264,6 @@ struct FamilySettings: Codable {
         case language
         case customTheme = "custom_theme"
         case weeklyBonusLabel = "weekly_bonus_label"
+        case activityPushEnabled = "activity_push_enabled"
     }
 }
