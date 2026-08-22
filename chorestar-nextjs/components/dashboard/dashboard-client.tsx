@@ -31,7 +31,6 @@ import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { resolveHeaderInk } from '@/lib/utils/resolve-theme'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
@@ -213,12 +212,7 @@ function DashboardContent({
     (document.documentElement.classList.contains('dark') ||
      document.documentElement.getAttribute('data-theme') === 'dark')
 
-  const [headerTextColor, setHeaderTextColor] = useState<'white' | 'gradient'>(() =>
-    detectDarkMode() ? 'gradient' : 'white'
-  )
-  const [buttonColor, setButtonColor] = useState<'white' | 'black'>(() =>
-    detectDarkMode() ? 'black' : 'white'
-  )
+  const [isDarkHeader, setIsDarkHeader] = useState(() => detectDarkMode())
   const [activeTab, setActiveTab] = useState<'chores' | 'routines'>('chores')
   const [openRoutineBuilderTrigger, setOpenRoutineBuilderTrigger] = useState(false)
 
@@ -231,9 +225,16 @@ function DashboardContent({
 
   const customTheme = settings?.custom_theme as CustomTheme | null
 
-  // The header is filled with the accent in light mode, so its ink is derived
-  // rather than hardcoded white — see resolveHeaderInk.
-  const headerInk = resolveHeaderInk(customTheme, headerTextColor === 'gradient')
+  // Accent sticky header in light mode (iOS-like white type on themed fill).
+  // Dark mode stays neutral — white-on-accent fights the dark chrome.
+  const headerInk = isDarkHeader
+    ? { color: 'var(--text-primary)', logo: 'white' as const, onAccent: false }
+    : {
+        color: 'var(--hero-foreground, var(--primary-foreground))',
+        logo: 'white' as const,
+        onAccent: true,
+      }
+  const settingsButtonColor = isDarkHeader ? 'black' : 'white'
   const headerEmoji = customTheme?.seasonalTheme
     ? (THEME_EMOJIS[customTheme.seasonalTheme] ?? '⭐')
     : '⭐'
@@ -246,9 +247,7 @@ function DashboardContent({
   }
 
   useEffect(() => {
-    const isDark = detectDarkMode()
-    setHeaderTextColor(isDark ? 'gradient' : 'white')
-    setButtonColor(isDark ? 'black' : 'white')
+    setIsDarkHeader(detectDarkMode())
   }, [settings])
 
   if (isLoading) {
@@ -260,11 +259,20 @@ function DashboardContent({
       {/* Ambient aurora backdrop — theme-tinted, purely decorative */}
       <AmbientBackground />
 
-      {/* Header */}
-      <header className="glass glass-border sticky top-0 z-50 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700" style={{
-        boxShadow: 'var(--shadow-sm)',
-        backgroundColor: 'var(--card-bg)'
-      }}>
+      {/* Header — accent fill + white-preferring ink in light mode (a11y-safe) */}
+      <header
+        className={`sticky top-0 z-50 border-b ${
+          headerInk.onAccent
+            ? 'border-white/15'
+            : 'border-black/[0.06] dark:border-white/[0.08]'
+        }`}
+        style={{
+          backgroundColor: headerInk.onAccent
+            ? 'var(--hero-fill, var(--primary-fill))'
+            : 'var(--card-bg)',
+          color: headerInk.color,
+        }}
+      >
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -273,7 +281,11 @@ function DashboardContent({
                 type="button"
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
-                className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/20 active:bg-white/30"
+                className={`inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors ${
+                  headerInk.onAccent
+                    ? 'hover:bg-white/15 active:bg-white/25'
+                    : 'hover:bg-black/[0.05] dark:hover:bg-white/[0.08] active:bg-black/[0.08] dark:active:bg-white/[0.12]'
+                }`}
                 style={{ color: headerInk.color }}
               >
                 <Menu className="w-5 h-5" />
@@ -288,7 +300,7 @@ function DashboardContent({
                 </span>
               </h1>
             </div>
-            <SettingsMenu buttonColor={buttonColor} onLogout={handleLogout} />
+            <SettingsMenu buttonColor={settingsButtonColor} onLogout={handleLogout} />
           </div>
         </div>
       </header>
@@ -462,9 +474,14 @@ function DashboardContent({
 
             {/* Family — avatar-ring child switcher */}
             <section className="space-y-3">
-              <h2 className="px-1 text-lg font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                Family
-              </h2>
+              <div className="flex items-baseline justify-between gap-3 px-1">
+                <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  Family
+                </h2>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                  {children.length}
+                </span>
+              </div>
               <ChildSwitcher
                 children={children}
                 selectedChildId={selectedChildId}

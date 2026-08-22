@@ -6,6 +6,7 @@ import {
 import {
   ensureReadable,
   accessiblePair,
+  accessiblePairPreferWhite,
   hoverFill,
   normalizeHex,
   ON_ACCENT_LIGHT,
@@ -71,8 +72,15 @@ export function resolveActiveTheme(
 
   const manualId = customTheme?.seasonalTheme
   if (manualId) {
-    const colors = THEME_COLORS[manualId]
-    if (colors) return { id: manualId, name: manualId, source: 'manual', colors, fullReach: true }
+    // Accept iOS-stored ids (`stpatricks`) as well as web camelCase (`stPatricks`).
+    const normalized =
+      manualId === 'stpatricks' || manualId.toLowerCase() === 'stpatricks'
+        ? 'stPatricks'
+        : manualId === 'newyear'
+          ? 'newYear'
+          : manualId
+    const colors = THEME_COLORS[normalized] ?? THEME_COLORS[manualId]
+    if (colors) return { id: normalized, name: normalized, source: 'manual', colors, fullReach: true }
     // An unknown stored id (a renamed or removed theme) falls through to auto
     // rather than leaving the UI with no accent at all.
   }
@@ -115,6 +123,11 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
   const primaryPair = accessiblePair(primary)
   const secondaryPair = accessiblePair(secondary)
 
+  // Hero / accent-header: white-preferring pairs (iOS match, AA-safe).
+  const heroPrimary = accessiblePairPreferWhite(primary)
+  const heroSecondarySrc = colors.highlight ?? secondary
+  const heroSecondary = accessiblePairPreferWhite(heroSecondarySrc)
+
   const vars: Record<string, string> = {
     '--primary': ensureReadable(primary, surface),
     '--secondary': ensureReadable(secondary, surface),
@@ -126,6 +139,10 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
     '--primary-fill-hover': hoverFill(primaryPair.fill, primaryPair.foreground),
     '--seasonal-accent': ensureReadable(primary, surface),
     '--seasonal-secondary': ensureReadable(secondary, surface),
+    // iOS-matched hero gradient + sticky accent header.
+    '--hero-fill': heroPrimary.fill,
+    '--hero-secondary-fill': heroSecondary.fill,
+    '--hero-foreground': heroPrimary.foreground,
   }
 
   return vars

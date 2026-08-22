@@ -122,6 +122,22 @@ export function accessiblePair(fill: string, target: number = AA_NORMAL): Access
 }
 
 /**
+ * iOS-style hero pair: prefer white ink, darken the fill until AA passes.
+ *
+ * `accessiblePair` keeps pale accents (summer teal, halloween orange) at their
+ * true hue and switches to dark ink. That is correct for chips, but the dashboard
+ * hero / accent header should read like iOS — white type on a slightly richer
+ * fill — without falling back to inaccessible white-on-yellow.
+ */
+export function accessiblePairPreferWhite(fill: string, target: number = AA_NORMAL): AccessiblePair {
+  const adjusted = ensureReadable(fill, ON_ACCENT_LIGHT, target)
+  if (contrastRatio(adjusted, ON_ACCENT_LIGHT) >= target) {
+    return { fill: adjusted, foreground: ON_ACCENT_LIGHT }
+  }
+  return accessiblePair(fill, target)
+}
+
+/**
  * A hover fill that always moves AWAY from its ink, so contrast can only improve.
  *
  * Darkening on hover is the obvious choice and is what `hover:bg-indigo-600` did,

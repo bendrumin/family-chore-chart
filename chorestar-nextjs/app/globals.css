@@ -97,6 +97,11 @@
        can only improve on hover. Computed by hoverFill(); asserted in tests. */
     --primary-fill-hover: #565ad2;
     --primary-foreground: #ffffff;
+    /* Second stop for iOS-style hero gradients (indigo → purple brand default). */
+    --secondary-fill: #8b5cf6;
+    --hero-fill: #5e61e5;
+    --hero-secondary-fill: #8b5cf6;
+    --hero-foreground: #ffffff;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
@@ -157,6 +162,10 @@
     --primary-fill: #4f46e5;
     --primary-fill-hover: #4941d2;
     --primary-foreground: #ffffff;
+    --secondary-fill: #7c3aed;
+    --hero-fill: #4f46e5;
+    --hero-secondary-fill: #7c3aed;
+    --hero-foreground: #ffffff;
 
     --bg-primary: #1f2937;
     --bg-secondary: #111827;
@@ -754,6 +763,39 @@ html[data-theme="dark"] header.glass {
 
   .kid-button {
     transition: none !important;
+  }
+}
+
+/* Theme particles — soft drift inside the dashboard hero (Track B) */
+@keyframes theme-particle-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(12px, 120%, 0) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+.theme-particle {
+  animation-name: theme-particle-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-particle {
+    animation: none !important;
+    opacity: 0.18 !important;
+    top: 18% !important;
   }
 }
 

@@ -98,7 +98,8 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎄',
     startDate: '12-01',
     endDate: '12-31',
-    colors: paletteFrom('#c41e3a'),
+    // iOS SeasonalThemes — red → green (not same-hue ramp).
+    colors: paletteFrom('#dc2626', { highlight: '#218733' }),
     decorativeIcons: ['🎄', '🎁', '🧦', '🍪', '⭐', '❄️'],
     isHoliday: true,
     seasonalActivities: [
@@ -116,7 +117,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🦃',
     startDate: '11-20',
     endDate: '11-30',
-    colors: paletteFrom('#a3541b'),
+    colors: paletteFrom('#ea8811', { highlight: '#c7590d' }),
     decorativeIcons: ['🦃', '🍁', '🥧', '🌽', '🍂'],
     isHoliday: true,
     seasonalActivities: [
@@ -133,7 +134,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎃',
     startDate: '10-01',
     endDate: '10-31',
-    colors: paletteFrom('#c2410c'),
+    colors: paletteFrom('#f79307', { highlight: '#8c24ab' }),
     decorativeIcons: ['🎃', '👻', '🕷️', '🍬', '🍭', '🧙‍♀️'],
     isHoliday: true,
     seasonalActivities: [
@@ -151,7 +152,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🐰',
     startDate: '04-01',
     endDate: '04-30',
-    colors: paletteFrom('#7e22ce'),
+    colors: paletteFrom('#a855f7', { highlight: '#ed789e' }),
     decorativeIcons: ['🐰', '🥚', '🌷', '🧺', '🌸'],
     isHoliday: true,
     seasonalActivities: [
@@ -169,7 +170,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '💝',
     startDate: '02-10',
     endDate: '02-14',
-    colors: paletteFrom('#be185d'),
+    colors: paletteFrom('#ec4899', { highlight: '#d92e61' }),
     decorativeIcons: ['💝', '💌', '💖', '🌹', '💕'],
     isHoliday: true,
     seasonalActivities: [
@@ -186,7 +187,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '☘️',
     startDate: '03-15',
     endDate: '03-17',
-    colors: paletteFrom('#15803d'),
+    colors: paletteFrom('#22b84e', { highlight: '#148738' }),
     decorativeIcons: ['☘️', '🍀', '🌈', '🎩'],
     isHoliday: true,
     seasonalActivities: [
@@ -202,8 +203,7 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '☀️',
     startDate: '06-01',
     endDate: '08-31',
-    // Edge of Paradise. True teal, 3.32:1 on white but 5.35:1 with the derived
-    // ink. Tint is the flamingo blush at 11.63:1 with dark ink.
+    // Edge of Paradise / iOS: teal → flamingo coral.
     colors: paletteFrom('#3a9aa3', { tint: '#f1c8c1', highlight: '#ed706f' }),
     isHoliday: false,
     seasonalActivities: [
@@ -221,8 +221,6 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🌸',
     startDate: '03-20',
     endDate: '06-20',
-    // Cherry Blossom. Tint is the sky from the photograph — pink blossom against
-    // powder blue is the whole image, and no single-hue ramp can produce it.
     colors: paletteFrom('#ee3c6b', { tint: '#c5d8eb', highlight: '#e7206b' }),
     isHoliday: false,
     seasonalActivities: [
@@ -239,7 +237,6 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🍁',
     startDate: '09-22',
     endDate: '12-20',
-    // Autumn Ember. Firebrick needed no correction at all — 6.75:1 on white.
     colors: paletteFrom('#b31e11', { tint: '#ee9c15', highlight: '#fa6a18' }),
     isHoliday: false,
     seasonalActivities: [
@@ -256,9 +253,6 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '❄️',
     startDate: '12-21',
     endDate: '03-19',
-    // Winter Frost. The source palette's navies measured 1.05–1.33:1 against the
-    // dark-mode surface and would vanish, so the anchor stops at royal blue and
-    // paletteFrom lifts dark mode to ramp[400].
     colors: paletteFrom('#1a22b0', { tint: '#a9adb1', highlight: '#2f7cc6' }),
     isHoliday: false,
     seasonalActivities: [
@@ -275,7 +269,8 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     icon: '🎉',
     startDate: '12-28',
     endDate: '01-05',
-    colors: paletteFrom('#a16207'),
+    // iOS: indigo → purple (not gold).
+    colors: paletteFrom('#6366f1', { highlight: '#8c5cf7' }),
     decorativeIcons: ['🎉', '🎊', '✨', '🎆', '⭐'],
     isHoliday: true,
     seasonalActivities: [
@@ -296,38 +291,38 @@ export const ACCENT_THEMES: Record<string, { id: string; name: string; icon: str
     id: 'sunset',
     name: 'Sunset',
     icon: '🌅',
-    colors: paletteFrom('#b91c1c')
+    colors: paletteFrom('#ea4c23', { highlight: '#f59e0a' }),
   },
   ocean: {
     id: 'ocean',
     name: 'Ocean',
     icon: '🌊',
-    colors: paletteFrom('#006994')
+    colors: paletteFrom('#0284c7', { highlight: '#0a5ca6' }),
   },
   forest: {
     id: 'forest',
     name: 'Forest',
     icon: '🌲',
-    colors: paletteFrom('#2d5016')
+    colors: paletteFrom('#158750', { highlight: '#0d6138' }),
   },
   aurora: {
     id: 'aurora',
     name: 'Aurora',
     icon: '🌌',
-    colors: paletteFrom('#4a148c')
+    colors: paletteFrom('#592eba', { highlight: '#1fab8c' }),
   },
   coral: {
     id: 'coral',
     name: 'Coral',
     icon: '🪸',
-    colors: paletteFrom('#e11d48')
+    colors: paletteFrom('#f56b5b', { highlight: '#f59e0a' }),
   },
   lavender: {
     id: 'lavender',
     name: 'Lavender',
     icon: '💜',
-    colors: paletteFrom('#9b59b6')
-  }
+    colors: paletteFrom('#9466dd', { highlight: '#6640b3' }),
+  },
 }
 
 /**

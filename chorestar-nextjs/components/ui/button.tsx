@@ -2,23 +2,28 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils/cn'
 
+/**
+ * Calm buttons — solid fills, no hover scale / multi-shadow lift.
+ * Matches the quieter iOS control language used in Track B.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer active:opacity-90',
   {
     variants: {
       variant: {
-        default: 'text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95',
-        destructive: 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:from-red-600 hover:to-pink-600 active:scale-95',
-        outline: 'border-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md hover:bg-white/90 dark:hover:bg-gray-800/90 hover:scale-105 hover:shadow-md active:scale-95 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600',
-        secondary: 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-900 dark:text-white shadow-md hover:shadow-lg hover:scale-105 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700 active:scale-95',
-        ghost: 'hover:bg-white/50 dark:hover:bg-gray-800/50 backdrop-blur-md hover:scale-105 active:scale-95 text-gray-900 dark:text-gray-100',
-        link: 'text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline hover:scale-105',
-        gradient: 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg hover:shadow-2xl hover:scale-110 hover:from-indigo-600 hover:to-purple-600 active:scale-95',
-        success: 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:from-green-500 hover:to-emerald-600 active:scale-95',
+        default: 'text-white',
+        destructive: 'bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 dark:hover:bg-red-500',
+        outline: 'border-2 bg-transparent hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600',
+        secondary: 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600',
+        ghost: 'hover:bg-black/[0.05] dark:hover:bg-white/[0.08] text-gray-900 dark:text-gray-100',
+        link: 'text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline',
+        // Prefer theme fill via default; gradient kept as solid accent for call sites.
+        gradient: 'text-white',
+        success: 'bg-emerald-500 dark:bg-emerald-600 text-white hover:bg-emerald-600 dark:hover:bg-emerald-500',
       },
       size: {
         default: 'h-11 px-6 py-2.5',
-        sm: 'h-11 rounded-lg px-4 text-xs', // Increased from h-9 to h-11 for 44px minimum touch target
+        sm: 'h-11 rounded-lg px-4 text-xs',
         lg: 'h-14 rounded-2xl px-10 text-base',
         icon: 'h-11 w-11',
       },
@@ -38,16 +43,15 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, style, ...props }, ref) => {
-    // Apply the gradient background to the default variant — including when no
-    // `variant` prop is passed. cva defaults the *classes* to 'default' (which
-    // only set text-white, no background), but `variant` is still undefined
-    // here, so without treating undefined as default the button renders white
-    // text on no background (white-on-white / invisible).
-    const isDefaultVariant = variant === undefined || variant === 'default'
-    const defaultStyle = isDefaultVariant ? {
-      background: 'var(--gradient-primary)',
-      ...style
-    } : style
+    const isAccentFill =
+      variant === undefined || variant === 'default' || variant === 'gradient'
+    const defaultStyle = isAccentFill
+      ? {
+          background: 'var(--primary-fill)',
+          color: 'var(--primary-foreground)',
+          ...style,
+        }
+      : style
 
     return (
       <button

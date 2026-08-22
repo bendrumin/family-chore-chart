@@ -34,6 +34,7 @@ import {
   ensureReadable,
   bestForeground,
   accessiblePair,
+  accessiblePairPreferWhite,
   hoverFill,
   relativeLuminance,
   isValidHex,
@@ -90,6 +91,7 @@ t('the exposed tokens are accents and the ramp — never a surface', () => {
     '--primary-foreground', '--secondary-foreground',
     '--seasonal-accent', '--seasonal-secondary',
     '--primary-fill-hover',
+    '--hero-fill', '--hero-secondary-fill', '--hero-foreground',
     ...THEME_PALETTE_VAR_NAMES,
     ...ACCENT_SCALE_VAR_NAMES,
   ]))
@@ -771,32 +773,53 @@ t('auto-seasonal emits NO second hue, so the backdrop cannot go half-themed', ()
   }
 })
 
-t('an untinted theme emits no palette roles at all', () => {
-  // Otherwise the clear-then-set cycle would paint a stale or default tint.
-  const plain = THEME_COLORS['ocean']
-  assert.ok(plain && !plain.tint, 'expected ocean to be untinted')
+t('themes without tint/highlight emit no palette roles', () => {
+  // Custom accents and plain paletteFrom() themes have no second-hue roles.
+  // After iOS parity every named seasonal theme declares a highlight, so this
+  // asserts the clear path with a synthetic accent-only palette.
+  const colors = colorsFromAccent('#0284c7')
+  assert.ok(!colors.tint && !colors.highlight)
   for (const isDark of [false, true]) {
     const vars = themeVarsFor(
-      { id: 'ocean', name: 'ocean', source: 'manual', colors: plain, fullReach: true }, isDark)
+      { id: 'custom', name: 'custom', source: 'custom', colors, fullReach: true }, isDark)
     for (const name of THEME_PALETTE_VAR_NAMES) {
-      assert.ok(!(name in vars), `untinted theme still emitted ${name}`)
+      assert.ok(!(name in vars), `role-less theme still emitted ${name}`)
     }
   }
 })
 
-t('the tinted blob falls back to the ramp, so untinted themes keep their color', () => {
+t('secondary aurora blob falls back through hero → secondary → primary fills', () => {
   const raw = readFileSync(new URL('../../components/ui/ambient-background.tsx', import.meta.url), 'utf8')
   const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-  const tintUse = src.match(/var\(--accent-tint[^)]*\)/g) ?? []
-  assert.ok(tintUse.length > 0, 'no blob uses the tint')
-  for (const use of tintUse) {
-    // An undefined var() invalidates the declaration and drops the property
-    // entirely — the blob would lose its background, not fall back to a default.
-    assert.ok(use.includes(','), `--accent-tint used with no fallback: ${use}`)
-  }
+  assert.ok(
+    src.includes("var(--hero-secondary-fill, var(--secondary-fill, var(--primary-fill)))"),
+    'secondary blob must fall back so brand-only pages keep a tinted wash'
+  )
 })
 
-t('the ambient backdrop draws every blob from the ramp', () => {
+t('hero gradient uses the iOS second-hue stop when present', () => {
+  const summer = THEME_COLORS['summer']
+  assert.ok(summer.highlight, 'summer should declare the flamingo highlight')
+  for (const isDark of [false, true]) {
+    const vars = themeCssVars(summer, isDark)
+    // Prefer-white may darken the highlight slightly; it must stay a close mix.
+    assert.ok(vars['--hero-secondary-fill'], 'missing hero secondary')
+    assert.equal(vars['--hero-foreground']?.toLowerCase(), '#ffffff')
+  }
+  const hero = readFileSync(new URL('../../components/dashboard/dashboard-hero.tsx', import.meta.url), 'utf8')
+  assert.ok(hero.includes('--hero-secondary-fill'), 'hero does not use the iOS second stop')
+  assert.ok(hero.includes('--hero-foreground'), 'hero does not use white-preferring ink')
+})
+
+t('hero prefer-white darkens pale fills instead of switching to black text', () => {
+  // Summer teal fails white at rest; pair must keep white ink and darken fill.
+  const pair = accessiblePairPreferWhite('#3a9aa3')
+  assert.equal(pair.foreground.toLowerCase(), '#ffffff')
+  assert.ok(contrastRatio(pair.fill, pair.foreground) >= AA_NORMAL)
+  assert.notEqual(pair.fill.toLowerCase(), '#3a9aa3')
+})
+
+t('the ambient backdrop draws every blob from theme fills', () => {
   const raw = readFileSync(new URL('../../components/ui/ambient-background.tsx', import.meta.url), 'utf8')
   // Strip comments — the file documents the old bug by name.
   const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
@@ -805,7 +828,14 @@ t('the ambient backdrop draws every blob from the ramp', () => {
   const blobs = src.match(/background: '[^']*'/g) ?? []
   assert.ok(blobs.length >= 3, 'expected three blobs')
   for (const b of blobs) {
-    assert.ok(b.includes('var(--accent-'), `blob not on the ramp: ${b}`)
+    // Track B: blobs follow theme fills so accent-only seasonal still tints the
+    // aurora, without rewriting the Tailwind ramp (yellow-dashboard safe).
+    assert.ok(
+      /var\(--(primary|secondary|hero|hero-secondary)-fill/.test(b) ||
+        /var\(--hero-fill/.test(b) ||
+        /var\(--hero-secondary-fill/.test(b),
+      `blob not on a theme fill: ${b}`
+    )
   }
 })
 
@@ -813,7 +843,7 @@ t('the hero derives its ink instead of hardcoding white', () => {
   const src = readFileSync(new URL('../../components/dashboard/dashboard-hero.tsx', import.meta.url), 'utf8')
   const code = src.split('\n').filter(l => !l.trim().startsWith('//')).join('\n')
   assert.ok(!/text-white|bg-white|stroke="#fff"/.test(code), 'hero still hardcodes white')
-  assert.ok(code.includes("color: 'var(--primary-foreground)'"), 'hero ink is not derived')
+  assert.ok(code.includes("var(--hero-foreground"), 'hero ink is not derived')
 })
 
 t('a completed day cell follows the theme, with no hardcoded green or white', () => {

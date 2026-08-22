@@ -148,22 +148,22 @@ export const ChoreCard = memo(function ChoreCard({
 
   return (
     <>
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl active:shadow-lg active:scale-[0.995] group relative border border-gray-200 dark:border-gray-700">
+      <Card className="overflow-hidden group relative !border-transparent dark:!border-transparent bg-black/[0.03] dark:bg-white/[0.04]">
         {/* Edit Button - Top Right */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-3 right-3 z-10 min-h-[44px] min-w-[44px] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm rounded-lg shadow-sm touch-device-visible"
+          className="absolute top-2 right-2 z-10 min-h-[44px] min-w-[44px] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity rounded-lg touch-device-visible"
           title="Edit chore"
           aria-label="Edit chore"
         >
           <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
         </Button>
 
-        <div className="p-4 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50">
+        <div className="p-3.5">
           {/* Header */}
-          <div className="flex items-center justify-between mb-2.5 pb-2.5 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
             <div className="flex-1 pr-10">
               <div className="flex items-center gap-2.5">
                 {chore.icon && (
@@ -175,11 +175,11 @@ export const ChoreCard = memo(function ChoreCard({
                 )}
                 <div className="flex items-center gap-x-3 gap-y-0.5 flex-wrap min-w-0">
                   <div className="min-w-0">
-                    <h3 className="font-bold text-base leading-snug" style={{ color: 'var(--text-primary)' }}>
+                    <h3 className="font-semibold text-[0.95rem] leading-snug" style={{ color: 'var(--text-primary)' }}>
                       {chore.name}
                     </h3>
                     {childName && (
-                      <p className="text-xs font-semibold mt-0.5" style={{ color: iconTint || 'var(--text-secondary)' }}>
+                      <p className="text-xs font-medium mt-0.5" style={{ color: iconTint || 'var(--text-secondary)' }}>
                         {childName}
                       </p>
                     )}
@@ -201,12 +201,11 @@ export const ChoreCard = memo(function ChoreCard({
                   onClick={() => toggleCompletion(day.dayOfWeek)}
                   aria-label={`${chore.name} ${day.dayName} — ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
-                  className={`h-14 sm:h-16 rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 font-bold touch-manipulation ${
+                  className={`h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation ${
                     completed
-                      ? 'accent-fill hover:scale-110 active:scale-95 shadow-md'
-                      : 'bg-white dark:bg-gray-700 hover:scale-105 hover:shadow-md active:scale-95 border border-gray-200 dark:border-gray-600'
+                      ? 'accent-fill'
+                      : 'bg-white/70 dark:bg-gray-800/60 border border-black/[0.06] dark:border-white/[0.1] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]'
                   }`}
-                  style={completed ? { boxShadow: 'var(--shadow-md)' } : undefined}
                   title={`${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`}
                 >
                   {/* A completed cell is the theme accent, via .accent-fill. The
@@ -224,12 +223,12 @@ export const ChoreCard = memo(function ChoreCard({
           </div>
 
           {/* Stats */}
-          <div className="pt-2.5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-              <span className="font-bold text-lg mr-1 text-gray-900 dark:text-gray-100">
+          <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <span className="font-bold text-base mr-1 text-gray-900 dark:text-gray-100">
                 {choreCompletions.length}
               </span>
-              this week {choreCompletions.length >= 5 && '🔥'}
+              this week{choreCompletions.length >= 5 ? ' · on a roll' : ''}
             </div>
             {rewardMode === 'per_chore' && (
               <div className="text-sm font-semibold text-green-600 dark:text-green-400">
