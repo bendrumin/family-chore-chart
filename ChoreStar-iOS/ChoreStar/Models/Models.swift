@@ -242,12 +242,23 @@ struct FamilySettings: Codable {
     /// nil (pre-migration row) means enabled.
     var activityPushOn: Bool { activityPushEnabled != false }
     var currencySymbol: String {
-        switch currencyCode {
+        switch currencyCode?.uppercased() {
         case "GBP": return "£"
         case "EUR": return "€"
-        case "CAD": return "CA$"
-        case "AUD": return "A$"
+        case "JPY", "CNY": return "¥"
+        case "INR": return "₹"
+        case "KRW": return "₩"
+        case "CHF": return "Fr"
+        case "BRL": return "R$"
+        case "CAD", "AUD", "MXN", "USD", .none: return "$"
         default: return "$"
+        }
+    }
+    /// Minor-unit decimals for formatting (JPY/KRW have none).
+    var currencyDecimals: Int {
+        switch currencyCode?.uppercased() {
+        case "JPY", "KRW": return 0
+        default: return 2
         }
     }
     

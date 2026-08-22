@@ -26,6 +26,7 @@ class ThemeManager: ObservableObject {
             activeTheme = nil
         } else {
             activeTheme = SeasonalTheme(rawValue: seasonalThemeSetting)
+                ?? SeasonalTheme(rawValue: Self.iosSeasonalId(fromWeb: seasonalThemeSetting))
         }
     }
     
@@ -41,6 +42,53 @@ class ThemeManager: ObservableObject {
     @MainActor
     func applyCustomAccent(_ hex: String?) {
         customAccentHex = hex
+    }
+
+    /**
+     Apply seasonal preference from the shared custom_theme JSON.
+
+     Web shape: `{ autoSeasonal: bool, seasonalTheme: string|null }`.
+     iOS AppStorage: "auto" | "none" | SeasonalTheme.rawValue.
+     */
+    @MainActor
+    func applySeasonalFromCustomTheme(_ theme: CustomThemePayload?) {
+        guard let theme else { return }
+        let next: String
+        if theme.autoSeasonal == true {
+            next = "auto"
+        } else if let id = theme.seasonalTheme, !id.isEmpty {
+            next = Self.iosSeasonalId(fromWeb: id)
+        } else {
+            next = "none"
+        }
+        guard next != seasonalThemeSetting else {
+            resolveTheme()
+            return
+        }
+        seasonalThemeSetting = next
+        resolveTheme()
+    }
+
+    /// Web uses camelCase for a couple of ids (`stPatricks`, `newYear`).
+    static func iosSeasonalId(fromWeb id: String) -> String {
+        switch id.lowercased() {
+        case "stpatricks": return SeasonalTheme.stpatricks.rawValue
+        case "newyear": return SeasonalTheme.newYear.rawValue
+        default:
+            if let match = SeasonalTheme.allCases.first(where: { $0.rawValue.lowercased() == id.lowercased() }) {
+                return match.rawValue
+            }
+            return id
+        }
+    }
+
+    /// Persist the id web's appearance tab already understands.
+    static func webSeasonalId(fromIOS id: String) -> String {
+        switch id.lowercased() {
+        case "stpatricks": return "stPatricks"
+        case "newyear": return "newYear"
+        default: return id
+        }
     }
 
     private var customAccent: Color? {

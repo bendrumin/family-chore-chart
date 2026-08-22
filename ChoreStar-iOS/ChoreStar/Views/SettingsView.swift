@@ -64,13 +64,18 @@ struct SettingsView: View {
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     .listRowBackground(Color.clear)
+                    .onChange(of: seasonalThemeSetting) { _, newValue in
+                        Task { await manager.setSeasonalThemePreference(newValue) }
+                    }
                 } header: {
                     Text("Theme")
                 } footer: {
                     if themeManager.customAccentHex != nil {
-                        Text("Custom accent overrides the theme colours.")
+                        Text("Custom accent overrides the theme colours. Theme choice syncs with the web app.")
                     } else if let activeTheme = themeManager.activeTheme {
-                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName)")
+                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName) — synced with the web app.")
+                    } else {
+                        Text("Theme choice syncs with the web app.")
                     }
                 }
 
@@ -216,6 +221,16 @@ struct SettingsView: View {
                             Image(systemName: "person.2.fill")
                                 .foregroundColor(.choreStarPrimary)
                             Text("Family Sharing & Kid Login")
+                        }
+                    }
+
+                    NavigationLink {
+                        FamilyRewardsSettingsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "dollarsign.circle.fill")
+                                .foregroundColor(.choreStarAccent)
+                            Text("Rewards & Currency")
                         }
                     }
                 }
@@ -849,3 +864,132 @@ struct DeleteAccountView: View {
         }
     }
 }
+
+// MARK: - Rewards & Currency (was web-only)
+
+/// Lets parents edit reward mode, daily/weekly amounts, and currency on device.
+/// Writes the same family_settings columns the web Family tab already uses.
+struct FamilyRewardsSettingsView: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @State private var rewardMode: String = "flat"
+    @State private var dailyCentsText: String = "7"
+    @State private var weeklyCentsText: String = "1"
+    @State private var currencyCode: String = "USD"
+    @State private var isSaving = false
+    @State private var statusMessage: String?
+
+    private let currencies: [(code: String, label: String)] = [
+        ("USD", "US Dollar ($)"),
+        ("EUR", "Euro (€)"),
+        ("GBP", "British Pound (£)"),
+        ("CAD", "Canadian Dollar ($)"),
+        ("AUD", "Australian Dollar ($)"),
+        ("JPY", "Japanese Yen (¥)"),
+        ("INR", "Indian Rupee (₹)"),
+        ("MXN", "Mexican Peso ($)"),
+        ("BRL", "Brazilian Real (R$)"),
+        ("CHF", "Swiss Franc (Fr)"),
+        ("CNY", "Chinese Yuan (¥)"),
+        ("KRW", "Korean Won (₩)"),
+    ]
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("Reward mode", selection: $rewardMode) {
+                    Text("Daily flat rate").tag("flat")
+                    Text("Per chore").tag("per_chore")
+                }
+                .pickerStyle(.segmented)
+            } footer: {
+                Text(rewardMode == "per_chore"
+                       ? "Kids earn the amount on each chore they finish."
+                       : "Kids earn the daily amount when they finish every chore for the day.")
+            }
+
+            Section("Amounts (cents)") {
+                HStack {
+                    Text(rewardMode == "per_chore" ? "Default chore" : "Daily reward")
+                    Spacer()
+                    TextField("7", text: $dailyCentsText)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 80)
+                    Text("¢")
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+                HStack {
+                    Text("Weekly bonus")
+                    Spacer()
+                    TextField("1", text: $weeklyCentsText)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 80)
+                    Text("¢")
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+            } footer: {
+                Text("Enter amounts in cents — e.g. 100 = \(manager.formatMoney(1.0)). Synced with the web app.")
+            }
+
+            Section("Currency") {
+                Picker("Currency", selection: $currencyCode) {
+                    ForEach(currencies, id: \.code) { item in
+                        Text(item.label).tag(item.code)
+                    }
+                }
+            }
+
+            Section {
+                Button {
+                    Task { await save() }
+                } label: {
+                    HStack {
+                        if isSaving { ProgressView() }
+                        Text(isSaving ? "Saving…" : "Save Rewards")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .disabled(isSaving)
+
+                if let statusMessage {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundColor(statusMessage.contains("Saved") ? .choreStarSuccess : .red)
+                }
+            }
+        }
+        .navigationTitle("Rewards & Currency")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { loadFromSettings() }
+        .onChange(of: manager.familySettings?.id) { _, _ in loadFromSettings() }
+    }
+
+    private func loadFromSettings() {
+        guard let s = manager.familySettings else { return }
+        rewardMode = s.rewardMode ?? "flat"
+        dailyCentsText = String(s.dailyRewardCents)
+        weeklyCentsText = String(s.weeklyBonusCents)
+        currencyCode = s.currencyCode ?? "USD"
+    }
+
+    private func save() async {
+        let daily = Int(dailyCentsText.filter(\.isNumber)) ?? 7
+        let weekly = Int(weeklyCentsText.filter(\.isNumber)) ?? 0
+        isSaving = true
+        statusMessage = nil
+        let err = await manager.updateFamilyRewards(
+            rewardMode: rewardMode,
+            dailyRewardCents: max(0, daily),
+            weeklyBonusCents: max(0, weekly),
+            currencyCode: currencyCode
+        )
+        await MainActor.run {
+            isSaving = false
+            statusMessage = err ?? "Saved — synced with the web app."
+            if err == nil { Haptics.success() }
+        }
+    }
+}
+

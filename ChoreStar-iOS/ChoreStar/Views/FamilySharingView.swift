@@ -112,7 +112,7 @@ struct FamilySharingView: View {
         } header: {
             Text("Invite a Co-Parent")
         } footer: {
-            Text("Share this code with a partner or grandparent so they can see and manage your family's chores from their own account.")
+            Text("Share this code with a partner or grandparent so they can see and manage your family's chores from their own account. The same code works in the iOS app and on chorestar.app.")
         }
     }
 

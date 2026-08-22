@@ -46,7 +46,12 @@ class SupabaseManager: ObservableObject {
 
     /// Formats a dollar amount using the family's currency, e.g. "£2.50".
     func formatMoney(_ amount: Double) -> String {
-        String(format: "%@%.2f", currencySymbol, amount)
+        let symbol = currencySymbol
+        let decimals = familySettings?.currencyDecimals ?? 2
+        if decimals == 0 {
+            return String(format: "%@%.0f", symbol, amount.rounded())
+        }
+        return String(format: "%@%.\(decimals)f", symbol, amount)
     }
     
     // Child session properties
@@ -1940,6 +1945,9 @@ class SupabaseManager: ObservableObject {
                 // The custom accent lives in family_settings.custom_theme, shared
                 // with web — a colour picked on either platform shows up on both.
                 ThemeManager.shared.applyCustomAccent(settings.first?.customTheme?.accentColor)
+                // Seasonal / classic / auto also live in that JSON — apply so a
+                // Halloween pick on the website lands on the phone.
+                ThemeManager.shared.applySeasonalFromCustomTheme(settings.first?.customTheme)
                 if let settings = settings.first {
                     debugLastError = "Loaded settings: \(settings.dailyRewardCents)¢ per day"
                 }
@@ -2021,6 +2029,99 @@ class SupabaseManager: ObservableObject {
                 debugLastError = "Activity push pref failed: \(error.localizedDescription)"
             }
         }
+        #endif
+    }
+
+    /**
+     Writes seasonal theme preference into family_settings.custom_theme so web
+     and iOS share the same pick.
+
+     `setting` mirrors the ThemeGallery ids: "auto" | "none" | SeasonalTheme.rawValue.
+     Web uses autoSeasonal bool + seasonalTheme string (stPatricks camelCase).
+     */
+    func setSeasonalThemePreference(_ setting: String) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+
+        struct RawThemeRow: Codable { let custom_theme: [String: AnyJSON]? }
+
+        do {
+            let rows: [RawThemeRow] = try await client
+                .from("family_settings")
+                .select("custom_theme")
+                .eq("user_id", value: uid)
+                .limit(1)
+                .execute()
+                .value
+
+            var merged = rows.first?.custom_theme ?? [:]
+            switch setting {
+            case "auto":
+                merged["autoSeasonal"] = .bool(true)
+                merged["seasonalTheme"] = .null
+            case "none":
+                merged["autoSeasonal"] = .bool(false)
+                merged["seasonalTheme"] = .null
+            default:
+                merged["autoSeasonal"] = .bool(false)
+                merged["seasonalTheme"] = .string(ThemeManager.webSeasonalId(fromIOS: setting))
+            }
+
+            try await client
+                .from("family_settings")
+                .update(["custom_theme": AnyJSON.object(merged)])
+                .eq("user_id", value: uid)
+                .execute()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Seasonal theme save failed: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Reward mode, daily/weekly amounts, and currency — previously web-only.
+    func updateFamilyRewards(
+        rewardMode: String,
+        dailyRewardCents: Int,
+        weeklyBonusCents: Int,
+        currencyCode: String
+    ) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return "Not signed in." }
+
+        struct RewardsUpdate: Encodable {
+            let reward_mode: String
+            let daily_reward_cents: Int
+            let weekly_bonus_cents: Int
+            let currency_code: String
+        }
+
+        do {
+            try await client
+                .from("family_settings")
+                .update(RewardsUpdate(
+                    reward_mode: rewardMode,
+                    daily_reward_cents: dailyRewardCents,
+                    weekly_bonus_cents: weeklyBonusCents,
+                    currency_code: currencyCode
+                ))
+                .eq("user_id", value: uid)
+                .execute()
+            await loadFamilySettings()
+            return nil
+        } catch {
+            await MainActor.run {
+                debugLastError = "Rewards save failed: \(error.localizedDescription)"
+            }
+            return "Couldn't save rewards. Please try again."
+        }
+        #else
+        return "Supabase not available."
         #endif
     }
 

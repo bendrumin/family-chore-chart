@@ -94,9 +94,15 @@ extension Color {
         childGradient1, childGradient2, childGradient3, childGradient4
     ]
 
-    // Map string color names to actual colors
+    // Map string color names OR hex (#rrggbb) to colors.
+    // Web stores avatar_color as hex; iOS historically used names. Accept both
+    // so a pink child set on the website doesn't collapse to blue on iPhone.
     static func fromString(_ colorName: String) -> Color {
-        switch colorName.lowercased() {
+        let trimmed = colorName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let hex = Color(hexString: trimmed) {
+            return hex
+        }
+        switch trimmed.lowercased() {
         // Basic colors
         case "red": return .red
         case "blue": return .blue
