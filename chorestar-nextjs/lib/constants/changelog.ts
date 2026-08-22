@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.8.2'
+export const LATEST_CHANGELOG_VERSION = '2026.8.3'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.8.3': {
+    version: '2026.8.3',
+    date: 'August 2026',
+    title: 'Home That Feels Like the App',
+    features: [
+      {
+        icon: '🏠',
+        title: "Today's Chores, by Kid",
+        description: 'The Everyone view is now a day checklist like the iPhone app — one tap to mark today done. Chores stay grouped under each child so siblings never get mixed up, and you can switch between 1, 2, or 3 columns on wider screens. Tap a child for the full week grid and routines.',
+      },
+      {
+        icon: '🎨',
+        title: 'Themes Match Across Web & App',
+        description: 'Seasonal and accent colors now use the same palettes as iOS, with soft gradients and white text on the header and hero — contrast-checked so everything stays readable, even on bright summer colors.',
+      },
+      {
+        icon: '✨',
+        title: 'A Calmer Dashboard',
+        description: 'Cards and buttons dropped the heavy glass and hover bounce. You get quiet surfaces, a soft theme glow in the background, and light seasonal particles on the hero instead of sticker clutter.',
+      },
+    ],
+  },
   '2026.8.2': {
     version: '2026.8.2',
     date: 'August 2026',
