@@ -40,7 +40,7 @@ final class NotificationsManager {
 
         let content = UNMutableNotificationContent()
         content.title = "ChoreStar ⭐"
-        content.body = "Time to check today's chores — a little progress goes a long way!"
+        content.body = "Time to check today's chores. A little progress goes a long way!"
         content.sound = .default
 
         var components = Calendar.current.dateComponents([.hour, .minute], from: time)

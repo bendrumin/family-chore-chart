@@ -874,7 +874,7 @@ class SupabaseManager: ObservableObject {
     static func friendlySignInMessage(for error: Error) -> String {
         let raw = error.localizedDescription.lowercased()
         if raw.contains("not confirmed") || raw.contains("not_confirmed") {
-            return "Please confirm your email address first — check your inbox for the link we sent."
+            return "Please confirm your email address first. Check your inbox for the link we sent."
         }
         if raw.contains("invalid login") || raw.contains("invalid_credentials") || raw.contains("credentials") {
             // Supabase intentionally returns the same error for a wrong
@@ -960,7 +960,7 @@ class SupabaseManager: ObservableObject {
         }
 
         await MainActor.run {
-            debugLastError = "Sign-up successful — check your email to confirm your account."
+            debugLastError = "Sign-up successful. Check your email to confirm your account."
         }
     }
     
