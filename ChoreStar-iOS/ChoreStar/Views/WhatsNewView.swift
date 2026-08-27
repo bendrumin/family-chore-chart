@@ -34,7 +34,7 @@ enum Changelog {
                 Feature(
                     icon: "📱",
                     title: "Widget Deep Links",
-                    description: "Tap Today's Progress — or a child on the medium widget — to open the right place in ChoreStar."
+                    description: "Tap Today's Progress (or a child on the medium widget) to open the right place in ChoreStar."
                 ),
                 Feature(
                     icon: "🔒",
@@ -51,7 +51,7 @@ enum Changelog {
                 Feature(
                     icon: "🧒",
                     title: "Kid Login on Any Device",
-                    description: "Kids can now sign in on their own iPad or iPhone with just the family code and their PIN — no parent account needed."
+                    description: "Kids can now sign in on their own iPad or iPhone with just the family code and their PIN, no parent account needed."
                 ),
                 Feature(
                     icon: "📊",
@@ -61,7 +61,7 @@ enum Changelog {
                 Feature(
                     icon: "🏆",
                     title: "10 Achievement Badges",
-                    description: "The full badge collection from the web app — with rarity tiers and progress bars — is now on iOS."
+                    description: "The full badge collection from the web app (with rarity tiers and progress bars) is now on iOS."
                 ),
                 Feature(
                     icon: "💡",
@@ -71,7 +71,7 @@ enum Changelog {
                 Feature(
                     icon: "👑",
                     title: "Premium in the App",
-                    description: "Upgrade to ChoreStar Premium right from Settings — monthly or annual."
+                    description: "Upgrade to ChoreStar Premium right from Settings, monthly or annual."
                 ),
                 Feature(
                     icon: "📱",

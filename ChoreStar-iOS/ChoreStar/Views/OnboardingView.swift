@@ -108,7 +108,7 @@ struct OnboardingView: View {
             subtitle: "A little structure goes a long way",
             rows: [
                 ("list.bullet.clipboard.fill", "Create chores with rewards on the Chores tab"),
-                ("sparkles", "Grab a ready-made starter routine — morning, bedtime, or after school"),
+                ("sparkles", "Grab a ready-made starter routine (morning, bedtime, or after school)"),
                 ("lightbulb.fill", "Not sure where to start? We suggest chores by age")
             ]
         )
@@ -120,7 +120,7 @@ struct OnboardingView: View {
             title: "Hand It to Your Kid",
             subtitle: kidLoginSubtitle,
             rows: [
-                ("number.circle.fill", "Kids log in with your family code — no email needed"),
+                ("number.circle.fill", "Kids log in with your family code, no email needed"),
                 ("hand.tap.fill", "Big buttons and celebrations, made for small hands"),
                 ("gearshape.fill", "Find your family code anytime in Settings")
             ]

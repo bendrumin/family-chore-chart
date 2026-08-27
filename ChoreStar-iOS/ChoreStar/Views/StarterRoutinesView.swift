@@ -47,7 +47,7 @@ struct StarterRoutinesView: View {
                 .font(.system(size: 50))
             Text("Add a child first")
                 .font(.headline)
-            Text("Routines belong to a kid — add one on the Family tab, then come back here.")
+            Text("Routines belong to a kid. Add one on the Family tab, then come back here.")
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)

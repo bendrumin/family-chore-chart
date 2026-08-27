@@ -73,7 +73,7 @@ struct SettingsView: View {
                     if themeManager.customAccentHex != nil {
                         Text("Custom accent overrides the theme colours. Theme choice syncs with the web app.")
                     } else if let activeTheme = themeManager.activeTheme {
-                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName) — synced with the web app.")
+                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName). Synced with the web app.")
                     } else {
                         Text("Theme choice syncs with the web app.")
                     }
@@ -108,7 +108,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Accent Colour")
                 } footer: {
-                    Text("Synced with the web app — pick a colour once and every device follows.")
+                    Text("Synced with the web app. Pick a colour once and every device follows.")
                 }
                 
                 Section("Audio") {
@@ -931,7 +931,7 @@ struct FamilyRewardsSettingsView: View {
             } header: {
                 Text("Amounts (cents)")
             } footer: {
-                Text("Enter amounts in cents — e.g. 100 = \(manager.formatMoney(1.0)). Synced with the web app.")
+                Text("Enter amounts in cents, e.g. 100 = \(manager.formatMoney(1.0)). Synced with the web app.")
             }
 
             Section("Currency") {
@@ -989,7 +989,7 @@ struct FamilyRewardsSettingsView: View {
         )
         await MainActor.run {
             isSaving = false
-            statusMessage = err ?? "Saved — synced with the web app."
+            statusMessage = err ?? "Saved. Synced with the web app."
             if err == nil { Haptics.success() }
         }
     }

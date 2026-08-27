@@ -172,7 +172,7 @@ enum ChoreSuggestionEngine {
                 if !def.seasonalMonths.isEmpty && def.seasonalMonths.contains(month) {
                     reason = "Great for this time of year"
                 } else if completionRate > 75 && def.rewardCents >= 15 {
-                    reason = "\(childName) is doing great — ready for a challenge!"
+                    reason = "\(childName) is doing great, ready for a challenge!"
                 } else if age <= 6 && def.maxAge <= 10 {
                     reason = "Perfect for \(childName)'s age"
                 } else {

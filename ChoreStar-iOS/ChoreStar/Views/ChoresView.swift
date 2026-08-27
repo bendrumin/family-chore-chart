@@ -8,7 +8,7 @@ struct SwipeToCompleteTip: Tip {
     }
 
     var message: Text? {
-        Text("Swipe a chore to the right to check it off — or drag with a long press to reorder.")
+        Text("Swipe a chore to the right to check it off, or drag with a long press to reorder.")
     }
 
     var image: Image? {
