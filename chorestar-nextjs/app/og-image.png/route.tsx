@@ -47,7 +47,7 @@ export async function GET() {
               lineHeight: 1.4,
             }}
           >
-            Make chores fun for kids — track tasks, earn rewards, build great habits
+            Make chores fun for kids. Track tasks, earn rewards, build great habits
           </div>
         </div>
         <div

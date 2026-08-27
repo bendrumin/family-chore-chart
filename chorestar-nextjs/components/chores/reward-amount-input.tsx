@@ -194,7 +194,7 @@ export function RewardAmountInput({
               <>
                 : each child earns{' '}
                 <strong>{formatMoney(dailyRateCents, currencyCode)} per day</strong> for
-                finishing <em>all</em> of their chores — not per chore
+                finishing <em>all</em> of their chores, not per chore
               </>
             )}
             . This amount isn&apos;t used yet, but it&apos;s saved and applies if you

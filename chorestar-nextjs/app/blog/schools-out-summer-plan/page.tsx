@@ -5,9 +5,9 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
+  title: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
   description:
-    'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores — without overscheduling summer.',
+    'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores, without overscheduling summer.',
   keywords: [
     'schools out now what',
     'summer schedule for kids',
@@ -22,15 +22,15 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-06-08',
     images: ['/og-image.png'],
-    title: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
+    title: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
     description:
-      'Survive the first two weeks of summer break with a light daily rhythm — before you worry about chore charts.',
+      'Survive the first two weeks of summer break with a light daily rhythm, before you worry about chore charts.',
     url: 'https://chorestar.app/blog/schools-out-summer-plan',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "School's Out — Now What?",
-    description: 'A simple summer plan for the first two weeks — sleep, screens, rhythm, and when to add chores.',
+    title: "School's Out: Now What?",
+    description: 'A simple summer plan for the first two weeks. Sleep, screens, rhythm, and when to add chores.',
   },
   alternates: {
     canonical: 'https://chorestar.app/blog/schools-out-summer-plan',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: "School's Out — Now What? A Simple Summer Plan for the First Two Weeks",
+  headline: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
   image: 'https://chorestar.app/og-image.png',
   description:
     'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores.',
@@ -61,7 +61,7 @@ const faqJsonLd = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: "School's out — now what do I do with my kids?",
+      name: "School's out. Now what do I do with my kids?",
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'Start with basics for week one: keep a loose wake-up time, set one simple daily rhythm (morning, afternoon, evening), and agree on screen-time rules before boredom turns into battles. Add chores in week two once everyone has adjusted.',
@@ -89,13 +89,13 @@ const faqJsonLd = {
 const weekOneAnchors = [
   { time: 'Morning', items: ['Wake up within 1 hour of school-year time', 'Get dressed + brush teeth', 'Breakfast before screens'] },
   { time: 'Afternoon', items: ['One outing OR one at-home project', 'Outside time if possible', 'Quiet hour (books, crafts, not just tablets)'] },
-  { time: 'Evening', items: ['Same dinner window as during school', 'Screens off 30–60 min before bed', 'Same bedtime routine — even if bedtime is later'] },
+  { time: 'Evening', items: ['Same dinner window as during school', 'Screens off 30–60 min before bed', 'Same bedtime routine, even if bedtime is later'] },
 ]
 
 const boredomIdeas = [
-  'Build a "boredom jar" — write 20 ideas on slips of paper',
+  'Build a "boredom jar." Write 20 ideas on slips of paper',
   'Rotate who picks lunch and one activity',
-  'Library day, park day, pool day — three defaults you can repeat weekly',
+  'Library day, park day, pool day. Three defaults you can repeat weekly',
   'Let kids plan one "yes day" activity per week',
 ]
 
@@ -122,11 +122,11 @@ export default function SchoolsOutSummerPlanPage() {
               <span className="text-xs text-gray-400 dark:text-gray-500">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              School&apos;s Out — Now What? A Simple Summer Plan for the First Two Weeks
+              School&apos;s Out: Now What? A Simple Summer Plan for the First Two Weeks
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               The last day of school hits and suddenly nobody knows what day it is. You do not need a Pinterest-perfect
-              summer calendar on day one — you need a plan that keeps everyone sane until rhythm kicks in.
+              summer calendar on day one. You need a plan that keeps everyone sane until rhythm kicks in.
             </p>
           </header>
 
@@ -144,7 +144,7 @@ export default function SchoolsOutSummerPlanPage() {
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Sleep: loose, not lawless</h3>
             <p className="text-gray-700 dark:text-gray-300">
-              Let them sleep in a little — summer should feel different — but keep wake-up within about an hour of the
+              Let them sleep in a little (summer should feel different) but keep wake-up within about an hour of the
               school-year norm. Bodies that drift three hours later every day turn into meltdown machines by Thursday.
               Same goes for bedtime: later is fine, chaotic is not.
             </p>
@@ -156,7 +156,7 @@ export default function SchoolsOutSummerPlanPage() {
             <ul className="space-y-2 text-gray-700 dark:text-gray-300 list-disc list-inside">
               <li>No screens before breakfast and getting dressed</li>
               <li>One hour of outdoor time before tablets</li>
-              <li>Devices charge in the kitchen overnight — not in bedrooms</li>
+              <li>Devices charge in the kitchen overnight, not in bedrooms</li>
             </ul>
             <p className="text-gray-700 dark:text-gray-300">
               You can tie screen time to chores later. Week one is just about stopping the default of waking up and
@@ -191,7 +191,7 @@ export default function SchoolsOutSummerPlanPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Boredom Is Normal (And Useful)</h2>
             <p className="text-gray-700 dark:text-gray-300">
               &ldquo;I&apos;m bored&rdquo; on day two does not mean you failed. Boredom is where kids learn to entertain
-              themselves — if adults do not rush in with a screen every time. A few tricks:
+              themselves, if adults do not rush in with a screen every time. A few tricks:
             </p>
             <ul className="space-y-2 text-gray-700 dark:text-gray-300">
               {boredomIdeas.map((idea) => (
@@ -201,12 +201,12 @@ export default function SchoolsOutSummerPlanPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Week Two: Add Structure (Gently)</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Once everyone has adjusted, layer in responsibility. Not a 40-item chore list — start with{' '}
+              Once everyone has adjusted, layer in responsibility. Not a 40-item chore list. Start with{' '}
               <strong>2–4 short daily tasks</strong> and one bigger weekly job (yard cleanup, car wash, room reset).
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              This is when a morning or bedtime <strong>routine</strong> helps: five steps kids run on their own —
-              brush teeth, make bed, one chore, then summer fun unlocks. Routines beat nagging because the list is the
+              This is when a morning or bedtime <strong>routine</strong> helps: five steps kids run on their own.
+              Brush teeth, make bed, one chore, then summer fun unlocks. Routines beat nagging because the list is the
               boss, not you.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
@@ -225,18 +225,18 @@ export default function SchoolsOutSummerPlanPage() {
             <ul className="space-y-2 text-gray-700 dark:text-gray-300 list-disc list-inside">
               <li>Launch a complicated reward system and three new apps</li>
               <li>Compare your summer to other families on social media</li>
-              <li>Fill every hour — white space is part of summer</li>
-              <li>Abandon all rules because &ldquo;it&apos;s summer&rdquo; — kids need some predictability</li>
+              <li>Fill every hour. White space is part of summer</li>
+              <li>Abandon all rules because &ldquo;it&apos;s summer.&rdquo; Kids need some predictability</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">When ChoreStar Fits In</h2>
             <p className="text-gray-700 dark:text-gray-300">
               You do not need an app on day one. When you are ready for week two, ChoreStar gives you a chore tracker,
-              step-by-step routines kids can run themselves, and kid login with a PIN — no email account for the kids.
+              step-by-step routines kids can run themselves, and kid login with a PIN, no email account for the kids.
               They check off tasks, earn rewards, and you stop being the reminder machine.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              Free for up to 3 kids and 20 chores. Works in the browser on any phone or tablet — nothing to install.
+              Free for up to 3 kids and 20 chores. Works in the browser on any phone or tablet, nothing to install.
             </p>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">

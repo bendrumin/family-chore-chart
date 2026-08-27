@@ -77,11 +77,11 @@ const TALKING_POINTS = [
   },
   {
     headline: 'Free to Try, Easy to Love',
-    detail: 'No credit card required. Families can track up to 3 kids and 20 chores for free — making it a zero-risk recommendation.',
+    detail: 'No credit card required. Families can track up to 3 kids and 20 chores for free, making it a zero-risk recommendation.',
   },
   {
     headline: 'Works Everywhere',
-    detail: 'Browser-based PWA — no app store download needed. Works on phones, tablets, and computers. Parents and kids stay synced in real time.',
+    detail: 'Browser-based PWA, no app store download needed. Works on phones, tablets, and computers. Parents and kids stay synced in real time.',
   },
   {
     headline: 'Proven Traction',
@@ -96,11 +96,11 @@ const TALKING_POINTS = [
 const SAMPLE_COPY = [
   {
     label: 'Short (social / ad)',
-    text: 'Tired of nagging your kids about chores? ChoreStar turns chores into a game they actually want to play. Free to start — chorestar.app',
+    text: 'Tired of nagging your kids about chores? ChoreStar turns chores into a game they actually want to play. Free to start at chorestar.app',
   },
   {
     label: 'Medium (email / blog)',
-    text: 'ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed — works on any device. Join 117+ parents and kids at chorestar.app',
+    text: 'ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed, works on any device. Join 117+ parents and kids at chorestar.app',
   },
   {
     label: 'Tagline options',
@@ -199,7 +199,7 @@ export default function PartnersPage() {
                 ChoreStar is a family chore tracking app that turns household responsibilities into a game kids want to play. Parents assign chores and set daily rewards. Kids log in with a simple PIN, check off their tasks, earn points, unlock achievements, and watch their earnings grow.
               </p>
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-                It works in any browser — no app download required — and keeps the whole family synced in real time. Built by a parent, for parents who want less nagging and more cooperation.
+                It works in any browser (no app download required) and keeps the whole family synced in real time. Built by a parent, for parents who want less nagging and more cooperation.
               </p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/20">

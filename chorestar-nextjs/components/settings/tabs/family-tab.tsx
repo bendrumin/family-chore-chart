@@ -305,7 +305,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             </h5>
           </div>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Share this link with your kids. They&apos;ll enter their PIN (set in Edit Children). Each family has a unique link—kids only see your family&apos;s routines.
+            Share this link with your kids. They&apos;ll enter their PIN (set in Edit Children). Each family has a unique link. Kids only see your family&apos;s routines.
           </p>
           {kidLoginUrl ? (
             <div className="flex gap-2">

@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
-  description: 'A practical guide to matching chores with your child\'s age — from simple self-care at 3 to full household responsibilities at 15, with 85+ real chore ideas organized by category.',
+  description: 'A practical guide to matching chores with your child\'s age, from simple self-care at 3 to full household responsibilities at 15, with 85+ real chore ideas organized by category.',
   keywords: [
     'age appropriate chores',
     'chores for 5 year olds',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
     title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
-    description: 'A practical guide to matching chores with your child\'s age — 85+ chore ideas organized by category.',
+    description: 'A practical guide to matching chores with your child\'s age, 85+ chore ideas organized by category.',
     url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',
   },
   twitter: {
@@ -40,7 +40,7 @@ const articleJsonLd = {
   '@type': 'Article',
   headline: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
   image: 'https://chorestar.app/og-image.png',
-  description: 'A practical guide to matching chores with your child\'s age — from simple self-care at 3 to full household responsibilities at 15.',
+  description: 'A practical guide to matching chores with your child\'s age, from simple self-care at 3 to full household responsibilities at 15.',
   url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',
   datePublished: '2026-03-28',
   dateModified: '2026-03-28',
@@ -63,7 +63,7 @@ const choresByAge = [
       '👚 Pick up clothes off floor',
       '🐾 Fill pet water bowl',
     ],
-    tip: 'At this age, focus on self-care and simple tidying. Kids are building habits, not doing heavy lifting. The Flat Daily Rate reward mode works best here — participation is what matters.',
+    tip: 'At this age, focus on self-care and simple tidying. Kids are building habits, not doing heavy lifting. The Flat Daily Rate reward mode works best here. Participation is what matters.',
   },
   {
     range: 'Ages 5-7',
@@ -136,7 +136,7 @@ const choresByAge = [
       '🎸 Practice instrument',
       '📖 Independent study time',
     ],
-    tip: 'Teenagers should be handling chores they\'ll need as adults. The Full Week Bonus works well here — "stay up late" or "use the car" as a reward for a perfect week is more motivating than small cash amounts.',
+    tip: 'Teenagers should be handling chores they\'ll need as adults. The Full Week Bonus works well here. "Stay up late" or "use the car" as a reward for a perfect week is more motivating than small cash amounts.',
   },
 ]
 
@@ -175,7 +175,7 @@ export default function AgeAppropriateChoresPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Golden Rule: Start Simple, Add Gradually</h2>
             <p className="text-gray-700 dark:text-gray-300">
               The biggest mistake parents make is assigning too many chores too fast. A 4-year-old who&apos;s never done
-              chores shouldn&apos;t start with 10 tasks — they should start with 2-3, get comfortable, and build from
+              chores shouldn&apos;t start with 10 tasks. They should start with 2-3, get comfortable, and build from
               there. ChoreStar&apos;s suggestion engine follows this principle: it filters chores by your child&apos;s age,
               avoids duplicates of chores you&apos;ve already assigned, and if your child has a completion rate above
               75%, it starts suggesting slightly harder tasks.
@@ -193,7 +193,7 @@ export default function AgeAppropriateChoresPage() {
                 <div key={range} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div className="px-5 py-3.5 flex items-center gap-3" style={{ borderBottom: `3px solid ${color}` }}>
                     <span className="font-bold text-gray-900 dark:text-white">{range}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">— {label}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">({label})</span>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-4">
@@ -232,7 +232,7 @@ export default function AgeAppropriateChoresPage() {
               like reading and homework.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              There are also achievement badges tied to these categories — &ldquo;Family Helper&rdquo; (🏠) for 50 household
+              There are also achievement badges tied to these categories, &ldquo;Family Helper&rdquo; (🏠) for 50 household
               chores, &ldquo;Little Scholar&rdquo; (📚) for 25 learning activities, &ldquo;Creative Artist&rdquo; (🎨) for 20
               creative activities, and &ldquo;Young Athlete&rdquo; (🏃) for 30 physical activities. Diversifying chores
               across categories gives kids more badges to work toward.
@@ -241,7 +241,7 @@ export default function AgeAppropriateChoresPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How ChoreStar Suggests Chores</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Instead of staring at a blank page trying to think of chores, ChoreStar&apos;s Smart Suggestions feature
-              does the work for you. It generates 5 age-appropriate, seasonal chore ideas tailored to each child —
+              does the work for you. It generates 5 age-appropriate, seasonal chore ideas tailored to each child,
               one tap to add them. The algorithm filters by your child&apos;s age, removes chores your family already
               has, boosts seasonal chores based on the current month, diversifies across categories, and even adjusts
               difficulty based on your child&apos;s completion rate. If they&apos;re completing more than 75% of their chores
@@ -252,7 +252,7 @@ export default function AgeAppropriateChoresPage() {
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Let ChoreStar suggest chores for your kids</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 Add your children with their ages and ChoreStar will automatically suggest age-appropriate chores.
-                Free for up to 3 kids and 20 chores — no credit card required.
+                Free for up to 3 kids and 20 chores, no credit card required.
               </p>
               <Link
                 href="/signup"

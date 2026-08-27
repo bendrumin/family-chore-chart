@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
   description:
-    'ChoreStar is now on the App Store — a family chore app with PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
+    'ChoreStar is now on the App Store, a family chore app with PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
   keywords: [
     'chore app for iPhone',
     'chore app for iPad',
@@ -25,14 +25,14 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
     title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
     description:
-      'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app — now on the App Store.',
+      'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app, now on the App Store.',
     url: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
     description:
-      'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app — now on the App Store.',
+      'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app, now on the App Store.',
   },
   alternates: {
     canonical: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',
@@ -45,7 +45,7 @@ const articleJsonLd = {
   headline: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
   image: 'https://chorestar.app/og-image.png',
   description:
-    'ChoreStar is now on the App Store — PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
+    'ChoreStar is now on the App Store. PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
   url: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',
   datePublished: '2026-08-17',
   dateModified: '2026-08-17',
@@ -76,7 +76,7 @@ export default function ChoreStarIosAppPage() {
               <span className="text-xs text-gray-400 dark:text-gray-500">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              ChoreStar for iPhone &amp; iPad Is Here — The Chore App Your Kid Can Run Themselves
+              ChoreStar for iPhone &amp; iPad Is Here: The Chore App Your Kid Can Run Themselves
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               After months of building (and eight rounds with App Review), the native ChoreStar
@@ -89,7 +89,7 @@ export default function ChoreStarIosAppPage() {
             <div className="not-prose my-8 text-center">
               <AppStoreBadge />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
-                Free to download — works with your existing ChoreStar account, or start fresh.
+                Free to download. Works with your existing ChoreStar account, or start fresh.
               </p>
             </div>
 
@@ -98,7 +98,7 @@ export default function ChoreStarIosAppPage() {
               Search &ldquo;chore app&rdquo; on the App Store and you&apos;ll find dozens of apps
               where the <em>parent</em> is the operator: the parent&apos;s phone, the parent&apos;s
               account, the parent checking things off while the kid watches. ChoreStar flips that.
-              Kids log in themselves with a <strong>family code and a 4-digit PIN</strong> — no
+              Kids log in themselves with a <strong>family code and a 4-digit PIN</strong>, no
               email address, no password, no account of their own. That means a seven-year-old can
               open the app on the family iPad, tap their own avatar, and run their own day.
             </p>
@@ -106,8 +106,8 @@ export default function ChoreStarIosAppPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Routines That Actually Get Followed</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Morning and bedtime are where family friction lives, so routines are the heart of the
-              app — not a repeating to-do list. Build a morning routine once (get dressed, brush
-              teeth, pack backpack — each step with its own icon and optional timer), and your kid
+              app, not a repeating to-do list. Build a morning routine once (get dressed, brush
+              teeth, pack backpack, each step with its own icon and optional timer), and your kid
               steps through it one big &ldquo;Done!&rdquo; button at a time. Step timers show up in
               the <strong>Dynamic Island and on the Lock Screen</strong>, there&apos;s a progress
               bar, and finishing earns points and a confetti celebration. It turns &ldquo;did you
@@ -117,7 +117,7 @@ export default function ChoreStarIosAppPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Allowance Without a Debit Card</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Plenty of apps want to give your nine-year-old a Visa card and a bank login. ChoreStar
-              deliberately doesn&apos;t. Chores carry reward amounts (per-chore or a daily rate —
+              deliberately doesn&apos;t. Chores carry reward amounts (per-chore or a daily rate,
               your choice), earnings add up transparently through the week, and <em>you</em> pay out
               however your family does money: cash, a transfer, screen time, a trip for ice cream.
               The trust-building of allowance, no fintech onboarding required.
@@ -129,13 +129,13 @@ export default function ChoreStarIosAppPage() {
               <strong> full web app and a native iOS app on the same family account</strong>. Set up
               chores from your laptop during lunch; the kids see them on the iPad immediately. A kid
               checks off &ldquo;feed the dog&rdquo; on the iPhone; your dashboard updates on the web.
-              No export, no sync button, no &ldquo;premium sync&rdquo; upsell — it&apos;s just one
+              No export, no sync button, no &ldquo;premium sync&rdquo; upsell. It&apos;s just one
               account everywhere, including any browser on a school Chromebook.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Built for iOS, Not Ported to It</h2>
             <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 space-y-2">
-              <li><strong>Home screen widgets</strong> — today&apos;s progress at a glance, no app launch needed</li>
+              <li><strong>Home screen widgets</strong>, today&apos;s progress at a glance, no app launch needed</li>
               <li><strong>Routine timers in the Dynamic Island</strong> and on the Lock Screen</li>
               <li><strong>Kid mode</strong> with big buttons, playful animations, and sound effects</li>
               <li><strong>Seasonal themes</strong> that change with the calendar, plus dark mode</li>
@@ -144,8 +144,8 @@ export default function ChoreStarIosAppPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Private by Design</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              No ads. No third-party analytics or trackers. Kids never enter personal information —
-              the PIN login exists precisely so children don&apos;t need accounts. Family data is
+              No ads. No third-party analytics or trackers. Kids never enter personal information.
+              The PIN login exists precisely so children don&apos;t need accounts. Family data is
               never shared or sold. That&apos;s rare in this category, and it&apos;s verifiable in
               the app&apos;s privacy label.
             </p>
@@ -161,7 +161,7 @@ export default function ChoreStarIosAppPage() {
             <div className="not-prose my-10 rounded-2xl border border-indigo-100 dark:border-indigo-900 bg-white dark:bg-gray-800 p-8 text-center shadow-lg">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Try It This Week</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
-                Set up your family in about two minutes — add a child, pick a starter routine, and
+                Set up your family in about two minutes. Add a child, pick a starter routine, and
                 hand over the iPad tomorrow morning.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
@@ -180,7 +180,7 @@ export default function ChoreStarIosAppPage() {
               <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline">
                 download the app
               </a>{' '}
-              and sign in with your existing account — everything will be there.
+              and sign in with your existing account. Everything will be there.
             </p>
           </div>
 

@@ -147,7 +147,7 @@ export function AdminDashboardClient() {
       setPreviews(data.previews || [])
       setTableMissing(!!data.tableMissing)
       if (!data.previews?.length) {
-        toast.info('No recipients — everyone may already have been emailed for this campaign')
+        toast.info('No recipients. Everyone may already have been emailed for this campaign')
       }
     } catch {
       toast.error('Could not load preview')
@@ -158,7 +158,7 @@ export function AdminDashboardClient() {
 
   const handleSend = async () => {
     if (!previews.length) {
-      toast.error('Preview first — no emails queued')
+      toast.error('Preview first. No emails queued')
       return
     }
     if (!confirm(`Send ${previews.length} personal email(s) via Resend?`)) return
@@ -191,7 +191,7 @@ export function AdminDashboardClient() {
   const logManualBatch = async (batchId: string) => {
     const meta = manualSendLogs.find((b) => b.id === batchId)
     if (meta?.count === 0) {
-      toast.info(meta.hint || 'No manual entries for this week — sends via preset auto-log.')
+      toast.info(meta.hint || 'No manual entries for this week. Sends via preset auto-log.')
       return
     }
     if (!confirm(`Log ${meta?.count ?? ''} manual send(s) for ${meta?.label ?? batchId}?`)) return
@@ -372,14 +372,14 @@ export function AdminDashboardClient() {
                   <optgroup label="Presets (week sequences)">
                     {presets.map((p) => (
                       <option key={p.id} value={`preset:${p.id}`}>
-                        {p.label} — {p.description}
+                        {p.label}: {p.description}
                       </option>
                     ))}
                   </optgroup>
                   <optgroup label="Campaigns">
                     {campaigns.map((c) => (
                       <option key={c.id} value={`campaign:${c.id}`}>
-                        {c.label} — {c.description}
+                        {c.label}: {c.description}
                       </option>
                     ))}
                   </optgroup>

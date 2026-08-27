@@ -289,8 +289,8 @@ export function AppearanceTab() {
             ? 'A theme you picked stays until you choose None.'
             : autoSeasonalEnabled
               ? activeSeasonal
-                ? `Auto is on — today falls in the ${activeSeasonal.name} window.`
-                : 'Auto is on — no season is active today, so no accent is applied.'
+                ? `Auto is on. Today falls in the ${activeSeasonal.name} window.`
+                : 'Auto is on. No season is active today, so no accent is applied.'
               : 'Enable auto mode to have themes change automatically throughout the year.'}
         </p>
         {seasonalTheme && (
@@ -317,7 +317,7 @@ export function AppearanceTab() {
               <p className="mt-0.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {accentColor
                   ? 'Overrides the themes above.'
-                  : 'Pick any color — it\'s adjusted automatically to stay readable.'}
+                  : 'Pick any color. It\'s adjusted automatically to stay readable.'}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -341,7 +341,7 @@ export function AppearanceTab() {
                 <>
                   <span
                     className="rounded-full px-2.5 py-1 text-xs font-bold tabular-nums accent-fill"
-                    title="Preview — this is how a badge will look"
+                    title="Preview. This is how a badge will look."
                   >
                     {accentColor}
                   </span>

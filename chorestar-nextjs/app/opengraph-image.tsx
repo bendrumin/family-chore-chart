@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
 
-export const alt = 'ChoreStar — Chore Chart App & Allowance Tracker for Families'
+export const alt = 'ChoreStar: Chore Chart App & Allowance Tracker for Families'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 

@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 export const metadata: Metadata = {
   title: 'The Best Skylight Chore Chart Alternative (No Wall Device)',
   description:
-    'Want a Skylight-style chore chart without buying a $160+ touchscreen? ChoreStar runs on the phones and tablets you already own — free to start, with routines, timers, and PIN-based kid login.',
+    'Want a Skylight-style chore chart without buying a $160+ touchscreen? ChoreStar runs on the phones and tablets you already own, free to start, with routines, timers, and PIN-based kid login.',
   keywords: [
     'skylight alternative',
     'skylight calendar alternative',
@@ -20,24 +20,24 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
     title: 'The Best Skylight Chore Chart Alternative',
     description:
-      'Skylight-style chore tracking without buying a wall device. ChoreStar runs on the devices you already own — free to start.',
+      'Skylight-style chore tracking without buying a wall device. ChoreStar runs on the devices you already own, free to start.',
     url: 'https://chorestar.app/compare/skylight-alternative',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'The Best Skylight Chore Chart Alternative',
-    description: 'A chore chart without buying a $160+ device — free to start.',
+    description: 'A chore chart without buying a $160+ device, free to start.',
   },
   alternates: { canonical: 'https://chorestar.app/compare/skylight-alternative' },
 }
 
 const rows = [
-  { feature: 'Cost to start', chorestar: 'Free (up to 3 kids, 20 chores)', them: 'Buy a device — $159.99+' },
-  { feature: 'Physical hardware', chorestar: 'None — uses your phone/tablet/computer', them: 'Wall-mounted touchscreen required' },
+  { feature: 'Cost to start', chorestar: 'Free (up to 3 kids, 20 chores)', them: 'Buy a device ($159.99+)' },
+  { feature: 'Physical hardware', chorestar: 'None (uses your phone/tablet/computer)', them: 'Wall-mounted touchscreen required' },
   { feature: 'Where kids use it', chorestar: 'Their own device, anywhere', them: 'Shared screen in one room' },
   { feature: 'Kid login', chorestar: 'Family code + 4-digit PIN', them: 'Tap the shared screen (no personal login)' },
-  { feature: 'Chore chart & rewards', chorestar: 'Yes — points, badges, streaks', them: 'Yes — chore chart with stars' },
-  { feature: 'Step-by-step routines with timers', chorestar: 'Yes — a core feature', them: 'Not its focus' },
+  { feature: 'Chore chart & rewards', chorestar: 'Yes (points, badges, streaks)', them: 'Yes (chore chart with stars)' },
+  { feature: 'Step-by-step routines with timers', chorestar: 'Yes, a core feature', them: 'Not its focus' },
   { feature: 'Ongoing cost', chorestar: 'Free, or $4.99/mo · $49.99/yr', them: 'Optional subscription ~$39/yr for advanced features' },
 ]
 
@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'Can kids check off their own chores in ChoreStar like they do on a Skylight screen?',
-    a: 'Yes — and from anywhere, not just one room. Each child logs in with your family code and their own 4-digit PIN, then checks off chores and runs their routines on any device. Skylight uses a single shared screen mounted in a common area.',
+    a: 'Yes, and from anywhere. Each child logs in with your family code and their own 4-digit PIN, then checks off chores and runs their routines on any device. Skylight uses a single shared screen mounted in a common area.',
   },
   {
     q: 'What does ChoreStar do that a chore chart on a wall device may not?',
@@ -65,7 +65,7 @@ const articleJsonLd = {
   '@type': 'Article',
   headline: 'The Best Skylight Chore Chart Alternative (No Wall Device)',
   description:
-    'How ChoreStar compares to a Skylight chore chart — no hardware to buy, PIN-based kid login, and step-by-step routines with timers.',
+    'How ChoreStar compares to a Skylight chore chart. No hardware to buy, PIN-based kid login, and step-by-step routines with timers.',
   url: 'https://chorestar.app/compare/skylight-alternative',
   datePublished: '2026-07-02',
   dateModified: '2026-07-02',
@@ -114,10 +114,10 @@ export default function SkylightAlternativePage() {
               Skylight alternative
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              A Skylight-style chore chart — without buying the wall device
+              A Skylight-style chore chart, without buying the wall device
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Skylight&apos;s chore chart lives on a touchscreen you mount in the kitchen — a lovely
+              Skylight&apos;s chore chart lives on a touchscreen you mount in the kitchen, a lovely
               device, but it starts around $160 and everything happens on that one shared screen.
               ChoreStar gives every kid their own chore chart and routines on the phones and tablets
               you already own, free to start.
@@ -160,22 +160,22 @@ export default function SkylightAlternativePage() {
               <p className="text-gray-700 dark:text-gray-300">
                 The biggest difference is simple: there&apos;s nothing to buy or mount. A wall display
                 is great if you want an always-on family calendar in the kitchen, but it also means the
-                chore chart is tied to one screen in one room — and it starts at a real hardware price.
+                chore chart is tied to one screen in one room, and it starts at a real hardware price.
                 ChoreStar puts each child&apos;s chores on the device in their hand, so a kid can check
                 off &ldquo;made my bed&rdquo; from their own tablet upstairs.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                ChoreStar is also built around <strong>routines</strong>, not just a chart. Kids run a
+                ChoreStar is built around <strong>routines</strong>. Kids run a
                 morning or bedtime routine one step at a time, with an optional timer per step, a
                 progress bar, and a celebration when they finish. And every child logs in with just a
-                family code and a 4-digit PIN — no email and no personal account for your kids.
+                family code and a 4-digit PIN, no email and no personal account for your kids.
               </p>
 
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">When Skylight is the better choice</h2>
               <p className="text-gray-700 dark:text-gray-300">
-                We&apos;ll be honest: if what you really want is a big, always-on touchscreen on the
-                wall that the whole family glances at for the shared calendar, meal plans, and chores —
-                and you&apos;re happy to buy the hardware — a Skylight (or similar smart display) is a
+                If what you really want is a big, always-on touchscreen on the
+                wall that the whole family glances at for the shared calendar, meal plans, and chores,
+                and you&apos;re happy to buy the hardware, a Skylight (or similar smart display) is a
                 genuinely nice product. ChoreStar is the better fit if you&apos;d rather use the devices
                 you already own, want per-kid routines and gamification, and prefer to start free.
               </p>

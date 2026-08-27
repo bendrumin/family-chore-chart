@@ -7,7 +7,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'How to Build a Morning Routine for Kids That Actually Sticks',
-  description: 'A step-by-step guide to creating morning routines kids follow independently — with timers, progress tracking, and celebrations built in.',
+  description: 'A step-by-step guide to creating morning routines kids follow independently, with timers, progress tracking, and celebrations built in.',
   keywords: [
     'morning routine for kids',
     'kids morning checklist',
@@ -39,7 +39,7 @@ const articleJsonLd = {
   '@type': 'Article',
   headline: 'How to Build a Morning Routine for Kids That Actually Sticks',
   image: 'https://chorestar.app/og-image.png',
-  description: 'A step-by-step guide to creating morning routines kids follow independently — with timers, progress tracking, and celebrations built in.',
+  description: 'A step-by-step guide to creating morning routines kids follow independently, with timers, progress tracking, and celebrations built in.',
   url: 'https://chorestar.app/blog/morning-routine-for-kids',
   datePublished: '2026-03-28',
   dateModified: '2026-03-28',
@@ -73,19 +73,19 @@ export default function MorningRoutinePage() {
               How to Build a Morning Routine for Kids That Actually Sticks
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              If mornings in your house feel like herding cats, you&apos;re not alone. Here&apos;s how to build a routine your kids will actually follow — on their own.
+              If mornings in your house feel like herding cats, you&apos;re not alone. Here&apos;s how to build a routine your kids will actually follow, on their own.
             </p>
           </header>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Morning Problem Every Parent Knows</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Parents spend an average of 20+ minutes a day nagging kids about tasks. Mornings are the worst — there&apos;s a
+              Parents spend an average of 20+ minutes a day nagging kids about tasks. Mornings are the worst. There&apos;s a
               hard deadline (school), multiple steps to get through, and kids who&apos;d rather do literally anything else. The
               result is constant reminders: &ldquo;Did you brush your teeth? Where are your shoes? Have you packed your backpack?&rdquo;
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              The fix isn&apos;t more nagging — it&apos;s giving kids a system they can follow independently. A routine that breaks
+              The fix is giving kids a system they can follow independently. A routine that breaks
               the morning into clear, ordered steps so they always know what comes next.
             </p>
 
@@ -131,14 +131,14 @@ export default function MorningRoutinePage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Why One Step at a Time Works</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Handing a kid a list of 8 things is overwhelming. But showing them one step at a time — with a big,
-              friendly &ldquo;Done!&rdquo; button — turns it into something manageable. They see what they need to do right now,
+              Handing a kid a list of 8 things is overwhelming. But showing them one step at a time (with a big,
+              friendly &ldquo;Done!&rdquo; button) turns it into something manageable. They see what they need to do right now,
               they do it, they tap, and the next step appears. There&apos;s a progress bar at the top so they can see how
               close they are to finishing.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               This is exactly how ChoreStar&apos;s routine player works. Kids step through each task one at a time. Optional
-              per-step timers count down to keep things moving — two minutes for teeth brushing, three minutes for getting
+              per-step timers count down to keep things moving, two minutes for teeth brushing, three minutes for getting
               dressed. When the last step is done, they get a confetti celebration and points earned.
             </p>
 
@@ -150,13 +150,13 @@ export default function MorningRoutinePage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               In ChoreStar, each routine step can optionally have a countdown timer. When it runs out, the step doesn&apos;t
-              auto-advance — it just nudges kids to wrap up. The parent sets the durations when building the routine, so
+              auto-advance. It just nudges kids to wrap up. The parent sets the durations when building the routine, so
               you can adjust them after the first week once you see what&apos;s realistic for your family.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Power of the Celebration</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              When a kid completes all the steps, they don&apos;t just get a checkmark — they get confetti, a celebration
+              When a kid completes all the steps, they get confetti, a celebration
               screen, and points earned. ChoreStar fires confetti particles from both sides of the screen in the routine&apos;s
               color plus gold, red, green, and purple. The celebration shows how many steps they completed, how long it
               took, and the points they earned.
@@ -175,7 +175,7 @@ export default function MorningRoutinePage() {
               do homework, play outside).
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              Each template is fully customizable — add, remove, rename, or reorder steps to match your family&apos;s actual
+              Each template is fully customizable. Add, remove, rename, or reorder steps to match your family&apos;s actual
               schedule. Drag and drop makes it easy to rearrange.
             </p>
 
@@ -183,18 +183,18 @@ export default function MorningRoutinePage() {
             <p className="text-gray-700 dark:text-gray-300">
               From your dashboard, tap the Routines tab, then &ldquo;Add Routine.&rdquo; Select the Morning Routine template.
               Review the pre-loaded steps, adjust anything that doesn&apos;t match your family&apos;s morning, and tap Create
-              Routine. It&apos;s now ready for your kids to run — they&apos;ll see it on their dashboard with a big &ldquo;Start&rdquo;
+              Routine. It&apos;s now ready for your kids to run. They&apos;ll see it on their dashboard with a big &ldquo;Start&rdquo;
               button when they log in.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              Kids log in with your family code and their 4-digit PIN — no email required. The routine resets daily, so
+              Kids log in with your family code and their 4-digit PIN, no email required. The routine resets daily, so
               it&apos;s ready to go every morning without any parent intervention.
             </p>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Ready to try it?</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
-                ChoreStar is free to start — up to 3 kids and 20 chores on the free plan, no credit card required.
+                ChoreStar is free to start, up to 3 kids and 20 chores on the free plan, no credit card required.
                 Set up your family&apos;s morning routine in under two minutes.
               </p>
               <Link

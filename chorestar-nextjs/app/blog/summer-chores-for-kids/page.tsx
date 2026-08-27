@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
-  description: 'A practical summer chore list for kids — watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
+  description: 'A practical summer chore list for kids. Watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
   keywords: [
     'summer chores for kids',
     'outdoor chores for kids',
@@ -40,7 +40,7 @@ const articleJsonLd = {
   '@type': 'BlogPosting',
   headline: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
   image: 'https://chorestar.app/og-image.png',
-  description: 'A practical summer chore list for kids — watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
+  description: 'A practical summer chore list for kids. Watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
   url: 'https://chorestar.app/blog/summer-chores-for-kids',
   datePublished: '2026-06-07',
   dateModified: '2026-06-07',
@@ -69,7 +69,7 @@ const faqJsonLd = {
       name: 'How many chores should kids do in summer?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Most families do well with 2-4 daily chores plus one bigger weekly outdoor job. Summer should still feel like summer — short, concrete tasks beat long chore marathons.',
+        text: 'Most families do well with 2-4 daily chores plus one bigger weekly outdoor job. Summer should still feel like summer. Short, concrete tasks beat long chore marathons.',
       },
     },
     {
@@ -121,7 +121,7 @@ const summerChores = [
 
 const screenTimeSwaps = [
   'Do 3 chores, then 30 minutes of screen time',
-  'Morning routine first — chores before tablets',
+  'Morning routine first, chores before tablets',
   'Earn a pool trip or ice cream run by finishing the daily list',
   'Weekend bonus: finish all weekly chores for a family movie night',
 ]
@@ -156,7 +156,7 @@ export default function SummerChoresPage() {
               Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Summer break does not have to mean zero structure — or a daily nagging battle. The trick is picking
+              Summer break does not have to mean zero structure, or a daily nagging battle. The trick is picking
               chores that fit the season, keeping them short, and letting kids see their progress.
             </p>
           </header>
@@ -164,7 +164,7 @@ export default function SummerChoresPage() {
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Why Summer Chores Are Different</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              During the school year, chores often happen in the margins — before the bus, after homework, before bed.
+              During the school year, chores often happen in the margins, before the bus, after homework, before bed.
               Summer flips the schedule. Kids have more free time, parents are juggling camps and work, and without
               some structure, &ldquo;I&apos;ll do it later&rdquo; stretches until September.
             </p>
@@ -176,7 +176,7 @@ export default function SummerChoresPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Summer Chore Ideas by Age</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Aim for 2–4 daily tasks and one bigger weekly job. Keep each task concrete — &ldquo;water the front flower
+              Aim for 2–4 daily tasks and one bigger weekly job. Keep each task concrete. &ldquo;Water the front flower
               pots&rdquo; beats &ldquo;help in the yard.&rdquo;
             </p>
 
@@ -203,13 +203,13 @@ export default function SummerChoresPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The ChoreStar Summer Suggestions</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              ChoreStar&apos;s smart suggestion engine boosts summer-friendly chores from June through August — watering
+              ChoreStar&apos;s smart suggestion engine boosts summer-friendly chores from June through August, watering
               plants, cleaning the pool, BBQ prep, beach cleanup, mowing the lawn, and washing the car. They are
               age-filtered, so younger kids see simpler outdoor jobs while older kids get the bigger yard work.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               You can add any suggestion with one tap, set a reward amount, and assign it to the right child. The
-              Summer theme in Settings → Appearance swaps in sunny accent colors across the dashboard — a small thing,
+              Summer theme in Settings → Appearance swaps in sunny accent colors across the dashboard, a small thing,
               but kids notice when the app feels seasonal too.
             </p>
 
@@ -225,8 +225,8 @@ export default function SummerChoresPage() {
             </ul>
             <p className="text-gray-700 dark:text-gray-300">
               The key is consistency. If chores unlock screen time on Monday but not Tuesday, kids stop trusting the
-              system. A chore tracker kids can check themselves — even a PIN login they manage on their own phone or
-              tablet — cuts down on &ldquo;Did I do enough yet?&rdquo; questions.
+              system. A chore tracker kids can check themselves (even a PIN login they manage on their own phone or
+              tablet) cuts down on &ldquo;Did I do enough yet?&rdquo; questions.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Build a Simple Summer Morning Routine</h2>
@@ -238,10 +238,10 @@ export default function SummerChoresPage() {
               <li>Make bed</li>
               <li>Feed pets or water plants</li>
               <li>One assigned chore from the daily list</li>
-              <li>Breakfast — then summer fun unlocks</li>
+              <li>Breakfast, then summer fun unlocks</li>
             </ol>
             <p className="text-gray-700 dark:text-gray-300">
-              Kids run through routines one step at a time in ChoreStar&apos;s routine player — with optional timers and a
+              Kids run through routines one step at a time in ChoreStar&apos;s routine player, with optional timers and a
               confetti celebration when they finish. It turns &ldquo;get your stuff done&rdquo; into something they can actually
               complete without you repeating every step.
             </p>
@@ -249,19 +249,19 @@ export default function SummerChoresPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How to Keep Summer Chores From Becoming a Fight</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Keep outdoor chores short and specific. Give a time limit (&ldquo;10 minutes of yard pickup&rdquo;) instead of an
-              open-ended project. Rotate the boring jobs — nobody wants to take out trash every single day all summer.
+              open-ended project. Rotate the boring jobs. Nobody wants to take out trash every single day all summer.
               And celebrate completion, even for small wins. A streak, a few points, or a quick &ldquo;you&apos;re done, go
               swim&rdquo; goes further than a lecture about responsibility.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               If you have multiple kids, let them pick from a short list of approved chores. Choice reduces resistance.
-              Siblings competing to finish first? That is free motivation — lean into it.
+              Siblings competing to finish first? That is free motivation. Lean into it.
             </p>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Ready for summer structure?</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
-                ChoreStar suggests age-appropriate summer chores, tracks rewards, and lets kids log in with a PIN — no
+                ChoreStar suggests age-appropriate summer chores, tracks rewards, and lets kids log in with a PIN, no
                 email required. Free for up to 3 kids and 20 chores. Works on any phone or tablet, no download needed.
               </p>
               <Link

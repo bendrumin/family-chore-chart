@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
-  description: 'Achievements, streaks, confetti, and progress bars aren\'t just fun — they tap into the same psychology that makes kids want to level up. Here\'s the science and the system.',
+  description: 'Achievements, streaks, confetti, and progress bars tap into the same psychology that makes kids want to level up. Here\'s the science and the system.',
   keywords: [
     'gamify chores for kids',
     'chore gamification',
@@ -72,7 +72,7 @@ export default function WhyGamifyingChoresWorksPage() {
               Why Gamifying Chores Actually Works (And How ChoreStar Does It)
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Your kid will spend 30 minutes trying to beat a video game level but won&apos;t spend 2 minutes making their bed. The difference isn&apos;t laziness — it&apos;s design.
+              Your kid will spend 30 minutes trying to beat a video game level but won&apos;t spend 2 minutes making their bed. The difference is design.
             </p>
           </header>
 
@@ -80,17 +80,17 @@ export default function WhyGamifyingChoresWorksPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What Games Get Right</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Games are engineered to keep you playing. They use clear goals, immediate feedback, visible progress,
-              and rewards at just the right intervals. None of this is accidental — it&apos;s decades of design research
+              and rewards at just the right intervals. None of this is accidental. It&apos;s decades of design research
               into what motivates people to keep going.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               Chores, on the other hand, have none of this by default. The &ldquo;reward&rdquo; for doing the dishes is that
-              the dishes are done. The feedback loop is nonexistent — or worse, the only feedback is a parent saying
+              the dishes are done. The feedback loop is nonexistent, or worse, the only feedback is a parent saying
               &ldquo;you missed a spot.&rdquo; No wonder kids resist.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               Gamification bridges this gap. It takes the motivational mechanics that make games compelling and applies
-              them to real-world tasks. When done right, kids don&apos;t feel like they&apos;re &ldquo;doing chores&rdquo; — they feel
+              them to real-world tasks. When done right, kids don&apos;t feel like they&apos;re &ldquo;doing chores.&rdquo; They feel
               like they&apos;re earning, progressing, and unlocking.
             </p>
 
@@ -101,7 +101,7 @@ export default function WhyGamifyingChoresWorksPage() {
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">1. Achievement Badges</h3>
             <p className="text-gray-700 dark:text-gray-300">
-              ChoreStar has 10 achievements across four rarity tiers — Common, Rare, Epic, and Legendary. Kids start
+              ChoreStar has 10 achievements across four rarity tiers, Common, Rare, Epic, and Legendary. Kids start
               with &ldquo;First Steps&rdquo; (👶) for completing their first chore, then work up to &ldquo;Super Star&rdquo; (🌟) for
               completing 250 total chores. In between, there are category-specific badges like &ldquo;Family Helper&rdquo; (🏠)
               for 50 household chores, &ldquo;Little Scholar&rdquo; (📚) for 25 learning activities, &ldquo;Creative Artist&rdquo; (🎨) for
@@ -110,21 +110,21 @@ export default function WhyGamifyingChoresWorksPage() {
             <p className="text-gray-700 dark:text-gray-300">
               The rarity tiers matter. Common badges (gray border) are easy to get. Rare badges (blue) take consistent
               effort. Epic badges like &ldquo;Streak Master&rdquo; (🔥) require a 10-day streak, and &ldquo;Chore Champion&rdquo; (🏆)
-              requires 100 total chores. The Legendary badges — &ldquo;Perfect Week&rdquo; (⭐) and &ldquo;Super Star&rdquo; (🌟) — are
+              requires 100 total chores. The Legendary badges, &ldquo;Perfect Week&rdquo; (⭐) and &ldquo;Super Star&rdquo; (🌟), are
               genuinely hard to earn, which makes them genuinely satisfying when unlocked.
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">2. Streaks</h3>
             <p className="text-gray-700 dark:text-gray-300">
               A streak counter tracks how many consecutive days a child has completed chores. The &ldquo;Streak Master&rdquo;
-              badge unlocks at 10 days. The streak creates a powerful &ldquo;don&apos;t break the chain&rdquo; motivation — kids
+              badge unlocks at 10 days. The streak creates a powerful &ldquo;don&apos;t break the chain&rdquo; motivation. Kids
               who&apos;ve built a 7-day streak will often do their chores without any prompting because they don&apos;t want
               to lose it.
             </p>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">3. Celebration Moments</h3>
             <p className="text-gray-700 dark:text-gray-300">
-              When a kid completes a routine, ChoreStar doesn&apos;t just check a box — it throws a party. Confetti bursts
+              When a kid completes a routine, ChoreStar throws a party. Confetti bursts
               from both sides of the screen (50-200 particles depending on the achievement type), a celebration screen
               shows points earned and steps completed, and there are different confetti styles for different moments:
               gold particles for achievements, red-orange for streak milestones, and purple for perfect weeks.
@@ -136,7 +136,7 @@ export default function WhyGamifyingChoresWorksPage() {
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">4. Visible Progress</h3>
             <p className="text-gray-700 dark:text-gray-300">
-              The parent dashboard shows a 7-day completion grid for each child — a visual streak of what&apos;s been
+              The parent dashboard shows a 7-day completion grid for each child, a visual streak of what&apos;s been
               done this week. Kids see a progress bar during routines that fills as they complete each step. Weekly
               stats show completion trends and per-child comparisons. Everything is designed to make invisible effort
               visible.
@@ -146,7 +146,7 @@ export default function WhyGamifyingChoresWorksPage() {
             <p className="text-gray-700 dark:text-gray-300">
               Points and badges are great, but actual money (or the promise of it) hits different. ChoreStar lets
               parents set up flat daily rewards or per-chore rewards so kids see their earnings grow as they complete
-              tasks. There&apos;s also a Full Week Bonus — a custom label like &ldquo;pizza night&rdquo; or &ldquo;movie night&rdquo; that
+              tasks. There&apos;s also a Full Week Bonus, a custom label like &ldquo;pizza night&rdquo; or &ldquo;movie night&rdquo; that
               pops up as a celebration when kids complete every chore every day for a full week.
             </p>
 
@@ -162,21 +162,21 @@ export default function WhyGamifyingChoresWorksPage() {
               ].map(({ quote, name, role }) => (
                 <div key={name} className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
                   <p className="text-sm text-gray-700 dark:text-gray-300 italic mb-3">&ldquo;{quote}&rdquo;</p>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{name} <span className="font-normal text-gray-500 dark:text-gray-400">— {role}</span></p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{name} <span className="font-normal text-gray-500 dark:text-gray-400">({role})</span></p>
                 </div>
               ))}
             </div>
             <p className="text-gray-700 dark:text-gray-300">
               The competitive element is particularly powerful in multi-kid families. When siblings can see each
-              other&apos;s progress, the &ldquo;I want to finish first&rdquo; instinct kicks in. Parents don&apos;t even have to ask — kids
+              other&apos;s progress, the &ldquo;I want to finish first&rdquo; instinct kicks in. Parents don&apos;t even have to ask. Kids
               are racing to complete their routines.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Line Between Motivation and Manipulation</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Gamification gets a bad rap when it&apos;s used to manipulate people into endless scrolling or impulsive
-              purchases. ChoreStar is different because the underlying behavior — doing chores, building routines,
-              learning responsibility — is genuinely good for kids. The gamification isn&apos;t tricking them into doing
+              purchases. ChoreStar is different because the underlying behavior (doing chores, building routines,
+              learning responsibility) is genuinely good for kids. The gamification isn&apos;t tricking them into doing
               something against their interest. It&apos;s making something they need to do anyway feel rewarding.
             </p>
             <p className="text-gray-700 dark:text-gray-300">

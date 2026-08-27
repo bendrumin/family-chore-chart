@@ -157,7 +157,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               We&apos;re here to help! Send us a message and we&apos;ll get back to you within 24 hours.
             </p>
             <p className="text-sm mb-6 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800" style={{ color: 'var(--text-secondary)' }}>
-              <strong>Something not working? Found a bug?</strong> Please contact us—we read every message and want to fix any issues you run into.
+              <strong>Something not working? Found a bug?</strong> Please contact us. We read every message and want to fix any issues you run into.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">

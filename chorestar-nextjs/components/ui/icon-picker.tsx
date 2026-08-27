@@ -259,7 +259,7 @@ export function IconPicker({ currentIcon, onSelect }: IconPickerProps) {
         ))}
         {filteredEmojis.length === 0 && (
           <div className="col-span-full py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            No icons match “{searchTerm}” — try “clean”, “pet”, or “music”.
+            No icons match “{searchTerm}”. Try “clean”, “pet”, or “music”.
           </div>
         )}
       </div>

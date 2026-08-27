@@ -5,8 +5,8 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How to Give Kids Their Own Chore App — No Email Required',
-  description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN — no email, no password, no hassle.',
+  title: 'How to Give Kids Their Own Chore App: No Email Required',
+  description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN, no email, no password, no hassle.',
   keywords: [
     'kids chore app no email',
     'chore app for kids without email',
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'How to Give Kids Their Own Chore App — No Email Required',
+    title: 'How to Give Kids Their Own Chore App: No Email Required',
     description: 'How ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
     url: 'https://chorestar.app/blog/kids-chore-app-no-email',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'How to Give Kids Their Own Chore App — No Email Required',
+    title: 'How to Give Kids Their Own Chore App: No Email Required',
     description: 'How ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
   },
   alternates: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'How to Give Kids Their Own Chore App — No Email Required',
+  headline: 'How to Give Kids Their Own Chore App: No Email Required',
   image: 'https://chorestar.app/og-image.png',
   description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
   url: 'https://chorestar.app/blog/kids-chore-app-no-email',
@@ -69,7 +69,7 @@ export default function KidsChoreAppNoEmailPage() {
               <span className="text-xs text-gray-400 dark:text-gray-500">5 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              How to Give Kids Their Own Chore App — No Email Required
+              How to Give Kids Their Own Chore App: No Email Required
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Most chore apps make everyone create an account. That doesn&apos;t work when your users are 6 years old.
@@ -81,7 +81,7 @@ export default function KidsChoreAppNoEmailPage() {
             <p className="text-gray-700 dark:text-gray-300">
               Your 7-year-old doesn&apos;t have an email address. And you probably don&apos;t want to create one just so they
               can check off &ldquo;brush teeth&rdquo; on a chore chart. Most family apps either require every user to have a
-              full account, or they force everyone to share a single login — which means kids can&apos;t independently access
+              full account, or they force everyone to share a single login, which means kids can&apos;t independently access
               their own tasks.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
@@ -97,10 +97,10 @@ export default function KidsChoreAppNoEmailPage() {
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden my-6">
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {[
-                  { num: '1', title: 'Parent gets the family code', desc: 'Go to Settings → Family. Your unique family code is right there — it\'s auto-generated when you create your account.' },
-                  { num: '2', title: 'Parent sets a PIN for each child', desc: 'Open a child\'s edit modal and set a 4-digit PIN. The PIN is hashed with SHA-256 and a random salt — we never store it in plain text.' },
+                  { num: '1', title: 'Parent gets the family code', desc: 'Go to Settings → Family. Your unique family code is right there. It\'s auto-generated when you create your account.' },
+                  { num: '2', title: 'Parent sets a PIN for each child', desc: 'Open a child\'s edit modal and set a 4-digit PIN. The PIN is hashed with SHA-256 and a random salt. We never store it in plain text.' },
                   { num: '3', title: 'Kid visits the family link', desc: 'The link looks like chorestar.app/kid-login/abc123. Bookmark it on the family tablet, text it to their phone, or add it as a home screen shortcut.' },
-                  { num: '4', title: 'Kid enters their PIN', desc: 'A big, colorful number pad shows up — designed for small fingers. They tap their 4 digits and they\'re in.' },
+                  { num: '4', title: 'Kid enters their PIN', desc: 'A big, colorful number pad shows up, designed for small fingers. They tap their 4 digits and they\'re in.' },
                   { num: '5', title: 'Kid lands on their dashboard', desc: 'They see their name, their avatar, and their routines with big "Start" buttons. No menus, no sibling mix-ups, just their stuff.' },
                 ].map(({ num, title, desc }) => (
                   <div key={num} className="flex gap-4 px-5 py-4">
@@ -123,19 +123,19 @@ export default function KidsChoreAppNoEmailPage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               There&apos;s no navigation menu, no settings, no sibling data visible. Kids see only their own routines. This
-              is by design — the fewer distractions, the more likely they are to just tap &ldquo;Start&rdquo; and get going.
+              is by design. The fewer distractions, the more likely they are to just tap &ldquo;Start&rdquo; and get going.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Security Without Complexity</h2>
             <p className="text-gray-700 dark:text-gray-300">
               We take PIN security seriously despite the simplicity of the interface. The PIN is hashed using SHA-256
-              with a unique random salt per child — the same approach used for passwords, just with a shorter input.
+              with a unique random salt per child, the same approach used for passwords, just with a shorter input.
               Verification uses constant-time comparison to prevent timing attacks. And there&apos;s rate limiting: 5 PIN
               attempts per 15 minutes per IP address before the account locks temporarily.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               When a PIN is verified correctly, ChoreStar creates a temporary session token that expires after 8 hours.
-              That means kids stay logged in during the day but the session naturally expires overnight — ready for
+              That means kids stay logged in during the day but the session naturally expires overnight, ready for
               a fresh login the next morning. If a child forgets their PIN, a parent can reset it instantly from the
               child&apos;s edit modal.
             </p>
@@ -143,7 +143,7 @@ export default function KidsChoreAppNoEmailPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Privacy by Design</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Children don&apos;t create accounts, provide an email address, or submit personal information to ChoreStar
-              directly. Any information about children — names, ages, avatars — is entered and controlled solely by the
+              directly. Any information about children (names, ages, avatars) is entered and controlled solely by the
               parent account holder. Kids interact with the app through a family-specific link and a numeric PIN, and
               the session token is stored only on their device.
             </p>
@@ -164,7 +164,7 @@ export default function KidsChoreAppNoEmailPage() {
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Try Kid Login today</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 Sign up free, add your kids, set their PINs, and share the family link. No credit card, no email
-                for kids — just a code and a PIN.
+                for kids, just a code and a PIN.
               </p>
               <Link
                 href="/signup"

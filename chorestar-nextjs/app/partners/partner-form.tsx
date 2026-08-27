@@ -39,7 +39,7 @@ export function PartnerForm() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          subject: `Partner Inquiry — ${formData.channel}${formData.company ? ` — ${formData.company}` : ''}`,
+          subject: `Partner Inquiry: ${formData.channel}${formData.company ? ` (${formData.company})` : ''}`,
           message: `Partner/Agency Inquiry\n\nCompany: ${formData.company || 'N/A'}\nPromotion Channel: ${formData.channel}\n\n${formData.message}`,
         }),
       })

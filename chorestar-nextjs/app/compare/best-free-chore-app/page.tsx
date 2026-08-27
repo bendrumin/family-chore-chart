@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 export const metadata: Metadata = {
   title: 'The Best Free Chore App for Kids (2026)',
   description:
-    'What to look for in a genuinely free chore chart app for kids — and how ChoreStar’s free plan compares to paid apps, debit-card apps, and wall devices.',
+    'What to look for in a genuinely free chore chart app for kids, and how ChoreStar’s free plan compares to paid apps, debit-card apps, and wall devices.',
   keywords: [
     'best free chore app for kids',
     'free chore chart app',
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
     title: 'The Best Free Chore App for Kids (2026)',
     description:
-      'What actually makes a free chore app worth using — and how ChoreStar’s free plan stacks up.',
+      'What actually makes a free chore app worth using, and how ChoreStar’s free plan stacks up.',
     url: 'https://chorestar.app/compare/best-free-chore-app',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'The Best Free Chore App for Kids (2026)',
-    description: 'What to look for in a free chore app — and how ChoreStar compares.',
+    description: 'What to look for in a free chore app, and how ChoreStar compares.',
   },
   alternates: { canonical: 'https://chorestar.app/compare/best-free-chore-app' },
 }
@@ -33,19 +33,19 @@ export const metadata: Metadata = {
 const checklist = [
   {
     title: 'Free that stays useful',
-    desc: 'Some apps are “free” but lock the basics behind a trial or a paywall. Look for a free tier you can actually run a family on. ChoreStar’s free plan covers up to 3 children and 20 chores, kid PIN login, points and earnings, badges, and weekly reports — no trial clock.',
+    desc: 'Some apps are “free” but lock the basics behind a trial or a paywall. Look for a free tier you can actually run a family on. ChoreStar’s free plan covers up to 3 children and 20 chores, kid PIN login, points and earnings, badges, and weekly reports, no trial clock.',
   },
   {
     title: 'Kids can use it independently',
-    desc: 'A chore app only helps if kids actually open it. Look for a real kid mode. In ChoreStar, children log in with a family code and a 4-digit PIN — no email, no parent handing over their phone.',
+    desc: 'A chore app only helps if kids actually open it. Look for a real kid mode. In ChoreStar, children log in with a family code and a 4-digit PIN, no email, no parent handing over their phone.',
   },
   {
-    title: 'Routines, not just a checklist',
+    title: 'Step-by-step routines',
     desc: 'The best free apps help with the hard parts of the day. ChoreStar includes step-by-step morning, bedtime, and afterschool routines with optional timers and a celebration at the finish.',
   },
   {
     title: 'Still actively maintained',
-    desc: 'A few well-known “free” chore apps have gone quiet — broken logins, closed help centers, no updates. Check that the app is current before you build your family’s week around it.',
+    desc: 'A few well-known “free” chore apps have gone quiet (broken logins, closed help centers, no updates). Check that the app is current before you build your family’s week around it.',
   },
   {
     title: 'No hardware or bank account needed',
@@ -56,15 +56,15 @@ const checklist = [
 const faqs = [
   {
     q: 'What is the best free chore app for kids?',
-    a: 'ChoreStar has a genuinely free plan built for families: up to 3 children and 20 chores, kid login with a PIN (no email), points and allowance tracking, achievement badges, step-by-step routines, and weekly progress reports — with nothing to buy and no bank account required.',
+    a: 'ChoreStar has a genuinely free plan built for families: up to 3 children and 20 chores, kid login with a PIN (no email), points and allowance tracking, achievement badges, step-by-step routines, and weekly progress reports, with nothing to buy and no bank account required.',
   },
   {
     q: 'Is ChoreStar really free?',
-    a: 'Yes. The free plan is free forever for up to 3 children and 20 chores, with no credit card required to start. If you need unlimited children and chores, family sharing, or premium themes, Premium is $4.99/month or $49.99/year — but you never have to upgrade.',
+    a: 'Yes. The free plan is free forever for up to 3 children and 20 chores, with no credit card required to start. If you need unlimited children and chores, family sharing, or premium themes, Premium is $4.99/month or $49.99/year, but you never have to upgrade.',
   },
   {
     q: 'Do free chore apps require a debit card or bank account?',
-    a: 'Some do — apps built around a kids debit card (like Greenlight or GoHenry/Acorns Early) require linking a bank account and usually charge a monthly fee. ChoreStar does not: it tracks chores and allowance with no card and no bank link.',
+    a: 'Some do. Apps built around a kids debit card (like Greenlight or GoHenry/Acorns Early) require linking a bank account and usually charge a monthly fee. ChoreStar does not: it tracks chores and allowance with no card and no bank link.',
   },
   {
     q: 'Can kids log in to a free chore app without an email?',
@@ -129,8 +129,8 @@ export default function BestFreeChoreAppPage() {
               The best free chore app for kids
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              &ldquo;Free&rdquo; means a lot of different things in the chore-app world — free-with-ads,
-              free-trial, or free-but-abandoned. Here&apos;s what actually makes a free chore app worth
+              &ldquo;Free&rdquo; means a lot of different things in the chore-app world (free-with-ads,
+              free-trial, or free-but-abandoned). Here&apos;s what actually makes a free chore app worth
               building your week around, and how ChoreStar&apos;s free plan measures up.
             </p>
           </header>
@@ -156,8 +156,8 @@ export default function BestFreeChoreAppPage() {
             <section className="prose prose-gray dark:prose-invert max-w-none">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What ChoreStar’s free plan includes</h2>
               <p className="text-gray-700 dark:text-gray-300">
-                ChoreStar is free forever for up to 3 children and 20 chores — no credit card to start.
-                The free plan isn&apos;t a stripped-down demo: kids get their own PIN login, points and
+                ChoreStar is free forever for up to 3 children and 20 chores, no credit card to start.
+                The free plan is built for everyday use: kids get their own PIN login, points and
                 earnings tracking, achievement badges, step-by-step routines, and weekly progress
                 reports. You only need Premium if you want unlimited children and chores, family sharing
                 with a co-parent, or premium themes.
@@ -186,7 +186,7 @@ export default function BestFreeChoreAppPage() {
             </section>
 
             <section className="text-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-10 text-white">
-              <h2 className="text-2xl md:text-3xl font-black mb-3">Start free — and stay free</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-3">Start free, and stay free</h2>
               <p className="text-indigo-100 mb-6 max-w-xl mx-auto">
                 Up to 3 kids and 20 chores, free forever. No hardware, no bank account, no credit card to start.
               </p>

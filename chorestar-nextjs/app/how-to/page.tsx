@@ -37,7 +37,7 @@ const tutorials: Tutorial[] = [
     steps: [
       { text: 'From your dashboard, tap Add Child.', icon: <UserPlus className="w-4 h-4" /> },
       { text: "Enter your child's name and age.", icon: <PenLine className="w-4 h-4" /> },
-      { text: 'Hit Randomize to generate a random robot avatar — keep hitting it until something clicks!', icon: <Shuffle className="w-4 h-4" /> },
+      { text: 'Hit Randomize to generate a random robot avatar. Keep hitting it until something clicks!', icon: <Shuffle className="w-4 h-4" /> },
       { text: 'Tap Add Child to save.', icon: <PlusCircle className="w-4 h-4" /> },
       { text: "Find your child's card and tap Edit to choose a background color or a specific robot style.", icon: <Palette className="w-4 h-4" /> },
     ],
@@ -55,9 +55,9 @@ const tutorials: Tutorial[] = [
       { text: 'Select the Morning Routine template.', icon: <Sun className="w-4 h-4" /> },
       { text: 'Review the pre-loaded steps: Wake up, Brush teeth, Get dressed, Make bed, Eat breakfast, Pack backpack.', icon: <ListChecks className="w-4 h-4" /> },
       { text: "Add, remove, or rename steps to match your family's actual morning.", icon: <PenLine className="w-4 h-4" /> },
-      { text: "Tap Create Routine — it's now ready to assign to your kids.", icon: <CheckCircle2 className="w-4 h-4" /> },
+      { text: "Tap Create Routine. It's now ready to assign to your kids.", icon: <CheckCircle2 className="w-4 h-4" /> },
     ],
-    tip: 'Bedtime works exactly the same way — just choose the Bedtime Routine template instead.',
+    tip: 'Bedtime works exactly the same way. Just choose the Bedtime Routine template instead.',
   },
   {
     emoji: '🔑',
@@ -65,15 +65,15 @@ const tutorials: Tutorial[] = [
     slug: 'kid-login',
     accent: '#3b82f6',
     intro:
-      "ChoreStar's Kid Zone lets kids access their routines independently — no email or password needed.",
+      "ChoreStar's Kid Zone lets kids access their routines independently, no email or password needed.",
     steps: [
       { text: 'Tap the Settings gear icon, then go to the Family tab.', icon: <Settings className="w-4 h-4" /> },
-      { text: 'Copy your Kid Login Link — this is the unique URL for your family.', icon: <Copy className="w-4 h-4" /> },
+      { text: 'Copy your Kid Login Link. This is the unique URL for your family.', icon: <Copy className="w-4 h-4" /> },
       { text: 'Open the editor and set a 4-digit PIN for each child.', icon: <Key className="w-4 h-4" /> },
       { text: 'Share the link with your kid: bookmark it on the family tablet, text it to their phone, or make it a home screen shortcut.', icon: <Smartphone className="w-4 h-4" /> },
       { text: 'When they visit the link and enter their PIN, they land directly in their ChoreStar.', icon: <CheckCircle2 className="w-4 h-4" /> },
     ],
-    tip: "Kids see only their own routines — no confusing menus, no sibling mix-ups.",
+    tip: "Kids see only their own routines. No confusing menus, no sibling mix-ups.",
   },
   {
     emoji: '🎉',
@@ -85,9 +85,9 @@ const tutorials: Tutorial[] = [
     steps: [
       { text: 'Kid visits the Kid Login Link and enters their 4-digit PIN.', icon: <Key className="w-4 h-4" /> },
       { text: 'They see their routine cards with a big, friendly Start button.', icon: <Play className="w-4 h-4" /> },
-      { text: 'Tapping Start begins the routine — one step shown at a time.', icon: <ListChecks className="w-4 h-4" /> },
+      { text: 'Tapping Start begins the routine, one step shown at a time.', icon: <ListChecks className="w-4 h-4" /> },
       { text: 'Each step shows clearly on screen; when done, they tap to move to the next.', icon: <CheckCircle2 className="w-4 h-4" /> },
-      { text: 'After the last step — confetti! A celebration screen rewards the effort.', icon: <PartyPopper className="w-4 h-4" /> },
+      { text: 'After the last step, confetti! A celebration screen rewards the effort.', icon: <PartyPopper className="w-4 h-4" /> },
     ],
     tip: 'That little burst of positive reinforcement goes a long way toward building habits that actually stick.',
   },
@@ -105,7 +105,7 @@ const tutorials: Tutorial[] = [
       { text: "Tap Open Editor to manage children's profiles and set or update their PINs.", icon: <Edit3 className="w-4 h-4" /> },
       { text: 'Update a PIN anytime if your child forgets it.', icon: <Key className="w-4 h-4" /> },
     ],
-    tip: "Every child gets their own unique PIN — this is how ChoreStar tells kids apart at login.",
+    tip: "Every child gets their own unique PIN. This is how ChoreStar tells kids apart at login.",
   },
 ]
 

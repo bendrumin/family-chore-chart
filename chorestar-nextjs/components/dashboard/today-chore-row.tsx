@@ -107,7 +107,7 @@ export const TodayChoreRow = memo(function TodayChoreRow({
       type="button"
       onClick={toggle}
       aria-pressed={done}
-      aria-label={`${chore.name}${childName ? ` for ${childName}` : ''} — ${done ? 'done, tap to undo' : 'not done, tap to complete'}`}
+      aria-label={`${chore.name}${childName ? ` for ${childName}` : ''}, ${done ? 'done, tap to undo' : 'not done, tap to complete'}`}
       className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity duration-150 touch-manipulation ${
         done ? 'opacity-75' : 'opacity-100'
       } hover:bg-black/[0.02] dark:hover:bg-white/[0.04] active:opacity-90`}

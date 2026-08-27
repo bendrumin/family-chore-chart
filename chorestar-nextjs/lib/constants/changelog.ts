@@ -22,12 +22,12 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🏠',
         title: "Today's Chores, by Kid",
-        description: 'The Everyone view is now a day checklist like the iPhone app — one tap to mark today done. Chores stay grouped under each child so siblings never get mixed up, and you can switch between 1, 2, or 3 columns on wider screens. Tap a child for the full week grid and routines.',
+        description: 'The Everyone view is now a day checklist like the iPhone app. One tap to mark today done. Chores stay grouped under each child so siblings never get mixed up, and you can switch between 1, 2, or 3 columns on wider screens. Tap a child for the full week grid and routines.',
       },
       {
         icon: '🎨',
         title: 'Themes Match Across Web & App',
-        description: 'Seasonal and accent colors now use the same palettes as iOS, with soft gradients and white text on the header and hero — contrast-checked so everything stays readable, even on bright summer colors.',
+        description: 'Seasonal and accent colors now use the same palettes as iOS, with soft gradients and white text on the header and hero, contrast-checked so everything stays readable, even on bright summer colors.',
       },
       {
         icon: '✨',
@@ -44,7 +44,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '📱',
         title: 'The iPhone & iPad App Is Live',
-        description: 'After months in the making, the fully native ChoreStar app is out of beta and on the App Store — home screen widgets, kid mode with PIN login, step-by-step routine timers in the Dynamic Island, seasonal themes, and confetti celebrations. Your same family account works everywhere: set up chores on the web, and the kids can check them off from the iPad. Search "ChoreStar" on the App Store or grab it from the link on the home page.',
+        description: 'After months in the making, the fully native ChoreStar app is out of beta and on the App Store, including home screen widgets, kid mode with PIN login, step-by-step routine timers in the Dynamic Island, seasonal themes, and confetti celebrations. Your same family account works everywhere: set up chores on the web, and the kids can check them off from the iPad. Search "ChoreStar" on the App Store or grab it from the link on the home page.',
       },
     ],
   },
@@ -56,7 +56,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🌸',
         title: 'Spring, Summer, Fall & Winter Got Repainted',
-        description: 'Each season now uses a palette drawn from a real photograph — cherry blossom, flamingos at the water\'s edge, autumn maple, a frozen valley. They pair two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Pick a season any time of year under Settings › Appearance.',
+        description: 'Each season now uses a palette drawn from a real photograph (cherry blossom, flamingos at the water\'s edge, autumn maple, a frozen valley). They pair two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Pick a season any time of year under Settings › Appearance.',
       },
     ],
   },
@@ -68,12 +68,12 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🎨',
         title: 'Pick Any Accent Color',
-        description: 'Settings › Appearance now has a full color picker. Whatever you choose recolors the whole dashboard — header, buttons, progress ring, and the day checkboxes on every chore. Seasonal themes each bring their own color too, and every one is contrast-checked so text stays readable.',
+        description: 'Settings › Appearance now has a full color picker. Whatever you choose recolors the whole dashboard (header, buttons, progress ring, and the day checkboxes on every chore). Seasonal themes each bring their own color too, and every one is contrast-checked so text stays readable.',
       },
       {
         icon: '⚙️',
         title: 'New Account Tab',
-        description: 'Your sign-in email and account controls now live together under Settings › Account — including the option to permanently delete your account and all of your family\'s data, if you ever want to.',
+        description: 'Your sign-in email and account controls now live together under Settings › Account, including the option to permanently delete your account and all of your family\'s data, if you ever want to.',
       },
     ],
   },
@@ -85,12 +85,12 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '✨',
         title: 'AI-Powered Suggestions',
-        description: 'Smart Chore Suggestions now use AI to tailor ideas to each child — their age, the chores they already have, how they\'ve been doing lately, and the time of year. Open Smart Suggestions and look for the "AI-personalized" badge.',
+        description: 'Smart Chore Suggestions now use AI to tailor ideas to each child (their age, the chores they already have, how they\'ve been doing lately, and the time of year). Open Smart Suggestions and look for the "AI-personalized" badge.',
       },
       {
         icon: '🎯',
         title: 'Personal, and Always Instant',
-        description: 'Ideas come back in a tap, and if the AI is ever unavailable we fall back to our built-in suggestions automatically — so you never wait and never hit a dead end.',
+        description: 'Ideas come back in a tap, and if the AI is ever unavailable we fall back to our built-in suggestions automatically, so you never wait and never hit a dead end.',
       },
     ],
   },
@@ -101,13 +101,13 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
     features: [
       {
         icon: '🏫',
-        title: "School's Out — Now What?",
-        description: 'New blog guide for the first two weeks of summer break: sleep, screens, daily rhythm, and when to add chores — without overscheduling.',
+        title: "School's Out: Now What?",
+        description: 'New blog guide for the first two weeks of summer break: sleep, screens, daily rhythm, and when to add chores, without overscheduling.',
       },
       {
         icon: '🌙',
         title: 'Consistent Dark Mode',
-        description: 'Your light/dark/auto theme preference now follows you across the dashboard, homepage, and login — no more flipping between modes.',
+        description: 'Your light/dark/auto theme preference now follows you across the dashboard, homepage, and login. No more flipping between modes.',
       },
     ],
   },
@@ -119,7 +119,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '☀️',
         title: 'Summer Chore Suggestions',
-        description: 'Smart Suggestions now boost outdoor summer jobs — watering plants, washing the car, BBQ prep, pool cleanup, mowing, and more — age-filtered for each child.'
+        description: 'Smart Suggestions now boost outdoor summer jobs (watering plants, washing the car, BBQ prep, pool cleanup, mowing, and more), age-filtered for each child.'
       },
       {
         icon: '🏖️',
@@ -153,7 +153,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '💡',
         title: 'Smart Chore Suggestions',
-        description: 'Get age-appropriate, seasonal chore ideas tailored to each child. One tap to add them — no more blank-page brainstorming.'
+        description: 'Get age-appropriate, seasonal chore ideas tailored to each child. One tap to add them. No more blank-page brainstorming.'
       },
       {
         icon: '📈',
@@ -168,7 +168,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '📖',
         title: 'Redesigned How-To Guides',
-        description: 'The tutorials page got a fresh timeline layout — cleaner, scannable, and easier to follow.'
+        description: 'The tutorials page got a fresh timeline layout, cleaner, scannable, and easier to follow.'
       },
       {
         icon: '✨',
@@ -185,12 +185,12 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '💰',
         title: 'Per-Chore Reward Mode',
-        description: 'Switch to "Per Chore" mode in Settings → Family and set a unique reward amount on each chore. Earnings add up as kids complete them — bigger chores can be worth more.'
+        description: 'Switch to "Per Chore" mode in Settings → Family and set a unique reward amount on each chore. Earnings add up as kids complete them. Bigger chores can be worth more.'
       },
       {
         icon: '🎉',
         title: 'Full Week Bonus Reward',
-        description: 'Replace the old weekly bonus cents with a fun label — "pizza night," "movie night," "stay up late." When kids complete every chore every day, the label pops up as a celebration.'
+        description: 'Replace the old weekly bonus cents with a fun label ("pizza night," "movie night," "stay up late"). When kids complete every chore every day, the label pops up as a celebration.'
       },
       {
         icon: '🏷️',
@@ -207,12 +207,12 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '👨‍👩‍👧‍👦',
         title: 'Family Sharing (Multi-Parent)',
-        description: 'Invite a co-parent or guardian via email. They get full access to manage children, chores, and routines — all synced in real time.'
+        description: 'Invite a co-parent or guardian via email. They get full access to manage children, chores, and routines, all synced in real time.'
       },
       {
         icon: '🎨',
         title: 'Seasonal Themes',
-        description: 'The dashboard now dresses up for the season — Spring blossoms, Summer sunshine, Fall harvest, and Winter snowflakes. Automatically applied based on the time of year.'
+        description: 'The dashboard now dresses up for the season (Spring blossoms, Summer sunshine, Fall harvest, and Winter snowflakes). Automatically applied based on the time of year.'
       },
       {
         icon: '🔄',
@@ -227,7 +227,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🏠',
         title: 'Full Visual Consistency',
-        description: 'Every page — login, signup, how-to guide, and more — now shares a unified look and feel with the main dashboard.'
+        description: 'Every page (login, signup, how-to guide, and more) now shares a unified look and feel with the main dashboard.'
       }
     ]
   },
@@ -239,7 +239,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🧒',
         title: 'Kid Mode',
-        description: 'Kids can now log in on their own device using a family code — no email or password required. PIN-protected so only they can mark their own chores done.'
+        description: 'Kids can now log in on their own device using a family code, no email or password required. PIN-protected so only they can mark their own chores done.'
       },
       {
         icon: '📋',
@@ -254,7 +254,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '📖',
         title: 'How-To Guide',
-        description: 'New dedicated guide page walking through every feature — great for getting new family members up to speed quickly.'
+        description: 'New dedicated guide page walking through every feature, great for getting new family members up to speed quickly.'
       }
     ]
   },

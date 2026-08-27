@@ -41,7 +41,7 @@ const howToJsonLd = {
       step: [
         { '@type': 'HowToStep', position: 1, text: 'From your dashboard, tap Add Child.' },
         { '@type': 'HowToStep', position: 2, text: "Enter your child's name and age." },
-        { '@type': 'HowToStep', position: 3, text: 'Hit Randomize to generate a random robot avatar — keep hitting it until something clicks!' },
+        { '@type': 'HowToStep', position: 3, text: 'Hit Randomize to generate a random robot avatar. Keep hitting it until something clicks!' },
         { '@type': 'HowToStep', position: 4, text: 'Tap Add Child to save.' },
         { '@type': 'HowToStep', position: 5, text: "Find your child's card and tap Edit to choose a background color or a specific robot style." },
       ],
@@ -57,18 +57,18 @@ const howToJsonLd = {
         { '@type': 'HowToStep', position: 2, text: 'Select the Morning Routine template.' },
         { '@type': 'HowToStep', position: 3, text: 'Review the pre-loaded steps: Wake up, Brush teeth, Get dressed, Make bed, Eat breakfast, Pack backpack.' },
         { '@type': 'HowToStep', position: 4, text: "Add, remove, or rename steps to match your family's actual morning." },
-        { '@type': 'HowToStep', position: 5, text: "Tap Create Routine — it's now ready to assign to your kids." },
+        { '@type': 'HowToStep', position: 5, text: "Tap Create Routine. It's now ready to assign to your kids." },
       ],
     },
     {
       '@type': 'HowTo',
       position: 3,
       name: 'Kid Login Setup',
-      description: "ChoreStar's Kid Zone lets kids access their routines independently — no email or password needed.",
+      description: "ChoreStar's Kid Zone lets kids access their routines independently, no email or password needed.",
       url: 'https://chorestar.app/how-to#kid-login',
       step: [
         { '@type': 'HowToStep', position: 1, text: 'Tap the Settings gear icon, then go to the Family tab.' },
-        { '@type': 'HowToStep', position: 2, text: 'Copy your Kid Login Link — this is the unique URL for your family.' },
+        { '@type': 'HowToStep', position: 2, text: 'Copy your Kid Login Link. This is the unique URL for your family.' },
         { '@type': 'HowToStep', position: 3, text: 'Set a 4-digit PIN for each child.' },
         { '@type': 'HowToStep', position: 4, text: 'Share the link with your kid: bookmark it on the family tablet, text it to their phone, or make it a home screen shortcut.' },
         { '@type': 'HowToStep', position: 5, text: 'When they visit the link and enter their PIN, they land directly in their ChoreStar.' },
@@ -83,9 +83,9 @@ const howToJsonLd = {
       step: [
         { '@type': 'HowToStep', position: 1, text: 'Kid visits the Kid Login Link and enters their 4-digit PIN.' },
         { '@type': 'HowToStep', position: 2, text: 'They see their routine cards with a big, friendly Start button.' },
-        { '@type': 'HowToStep', position: 3, text: 'Tapping Start begins the routine — one step shown at a time.' },
+        { '@type': 'HowToStep', position: 3, text: 'Tapping Start begins the routine, one step shown at a time.' },
         { '@type': 'HowToStep', position: 4, text: 'Each step shows clearly on screen; when done, they tap to move to the next.' },
-        { '@type': 'HowToStep', position: 5, text: 'After the last step — confetti! A celebration screen rewards the effort.' },
+        { '@type': 'HowToStep', position: 5, text: 'After the last step, confetti! A celebration screen rewards the effort.' },
       ],
     },
     {

@@ -32,12 +32,12 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Chores',
     question: 'How do chore rewards work?',
-    answer: 'Choose between two reward modes in Settings → Family. "Flat Daily Rate" pays a set amount for any day with completions. "Per Chore" adds up each individual chore\'s reward as kids complete them — great for making bigger chores worth more. Either way, you can set a Full Week Bonus Reward (like "pizza night") that shows as a celebration when kids nail every chore every day of the week.'
+    answer: 'Choose between two reward modes in Settings → Family. "Flat Daily Rate" pays a set amount for any day with completions. "Per Chore" adds up each individual chore\'s reward as kids complete them, great for making bigger chores worth more. Either way, you can set a Full Week Bonus Reward (like "pizza night") that shows as a celebration when kids nail every chore every day of the week.'
   },
   {
     category: 'Chores',
     question: 'Can I edit multiple chores at once?',
-    answer: 'Yes! Go to Settings > Chores and click "Open Bulk Editor". You can select multiple chores and change their category, reward, or delete them all at once.'
+    answer: 'Yes. Go to Settings > Chores and click "Open Bulk Editor". You can select multiple chores and change their category, reward, or delete them all at once.'
   },
   {
     category: 'Chores',
@@ -52,7 +52,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Settings',
     question: 'How does kid login work?',
-    answer: 'Get your unique kid login link in Settings > Family. Share that link with kids—they enter their 4–6 digit PIN (set per child in Edit Children) and see only your family\'s routines.'
+    answer: 'Get your unique kid login link in Settings > Family. Share that link with kids. They enter their 4–6 digit PIN (set per child in Edit Children) and see only your family\'s routines.'
   },
   {
     category: 'Account',
@@ -62,7 +62,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Settings',
     question: 'Can I change the currency?',
-    answer: 'Yes! Go to Settings > Family and select your preferred currency from the dropdown. ChoreStar supports 12 major currencies worldwide.'
+    answer: 'Yes. Go to Settings > Family and select your preferred currency from the dropdown. ChoreStar supports 12 major currencies worldwide.'
   },
   {
     category: 'Settings',
@@ -87,7 +87,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Account',
     question: 'Is my data safe?',
-    answer: 'Yes! All your data is securely stored and encrypted. Only you can access your family\'s information.'
+    answer: 'Yes. All your data is securely stored and encrypted. Only you can access your family\'s information.'
   },
   {
     category: 'Account',
@@ -97,12 +97,12 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Family Sharing',
     question: 'What is Family Sharing?',
-    answer: 'Family Sharing lets you invite a co-parent or guardian to access your ChoreStar family. Shared members get full access to manage children, chores, and routines — perfect for two-parent households or blended families.'
+    answer: 'Family Sharing lets you invite a co-parent or guardian to access your ChoreStar family. Shared members get full access to manage children, chores, and routines, perfect for two-parent households or blended families.'
   },
   {
     category: 'Family Sharing',
     question: 'How do I invite a co-parent or guardian?',
-    answer: 'Go to Settings > Family and click "Manage Sharing". Enter their email address and click "Send Invite". They\'ll receive an email with a link to accept — they\'ll need a ChoreStar account (free to create) to join.'
+    answer: 'Go to Settings > Family and click "Manage Sharing". Enter their email address and click "Send Invite". They\'ll receive an email with a link to accept. They\'ll need a ChoreStar account (free to create) to join.'
   },
   {
     category: 'Family Sharing',
@@ -112,12 +112,12 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Family Sharing',
     question: 'How do I remove a family member?',
-    answer: 'Go to Settings > Family > Manage Sharing. You\'ll see a list of active members — click the remove button next to anyone you want to revoke access for. They\'ll lose access immediately.'
+    answer: 'Go to Settings > Family > Manage Sharing. You\'ll see a list of active members. Click the remove button next to anyone you want to revoke access for. They\'ll lose access immediately.'
   },
   {
     category: 'Family Sharing',
     question: 'Can I resend an invite if they didn\'t get the email?',
-    answer: 'Yes! Open Manage Sharing and find the pending invite. Click the resend icon next to it — this refreshes the invite link and sends a fresh email.'
+    answer: 'Yes. Open Manage Sharing and find the pending invite. Click the resend icon next to it. This refreshes the invite link and sends a fresh email.'
   },
 ]
 

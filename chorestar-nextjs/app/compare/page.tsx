@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'ChoreStar vs Chore Apps, Smart Displays & Kids Cards',
   description:
-    'How ChoreStar compares to smart-display chore charts (like Skylight), kids debit-card apps (like Greenlight), and basic chore-list apps — no hardware, no bank account, and no email for your kids.',
+    'How ChoreStar compares to smart-display chore charts (like Skylight), kids debit-card apps (like Greenlight), and basic chore-list apps. No hardware, no bank account, and no email for your kids.',
   keywords: [
     'chore app comparison',
     'best chore app for kids',
@@ -42,11 +42,11 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: 'What is the best alternative to a Skylight chore chart?',
-    a: 'If you want Skylight-style chore tracking without buying a wall device, ChoreStar runs on the phones, tablets, and computers you already own. It is free to start, adds step-by-step routines with timers, and lets kids log in with a family code and PIN — no hardware and no kid email required.',
+    a: 'If you want Skylight-style chore tracking without buying a wall device, ChoreStar runs on the phones, tablets, and computers you already own. It is free to start, adds step-by-step routines with timers, and lets kids log in with a family code and PIN, no hardware and no kid email required.',
   },
   {
     q: 'Is there a kids chore and allowance app that does not need a debit card?',
-    a: 'Yes. Debit-card apps like Greenlight and GoHenry are built around a real card and require linking a bank account. ChoreStar tracks chores and allowance without a card or bank — you stay in control of real money and hand it out however you already do.',
+    a: 'Yes. Debit-card apps like Greenlight and GoHenry are built around a real card and require linking a bank account. ChoreStar tracks chores and allowance without a card or bank. You stay in control of real money and hand it out however you already do.',
   },
   {
     q: 'Do kids need their own email or account to use ChoreStar?',
@@ -81,22 +81,22 @@ const differentiators = [
   {
     icon: '📱',
     title: 'No hardware to buy',
-    desc: 'Smart-display chore charts (like Skylight) start with a wall device. ChoreStar runs on the phones, tablets, and computers your family already has — nothing to mount, nothing to ship.',
+    desc: 'Smart-display chore charts (like Skylight) start with a wall device. ChoreStar runs on the phones, tablets, and computers your family already has. Nothing to mount, nothing to ship.',
   },
   {
     icon: '🚫💳',
     title: 'No bank account or debit card',
-    desc: 'Kids debit-card apps require KYC, a linked bank, and a card for your child. ChoreStar tracks allowance virtually so you stay in control of real money — no card for a 7-year-old.',
+    desc: 'Kids debit-card apps require KYC, a linked bank, and a card for your child. ChoreStar tracks allowance virtually so you stay in control of real money, no card for a 7-year-old.',
   },
   {
     icon: '🔑',
     title: 'No email for kids',
-    desc: 'Children log in with a family code and a 4-digit PIN. No email, no personal account, no data collection on your kids — a genuinely COPPA-friendly design.',
+    desc: 'Children log in with a family code and a 4-digit PIN. No email, no personal account, no data collection on your kids, a genuinely COPPA-friendly design.',
   },
   {
     icon: '🎯',
-    title: 'Routines, not just checkboxes',
-    desc: 'Build morning, bedtime, and afterschool routines kids run one step at a time — with optional timers, a progress bar, and a confetti celebration at the finish.',
+    title: 'Step-by-step routines',
+    desc: 'Build morning, bedtime, and afterschool routines kids run one step at a time, with optional timers, a progress bar, and a confetti celebration at the finish.',
   },
 ]
 
@@ -120,7 +120,7 @@ export default function ComparePage() {
             The chore app with no hardware, no bank account, and no email for kids
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            There are a lot of ways to get kids doing chores — a wall device, a debit card, or a
+            There are a lot of ways to get kids doing chores, a wall device, a debit card, or a
             basic checklist app. Here&apos;s an honest look at how ChoreStar compares, and when a
             different option might fit your family better.
           </p>
@@ -208,7 +208,7 @@ export default function ComparePage() {
           </div>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 text-center">
             Comparison reflects typical products in each category. Competitor pricing and features
-            change — check their sites for the latest.
+            change. Check their sites for the latest.
           </p>
         </section>
 
@@ -245,7 +245,7 @@ export default function ComparePage() {
               <p>
                 <strong className="text-gray-900 dark:text-white">Choose ChoreStar</strong> if you
                 want kids to build chore and routine habits on devices you already own, with
-                gamification and flexible allowance tracking — and you&apos;d rather not buy hardware
+                gamification and flexible allowance tracking, and you&apos;d rather not buy hardware
                 or open a bank account.
               </p>
               <p>
@@ -257,7 +257,7 @@ export default function ComparePage() {
               <p>
                 <strong className="text-gray-900 dark:text-white">A kids debit-card app</strong>{' '}
                 (like Greenlight or GoHenry) makes sense if your main goal is real-world spending,
-                saving, and investing with an actual card — and you&apos;re comfortable linking a
+                saving, and investing with an actual card, and you&apos;re comfortable linking a
                 bank and issuing your child a card.
               </p>
             </div>

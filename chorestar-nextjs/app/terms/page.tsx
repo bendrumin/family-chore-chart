@@ -60,7 +60,7 @@ export default function TermsPage() {
 
           <Section title="Who Can Use ChoreStar">
             <p className="text-gray-700 dark:text-gray-300">
-              The account holder must be an adult (18 or older) — a parent or guardian. ChoreStar is a tool for
+              The account holder must be an adult (18 or older), a parent or guardian. ChoreStar is a tool for
               adults to manage chores and routines for children in their care. Children access the app through a
               family-specific link and a numeric PIN set by a parent; children do not create accounts or agree to
               these Terms themselves. The account holder is responsible for supervising children&apos;s use of the

@@ -24,7 +24,7 @@ export function IosAppBanner() {
       <Smartphone className="w-5 h-5 shrink-0 text-indigo-500 dark:text-indigo-400" />
       <p className="flex-1 min-w-0 text-sm text-gray-700 dark:text-gray-300">
         <span className="font-semibold text-gray-900 dark:text-white">ChoreStar is on the App Store!</span>{' '}
-        Widgets, kid mode, and routine timers — synced with everything here.{' '}
+        Widgets, kid mode, and routine timers, synced with everything here.{' '}
         <a
           href={APP_STORE_URL}
           target="_blank"

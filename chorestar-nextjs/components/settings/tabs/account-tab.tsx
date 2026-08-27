@@ -132,7 +132,7 @@ export function AccountTab() {
 
             <p className="text-sm rounded-lg p-3 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/60" style={{ color: 'var(--text-primary)' }}>
               Any subscription billed by ChoreStar is cancelled. If you subscribed through the
-              iOS app, Apple bills you and we can&apos;t cancel it for you — turn it off in your
+              iOS app, Apple bills you and we can&apos;t cancel it for you. Turn it off in your
               iPhone&apos;s Settings &rsaquo; your name &rsaquo; Subscriptions. If you share this
               family, everyone else loses access to its children, chores, and routines.
             </p>

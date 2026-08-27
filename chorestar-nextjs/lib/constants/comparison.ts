@@ -25,7 +25,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
     path: '/compare',
     title: 'ChoreStar vs the Alternatives',
     description:
-      'How ChoreStar compares to smart-display chore charts, kids debit-card apps, and basic chore-list apps — no hardware, no bank account, no email for kids.',
+      'How ChoreStar compares to smart-display chore charts, kids debit-card apps, and basic chore-list apps. No hardware, no bank account, no email for kids.',
     isoDate: '2026-07-02',
   },
   {
@@ -33,7 +33,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
     path: '/compare/skylight-alternative',
     title: 'The Best Skylight Chore Chart Alternative',
     description:
-      'Want a Skylight-style chore chart without buying a $160+ wall device? ChoreStar runs on the phones and tablets you already own — free to start.',
+      'Want a Skylight-style chore chart without buying a $160+ wall device? ChoreStar runs on the phones and tablets you already own, free to start.',
     isoDate: '2026-07-02',
   },
   {
@@ -49,7 +49,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
     path: '/compare/greenlight-alternative',
     title: 'The Best Greenlight Alternative for Chores & Allowance',
     description:
-      'Love the idea of Greenlight but not the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank — free to start.',
+      'Love the idea of Greenlight but not the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank, free to start.',
     isoDate: '2026-07-02',
   },
   {
@@ -57,7 +57,7 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
     path: '/compare/best-free-chore-app',
     title: 'The Best Free Chore App for Kids',
     description:
-      'Looking for a genuinely free chore chart app for kids? Here is what to look for — and how ChoreStar’s free plan compares to paid apps and wall devices.',
+      'Looking for a genuinely free chore chart app for kids? Here is what to look for, and how ChoreStar’s free plan compares to paid apps and wall devices.',
     isoDate: '2026-07-02',
   },
 ]
@@ -109,7 +109,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: 'Kids log in with no email',
     values: {
-      chorestar: 'Yes — family code + PIN',
+      chorestar: 'Yes (family code + PIN)',
       smartDisplay: 'On the device',
       debitCard: 'Kid account',
       basicApp: 'Often shared login',
@@ -126,7 +126,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     feature: 'Flexible allowance tracking',
     values: {
-      chorestar: 'Yes — per-chore or flat, any currency',
+      chorestar: 'Yes (per-chore or flat, any currency)',
       smartDisplay: 'Basic',
       debitCard: 'Real card spending',
       basicApp: 'Varies',

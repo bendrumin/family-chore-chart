@@ -25,10 +25,10 @@ export const metadata: Metadata = {
   // Safari's native Smart App Banner — links iOS visitors to the App Store listing.
   itunes: { appId: '6761279049' },
   title: {
-    default: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
+    default: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
     template: '%s | ChoreStar',
   },
-  description: 'The free chore chart app that turns household chores into a game kids love — track chores, manage allowances, and reward responsibility, on any device.',
+  description: 'The free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility on any device.',
   keywords: [
     'chore chart app',
     'chore tracker for kids',
@@ -70,14 +70,14 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
-    title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device — no download needed. Join 117+ parents and kids.',
+    title: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
+    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device, no download needed. Join 117+ parents and kids.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'ChoreStar — Make chores fun for kids',
+        alt: 'ChoreStar: Make chores fun for kids',
       },
     ],
   },
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@chorestar',
     creator: '@chorestar',
-    title: 'ChoreStar — Chore Chart App & Allowance Tracker for Families',
+    title: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
     description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 117+ parents and kids.',
     images: ['/og-image.png'],
   },

@@ -19,27 +19,27 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: 'Does my child need their own account or email?',
-    a: 'No! Kids log in using a special family link and a simple PIN you set for them. No email address or account needed for kids — they just tap their name and enter their PIN.',
+    a: 'No. Kids log in using a special family link and a simple PIN you set for them. No email address or account is needed for kids. They just tap their name and enter their PIN.',
   },
   {
     q: 'What devices does ChoreStar work on?',
-    a: 'ChoreStar works in any web browser — phone, tablet, or computer. No app download required — just bookmark the page and it works like an app on any device. There\'s also a native iPhone and iPad app on the App Store, synced to the same family account.',
+    a: 'ChoreStar works in any web browser on a phone, tablet, or computer. No app download is required. Bookmark the page and it works like an app on any device. There\'s also a native iPhone and iPad app on the App Store, synced to the same family account.',
   },
   {
     q: 'Can I add chores that repeat daily or weekly?',
-    a: 'Yes! You can create routines with daily or weekly chores for each child. Chores reset automatically so you never have to set them up again.',
+    a: 'Yes. You can create routines with daily or weekly chores for each child. Chores reset automatically so you never have to set them up again.',
   },
   {
     q: 'How does the allowance tracking work?',
-    a: 'Choose your reward mode in Settings. "Flat Daily Rate" pays a set amount for each day with any completions. "Per Chore" tallies up each chore\'s individual reward as kids complete them — so a bigger chore can be worth more than a quick one. You can also set a Full Week Bonus Reward (like "ice cream" or "movie night") that pops up as a celebration when kids complete everything all 7 days.',
+    a: 'Choose your reward mode in Settings. "Flat Daily Rate" pays a set amount for each day with any completions. "Per Chore" tallies up each chore\'s individual reward as kids complete them, so a bigger chore can be worth more than a quick one. You can also set a Full Week Bonus Reward (like "ice cream" or "movie night") that pops up as a celebration when kids complete everything all 7 days.',
   },
   {
     q: 'Can two parents manage the same family?',
-    a: 'Yes — with a Premium plan, you can invite a co-parent or guardian via email. They\'ll get their own login that shows your family\'s chores and kids.',
+    a: 'Yes, with a Premium plan you can invite a co-parent or guardian via email. They\'ll get their own login that shows your family\'s chores and kids.',
   },
   {
     q: 'Can I try Premium before paying?',
-    a: 'Absolutely. Sign up for free and you can start a trial of Premium from your dashboard at any time. No credit card required to create your account.',
+    a: 'Yes. Sign up for free and start a trial of Premium from your dashboard at any time. No credit card is required to create your account.',
   },
 ]
 
@@ -155,7 +155,7 @@ export default async function HomePage() {
           <h1 className="mb-4">
             <span className="text-6xl font-black inline-flex items-center justify-center gap-2" style={GRADIENT_TEXT}><ChoreStarLogo size={48} /> ChoreStar</span>
             <span className="mt-4 block text-2xl font-bold text-gray-600 dark:text-gray-300">
-              Turn Household Chores Into Family Wins — the chore chart app kids love
+              Turn Household Chores Into Family Wins: the chore chart app kids love
             </span>
           </h1>
           <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
@@ -175,7 +175,7 @@ export default async function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device — and the native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">now on the App Store</a>!<br/>
+            📱 Works on any device, and the native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">now on the App Store</a>!<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
@@ -295,10 +295,10 @@ export default async function HomePage() {
             {[
               { icon: '⚡', title: 'Set Up in Minutes', desc: 'No complicated setup. Add your kids, assign chores, and you\'re done. Start seeing results today, not next week.' },
               { icon: '🎮', title: 'Kids Actually Use It', desc: 'Colorful, fun interface that feels like a game. Kids love checking off tasks and watching their earnings grow.' },
-              { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Flat daily rate or per-chore rewards — you choose. Bigger chores can earn more. ChoreStar tallies it all automatically.' },
-              { icon: '📱', title: 'Works Everywhere', desc: 'Phone, tablet, computer — no download needed, and everyone stays synced in real time. A native iPhone app is on the way, too.' },
-              { icon: '👨‍👩‍👧‍👦', title: 'Built for Real Families', desc: 'Multiple kids? Different chores per child? Various reward amounts? We\'ve got you covered.' },
-              { icon: '🔒', title: 'Safe & Private', desc: 'Your family data is secure and private. We never share or sell your information. Period.' },
+              { icon: '💰', title: 'Fair Allowance Tracking', desc: 'Flat daily rate or per-chore rewards, you choose. Bigger chores can earn more. ChoreStar tallies it all automatically.' },
+              { icon: '📱', title: 'Works Everywhere', desc: 'Works in the browser on any phone, tablet, or computer with no download needed, and everyone stays synced in real time. The native iPhone and iPad app is on the App Store, too.' },
+              { icon: '👨‍👩‍👧‍👦', title: 'Built for Real Families', desc: 'Multiple kids, different chores per child, different reward amounts. ChoreStar handles all of it.' },
+              { icon: '🔒', title: 'Safe & Private', desc: 'Your family data is private. We never share or sell your information.' },
             ].map(({ icon, title, desc }) => (
               <div
                 key={title}
@@ -364,7 +364,7 @@ export default async function HomePage() {
             Summer Survival Guides
           </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
-            Free reads from the ChoreStar blog — no signup required
+            Free reads from the ChoreStar blog, no signup required
           </p>
           <div className="grid md:grid-cols-2 gap-6">
             <Link
@@ -373,7 +373,7 @@ export default async function HomePage() {
             >
               <span className="text-3xl mb-3 block">🏫</span>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                School&apos;s Out — Now What?
+                School&apos;s Out: Now What?
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                 A simple plan for the first two weeks: sleep, screens, daily rhythm, and when to add chores.
@@ -569,10 +569,10 @@ export default async function HomePage() {
               <p className="text-gray-600 dark:text-gray-300 mb-2 max-w-lg mx-auto">
                 A fully native iOS app with home screen widgets, routine timers in the
                 Dynamic Island, kid mode with PIN login, seasonal themes, and confetti
-                celebrations — built for families who live on their phones.
+                celebrations, built for families who live on their phones.
               </p>
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-6">
-                Now live on the App Store — free to download. Same family account as the
+                Now live on the App Store, free to download. Same family account as the
                 web app, synced instantly: set up chores on your laptop, kids check them
                 off on the iPad.
               </p>
@@ -603,12 +603,12 @@ export default async function HomePage() {
               <tbody className="text-gray-700 dark:text-gray-300">
                 <tr className="border-b border-gray-100 dark:border-gray-700/60">
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">Where it works</td>
-                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Full web app + native iPhone &amp; iPad app — one account, synced instantly</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Full web app + native iPhone &amp; iPad app. One account, synced instantly</td>
                   <td className="p-4">Phone-only. No web version for the family computer.</td>
                 </tr>
                 <tr className="border-b border-gray-100 dark:border-gray-700/60">
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">How kids log in</td>
-                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Family code + secret PIN — no email, no account, works on any device</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Family code + secret PIN. No email, no account, works on any device</td>
                   <td className="p-4">A profile inside the parent&apos;s app, on the parent&apos;s phone.</td>
                 </tr>
                 <tr className="border-b border-gray-100 dark:border-gray-700/60">
@@ -618,17 +618,17 @@ export default async function HomePage() {
                 </tr>
                 <tr className="border-b border-gray-100 dark:border-gray-700/60">
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">Allowance</td>
-                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Transparent earnings you pay out your way — no bank linking, no kid debit card</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ Transparent earnings you pay out your way. No bank linking, no kid debit card</td>
                   <td className="p-4">Points with no money meaning, or a full fintech signup.</td>
                 </tr>
                 <tr className="border-b border-gray-100 dark:border-gray-700/60">
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">Privacy</td>
-                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ No ads, no third-party trackers — kids never enter personal info</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ No ads, no third-party trackers. Kids never enter personal info</td>
                   <td className="p-4">&ldquo;Free&rdquo; apps supported by ads and data.</td>
                 </tr>
                 <tr>
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">Pricing</td>
-                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ A free plan that stays free — 3 kids, 20 chores, routines &amp; badges included</td>
+                  <td className="p-4 bg-indigo-50/60 dark:bg-indigo-900/20">✅ A free plan that stays free: 3 kids, 20 chores, routines &amp; badges included</td>
                   <td className="p-4">Free to download, paywall by day two.</td>
                 </tr>
               </tbody>

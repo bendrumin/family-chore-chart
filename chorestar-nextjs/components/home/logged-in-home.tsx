@@ -96,7 +96,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone &amp; iPad is live!</h2>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                The native app is on the App Store — home screen widgets, kid mode with PIN
+                The native app is on the App Store, including home screen widgets, kid mode with PIN
                 login, routine timers in the Dynamic Island, and seasonal themes. It syncs
                 instantly with everything you do here: set up chores on the web, kids check
                 them off on the iPad.

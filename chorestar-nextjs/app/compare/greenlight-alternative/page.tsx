@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 export const metadata: Metadata = {
   title: 'The Best Greenlight Alternative for Chores & Allowance',
   description:
-    'Want Greenlight-style chores and allowance without the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank — free to start.',
+    'Want Greenlight-style chores and allowance without the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank, free to start.',
   keywords: [
     'greenlight alternative',
     'greenlight alternative for chores',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 const rows = [
   { feature: 'Core product', chorestar: 'Chore & routine app', them: 'Kids debit card + app' },
-  { feature: 'Bank account required', chorestar: 'No', them: 'Yes — linked & verified' },
+  { feature: 'Bank account required', chorestar: 'No', them: 'Yes (linked & verified)' },
   { feature: 'Physical card for your child', chorestar: 'No', them: 'Yes' },
   { feature: 'Cost to start', chorestar: 'Free', them: 'Monthly subscription' },
   { feature: 'Who holds the real money', chorestar: 'You do', them: 'Loaded onto the card' },
@@ -44,7 +44,7 @@ const rows = [
 const faqs = [
   {
     q: 'What is the best Greenlight alternative if I do not want a debit card?',
-    a: 'ChoreStar. Greenlight is fundamentally a kids debit card with a companion app, so it requires linking a bank account, verifying your identity, and paying a monthly subscription. If your goal is really chores, routines, and allowance tracking — not a card — ChoreStar does that with no card, no bank link, and a free plan.',
+    a: 'ChoreStar. Greenlight is fundamentally a kids debit card with a companion app, so it requires linking a bank account, verifying your identity, and paying a monthly subscription. If your goal is really chores, routines, and allowance tracking (not a card), ChoreStar does that with no card, no bank link, and a free plan.',
   },
   {
     q: 'Does ChoreStar do allowance like Greenlight?',
@@ -52,7 +52,7 @@ const faqs = [
   },
   {
     q: 'When is Greenlight still the better choice?',
-    a: 'If your main goal is real-world spending, saving, and investing with an actual debit card — and you are comfortable linking a bank and verifying your identity — Greenlight is purpose-built for that. ChoreStar is the better fit when you want chores, routines, and allowance tracking without the banking overhead.',
+    a: 'If your main goal is real-world spending, saving, and investing with an actual debit card, and you are comfortable linking a bank and verifying your identity, Greenlight is purpose-built for that. ChoreStar is the better fit when you want chores, routines, and allowance tracking without the banking overhead.',
   },
   {
     q: 'How much does ChoreStar cost?',
@@ -65,7 +65,7 @@ const articleJsonLd = {
   '@type': 'Article',
   headline: 'The Best Greenlight Alternative for Chores & Allowance',
   description:
-    'How ChoreStar compares to Greenlight for chores and allowance — no debit card, no bank account, no monthly fee required.',
+    'How ChoreStar compares to Greenlight for chores and allowance. No debit card, no bank account, no monthly fee required.',
   url: 'https://chorestar.app/compare/greenlight-alternative',
   datePublished: '2026-07-02',
   dateModified: '2026-07-02',
@@ -114,11 +114,11 @@ export default function GreenlightAlternativePage() {
               Greenlight alternative
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              A Greenlight alternative for chores — without the debit card
+              A Greenlight alternative for chores, without the debit card
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Greenlight is a kids debit card with a chores-and-allowance app attached. It&apos;s great
-              for real-world spending — but it means a linked bank account, identity verification, a
+              for real-world spending, but it means a linked bank account, identity verification, a
               monthly fee, and a card for your child. If what you actually want is the chores and
               allowance part, ChoreStar does that with no card and no bank, free to start.
             </p>
@@ -159,13 +159,13 @@ export default function GreenlightAlternativePage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Chores and habits, minus the banking</h2>
               <p className="text-gray-700 dark:text-gray-300">
                 The reason to pick ChoreStar over Greenlight is scope. Greenlight is a financial product
-                first — the chores exist to feed the card. ChoreStar is a chore and routine app first:
+                first. The chores exist to feed the card. ChoreStar is a chore and routine app first:
                 kids run morning and bedtime routines one step at a time, earn points and badges, build
-                streaks, and see their allowance add up — all without a card, a bank link, or a monthly
+                streaks, and see their allowance add up, all without a card, a bank link, or a monthly
                 requirement, and with a free plan for up to 3 kids.
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                Kids also log in with just a family code and a 4-digit PIN — no email and no personal
+                Kids also log in with just a family code and a 4-digit PIN, no email and no personal
                 account for your children, which keeps their data private.
               </p>
 
@@ -173,7 +173,7 @@ export default function GreenlightAlternativePage() {
               <p className="text-gray-700 dark:text-gray-300">
                 If your priority is teaching real spending, saving, and investing with an actual debit
                 card your child carries, Greenlight is built for exactly that and does it well. Reach for
-                ChoreStar when the goal is chores, routines, and allowance <em>tracking</em> — and
+                ChoreStar when the goal is chores, routines, and allowance <em>tracking</em>, and
                 you&apos;d rather keep the real money in your own hands.
               </p>
             </section>
@@ -194,7 +194,7 @@ export default function GreenlightAlternativePage() {
             </section>
 
             <section className="text-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-10 text-white">
-              <h2 className="text-2xl md:text-3xl font-black mb-3">Chores that pay off — no card required</h2>
+              <h2 className="text-2xl md:text-3xl font-black mb-3">Chores that pay off, no card required</h2>
               <p className="text-indigo-100 mb-6 max-w-xl mx-auto">
                 Free for up to 3 kids and 20 chores. No bank account, no credit card to start.
               </p>

@@ -42,7 +42,7 @@ export default function PrivacyPage() {
               how we use it, and your rights regarding that data.
             </p>
             <p>
-              We built ChoreStar for families and take privacy seriously — especially because families with children use
+              We built ChoreStar for families and take privacy seriously, especially because families with children use
               our app. We do not sell your data. We do not run ads. We never share personal information with third
               parties except as required to operate the Service.
             </p>
@@ -51,10 +51,10 @@ export default function PrivacyPage() {
           <Section title="Information We Collect">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Account information (parents)</h3>
             <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300">
-              <li>Email address — used for account creation, login, and transactional emails</li>
-              <li>Password — stored as a secure hash; we never see your plaintext password</li>
-              <li>Family name — used to personalize the dashboard</li>
-              <li>Subscription status — to determine which features are available</li>
+              <li>Email address, used for account creation, login, and transactional emails</li>
+              <li>Password, stored as a secure hash; we never see your plaintext password</li>
+              <li>Family name, used to personalize the dashboard</li>
+              <li>Subscription status, to determine which features are available</li>
             </ul>
 
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Family data (entered by parents)</h3>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Profile photos (optional)</h3>
             <p className="text-gray-700 dark:text-gray-300">
               A parent may optionally add a profile photo for a child, taken with the camera or chosen
-              from their device. Photos are entirely optional — every avatar option other than this one
+              from their device. Photos are entirely optional. Every avatar option other than this one
               is a drawing, an emoji, or a colour, and the app works exactly the same without a photo.
             </p>
             <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300 mt-2">
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Uploaded by a parent, never by a child.</strong> Only the signed-in account
-                holder can add or change a photo — this is the parental-consent model, and children
+                holder can add or change a photo. This is the parental-consent model, and children
                 cannot upload anything.
               </li>
               <li>
@@ -104,8 +104,8 @@ export default function PrivacyPage() {
             <p className="text-gray-700 dark:text-gray-300">
               Children do not create accounts or provide personal information. They access the app through a
               family-specific link and a numeric PIN set by a parent. We do not collect names, emails,
-              or any personal data directly from children. Anything about a child in ChoreStar — their
-              name, age, avatar, and any optional profile photo — is entered by their parent, not by
+              or any personal data directly from children. Anything about a child in ChoreStar (their
+              name, age, avatar, and any optional profile photo) is entered by their parent, not by
               them.
             </p>
 
@@ -140,15 +140,15 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
               <li>
-                <strong>Supabase</strong> — database, authentication, and file storage infrastructure.
+                <strong>Supabase</strong> (database, authentication, and file storage infrastructure).
                 Data is encrypted in transit and at rest.
               </li>
               <li>
-                <strong>Stripe</strong> — payment processing. We never store your card number or payment details;
+                <strong>Stripe</strong> (payment processing). We never store your card number or payment details;
                 Stripe handles all payment data under their own PCI-compliant infrastructure.
               </li>
               <li>
-                <strong>Resend</strong> — transactional email delivery (password resets, receipts).
+                <strong>Resend</strong> (transactional email delivery, e.g., password resets and receipts).
               </li>
             </ul>
             <p className="text-gray-700 dark:text-gray-300 mt-3">
@@ -186,11 +186,11 @@ export default function PrivacyPage() {
           <Section title="Your Rights">
             <p className="text-gray-700 dark:text-gray-300 mb-3">You have the right to:</p>
             <ul className="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-300">
-              <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
-              <li><strong>Correction</strong> — update or correct inaccurate information</li>
-              <li><strong>Deletion</strong> — request that we delete your account and associated data</li>
-              <li><strong>Portability</strong> — receive your data in a portable format</li>
-              <li><strong>Objection</strong> — object to certain uses of your data</li>
+              <li><strong>Access</strong> (request a copy of the personal data we hold about you)</li>
+              <li><strong>Correction</strong> (update or correct inaccurate information)</li>
+              <li><strong>Deletion</strong> (request that we delete your account and associated data)</li>
+              <li><strong>Portability</strong> (receive your data in a portable format)</li>
+              <li><strong>Objection</strong> (object to certain uses of your data)</li>
             </ul>
             <p className="text-gray-700 dark:text-gray-300 mt-3">
               To exercise any of these rights, email us at{' '}

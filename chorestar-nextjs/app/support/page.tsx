@@ -6,17 +6,17 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Support & Help',
-  description: 'Get help with ChoreStar — contact support, browse how-to guides, and find answers to common questions about kid login, allowance, routines, and subscriptions.',
+  description: 'Get help with ChoreStar. Contact support, browse how-to guides, and find answers to common questions about kid login, allowance, routines, and subscriptions.',
   openGraph: {
     title: 'Support & Help | ChoreStar',
-    description: 'Get help with ChoreStar — contact support, how-to guides, and answers to common questions.',
+    description: 'Get help with ChoreStar. Contact support, how-to guides, and answers to common questions.',
     url: 'https://chorestar.app/support',
     images: ['/og-image.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Support & Help | ChoreStar',
-    description: 'Get help with ChoreStar — contact support, how-to guides, and answers to common questions.',
+    description: 'Get help with ChoreStar. Contact support, how-to guides, and answers to common questions.',
     images: ['/og-image.png'],
   },
   alternates: { canonical: 'https://chorestar.app/support' },
@@ -33,11 +33,11 @@ const FAQS = [
   },
   {
     q: 'How does allowance work?',
-    a: 'Choose a reward mode in Settings — a flat daily amount, or a custom amount per chore. ChoreStar automatically tallies each child\'s earnings as chores are completed, so it\'s always clear how much they\'ve earned.',
+    a: 'Choose a reward mode in Settings, either a flat daily amount or a custom amount per chore. ChoreStar automatically tallies each child\'s earnings as chores are completed, so it\'s always clear how much they\'ve earned.',
   },
   {
     q: 'What are routines?',
-    a: 'Routines are step-by-step sequences (morning, bedtime, after-school, or custom) that kids run on their own — with optional per-step timers and a reward for finishing. On iPhone, the current step\'s timer even appears on the Lock Screen and Dynamic Island.',
+    a: 'Routines are step-by-step sequences (morning, bedtime, after-school, or custom) that kids run on their own, with optional per-step timers and a reward for finishing. On iPhone, the current step\'s timer even appears on the Lock Screen and Dynamic Island.',
   },
   {
     q: 'How do I manage or cancel my subscription?',
@@ -45,7 +45,7 @@ const FAQS = [
   },
   {
     q: 'Is my family\'s data private?',
-    a: 'Yes. We never sell or share your data, and children never provide an email or personal information — they sign in with a family code and PIN only. See our Privacy Policy for full details.',
+    a: 'Yes. We never sell or share your data, and children never provide an email or personal information. They sign in with a family code and PIN only. See our Privacy Policy for full details.',
   },
 ]
 
@@ -83,7 +83,7 @@ export default function SupportPage() {
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Contact us</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Have a question, found a bug, or want to suggest a feature? Email us and we&apos;ll get back to you as soon as we can — usually within one business day.
+                Have a question, found a bug, or want to suggest a feature? Email us and we&apos;ll get back to you as soon as we can, usually within one business day.
               </p>
               <a
                 href="mailto:hi@chorestar.app"

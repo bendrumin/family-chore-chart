@@ -199,7 +199,7 @@ export const ChoreCard = memo(function ChoreCard({
                 <button
                   key={day.dayOfWeek}
                   onClick={() => toggleCompletion(day.dayOfWeek)}
-                  aria-label={`${chore.name} ${day.dayName} — ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
+                  aria-label={`${chore.name} ${day.dayName}, ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
                   className={`h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation ${
                     completed
