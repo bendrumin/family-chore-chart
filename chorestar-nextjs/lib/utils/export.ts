@@ -399,7 +399,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
     doc.setFont(undefined, 'bold');
     const title = style === 'stars' ? `${child.name}'s Weekly Chore Chart` :
                   style === 'rainbow' ? `${child.name}'s Week` :
-                  `${child.name} — Weekly Chores`;
+                  `${child.name}: Weekly Chores`;
     doc.text(title, margin, 26);
 
     doc.setFontSize(10);
@@ -435,7 +435,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
 
     if (childChores.length === 0) {
       doc.setFontSize(11);
-      doc.text('No chores assigned yet — add some from the dashboard!', margin + 2, y + 6);
+      doc.text('No chores assigned yet. Add some from the dashboard!', margin + 2, y + 6);
     }
 
     childChores.forEach((chore, i) => {

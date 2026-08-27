@@ -101,10 +101,10 @@ export async function POST(request: Request) {
     </div>
     <div style="padding:36px 32px;">
       <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 16px;">
-        <strong>${familyName}</strong> has invited you to join their family on ChoreStar — the app that helps families manage chores and daily routines together.
+        <strong>${familyName}</strong> has invited you to join their family on ChoreStar, the app that helps families manage chores and daily routines together.
       </p>
       <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0 0 28px;">
-        As a family member you'll have full access to manage children, chores, and routines — perfect for co-parents and guardians.
+        As a family member you'll have full access to manage children, chores, and routines, which makes it a good fit for co-parents and guardians.
       </p>
       <div style="text-align:center;margin:0 0 28px;">
         <a href="${acceptUrl}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;font-size:16px;">

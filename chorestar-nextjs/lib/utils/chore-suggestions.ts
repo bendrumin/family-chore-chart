@@ -176,7 +176,7 @@ export function generateSuggestions(req: SuggestionRequest, count = 5): ChoreSug
     if (chore.seasonalMonths.length > 0 && chore.seasonalMonths.includes(month)) {
       reason = `Great for this time of year`
     } else if (req.completionRate > 75 && chore.rewardCents >= 15) {
-      reason = `${req.childName} is doing great — ready for a challenge!`
+      reason = `${req.childName} is doing great, ready for a challenge!`
     } else if (age <= 6 && chore.maxAge <= 10) {
       reason = `Perfect for ${req.childName}'s age`
     } else {
