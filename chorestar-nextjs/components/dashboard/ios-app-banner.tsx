@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, Smartphone } from 'lucide-react'
-import { APP_STORE_URL } from '@/components/home/app-store-badge'
+import { APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 
 const DISMISS_KEY = 'chorestar-ios-banner-dismissed'
 
@@ -32,6 +32,15 @@ export function IosAppBanner() {
           className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"
         >
           Get the iPhone &amp; iPad app →
+        </a>{' '}
+        <span className="text-gray-400 dark:text-gray-500">·</span>{' '}
+        <a
+          href={APP_STORE_REVIEW_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"
+        >
+          Already have it? Rate it ★
         </a>
       </p>
       <button

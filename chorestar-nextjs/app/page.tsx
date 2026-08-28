@@ -5,7 +5,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { AppStoreBadge, APP_STORE_URL } from '@/components/home/app-store-badge'
+import { AppStoreBadge, APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 const SITE_URL = 'https://chorestar.app'
@@ -577,6 +577,17 @@ export default async function HomePage() {
                 off on the iPad.
               </p>
               <AppStoreBadge />
+              <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
+                Already using the app? A quick rating helps other families find it.{' '}
+                <a
+                  href={APP_STORE_REVIEW_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  Rate ChoreStar on the App Store ★
+                </a>
+              </p>
             </div>
           </div>
         </div>

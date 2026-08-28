@@ -1,6 +1,8 @@
 import Link from 'next/link'
 
 export const APP_STORE_URL = 'https://apps.apple.com/app/id6761279049'
+/** Opens the App Store's "Write a Review" sheet directly (on Apple devices). */
+export const APP_STORE_REVIEW_URL = 'https://apps.apple.com/app/id6761279049?action=write-review'
 
 /**
  * "Download on the App Store" badge. Drawn in-house (rounded black badge,

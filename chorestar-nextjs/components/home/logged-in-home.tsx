@@ -4,7 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { AppStoreBadge } from '@/components/home/app-store-badge'
+import { AppStoreBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import {
   LayoutDashboard,
   BookOpen,
@@ -109,6 +109,14 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                 >
                   See everything it can do →
                 </Link>
+                <a
+                  href={APP_STORE_REVIEW_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  Already using it? Rate it on the App Store ★
+                </a>
               </div>
             </div>
           </div>
