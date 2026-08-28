@@ -295,7 +295,31 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("About") {
+                Section {
+                    Link(destination: ReviewPrompter.writeReviewURL) {
+                        HStack {
+                            Text("Rate ChoreStar")
+                            Spacer()
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.choreStarAccent)
+                        }
+                    }
+                    .foregroundColor(.choreStarTextPrimary)
+
+                    ShareLink(
+                        item: ReviewPrompter.appStoreURL,
+                        subject: Text("ChoreStar"),
+                        message: Text("We use ChoreStar for chores and routines with the kids. Free on the App Store.")
+                    ) {
+                        HStack {
+                            Text("Share ChoreStar")
+                            Spacer()
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundColor(.choreStarAccent)
+                        }
+                    }
+                    .foregroundColor(.choreStarTextPrimary)
+
                     Button(action: { showingWhatsNew = true }) {
                         HStack {
                             Text("What's New")
@@ -315,6 +339,10 @@ struct SettingsView: View {
                         }
                     }
                     .foregroundColor(.choreStarTextPrimary)
+                } header: {
+                    Text("About")
+                } footer: {
+                    Text("Ratings and reviews are how other families find ChoreStar. A quick rating helps more than you'd think. Thank you!")
                 }
                 
                 Section {

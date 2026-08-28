@@ -7,6 +7,12 @@ import Foundation
 /// never prompt; kids can't leave reviews and shouldn't be interrupted.
 enum ReviewPrompter {
 
+    /// Public App Store listing, used by the Share row in Settings.
+    static let appStoreURL = URL(string: "https://apps.apple.com/app/id6761279049")!
+    /// Deep link straight to the App Store's "Write a Review" sheet. Explicit
+    /// buttons must use this rather than requestReview, which may show nothing.
+    static let writeReviewURL = URL(string: "https://apps.apple.com/app/id6761279049?action=write-review")!
+
     static let minDaysSinceFirstLaunch = 3
     static let minPerfectDays = 2
     static let minDaysBetweenPrompts = 90
