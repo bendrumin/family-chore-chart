@@ -900,7 +900,7 @@ struct DeleteAccountView: View {
 struct FamilyRewardsSettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var rewardMode: String = "flat"
-    @State private var dailyCentsText: String = "7"
+    @State private var dailyCentsText: String = "100"
     @State private var weeklyCentsText: String = "1"
     @State private var currencyCode: String = "USD"
     @State private var isSaving = false
@@ -939,7 +939,7 @@ struct FamilyRewardsSettingsView: View {
                 HStack {
                     Text(rewardMode == "per_chore" ? "Default chore" : "Daily reward")
                     Spacer()
-                    TextField("7", text: $dailyCentsText)
+                    TextField("100", text: $dailyCentsText)
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 80)
@@ -1005,7 +1005,7 @@ struct FamilyRewardsSettingsView: View {
     }
 
     private func save() async {
-        let daily = Int(dailyCentsText.filter(\.isNumber)) ?? 7
+        let daily = Int(dailyCentsText.filter(\.isNumber)) ?? 100
         let weekly = Int(weeklyCentsText.filter(\.isNumber)) ?? 0
         isSaving = true
         statusMessage = nil

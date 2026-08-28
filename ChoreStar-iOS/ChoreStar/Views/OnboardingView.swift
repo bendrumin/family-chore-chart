@@ -13,7 +13,13 @@ struct OnboardingView: View {
     let onFinish: (_ goToFamily: Bool) -> Void
 
     @State private var page = 0
-    private let pageCount = 4
+    private let pageCount = 5
+
+    /// Rewards page state. Saved when the user moves past that page, so a family
+    /// picks how earning works for THEIR household instead of inheriting a default.
+    @State private var rewardMode = "flat"
+    @State private var dailyAmountText = "1.00"
+    private let rewardsPageIndex = 2
 
     var body: some View {
         ZStack {
@@ -34,8 +40,9 @@ struct OnboardingView: View {
                 TabView(selection: $page) {
                     welcomePage.tag(0)
                     familyPage.tag(1)
-                    choresPage.tag(2)
-                    kidLoginPage.tag(3)
+                    rewardsPage.tag(2)
+                    choresPage.tag(3)
+                    kidLoginPage.tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -66,10 +73,33 @@ struct OnboardingView: View {
     }
 
     private func advance() {
+        if page == rewardsPageIndex {
+            saveRewards()
+        }
         if page < pageCount - 1 {
             withAnimation { page += 1 }
         } else {
             onFinish(true)
+        }
+    }
+
+    private var dailyCents: Int {
+        let cleaned = dailyAmountText.replacingOccurrences(of: ",", with: ".").filter { "0123456789.".contains($0) }
+        guard let dollars = Double(cleaned), dollars >= 0 else { return 100 }
+        return Int((dollars * 100).rounded())
+    }
+
+    private func saveRewards() {
+        let mode = rewardMode
+        let cents = dailyCents
+        let existing = manager.familySettings
+        Task {
+            _ = await manager.updateFamilyRewards(
+                rewardMode: mode,
+                dailyRewardCents: cents,
+                weeklyBonusCents: existing?.weeklyBonusCents ?? 0,
+                currencyCode: existing?.currencyCode ?? "USD"
+            )
         }
     }
 
@@ -99,6 +129,91 @@ struct OnboardingView: View {
                 ("lock.circle.fill", "Set a 4-digit PIN so kids can log in themselves")
             ]
         )
+    }
+
+    private var rewardsPage: some View {
+        let symbol = manager.familySettings?.currencySymbol ?? "$"
+        return VStack(spacing: 24) {
+            Spacer()
+
+            Text("💰")
+                .font(.system(size: 80))
+
+            VStack(spacing: 8) {
+                Text("How Should Rewards Work?")
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+
+                Text("Every household is different. Pick what fits yours.")
+                    .font(.title3)
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 24)
+
+            VStack(alignment: .leading, spacing: 16) {
+                Picker("Reward mode", selection: $rewardMode) {
+                    Text("One daily amount").tag("flat")
+                    Text("Per chore").tag("per_chore")
+                }
+                .pickerStyle(.segmented)
+                .colorMultiply(.white)
+
+                if rewardMode == "flat" {
+                    Text("Kids earn a set amount for each day they finish all their chores.")
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 8) {
+                        Text(symbol)
+                            .font(.title2.weight(.semibold))
+                            .foregroundColor(.white)
+                        TextField("1.00", text: $dailyAmountText)
+                            .keyboardType(.decimalPad)
+                            .font(.title2.weight(.semibold))
+                            .foregroundColor(.choreStarTextPrimary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .frame(maxWidth: 140)
+                        Text("per day")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+
+                    HStack(spacing: 8) {
+                        ForEach(["0.50", "1.00", "2.00", "5.00"], id: \.self) { preset in
+                            Button(preset) { dailyAmountText = preset }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(dailyAmountText == preset ? .choreStarTextPrimary : .white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(dailyAmountText == preset ? Color.white : Color.white.opacity(0.2))
+                                .clipShape(Capsule())
+                        }
+                    }
+                } else {
+                    Text("Each chore gets its own reward, so bigger jobs can be worth more. You set the amount when you add a chore.")
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Text("You can change this anytime in Settings.")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.75))
+            }
+            .padding(20)
+            .background(Color.white.opacity(0.15))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 24)
+
+            Spacer()
+            Spacer()
+        }
     }
 
     private var choresPage: some View {

@@ -2094,7 +2094,11 @@ class SupabaseManager: ObservableObject {
         let uid = await MainActor.run { effectiveUserId }
         guard let uid = uid else { return "Not signed in." }
 
-        struct RewardsUpdate: Encodable {
+        // Upsert, not update: a family created on iOS has no family_settings row
+        // until the web app makes one, and an update on a missing row is a silent
+        // no-op. onConflict user_id turns this into "create or edit".
+        struct RewardsUpsert: Encodable {
+            let user_id: String
             let reward_mode: String
             let daily_reward_cents: Int
             let weekly_bonus_cents: Int
@@ -2104,13 +2108,13 @@ class SupabaseManager: ObservableObject {
         do {
             try await client
                 .from("family_settings")
-                .update(RewardsUpdate(
+                .upsert(RewardsUpsert(
+                    user_id: "\(uid)",
                     reward_mode: rewardMode,
                     daily_reward_cents: dailyRewardCents,
                     weekly_bonus_cents: weeklyBonusCents,
                     currency_code: currencyCode
-                ))
-                .eq("user_id", value: uid)
+                ), onConflict: "user_id")
                 .execute()
             await loadFamilySettings()
             return nil
