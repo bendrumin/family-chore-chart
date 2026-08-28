@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { DEFAULT_DAILY_REWARD_CENTS } from '@/lib/utils/earnings'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -91,7 +92,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       setLocalCurrencyCode(settings.currency_code || 'USD')
       setLocalDateFormat(settings.date_format || 'auto')
       setLocalLanguage(settings.language || 'en')
-      setLocalDailyReward((settings.daily_reward_cents || 7).toString())
+      setLocalDailyReward((settings.daily_reward_cents ?? DEFAULT_DAILY_REWARD_CENTS).toString())
       setLocalWeeklyBonus((settings.weekly_bonus_cents || 1).toString())
       setLocalRewardMode((settings.reward_mode as 'flat' | 'per_chore') || 'flat')
       setLocalWeeklyBonusLabel(settings.weekly_bonus_label || '')

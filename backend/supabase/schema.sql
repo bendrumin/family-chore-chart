@@ -54,7 +54,7 @@ CREATE TABLE chore_completions (
 CREATE TABLE family_settings (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,
-    daily_reward_cents INTEGER DEFAULT 7 CHECK (daily_reward_cents >= 0),
+    daily_reward_cents INTEGER DEFAULT 100 CHECK (daily_reward_cents >= 0),
     weekly_bonus_cents INTEGER DEFAULT 1 CHECK (weekly_bonus_cents >= 0),
     timezone TEXT DEFAULT 'UTC',
     currency_code TEXT DEFAULT 'USD' CHECK (currency_code ~ '^[A-Z]{3}$'),

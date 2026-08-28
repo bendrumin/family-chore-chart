@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ChevronLeft, CheckCircle, Users, ListChecks, Star, Trophy } from 'lucide-react'
+import { ChevronRight, ChevronLeft, CheckCircle, Users, ListChecks, Star, Trophy, Coins } from 'lucide-react'
+import { RewardsSetupStep } from '@/components/onboarding/rewards-setup-step'
 
 interface OnboardingWizardProps {
   open: boolean
@@ -75,6 +76,13 @@ const STEPS = [
         </div>
       </div>
     )
+  },
+  {
+    icon: Coins,
+    title: 'Set Up Rewards',
+    description: 'Decide how your kids earn. Every household is different.',
+    image: '💰',
+    content: <RewardsSetupStep />
   },
   {
     icon: ListChecks,

@@ -23,8 +23,12 @@ export type EarningsSettings = Pick<
   'reward_mode' | 'daily_reward_cents' | 'weekly_bonus_cents'
 >
 
-/** Matches the schema default for family_settings.daily_reward_cents. */
-export const DEFAULT_DAILY_REWARD_CENTS = 7
+/**
+ * Fallback when a family has not chosen a daily rate (matches the schema default
+ * for family_settings.daily_reward_cents). New families pick their own during
+ * onboarding; the old 7 was one household's setting that leaked into the code.
+ */
+export const DEFAULT_DAILY_REWARD_CENTS = 100
 
 export interface ChoreReward {
   id: string

@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { DEFAULT_DAILY_REWARD_CENTS } from '@/lib/utils/earnings'
 import { createClient } from '@/lib/supabase/client'
 import type { Database, CustomTheme } from '@/lib/supabase/database.types'
 import {
@@ -72,7 +73,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
         locale: 'en-US',
         date_format: 'auto',
         custom_theme: { mode: 'auto', seasonalTheme: null, autoSeasonal: false },
-        daily_reward_cents: 7,
+        daily_reward_cents: DEFAULT_DAILY_REWARD_CENTS,
         weekly_bonus_cents: 1,
         timezone: 'UTC',
       }

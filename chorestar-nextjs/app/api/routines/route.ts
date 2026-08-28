@@ -1,4 +1,5 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { DEFAULT_DAILY_REWARD_CENTS } from '@/lib/utils/earnings';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateKidToken } from '@/lib/utils/kid-auth';
@@ -183,7 +184,7 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .single();
 
-    const defaultRewardCents = settings?.daily_reward_cents || 7;
+    const defaultRewardCents = settings?.daily_reward_cents ?? DEFAULT_DAILY_REWARD_CENTS;
 
     // Create routine
     const routineInsert: RoutineInsert = {
