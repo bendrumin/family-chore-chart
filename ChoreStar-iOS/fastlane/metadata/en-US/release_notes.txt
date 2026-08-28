@@ -1,7 +1,7 @@
-Version 1.7 helps you feel progress without opening the app.
+Version 1.8 makes it easy to spread the word.
 
-• Activity alerts: tap a push when a kid finishes all chores or a routine to jump straight to their page. Turn these on or off in Settings
-• Widget deep links: tap Today's Progress (or a child on the medium widget) to open the right place in ChoreStar
-• New Lock Screen rectangular widget shows who's ahead on today's chores
+• Rate ChoreStar: Settings > About now has a one-tap link to leave an App Store rating or review
+• Share ChoreStar: send the App Store link to another family straight from Settings
+• Copy polish throughout the app
 
 Questions or feedback are welcome at hi@chorestar.app
