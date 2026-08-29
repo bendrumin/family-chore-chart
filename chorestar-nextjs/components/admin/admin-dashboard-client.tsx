@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react'
 import type { PowerUserReport, PowerUserStat } from '@/lib/admin/types'
+import type { HubReport, ProductMetrics } from '@/lib/admin/hub'
 
 interface CampaignMeta {
   id: string
@@ -77,10 +78,109 @@ function tierColor(tier: string) {
   }
 }
 
+function timeAgo(iso: string): string {
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000))
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 48) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+function ProductCard({ title, m, note }: { title: string; m: ProductMetrics | null; note?: string }) {
+  const rows = m
+    ? [
+        { label: 'Users', value: m.users.total },
+        { label: 'New, 7d', value: m.users.new7 },
+        { label: 'New, 30d', value: m.users.new30 },
+        { label: 'Active, 7d', value: m.users.active7 },
+        { label: 'Paid', value: m.paid.active },
+        ...m.extras,
+      ]
+    : []
+  return (
+    <Card className={adminCardClass}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base text-gray-900 dark:text-white">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {m ? (
+          <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
+            {rows.map((r) => (
+              <div key={r.label}>
+                <dt className="text-xs text-gray-500 dark:text-gray-400">{r.label}</dt>
+                <dd className="text-xl font-black text-gray-900 dark:text-white">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="text-sm text-amber-700 dark:text-amber-300">{note || 'Unavailable'}</p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function HubPanel({ hub, loading, onRefresh }: { hub: HubReport | null; loading: boolean; onRefresh: () => void }) {
+  const signups = hub
+    ? [
+        ...hub.chorestar.recentSignups.map((s) => ({ ...s, product: 'ChoreStar' })),
+        ...(hub.kidcanvas?.recentSignups ?? []).map((s) => ({ ...s, product: 'KidCanvas' })),
+      ]
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .slice(0, 12)
+    : []
+  return (
+    <section className="mb-8">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Growth across products</h2>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+      {loading && !hub ? (
+        <p className="text-sm text-gray-500">Loading…</p>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ProductCard title="ChoreStar" m={hub?.chorestar ?? null} />
+          <ProductCard title="KidCanvas" m={hub?.kidcanvas ?? null} note={hub?.kidcanvasError} />
+          <Card className={adminCardClass}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-gray-900 dark:text-white">Recent signups</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {signups.length === 0 ? (
+                <p className="text-sm text-gray-500">None yet</p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {signups.map((s) => (
+                    <li key={`${s.product}-${s.email}-${s.createdAt}`} className="flex items-center justify-between gap-2">
+                      <span className="truncate text-gray-900 dark:text-gray-100">{s.email}</span>
+                      <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                        {s.product} · {timeAgo(s.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export function AdminDashboardClient() {
   const [tab, setTab] = useState<Tab>('users')
   const [loading, setLoading] = useState(true)
   const [report, setReport] = useState<PowerUserReport | null>(null)
+  const [hub, setHub] = useState<HubReport | null>(null)
+  const [hubLoading, setHubLoading] = useState(true)
   const [campaigns, setCampaigns] = useState<CampaignMeta[]>([])
   const [presets, setPresets] = useState<PresetMeta[]>([])
   const [manualSendLogs, setManualSendLogs] = useState<ManualSendLogMeta[]>([])
@@ -111,6 +211,18 @@ export function AdminDashboardClient() {
     }
   }, [])
 
+  const loadHub = useCallback(async () => {
+    setHubLoading(true)
+    try {
+      const res = await fetch('/api/admin/hub')
+      if (res.ok) setHub(await res.json())
+    } catch {
+      // The Power Users report still renders; the hub panel shows its own notice.
+    } finally {
+      setHubLoading(false)
+    }
+  }, [])
+
   const loadMeta = useCallback(async () => {
     const res = await fetch('/api/admin/outreach')
     if (res.ok) {
@@ -132,9 +244,10 @@ export function AdminDashboardClient() {
 
   useEffect(() => {
     loadReport()
+    loadHub()
     loadMeta()
     loadHistory()
-  }, [loadReport, loadMeta, loadHistory])
+  }, [loadReport, loadHub, loadMeta, loadHistory])
 
   const loadPreview = async () => {
     setPreviewLoading(true)
@@ -294,6 +407,8 @@ export function AdminDashboardClient() {
 
         {tab === 'users' && (
           <>
+            <HubPanel hub={hub} loading={hubLoading} onRefresh={loadHub} />
+
             {report && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                 {[
