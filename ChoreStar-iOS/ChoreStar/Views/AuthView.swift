@@ -7,6 +7,7 @@ enum AuthMode {
 }
 
 struct AuthView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
     @State private var email: String = ""
@@ -40,7 +41,19 @@ struct AuthView: View {
                 .scrollDismissesKeyboard(.immediately)
             }
         }
-        .sheet(isPresented: $showingKidLogin) {
+        // On iPad a .sheet is a fixed-height form sheet, and the PIN pad's Go!
+        // button fell below its bottom edge (a tap there dismissed the sheet
+        // instead). Regular width gets a full-screen cover; iPhone keeps the sheet.
+        .sheet(isPresented: Binding(
+            get: { showingKidLogin && horizontalSizeClass != .regular },
+            set: { if !$0 { showingKidLogin = false } }
+        )) {
+            KidLoginView()
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { showingKidLogin && horizontalSizeClass == .regular },
+            set: { if !$0 { showingKidLogin = false } }
+        )) {
             KidLoginView()
         }
         .onAppear {

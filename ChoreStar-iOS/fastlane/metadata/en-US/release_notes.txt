@@ -5,6 +5,7 @@ Version 1.8 makes it easy to spread the word, and easier to get started.
 • New families choose how rewards work during setup (one daily amount, or an amount per chore) instead of starting from a preset
 • Share a perfect day straight from the celebration screen
 • Tapping a promoted Premium plan on the App Store now starts the purchase in the app
+• Fixed: on iPad, the kid login's Go button could sit below the bottom of the sheet. Kid login now opens full screen on iPad
 • Copy polish throughout the app
 
 Questions or feedback are welcome at hi@chorestar.app
