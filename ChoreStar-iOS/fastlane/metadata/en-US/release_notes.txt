@@ -3,6 +3,8 @@ Version 1.8 makes it easy to spread the word, and easier to get started.
 • Rate ChoreStar: Settings > About now has a one-tap link to leave an App Store rating or review
 • Share ChoreStar: send the App Store link to another family straight from Settings
 • New families choose how rewards work during setup (one daily amount, or an amount per chore) instead of starting from a preset
+• Share a perfect day straight from the celebration screen
+• Tapping a promoted Premium plan on the App Store now starts the purchase in the app
 • Copy polish throughout the app
 
 Questions or feedback are welcome at hi@chorestar.app

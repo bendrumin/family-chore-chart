@@ -343,10 +343,58 @@ struct ThemeParticleOverlay: View {
 // MARK: - Perfect Day Celebration
 
 /// Full-screen moment shown when every chore of the day is done.
+/// Quiet, dismissible "Enjoying ChoreStar?" card for the parent dashboard.
+/// Gated by ReviewPrompter.shouldShowRateCard; never shown in kid mode.
+struct RateChoreStarCard: View {
+    let onRate: () -> Void
+    let onNotNow: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "star.fill")
+                    .font(.title3)
+                    .foregroundColor(.choreStarAccent)
+                Text("Enjoying ChoreStar?")
+                    .font(.system(.headline, design: .rounded).weight(.bold))
+                    .foregroundColor(.choreStarTextPrimary)
+            }
+            Text("A quick App Store rating is how other families find it. It takes about ten seconds.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 12) {
+                Link(destination: ReviewPrompter.writeReviewURL) {
+                    Text("Rate on the App Store")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.choreStarPrimary)
+                        .clipShape(Capsule())
+                }
+                .simultaneousGesture(TapGesture().onEnded { onRate() })
+
+                Button("Not now", action: onNotNow)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarTextSecondary)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal)
+    }
+}
+
 struct PerfectDayOverlay: View {
     let onDismiss: () -> Void
 
     @State private var appeared = false
+    /// Set when the parent taps Share, so the overlay stops auto-dismissing
+    /// underneath the share sheet.
+    @State private var interacted = false
 
     var body: some View {
         ZStack {
@@ -368,6 +416,21 @@ struct PerfectDayOverlay: View {
                     .font(.headline)
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+
+                ShareLink(
+                    item: ReviewPrompter.appStoreURL,
+                    message: Text("Perfect day! Every chore in our house got done today, thanks to ChoreStar. Free on the App Store.")
+                ) {
+                    Label("Share this win", systemImage: "square.and.arrow.up")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.choreStarPrimary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.white)
+                        .clipShape(Capsule())
+                }
+                .simultaneousGesture(TapGesture().onEnded { interacted = true })
+                .padding(.top, 4)
             }
             .padding(40)
             .background(Color.choreStarGradient)
@@ -384,8 +447,8 @@ struct PerfectDayOverlay: View {
             Haptics.success()
             SoundManager.shared.play(.cheer)
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                onDismiss()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                if !interacted { onDismiss() }
             }
         }
         .transition(.opacity)

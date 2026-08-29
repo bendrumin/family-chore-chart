@@ -33,15 +33,30 @@ final class StoreKitManager: ObservableObject {
     @Published var lastError: String?
 
     private var updatesTask: Task<Void, Never>?
+    private var purchaseIntentsTask: Task<Void, Never>?
 
     private init() {
         updatesTask = Task { [weak self] in
             await self?.listenForTransactions()
         }
+        purchaseIntentsTask = Task { [weak self] in
+            await self?.listenForPurchaseIntents()
+        }
     }
 
     deinit {
         updatesTask?.cancel()
+        purchaseIntentsTask?.cancel()
+    }
+
+    /// App Store promoted in-app purchases. When someone taps a promoted
+    /// subscription on the product page (or in search), StoreKit delivers the
+    /// intent here and we run the purchase. Without this listener the tap is
+    /// dropped, and App Store Connect will not let the promotion be enabled.
+    private func listenForPurchaseIntents() async {
+        for await intent in PurchaseIntent.intents {
+            _ = await purchase(intent.product)
+        }
     }
 
     func loadProducts() async {

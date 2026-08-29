@@ -17,15 +17,51 @@ enum ReviewPrompter {
     static let minPerfectDays = 2
     static let minDaysBetweenPrompts = 90
 
+    /// The dashboard's "Enjoying ChoreStar?" card. It links to the App Store's
+    /// write-review page rather than calling requestReview, so it is not capped
+    /// at three a year, which is exactly why it has to stay rare and polite:
+    /// only after real use, snoozed for two months on "Not now", and gone for
+    /// good once they tap Rate.
+    static let rateCardMinDays = 3
+    static let rateCardMinLaunches = 5
+    static let rateCardSnoozeDays = 60
+
     private static let firstLaunchKey = "review.firstLaunchDate"
     private static let perfectDayCountKey = "review.perfectDayCount"
     private static let lastPromptKey = "review.lastPromptDate"
+    private static let launchCountKey = "review.launchCount"
+    private static let rateCardSnoozedKey = "review.rateCardSnoozedDate"
+    private static let rateCardDoneKey = "review.rateCardDone"
 
-    /// Idempotent; stamps the first launch date once.
+    /// Stamps the first launch date once and counts launches.
     static func recordLaunch(defaults: UserDefaults = .standard, now: Date = Date()) {
         if defaults.object(forKey: firstLaunchKey) == nil {
             defaults.set(now, forKey: firstLaunchKey)
         }
+        defaults.set(defaults.integer(forKey: launchCountKey) + 1, forKey: launchCountKey)
+    }
+
+    static func shouldShowRateCard(defaults: UserDefaults = .standard, now: Date = Date()) -> Bool {
+        let day: TimeInterval = 86_400
+        if defaults.bool(forKey: rateCardDoneKey) { return false }
+        guard let firstLaunch = defaults.object(forKey: firstLaunchKey) as? Date,
+              now.timeIntervalSince(firstLaunch) >= TimeInterval(rateCardMinDays) * day else {
+            return false
+        }
+        guard defaults.integer(forKey: launchCountKey) >= rateCardMinLaunches else { return false }
+        if let snoozed = defaults.object(forKey: rateCardSnoozedKey) as? Date,
+           now.timeIntervalSince(snoozed) < TimeInterval(rateCardSnoozeDays) * day {
+            return false
+        }
+        return true
+    }
+
+    static func snoozeRateCard(defaults: UserDefaults = .standard, now: Date = Date()) {
+        defaults.set(now, forKey: rateCardSnoozedKey)
+    }
+
+    static func completeRateCard(defaults: UserDefaults = .standard) {
+        defaults.set(true, forKey: rateCardDoneKey)
     }
 
     /// Call when the perfect-day celebration is dismissed. Increments the

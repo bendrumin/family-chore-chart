@@ -13,6 +13,7 @@ struct DashboardView: View {
     // It lives behind Settings → About → What's New instead.
     @State private var showingKidMode = false
     @State private var showPerfectDay = false
+    @State private var showRateCard = false
 
     private var completedChores: Int {
         manager.chores.filter { manager.isChoreCompleted($0) }.count
@@ -183,6 +184,20 @@ struct DashboardView: View {
                             .padding(.horizontal, 20)
                     }
 
+                    if showRateCard {
+                        RateChoreStarCard(
+                            onRate: {
+                                ReviewPrompter.completeRateCard()
+                                withAnimation { showRateCard = false }
+                            },
+                            onNotNow: {
+                                ReviewPrompter.snoozeRateCard()
+                                withAnimation { showRateCard = false }
+                            }
+                        )
+                        .transition(.opacity)
+                    }
+
                     // Family: avatar ring chips, Fitness sharing-style
                     if !manager.children.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -272,6 +287,9 @@ struct DashboardView: View {
             .sheet(isPresented: $showingKidMode) {
                 ChildAuthView()
             }
+        }
+        .onAppear {
+            showRateCard = ReviewPrompter.shouldShowRateCard()
         }
         .onChange(of: completedChores) { oldValue, newValue in
             // Celebrate crossing the finish line (not on initial load)
