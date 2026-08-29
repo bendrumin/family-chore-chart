@@ -11,7 +11,10 @@ export const THEME_MODE_STORAGE_KEY = 'chorestar-theme-mode'
  */
 export const THEME_VARS_STORAGE_KEY = 'chorestar-theme-vars'
 
+export const THEME_VARS_VERSION = 2
+
 export interface StoredThemeVars {
+  v: number
   id: string
   reach: 'full' | 'accent'
   light: Record<string, string>
@@ -93,4 +96,4 @@ export function applyThemeMode(mode: ThemeMode): void {
 }
 
 /** Inline script for layout <head> — prevents flash before React hydrates. */
-export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=localStorage.getItem('${THEME_MODE_STORAGE_KEY}'),dark;if(m==='dark')dark=true;else if(m==='light')dark=false;else dark=window.matchMedia('(prefers-color-scheme:dark)').matches||(function(){var h=new Date().getHours();return h>=19||h<7})();if(dark){d.classList.add('dark');d.setAttribute('data-theme','dark')}else{d.classList.remove('dark');d.setAttribute('data-theme','light')}var v=localStorage.getItem('${THEME_VARS_STORAGE_KEY}');if(v){var o=JSON.parse(v),set=dark?o.dark:o.light;for(var k in set)d.style.setProperty(k,set[k]);if(o.id)d.setAttribute('data-seasonal-theme',o.id);if(o.reach)d.setAttribute('data-theme-reach',o.reach)}}catch(e){}})()`
+export const THEME_INIT_SCRIPT = `(function(){try{var d=document.documentElement,m=localStorage.getItem('${THEME_MODE_STORAGE_KEY}'),dark;if(m==='dark')dark=true;else if(m==='light')dark=false;else dark=window.matchMedia('(prefers-color-scheme:dark)').matches||(function(){var h=new Date().getHours();return h>=19||h<7})();if(dark){d.classList.add('dark');d.setAttribute('data-theme','dark')}else{d.classList.remove('dark');d.setAttribute('data-theme','light')}var v=localStorage.getItem('${THEME_VARS_STORAGE_KEY}');if(v){var o=JSON.parse(v);if(o.v===${THEME_VARS_VERSION}){var set=dark?o.dark:o.light;for(var k in set)d.style.setProperty(k,set[k]);if(o.id)d.setAttribute('data-seasonal-theme',o.id);if(o.reach)d.setAttribute('data-theme-reach',o.reach)}}}catch(e){}})()`

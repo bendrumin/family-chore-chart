@@ -10,6 +10,7 @@ import {
   setStoredThemeMode,
   storeThemeVars,
   clearStoredThemeVars,
+  THEME_VARS_VERSION,
   type ThemeMode,
 } from '@/lib/utils/theme-mode'
 import {
@@ -150,6 +151,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     // accent onto every non-dashboard page (homepage, blog, how-to, auth)
     // before hydration, instead of snapping back to the brand default there.
     storeThemeVars({
+      v: THEME_VARS_VERSION,
       id: active.id,
       reach: active.fullReach ? 'full' : 'accent',
       light: themeVarsFor(active, false),

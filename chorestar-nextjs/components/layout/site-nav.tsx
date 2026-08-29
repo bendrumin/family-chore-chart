@@ -129,8 +129,7 @@ export function SiteNav() {
             {isLoggedIn === true && (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-md"
-                style={ACCENT_SURFACE_STYLE}
+                className="accent-fill accent-fill-hover inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
               >
                 Dashboard →
               </Link>

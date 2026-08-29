@@ -120,8 +120,13 @@ export function themeCssVars(colors: ThemeColors, isDark: boolean): Record<strin
   const { primary, secondary } = isDark ? colors.dark : colors.light
   const surface = isDark ? SURFACE_DARK : SURFACE_LIGHT
 
-  const primaryPair = accessiblePair(primary)
-  const secondaryPair = accessiblePair(secondary)
+  // Interactive fills (buttons, pills, chips) use the same white-preferring pair
+  // as the hero, so a pale accent like Summer's teal reads as one richer fill
+  // with white type everywhere. Before, the hero deepened to #2e7b82 + white
+  // while buttons stayed #3a9aa3 + near-black ink, which looked like two
+  // different themes side by side (dashboard header vs the marketing nav).
+  const primaryPair = accessiblePairPreferWhite(primary)
+  const secondaryPair = accessiblePairPreferWhite(secondary)
 
   // Hero / accent-header: white-preferring pairs (iOS match, AA-safe).
   const heroPrimary = accessiblePairPreferWhite(primary)
