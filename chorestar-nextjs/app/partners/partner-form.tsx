@@ -59,13 +59,13 @@ export function PartnerForm() {
       <div className="text-center py-8">
         <div className="text-5xl mb-4">🎉</div>
         <h3 className="text-2xl font-bold mb-2">Thanks for reaching out!</h3>
-        <p className="opacity-90">We&apos;ll review your info and respond within 24 hours at <strong>{formData.email}</strong>.</p>
+        <p>We&apos;ll review your info and respond within 24 hours at <strong>{formData.email}</strong>.</p>
       </div>
     )
   }
 
-  const inputClasses = 'w-full px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border-2 border-white/20 text-white placeholder-white/50 focus:border-white/50 focus:outline-none transition-colors'
-  const labelClasses = 'block text-sm font-semibold mb-1.5 text-white/90'
+  const inputClasses = 'w-full px-4 py-3 rounded-xl bg-white border-2 border-white text-gray-900 placeholder-gray-500 focus:border-indigo-300 focus:outline-none transition-colors'
+  const labelClasses = 'block text-sm font-semibold mb-1.5 text-white'
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -98,7 +98,7 @@ export function PartnerForm() {
 
       <div className="grid md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="partner-company" className={labelClasses}>Company / Brand <span className="font-normal opacity-70">(optional)</span></label>
+          <label htmlFor="partner-company" className={labelClasses}>Company / Brand <span className="font-normal">(optional)</span></label>
           <input
             id="partner-company"
             type="text"
@@ -178,7 +178,7 @@ export function PartnerForm() {
         </button>
       </div>
 
-      <p className="text-sm opacity-70">
+      <p className="text-sm">
         Or email us directly at <a href="mailto:hi@chorestar.app" className="underline font-medium">hi@chorestar.app</a>
       </p>
     </form>

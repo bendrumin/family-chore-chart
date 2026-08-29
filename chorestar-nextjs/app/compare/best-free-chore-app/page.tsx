@@ -116,13 +116,13 @@ export default function BestFreeChoreAppPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/compare" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/compare" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← All comparisons
         </Link>
 
         <article>
           <header className="mb-10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">
               Buyer’s guide
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">

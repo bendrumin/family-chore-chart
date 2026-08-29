@@ -253,7 +253,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
-                          <ChoreIcon emoji={suggestion.icon} className="w-7 h-7 text-indigo-500 dark:text-indigo-400" />
+                          <ChoreIcon emoji={suggestion.icon} className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
                           <div>
                             <h4 className="font-bold" style={{ color: 'var(--text-primary)' }}>
                               {suggestion.name}

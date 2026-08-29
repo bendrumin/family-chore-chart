@@ -78,7 +78,7 @@ export default function SupportPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-indigo-100 dark:border-indigo-900 shadow-sm p-6 mb-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-indigo-50 dark:bg-indigo-900/30">
-              <Mail className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
+              <Mail className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Contact us</h2>
@@ -100,12 +100,12 @@ export default function SupportPage() {
         {/* Quick links */}
         <div className="grid sm:grid-cols-2 gap-4 mb-12">
           <Link href="/how-to" className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-all">
-            <BookOpen className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mb-3" />
+            <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mb-3" />
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">How-To Guides</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">Step-by-step tutorials for setting up chores, routines, and kid login.</p>
           </Link>
           <Link href="/privacy" className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-all">
-            <ShieldCheck className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mb-3" />
+            <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mb-3" />
             <h3 className="font-bold text-gray-900 dark:text-white mb-1">Privacy Policy</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">How we protect your family&apos;s data. We never sell it or run ads.</p>
           </Link>
@@ -113,7 +113,7 @@ export default function SupportPage() {
 
         {/* FAQ */}
         <div className="flex items-center gap-2 mb-5">
-          <MessageCircle className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
+          <MessageCircle className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-2xl font-black text-gray-900 dark:text-white">Frequently asked questions</h2>
         </div>
         <div className="space-y-3">
@@ -121,7 +121,7 @@ export default function SupportPage() {
             <details key={q} className="group bg-white dark:bg-gray-800 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm overflow-hidden">
               <summary className="flex items-center justify-between p-5 cursor-pointer font-semibold text-gray-900 dark:text-white list-none hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                 {q}
-                <span className="ml-4 text-indigo-500 text-xl flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
+                <span className="ml-4 text-indigo-600 dark:text-indigo-400 text-xl flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
               </summary>
               <div className="px-5 pb-5 text-sm text-gray-600 dark:text-gray-300 leading-relaxed border-t border-indigo-50 dark:border-indigo-900 pt-4">
                 {a}

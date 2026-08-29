@@ -60,7 +60,9 @@
 @layer base {
   :root {
     /* Professional Color System */
-    --primary: #6366f1;
+    /* Accent text on the page surface. #6366f1 was 4.47:1 on white, a hair under AA;
+       this clears 4.5:1 on white and on the indigo-50 / purple-50 page washes. */
+    --primary: #595cd9;
     --primary-dark: #4f46e5;
     --primary-light: #818cf8;
 

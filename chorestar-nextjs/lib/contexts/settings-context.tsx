@@ -8,6 +8,8 @@ import {
   applyThemeClasses,
   resolveIsDark,
   setStoredThemeMode,
+  storeThemeVars,
+  clearStoredThemeVars,
   type ThemeMode,
 } from '@/lib/utils/theme-mode'
 import {
@@ -130,6 +132,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       root.removeAttribute('data-seasonal-theme')
       root.removeAttribute('data-theme-reach')
       for (const name of THEME_CSS_VAR_NAMES) root.style.removeProperty(name)
+      clearStoredThemeVars()
       return
     }
 
@@ -142,6 +145,16 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       root.style.setProperty(name, value)
     }
     root.setAttribute('data-theme-reach', active.fullReach ? 'full' : 'accent')
+
+    // Remember both mode variants so the inline init script can carry this
+    // accent onto every non-dashboard page (homepage, blog, how-to, auth)
+    // before hydration, instead of snapping back to the brand default there.
+    storeThemeVars({
+      id: active.id,
+      reach: active.fullReach ? 'full' : 'accent',
+      light: themeVarsFor(active, false),
+      dark: themeVarsFor(active, true),
+    })
   }
 
   const updateSettings = async (updates: Partial<FamilySettings>) => {

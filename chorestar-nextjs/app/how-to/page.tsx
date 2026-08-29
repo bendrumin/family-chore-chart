@@ -154,7 +154,7 @@ export default function HowToPage() {
                   <div className="flex-1">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">{tutorial.title}</h2>
                   </div>
-                  <span className="text-xs font-medium text-gray-400 dark:text-gray-500">{tutorial.steps.length} steps</span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{tutorial.steps.length} steps</span>
                 </div>
 
                 <div className="px-5 py-4">
@@ -209,24 +209,24 @@ export default function HowToPage() {
           <h3 className="text-2xl font-bold mb-3">
             Ready to Get Started?
           </h3>
-          <p className="text-lg mb-6 opacity-90">
+          <p className="text-lg mb-6">
             Free to try, no credit card needed.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-500 dark:text-indigo-400"
+              className="px-8 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-600 dark:text-indigo-400"
             >
               Start Free Today →
             </Link>
             <Link
               href="/login"
-              className="px-8 py-3 bg-white/20 text-white border-2 border-white/40 rounded-xl font-semibold text-base hover:bg-white/30 transition-colors text-center"
+              className="px-8 py-3 bg-white text-indigo-700 border-2 border-white rounded-xl font-semibold text-base hover:bg-indigo-50 transition-colors text-center"
             >
               Sign In
             </Link>
           </div>
-          <p className="mt-4 text-xs opacity-75">
+          <p className="mt-4 text-xs">
             ✓ Free plan available  •  ✓ No credit card to start  •  ✓ 117+ happy users
           </p>
         </div>

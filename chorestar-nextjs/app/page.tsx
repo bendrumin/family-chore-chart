@@ -158,7 +158,7 @@ export default async function HomePage() {
               Turn Household Chores Into Family Wins: the chore chart app kids love
             </span>
           </h1>
-          <p className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">
+          <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
             ⭐ Join 117+ parents and kids already using ChoreStar
           </p>
         </header>
@@ -190,14 +190,13 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Link
               href="/signup"
-              className="px-8 py-4 rounded-xl font-bold text-lg text-white text-center shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-              style={ACCENT_SURFACE_STYLE}
+              className="accent-fill accent-fill-hover px-8 py-4 rounded-xl font-bold text-lg text-center shadow-lg hover:shadow-xl hover:scale-105 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
             >
               Start Free Today →
             </Link>
             <Link
               href="/login"
-              className="px-8 py-4 rounded-xl font-semibold text-lg text-center border-2 transition-all hover:opacity-80 border-purple-500 dark:border-purple-400 text-indigo-500 dark:text-indigo-400"
+              className="px-8 py-4 rounded-xl font-semibold text-lg text-center border-2 transition-all border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
             >
               Sign In
             </Link>
@@ -247,7 +246,7 @@ export default async function HomePage() {
                   {step}
                 </div>
                 <div className="text-4xl mb-4 mt-2">{icon}</div>
-                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h4>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{desc}</p>
               </div>
             ))}
@@ -261,7 +260,7 @@ export default async function HomePage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-red-50 dark:bg-gray-800 rounded-xl p-6 border-2 border-red-200 dark:border-red-900">
-              <h4 className="text-xl font-bold text-red-700 dark:text-red-400 mb-3">😫 Before ChoreStar</h4>
+              <h3 className="text-xl font-bold text-red-700 dark:text-red-400 mb-3">😫 Before ChoreStar</h3>
               <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                 <li>❌ Constant nagging about chores</li>
                 <li>❌ Arguments over allowance</li>
@@ -271,7 +270,7 @@ export default async function HomePage() {
               </ul>
             </div>
             <div className="bg-green-50 dark:bg-gray-800 rounded-xl p-6 border-2 border-green-200 dark:border-green-900">
-              <h4 className="text-xl font-bold text-green-700 dark:text-green-400 mb-3">🎉 After ChoreStar</h4>
+              <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-3">🎉 After ChoreStar</h3>
               <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                 <li>✅ Kids check off chores without reminders</li>
                 <li>✅ Fair, automatic allowance tracking</li>
@@ -340,7 +339,7 @@ export default async function HomePage() {
                 ].map((r, i) => (
                   <tr key={r.f} className={i % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-900/30' : ''}>
                     <th scope="row" className="text-left p-4 font-medium text-gray-700 dark:text-gray-300">{r.f}</th>
-                    <td className="text-center p-4 font-semibold text-emerald-600 dark:text-emerald-400 bg-indigo-50/40 dark:bg-indigo-900/10">{r.a}</td>
+                    <td className="text-center p-4 font-semibold text-emerald-700 dark:text-emerald-400 bg-indigo-50/40 dark:bg-indigo-900/10">{r.a}</td>
                     <td className="text-center p-4 text-gray-500 dark:text-gray-400">{r.b}</td>
                     <td className="text-center p-4 text-gray-500 dark:text-gray-400">{r.c}</td>
                   </tr>
@@ -378,7 +377,7 @@ export default async function HomePage() {
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                 A simple plan for the first two weeks: sleep, screens, daily rhythm, and when to add chores.
               </p>
-              <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">Read guide →</span>
+              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">Read guide →</span>
             </Link>
             <Link
               href="/blog/summer-chores-for-kids"
@@ -391,7 +390,7 @@ export default async function HomePage() {
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                 Outdoor jobs by age, screen-time swaps, and a five-step morning routine for week two.
               </p>
-              <span className="text-sm font-semibold text-indigo-500 dark:text-indigo-400">Read guide →</span>
+              <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">Read guide →</span>
             </Link>
           </div>
         </div>
@@ -447,7 +446,7 @@ export default async function HomePage() {
             {/* Free Plan */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-2 border-gray-200 dark:border-gray-700">
               <div className="text-center mb-6">
-                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free Plan</h4>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Free Plan</h3>
                 <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">$0</div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Forever free</p>
               </div>
@@ -471,8 +470,7 @@ export default async function HomePage() {
 
               <Link
                 href="/signup"
-                className="block w-full px-6 py-3 rounded-xl font-semibold text-center text-white transition-all hover:opacity-90 hover:shadow-md"
-                style={ACCENT_SURFACE_STYLE}
+                className="accent-fill accent-fill-hover block w-full px-6 py-3 rounded-xl font-semibold text-center transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
               >
                 Start Free
               </Link>
@@ -488,7 +486,7 @@ export default async function HomePage() {
               </div>
 
               <div className="text-center mb-6">
-                <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium</h4>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium</h3>
                 <div className="text-4xl font-black mb-2" style={GRADIENT_TEXT}>$4.99</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">per month</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">or $49.99/year (save 17%)</p>
@@ -505,7 +503,7 @@ export default async function HomePage() {
                   'Priority email support',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="text-xl text-indigo-500 dark:text-indigo-400">✓</span>
+                    <span className="text-xl text-indigo-600 dark:text-indigo-400">✓</span>
                     <span className="text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: item }} />
                   </li>
                 ))}
@@ -513,8 +511,7 @@ export default async function HomePage() {
 
               <Link
                 href="/signup"
-                className="block w-full px-6 py-3 rounded-xl font-bold text-center text-white transition-all hover:opacity-90 shadow-lg hover:shadow-xl"
-                style={ACCENT_SURFACE_STYLE}
+                className="accent-fill accent-fill-hover block w-full px-6 py-3 rounded-xl font-bold text-center transition-all shadow-lg hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
               >
                 Start Free, Upgrade Anytime
               </Link>
@@ -542,7 +539,7 @@ export default async function HomePage() {
               >
                 <summary className="flex items-center justify-between p-5 cursor-pointer font-semibold text-gray-900 dark:text-white list-none hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                   {q}
-                  <span className="ml-4 text-indigo-500 text-xl flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
+                  <span className="ml-4 text-indigo-600 dark:text-indigo-400 text-xl flex-shrink-0 group-open:rotate-45 transition-transform">+</span>
                 </summary>
                 <div className="px-5 pb-5 text-sm text-gray-600 dark:text-gray-300 leading-relaxed border-t border-indigo-50 dark:border-indigo-900 pt-4">
                   {a}
@@ -606,7 +603,7 @@ export default async function HomePage() {
             <table className="w-full min-w-[36rem] text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-semibold"></th>
+                  <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-semibold"><span className="sr-only">Feature</span></th>
                   <th className="text-left p-4 text-indigo-600 dark:text-indigo-400 font-bold">ChoreStar</th>
                   <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-semibold">Typical chore app</th>
                 </tr>
@@ -655,16 +652,16 @@ export default async function HomePage() {
           <h2 className="text-3xl font-bold mb-4">
             Ready to Transform Chore Time?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
+          <p className="text-xl mb-8">
             Join 117+ parents and kids who've said goodbye to chore battles
           </p>
           <Link
             href="/signup"
-            className="inline-block px-12 py-5 bg-white dark:bg-gray-800 rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-500 dark:text-indigo-400"
+            className="inline-block px-12 py-5 bg-white dark:bg-gray-800 rounded-xl font-bold text-xl hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-600 dark:text-indigo-400"
           >
             Start Free Today →
           </Link>
-          <p className="mt-6 text-sm opacity-75">
+          <p className="mt-6 text-sm">
             ✓ Set up in 2 minutes  •  ✓ Free plan available  •  ✓ No credit card required
           </p>
         </div>

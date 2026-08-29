@@ -108,18 +108,18 @@ export default function SchoolsOutSummerPlanPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 Parenting
               </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">June 8, 2026</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">6 min read</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">June 8, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               School&apos;s Out: Now What? A Simple Summer Plan for the First Two Weeks
@@ -179,7 +179,7 @@ export default function SchoolsOutSummerPlanPage() {
                   <ul className="space-y-2">
                     {items.map((item) => (
                       <li key={item} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                        <span className="text-indigo-500 dark:text-indigo-400 mt-0.5">→</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">→</span>
                         {item}
                       </li>
                     ))}
@@ -211,11 +211,11 @@ export default function SchoolsOutSummerPlanPage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               Need chore ideas by age? We put together a{' '}
-              <Link href="/blog/summer-chores-for-kids" className="text-indigo-500 dark:text-indigo-400 hover:underline">
+              <Link href="/blog/summer-chores-for-kids" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                 summer chore list
               </Link>{' '}
               with outdoor jobs, screen-time swaps, and age-appropriate tasks. Or see our{' '}
-              <Link href="/blog/morning-routine-for-kids" className="text-indigo-500 dark:text-indigo-400 hover:underline">
+              <Link href="/blog/morning-routine-for-kids" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                 morning routine guide
               </Link>{' '}
               for building step-by-step habits that stick.
@@ -251,6 +251,7 @@ export default function SchoolsOutSummerPlanPage() {
                 <Link
                   href="/signup"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold accent-fill accent-fill-hover transition-colors"
+                style={{ color: 'var(--primary-foreground)' }}
                 >
                   Get Started Free →
                 </Link>

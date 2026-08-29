@@ -43,8 +43,7 @@ export function AuthShell({ title, subtitle, tag, children, footer, maxWidth = '
 
           {tag && (
             <span
-              className="mx-auto mb-3 block w-fit rounded-full px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em]"
-              style={{ color: 'var(--primary)', background: 'color-mix(in srgb, var(--primary) 12%, transparent)' }}
+              className="mx-auto mb-3 block w-fit rounded-full px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-indigo-700 dark:text-indigo-300 bg-indigo-500/10 dark:bg-indigo-400/15"
             >
               {tag}
             </span>

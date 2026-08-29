@@ -142,7 +142,7 @@ export default function PartnersPage() {
 
           {/* Hero */}
           <header className="text-center mb-16">
-            <p className="text-sm font-semibold uppercase tracking-wider mb-4 text-indigo-500 dark:text-indigo-400">
+            <p className="text-sm font-semibold uppercase tracking-wider mb-4 text-indigo-600 dark:text-indigo-400">
               Partner Program
             </p>
             <h1 className="text-5xl md:text-6xl font-black mb-6">
@@ -269,8 +269,7 @@ export default function PartnersPage() {
                 <a
                   href="/icon.svg"
                   download="chorestar-logo.svg"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
-                  style={ACCENT_SURFACE_STYLE}
+                  className="accent-fill accent-fill-hover inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
                 >
                   Download Logo (SVG)
                 </a>
@@ -290,7 +289,7 @@ export default function PartnersPage() {
                         style={{ backgroundColor: hex }}
                       />
                       <div>
-                        <div className="font-medium text-gray-900 dark:text-white text-sm">{name} <span className="font-mono text-xs text-gray-500">{hex}</span></div>
+                        <div className="font-medium text-gray-900 dark:text-white text-sm">{name} <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{hex}</span></div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">{usage}</div>
                       </div>
                     </div>
@@ -310,7 +309,7 @@ export default function PartnersPage() {
               <h3 className="font-bold text-gray-900 dark:text-white mb-4">Name &amp; Copy Guidelines</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-sm font-semibold text-green-600 dark:text-green-400 mb-2">Do</h4>
+                  <h4 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Do</h4>
                   <ul className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
                     <li>✅ Write as one word: <strong>ChoreStar</strong></li>
                     <li>✅ Capitalize both C and S</li>
@@ -342,7 +341,7 @@ export default function PartnersPage() {
             <div className="space-y-4">
               {SAMPLE_COPY.map(({ label, text }) => (
                 <div key={label} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md border border-indigo-100 dark:border-indigo-900">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-indigo-500 mb-2">{label}</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">{label}</div>
                   <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{text}</p>
                 </div>
               ))}
@@ -396,7 +395,7 @@ export default function PartnersPage() {
               <h2 className="text-3xl font-bold text-center mb-3">
                 Interested in Partnering?
               </h2>
-              <p className="text-center text-lg opacity-90 mb-8">
+              <p className="text-center text-lg mb-8">
                 Tell us a bit about yourself and how you&apos;d like to promote ChoreStar. We respond within 24 hours.
               </p>
               <PartnerForm />

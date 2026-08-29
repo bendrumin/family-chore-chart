@@ -34,7 +34,7 @@ import { ChoreStarLogo } from '@/components/brand/logo'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import type { Profile, Child } from '@/lib/types'
 import { RoutineList } from '@/components/routines/routine-list'
-import { applyThemeMode, clearStoredThemeMode } from '@/lib/utils/theme-mode'
+import { applyThemeMode, clearStoredThemeMode, clearStoredThemeVars } from '@/lib/utils/theme-mode'
 
 export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember, isAdmin }: {
   initialUser: any
@@ -129,6 +129,7 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
     const supabase = createClient()
     await supabase.auth.signOut()
     clearStoredThemeMode()
+    clearStoredThemeVars()
     applyThemeMode('auto')
     router.push('/login')
     router.refresh()

@@ -64,16 +64,16 @@ export default function ChoreStarIosAppPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Announcements</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">August 17, 2026</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">6 min read</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Announcements</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">August 17, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               ChoreStar for iPhone &amp; iPad Is Here: The Chore App Your Kid Can Run Themselves

@@ -95,7 +95,7 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
       {/* Family Name */}
       <div className="space-y-2">
         <Label htmlFor="familyName">
-          Family Name <span className="text-gray-400 text-xs font-normal">(optional)</span>
+          Family Name <span className="text-gray-500 dark:text-gray-400 text-xs font-normal">(optional)</span>
         </Label>
         <Input
           id="familyName"
@@ -105,7 +105,7 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
           onChange={(e) => setFormData({ ...formData, familyName: e.target.value })}
           placeholder="e.g., The Smiths"
         />
-        <p className="text-xs text-gray-500">This helps personalize your experience</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">This helps personalize your experience</p>
       </div>
 
       {/* Password */}

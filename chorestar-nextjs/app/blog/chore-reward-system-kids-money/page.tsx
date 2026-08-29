@@ -58,16 +58,16 @@ export default function ChoreRewardSystemPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Allowance</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">March 28, 2026</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">6 min read</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Allowance</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">March 28, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               Teaching Kids About Money With a Chore Reward System
@@ -195,6 +195,7 @@ export default function ChoreRewardSystemPage() {
               <Link
                 href="/signup"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold accent-fill accent-fill-hover transition-colors"
+                style={{ color: 'var(--primary-foreground)' }}
               >
                 Get Started Free →
               </Link>

@@ -71,7 +71,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-indigo-500" />
+            <Users className="w-6 h-6 mx-auto mb-2 text-indigo-600 dark:text-indigo-400" />
             <div className="text-2xl font-black text-gray-900 dark:text-white">{childCount}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {childCount === 1 ? 'Child' : 'Children'}
@@ -130,12 +130,12 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           >
             <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
             <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>
-            <p className="opacity-90 mb-5 max-w-lg mx-auto">
+            <p className="mb-5 max-w-lg mx-auto">
               Get unlimited children, unlimited chores, family sharing, export reports, and more.
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-500 dark:text-indigo-400"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-600 dark:text-indigo-400"
             >
               Upgrade from $4.99/mo
               <ArrowRight className="w-5 h-5" />
@@ -201,7 +201,7 @@ function ResourceLink({ href, label, external = false }: { href: string; label: 
       className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
       {...extraProps}
     >
-      <ArrowRight className="w-4 h-4 text-indigo-500 shrink-0" />
+      <ArrowRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
       {label}
     </Component>
   )

@@ -113,7 +113,7 @@ export default function ComparePage() {
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Hero */}
         <header className="text-center max-w-3xl mx-auto mb-12">
-          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">
             Compare
           </p>
           <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-5">
@@ -156,7 +156,7 @@ export default function ComparePage() {
                       >
                         {col.label}
                       </div>
-                      <div className="text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">
+                      <div className="text-xs font-normal text-gray-600 dark:text-gray-400 mt-0.5">
                         {col.note}
                       </div>
                     </th>
@@ -189,9 +189,9 @@ export default function ComparePage() {
                           <span
                             className={
                               pos
-                                ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+                                ? 'font-semibold text-emerald-700 dark:text-emerald-400'
                                 : neg
-                                ? 'text-gray-400 dark:text-gray-500'
+                                ? 'text-gray-600 dark:text-gray-400'
                                 : 'text-gray-700 dark:text-gray-300'
                             }
                           >
@@ -206,7 +206,7 @@ export default function ComparePage() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
             Comparison reflects typical products in each category. Competitor pricing and features
             change. Check their sites for the latest.
           </p>
@@ -281,7 +281,7 @@ export default function ComparePage() {
                     {page.title}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">{page.description}</p>
-                  <span className="inline-block mt-3 text-sm font-semibold text-indigo-500 dark:text-indigo-400">
+                  <span className="inline-block mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
                     Read more →
                   </span>
                 </Link>

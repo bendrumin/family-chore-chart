@@ -167,7 +167,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
           {/* Search */}
           <div className="relative flex-shrink-0">
             <label htmlFor="faq-search" className="sr-only">Search FAQ</label>
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
             <Input
               id="faq-search"
               type="text"
@@ -223,9 +223,9 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
                       </div>
                     </div>
                     {expandedItems.has(index) ? (
-                      <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0 ml-4" />
+                      <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 ml-4" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0 ml-4" />
+                      <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 ml-4" />
                     )}
                   </button>
                   {expandedItems.has(index) && (

@@ -141,16 +141,16 @@ export default function SummerChoresPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Chores</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">June 7, 2026</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">7 min read</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Chores</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">June 7, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps
@@ -267,6 +267,7 @@ export default function SummerChoresPage() {
               <Link
                 href="/signup"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold accent-fill accent-fill-hover transition-colors"
+                style={{ color: 'var(--primary-foreground)' }}
               >
                 Get Started Free →
               </Link>

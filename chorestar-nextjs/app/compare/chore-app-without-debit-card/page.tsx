@@ -105,13 +105,13 @@ export default function ChoreAppNoDebitCardPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/compare" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/compare" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← All comparisons
         </Link>
 
         <article>
           <header className="mb-10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3">
               No debit card required
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
@@ -143,14 +143,14 @@ export default function ChoreAppNoDebitCardPage() {
                     {rows.map((r, i) => (
                       <tr key={r.feature} className={i % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-900/30' : ''}>
                         <th scope="row" className="text-left p-4 font-medium text-gray-700 dark:text-gray-300">{r.feature}</th>
-                        <td className="text-center p-4 text-emerald-600 dark:text-emerald-400 font-medium bg-indigo-50/40 dark:bg-indigo-900/10">{r.chorestar}</td>
+                        <td className="text-center p-4 text-emerald-700 dark:text-emerald-400 font-medium bg-indigo-50/40 dark:bg-indigo-900/10">{r.chorestar}</td>
                         <td className="text-center p-4 text-gray-600 dark:text-gray-300">{r.them}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                 &ldquo;Debit-card apps&rdquo; describes products like Greenlight, GoHenry / Acorns Early,
                 and BusyKid. Their pricing and features change. Check their sites for the latest.
               </p>

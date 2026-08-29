@@ -57,13 +57,13 @@ export default function BlogPage() {
                   <span className="text-3xl flex-shrink-0 mt-1">{post.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                         {post.category}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {post.date}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {post.readTime}
                       </span>
                     </div>

@@ -142,16 +142,16 @@ export default function SpringCleaningChoresPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-500 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Chores</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">May 2, 2026</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">7 min read</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Chores</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">May 2, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks
@@ -186,7 +186,7 @@ export default function SpringCleaningChoresPage() {
                 <div key={title} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
-                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full px-3 py-1">
+                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-full px-3 py-1">
                       {age}
                     </span>
                   </div>
@@ -255,6 +255,7 @@ export default function SpringCleaningChoresPage() {
               <Link
                 href="/signup"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold accent-fill accent-fill-hover transition-colors"
+                style={{ color: 'var(--primary-foreground)' }}
               >
                 Get Started Free →
               </Link>
