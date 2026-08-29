@@ -42,7 +42,8 @@ appId: com.chorestar.ChoreStar
 - tapOn: "2"
 - tapOn: "3"
 - tapOn: "4"
-- tapOn: ".*Go.*"
+# Exact text: on iPad the login is a form sheet and ".*Go.*" matched "Forgot Password?" behind it
+- tapOn: "Go!"
 
 # Kid dashboard shows a greeting; wait for it to load.
 - extendedWaitUntil:
