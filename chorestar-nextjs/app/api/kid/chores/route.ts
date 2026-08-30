@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
     const { data: chores, error: choresError } = await admin
       .from('chores')
-      .select('id, name, icon, category, reward_cents, sort_order')
+      .select('id, name, icon, category, reward_cents, sort_order, days_of_week')
       .eq('child_id', session.childId)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })

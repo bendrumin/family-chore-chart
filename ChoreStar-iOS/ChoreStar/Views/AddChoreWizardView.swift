@@ -32,6 +32,7 @@ struct AddChoreWizardView: View {
     @State private var selectedIcon = "📝"
     @State private var selectedColor = "blue"
     @State private var notes = ""
+    @State private var daysOfWeek: [Int] = ChoreSchedule.everyDay
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
@@ -424,6 +425,15 @@ struct AddChoreWizardView: View {
             }
 
             VStack(alignment: .leading, spacing: 10) {
+                Text("Which days?")
+                    .font(.headline)
+                DaysOfWeekPicker(selection: $daysOfWeek)
+                    .padding(12)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
                 Text("Notes (optional)")
                     .font(.headline)
                 TextField("Anything your kid should know?", text: $notes, axis: .vertical)
@@ -470,7 +480,8 @@ struct AddChoreWizardView: View {
                     category: category,
                     icon: selectedIcon,
                     color: selectedColor,
-                    notes: notes.isEmpty ? nil : notes
+                    notes: notes.isEmpty ? nil : notes,
+                    daysOfWeek: daysOfWeek
                 )
                 await MainActor.run {
                     dismiss()

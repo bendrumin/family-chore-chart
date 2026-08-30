@@ -171,7 +171,7 @@ struct WeekCalendarView: View {
                                 dayIndex: dayIndex,
                                 dayName: fullDays[dayIndex],
                                 shortDayName: days[dayIndex],
-                                chores: childChores,
+                                chores: ChoreSchedule.due(childChores, on: dayIndex),
                                 manager: manager,
                                 earnedAchievements: $earnedAchievements,
                                 showAchievementAlert: $showAchievementAlert,
@@ -316,6 +316,16 @@ struct ChoreWeekRow: View {
                         }
                         .foregroundColor(.choreStarTextSecondary)
                     }
+
+                    if !chore.isEveryDay {
+                        HStack(spacing: 4) {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 8))
+                            Text(chore.scheduleLabel)
+                                .font(.caption)
+                        }
+                        .foregroundColor(.choreStarTextSecondary)
+                    }
                 }
             }
             .frame(width: choreColumnWidth, alignment: .leading)
@@ -357,12 +367,18 @@ struct DayCell: View {
     private var isCompleted: Bool {
         return manager.isChoreCompleted(chore, forDay: dayIndex)
     }
-    
+
+    /// Off-day cells stay tappable (a parent can credit work done on another
+    /// day) but read as "not scheduled": dashed and dimmed.
+    private var isDue: Bool {
+        chore.isDue(on: dayIndex)
+    }
+
     var body: some View {
         Button(action: {
             let impact = UIImpactFeedbackGenerator(style: .light)
             impact.impactOccurred()
-            
+
             let wasCompleted = isCompleted
             Task {
                 let achievements = await manager.toggleChoreCompletion(chore, forDay: dayIndex)
@@ -380,15 +396,16 @@ struct DayCell: View {
         }) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isCompleted ? Color.choreStarSuccess : Color.choreStarBackground)
+                    .fill(isCompleted ? Color.choreStarSuccess : (isDue ? Color.choreStarBackground : Color.clear))
                     .frame(width: cellSize, height: cellSize)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(
-                                isCompleted ? Color.choreStarSuccess : (isToday ? Color.choreStarPrimary.opacity(0.5) : Color.choreStarTextSecondary.opacity(0.2)),
-                                lineWidth: isToday ? 3 : 1.5
+                                isCompleted ? Color.choreStarSuccess : (isToday ? Color.choreStarPrimary.opacity(0.5) : Color.choreStarTextSecondary.opacity(isDue ? 0.2 : 0.35)),
+                                style: StrokeStyle(lineWidth: isToday ? 3 : 1.5, dash: (isDue || isCompleted) ? [] : [4, 3])
                             )
                     )
+                    .opacity(isDue || isCompleted ? 1 : 0.6)
                     .shadow(color: isCompleted ? Color.choreStarSuccess.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
                 
                 if isCompleted {
@@ -468,7 +485,7 @@ struct DayBreakdownCard: View {
                     }
                     
                     HStack(spacing: 8) {
-                        Text("\(completedChores.count) of \(chores.count) completed")
+                        Text(chores.isEmpty ? "Nothing scheduled" : "\(completedChores.count) of \(chores.count) completed")
                             .font(.caption)
                             .foregroundColor(.choreStarTextSecondary)
                         

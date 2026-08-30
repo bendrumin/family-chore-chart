@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { childDayEarningsCents, type EarningsSettings } from '@/lib/utils/earnings'
+import { dueOn } from '@/lib/utils/schedule'
 import type { Child } from '@/lib/types'
 
 export interface TodaySnapshot {
@@ -45,11 +46,13 @@ export function useTodaySnapshot(children: Child[], settings?: EarningsSettings 
 
       const { data: chores } = await supabase
         .from('chores')
-        .select('id, reward_cents, child_id')
+        .select('id, reward_cents, child_id, days_of_week')
         .in('child_id', ids)
         .eq('is_active', true)
 
-      const choreList = chores ?? []
+      // Today's list is the chores DUE today. A Tuesday-only chore is not a
+      // hole in Wednesday's ring.
+      const choreList = dueOn(chores ?? [], today)
       if (choreList.length === 0) {
         const perChild: TodaySnapshot['perChild'] = {}
         ids.forEach(id => { perChild[id] = { done: 0, total: 0 } })

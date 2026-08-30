@@ -1,6 +1,7 @@
 import 'server-only'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { apnsConfigured, sendApnsAlert, type ApnsCustomData } from '@/lib/push/apns'
+import { dueOn } from '@/lib/utils/schedule'
 
 /**
  * Domain-level push notifications.
@@ -115,22 +116,24 @@ export async function notifyIfAllChoresDone(
 
     const { data: chores } = await admin
       .from('chores')
-      .select('id')
+      .select('id, days_of_week')
       .eq('child_id', childId)
       .eq('is_active', true)
-    if (!chores || chores.length === 0) return
+    // "The whole list" is the chores due on this day of the week.
+    const due = dueOn(chores ?? [], dayOfWeek)
+    if (due.length === 0) return
 
     const { data: completions } = await admin
       .from('chore_completions')
       .select('chore_id')
-      .in('chore_id', chores.map(c => c.id))
+      .in('chore_id', due.map(c => c.id))
       .eq('week_start', weekStart)
       .eq('day_of_week', dayOfWeek)
 
     // Membership, not row count — duplicate completion rows must not fake a
     // finished day (same rule as lib/utils/earnings.ts isPerfectDay).
     const done = new Set((completions ?? []).map(c => c.chore_id))
-    if (!chores.every(c => done.has(c.id))) return
+    if (!due.every(c => done.has(c.id))) return
 
     const { data: child } = await admin
       .from('children')

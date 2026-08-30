@@ -5,11 +5,12 @@ import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Check, Edit } from 'lucide-react'
+import { Check, Edit, CalendarDays } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
 import { CategoryBadge } from '@/components/ui/category-badge'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
+import { isDueOn, isEveryDay, formatSchedule } from '@/lib/utils/schedule'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -185,6 +186,16 @@ export const ChoreCard = memo(function ChoreCard({
                     )}
                   </div>
                   <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
+                  {!isEveryDay(chore.days_of_week) && (
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-semibold"
+                      style={{ color: 'var(--text-secondary)' }}
+                      title="Days this chore is due"
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" aria-hidden />
+                      {formatSchedule(chore.days_of_week)}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -192,21 +203,31 @@ export const ChoreCard = memo(function ChoreCard({
 
           {/* 7-Day Grid - Professional */}
           <div className="grid grid-cols-7 gap-1.5 mb-2.5">
-            {days.map((day, index) => {
+            {days.map((day) => {
               const completed = optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek)
+              const due = isDueOn(chore, day.dayOfWeek)
+
+              // An off-day cell is still tappable (a parent can credit work done
+              // on a different day) but reads as "not scheduled": dashed and
+              // dimmed, so the week's real shape is visible at a glance.
+              const idle = due
+                ? 'bg-white/70 dark:bg-gray-800/60 border border-black/[0.06] dark:border-white/[0.1] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]'
+                : 'bg-transparent border border-dashed border-black/[0.12] dark:border-white/[0.16] opacity-60 hover:opacity-90'
 
               return (
                 <button
                   key={day.dayOfWeek}
                   onClick={() => toggleCompletion(day.dayOfWeek)}
-                  aria-label={`${chore.name} ${day.dayName}, ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
+                  aria-label={`${chore.name} ${day.dayName}${due ? '' : ', not scheduled'}, ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
                   className={`h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation ${
-                    completed
-                      ? 'accent-fill'
-                      : 'bg-white/70 dark:bg-gray-800/60 border border-black/[0.06] dark:border-white/[0.1] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]'
+                    completed ? 'accent-fill' : idle
                   }`}
-                  title={`${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`}
+                  title={
+                    due
+                      ? `${day.dayName} - Click to ${completed ? 'unmark' : 'mark'} as complete`
+                      : `${day.dayName} - Not scheduled. Click to ${completed ? 'unmark' : 'mark'} as an extra`
+                  }
                 >
                   {/* A completed cell is the theme accent, via .accent-fill. The
                       old fixed green was only 3.77:1 against its hardcoded white

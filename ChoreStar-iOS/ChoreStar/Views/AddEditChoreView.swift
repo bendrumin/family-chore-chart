@@ -13,6 +13,7 @@ struct AddEditChoreView: View {
     @State private var selectedIcon: String
     @State private var selectedColor: String
     @State private var notes: String
+    @State private var daysOfWeek: [Int]
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
@@ -63,6 +64,7 @@ struct AddEditChoreView: View {
         _selectedIcon = State(initialValue: chore?.icon ?? "📝")
         _selectedColor = State(initialValue: chore?.color ?? "blue")
         _notes = State(initialValue: chore?.notes ?? "")
+        _daysOfWeek = State(initialValue: chore?.daysOfWeek ?? ChoreSchedule.everyDay)
     }
     
     var isEditing: Bool {
@@ -228,6 +230,14 @@ struct AddEditChoreView: View {
                     }
                 }
                 
+                Section {
+                    DaysOfWeekPicker(selection: $daysOfWeek)
+                } header: {
+                    Text("Which Days")
+                } footer: {
+                    Text("Only the days you pick count toward a perfect day. Web and iOS share the same schedule.")
+                }
+
                 Section("Category") {
                     Picker("Category", selection: $category) {
                         ForEach(ChoreCategory.allCases) { cat in
@@ -377,7 +387,8 @@ struct AddEditChoreView: View {
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
-                        notes: notes.isEmpty ? nil : notes
+                        notes: notes.isEmpty ? nil : notes,
+                        daysOfWeek: daysOfWeek
                     )
                 } else {
                     // Create new chore
@@ -388,7 +399,8 @@ struct AddEditChoreView: View {
                         category: category,
                         icon: selectedIcon,
                         color: selectedColor,
-                        notes: notes.isEmpty ? nil : notes
+                        notes: notes.isEmpty ? nil : notes,
+                        daysOfWeek: daysOfWeek
                     )
                 }
                 
@@ -402,6 +414,104 @@ struct AddEditChoreView: View {
                 }
             }
         }
+    }
+}
+
+/// Seven toggles and three presets, what a fridge chart looks like. Shared by
+/// the chore editor and the add-chore wizard; mirrors the web's
+/// components/chores/day-of-week-picker.tsx.
+///
+/// The last selected day cannot be un-selected: a chore due on no day is not a
+/// chore, and the database rejects it (migration 015), so the picker keeps the
+/// user out of that state instead of surfacing an error on save.
+struct DaysOfWeekPicker: View {
+    @Binding var selection: [Int]
+
+    private struct Preset: Identifiable {
+        let id: String
+        let days: [Int]
+    }
+
+    private let presets = [
+        Preset(id: "Every day", days: ChoreSchedule.everyDay),
+        Preset(id: "Weekdays", days: ChoreSchedule.weekdays),
+        Preset(id: "Weekends", days: ChoreSchedule.weekends),
+    ]
+
+    private var normalized: [Int] { ChoreSchedule.normalized(selection) }
+
+    private func isLastSelected(_ day: Int) -> Bool {
+        normalized.count == 1 && normalized[0] == day
+    }
+
+    private func toggle(_ day: Int) {
+        guard !isLastSelected(day) else { return }
+        var days = Set(normalized)
+        if days.contains(day) { days.remove(day) } else { days.insert(day) }
+        selection = days.sorted()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(ChoreSchedule.label(for: normalized))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.choreStarTextSecondary)
+                Spacer()
+            }
+
+            HStack(spacing: 6) {
+                ForEach(0..<7, id: \.self) { day in
+                    let on = normalized.contains(day)
+                    Button {
+                        toggle(day)
+                    } label: {
+                        Text(ChoreSchedule.shortNames[day])
+                            .font(.footnote)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(on ? Color.choreStarAccent : Color.choreStarAccent.opacity(0.10))
+                            )
+                            .foregroundColor(on ? .white : .choreStarTextPrimary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(ChoreSchedule.longNames[day])
+                    .accessibilityAddTraits(on ? [.isSelected] : [])
+                    .accessibilityHint(isLastSelected(day) ? "The only day selected. A chore needs at least one day." : "")
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(presets) { preset in
+                        let active = normalized == preset.days
+                        Button {
+                            selection = preset.days
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        } label: {
+                            Text(preset.id)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 7)
+                                .background(
+                                    Capsule().fill(active ? Color.choreStarPrimary : Color.choreStarPrimary.opacity(0.12))
+                                )
+                                .foregroundColor(active ? .white : .choreStarPrimary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(active ? [.isSelected] : [])
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 

@@ -384,13 +384,13 @@ struct LeaderboardRow: View {
     let manager: SupabaseManager
     
     private var childChores: [Chore] {
-        manager.chores.filter { $0.childId == child.id }
+        manager.dueChores(for: child.id)
     }
-    
+
     private var completedCount: Int {
         childChores.filter { manager.isChoreCompleted($0) }.count
     }
-    
+
     private var totalEarnings: Double {
         manager.calculateTodayEarnings(for: child.id)
     }

@@ -552,6 +552,7 @@ class SupabaseManager: ObservableObject {
         let category: String?
         let reward_cents: Int?
         let sort_order: Int?
+        let days_of_week: [Int]?
     }
 
     private struct KidChoreCompletionRow: Codable {
@@ -624,6 +625,7 @@ class SupabaseManager: ObservableObject {
                     color: nil,
                     notes: nil,
                     sortOrder: row.sort_order ?? 0,
+                    daysOfWeek: ChoreSchedule.normalized(row.days_of_week),
                     createdAt: Date(),
                     updatedAt: Date()
                 )
@@ -1640,6 +1642,7 @@ class SupabaseManager: ObservableObject {
                     color: row.color,
                     notes: row.notes,
                     sortOrder: row.sort_order ?? 0,
+                    daysOfWeek: ChoreSchedule.normalized(row.days_of_week),
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
                     updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()
                 )
@@ -1874,43 +1877,52 @@ class SupabaseManager: ObservableObject {
         return Calendar.current.isDate(completionDate, inSameDayAs: Date())
     }
     
-    // Check if ALL chores for a child are completed today (perfect day)
+    // MARK: - Schedules
+
+    /// Today's weekday index, 0 = Sunday.
+    var todayIndex: Int { RewardMath.dayIndex(of: Date()) }
+
+    /// A child's chores that are due on `dayOfWeek` (default: today). This is
+    /// "the list" everywhere the app asks whether the day is finished.
+    func dueChores(for childId: UUID, on dayOfWeek: Int? = nil) -> [Chore] {
+        ChoreSchedule.due(chores.filter { $0.childId == childId }, on: dayOfWeek ?? todayIndex)
+    }
+
+    /// Every family chore due today, across children. The parent Home list.
+    var choresDueToday: [Chore] {
+        ChoreSchedule.due(chores, on: todayIndex)
+    }
+
+    // Check if ALL chores due today are completed (perfect day)
     func isTodayPerfectDay(for childId: UUID) -> Bool {
-        let childChores = chores.filter { $0.childId == childId }
-        guard !childChores.isEmpty else { return false }
-        
-        // Check if all chores are completed
-        let allCompleted = childChores.allSatisfy { chore in
-            isChoreCompleted(chore)
-        }
-        
-        return allCompleted
+        isPerfectDay(for: childId, dayOfWeek: todayIndex)
     }
-    
-    // Check if ALL chores for a child are completed for a specific day (perfect day)
+
+    // Check if ALL chores due on a specific day are completed (perfect day).
+    // A day with nothing due is not perfect: there is nothing to be perfect at.
     func isPerfectDay(for childId: UUID, dayOfWeek: Int) -> Bool {
-        let childChores = chores.filter { $0.childId == childId }
-        guard !childChores.isEmpty else { return false }
-        
-        // Check if all chores are completed for this specific day
-        let allCompleted = childChores.allSatisfy { chore in
-            isChoreCompleted(chore, forDay: dayOfWeek)
-        }
-        
-        return allCompleted
+        let due = dueChores(for: childId, on: dayOfWeek)
+        guard !due.isEmpty else { return false }
+        return due.allSatisfy { isChoreCompleted($0, forDay: dayOfWeek) }
     }
-    
+
     // Calculate earnings for a child for a specific day.
     // The math itself lives in RewardMath so it's unit-testable.
+    //
+    // Per-chore mode pays every completed chore, due that day or not (a parent
+    // crediting Tuesday's trash on Wednesday is crediting real work). The flat
+    // daily rate is judged against the chores DUE that day.
     func calculateDayEarnings(for childId: UUID, dayOfWeek: Int) -> Double {
         let childChores = chores.filter { $0.childId == childId }
-        let completedRewards = childChores
+        let isPerChore = familySettings?.isPerChoreMode == true
+        let pool = isPerChore ? childChores : ChoreSchedule.due(childChores, on: dayOfWeek)
+        let completedRewards = pool
             .filter { isChoreCompleted($0, forDay: dayOfWeek) }
             .map(\.reward)
         let cents = RewardMath.dayEarningsCents(
             completedRewards: completedRewards,
-            totalChoreCount: childChores.count,
-            isPerChoreMode: familySettings?.isPerChoreMode == true,
+            totalChoreCount: pool.count,
+            isPerChoreMode: isPerChore,
             dailyRewardCents: familySettings?.dailyRewardCents
         )
         return Double(cents) / 100.0
@@ -2266,7 +2278,10 @@ class SupabaseManager: ObservableObject {
     
     // `chores` has no `description` column anymore, and `category` is the
     // Postgres enum `activity_category` — only ChoreCategory raw values insert.
-    func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?) async throws {
+    /// `daysOfWeek` nil leaves the column to its default (every day). Optionals
+    /// are omitted from the encoded row, not sent as null, so a nil here never
+    /// trips the NOT NULL constraint.
+    func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -2280,6 +2295,7 @@ class SupabaseManager: ObservableObject {
             let icon: String?
             let color: String?
             let notes: String?
+            let days_of_week: [Int]?
         }
 
         let newChore = NewChoreRow(
@@ -2289,7 +2305,8 @@ class SupabaseManager: ObservableObject {
             category: category.map { ChoreCategory.normalize($0).rawValue },
             icon: icon,
             color: color,
-            notes: notes
+            notes: notes,
+            days_of_week: daysOfWeek.map { ChoreSchedule.normalized($0) }
         )
         
         try await client
@@ -2305,7 +2322,7 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, category: String?, icon: String?, color: String?, notes: String?) async throws {
+    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -2319,6 +2336,7 @@ class SupabaseManager: ObservableObject {
             let icon: String?
             let color: String?
             let notes: String?
+            let days_of_week: [Int]?
             let updated_at: String
         }
 
@@ -2330,6 +2348,7 @@ class SupabaseManager: ObservableObject {
             icon: icon,
             color: color,
             notes: notes,
+            days_of_week: daysOfWeek.map { ChoreSchedule.normalized($0) },
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         
@@ -2863,8 +2882,9 @@ class SupabaseManager: ObservableObject {
     /// Publishes today's progress to the shared app group for the home screen widget.
     @MainActor
     func publishWidgetSnapshot() {
+        // The widget shows today's list: only chores due today count.
         let childProgress = children.map { child -> WidgetSnapshot.ChildProgress in
-            let childChores = chores.filter { $0.childId == child.id }
+            let childChores = dueChores(for: child.id)
             let done = childChores.filter { isChoreCompleted($0) }.count
             return WidgetSnapshot.ChildProgress(
                 id: child.id,
@@ -2876,10 +2896,11 @@ class SupabaseManager: ObservableObject {
         }
 
         let earned = children.reduce(0.0) { $0 + calculateTodayEarnings(for: $1.id) }
+        let dueToday = choresDueToday
 
         WidgetSnapshot(
-            completedToday: chores.filter { isChoreCompleted($0) }.count,
-            totalToday: chores.count,
+            completedToday: dueToday.filter { isChoreCompleted($0) }.count,
+            totalToday: dueToday.count,
             earnedTodayFormatted: formatMoney(earned),
             children: childProgress,
             generatedAt: Date()
@@ -3264,14 +3285,19 @@ class SupabaseManager: ObservableObject {
         var dailyStatus: [Bool] = []
         var daysWithCompletions = 0
         var totalCompletions = 0
-        
+        // Days this week with at least one chore due: the "out of" for perfect
+        // days and the perfect-week bonus. 7 for an unscheduled list.
+        let dueDayCount = ChoreSchedule.dueDayCount(childChores)
+
         for day in 0..<7 {
             let dayCompletions = weekCompletions.filter { completion in
                 completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
             }
             totalCompletions += dayCompletions.count
-            
-            let allDone = childChores.allSatisfy { chore in
+
+            // Perfect = every chore DUE that day done. Nothing due: not perfect.
+            let due = ChoreSchedule.due(childChores, on: day)
+            let allDone = !due.isEmpty && due.allSatisfy { chore in
                 dayCompletions.contains(where: { $0.choreId == chore.id })
             }
             dailyStatus.append(allDone)
@@ -3299,17 +3325,19 @@ class SupabaseManager: ObservableObject {
             earningsCents = perfectDayCount * dailyRewardCents
         }
         
-        if perfectDayCount == 7 {
+        if dueDayCount > 0 && perfectDayCount == dueDayCount {
             earningsCents += weeklyBonusCents
         }
-        
-        let completionRate = Double(perfectDayCount) / 7.0
-        
-        // Streak: consecutive days with at least one completion, counting backwards from today
+
+        let completionRate = dueDayCount > 0 ? Double(perfectDayCount) / Double(dueDayCount) : 0
+
+        // Streak: consecutive days with at least one completion, counting
+        // backwards from today. A day with nothing due is skipped, not broken.
         let currentDay = calendar.component(.weekday, from: Date()) - 1
         var streak = 0
         for offset in 0..<7 {
             let day = (currentDay - offset + 7) % 7
+            if ChoreSchedule.due(childChores, on: day).isEmpty { continue }
             let hasCompletion = weekCompletions.contains { completion in
                 completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
             }

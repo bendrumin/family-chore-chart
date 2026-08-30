@@ -15,12 +15,17 @@ struct DashboardView: View {
     @State private var showPerfectDay = false
     @State private var showRateCard = false
 
+    /// Home is a day view, so everything here counts chores DUE today.
+    private var choresToday: [Chore] {
+        manager.choresDueToday
+    }
+
     private var completedChores: Int {
-        manager.chores.filter { manager.isChoreCompleted($0) }.count
+        choresToday.filter { manager.isChoreCompleted($0) }.count
     }
 
     private var totalChores: Int {
-        manager.chores.count
+        choresToday.count
     }
 
     private var completionPercentage: Double {
@@ -43,14 +48,14 @@ struct DashboardView: View {
     }
 
     private func childProgress(_ child: Child) -> Double {
-        let childChores = manager.chores.filter { $0.childId == child.id }
+        let childChores = manager.dueChores(for: child.id)
         guard !childChores.isEmpty else { return 0 }
         let done = childChores.filter { manager.isChoreCompleted($0) }.count
         return Double(done) / Double(childChores.count)
     }
 
     private func childProgressText(_ child: Child) -> String {
-        let childChores = manager.chores.filter { $0.childId == child.id }
+        let childChores = manager.dueChores(for: child.id)
         let done = childChores.filter { manager.isChoreCompleted($0) }.count
         return "\(done)/\(childChores.count)"
     }
@@ -237,12 +242,20 @@ struct DashboardView: View {
                                     .padding(.horizontal, 20)
                             }
 
+                            if choresToday.isEmpty {
+                                Text("Nothing is due today. Chores scheduled for other days show up on their day.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.choreStarTextSecondary)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 8)
+                            }
+
                             LazyVGrid(
                                 columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 12, alignment: .top)],
                                 alignment: .center,
                                 spacing: 8
                             ) {
-                                ForEach(manager.chores, id: \.id) { chore in
+                                ForEach(choresToday, id: \.id) { chore in
                                     ChoreCard(
                                         chore: chore,
                                         manager: manager,

@@ -120,6 +120,8 @@ export interface Database {
           category: string | null
           notes: string | null
           color: string | null
+          /** Days the chore is due, 0=Sunday .. 6=Saturday. Migration 015. */
+          days_of_week: number[]
           created_at: string
           updated_at: string
         }
@@ -134,6 +136,7 @@ export interface Database {
           category?: string | null
           notes?: string | null
           color?: string | null
+          days_of_week?: number[]
           created_at?: string
           updated_at?: string
         }
@@ -148,6 +151,7 @@ export interface Database {
           category?: string | null
           notes?: string | null
           color?: string | null
+          days_of_week?: number[]
           created_at?: string
           updated_at?: string
         }

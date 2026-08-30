@@ -41,7 +41,7 @@ async function computeBalance(
 
   const { data: chores } = await supabase
     .from('chores')
-    .select('id, reward_cents')
+    .select('id, reward_cents, days_of_week')
     .eq('child_id', childId)
     .eq('is_active', true)
 

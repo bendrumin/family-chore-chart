@@ -44,6 +44,12 @@ struct Chore: Codable, Identifiable {
     let color: String?
     let notes: String?
     let sortOrder: Int
+    /// Days the chore is due, 0 = Sunday .. 6 = Saturday (same convention as
+    /// `chore_completions.day_of_week`). Defaults to every day, which is what
+    /// every chore was before `chores.days_of_week` existed (migration 015).
+    /// `var` with a default so the memberwise init keeps working for callers
+    /// that predate the column.
+    var daysOfWeek: [Int] = ChoreSchedule.everyDay
     let createdAt: Date
     let updatedAt: Date
 
@@ -58,8 +64,48 @@ struct Chore: Codable, Identifiable {
         case color
         case notes
         case sortOrder = "sort_order"
+        case daysOfWeek = "days_of_week"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
+
+    /// Is this chore on today's list (for the given weekday index)?
+    func isDue(on dayIndex: Int) -> Bool {
+        ChoreSchedule.isDue(daysOfWeek, on: dayIndex)
+    }
+
+    var isDueToday: Bool {
+        isDue(on: RewardMath.dayIndex(of: Date()))
+    }
+
+    var isEveryDay: Bool {
+        ChoreSchedule.isEveryDay(daysOfWeek)
+    }
+
+    /// "Every day", "Weekdays", "Mon, Wed, Fri", ...
+    var scheduleLabel: String {
+        ChoreSchedule.label(for: daysOfWeek)
+    }
+}
+
+extension Chore {
+    /// Tolerant decoding: a row from before the migration, or from a server
+    /// that has not started sending `days_of_week`, means every day.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        childId = try c.decode(UUID.self, forKey: .childId)
+        reward = try c.decode(Double.self, forKey: .reward)
+        description = try c.decodeIfPresent(String.self, forKey: .description)
+        category = try c.decodeIfPresent(String.self, forKey: .category)
+        icon = try c.decodeIfPresent(String.self, forKey: .icon)
+        color = try c.decodeIfPresent(String.self, forKey: .color)
+        notes = try c.decodeIfPresent(String.self, forKey: .notes)
+        sortOrder = try c.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
+        daysOfWeek = ChoreSchedule.normalized(try c.decodeIfPresent([Int].self, forKey: .daysOfWeek))
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
     }
 }
 
@@ -184,6 +230,8 @@ struct ChoreRow: Codable {
     let color: String?
     let notes: String?
     let sort_order: Int?
+    /// Optional so a database that has not run migration 015 still decodes.
+    let days_of_week: [Int]?
     let created_at: String
     let updated_at: String
 }

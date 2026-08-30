@@ -5,6 +5,7 @@
 
 import type { Database } from '@/lib/supabase/database.types'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
+import { isDueOn, isEveryDay, scheduleDays } from '@/lib/utils/schedule'
 
 type Child = Database['public']['Tables']['children']['Row']
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -332,7 +333,14 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
     for (const chore of childChores) {
       doc.text(chore.name, margin + 5, y);
       for (let d = 0; d < 7; d++) {
-        doc.rect(margin + colW * (d + 1) + 2, y - 4, 6, 6);
+        const x = margin + colW * (d + 1) + 2;
+        if (isDueOn(chore, d)) {
+          doc.rect(x, y - 4, 6, 6);
+        } else {
+          // Not scheduled: a filled grey square, nothing to tick.
+          doc.setFillColor(228, 228, 228);
+          doc.rect(x, y - 4, 6, 6, 'F');
+        }
       }
       y += rowH;
     }
@@ -466,6 +474,14 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
         const cy = y - 1;
         const size = 8;
 
+        // Not scheduled that day: a quiet dash instead of a box.
+        if (!isDueOn(chore, d)) {
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.5);
+          doc.line(cx + 1.5, cy + size / 2, cx + size - 1.5, cy + size / 2);
+          continue;
+        }
+
         // Draw rounded checkbox
         doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
         doc.setLineWidth(0.5);
@@ -491,8 +507,15 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
     doc.setFontSize(10);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-    const totalReward = childChores.reduce((sum, c) => sum + c.reward_cents, 0) * 7;
-    doc.text(`Weekly Goal: Complete all ${childChores.length} chores every day`, margin + 5, summaryY + 10);
+    const totalReward = childChores.reduce((sum, c) => sum + c.reward_cents * scheduleDays(c).length, 0);
+    const anyScheduled = childChores.some(c => !isEveryDay(c.days_of_week));
+    doc.text(
+      anyScheduled
+        ? 'Weekly Goal: Complete every chore on its scheduled days'
+        : `Weekly Goal: Complete all ${childChores.length} chores every day`,
+      margin + 5,
+      summaryY + 10
+    );
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
     doc.text(`Possible earnings: ${currencySymbol}${(totalReward / 100).toFixed(2)} per week`, margin + 5, summaryY + 18);

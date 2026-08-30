@@ -1,4 +1,5 @@
 import type { Database } from '@/lib/supabase/database.types'
+import { dueOn, type Scheduled } from '@/lib/utils/schedule'
 
 type FamilySettings = Database['public']['Tables']['family_settings']['Row']
 
@@ -13,8 +14,17 @@ type FamilySettings = Database['public']['Tables']['family_settings']['Row']
  *                  when every one of their active chores is done that day.
  *
  * The daily rate is per child, not per family: two children who each finish
- * their list both earn it. The weekly bonus applies only on a 7/7 week, in
+ * their list both earn it. The weekly bonus applies only on a perfect week, in
  * both modes.
+ *
+ * Schedules: a chore carries the days it is due (`days_of_week`, see
+ * lib/utils/schedule.ts). "Every chore done" means every chore DUE that day.
+ * A day with nothing due is neither perfect nor imperfect: it is skipped, so it
+ * can't earn the daily rate and can't break the streak or the weekly bonus. A
+ * perfect week is every day that had something due, not necessarily seven.
+ *
+ * In per-chore mode a completed chore always pays, due or not: a parent who
+ * ticks Tuesday's trash on Wednesday is crediting real work.
  */
 
 /** The slice of family_settings the rules depend on. */
@@ -30,7 +40,7 @@ export type EarningsSettings = Pick<
  */
 export const DEFAULT_DAILY_REWARD_CENTS = 100
 
-export interface ChoreReward {
+export interface ChoreReward extends Scheduled {
   id: string
   reward_cents: number | null
 }
@@ -53,31 +63,42 @@ export function weeklyBonusCents(settings?: EarningsSettings | null): number {
 }
 
 /**
- * Did this child finish every active chore on this day? Tested by chore-id
+ * Did this child finish every chore due on this day? Tested by chore-id
  * membership rather than by counting rows, so duplicate completion rows can't
  * push a partial day over the threshold and fake a perfect day.
+ *
+ * Pass `dayOfWeek` to honor each chore's schedule; without it every chore in
+ * the list is treated as due (the pre-schedule behaviour, still right for
+ * callers that have already filtered to today's list).
  */
-export function isPerfectDay(chores: ChoreReward[], doneChoreIds: Set<string>): boolean {
-  if (chores.length === 0) return false
-  return chores.every(c => doneChoreIds.has(c.id))
+export function isPerfectDay(
+  chores: ChoreReward[],
+  doneChoreIds: Set<string>,
+  dayOfWeek?: number
+): boolean {
+  const due = dayOfWeek === undefined ? chores : dueOn(chores, dayOfWeek)
+  if (due.length === 0) return false
+  return due.every(c => doneChoreIds.has(c.id))
 }
 
 /** Earnings in cents for ONE child on ONE day. */
 export function childDayEarningsCents(
   chores: ChoreReward[],
   doneChoreIds: Set<string>,
-  settings?: EarningsSettings | null
+  settings?: EarningsSettings | null,
+  dayOfWeek?: number
 ): number {
   if (chores.length === 0) return 0
 
   if (isPerChoreMode(settings)) {
+    // Every completed chore pays, scheduled for today or not.
     return chores.reduce(
       (sum, c) => sum + (doneChoreIds.has(c.id) ? c.reward_cents ?? 0 : 0),
       0
     )
   }
 
-  return isPerfectDay(chores, doneChoreIds) ? dailyRewardCents(settings) : 0
+  return isPerfectDay(chores, doneChoreIds, dayOfWeek) ? dailyRewardCents(settings) : 0
 }
 
 /** Completed chore-ids bucketed by day_of_week. */
@@ -97,7 +118,10 @@ export function groupDoneByDay(completions: DayCompletion[]): Map<number, Set<st
 
 export interface WeekEarnings {
   earnedCents: number
+  /** Days this week where every due chore was done. */
   perfectDays: number
+  /** Days this week with at least one chore due. 7 for an unscheduled list. */
+  dueDays: number
 }
 
 /** A completion that also knows which week it belongs to. */
@@ -155,14 +179,18 @@ export function childWeekEarningsCents(
 
   let earnedCents = 0
   let perfectDays = 0
+  let dueDays = 0
 
   for (let day = 0; day < 7; day++) {
     const done = byDay.get(day) ?? NONE
-    earnedCents += childDayEarningsCents(chores, done, settings)
-    if (isPerfectDay(chores, done)) perfectDays++
+    earnedCents += childDayEarningsCents(chores, done, settings, day)
+    if (dueOn(chores, day).length > 0) dueDays++
+    if (isPerfectDay(chores, done, day)) perfectDays++
   }
 
-  if (perfectDays === 7) earnedCents += weeklyBonusCents(settings)
+  // A perfect week is every day that had something due. With nothing due all
+  // week there is nothing to be perfect at, so no bonus.
+  if (dueDays > 0 && perfectDays === dueDays) earnedCents += weeklyBonusCents(settings)
 
-  return { earnedCents, perfectDays }
+  return { earnedCents, perfectDays, dueDays }
 }

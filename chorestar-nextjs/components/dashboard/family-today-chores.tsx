@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client'
 import { TodayChoreRow } from '@/components/dashboard/today-chore-row'
 import { getWeekStart } from '@/lib/utils/date-helpers'
+import { dueOn } from '@/lib/utils/schedule'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { Columns2, Columns3, Rows3 } from 'lucide-react'
@@ -134,10 +135,13 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
     return map
   }, [completions])
 
-  /** One block per child, in Family strip order. Kids with no chores are omitted. */
+  /**
+   * One block per child, in Family strip order. Only chores DUE today appear;
+   * a kid whose chores all fall on other days is omitted for the day.
+   */
   const groups = useMemo(() => {
     const byChild = new Map<string, Chore[]>()
-    for (const chore of chores) {
+    for (const chore of dueOn(chores, dayOfWeek)) {
       const list = byChild.get(chore.child_id)
       if (list) list.push(chore)
       else byChild.set(chore.child_id, [chore])

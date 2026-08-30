@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.8.3'
+export const LATEST_CHANGELOG_VERSION = '2026.9.0'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.0': {
+    version: '2026.9.0',
+    date: 'September 2026',
+    title: 'Chores on Their Own Days',
+    features: [
+      {
+        icon: '📅',
+        title: 'Pick the Days a Chore Is Due',
+        description: 'Trash on Tuesdays. Piano on Mon, Wed, Fri. Every chore now has a schedule: tap the days in the chore editor, or use Every day, Weekdays, or Weekends. The day checklist, the kid dashboard, the week grid, and the printable charts only show what is actually due.',
+      },
+      {
+        icon: '⭐',
+        title: 'Perfect Days That Are Fair',
+        description: 'A perfect day means every chore due that day is done. Days with nothing due are skipped, so they never break a streak or cost the week bonus. Off days show as dashed cells in the grid, and you can still tick one to credit work done early or late.',
+      },
+    ],
+  },
   '2026.8.3': {
     version: '2026.8.3',
     date: 'August 2026',

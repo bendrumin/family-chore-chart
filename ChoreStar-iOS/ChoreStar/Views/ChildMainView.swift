@@ -5,9 +5,10 @@ struct ChildMainView: View {
     @State private var activeRoutine: Routine?
     @State private var showPerfectDay = false
     
+    /// Only what is due today. A Tuesday-only chore is not on Wednesday's list.
     private var childChores: [Chore] {
         guard let child = manager.currentChild else { return [] }
-        return manager.chores.filter { $0.childId == child.id }
+        return manager.dueChores(for: child.id)
     }
     
     private var completedChores: [Chore] {

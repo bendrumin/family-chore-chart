@@ -4,6 +4,7 @@
  */
 
 import { ACHIEVEMENTS, type Achievement } from '@/lib/constants/achievements'
+import { dueDaysInWeek } from '@/lib/utils/schedule'
 import type { Database } from '@/lib/supabase/database.types'
 
 type ChoreCompletion = Database['public']['Tables']['chore_completions']['Row']
@@ -97,15 +98,17 @@ function calculateAchievementProgress(
       }
 
     case 'week_complete':
-      // Check if there's any week where all chores were completed
+      // Check if there's any week where every day with chores due had a
+      // completion. A weekdays-only list has 5 such days, not 7: judging it
+      // against 7 would make this badge impossible for that child.
       const weekCompletions = groupCompletionsByWeek(completions)
+      const requiredDays = Math.max(1, dueDaysInWeek(chores))
       const hasCompleteWeek = Array.from(weekCompletions.values()).some(
         weekComps => {
           const daysWithCompletions = new Set(
             weekComps.map(c => c.day_of_week).filter(d => d !== null)
           )
-          // Check if all 7 days have completions and each day has all chores
-          return daysWithCompletions.size >= 7
+          return daysWithCompletions.size >= requiredDays
         }
       )
       return {

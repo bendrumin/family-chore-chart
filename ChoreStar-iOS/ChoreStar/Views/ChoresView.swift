@@ -143,9 +143,11 @@ struct ChoresView: View {
         let base: [Chore]
         switch selectedFilter {
         case .all:
+            // Everything the family has, whatever day it falls on.
             base = manager.chores
         case .pending:
-            base = manager.chores.filter { !manager.isChoreCompleted($0) }
+            // "Still to do" is about today, so only today's list qualifies.
+            base = manager.choresDueToday.filter { !manager.isChoreCompleted($0) }
         case .completed:
             base = manager.chores.filter { manager.isChoreCompleted($0) }
         }
@@ -472,9 +474,14 @@ struct ChoreGroupCard: View {
     private var child: Child? {
         manager.children.first { $0.name == childName }
     }
-    
+
+    /// The header ring is about today: chores due today, done today.
+    private var todayChores: [Chore] {
+        chores.filter { $0.isDueToday }
+    }
+
     private var completedCount: Int {
-        chores.filter { manager.isChoreCompleted($0) }.count
+        todayChores.filter { manager.isChoreCompleted($0) }.count
     }
     
     var body: some View {
@@ -483,7 +490,7 @@ struct ChoreGroupCard: View {
             HStack(spacing: 12) {
                 if let child = child {
                     ProgressRing(
-                        progress: chores.isEmpty ? 0 : Double(completedCount) / Double(chores.count),
+                        progress: todayChores.isEmpty ? 0 : Double(completedCount) / Double(todayChores.count),
                         lineWidth: 3.5,
                         tint: Color.fromString(child.avatarColor)
                     ) {
@@ -505,7 +512,7 @@ struct ChoreGroupCard: View {
                         .font(.headline)
                         .foregroundColor(.choreStarTextPrimary)
 
-                    Text("\(completedCount) of \(chores.count) done")
+                    Text(todayChores.isEmpty ? "Nothing due today" : "\(completedCount) of \(todayChores.count) done today")
                         .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)
                 }
@@ -580,6 +587,16 @@ struct EnhancedChoreRow: View {
                         .font(.caption)
                         .foregroundColor(.choreStarTextSecondary)
                         .lineLimit(1)
+                }
+
+                if !chore.isEveryDay {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 9))
+                        Text(chore.scheduleLabel)
+                            .font(.caption)
+                    }
+                    .foregroundColor(chore.isDueToday ? .choreStarTextSecondary : .choreStarTextSecondary.opacity(0.7))
                 }
             }
 

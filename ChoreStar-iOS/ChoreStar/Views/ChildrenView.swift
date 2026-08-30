@@ -79,14 +79,15 @@ struct ChildDetailCard: View {
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     
+    /// Today's list: chores due today.
     private var childChores: [Chore] {
-        manager.chores.filter { $0.childId == child.id }
+        manager.dueChores(for: child.id)
     }
-    
+
     private var completedChores: Int {
         childChores.filter { manager.isChoreCompleted($0) }.count
     }
-    
+
     private var totalChores: Int {
         childChores.count
     }

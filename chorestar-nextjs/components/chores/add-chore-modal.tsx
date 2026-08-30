@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Sparkles, DollarSign, FileText, Palette } from 'lucide-react'
+import { Sparkles, DollarSign, FileText, Palette, CalendarDays } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
+import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
+import { ALL_DAYS } from '@/lib/utils/schedule'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import { playSound } from '@/lib/utils/sound'
 
@@ -31,7 +33,8 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     name: '',
     rewardCents: DEFAULT_CHORE_REWARD_CENTS,
     icon: '📝',
-    category: 'household_chores' as ChoreCategory
+    category: 'household_chores' as ChoreCategory,
+    days: [...ALL_DAYS],
   })
 
   // The default follows the family's reward mode.
@@ -48,7 +51,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
   useEffect(() => {
     if (!open) return
-    setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores' })
+    setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS] })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultRewardCents])
 
@@ -67,13 +70,14 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
         is_active: true,
         icon: formData.icon,
         category: formData.category,
+        days_of_week: formData.days,
       })
 
       if (error) throw error
 
       playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
-      setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores' })
+      setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS] })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)
@@ -151,6 +155,22 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 />
               </div>
             </div>
+
+            {/* Schedule Section - Amber accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-900/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2 mb-4">
+                <CalendarDays className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Schedule
+                </h4>
+              </div>
+              <DayOfWeekPicker
+                idPrefix="add-days"
+                value={formData.days}
+                onChange={(days) => setFormData({ ...formData, days })}
+              />
+            </div>
+
             {/* Appearance Section - Purple accent */}
             <div className="p-4 sm:p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-900/20 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2 mb-4">

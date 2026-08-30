@@ -21,6 +21,12 @@ import {
   type EarningsSettings,
 } from './earnings'
 import {
+  scheduleDays,
+  isDueOn,
+  formatSchedule,
+  normalizeDays,
+} from './schedule'
+import {
   formatAmount,
   formatMoney,
   currencySymbol,
@@ -341,6 +347,74 @@ t('owed is earned minus paid, and never goes negative', () => {
 
 t('a child with no chores is owed nothing', () => {
   assert.equal(childTotalEarningsCents([], [dated('a', 1, '2026-08-02')], PER), 0)
+})
+
+
+group('schedules: a chore is only due on its days')
+
+const mon = { id: 'm', reward_cents: 50, days_of_week: [1] }
+const daily = { id: 'd', reward_cents: 25, days_of_week: [0, 1, 2, 3, 4, 5, 6] }
+const weekdaysOnly = { id: 'w', reward_cents: 10, days_of_week: [1, 2, 3, 4, 5] }
+
+t('flat: a day with nothing due is not a perfect day and earns nothing', () => {
+  assert.equal(isPerfectDay([mon], new Set(), 2), false)
+  assert.equal(childDayEarningsCents([mon], new Set(), FLAT, 2), 0)
+})
+
+t('flat: finishing what is due today pays the daily rate even with other chores off today', () => {
+  // Tuesday: only `daily` is due.
+  assert.equal(isPerfectDay([mon, daily], new Set(['d']), 2), true)
+  assert.equal(childDayEarningsCents([mon, daily], new Set(['d']), FLAT, 2), 8)
+})
+
+t('flat: on Monday both are due, so one done is not perfect', () => {
+  assert.equal(childDayEarningsCents([mon, daily], new Set(['d']), FLAT, 1), 0)
+})
+
+t('per_chore: a chore ticked on an off day still pays', () => {
+  assert.equal(childDayEarningsCents([mon], new Set(['m']), PER, 3), 50)
+})
+
+t('without a day, every chore counts as due (legacy callers)', () => {
+  assert.equal(isPerfectDay([mon, daily], new Set(['d'])), false)
+  assert.equal(isPerfectDay([mon, daily], new Set(['d', 'm'])), true)
+})
+
+t('week: a weekdays-only list has 5 due days and a 5/5 week pays the bonus', () => {
+  const comps: DayCompletion[] = [1, 2, 3, 4, 5].map(d => ({ chore_id: 'w', day_of_week: d }))
+  const r = childWeekEarningsCents([weekdaysOnly], comps, FLAT)
+  assert.equal(r.dueDays, 5)
+  assert.equal(r.perfectDays, 5)
+  assert.equal(r.earnedCents, 5 * 8 + 1)
+})
+
+t('week: a missed due day forfeits the bonus', () => {
+  const comps: DayCompletion[] = [1, 2, 3, 4].map(d => ({ chore_id: 'w', day_of_week: d }))
+  const r = childWeekEarningsCents([weekdaysOnly], comps, FLAT)
+  assert.equal(r.perfectDays, 4)
+  assert.equal(r.earnedCents, 4 * 8)
+})
+
+t('week: an unscheduled list still has 7 due days', () => {
+  assert.equal(childWeekEarningsCents([daily], [], FLAT).dueDays, 7)
+})
+
+t('an empty or missing schedule means every day', () => {
+  assert.deepEqual(scheduleDays({ days_of_week: [] }), [0, 1, 2, 3, 4, 5, 6])
+  assert.deepEqual(scheduleDays({}), [0, 1, 2, 3, 4, 5, 6])
+  assert.equal(isDueOn({ days_of_week: null }, 4), true)
+})
+
+t('formatSchedule names the common shapes', () => {
+  assert.equal(formatSchedule([0, 1, 2, 3, 4, 5, 6]), 'Every day')
+  assert.equal(formatSchedule([1, 2, 3, 4, 5]), 'Weekdays')
+  assert.equal(formatSchedule([0, 6]), 'Weekends')
+  assert.equal(formatSchedule([2]), 'Tuesdays')
+  assert.equal(formatSchedule([5, 1, 3]), 'Mon, Wed, Fri')
+})
+
+t('normalizeDays drops junk and duplicates', () => {
+  assert.deepEqual(normalizeDays([6, 1, 1, 9, -1, 2.5]), [1, 6])
 })
 
 

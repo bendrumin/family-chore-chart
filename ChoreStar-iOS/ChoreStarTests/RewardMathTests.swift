@@ -97,4 +97,55 @@ final class RewardMathTests: XCTestCase {
         let saturday = calendar.date(from: DateComponents(year: 2021, month: 1, day: 9))!
         XCTAssertEqual(RewardMath.dayIndex(of: saturday, calendar: calendar), 6)
     }
+
+    // MARK: - Schedules
+
+    func testEmptyOrMissingScheduleMeansEveryDay() {
+        XCTAssertEqual(ChoreSchedule.normalized(nil), ChoreSchedule.everyDay)
+        XCTAssertEqual(ChoreSchedule.normalized([]), ChoreSchedule.everyDay)
+        XCTAssertTrue(ChoreSchedule.isDue([], on: 4))
+    }
+
+    func testNormalizedDropsJunkAndDuplicates() {
+        XCTAssertEqual(ChoreSchedule.normalized([6, 1, 1, 9, -1]), [1, 6])
+    }
+
+    func testIsDueHonorsTheSchedule() {
+        XCTAssertTrue(ChoreSchedule.isDue([1], on: 1))
+        XCTAssertFalse(ChoreSchedule.isDue([1], on: 2))
+    }
+
+    func testLabelNamesTheCommonShapes() {
+        XCTAssertEqual(ChoreSchedule.label(for: ChoreSchedule.everyDay), "Every day")
+        XCTAssertEqual(ChoreSchedule.label(for: [1, 2, 3, 4, 5]), "Weekdays")
+        XCTAssertEqual(ChoreSchedule.label(for: [0, 6]), "Weekends")
+        XCTAssertEqual(ChoreSchedule.label(for: [2]), "Tuesdays")
+        XCTAssertEqual(ChoreSchedule.label(for: [5, 1, 3]), "Mon, Wed, Fri")
+    }
+
+    func testChoreDecodesWithoutDaysOfWeekAsEveryDay() throws {
+        // A row from before migration 015, or from the kid API before it sent
+        // the column, must still decode and default to every day.
+        let json = """
+        {"id":"9A6B9C2E-0B1B-4A0F-9B1D-8D3E8F9A0B11","name":"Make bed","child_id":"4D2E1F00-1111-4222-8333-944455556666",
+         "reward_cents":25,"sort_order":0,"created_at":"2026-08-01T00:00:00Z","updated_at":"2026-08-01T00:00:00Z"}
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let chore = try decoder.decode(Chore.self, from: Data(json.utf8))
+        XCTAssertEqual(chore.daysOfWeek, ChoreSchedule.everyDay)
+        XCTAssertTrue(chore.isEveryDay)
+    }
+
+    func testDueDayCountSkipsDaysWithNothingDue() {
+        let mon = Chore(id: UUID(), name: "Trash", childId: UUID(), reward: 0.5, description: nil,
+                        category: nil, icon: nil, color: nil, notes: nil, sortOrder: 0,
+                        daysOfWeek: [1], createdAt: Date(), updatedAt: Date())
+        let fri = Chore(id: UUID(), name: "Piano", childId: UUID(), reward: 0.5, description: nil,
+                        category: nil, icon: nil, color: nil, notes: nil, sortOrder: 0,
+                        daysOfWeek: [5], createdAt: Date(), updatedAt: Date())
+        XCTAssertEqual(ChoreSchedule.dueDayCount([mon, fri]), 2)
+        XCTAssertEqual(ChoreSchedule.due([mon, fri], on: 1).map(\.name), ["Trash"])
+        XCTAssertEqual(ChoreSchedule.due([mon, fri], on: 3).count, 0)
+    }
 }

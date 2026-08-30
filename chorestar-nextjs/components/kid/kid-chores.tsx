@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { getWeekStart } from '@/lib/utils/date-helpers'
+import { dueOn } from '@/lib/utils/schedule'
 import { playSound } from '@/lib/utils/sound'
 
 /**
@@ -25,6 +26,7 @@ interface KidChore {
   name: string
   icon: string | null
   reward_cents: number | null
+  days_of_week?: number[] | null
 }
 
 interface KidChoresProps {
@@ -52,7 +54,9 @@ export function KidChores({ kidToken, iconTint }: KidChoresProps) {
         if (!res.ok) return
         const data = await res.json()
         if (!active) return
-        setChores(data.chores ?? [])
+        // Only what is due today. The day is the kid's local day, same as
+        // dayOfWeek below, so the list and the ticks agree.
+        setChores(dueOn((data.chores ?? []) as KidChore[], dayOfWeek))
         setDoneToday(new Set(
           (data.completions ?? [])
             .filter((c: { day_of_week: number | null }) => c.day_of_week === dayOfWeek)

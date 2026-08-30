@@ -15,16 +15,28 @@ struct ChildDetailView: View {
     @State private var deleteErrorText: String?
     @State private var showWeekView = false
     
+    /// Every chore the child has, whatever day it falls on.
     private var childChores: [Chore] {
         manager.chores.filter { $0.childId == child.id }
     }
-    
-    private var completedChores: [Chore] {
-        childChores.filter { manager.isChoreCompleted($0) }
+
+    /// The part of the list that is due today.
+    private var todayChores: [Chore] {
+        childChores.filter { $0.isDueToday }
     }
-    
+
+    /// Chores scheduled for other days. Shown so the parent can still find
+    /// and edit them; ticking one credits it as an extra for today.
+    private var otherDayChores: [Chore] {
+        childChores.filter { !$0.isDueToday }
+    }
+
+    private var completedChores: [Chore] {
+        todayChores.filter { manager.isChoreCompleted($0) }
+    }
+
     private var pendingChores: [Chore] {
-        childChores.filter { !manager.isChoreCompleted($0) }
+        todayChores.filter { !manager.isChoreCompleted($0) }
     }
     
     private var totalEarnings: Double {
@@ -33,8 +45,8 @@ struct ChildDetailView: View {
     }
     
     private var completionPercentage: Double {
-        guard childChores.count > 0 else { return 0 }
-        return Double(completedChores.count) / Double(childChores.count)
+        guard todayChores.count > 0 else { return 0 }
+        return Double(completedChores.count) / Double(todayChores.count)
     }
     
     var body: some View {
@@ -192,6 +204,27 @@ struct ChildDetailView: View {
                                         onDelete: { choreToDelete = chore }
                                     )
                                     .padding(.horizontal, 20)
+                                }
+                            }
+                        }
+
+                        // Scheduled for other days
+                        if !otherDayChores.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Other Days")
+                                    .font(.headline)
+                                    .foregroundColor(.choreStarTextSecondary)
+                                    .padding(.horizontal, 20)
+
+                                ForEach(otherDayChores) { chore in
+                                    ChildChoreCard(
+                                        chore: chore,
+                                        manager: manager,
+                                        onEdit: { editingChore = chore },
+                                        onDelete: { choreToDelete = chore }
+                                    )
+                                    .padding(.horizontal, 20)
+                                    .opacity(0.75)
                                 }
                             }
                         }

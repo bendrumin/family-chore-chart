@@ -10,9 +10,11 @@ import { toast } from 'sonner'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { RewardAmountInput } from '@/components/chores/reward-amount-input'
 import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
-import { Edit3, DollarSign, Trash2, FileText, Palette } from 'lucide-react'
+import { Edit3, DollarSign, FileText, Palette, CalendarDays } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
+import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
+import { scheduleDays } from '@/lib/utils/schedule'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import type { Database } from '@/lib/supabase/database.types'
@@ -35,7 +37,8 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     name: chore.name,
     rewardCents: chore.reward_cents ?? 0,
     icon: chore.icon || '📝',
-    category: (chore.category || 'household_chores') as ChoreCategory
+    category: (chore.category || 'household_chores') as ChoreCategory,
+    days: scheduleDays(chore),
   })
 
   const categories = getCategoryList()
@@ -46,7 +49,8 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
       name: chore.name,
       rewardCents: chore.reward_cents ?? 0,
       icon: chore.icon || '📝',
-      category: (chore.category || 'household_chores') as ChoreCategory
+      category: (chore.category || 'household_chores') as ChoreCategory,
+      days: scheduleDays(chore),
     })
   }, [chore])
 
@@ -63,6 +67,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
           reward_cents: formData.rewardCents,
           icon: formData.icon,
           category: formData.category,
+          days_of_week: formData.days,
         })
         .eq('id', chore.id)
 
@@ -167,6 +172,22 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 />
               </div>
             </div>
+
+            {/* Schedule Section - Amber accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-900/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2 mb-4">
+                <CalendarDays className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h4 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Schedule
+                </h4>
+              </div>
+              <DayOfWeekPicker
+                idPrefix="edit-days"
+                value={formData.days}
+                onChange={(days) => setFormData({ ...formData, days })}
+              />
+            </div>
+
             {/* Appearance Section - Purple accent */}
             <div className="p-4 sm:p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/30 dark:border-purple-800 dark:bg-purple-900/20 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2 mb-4">

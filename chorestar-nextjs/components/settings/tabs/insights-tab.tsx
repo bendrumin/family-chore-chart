@@ -10,6 +10,7 @@ import { AchievementsDisplay } from '@/components/achievements/achievements-disp
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
+import { weeklySlots } from '@/lib/utils/schedule'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
@@ -98,8 +99,8 @@ export function InsightsTab() {
 
       const trends: WeeklyTrend[] = recentWeeks.map(ws => {
         const weekCompletions = completions.filter(c => c.week_start === ws)
-        // Total possible = all active chores × 7 days
-        const totalPossible = chores.length * 7
+        // Total possible = each active chore once per day it is due
+        const totalPossible = weeklySlots(chores)
         const rate = totalPossible > 0
           ? Math.min(100, Math.round((weekCompletions.length / totalPossible) * 100))
           : 0
@@ -116,7 +117,7 @@ export function InsightsTab() {
         const childCompletions = completions.filter(c =>
           childChores.some(ch => ch.id === c.chore_id)
         )
-        const totalPossible = childChores.length * 7
+        const totalPossible = weeklySlots(childChores)
         const rate = totalPossible > 0
           ? Math.min(100, Math.round((childCompletions.length / totalPossible) * 100))
           : 0
@@ -135,7 +136,7 @@ export function InsightsTab() {
           childChores.some(chore => chore.id === c.chore_id)
         )
 
-        const totalPossible = childChores.length * 7
+        const totalPossible = weeklySlots(childChores)
         const completionRate = totalPossible > 0
           ? Math.round((childCompletions.length / totalPossible) * 100)
           : 0

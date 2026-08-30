@@ -9,6 +9,7 @@ import { Trophy, Star, TrendingUp, DollarSign, Flame, Wallet } from 'lucide-reac
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
+import { dueOn } from '@/lib/utils/schedule'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -27,6 +28,8 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     totalEarnings: 0,
     completionRate: 0,
     perfectDays: 0,
+    /** Days this week with at least one chore due. The "out of" for perfect days. */
+    dueDays: 7,
     streak: 0,
     weeklyBonusLabel: '',
     isLoading: true,
@@ -96,13 +99,14 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
           celebrationManager.celebrateWithConfetti('achievement')
           playSound('success')
 
-          if (stats.perfectDays === 7 && !hasShownPerfectWeek.current) {
+          const isPerfectWeek = stats.dueDays > 0 && stats.perfectDays === stats.dueDays
+          if (isPerfectWeek && !hasShownPerfectWeek.current) {
             setTimeout(() => {
               celebrationManager.celebratePerfectWeek()
               playSound('celebration')
               const bonusText = stats.weeklyBonusLabel
                 ? ` Bonus unlocked: ${stats.weeklyBonusLabel}! 🎁`
-                : ' All 7 days! 🎉'
+                : ` All ${stats.dueDays} days! 🎉`
               toast.success(`🎉 ${child.name} completed a PERFECT WEEK!${bonusText}`, {
                 duration: 5000,
               })
@@ -115,7 +119,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       }
       previousPerfectDays.current = stats.perfectDays
     }
-  }, [stats.perfectDays, stats.isLoading, child.name])
+  }, [stats.perfectDays, stats.dueDays, stats.isLoading, child.name])
 
   useEffect(() => {
     // Reset flags when week changes
@@ -155,7 +159,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         .eq('is_active', true)
 
       if (!chores || chores.length === 0) {
-        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, perfectDays: 0, streak: 0, weeklyBonusLabel: '', isLoading: false })
+        setStats({ totalCompletions: 0, totalEarnings: 0, completionRate: 0, perfectDays: 0, dueDays: 0, streak: 0, weeklyBonusLabel: '', isLoading: false })
         return
       }
 
@@ -180,24 +184,27 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
 
       // Earnings and perfect days both come from the shared rules so this card
       // can't disagree with the dashboard hero. See lib/utils/earnings.ts.
-      const { earnedCents, perfectDays } = childWeekEarningsCents(
+      const { earnedCents, perfectDays, dueDays } = childWeekEarningsCents(
         chores,
         completions ?? [],
         familySettings
       )
       const totalEarnings = earnedCents
 
-      // Calculate completion rate based on perfect days (matching Vanilla JS logic)
-      const completionRate = Math.round((perfectDays / 7) * 100)
+      // Completion rate is perfect days out of the days that had chores due,
+      // so a weekdays-only list can reach 100%.
+      const completionRate = dueDays > 0 ? Math.round((perfectDays / dueDays) * 100) : 0
 
-      // Calculate current streak (simplified - days with at least one completion)
-      const streak = await calculateStreak(child.id, choreIds)
+      // Current streak: consecutive days with at least one completion. Days
+      // with nothing due are skipped rather than breaking it.
+      const streak = await calculateStreak(chores)
 
       setStats({
         totalCompletions,
         totalEarnings: totalEarnings / 100, // Convert cents to dollars
         completionRate,
         perfectDays,
+        dueDays,
         streak,
         weeklyBonusLabel: familySettings?.weekly_bonus_label || '',
         isLoading: false,
@@ -214,9 +221,10 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
     loadStats()
   }, [loadStats])
 
-  const calculateStreak = async (childId: string, choreIds: string[]) => {
+  const calculateStreak = async (chores: Chore[]) => {
     try {
       const supabase = createClient()
+      const choreIds = chores.map(c => c.id)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
@@ -246,6 +254,9 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         checkDate.setDate(today.getDate() - i)
 
         const dayOfWeek = checkDate.getDay()
+        // Nothing due this weekday: not a miss, just not a day that counts.
+        if (dueOn(chores, dayOfWeek).length === 0) continue
+
         const ws = new Date(checkDate)
         ws.setDate(checkDate.getDate() - dayOfWeek)
         const wsKey = ws.toISOString().split('T')[0]
@@ -383,10 +394,13 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         <div className="p-3 rounded-lg shadow" style={{ background: 'var(--bg-secondary)' }}>
           <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
             <span>Perfect Days This Week</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{stats.perfectDays}/7 days</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {stats.perfectDays}/{stats.dueDays} days
+              {stats.dueDays < 7 && stats.dueDays > 0 ? ' with chores due' : ''}
+            </span>
           </div>
           <div className="flex justify-center gap-1">
-            {Array.from({ length: 7 }).map((_, index) => {
+            {Array.from({ length: stats.dueDays }).map((_, index) => {
               const isPerfect = index < stats.perfectDays
               return (
                 <div
@@ -406,11 +420,11 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
           {stats.perfectDays > 0 && (
             <div className="mt-1.5 text-center">
               <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                {stats.perfectDays === 7
+                {stats.dueDays > 0 && stats.perfectDays === stats.dueDays
                   ? `🎉 Perfect week! ${stats.weeklyBonusLabel ? `Bonus: ${stats.weeklyBonusLabel}! 🎁` : 'All chores done every day!'}`
-                  : stats.perfectDays >= 5
+                  : stats.perfectDays / Math.max(1, stats.dueDays) >= 0.7
                   ? '🌟 Awesome progress! Keep it up!'
-                  : stats.perfectDays >= 3
+                  : stats.perfectDays / Math.max(1, stats.dueDays) >= 0.4
                   ? '✨ Great start! You\'re doing well!'
                   : '💪 Good job! Keep going!'}
               </span>
