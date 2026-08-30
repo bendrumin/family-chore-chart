@@ -520,7 +520,13 @@ struct ApprovalTrayView: View {
 
     var body: some View {
         Group {
-            if !manager.pendingApprovals.isEmpty || !manager.pendingRedemptions.isEmpty {
+            // The empty branch must still be a REAL view: modifiers on a Group
+            // whose content is nothing never install, so the .task below never
+            // fired when the tray mounted empty — which is every launch where
+            // completions load fast. The tray then never fetched at all.
+            if manager.pendingApprovals.isEmpty && manager.pendingRedemptions.isEmpty {
+                Color.clear.frame(width: 0, height: 0)
+            } else if !manager.pendingApprovals.isEmpty || !manager.pendingRedemptions.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "clock.badge.checkmark.fill")
@@ -661,7 +667,9 @@ struct ApprovalTrayView: View {
                                         .font(.subheadline.weight(.bold))
                                     Text("Approve")
                                         .font(.subheadline.weight(.bold))
+                                        .lineLimit(1)
                                 }
+                                .fixedSize(horizontal: true, vertical: false)
                                 .padding(.horizontal, 12)
                                 .frame(height: 40)
                                 .background(Color.choreStarSuccess)

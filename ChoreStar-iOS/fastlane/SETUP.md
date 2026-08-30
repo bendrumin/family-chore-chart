@@ -73,6 +73,26 @@ Useful options:
 | `fastlane ios metadata force:true` | Skip the confirmation preview |
 | `fastlane ios metadata overwrite:true` | **Replaces every live screenshot** |
 
+## Screenshots (capture)
+
+`fastlane screenshots` captures RAW shots for every device in `Snapfile` by
+running `ChoreStarUITests/ScreenshotTests` (fastlane snapshot). Output lands in
+`appstore-screenshots/raw/en-US/`, named `<device>-<NN-name>.png` in listing
+order. The status bar is overridden (9:41, full battery); framing and captions
+stay a separate pass (see `appstore-screenshots/captions.md`).
+
+- Needs `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` on this Mac.
+- The tests sign in as **The Star Family** (`bsiegel13+uitest-shots@gmail.com`),
+  a dedicated, seeded screenshot account: Maya has a streak, a half-full goal,
+  and a pending store request; Leo has a tick in the Needs-your-OK tray. Do not
+  "clean up" that data — the shots depend on it. Override the credentials with
+  `CHORESTAR_SHOTS_EMAIL` / `CHORESTAR_SHOTS_PASSWORD` if it is ever recreated.
+- Kid-mode shots use the DEBUG `-chorestar-kid Maya` launch argument (no PIN),
+  so screenshots only work with Debug builds — which is what snapshot builds.
+- After capturing: frame/caption the picks, drop them into
+  `appstore-screenshots/{iphone-6.9-1320x2868,ipad-13}/`, then
+  `fastlane stage_screenshots` and `fastlane metadata` as before.
+
 ## Gotchas
 
 - **`overwrite:true` deletes screenshots for device families you did not stage.**

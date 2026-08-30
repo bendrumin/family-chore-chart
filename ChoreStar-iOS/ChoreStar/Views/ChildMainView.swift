@@ -16,7 +16,9 @@ struct ChildMainView: View {
     private var streak: Int {
         guard let child = manager.currentChild else { return 0 }
         if manager.kidModeSession != nil { return manager.kidStats?.streak ?? 0 }
-        return manager.calculateWeeklyStats(for: child.id).streak
+        // Cross-week and schedule-aware; the weekly-stats streak resets to
+        // this week only and read "1" every Sunday morning.
+        return manager.currentStreak(for: child.id)
     }
 
     private var badgeProgress: [AchievementProgressInfo] {

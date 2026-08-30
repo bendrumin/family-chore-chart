@@ -25,6 +25,18 @@ Download the CURRENTLY LIVE metadata and screenshots from App Store Connect.
 
 Run this before your first upload, then `git diff` to see where local text has drifted.
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Capture RAW App Store screenshots on every device in the Snapfile.
+
+Drives ChoreStarUITests/ScreenshotTests against The Star Family (the
+
+seeded screenshot account); output lands in appstore-screenshots/raw/.
+
 ### ios stage_screenshots
 
 ```sh

@@ -92,6 +92,13 @@ platform :ios do
     UI.message("Screenshots: use `fastlane deliver download_screenshots` if you need the live set too.")
   end
 
+  desc "Capture RAW App Store screenshots on every device in the Snapfile."
+  desc "Drives ChoreStarUITests/ScreenshotTests against The Star Family (the"
+  desc "seeded screenshot account); output lands in appstore-screenshots/raw/."
+  lane :screenshots do
+    snapshot
+  end
+
   desc "Copy captured screenshots into the flat layout deliver expects."
   lane :stage_screenshots do
     root = File.expand_path("..", __dir__)

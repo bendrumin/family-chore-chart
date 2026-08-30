@@ -2678,6 +2678,44 @@ class SupabaseManager: ObservableObject {
     /// Today's weekday index, 0 = Sunday.
     var todayIndex: Int { RewardMath.dayIndex(of: Date()) }
 
+    /**
+     Consecutive finished days ending today (or yesterday, when today is not
+     done yet), across week boundaries, honoring each chore's schedule. The
+     weekly-stats streak only sees the current week, which made a real 5-day
+     streak read as "1" every Sunday morning. Web parity: lib/utils/streak.ts.
+     */
+    func currentStreak(for childId: UUID) -> Int {
+        let childChores = chores.filter { $0.childId == childId }
+        guard !childChores.isEmpty else { return 0 }
+
+        var done: [String: Set<UUID>] = [:]
+        for c in allTimeCompletions where childChores.contains(where: { $0.id == c.choreId }) {
+            done["\(c.weekStart)|\(c.dayOfWeek)", default: []].insert(c.choreId)
+        }
+
+        let calendar = Calendar.current
+        var streak = 0
+        var date = Date()
+        for i in 0..<400 {
+            let day = RewardMath.dayIndex(of: date, calendar: calendar)
+            let due = ChoreSchedule.due(childChores, on: day)
+            if !due.isEmpty {
+                let key = "\(SupabaseManager.kidWeekStartString(for: date))|\(day)"
+                let doneSet = done[key] ?? []
+                if due.allSatisfy({ doneSet.contains($0.id) }) {
+                    streak += 1
+                } else if i > 0 {
+                    // A day with nothing done ends the run; an unfinished
+                    // TODAY is simply not counted yet.
+                    break
+                }
+            }
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: date) else { break }
+            date = previous
+        }
+        return streak
+    }
+
     /// A child's chores that are due on `dayOfWeek` (default: today). This is
     /// "the list" everywhere the app asks whether the day is finished.
     func dueChores(for childId: UUID, on dayOfWeek: Int? = nil) -> [Chore] {
@@ -3282,12 +3320,13 @@ class SupabaseManager: ObservableObject {
             let chore_id: UUID
             let week_start: String?
             let day_of_week: Int?
+            let status: String?
         }
 
         do {
             let rows: [HistoryRow] = try await client
                 .from("chore_completions")
-                .select("chore_id, week_start, day_of_week")
+                .select("chore_id, week_start, day_of_week, status")
                 .in("chore_id", values: currentChores.map { $0.id.uuidString })
                 .limit(10000)
                 .execute()
@@ -3297,7 +3336,8 @@ class SupabaseManager: ObservableObject {
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let calendar = Calendar.current
 
-            let mapped = rows.map { row -> HistoricalCompletion in
+            // A tick waiting for a parent's OK is not a completion yet.
+            let mapped = rows.filter { $0.status != "pending" }.map { row -> HistoricalCompletion in
                 let weekStart = row.week_start ?? ""
                 let day = row.day_of_week ?? 0
                 let date = dateFormatter.date(from: weekStart).flatMap {

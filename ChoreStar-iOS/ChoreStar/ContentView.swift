@@ -137,12 +137,24 @@ struct ContentView: View {
             debugShowKidLogin = true
         } else if let idx = args.firstIndex(of: "-chorestar-kid") {
             let name: String? = (idx + 1 < args.count && !args[idx + 1].hasPrefix("-")) ? args[idx + 1] : nil
-            let child = supabaseManager.children.first(where: { c in
-                name.map { c.name.caseInsensitiveCompare($0) == .orderedSame } ?? true
-            })
-            if let child {
-                supabaseManager.currentChild = child
-                supabaseManager.isChildSession = true
+            // Children load asynchronously (and, under `-chorestar-signin`,
+            // only after the sign-in lands), so firing synchronously here made
+            // this a silent no-op for XCUITest-driven screenshots. Wait.
+            Task {
+                let deadline = Date().addingTimeInterval(30)
+                while Date() < deadline {
+                    let child = supabaseManager.children.first(where: { c in
+                        name.map { c.name.caseInsensitiveCompare($0) == .orderedSame } ?? true
+                    })
+                    if let child {
+                        await MainActor.run {
+                            supabaseManager.currentChild = child
+                            supabaseManager.isChildSession = true
+                        }
+                        return
+                    }
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
             }
         }
     }

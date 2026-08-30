@@ -12,6 +12,12 @@ struct ChoreStarApp: App {
     @UIApplicationDelegateAdaptor(PushDelegate.self) private var pushDelegate
 
     init() {
+        // Screenshot runs (fastlane snapshot injects "-FASTLANE_SNAPSHOT YES",
+        // dash included) must not have tip cards photobombing the captures.
+        let snapshotArgs = ProcessInfo.processInfo.arguments
+        if snapshotArgs.contains("-FASTLANE_SNAPSHOT") || snapshotArgs.contains("FASTLANE_SNAPSHOT") {
+            Tips.hideAllTipsForTesting()
+        }
         try? Tips.configure([
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault),

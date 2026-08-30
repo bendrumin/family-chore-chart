@@ -1,0 +1,33 @@
+# fastlane snapshot config — `fastlane screenshots` (or `fastlane snapshot`).
+#
+# Captures RAW screenshots into appstore-screenshots/raw/, grouped by run.
+# Framing/captions stay a separate pass (AppScreens), and `stage_screenshots`
+# still uploads from the framed appstore-screenshots/{device} folders.
+#
+# Requires DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer on this
+# Mac (xcode-select points at CommandLineTools).
+
+project("./ChoreStar.xcodeproj")
+scheme("ChoreStar")
+only_testing(["ChoreStarUITests/ScreenshotTests"])
+
+# The two families the App Store listing carries: 6.9" iPhone + 13" iPad.
+devices([
+  "iPhone 17 Pro Max",
+  "iPad Pro 13-inch (M5)",
+])
+
+languages(["en-US"])
+
+output_directory("./appstore-screenshots/raw")
+clear_previous_screenshots(true)
+
+# 9:41, full battery, full signal on every shot.
+override_status_bar(true)
+
+concurrent_simulators(false)
+# Keep capturing the other screens when one anchor misses; a partial set is
+# more useful than an aborted run.
+stop_after_first_error(false)
+disable_slide_to_type(true)
+skip_open_summary(true)
