@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const admin = createServiceRoleClient()
     const { data: child, error } = await admin
       .from('children')
-      .select('id, name, avatar_color, avatar_url, avatar_file')
+      .select('id, name, avatar_color, avatar_url, avatar_file, user_id')
       .eq('id', session.childId)
       .maybeSingle()
 
@@ -44,8 +44,27 @@ export async function GET(request: Request) {
     // endpoint working whether or not migration 009 has been applied.
     const avatar_signed_url = await signChildAvatarForChild(session.childId)
 
+    // The family's theme, so kid mode on the kid's own device wears the same
+    // colors the parent picked. Kids are not Supabase users, so they cannot
+    // read family_settings themselves; the theme rides along here. Best-effort:
+    // a settings read failure leaves the kid on the default palette.
+    let theme: unknown = null
+    try {
+      const { data: settings } = await admin
+        .from('family_settings')
+        .select('custom_theme')
+        .eq('user_id', child.user_id)
+        .maybeSingle()
+      theme = settings?.custom_theme ?? null
+    } catch {
+      theme = null
+    }
+
+    const { user_id: _familyId, ...publicChild } = child
+    void _familyId
+
     return NextResponse.json(
-      { child: { ...child, avatar_signed_url } },
+      { child: { ...publicChild, avatar_signed_url }, theme },
       // A signed URL is per-request and short-lived; caching this response would
       // hand out a URL that expires before the cache does.
       { headers: { 'Cache-Control': 'no-store' } }

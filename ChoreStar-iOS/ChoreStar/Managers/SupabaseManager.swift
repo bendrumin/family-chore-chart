@@ -493,6 +493,7 @@ class SupabaseManager: ObservableObject {
                 debugLastError = "Kid logged in: \(apiChild.name)"
             }
 
+            await loadKidModeTheme()
             await loadKidModeRoutines()
             await loadKidModeChores()
             await loadKidModeStats()
@@ -519,10 +520,45 @@ class SupabaseManager: ObservableObject {
             debugLastError = "Kid session restored: \(session.childName)"
         }
 
+        await loadKidModeTheme()
         await loadKidModeRoutines()
         await loadKidModeChores()
         await loadKidModeStats()
         return true
+    }
+
+    /**
+     Loads the family's theme for a standalone kid session.
+
+     Kid devices have no parent session, so `loadFamilySettings()` never runs
+     and the theme the parent picked never reached them: kid mode on an iPad
+     was brand indigo whatever the family chose. /api/kid/child returns the
+     shared custom_theme payload; ThemeManager persists it so the next launch
+     paints before this request returns.
+     */
+    func loadKidModeTheme() async {
+        guard let session = await MainActor.run(body: { kidModeSession }) else { return }
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/kid/child") else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+
+        struct Response: Decodable {
+            let theme: CustomThemePayload?
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return }
+            let decoded = try JSONDecoder().decode(Response.self, from: data)
+            await MainActor.run {
+                ThemeManager.shared.apply(customTheme: decoded.theme)
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Kid theme error: \(error.localizedDescription)"
+            }
+        }
     }
 
     private struct KidRoutineStepRow: Codable {
@@ -3025,7 +3061,9 @@ class SupabaseManager: ObservableObject {
             earnedTodayFormatted: formatMoney(earned),
             children: childProgress,
             generatedAt: Date(),
-            topStreak: topStreak
+            topStreak: topStreak,
+            accentHex: ThemeManager.shared.accentHex,
+            secondaryHex: ThemeManager.shared.secondaryHex
         ).publish()
     }
 

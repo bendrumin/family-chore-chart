@@ -48,6 +48,19 @@ extension WidgetSnapshot {
 
 // MARK: - Shared bits
 
+/// "#rrggbb" to Color. The widget target has no access to the app's Color
+/// extensions, so this small parser lives here.
+func widgetHexColor(_ hex: String) -> Color? {
+    var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+    if s.hasPrefix("#") { s.removeFirst() }
+    guard s.count == 6, let value = UInt32(s, radix: 16) else { return nil }
+    return Color(
+        red: Double((value >> 16) & 0xFF) / 255.0,
+        green: Double((value >> 8) & 0xFF) / 255.0,
+        blue: Double(value & 0xFF) / 255.0
+    )
+}
+
 func widgetColor(_ name: String) -> Color {
     switch name.lowercased() {
     case "red": return .red
@@ -127,9 +140,13 @@ struct TodayRingWidgetView: View {
 
     private var snapshot: WidgetSnapshot { entry.snapshot ?? .empty }
 
-    /// Brighter accent in dark mode so the ring and checkmark pop on a dark surface.
+    /// The family's theme accent when the app has published one; otherwise the
+    /// brand indigo, brighter in dark mode so the ring pops on a dark surface.
     private var accent: Color {
-        colorScheme == .dark ? brandIndigoDark : brandIndigo
+        if let hex = snapshot.accentHex, let themed = widgetHexColor(hex) {
+            return themed
+        }
+        return colorScheme == .dark ? brandIndigoDark : brandIndigo
     }
 
     /// A subtle brand-tinted gradient surface — an elevated dark gray in dark

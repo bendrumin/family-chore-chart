@@ -28,6 +28,10 @@ struct WidgetSnapshot: Codable {
     /// Longest current streak in the family. Optional so a snapshot written by
     /// an older app version still decodes.
     var topStreak: Int? = nil
+    /// The family's theme accent pair, "#rrggbb", so the widget matches the
+    /// app instead of staying brand indigo. Optional for old snapshots.
+    var accentHex: String? = nil
+    var secondaryHex: String? = nil
 
     var progress: Double {
         totalToday > 0 ? Double(completedToday) / Double(totalToday) : 0
@@ -53,4 +57,7 @@ struct RoutineActivityAttributes: ActivityAttributes {
     var routineName: String
     var childName: String
     var totalSteps: Int
+    /// Theme accent for the progress tint, "#rrggbb". Optional so an activity
+    /// started by an older build still decodes.
+    var accentHex: String? = nil
 }

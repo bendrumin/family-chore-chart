@@ -9,7 +9,7 @@ struct RoutineLiveActivity: Widget {
         ActivityConfiguration(for: RoutineActivityAttributes.self) { context in
             // Lock screen / banner
             LockScreenRoutineView(context: context)
-                .activityBackgroundTint(Color(red: 0.388, green: 0.400, blue: 0.945).opacity(0.12))
+                .activityBackgroundTint(activityAccent(context).opacity(0.12))
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
@@ -42,7 +42,7 @@ struct RoutineLiveActivity: Widget {
                             .lineLimit(1)
 
                         ProgressView(value: stepProgress(context))
-                            .tint(Color(red: 0.388, green: 0.400, blue: 0.945))
+                            .tint(activityAccent(context))
                     }
                 }
             } compactLeading: {
@@ -103,8 +103,17 @@ private struct LockScreenRoutineView: View {
                 .lineLimit(1)
 
             ProgressView(value: Double(context.state.stepIndex), total: Double(max(context.attributes.totalSteps, 1)))
-                .tint(Color(red: 0.388, green: 0.400, blue: 0.945))
+                .tint(activityAccent(context))
         }
         .padding(16)
     }
+}
+
+/// The routine's theme accent, published by the app when the activity started;
+/// brand indigo for activities from builds that did not send one.
+func activityAccent(_ context: ActivityViewContext<RoutineActivityAttributes>) -> Color {
+    if let hex = context.attributes.accentHex, let themed = widgetHexColor(hex) {
+        return themed
+    }
+    return Color(red: 0.388, green: 0.400, blue: 0.945)
 }

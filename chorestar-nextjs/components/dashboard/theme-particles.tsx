@@ -31,7 +31,7 @@ const FALLBACK_GLYPH: Record<string, string> = {
   lavender: '✿',
 }
 
-function particleGlyph(themeId: string | null | undefined): string | null {
+export function particleGlyph(themeId: string | null | undefined): string | null {
   if (!themeId) return null
   const data = SEASONAL_THEMES_DATA[themeId]
   if (data?.icon) return data.icon

@@ -14,6 +14,25 @@ const KONAMI_CODE = [
   'a',
 ]
 
+/**
+ * The active theme's fills as a confetti palette, read off the document so this
+ * works wherever the theme was painted (parent dashboard or kid mode). Null
+ * when no theme is applied, so the library's own rainbow is used.
+ */
+function themeConfettiColors(): string[] | null {
+  if (typeof document === 'undefined') return null
+  const style = getComputedStyle(document.documentElement)
+  const primary = style.getPropertyValue('--primary-fill').trim()
+  if (!primary) return null
+  const secondary = style.getPropertyValue('--secondary-fill').trim()
+  const hero = style.getPropertyValue('--hero-secondary-fill').trim()
+  const highlight = style.getPropertyValue('--accent-highlight').trim()
+  const colors = [primary, secondary, hero, '#ffffff']
+  // The highlight ships as an RGB triplet for alpha use; wrap it for confetti.
+  if (highlight) colors.push(`rgb(${highlight})`)
+  return colors.filter((c, i, all) => c && all.indexOf(c) === i)
+}
+
 export class CelebrationManager {
   private konamiSequence: string[] = []
   private konamiTimeout: NodeJS.Timeout | null = null
@@ -106,7 +125,14 @@ export class CelebrationManager {
       },
     }
 
-    const config = confettiConfig[type] || confettiConfig.normal
+    const config: Record<string, unknown> = { ...(confettiConfig[type] || confettiConfig.normal) }
+
+    // On a themed page (kid mode), everyday confetti falls in the family's
+    // colors. Achievement gold and streak fire keep their meaning.
+    if (type === 'normal' || type === 'perfect') {
+      const themed = themeConfettiColors()
+      if (themed) config.colors = themed
+    }
 
     if (prefersReducedMotion()) return
 

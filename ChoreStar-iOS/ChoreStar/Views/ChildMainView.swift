@@ -2,6 +2,11 @@ import SwiftUI
 
 struct ChildMainView: View {
     @EnvironmentObject var manager: SupabaseManager
+    /// The family's theme. The kid screen used to be the one place it never
+    /// reached: a flat card header and an avatar-tinted wash, whatever the
+    /// parent picked. Observed directly rather than via the environment so a
+    /// standalone kid launch cannot crash on a missing environment object.
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var activeRoutine: Routine?
     @State private var showPerfectDay = false
     @State private var showBadges = false
@@ -52,26 +57,28 @@ struct ChildMainView: View {
     var body: some View {
         if let child = manager.currentChild {
             ZStack {
-                // Fun background gradient
+                // A soft wash of the family's theme under the list.
                 LinearGradient(
                     colors: [
-                        Color.fromString(child.avatarColor).opacity(0.1),
+                        themeManager.primaryColor.opacity(0.14),
+                        themeManager.secondaryColor.opacity(0.05),
                         Color.choreStarBackground
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    // Header
+                    // Header: the theme gradient with white type, the same
+                    // white-on-gradient kid surface the web uses.
                     VStack(spacing: 16) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Hi, \(child.name)! 👋")
                                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                                    .foregroundColor(.choreStarTextPrimary)
-                                
+                                    .foregroundColor(.white)
+
                                 // Flat rate: the whole-day deal, stated once, kid-sized.
                                 // familySettings is nil in STANDALONE kid sessions (no parent
                                 // client), so this shows on a parent's device and hides rather
@@ -79,59 +86,64 @@ struct ChildMainView: View {
                                 if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
                                     Text("Finish ALL your chores to earn \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) today! 🌟")
                                         .font(.headline)
-                                        .foregroundColor(.choreStarAccent)
+                                        .foregroundColor(.white.opacity(0.92))
                                 } else {
                                     Text("Let's get some chores done!")
                                         .font(.headline)
-                                        .foregroundColor(.choreStarTextSecondary)
+                                        .foregroundColor(.white.opacity(0.92))
                                 }
                             }
-                            
+
                             Spacer()
-                            
+
                             // Sign out button
                             Button(action: {
                                 manager.signOutChild()
                             }) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .font(.title3)
-                                    .foregroundColor(.choreStarDanger)
+                                    .foregroundColor(.white)
                                     .padding(12)
-                                    .background(Color.choreStarDanger.opacity(0.1))
+                                    .background(Color.white.opacity(0.2))
                                     .cornerRadius(12)
                             }
+                            .accessibilityLabel("Sign out")
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
-                        
+
                         // Big stats card
                         HStack(spacing: 16) {
                             StatBubble(
                                 icon: "checkmark.circle.fill",
                                 value: "\(completedChores.count)",
                                 label: "Done",
-                                color: .choreStarSuccess
+                                color: .choreStarSuccess,
+                                onGradient: true
                             )
-                            
+
                             StatBubble(
                                 icon: "clock.fill",
                                 value: "\(pendingChores.count)",
                                 label: "To Do",
-                                color: .choreStarWarning
+                                color: .choreStarWarning,
+                                onGradient: true
                             )
-                            
+
                             StatBubble(
                                 icon: "star.fill",
                                 value: manager.formatMoney(totalEarnings),
                                 label: "Earned",
-                                color: .choreStarAccent
+                                color: .choreStarAccent,
+                                onGradient: true
                             )
 
                             StatBubble(
                                 icon: "flame.fill",
                                 value: "\(streak)",
                                 label: "Streak",
-                                color: .orange
+                                color: .orange,
+                                onGradient: true
                             )
                         }
                         .padding(.horizontal, 20)
@@ -147,27 +159,27 @@ struct ChildMainView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("\(earnedBadgeCount) of \(badgeProgress.count) badges")
                                         .font(.headline)
-                                        .foregroundColor(.choreStarTextPrimary)
+                                        .foregroundColor(.white)
                                     if let next = nextBadge {
                                         Text("Next: \(next.definition.icon) \(next.definition.name)")
                                             .font(.caption)
-                                            .foregroundColor(.choreStarTextSecondary)
+                                            .foregroundColor(.white.opacity(0.85))
                                     } else if !badgeProgress.isEmpty {
                                         Text("You earned them all!")
                                             .font(.caption)
-                                            .foregroundColor(.choreStarTextSecondary)
+                                            .foregroundColor(.white.opacity(0.85))
                                     }
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundColor(.choreStarTextSecondary)
+                                    .foregroundColor(.white.opacity(0.85))
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.choreStarAccent.opacity(0.08))
+                                    .fill(Color.white.opacity(0.18))
                             )
                         }
                         .buttonStyle(.plain)
@@ -186,8 +198,18 @@ struct ChildMainView: View {
                         }
                     }
                     .padding(.bottom, 20)
-                    .background(Color.choreStarCardBackground)
-                    .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 2)
+                    .background(
+                        ZStack {
+                            themeManager.gradient
+                            // The season's particles, moved from the parent hero
+                            // to the screen where they get watched.
+                            if let glyph = ThemeParticleOverlay.glyph(for: themeManager.activeTheme) {
+                                ThemeParticleOverlay(glyph: glyph, particleCount: 14, opacity: 0.45)
+                            }
+                        }
+                        .ignoresSafeArea(edges: .top)
+                    )
+                    .shadow(color: themeManager.accentColor.opacity(0.25), radius: 14, x: 0, y: 6)
                     
                     // Chores & Routines list
                     ScrollView {
@@ -308,27 +330,33 @@ struct StatBubble: View {
     let value: String
     let label: String
     let color: Color
-    
+    /// On the themed header the bubble is a white card with fixed dark ink,
+    /// the web kid-mode look, instead of a tinted card with system label
+    /// colors (which go white in dark mode and vanish on the gradient).
+    var onGradient: Bool = false
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title)
                 .foregroundColor(color)
-            
+
             Text(value)
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.choreStarTextPrimary)
-            
+                .foregroundColor(onGradient ? Color.black.opacity(0.85) : .choreStarTextPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
             Text(label)
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.choreStarTextSecondary)
+                .foregroundColor(onGradient ? Color.black.opacity(0.6) : .choreStarTextSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(color.opacity(0.1))
+                .fill(onGradient ? Color.white.opacity(0.92) : color.opacity(0.1))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)

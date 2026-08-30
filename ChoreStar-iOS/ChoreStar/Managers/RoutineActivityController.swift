@@ -21,7 +21,8 @@ final class RoutineActivityController {
         let attributes = RoutineActivityAttributes(
             routineName: routine.name,
             childName: childName,
-            totalSteps: routine.steps.count
+            totalSteps: routine.steps.count,
+            accentHex: ThemeManager.shared.accentHex
         )
 
         let firstStep = routine.steps.first

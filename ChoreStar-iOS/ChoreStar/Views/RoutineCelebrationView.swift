@@ -2,6 +2,8 @@ import SwiftUI
 
 struct RoutineCelebrationView: View {
     @EnvironmentObject var manager: SupabaseManager
+    /// Family theme for the celebration wash, confetti, and the Home button.
+    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) var dismiss
     
     let routine: Routine
@@ -41,14 +43,22 @@ struct RoutineCelebrationView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.choreStarPrimary.opacity(0.1), Color.choreStarAccent.opacity(0.1)],
+                colors: [themeManager.primaryColor.opacity(0.12), themeManager.secondaryColor.opacity(0.10)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
+
             if showConfetti {
-                ConfettiView()
+                // The family's colors, plus gold and white so it still reads
+                // as a celebration on a one-hue theme.
+                ConfettiView(palette: [
+                    themeManager.primaryColor,
+                    themeManager.secondaryColor,
+                    themeManager.accentColor,
+                    .choreStarAccent,
+                    .white
+                ])
                     .allowsHitTesting(false)
             }
             
@@ -60,7 +70,7 @@ struct RoutineCelebrationView: View {
                     .font(.system(size: 80))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.choreStarAccent, .choreStarPrimary],
+                            colors: [.choreStarAccent, themeManager.primaryColor],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -107,7 +117,7 @@ struct RoutineCelebrationView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(Color.choreStarGradient)
+                    .background(themeManager.gradient)
                     .cornerRadius(14)
                 }
                 .padding(.horizontal, 24)

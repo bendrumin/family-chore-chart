@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct ConfettiView: View {
+    /// Confetti colors. nil keeps the classic brand mix; kid mode passes the
+    /// family's theme so a Halloween family gets orange and purple confetti.
+    var palette: [Color]? = nil
+
     @State private var confettiPieces: [ConfettiPiece] = []
     @State private var isAnimating = false
     
@@ -24,7 +28,7 @@ struct ConfettiView: View {
     }
     
     private func generateConfetti(in size: CGSize) {
-        let colors: [Color] = [
+        let colors: [Color] = palette ?? [
             .choreStarPrimary,
             .choreStarSuccess,
             .choreStarAccent,

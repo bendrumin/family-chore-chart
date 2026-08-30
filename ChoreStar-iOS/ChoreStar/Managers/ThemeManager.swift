@@ -10,9 +10,15 @@ class ThemeManager: ObservableObject {
     
     private var cancellable: AnyCancellable?
     
+    private static let customAccentKey = "customAccentHex"
+
     private init() {
+        // Restored before any network call so the accent paints on first frame,
+        // and so a standalone kid device keeps the family's color between
+        // launches (it has no family_settings to reload it from).
+        customAccentHex = UserDefaults.standard.string(forKey: Self.customAccentKey)
         resolveTheme()
-        
+
         cancellable = UserDefaults.standard.publisher(for: \.seasonalTheme)
             .sink { [weak self] _ in
                 self?.resolveTheme()
@@ -42,7 +48,26 @@ class ThemeManager: ObservableObject {
     @MainActor
     func applyCustomAccent(_ hex: String?) {
         customAccentHex = hex
+        if let hex, !hex.isEmpty {
+            UserDefaults.standard.set(hex, forKey: Self.customAccentKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: Self.customAccentKey)
+        }
     }
+
+    /// The whole shared theme payload at once: accent first (highest
+    /// precedence), then the seasonal preference. Used by kid mode, which gets
+    /// the family's theme from /api/kid/child rather than family_settings.
+    @MainActor
+    func apply(customTheme theme: CustomThemePayload?) {
+        applyCustomAccent(theme?.accentColor)
+        applySeasonalFromCustomTheme(theme)
+    }
+
+    /// "#rrggbb" for the current accent, for surfaces that cannot take a Color
+    /// (the widget snapshot, Live Activity attributes).
+    var accentHex: String? { accentColor.hexRGBString }
+    var secondaryHex: String? { secondaryColor.hexRGBString }
 
     /**
      Apply seasonal preference from the shared custom_theme JSON.
