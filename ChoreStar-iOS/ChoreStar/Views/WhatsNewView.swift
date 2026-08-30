@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "1.7"
+    static let latestVersion = "1.9"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,33 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "1.9",
+            date: "September 2026",
+            title: "The Kid's Screen Grew Up",
+            features: [
+                Feature(
+                    icon: "📅",
+                    title: "Chores on Their Own Days",
+                    description: "Pick the days a chore is due: Every day, Weekdays, Weekends, or any mix. Today's list, the week grid, and the widget only show what is due, and a day with nothing due never breaks a streak."
+                ),
+                Feature(
+                    icon: "🔥",
+                    title: "Kids See Their Streak and Badges",
+                    description: "The kid dashboard now shows their day streak, this week's earnings, and how many badges they have unlocked. Tap the badges row for the full cabinet and what to earn next."
+                ),
+                Feature(
+                    icon: "🎨",
+                    title: "Kid Mode Wears Your Theme",
+                    description: "The kid screen, the celebration, the confetti, the widgets, and the Live Activity all follow the seasonal or accent theme you picked. Halloween arrives in October on its own."
+                ),
+                Feature(
+                    icon: "✅",
+                    title: "Approve Chores First (Optional)",
+                    description: "Turn it on in Settings and kids' ticks wait in a Needs Your OK list before they count. Approve from the alert on your phone, or send one back. Any chore can also ask for a photo."
+                ),
+            ]
+        ),
         Entry(
             version: "1.7",
             date: "August 2026",

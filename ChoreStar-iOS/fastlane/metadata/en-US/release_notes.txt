@@ -1,11 +1,11 @@
-Version 1.8 makes it easy to spread the word, and easier to get started.
+Version 1.9 is about the kid's screen: it now shows what matters to them, and it wears your family's colors.
 
-• Rate ChoreStar: Settings > About now has a one-tap link to leave an App Store rating or review
-• Share ChoreStar: send the App Store link to another family straight from Settings
-• New families choose how rewards work during setup (one daily amount, or an amount per chore) instead of starting from a preset
-• Share a perfect day straight from the celebration screen
-• Tapping a promoted Premium plan on the App Store now starts the purchase in the app
-• Fixed: on iPad, the kid login's Go button could sit below the bottom of the sheet. Kid login now opens full screen on iPad
-• Copy polish throughout the app
+• Chores on their own days: pick the days a chore is due (Every day, Weekdays, Weekends, or any mix). Today's list, the week grid, and the widget only show what is due
+• Perfect days that are fair: a day with nothing due never breaks a streak or costs the week bonus
+• Kids see their streak, this week's earnings, and their badges right on their dashboard, with a badge cabinet showing what to earn next
+• Kid mode wears your theme: the header, celebration, confetti, widgets, and Live Activity follow the seasonal or accent theme you picked. Halloween arrives in October on its own
+• Optional approval: turn on Approve Chores First in Settings and kids' ticks wait in a Needs Your OK list (with a tap-to-approve alert on your phone) before they count
+• Ask for a photo on any chore: kids snap it from their list, you see it in the tray
+• The small widget shows the family's best streak
 
 Questions or feedback are welcome at hi@chorestar.app
