@@ -26,6 +26,9 @@ struct WidgetSnapshot: Codable {
     let earnedTodayFormatted: String
     let children: [ChildProgress]
     let generatedAt: Date
+    /// Longest current streak in the family. Optional so a snapshot written by
+    /// an older app version still decodes.
+    var topStreak: Int? = nil
 
     var progress: Double {
         totalToday > 0 ? Double(completedToday) / Double(totalToday) : 0

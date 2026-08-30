@@ -5,6 +5,7 @@
 
 import { ACHIEVEMENTS, type Achievement } from '@/lib/constants/achievements'
 import { dueDaysInWeek } from '@/lib/utils/schedule'
+import { computeStreaks, type DayRef } from '@/lib/utils/streak'
 import type { Database } from '@/lib/supabase/database.types'
 
 type ChoreCompletion = Database['public']['Tables']['chore_completions']['Row']
@@ -119,7 +120,11 @@ function calculateAchievementProgress(
 
     case 'streak':
       const streakDays = req.streak_days || 0
-      const currentStreak = calculateStreak(completions)
+      // The longest run of finished days on record, honoring each chore's
+      // schedule, so this badge and the kid's streak tile agree. The old
+      // shortcut (most completion-days in any one week) could say "5" while
+      // the kid's real streak was 0.
+      const currentStreak = calculateStreak(chores, completions)
       return {
         progress: Math.min(100, (currentStreak / streakDays) * 100),
         currentCount: currentStreak,
@@ -173,33 +178,26 @@ function groupCompletionsByWeek(
 }
 
 /**
- * Calculate current streak (consecutive days with completions)
+ * Best streak on record: the longest run of days where every chore due that
+ * day was done. Replayed up to the most recent completion, so an unfinished
+ * today never shortens it.
  */
-function calculateStreak(completions: ChoreCompletion[]): number {
-  if (completions.length === 0) return 0
+function calculateStreak(chores: Chore[], completions: ChoreCompletion[]): number {
+  if (completions.length === 0 || chores.length === 0) return 0
 
-  // Get unique days with completions, sorted by date
-  const daysMap = new Map<string, Set<number>>()
-
-  completions.forEach(comp => {
-    const weekStart = comp.week_start || ''
-    const dayOfWeek = comp.day_of_week
-
-    if (!daysMap.has(weekStart)) {
-      daysMap.set(weekStart, new Set())
+  let latest: DayRef | null = null
+  let latestAbs = -Infinity
+  for (const c of completions) {
+    if (!c.week_start || c.day_of_week === null || c.day_of_week === undefined) continue
+    const abs = Date.parse(`${c.week_start}T00:00:00Z`) + c.day_of_week * 86_400_000
+    if (abs > latestAbs) {
+      latestAbs = abs
+      latest = { weekStart: c.week_start, dayOfWeek: c.day_of_week }
     }
-    if (dayOfWeek !== null) {
-      daysMap.get(weekStart)!.add(dayOfWeek)
-    }
-  })
-
-  // Simplified streak calculation
-  let maxStreak = 0
-  for (const days of daysMap.values()) {
-    maxStreak = Math.max(maxStreak, days.size)
   }
+  if (!latest) return 0
 
-  return maxStreak
+  return computeStreaks(chores, completions, latest).best
 }
 
 /**

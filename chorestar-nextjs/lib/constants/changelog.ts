@@ -20,6 +20,11 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
     title: 'Chores on Their Own Days',
     features: [
       {
+        icon: '🔥',
+        title: 'Kids See Their Streak, Money, and Badges',
+        description: 'The kid dashboard now opens with the numbers that matter to them: their day streak (with their personal best), what they have earned this week, and how many badges they have unlocked. Tap the badges tile for the full cabinet, with a progress bar on every badge still to earn. Finishing the whole list for the day gets its own celebration.',
+      },
+      {
         icon: '📅',
         title: 'Pick the Days a Chore Is Due',
         description: 'Trash on Tuesdays. Piano on Mon, Wed, Fri. Every chore now has a schedule: tap the days in the chore editor, or use Every day, Weekdays, or Weekends. The day checklist, the kid dashboard, the week grid, and the printable charts only show what is actually due.',

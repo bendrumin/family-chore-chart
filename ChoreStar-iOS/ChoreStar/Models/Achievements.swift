@@ -186,10 +186,13 @@ enum AchievementEngine {
                     return (childCompletions.count, count)
 
                 case .weekComplete:
-                    // A week where all 7 days saw at least one completion
+                    // A week where every day with chores due saw a completion.
+                    // A weekdays-only list has 5 such days, not 7; judging it
+                    // against 7 would make this badge impossible for that child.
+                    let requiredDays = max(1, ChoreSchedule.dueDayCount(chores.filter { $0.childId == childId }))
                     let byWeek = Dictionary(grouping: childCompletions, by: \.weekStart)
                     let hasFullWeek = byWeek.values.contains { weekComps in
-                        Set(weekComps.map(\.dayOfWeek)).count >= 7
+                        Set(weekComps.map(\.dayOfWeek)).count >= requiredDays
                     }
                     return (hasFullWeek ? 1 : 0, 1)
 

@@ -4,6 +4,27 @@ struct ChildMainView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var activeRoutine: Routine?
     @State private var showPerfectDay = false
+    @State private var showBadges = false
+
+    /// Current streak. A standalone kid session gets it from /api/kid/stats;
+    /// on a parent's device the local week math already has it.
+    private var streak: Int {
+        guard let child = manager.currentChild else { return 0 }
+        if manager.kidModeSession != nil { return manager.kidStats?.streak ?? 0 }
+        return manager.calculateWeeklyStats(for: child.id).streak
+    }
+
+    private var badgeProgress: [AchievementProgressInfo] {
+        guard let child = manager.currentChild else { return [] }
+        return manager.achievementProgress(for: child.id)
+    }
+
+    private var earnedBadgeCount: Int { badgeProgress.filter(\.earned).count }
+
+    /// The closest unearned badge, so the row always points somewhere.
+    private var nextBadge: AchievementProgressInfo? {
+        badgeProgress.filter { !$0.earned }.max { $0.progress < $1.progress }
+    }
     
     /// Only what is due today. A Tuesday-only chore is not on Wednesday's list.
     private var childChores: [Chore] {
@@ -105,8 +126,64 @@ struct ChildMainView: View {
                                 label: "Earned",
                                 color: .choreStarAccent
                             )
+
+                            StatBubble(
+                                icon: "flame.fill",
+                                value: "\(streak)",
+                                label: "Streak",
+                                color: .orange
+                            )
                         }
                         .padding(.horizontal, 20)
+
+                        // Badge cabinet. The data existed for the parent's
+                        // Achievements screen; the kid never saw it.
+                        Button {
+                            showBadges = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text("🏆")
+                                    .font(.title2)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("\(earnedBadgeCount) of \(badgeProgress.count) badges")
+                                        .font(.headline)
+                                        .foregroundColor(.choreStarTextPrimary)
+                                    if let next = nextBadge {
+                                        Text("Next: \(next.definition.icon) \(next.definition.name)")
+                                            .font(.caption)
+                                            .foregroundColor(.choreStarTextSecondary)
+                                    } else if !badgeProgress.isEmpty {
+                                        Text("You earned them all!")
+                                            .font(.caption)
+                                            .foregroundColor(.choreStarTextSecondary)
+                                    }
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.choreStarAccent.opacity(0.08))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 20)
+                        .accessibilityLabel("\(earnedBadgeCount) of \(badgeProgress.count) badges earned. Open badges.")
+                        .sheet(isPresented: $showBadges) {
+                            NavigationStack {
+                                AchievementsView(child: child)
+                                    .environmentObject(manager)
+                                    .toolbar {
+                                        ToolbarItem(placement: .confirmationAction) {
+                                            Button("Done") { showBadges = false }
+                                        }
+                                    }
+                            }
+                        }
                     }
                     .padding(.bottom, 20)
                     .background(Color.choreStarCardBackground)

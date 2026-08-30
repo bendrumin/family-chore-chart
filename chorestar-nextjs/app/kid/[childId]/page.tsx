@@ -7,6 +7,7 @@ import { Play, LogOut, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRoutines } from '@/lib/hooks/useRoutines';
 import { KidChores } from '@/components/kid/kid-chores';
+import { KidStats } from '@/components/kid/kid-stats';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 
 interface ChildData {
@@ -25,6 +26,8 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   const router = useRouter();
   const [child, setChild] = useState<ChildData | null>(null);
   const [kidToken, setKidToken] = useState<string | null>(null);
+  // Bumped whenever a chore is ticked so the stats strip refetches.
+  const [statsVersion, setStatsVersion] = useState(0);
 
   const { data: routines, isLoading } = useRoutines(childId);
 
@@ -175,10 +178,20 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         </motion.div>
       </div>
 
+      {/* The kid's own numbers: streak, this week's money, badges. The parent
+          dashboard has always had these; the kid never saw them. */}
+      {kidToken && <KidStats kidToken={kidToken} childName={child.name} refreshKey={statsVersion} />}
+
       {/* Today's chores — the half of kid mode that was missing entirely.
           Routines had kid-token endpoints; chores did not, so a kid on their
           own device could never check off the things earning their allowance. */}
-      {kidToken && <KidChores kidToken={kidToken} iconTint={child.avatar_color} />}
+      {kidToken && (
+        <KidChores
+          kidToken={kidToken}
+          iconTint={child.avatar_color}
+          onChanged={() => setStatsVersion(v => v + 1)}
+        />
+      )}
 
       {/* Routines Grid */}
       <div className="max-w-6xl mx-auto">

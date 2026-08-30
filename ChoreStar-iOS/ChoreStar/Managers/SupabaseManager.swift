@@ -67,6 +67,9 @@ class SupabaseManager: ObservableObject {
 
     // Standalone kid-mode session (kid's own device, no parent Supabase auth)
     @Published var kidModeSession: KidModeSession?
+    /// Streak, week earnings, and badge counts for a standalone kid session.
+    /// nil on a parent's device, where the same numbers come from local state.
+    @Published var kidStats: KidStats?
     var isStandaloneKidSession: Bool { kidModeSession != nil }
 
     // Routines already completed today (drives "Done!" badges and replay prevention)
@@ -492,6 +495,7 @@ class SupabaseManager: ObservableObject {
 
             await loadKidModeRoutines()
             await loadKidModeChores()
+            await loadKidModeStats()
             return nil
         }
     }
@@ -516,7 +520,8 @@ class SupabaseManager: ObservableObject {
         }
 
         await loadKidModeRoutines()
-            await loadKidModeChores()
+        await loadKidModeChores()
+        await loadKidModeStats()
         return true
     }
 
@@ -563,6 +568,118 @@ class SupabaseManager: ObservableObject {
     private struct KidChoresResponse: Codable {
         let chores: [KidChoreRow]
         let completions: [KidChoreCompletionRow]
+    }
+
+    /// GET /api/kid/stats — the kid's own motivation numbers, plus the raw
+    /// history the achievement engine needs. See loadKidModeStats().
+    struct KidStats: Decodable {
+        struct NextBadge: Decodable {
+            let id: String
+            let name: String
+            let icon: String
+        }
+        struct CompletionRow: Decodable {
+            let chore_id: UUID
+            let week_start: String
+            let day_of_week: Int
+        }
+        struct BadgeRow: Decodable {
+            let id: String
+            let child_id: UUID
+            let badge_type: String
+            let badge_name: String
+            let badge_description: String
+            let badge_icon: String
+            let earned_at: String
+        }
+
+        let streak: Int
+        let bestStreak: Int
+        let todayPerfect: Bool
+        let weekEarnedCents: Int
+        let currencyCode: String?
+        let earnedCount: Int
+        let totalCount: Int
+        let next: NextBadge?
+        let completions: [CompletionRow]
+        let earnedBadges: [BadgeRow]
+    }
+
+    /// Supabase timestamps carry fractional seconds ("...T02:00:00.123456+00:00"),
+    /// which the default ISO8601DateFormatter rejects. Try both shapes.
+    private static func parseTimestamp(_ raw: String) -> Date? {
+        let fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = fractional.date(from: raw) { return d }
+        return ISO8601DateFormatter().date(from: raw)
+    }
+
+    /**
+     Loads the kid's streak, week earnings, and badge progress through the
+     web API, and seeds the achievement engine's inputs.
+
+     A standalone kid session has no Supabase JWT, so `loadAchievements()` and
+     `loadAllTimeCompletions()` (RLS reads) never run for it: AchievementsView
+     would show every badge locked. The stats endpoint returns the same rows,
+     so this fills `allTimeCompletions` and `achievements` from it and the
+     existing engine works unchanged in kid mode.
+     */
+    func loadKidModeStats() async {
+        guard let session = await MainActor.run(body: { kidModeSession }) else { return }
+
+        guard var components = URLComponents(string: "\(SupabaseManager.appBaseURL)/api/kid/stats") else { return }
+        components.queryItems = [
+            URLQueryItem(name: "weekStart", value: SupabaseManager.kidWeekStartString()),
+            URLQueryItem(name: "dayOfWeek", value: String(RewardMath.dayIndex(of: Date()))),
+        ]
+        guard let url = components.url else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(session.kidToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                await MainActor.run {
+                    debugLastError = "Kid stats fetch failed: HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)"
+                }
+                return
+            }
+
+            let decoded = try JSONDecoder().decode(KidStats.self, from: data)
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let calendar = Calendar.current
+            let history = decoded.completions.map { row -> HistoricalCompletion in
+                let date = dateFormatter.date(from: row.week_start).flatMap {
+                    calendar.date(byAdding: .day, value: row.day_of_week, to: $0)
+                }
+                return HistoricalCompletion(choreId: row.chore_id, weekStart: row.week_start, dayOfWeek: row.day_of_week, date: date)
+            }
+            let badges = decoded.earnedBadges.map { row in
+                Achievement(
+                    id: UUID(uuidString: row.id) ?? UUID(),
+                    childId: row.child_id,
+                    badgeType: row.badge_type,
+                    badgeName: row.badge_name,
+                    badgeDescription: row.badge_description,
+                    badgeIcon: row.badge_icon,
+                    earnedAt: SupabaseManager.parseTimestamp(row.earned_at) ?? Date()
+                )
+            }
+
+            await MainActor.run {
+                self.kidStats = decoded
+                self.allTimeCompletions = history
+                self.achievements = badges
+                debugLastError = "Kid stats loaded: streak \(decoded.streak)"
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Kid stats error: \(error.localizedDescription)"
+            }
+        }
     }
 
     /// The family's local Sunday, yyyy-MM-dd — the same convention the web
@@ -693,6 +810,9 @@ class SupabaseManager: ObservableObject {
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 throw URLError(.badServerResponse)
             }
+            // The tick is saved; refresh streak and badges in the background so
+            // the header catches up without holding the checkmark hostage.
+            Task { await loadKidModeStats() }
             return []
         } catch {
             // Revert the optimistic flip.
@@ -2897,13 +3017,15 @@ class SupabaseManager: ObservableObject {
 
         let earned = children.reduce(0.0) { $0 + calculateTodayEarnings(for: $1.id) }
         let dueToday = choresDueToday
+        let topStreak = children.map { calculateWeeklyStats(for: $0.id).streak }.max() ?? 0
 
         WidgetSnapshot(
             completedToday: dueToday.filter { isChoreCompleted($0) }.count,
             totalToday: dueToday.count,
             earnedTodayFormatted: formatMoney(earned),
             children: childProgress,
-            generatedAt: Date()
+            generatedAt: Date(),
+            topStreak: topStreak
         ).publish()
     }
 

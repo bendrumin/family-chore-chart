@@ -1,4 +1,8 @@
 # Ignore build artifacts
+# The iOS app never deploys to Vercel, and its Xcode derived data alone is
+# 40k+ files, which pushes a manual `vercel --prod` over the 15,000-file
+# upload limit ("missing_archive").
+ChoreStar-iOS/
 
 # Ignore development files
 .git/

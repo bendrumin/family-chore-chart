@@ -146,6 +146,16 @@ struct TodayRingWidgetView: View {
         )
     }
 
+    /// Money earned today, with the family's best streak once it is worth
+    /// bragging about. A one-day "streak" is just a day.
+    private var smallCaption: String {
+        if snapshot.totalToday == 0 { return "No chores today" }
+        if let streak = snapshot.topStreak, streak >= 2 {
+            return "\(snapshot.earnedTodayFormatted) · 🔥 \(streak) days"
+        }
+        return "\(snapshot.earnedTodayFormatted) earned"
+    }
+
     private var small: some View {
         VStack(spacing: 8) {
             ZStack {
@@ -166,7 +176,7 @@ struct TodayRingWidgetView: View {
             }
             .frame(maxHeight: .infinity)
 
-            Text(snapshot.totalToday == 0 ? "No chores today" : "\(snapshot.earnedTodayFormatted) earned")
+            Text(smallCaption)
                 .font(.caption2)
                 .fontWeight(.medium)
                 .foregroundStyle(.secondary)

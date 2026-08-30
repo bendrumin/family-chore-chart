@@ -33,9 +33,11 @@ interface KidChoresProps {
   kidToken: string
   /** Child avatar color — tints icons like the parent app. */
   iconTint?: string | null
+  /** Called after a tick or un-tick is saved, so sibling widgets can refetch. */
+  onChanged?: () => void
 }
 
-export function KidChores({ kidToken, iconTint }: KidChoresProps) {
+export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
   const [chores, setChores] = useState<KidChore[] | null>(null)
   const [doneToday, setDoneToday] = useState<Set<string>>(new Set())
   const [pending, setPending] = useState<Set<string>>(new Set())
@@ -73,6 +75,10 @@ export function KidChores({ kidToken, iconTint }: KidChoresProps) {
   const toggle = async (chore: KidChore) => {
     if (pending.has(chore.id)) return
     const wasDone = doneToday.has(chore.id)
+    // Does this tick finish the whole list? Decided up front, before the
+    // optimistic state moves, so the celebration fires exactly once.
+    const doneBefore = (chores ?? []).filter(c => doneToday.has(c.id)).length
+    const finishesDay = !wasDone && chores !== null && doneBefore + 1 === chores.length
 
     // Optimistic flip; revert on failure.
     setDoneToday(prev => {
@@ -104,6 +110,15 @@ export function KidChores({ kidToken, iconTint }: KidChoresProps) {
         }),
       })
       if (!res.ok) throw new Error(String(res.status))
+      if (finishesDay) {
+        // The whole list is done: the day's money is earned and the streak
+        // grows. Bigger than the per-chore sparkle, on purpose.
+        playSound('celebration')
+        import('@/lib/utils/celebrations')
+          .then(({ getCelebrationManager }) => getCelebrationManager().celebrateWithConfetti('perfect'))
+          .catch(() => {})
+      }
+      onChanged?.()
     } catch {
       setDoneToday(prev => {
         const next = new Set(prev)
