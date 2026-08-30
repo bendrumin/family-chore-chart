@@ -227,18 +227,38 @@ struct TodayRingWidgetView: View {
                 } else {
                     ForEach(snapshot.children.prefix(3)) { child in
                         Link(destination: chorestarURL(childId: child.id)) {
-                            HStack(spacing: 8) {
-                                Circle()
-                                    .fill(widgetColor(child.colorName))
-                                    .frame(width: 8, height: 8)
-                                Text(child.name)
-                                    .font(.caption)
-                                    .lineLimit(1)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Text("\(child.done)/\(child.total)")
-                                    .font(.system(.caption, design: .rounded).weight(.semibold))
-                                    .foregroundStyle(.secondary)
+                            VStack(spacing: 3) {
+                                HStack(spacing: 8) {
+                                    Circle()
+                                        .fill(widgetColor(child.colorName))
+                                        .frame(width: 8, height: 8)
+                                    Text(child.name)
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    if let emoji = child.goalEmoji, let pct = child.goalPercent {
+                                        Text("\(emoji) \(pct)%")
+                                            .font(.system(.caption2, design: .rounded).weight(.semibold))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Text("\(child.done)/\(child.total)")
+                                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                                // The goal bar: how close the kid is to the thing
+                                // they are saving for (2.0).
+                                if let pct = child.goalPercent {
+                                    GeometryReader { geo in
+                                        ZStack(alignment: .leading) {
+                                            Capsule().fill(accent.opacity(0.15))
+                                            Capsule()
+                                                .fill(pct >= 100 ? Color.orange : accent)
+                                                .frame(width: geo.size.width * CGFloat(min(max(pct, 0), 100)) / 100)
+                                        }
+                                    }
+                                    .frame(height: 4)
+                                }
                             }
                         }
                     }

@@ -39,6 +39,8 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   // deliberately does NOT reset on Sunday — that reset is what used to make
   // unpaid allowance disappear.
   const [balance, setBalance] = useState<{ owedCents: number; paidCents: number } | null>(null)
+  // The child's active goal (2.0), from the same balance call.
+  const [goal, setGoal] = useState<{ id: string; title: string; emoji: string | null; targetCents: number; progressCents: number; percent: number; reached: boolean } | null>(null)
   const [balanceUnavailable, setBalanceUnavailable] = useState(false)
   const [payingOut, setPayingOut] = useState(false)
 
@@ -48,6 +50,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       if (!res.ok) throw new Error(String(res.status))
       const data = await res.json()
       setBalance({ owedCents: data.owedCents ?? 0, paidCents: data.paidCents ?? 0 })
+      setGoal(data.goal ?? null)
       setBalanceUnavailable(false)
     } catch {
       // Most likely migration 011 hasn't been applied yet — hide the section
@@ -58,19 +61,24 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
 
   useEffect(() => { loadBalance() }, [loadBalance, stats.totalEarnings])
 
-  const handlePayOut = async () => {
+  const handlePayOut = async (goalId?: string) => {
     if (!balance || balance.owedCents <= 0) return
     setPayingOut(true)
     try {
       const res = await fetch('/api/allowance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ childId: child.id }),
+        body: JSON.stringify(goalId ? { childId: child.id, goalId } : { childId: child.id }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || 'failed')
       playSound('success')
-      toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)}`)
+      if (goalId && goal) {
+        getCelebrationManager().celebrateWithConfetti('epic')
+        toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)} for ${goal.emoji ?? ''} ${goal.title}. Goal reached!`)
+      } else {
+        toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)}`)
+      }
       await loadBalance()
     } catch {
       toast.error('Could not record the payout')
@@ -383,12 +391,45 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={handlePayOut}
+              onClick={() => handlePayOut()}
               disabled={payingOut || balance.owedCents <= 0}
               className="font-semibold"
             >
               {payingOut ? 'Recording…' : 'Paid Out'}
             </Button>
+          </div>
+        )}
+
+        {/* The goal the kid is saving for (2.0). Progress is the unspent balance. */}
+        {!balanceUnavailable && balance && goal && (
+          <div
+            className="p-3.5 rounded-xl border space-y-2"
+            style={{ background: 'var(--bg-secondary)', borderColor: 'hsl(var(--border))' }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xl" aria-hidden>{goal.emoji ?? '🎯'}</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                  Saving for {goal.title}
+                </div>
+                <div className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                  ${(goal.progressCents / 100).toFixed(2)} of ${(goal.targetCents / 100).toFixed(2)}
+                  {goal.reached ? ' · reached!' : ''}
+                </div>
+              </div>
+              <Button
+                variant={goal.reached ? 'gradient' : 'outline'}
+                size="sm"
+                onClick={() => handlePayOut(goal.id)}
+                disabled={payingOut || balance.owedCents <= 0}
+                className="font-semibold shrink-0"
+              >
+                {goal.reached ? 'Pay out the goal' : 'Pay toward goal'}
+              </Button>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--card-bg)' }}>
+              <div className={`h-full rounded-full ${goal.reached ? 'bg-amber-500' : 'accent-fill'}`} style={{ width: `${goal.percent}%` }} />
+            </div>
           </div>
         )}
 

@@ -22,6 +22,12 @@ class SupabaseManager: ObservableObject {
     @Published var pendingCompletions: [(choreId: UUID, dayOfWeek: Int, id: UUID)] = []
     /// The parent's "Needs your OK" list, from /api/chores/pending.
     @Published var pendingApprovals: [PendingApproval] = []
+    /// Store requests waiting for a parent, from the same endpoint (2.0).
+    @Published var pendingRedemptions: [PendingRedemption] = []
+    /// Each child's wallet (balance, goal, store), from /api/kid/wallet (2.0).
+    @Published var wallets: [UUID: KidWallet] = [:]
+    /// The family's reward store items, for the parent's Settings screen (2.0).
+    @Published var rewardItems: [RewardItem] = []
     @Published var achievements: [Achievement] = []
     @Published var familySettings: FamilySettings?
     @Published var isChildSession = false
@@ -502,6 +508,7 @@ class SupabaseManager: ObservableObject {
             await loadKidModeRoutines()
             await loadKidModeChores()
             await loadKidModeStats()
+            await loadWallet(for: session.childId)
             return nil
         }
     }
@@ -529,6 +536,7 @@ class SupabaseManager: ObservableObject {
         await loadKidModeRoutines()
         await loadKidModeChores()
         await loadKidModeStats()
+        await loadWallet(for: session.childId)
         return true
     }
 
@@ -606,6 +614,65 @@ class SupabaseManager: ObservableObject {
         let chore_id: UUID
         let day_of_week: Int?
         let status: String?
+    }
+
+    /// A store request waiting for review (GET /api/chores/pending, `redemptions`).
+    struct PendingRedemption: Decodable, Identifiable {
+        let id: UUID
+        let childId: UUID
+        let childName: String
+        let childColor: String?
+        let itemId: UUID
+        let itemTitle: String
+        let itemEmoji: String?
+        let priceCents: Int
+        let requestedAt: String?
+    }
+
+    /// The kid's wallet (GET /api/kid/wallet): balance, goal, store, limits.
+    struct KidWallet: Decodable {
+        struct Goal: Decodable, Identifiable {
+            let id: UUID
+            let title: String
+            let emoji: String?
+            let targetCents: Int
+            let progressCents: Int
+            let percent: Int
+            let reached: Bool
+            let status: String
+        }
+        struct StoreItem: Decodable, Identifiable {
+            let id: UUID
+            let title: String
+            let emoji: String?
+            let priceCents: Int
+            let affordable: Bool
+            let shortByCents: Int
+            let pendingRequestId: UUID?
+        }
+        struct Limits: Decodable {
+            let premium: Bool
+            let goalLimit: Int?
+            let storeItemLimit: Int?
+        }
+        let childId: UUID
+        let owedCents: Int
+        let currencyCode: String?
+        let goal: Goal?
+        let reachedGoals: [Goal]
+        let store: [StoreItem]
+        let limits: Limits
+    }
+
+    /// A reward_items row (the family's store). Written through RLS as a parent.
+    struct RewardItem: Codable, Identifiable {
+        let id: UUID
+        let user_id: UUID
+        var title: String
+        var emoji: String?
+        var price_cents: Int
+        var is_active: Bool
+        var sort_order: Int
     }
 
     /// One row of the parent's approval tray (GET /api/chores/pending).
@@ -1374,12 +1441,18 @@ class SupabaseManager: ObservableObject {
               let url = URL(string: "\(SupabaseManager.appBaseURL)/api/chores/pending") else { return }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        struct Response: Decodable { let items: [PendingApproval] }
+        struct Response: Decodable {
+            let items: [PendingApproval]
+            let redemptions: [PendingRedemption]?
+        }
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else { return }
             let decoded = try JSONDecoder().decode(Response.self, from: data)
-            await MainActor.run { self.pendingApprovals = decoded.items }
+            await MainActor.run {
+                self.pendingApprovals = decoded.items
+                self.pendingRedemptions = decoded.redemptions ?? []
+            }
         } catch {
             await MainActor.run { debugLastError = "Pending approvals error: \(error.localizedDescription)" }
         }
@@ -1483,6 +1556,277 @@ class SupabaseManager: ObservableObject {
         }())
         let resized = renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: target)) }
         return resized.jpegData(compressionQuality: 0.82)
+    }
+
+    // MARK: - Goals & Reward Store (2.0)
+
+    /// A kid-facing API call with whichever credential this device holds: the
+    /// kid session token on a kid's device, or the parent's JWT (plus the child
+    /// id) in kid mode on a parent's device. Returns (data, status).
+    private func kidAPI(
+        path: String,
+        method: String,
+        childId: UUID,
+        body: [String: Any]? = nil
+    ) async -> (Data, Int)? {
+        let session = await MainActor.run { kidModeSession }
+        var token: String? = session?.kidToken
+        if token == nil { token = await parentBearerToken() }
+        guard let token else { return nil }
+
+        var components = URLComponents(string: "\(SupabaseManager.appBaseURL)\(path)")
+        if session == nil && method == "GET" {
+            components?.queryItems = [URLQueryItem(name: "childId", value: childId.uuidString.lowercased())]
+        }
+        guard let url = components?.url else { return nil }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if var body, method != "GET" {
+            if session == nil { body["childId"] = childId.uuidString.lowercased() }
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        }
+        guard let (data, response) = try? await URLSession.shared.data(for: request) else { return nil }
+        return (data, (response as? HTTPURLResponse)?.statusCode ?? 0)
+    }
+
+    /// Balance, goal, and store for one child.
+    func loadWallet(for childId: UUID) async {
+        guard let (data, status) = await kidAPI(path: "/api/kid/wallet", method: "GET", childId: childId),
+              status == 200,
+              let wallet = try? JSONDecoder().decode(KidWallet.self, from: data) else { return }
+        await MainActor.run { wallets[childId] = wallet }
+    }
+
+    /// Everyone's wallets, for the parent Home and the widget.
+    func loadAllWallets() async {
+        let ids = await MainActor.run { children.map(\.id) }
+        for id in ids { await loadWallet(for: id) }
+        await MainActor.run { publishWidgetSnapshot() }
+    }
+
+    private func walletErrorMessage(_ data: Data, status: Int, fallback: String) -> String {
+        if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            if let message = obj["message"] as? String { return message }
+            if let code = obj["error"] as? String {
+                switch code {
+                case "goal_limit": return "One goal at a time on the free plan. Reach it or change it first."
+                case "not_enough":
+                    if let short = obj["shortByCents"] as? Int {
+                        return "You need \(formatMoney(Double(short) / 100.0)) more for that one."
+                    }
+                    return "Not quite enough yet."
+                default: break
+                }
+            }
+        }
+        return fallback
+    }
+
+    /// Kid (or parent, in kid mode) picks a goal. nil on success, else a message.
+    func createGoal(childId: UUID, title: String, emoji: String?, targetCents: Int) async -> String? {
+        var body: [String: Any] = ["title": title, "targetCents": targetCents]
+        if let emoji { body["emoji"] = emoji }
+        guard let (data, status) = await kidAPI(path: "/api/kid/goals", method: "POST", childId: childId, body: body) else {
+            return "Could not save the goal."
+        }
+        guard status == 200 else { return walletErrorMessage(data, status: status, fallback: "Could not save the goal.") }
+        await loadWallet(for: childId)
+        return nil
+    }
+
+    func updateGoal(childId: UUID, goalId: UUID, title: String, emoji: String?, targetCents: Int) async -> String? {
+        var body: [String: Any] = ["goalId": goalId.uuidString.lowercased(), "title": title, "targetCents": targetCents]
+        if let emoji { body["emoji"] = emoji }
+        guard let (data, status) = await kidAPI(path: "/api/kid/goals", method: "PATCH", childId: childId, body: body) else {
+            return "Could not save the goal."
+        }
+        guard status == 200 else { return walletErrorMessage(data, status: status, fallback: "Could not save the goal.") }
+        await loadWallet(for: childId)
+        return nil
+    }
+
+    func archiveGoal(childId: UUID, goalId: UUID) async -> String? {
+        let body: [String: Any] = ["goalId": goalId.uuidString.lowercased(), "action": "archive"]
+        guard let (_, status) = await kidAPI(path: "/api/kid/goals", method: "PATCH", childId: childId, body: body),
+              status == 200 else { return "Could not remove the goal." }
+        await loadWallet(for: childId)
+        return nil
+    }
+
+    /// Kid asks for a store item. nil on success, else a message.
+    func requestReward(childId: UUID, itemId: UUID) async -> String? {
+        guard let (data, status) = await kidAPI(path: "/api/kid/store/redeem", method: "POST", childId: childId,
+                                                body: ["itemId": itemId.uuidString.lowercased()]) else {
+            return "Could not send that. Try again."
+        }
+        guard status == 200 else { return walletErrorMessage(data, status: status, fallback: "Could not send that. Try again.") }
+        await loadWallet(for: childId)
+        return nil
+    }
+
+    func cancelRewardRequest(childId: UUID, redemptionId: UUID) async {
+        _ = await kidAPI(path: "/api/kid/store/redeem", method: "POST", childId: childId,
+                         body: ["redemptionId": redemptionId.uuidString.lowercased(), "action": "cancel"])
+        await loadWallet(for: childId)
+    }
+
+    /// Parent reviews a store request. Approve spends the money server-side.
+    @discardableResult
+    func reviewRedemption(id: UUID, action: String) async -> String? {
+        await MainActor.run {
+            objectWillChange.send()
+            pendingRedemptions.removeAll { $0.id == id }
+        }
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/rewards/redemptions") else { return "Not signed in." }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["redemptionId": id.uuidString.lowercased(), "action": action])
+        let result: String?
+        if let (data, response) = try? await URLSession.shared.data(for: request) {
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            result = status == 200 ? nil : walletErrorMessage(data, status: status, fallback: "Could not update that request.")
+        } else {
+            result = "Could not update that request."
+        }
+        await loadPendingApprovals()
+        await loadAllWallets()
+        return result
+    }
+
+    /// Parent records a payout: everything owed, or toward a goal (its target
+    /// or what is owed, whichever is less; the goal is then reached).
+    /// Returns the cents paid, or nil with a message.
+    func payOut(childId: UUID, goalId: UUID? = nil) async -> (paidCents: Int?, error: String?) {
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/allowance") else { return (nil, "Not signed in.") }
+        var body: [String: Any] = ["childId": childId.uuidString.lowercased()]
+        if let goalId { body["goalId"] = goalId.uuidString.lowercased() }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        guard let (data, response) = try? await URLSession.shared.data(for: request) else {
+            return (nil, "Could not record the payout.")
+        }
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard status == 200,
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let paid = obj["paidCents"] as? Int else {
+            return (nil, walletErrorMessage(data, status: status, fallback: "Could not record the payout."))
+        }
+        await loadWallet(for: childId)
+        await MainActor.run { publishWidgetSnapshot() }
+        return (paid, nil)
+    }
+
+    // Store management (parent, through RLS)
+
+    func loadRewardItems() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+        do {
+            let rows: [RewardItem] = try await client
+                .from("reward_items")
+                .select()
+                .eq("user_id", value: "\(uid)")
+                .eq("is_active", value: true)
+                .order("sort_order")
+                .order("price_cents")
+                .execute()
+                .value
+            await MainActor.run { rewardItems = rows }
+        } catch {
+            await MainActor.run { debugLastError = "Reward items error: \(error.localizedDescription)" }
+        }
+        #endif
+    }
+
+    /// Free plan lists three rewards; Premium removes the limit (web parity).
+    var rewardItemLimit: Int { isPremium ? Int.max : 3 }
+
+    func addRewardItem(title: String, emoji: String?, priceCents: Int) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return "Not signed in." }
+        let count = await MainActor.run { rewardItems.count }
+        guard count < rewardItemLimit else { return "The free plan lists 3 rewards. Premium removes the limit." }
+        struct NewItem: Encodable {
+            let user_id: String
+            let title: String
+            let emoji: String?
+            let price_cents: Int
+            let sort_order: Int
+        }
+        do {
+            try await client
+                .from("reward_items")
+                .insert(NewItem(user_id: "\(uid)", title: title, emoji: emoji, price_cents: priceCents, sort_order: count))
+                .execute()
+            await loadRewardItems()
+            return nil
+        } catch {
+            return "Could not add that reward."
+        }
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
+    func updateRewardItemPrice(id: UUID, priceCents: Int) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        _ = try? await client
+            .from("reward_items")
+            .update(["price_cents": priceCents])
+            .eq("id", value: id.uuidString)
+            .execute()
+        await loadRewardItems()
+        #endif
+    }
+
+    /// Soft delete: payouts reference items, so history keeps the row.
+    func removeRewardItem(id: UUID) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        _ = try? await client
+            .from("reward_items")
+            .update(["is_active": false])
+            .eq("id", value: id.uuidString)
+            .execute()
+        await loadRewardItems()
+        #endif
+    }
+
+    /// The same starter set the web offers (lib/constants/rewards.ts).
+    static let starterRewards: [(emoji: String, title: String, priceCents: Int)] = [
+        ("📱", "30 minutes of screen time", 200),
+        ("🌙", "Stay up 30 minutes late", 300),
+        ("🎬", "Pick the family movie", 400),
+        ("🍕", "Pick Friday dinner", 500),
+        ("🍦", "Ice cream trip", 500),
+        ("🎲", "Family game night, your pick", 400),
+    ]
+
+    func addStarterRewards() async -> Int {
+        var added = 0
+        for item in SupabaseManager.starterRewards {
+            let exists = await MainActor.run { rewardItems.contains { $0.title == item.title } }
+            if exists { continue }
+            let count = await MainActor.run { rewardItems.count }
+            if count >= rewardItemLimit { break }
+            if await addRewardItem(title: item.title, emoji: item.emoji, priceCents: item.priceCents) == nil { added += 1 }
+        }
+        return added
     }
 
     // MARK: - AI Chore Suggestions
@@ -2045,6 +2389,7 @@ class SupabaseManager: ObservableObject {
         
         await loadCurrentDayCompletions()
         await loadAchievements()
+        await loadAllWallets()
         await loadFamilySettings()
         await loadProfile()
         await loadRoutines()
@@ -3341,12 +3686,15 @@ class SupabaseManager: ObservableObject {
         let childProgress = children.map { child -> WidgetSnapshot.ChildProgress in
             let childChores = dueChores(for: child.id)
             let done = childChores.filter { isChoreCompleted($0) }.count
+            let goal = wallets[child.id]?.goal
             return WidgetSnapshot.ChildProgress(
                 id: child.id,
                 name: child.name,
                 colorName: child.avatarColor,
                 done: done,
-                total: childChores.count
+                total: childChores.count,
+                goalEmoji: goal?.emoji,
+                goalPercent: goal?.percent
             )
         }
 

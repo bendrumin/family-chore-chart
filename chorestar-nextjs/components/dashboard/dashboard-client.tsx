@@ -503,7 +503,7 @@ function DashboardContent({
 
             {/* Ticks waiting for a parent's OK (approval mode / photo chores).
                 Renders nothing when there is nothing to review. */}
-            <ApprovalTray />
+            <ApprovalTray currencyCode={settings?.currency_code} />
 
             {/* Main — family overview OR selected-child tabs */}
             <div>

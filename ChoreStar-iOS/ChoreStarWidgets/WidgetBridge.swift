@@ -18,6 +18,9 @@ struct WidgetSnapshot: Codable {
         let colorName: String
         let done: Int
         let total: Int
+        /// The child's active goal (2.0). Optional so older snapshots decode.
+        var goalEmoji: String? = nil
+        var goalPercent: Int? = nil
     }
 
     let completedToday: Int

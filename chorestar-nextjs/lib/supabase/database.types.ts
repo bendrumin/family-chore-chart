@@ -334,6 +334,154 @@ export interface Database {
         }
         Relationships: []
       }
+      allowance_payouts: {
+        Row: {
+          id: string
+          child_id: string
+          amount_cents: number
+          note: string | null
+          paid_at: string
+          created_at: string
+          /** Migration 017: what the payout was for. */
+          goal_id: string | null
+          reward_item_id: string | null
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          amount_cents: number
+          note?: string | null
+          paid_at?: string
+          created_at?: string
+          goal_id?: string | null
+          reward_item_id?: string | null
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          amount_cents?: number
+          note?: string | null
+          paid_at?: string
+          created_at?: string
+          goal_id?: string | null
+          reward_item_id?: string | null
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          id: string
+          child_id: string
+          title: string
+          emoji: string | null
+          target_cents: number
+          status: string
+          reached_at: string | null
+          notified_at: string | null
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          title: string
+          emoji?: string | null
+          target_cents: number
+          status?: string
+          reached_at?: string | null
+          notified_at?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          title?: string
+          emoji?: string | null
+          target_cents?: number
+          status?: string
+          reached_at?: string | null
+          notified_at?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_items: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          emoji: string | null
+          price_cents: number
+          is_active: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          emoji?: string | null
+          price_cents: number
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          emoji?: string | null
+          price_cents?: number
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          id: string
+          child_id: string
+          reward_item_id: string
+          price_cents: number
+          status: string
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          payout_id: string | null
+        }
+        Insert: {
+          id?: string
+          child_id: string
+          reward_item_id: string
+          price_cents: number
+          status?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          payout_id?: string | null
+        }
+        Update: {
+          id?: string
+          child_id?: string
+          reward_item_id?: string
+          price_cents?: number
+          status?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          payout_id?: string | null
+        }
+        Relationships: []
+      }
       achievement_badges: {
         Row: {
           id: string

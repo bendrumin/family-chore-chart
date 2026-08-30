@@ -234,6 +234,16 @@ struct SettingsView: View {
                             Text("Rewards & Currency")
                         }
                     }
+
+                    NavigationLink {
+                        RewardStoreSettingsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "bag.fill")
+                                .foregroundColor(.choreStarPurple)
+                            Text("Reward Store")
+                        }
+                    }
                 }
 
                 Section {
@@ -1044,3 +1054,173 @@ struct FamilyRewardsSettingsView: View {
     }
 }
 
+// MARK: - Reward Store (2.0)
+
+/// The family's menu of things money cannot buy. Mirrors the web's Settings ›
+/// Rewards tab: list, price edit, remove, add, and the starter set.
+struct RewardStoreSettingsView: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @State private var newTitle = ""
+    @State private var newEmoji = "🎁"
+    @State private var newPrice = "2.00"
+    @State private var statusMessage: String?
+    @State private var busy = false
+
+    private let emojis = ["🎁", "📱", "🌙", "🎬", "🍕", "🍦", "🎲", "🧸", "🎮", "🏊", "🚲", "📚", "⭐"]
+
+    private var atLimit: Bool { manager.rewardItems.count >= manager.rewardItemLimit }
+
+    var body: some View {
+        Form {
+            Section {
+                if manager.rewardItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("No rewards yet. Start with a few families like, then make them yours.")
+                            .font(.subheadline)
+                            .foregroundColor(.choreStarTextSecondary)
+                        Button {
+                            Task {
+                                busy = true
+                                let n = await manager.addStarterRewards()
+                                await MainActor.run { busy = false; statusMessage = n > 0 ? "Added \(n) starter rewards." : "Nothing new to add." }
+                            }
+                        } label: {
+                            Label("Add the starter set", systemImage: "sparkles")
+                                .fontWeight(.semibold)
+                        }
+                        .disabled(busy)
+                    }
+                } else {
+                    ForEach(manager.rewardItems) { item in
+                        RewardItemRow(item: item)
+                    }
+                    .onDelete { offsets in
+                        let ids = offsets.map { manager.rewardItems[$0].id }
+                        Task { for id in ids { await manager.removeRewardItem(id: id) } }
+                    }
+                }
+            } header: {
+                Text("Rewards (\(manager.rewardItems.count)\(manager.isPremium ? "" : " of \(manager.rewardItemLimit)"))")
+            } footer: {
+                Text("Kids ask from their dashboard; you say yes or no from Needs Your OK on Home, and the price comes off their balance. Swipe to remove.")
+            }
+
+            Section {
+                if atLimit {
+                    Label("The free plan lists 3 rewards. Premium removes the limit.", systemImage: "lock.fill")
+                        .font(.subheadline)
+                        .foregroundColor(.choreStarTextSecondary)
+                } else {
+                    Picker("Picture", selection: $newEmoji) {
+                        ForEach(emojis, id: \.self) { Text($0).tag($0) }
+                    }
+                    TextField("30 minutes of screen time", text: $newTitle)
+                    HStack {
+                        Text("Price")
+                        Spacer()
+                        Text(manager.currencySymbol).foregroundColor(.choreStarTextSecondary)
+                        TextField("2.00", text: $newPrice)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                    }
+                    Button {
+                        Task { await add() }
+                    } label: {
+                        HStack {
+                            if busy { ProgressView() }
+                            Text("Add reward").fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .disabled(busy || newTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                    if !manager.rewardItems.isEmpty {
+                        Button("Add more from the starter set") {
+                            Task {
+                                busy = true
+                                let n = await manager.addStarterRewards()
+                                await MainActor.run { busy = false; statusMessage = n > 0 ? "Added \(n) starter rewards." : "Nothing new to add." }
+                            }
+                        }
+                        .disabled(busy)
+                    }
+                }
+            } header: {
+                Text("Add a reward")
+            }
+
+            if let statusMessage {
+                Section {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+            }
+        }
+        .navigationTitle("Reward Store")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await manager.loadRewardItems() }
+    }
+
+    private func add() async {
+        let cleaned = newPrice.filter { "0123456789.".contains($0) }
+        guard let dollars = Double(cleaned), dollars > 0 else {
+            statusMessage = "Give the reward a price."
+            return
+        }
+        busy = true
+        let err = await manager.addRewardItem(
+            title: newTitle.trimmingCharacters(in: .whitespaces),
+            emoji: newEmoji,
+            priceCents: Int((dollars * 100).rounded())
+        )
+        await MainActor.run {
+            busy = false
+            if let err { statusMessage = err } else {
+                statusMessage = "Added \(newEmoji) \(newTitle)."
+                newTitle = ""
+                Haptics.success()
+            }
+        }
+    }
+}
+
+struct RewardItemRow: View {
+    let item: SupabaseManager.RewardItem
+    @EnvironmentObject var manager: SupabaseManager
+    @State private var priceText: String = ""
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(item.emoji ?? "🎁").font(.title2)
+            Text(item.title)
+                .lineLimit(2)
+            Spacer()
+            Text(manager.currencySymbol).foregroundColor(.choreStarTextSecondary)
+            TextField("", text: $priceText)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 70)
+                .onAppear { priceText = String(format: "%.2f", Double(item.price_cents) / 100.0) }
+                .onSubmit { commit() }
+                .accessibilityLabel("Price for \(item.title)")
+        }
+        .onChange(of: priceText) { _, _ in }
+        .submitLabel(.done)
+        .task(id: priceText) {
+            // Debounced commit: a parent typing a new price should not fire a
+            // write on every keystroke.
+            try? await Task.sleep(nanoseconds: 900_000_000)
+            commit()
+        }
+    }
+
+    private func commit() {
+        let cleaned = priceText.filter { "0123456789.".contains($0) }
+        guard let dollars = Double(cleaned), dollars > 0 else { return }
+        let cents = Int((dollars * 100).rounded())
+        guard cents != item.price_cents else { return }
+        Task { await manager.updateRewardItemPrice(id: item.id, priceCents: cents) }
+    }
+}

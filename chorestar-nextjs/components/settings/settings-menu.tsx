@@ -8,11 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Settings, Users, CheckSquare, Palette, BarChart3, FileDown, CreditCard, UserCog, LogOut, Loader2, ChevronRight } from 'lucide-react'
+import { Settings, Users, CheckSquare, Gift, Palette, BarChart3, FileDown, CreditCard, UserCog, LogOut, Loader2, ChevronRight } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
 import { ChoresTab } from '@/components/settings/tabs/chores-tab'
+import { RewardsTab } from '@/components/settings/tabs/rewards-tab'
 import { AppearanceTab } from '@/components/settings/tabs/appearance-tab'
 import { DownloadsTab } from '@/components/settings/tabs/downloads-tab'
 import { BillingTab } from '@/components/settings/tabs/billing-tab'
@@ -20,11 +21,12 @@ import { AccountTab } from '@/components/settings/tabs/account-tab'
 
 const InsightsTab = lazy(() => import('@/components/settings/tabs/insights-tab').then(m => ({ default: m.InsightsTab })))
 
-type SettingsTab = 'family' | 'chores' | 'appearance' | 'insights' | 'downloads' | 'billing' | 'account'
+type SettingsTab = 'family' | 'chores' | 'rewards' | 'appearance' | 'insights' | 'downloads' | 'billing' | 'account'
 
 const TABS = [
   { id: 'family' as SettingsTab, label: 'Family', icon: Users },
   { id: 'chores' as SettingsTab, label: 'Chores', icon: CheckSquare },
+  { id: 'rewards' as SettingsTab, label: 'Rewards', icon: Gift },
   { id: 'appearance' as SettingsTab, label: 'Appearance', icon: Palette },
   { id: 'insights' as SettingsTab, label: 'Insights', icon: BarChart3 },
   { id: 'downloads' as SettingsTab, label: 'Downloads', icon: FileDown },
@@ -127,6 +129,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuPr
             >
               {activeTab === 'family' && <FamilyTab onClose={() => setIsOpen(false)} />}
               {activeTab === 'chores' && <ChoresTab />}
+              {activeTab === 'rewards' && <RewardsTab />}
               {activeTab === 'appearance' && <AppearanceTab />}
               {activeTab === 'insights' && (
                 <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>}>

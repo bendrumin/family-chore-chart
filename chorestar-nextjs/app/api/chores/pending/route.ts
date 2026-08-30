@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       .in('user_id', families)
     const childList = children ?? []
     if (childList.length === 0) {
-      return NextResponse.json({ items: [] }, { headers: { 'Cache-Control': 'no-store' } })
+      return NextResponse.json({ items: [], redemptions: [] }, { headers: { 'Cache-Control': 'no-store' } })
     }
 
     const { data: chores } = await admin
@@ -35,17 +35,46 @@ export async function GET(request: Request) {
       .select('id, name, icon, child_id, reward_cents')
       .in('child_id', childList.map(c => c.id))
     const choreList = chores ?? []
-    if (choreList.length === 0) {
-      return NextResponse.json({ items: [] }, { headers: { 'Cache-Control': 'no-store' } })
-    }
 
-    const { data: pending } = await admin
+    // Store requests waiting for review ride along in the same tray.
+    const { data: redemptionRows } = await admin
+      .from('reward_redemptions')
+      .select('id, child_id, reward_item_id, price_cents, requested_at')
+      .in('child_id', childList.map(c => c.id))
+      .eq('status', 'pending')
+      .order('requested_at', { ascending: false })
+      .limit(50)
+    const itemIds = [...new Set((redemptionRows ?? []).map(r => r.reward_item_id))]
+    const { data: itemRows } = itemIds.length
+      ? await admin.from('reward_items').select('id, title, emoji').in('id', itemIds)
+      : { data: [] as Array<{ id: string; title: string; emoji: string | null }> }
+    const itemById = new Map((itemRows ?? []).map(i => [i.id, i]))
+    const childForRedemption = new Map(childList.map(c => [c.id, c]))
+    const redemptions = (redemptionRows ?? []).map(r => {
+      const item = itemById.get(r.reward_item_id)
+      const child = childForRedemption.get(r.child_id)
+      return {
+        id: r.id,
+        childId: r.child_id,
+        childName: child?.name ?? 'Kid',
+        childColor: child?.avatar_color ?? null,
+        itemId: r.reward_item_id,
+        itemTitle: item?.title ?? 'Reward',
+        itemEmoji: item?.emoji ?? null,
+        priceCents: r.price_cents,
+        requestedAt: r.requested_at,
+      }
+    })
+
+    const { data: pending } = choreList.length
+      ? await admin
       .from('chore_completions')
       .select('id, chore_id, day_of_week, week_start, completed_at, proof_path')
       .in('chore_id', choreList.map(c => c.id))
       .eq('status', 'pending')
       .order('completed_at', { ascending: false })
       .limit(100)
+      : { data: [] as Array<{ id: string; chore_id: string; day_of_week: number; week_start: string; completed_at: string; proof_path: string | null }> }
 
     const choreById = new Map(choreList.map(c => [c.id, c]))
     const childById = new Map(childList.map(c => [c.id, c]))
@@ -73,7 +102,7 @@ export async function GET(request: Request) {
       })
     )
 
-    return NextResponse.json({ items }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ items, redemptions }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('[chores/pending]', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

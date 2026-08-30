@@ -520,7 +520,7 @@ struct ApprovalTrayView: View {
 
     var body: some View {
         Group {
-            if !manager.pendingApprovals.isEmpty {
+            if !manager.pendingApprovals.isEmpty || !manager.pendingRedemptions.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "clock.badge.checkmark.fill")
@@ -529,9 +529,71 @@ struct ApprovalTrayView: View {
                             .font(.headline)
                             .foregroundColor(.choreStarTextPrimary)
                         Spacer()
-                        Text("\(manager.pendingApprovals.count)")
+                        Text("\(manager.pendingApprovals.count + manager.pendingRedemptions.count)")
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.choreStarTextSecondary)
+                    }
+
+                    // Store requests (2.0): Yes spends the money, Not now declines.
+                    ForEach(manager.pendingRedemptions) { r in
+                        HStack(spacing: 12) {
+                            Text(r.itemEmoji ?? "🎁")
+                                .font(.system(size: 28))
+                                .frame(width: 52, height: 52)
+                                .background(Color.choreStarBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(r.itemTitle)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(.choreStarTextPrimary)
+                                    .lineLimit(1)
+                                HStack(spacing: 4) {
+                                    Text("\(r.childName) wants this")
+                                        .foregroundColor(Color.fromString(r.childColor ?? ""))
+                                    Text("· \(manager.formatMoney(Double(r.priceCents) / 100.0))")
+                                        .foregroundColor(.choreStarTextSecondary)
+                                }
+                                .font(.caption.weight(.medium))
+                            }
+
+                            Spacer(minLength: 4)
+
+                            Button {
+                                Haptics.light()
+                                Task { await manager.reviewRedemption(id: r.id, action: "reject") }
+                            } label: {
+                                Text("Not now")
+                                    .font(.subheadline.weight(.semibold))
+                                    .padding(.horizontal, 10)
+                                    .frame(height: 40)
+                                    .background(Color.choreStarTextSecondary.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                Haptics.success()
+                                Task {
+                                    if let err = await manager.reviewRedemption(id: r.id, action: "approve") {
+                                        await MainActor.run { manager.debugLastError = err }
+                                    }
+                                }
+                            } label: {
+                                Text("Yes")
+                                    .font(.subheadline.weight(.bold))
+                                    .padding(.horizontal, 14)
+                                    .frame(height: 40)
+                                    .background(Color.choreStarSuccess)
+                                    .foregroundColor(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Yes to \(r.itemTitle) for \(r.childName)")
+                        }
+                        .padding(10)
+                        .background(Color.choreStarBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
 
                     ForEach(manager.pendingApprovals) { item in

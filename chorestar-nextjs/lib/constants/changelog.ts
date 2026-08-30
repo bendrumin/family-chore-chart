@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.0'
+export const LATEST_CHANGELOG_VERSION = '2026.9.1'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.1': {
+    version: '2026.9.1',
+    date: 'September 2026',
+    title: 'Somewhere for the Money to Go',
+    features: [
+      {
+        icon: '🎯',
+        title: 'Goals',
+        description: 'Kids pick what they are saving for, right from their dashboard, and watch the bar fill as their unspent allowance grows. When it is full, you get a nudge to pay it out and the goal goes on their trophy shelf. One active goal per kid on the free plan, unlimited on Premium. You can set or change goals in Settings › Rewards.',
+      },
+      {
+        icon: '🛍️',
+        title: 'The Reward Store',
+        description: 'Price the things money cannot buy: 30 minutes of screen time, picking Friday dinner, staying up late. Kids see what they can afford and ask with one tap; you say yes or no from the Needs your OK tray, and the price comes off their balance. Start with our starter set, then make it yours. Three rewards on the free plan, unlimited on Premium.',
+      },
+    ],
+  },
   '2026.9.0': {
     version: '2026.9.0',
     date: 'September 2026',

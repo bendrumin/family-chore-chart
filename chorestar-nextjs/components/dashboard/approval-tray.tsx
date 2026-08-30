@@ -6,6 +6,7 @@ import { Check, Undo2, Camera, Clock } from 'lucide-react'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
 import { toast } from 'sonner'
+import { formatMoney } from '@/lib/constants/currencies'
 
 /**
  * "Needs your OK": every chore a kid checked off that is waiting for a parent
@@ -33,6 +34,35 @@ export interface PendingItem {
   photoUrl: string | null
 }
 
+export interface PendingRedemption {
+  id: string
+  childId: string
+  childName: string
+  childColor: string | null
+  itemId: string
+  itemTitle: string
+  itemEmoji: string | null
+  priceCents: number
+  requestedAt: string
+}
+
+export async function reviewRedemption(
+  redemptionId: string,
+  action: 'approve' | 'reject'
+): Promise<{ ok: boolean; notEnough?: boolean }> {
+  try {
+    const res = await fetch('/api/rewards/redemptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ redemptionId, action }),
+    })
+    if (res.status === 409) return { ok: false, notEnough: true }
+    return { ok: res.ok }
+  } catch {
+    return { ok: false }
+  }
+}
+
 export async function reviewCompletion(completionId: string, action: 'approve' | 'reject'): Promise<boolean> {
   try {
     const res = await fetch('/api/chores/approve', {
@@ -46,8 +76,9 @@ export async function reviewCompletion(completionId: string, action: 'approve' |
   }
 }
 
-export function ApprovalTray({ onChanged }: { onChanged?: () => void }) {
+export function ApprovalTray({ onChanged, currencyCode }: { onChanged?: () => void; currencyCode?: string | null }) {
   const [items, setItems] = useState<PendingItem[] | null>(null)
+  const [redemptions, setRedemptions] = useState<PendingRedemption[]>([])
   const [busy, setBusy] = useState<Set<string>>(new Set())
   const [lightbox, setLightbox] = useState<PendingItem | null>(null)
   const loadRef = useRef<() => Promise<void>>(async () => {})
@@ -58,9 +89,11 @@ export function ApprovalTray({ onChanged }: { onChanged?: () => void }) {
       if (!res.ok) throw new Error(String(res.status))
       const data = await res.json()
       setItems(data.items ?? [])
+      setRedemptions(data.redemptions ?? [])
     } catch {
       // Migration 016 not applied yet, or a transient failure: stay hidden.
       setItems([])
+      setRedemptions([])
     }
   }, [])
   loadRef.current = load
@@ -73,6 +106,9 @@ export function ApprovalTray({ onChanged }: { onChanged?: () => void }) {
     const channel = supabase
       .channel('approval-tray')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chore_completions' }, () => {
+        void loadRef.current()
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reward_redemptions' }, () => {
         void loadRef.current()
       })
       .subscribe()
@@ -105,7 +141,33 @@ export function ApprovalTray({ onChanged }: { onChanged?: () => void }) {
     onChanged?.()
   }
 
-  if (!items || items.length === 0) return null
+  const reviewRedeem = async (r: PendingRedemption, action: 'approve' | 'reject') => {
+    if (busy.has(r.id)) return
+    setBusy(prev => new Set(prev).add(r.id))
+    setRedemptions(prev => prev.filter(x => x.id !== r.id))
+    const result = await reviewRedemption(r.id, action)
+    setBusy(prev => {
+      const next = new Set(prev)
+      next.delete(r.id)
+      return next
+    })
+    if (!result.ok) {
+      toast.error(result.notEnough ? `${r.childName} does not have enough saved for that right now` : 'Could not update that request')
+      void load()
+      return
+    }
+    if (action === 'approve') {
+      playSound('success')
+      toast.success(`${r.childName} gets ${r.itemEmoji ?? ''} ${r.itemTitle}`)
+    } else {
+      playSound('notification')
+      toast(`Not this time: ${r.itemTitle}`)
+    }
+    onChanged?.()
+  }
+
+  const total = (items?.length ?? 0) + redemptions.length
+  if (!items || total === 0) return null
 
   return (
     <>
@@ -124,9 +186,56 @@ export function ApprovalTray({ onChanged }: { onChanged?: () => void }) {
             </h2>
           </div>
           <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-            {items.length}
+            {total}
           </span>
         </div>
+
+        {redemptions.length > 0 && (
+          <ul className="space-y-2" aria-label="Reward requests">
+            {redemptions.map(r => (
+              <li
+                key={r.id}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 border border-black/[0.06] dark:border-white/[0.08]"
+                style={{ background: 'var(--bg-secondary)' }}
+              >
+                <span className="shrink-0 w-14 h-14 rounded-lg grid place-items-center text-3xl" style={{ background: 'var(--card-bg)' }} aria-hidden>
+                  {r.itemEmoji ?? '🎁'}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold leading-snug truncate" style={{ color: 'var(--text-primary)' }}>
+                    {r.itemTitle}
+                  </div>
+                  <div className="text-xs font-medium truncate flex items-center gap-1.5" style={{ color: r.childColor || 'var(--text-secondary)' }}>
+                    <span>{r.childName} wants this</span>
+                    <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>· {formatMoney(r.priceCents, currencyCode)}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => reviewRedeem(r, 'reject')}
+                    disabled={busy.has(r.id)}
+                    className="min-h-[40px] px-3 rounded-lg text-sm font-semibold border border-black/[0.08] dark:border-white/[0.12] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-50"
+                    style={{ color: 'var(--text-secondary)' }}
+                    aria-label={`Not this time: ${r.itemTitle} for ${r.childName}`}
+                  >
+                    Not now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => reviewRedeem(r, 'approve')}
+                    disabled={busy.has(r.id)}
+                    className="min-h-[40px] px-3 rounded-lg text-sm font-bold accent-fill disabled:opacity-50 inline-flex items-center gap-1.5"
+                    aria-label={`Yes to ${r.itemTitle} for ${r.childName}, ${formatMoney(r.priceCents, currencyCode)}`}
+                  >
+                    <Check className="w-4 h-4 stroke-[2.5]" aria-hidden />
+                    Yes
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <ul className="space-y-2">
           {items.map(item => (

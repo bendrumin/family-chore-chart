@@ -159,6 +159,10 @@ struct ChildDetailView: View {
                 
                 // Chores section
                 VStack(alignment: .leading, spacing: 16) {
+                    // Allowance, goal, and payout (2.0).
+                    ParentGoalSection(child: child)
+                        .task { await manager.loadWallet(for: child.id) }
+
                     Text("\(child.name)'s Chores")
                         .font(.title2)
                         .fontWeight(.bold)
@@ -496,3 +500,136 @@ struct EmptyChoresMessage: View {
     }
 }
 
+// MARK: - Allowance & goal (parent side, 2.0)
+
+/// What the child has saved and what they are saving for, with Paid Out and
+/// Pay-toward-goal. The iPhone app never had a payout button; the balance
+/// only lived on the web. Mirrors components/dashboard/weekly-stats.tsx.
+struct ParentGoalSection: View {
+    let child: Child
+    @EnvironmentObject var manager: SupabaseManager
+    @State private var busy = false
+    @State private var message: String?
+    @State private var editing = false
+
+    private var wallet: SupabaseManager.KidWallet? { manager.wallets[child.id] }
+    private func money(_ cents: Int) -> String { manager.formatMoney(Double(cents) / 100.0) }
+
+    var body: some View {
+        if let wallet {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Label("Allowance", systemImage: "wallet.pass.fill")
+                        .font(.headline)
+                        .foregroundColor(.choreStarTextPrimary)
+                    Spacer()
+                    Text(wallet.owedCents > 0 ? "\(money(wallet.owedCents)) owed" : "All paid up")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(wallet.owedCents > 0 ? .choreStarWarning : .choreStarTextSecondary)
+                }
+
+                if let goal = wallet.goal {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Text(goal.emoji ?? "🎯").font(.title2)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text("Saving for \(goal.title)")
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundColor(.choreStarTextPrimary)
+                                Text("\(money(goal.progressCents)) of \(money(goal.targetCents))\(goal.reached ? " · reached!" : "")")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            Spacer()
+                            Button { editing = true } label: {
+                                Image(systemName: "pencil")
+                                    .font(.caption.weight(.bold))
+                                    .frame(width: 32, height: 32)
+                                    .background(Color.choreStarTextSecondary.opacity(0.12))
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Change \(child.name)'s goal")
+                        }
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.choreStarBackground)
+                                Capsule()
+                                    .fill(goal.reached ? Color.choreStarWarning : ThemeManager.shared.accentColor)
+                                    .frame(width: geo.size.width * CGFloat(min(goal.percent, 100)) / 100)
+                            }
+                        }
+                        .frame(height: 8)
+                    }
+                } else {
+                    Button { editing = true } label: {
+                        Label("Set a goal for \(child.name)", systemImage: "target")
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.choreStarLink)
+                }
+
+                HStack(spacing: 10) {
+                    Button {
+                        Task { await pay(goalId: nil) }
+                    } label: {
+                        Text("Paid Out")
+                            .font(.subheadline.weight(.bold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 42)
+                            .background(Color.choreStarTextSecondary.opacity(0.12))
+                            .foregroundColor(.choreStarTextPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(busy || wallet.owedCents <= 0)
+
+                    if let goal = wallet.goal {
+                        Button {
+                            Task { await pay(goalId: goal.id) }
+                        } label: {
+                            Text(goal.reached ? "Pay out the goal" : "Pay toward goal")
+                                .font(.subheadline.weight(.bold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 42)
+                                .background(goal.reached ? AnyShapeStyle(ThemeManager.shared.gradient) : AnyShapeStyle(Color.choreStarPrimary.opacity(0.12)))
+                                .foregroundColor(goal.reached ? .white : .choreStarPrimary)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(busy || wallet.owedCents <= 0)
+                    }
+                }
+
+                if let message {
+                    Text(message)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+            }
+            .appCard()
+            .padding(.horizontal, 20)
+            .sheet(isPresented: $editing) {
+                GoalEditorSheet(child: child, goal: wallet.goal)
+                    .environmentObject(manager)
+            }
+        }
+    }
+
+    private func pay(goalId: UUID?) async {
+        busy = true
+        let result = await manager.payOut(childId: child.id, goalId: goalId)
+        await MainActor.run {
+            busy = false
+            if let paid = result.paidCents {
+                Haptics.success()
+                message = goalId == nil
+                    ? "Paid \(child.name) \(money(paid))."
+                    : "Paid \(child.name) \(money(paid)) toward the goal. Goal reached!"
+            } else {
+                message = result.error
+            }
+        }
+    }
+}

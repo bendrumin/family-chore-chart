@@ -2,6 +2,7 @@ import 'server-only'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { apnsConfigured, sendApnsAlert, type ApnsCustomData } from '@/lib/push/apns'
 import { dueOn } from '@/lib/utils/schedule'
+import { formatMoney } from '@/lib/constants/currencies'
 
 /**
  * Domain-level push notifications.
@@ -98,6 +99,48 @@ export async function notifyRoutineCompleted(childId: string, routineName: strin
 
 /** APNs category the iOS app registers with an Approve action button. */
 export const CHORE_APPROVAL_CATEGORY = 'CHORE_APPROVAL'
+
+/** "🛍️ Maya wants: 🍕 Pick Friday dinner ($5.00)" — a store request to review. */
+export async function notifyRedemptionRequested(
+  childId: string,
+  itemTitle: string,
+  priceCents: number,
+  currencyCode: string,
+  redemptionId: string
+): Promise<void> {
+  if (!apnsConfigured()) return
+  try {
+    const admin = createServiceRoleClient()
+    const { data: child } = await admin.from('children').select('name, user_id').eq('id', childId).maybeSingle()
+    if (!child) return
+    await sendPushToUser(
+      child.user_id,
+      '🛍️ Reward request',
+      `${child.name} wants: ${itemTitle} (${formatMoney(priceCents, currencyCode)})`,
+      { type: 'reward_request', childId, completionId: redemptionId }
+    )
+  } catch (error) {
+    console.error('[push] notifyRedemptionRequested failed:', error)
+  }
+}
+
+/** "🎯 Maya reached her goal!" — the balance now covers the target. */
+export async function notifyGoalReached(childId: string, goalTitle: string): Promise<void> {
+  if (!apnsConfigured()) return
+  try {
+    const admin = createServiceRoleClient()
+    const { data: child } = await admin.from('children').select('name, user_id').eq('id', childId).maybeSingle()
+    if (!child) return
+    await sendPushToUser(
+      child.user_id,
+      '🎯 Goal reached!',
+      `${child.name} saved up for ${goalTitle}. Time to pay it out!`,
+      { type: 'goal_reached', childId }
+    )
+  } catch (error) {
+    console.error('[push] notifyGoalReached failed:', error)
+  }
+}
 
 /**
  * A kid's tick is waiting for a parent (approval mode, or a chore that asks

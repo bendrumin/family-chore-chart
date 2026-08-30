@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useRoutines } from '@/lib/hooks/useRoutines';
 import { KidChores } from '@/components/kid/kid-chores';
 import { KidStats } from '@/components/kid/kid-stats';
+import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
+import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 
 interface ChildData {
@@ -30,6 +32,9 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   const [statsVersion, setStatsVersion] = useState(0);
 
   const { data: routines, isLoading } = useRoutines(childId);
+  // Balance, goal, and store. Refetches whenever a chore is ticked (money
+  // moves) or a wallet action completes.
+  const { wallet, refresh: refreshWallet } = useKidWallet(kidToken, statsVersion);
 
   // Load child data from localStorage with expiry check
   useEffect(() => {
@@ -178,6 +183,11 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         </motion.div>
       </div>
 
+      {/* What the money is FOR: the goal the kid is saving toward. */}
+      {kidToken && wallet && (
+        <KidGoalCard kidToken={kidToken} wallet={wallet} onChanged={refreshWallet} />
+      )}
+
       {/* The kid's own numbers: streak, this week's money, badges. The parent
           dashboard has always had these; the kid never saw them. */}
       {kidToken && <KidStats kidToken={kidToken} childName={child.name} refreshKey={statsVersion} />}
@@ -191,6 +201,11 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           iconTint={child.avatar_color}
           onChanged={() => setStatsVersion(v => v + 1)}
         />
+      )}
+
+      {/* Things money cannot buy, priced by the family. */}
+      {kidToken && wallet && (
+        <KidStore kidToken={kidToken} wallet={wallet} onChanged={refreshWallet} />
       )}
 
       {/* Routines Grid */}
