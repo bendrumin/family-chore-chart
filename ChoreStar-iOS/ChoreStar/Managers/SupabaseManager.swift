@@ -16,7 +16,12 @@ class SupabaseManager: ObservableObject {
     @Published var children: [Child] = []
     @Published var chores: [Chore] = []
     @Published var choreCompletions: [UUID: Date] = [:] // Today's completions
-    @Published var weekCompletions: [(choreId: UUID, dayOfWeek: Int)] = [] // Full week completions
+    @Published var weekCompletions: [(choreId: UUID, dayOfWeek: Int)] = [] // Full week completions (approved)
+    /// Ticks this week that are waiting for a parent's OK (migration 016).
+    /// Kept apart from weekCompletions so nothing downstream counts them.
+    @Published var pendingCompletions: [(choreId: UUID, dayOfWeek: Int, id: UUID)] = []
+    /// The parent's "Needs your OK" list, from /api/chores/pending.
+    @Published var pendingApprovals: [PendingApproval] = []
     @Published var achievements: [Achievement] = []
     @Published var familySettings: FamilySettings?
     @Published var isChildSession = false
@@ -594,11 +599,31 @@ class SupabaseManager: ObservableObject {
         let reward_cents: Int?
         let sort_order: Int?
         let days_of_week: [Int]?
+        let requires_photo: Bool?
     }
 
     private struct KidChoreCompletionRow: Codable {
         let chore_id: UUID
         let day_of_week: Int?
+        let status: String?
+    }
+
+    /// One row of the parent's approval tray (GET /api/chores/pending).
+    struct PendingApproval: Decodable, Identifiable {
+        let id: UUID
+        let choreId: UUID
+        let choreName: String
+        let choreIcon: String?
+        let rewardCents: Int
+        let childId: UUID?
+        let childName: String
+        let childColor: String?
+        let dayOfWeek: Int
+        let dayName: String
+        let weekStart: String
+        let completedAt: String?
+        let hasPhoto: Bool
+        let photoUrl: String?
     }
 
     private struct KidChoresResponse: Codable {
@@ -618,6 +643,7 @@ class SupabaseManager: ObservableObject {
             let chore_id: UUID
             let week_start: String
             let day_of_week: Int
+            let status: String?
         }
         struct BadgeRow: Decodable {
             let id: String
@@ -687,7 +713,7 @@ class SupabaseManager: ObservableObject {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
             let calendar = Calendar.current
-            let history = decoded.completions.map { row -> HistoricalCompletion in
+            let history = decoded.completions.filter { $0.status != "pending" }.map { row -> HistoricalCompletion in
                 let date = dateFormatter.date(from: row.week_start).flatMap {
                     calendar.date(byAdding: .day, value: row.day_of_week, to: $0)
                 }
@@ -779,14 +805,20 @@ class SupabaseManager: ObservableObject {
                     notes: nil,
                     sortOrder: row.sort_order ?? 0,
                     daysOfWeek: ChoreSchedule.normalized(row.days_of_week),
+                    requiresPhoto: row.requires_photo ?? false,
                     createdAt: Date(),
                     updatedAt: Date()
                 )
             }
 
+            // Approved ticks count; pending ones are shown as waiting.
             let week = decoded.completions.compactMap { c -> (choreId: UUID, dayOfWeek: Int)? in
-                guard let d = c.day_of_week else { return nil }
+                guard let d = c.day_of_week, c.status != "pending" else { return nil }
                 return (choreId: c.chore_id, dayOfWeek: d)
+            }
+            let waiting = decoded.completions.compactMap { c -> (choreId: UUID, dayOfWeek: Int, id: UUID)? in
+                guard let d = c.day_of_week, c.status == "pending" else { return nil }
+                return (choreId: c.chore_id, dayOfWeek: d, id: UUID())
             }
             let todayDone = Dictionary(uniqueKeysWithValues:
                 week.filter { $0.dayOfWeek == today }.map { ($0.choreId, Date()) })
@@ -794,6 +826,7 @@ class SupabaseManager: ObservableObject {
             await MainActor.run {
                 self.chores = mapped
                 self.weekCompletions = week
+                self.pendingCompletions = waiting
                 self.choreCompletions = todayDone
                 debugLastError = "Kid chores loaded: \(mapped.count)"
             }
@@ -834,6 +867,9 @@ class SupabaseManager: ObservableObject {
             let weekStart: String
             let completed: Bool
         }
+        struct ToggleResponse: Decodable {
+            let status: String?
+        }
         request.httpBody = try? JSONEncoder().encode(ToggleBody(
             choreId: chore.id.uuidString.lowercased(),
             dayOfWeek: dayOfWeek,
@@ -842,9 +878,26 @@ class SupabaseManager: ObservableObject {
         ))
 
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 throw URLError(.badServerResponse)
+            }
+            // Approval mode: the server may have parked the tick as pending.
+            // Move it out of the "done" set so it earns nothing until a parent
+            // approves, and show it as waiting.
+            if !wasCompleted,
+               let decoded = try? JSONDecoder().decode(ToggleResponse.self, from: data),
+               decoded.status == "pending" {
+                await MainActor.run {
+                    objectWillChange.send()
+                    weekCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                    choreCompletions.removeValue(forKey: chore.id)
+                    pendingCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek, id: UUID()))
+                }
+            } else if wasCompleted {
+                await MainActor.run {
+                    pendingCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                }
             }
             // The tick is saved; refresh streak and badges in the background so
             // the header catches up without holding the checkmark hostage.
@@ -1256,6 +1309,180 @@ class SupabaseManager: ObservableObject {
         ))
         _ = try? await URLSession.shared.data(for: request)
         #endif
+    }
+
+    // MARK: - Approval mode (migration 016)
+
+    /// Bearer token for the web API: the parent's Supabase access token.
+    private func parentBearerToken() async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return nil }
+        return try? await client.auth.session.accessToken
+        #else
+        return nil
+        #endif
+    }
+
+    private func reviewCompletion(id: UUID, action: String) async -> Bool {
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/chores/approve") else { return false }
+        struct Body: Encodable { let completionId: String; let action: String }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONEncoder().encode(Body(completionId: id.uuidString.lowercased(), action: action))
+        guard let (_, response) = try? await URLSession.shared.data(for: request),
+              (response as? HTTPURLResponse)?.statusCode == 200 else { return false }
+        return true
+    }
+
+    /// Approve a kid's pending tick. It then counts toward the day, the streak,
+    /// and the allowance. Reloads completions so every view agrees.
+    @discardableResult
+    func approveCompletion(id: UUID) async -> Bool {
+        await MainActor.run {
+            objectWillChange.send()
+            pendingApprovals.removeAll { $0.id == id }
+            pendingCompletions.removeAll { $0.id == id }
+        }
+        let ok = await reviewCompletion(id: id, action: "approve")
+        await loadCurrentDayCompletions()
+        await loadPendingApprovals()
+        if ok { await MainActor.run { publishWidgetSnapshot() } }
+        return ok
+    }
+
+    /// Send a pending tick back: the row is deleted and the chore reappears on
+    /// the kid's list.
+    @discardableResult
+    func rejectCompletion(id: UUID) async -> Bool {
+        await MainActor.run {
+            objectWillChange.send()
+            pendingApprovals.removeAll { $0.id == id }
+            pendingCompletions.removeAll { $0.id == id }
+        }
+        let ok = await reviewCompletion(id: id, action: "reject")
+        await loadCurrentDayCompletions()
+        await loadPendingApprovals()
+        return ok
+    }
+
+    /// The parent's "Needs your OK" list.
+    func loadPendingApprovals() async {
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/chores/pending") else { return }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        struct Response: Decodable { let items: [PendingApproval] }
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return }
+            let decoded = try JSONDecoder().decode(Response.self, from: data)
+            await MainActor.run { self.pendingApprovals = decoded.items }
+        } catch {
+            await MainActor.run { debugLastError = "Pending approvals error: \(error.localizedDescription)" }
+        }
+    }
+
+    /// Persist the family's approval preference (Settings toggle).
+    func setRequireApproval(_ enabled: Bool) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+        do {
+            try await client
+                .from("family_settings")
+                .update(["require_approval": enabled])
+                .eq("user_id", value: uid)
+                .execute()
+            await loadFamilySettings()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Approval pref failed: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /**
+     Check a chore off WITH a photo (a chore that asks for one).
+
+     Posts the picture and the tick together to /api/kid/chores/proof, which
+     creates the day's completion as pending. Works in a standalone kid session
+     (kid token) and in kid mode on the parent's device (parent Bearer token).
+     Returns nil on success or a user-facing message.
+     */
+    func submitChoreProof(chore: Chore, image: UIImage) async -> String? {
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/kid/chores/proof") else {
+            return "Something went wrong."
+        }
+        let session = await MainActor.run { kidModeSession }
+        let token: String?
+        if let session { token = session.kidToken } else { token = await parentBearerToken() }
+        guard let token else { return "Not signed in." }
+
+        guard let jpeg = SupabaseManager.prepareProofJPEG(image) else {
+            return "That photo could not be read."
+        }
+
+        let dayOfWeek = todayIndex
+        let weekStart = SupabaseManager.kidWeekStartString()
+        let boundary = "chorestar-\(UUID().uuidString)"
+        var body = Data()
+        func field(_ name: String, _ value: String) {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n\(value)\r\n".data(using: .utf8)!)
+        }
+        field("choreId", chore.id.uuidString.lowercased())
+        field("dayOfWeek", String(dayOfWeek))
+        field("weekStart", weekStart)
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"proof.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(jpeg)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = body
+
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                return "Could not send the photo. Please try again."
+            }
+            await MainActor.run {
+                objectWillChange.send()
+                pendingCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek, id: UUID()))
+            }
+            if session != nil {
+                await loadKidModeChores()
+                Task { await loadKidModeStats() }
+            } else {
+                await loadCurrentDayCompletions()
+            }
+            return nil
+        } catch {
+            return "Could not send the photo. Please try again."
+        }
+    }
+
+    /// Downscale a proof photo to 1280px on its long edge, JPEG.
+    static func prepareProofJPEG(_ image: UIImage) -> Data? {
+        let maxEdge: CGFloat = 1280
+        let longest = max(image.size.width, image.size.height)
+        let scale = min(1, maxEdge / max(longest, 1))
+        let target = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: target, format: {
+            let f = UIGraphicsImageRendererFormat.default()
+            f.scale = 1
+            return f
+        }())
+        let resized = renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: target)) }
+        return resized.jpegData(compressionQuality: 0.82)
     }
 
     // MARK: - AI Chore Suggestions
@@ -1799,6 +2026,7 @@ class SupabaseManager: ObservableObject {
                     notes: row.notes,
                     sortOrder: row.sort_order ?? 0,
                     daysOfWeek: ChoreSchedule.normalized(row.days_of_week),
+                    requiresPhoto: row.requires_photo ?? false,
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
                     updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()
                 )
@@ -1865,21 +2093,29 @@ class SupabaseManager: ObservableObject {
             var todayCompletions: [UUID: Date] = [:]
             var fullWeekCompletions: [(choreId: UUID, dayOfWeek: Int)] = []
             
+            var waiting: [(choreId: UUID, dayOfWeek: Int, id: UUID)] = []
             for completion in allWeekCompletions {
+                // A tick waiting for a parent's OK is not done yet (migration 016).
+                if completion.isPending {
+                    waiting.append((choreId: completion.chore_id, dayOfWeek: completion.day_of_week, id: completion.id))
+                    continue
+                }
                 // Add to full week list
                 fullWeekCompletions.append((choreId: completion.chore_id, dayOfWeek: completion.day_of_week))
-                
+
                 // Add to today's list if it's for today
                 if completion.day_of_week == dayOfWeek {
                     todayCompletions[completion.chore_id] = now
                 }
             }
-            
+
             let capturedToday = todayCompletions
             let capturedWeek = fullWeekCompletions
+            let capturedWaiting = waiting
             await MainActor.run {
                 self.choreCompletions = capturedToday
                 self.weekCompletions = capturedWeek
+                self.pendingCompletions = capturedWaiting
                 debugLastError = "Loaded \(capturedToday.count) completions for today, \(capturedWeek.count) for week"
             }
         } catch {
@@ -1893,6 +2129,21 @@ class SupabaseManager: ObservableObject {
     func isChoreCompleted(_ chore: Chore, forDay dayOfWeek: Int) -> Bool {
         return weekCompletions.contains(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
     }
+
+    /// The kid ticked it and it is waiting for a parent (approval mode).
+    func isChorePending(_ chore: Chore, forDay dayOfWeek: Int) -> Bool {
+        pendingCompletions.contains(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
+    }
+
+    func isChorePending(_ chore: Chore) -> Bool {
+        isChorePending(chore, forDay: todayIndex)
+    }
+
+    /// Does a KID-path tick wait for a parent right now? Approval mode on, or
+    /// the chore asks for a photo. Parent-path ticks never wait.
+    func kidTickNeedsApproval(_ chore: Chore) -> Bool {
+        chore.requiresPhoto || familySettings?.requireApproval == true
+    }
     
     // Toggle completion for a specific day
     func toggleChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int) async -> [Achievement] {
@@ -1903,7 +2154,27 @@ class SupabaseManager: ObservableObject {
             return await toggleChoreViaKidAPI(chore, forDay: dayOfWeek, session: session)
         }
         guard let client = client else { return [] }
-        
+
+        // A pending tick under a parent's finger is an approval; under the kid's
+        // (kid mode on the parent's device) it is an un-tick.
+        if let waiting = pendingCompletions.first(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }) {
+            let childSession = await MainActor.run { isChildSession }
+            if childSession {
+                await MainActor.run {
+                    objectWillChange.send()
+                    pendingCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                }
+                _ = try? await client
+                    .from("chore_completions")
+                    .delete()
+                    .eq("id", value: waiting.id.uuidString)
+                    .execute()
+                return []
+            }
+            await approveCompletion(id: waiting.id)
+            return []
+        }
+
         let isCompleted = isChoreCompleted(chore, forDay: dayOfWeek)
         var newAchievements: [Achievement] = []
         
@@ -1963,21 +2234,45 @@ class SupabaseManager: ObservableObject {
                 }
             }
             
+            // Kid mode on the parent's device writes directly (parent JWT), so the
+            // approval rule has to be applied here: the kid's tick waits when
+            // approval is on or the chore asks for a photo. A parent's own tick
+            // is always approved.
+            let childSession = await MainActor.run { isChildSession }
+            let waits = childSession && kidTickNeedsApproval(chore)
+
             // Save to database
             do {
-                let completion = ChoreCompletionRow(
+                var completion = ChoreCompletionRow(
                     id: UUID(),
                     chore_id: chore.id,
                     day_of_week: dayOfWeek,
                     week_start: weekStartString,
                     completed_at: ISO8601DateFormatter().string(from: now)
                 )
-                
+                if waits { completion.status = "pending" }
+
                 try await client
                     .from("chore_completions")
                     .insert(completion)
                     .execute()
-                
+
+                if waits {
+                    // Not done yet: move it from the done set to the waiting set.
+                    await MainActor.run {
+                        objectWillChange.send()
+                        weekCompletions.removeAll { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek }
+                        choreCompletions.removeValue(forKey: chore.id)
+                        if let idx = allTimeCompletions.lastIndex(where: {
+                            $0.choreId == chore.id && $0.weekStart == weekStartString && $0.dayOfWeek == dayOfWeek
+                        }) {
+                            allTimeCompletions.remove(at: idx)
+                        }
+                        pendingCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek, id: completion.id))
+                    }
+                    return []
+                }
+
                 // Parent-path write — ask the server to buzz if this finished the day.
                 await notifyParentIfAllChoresDone(
                     childId: chore.childId,
@@ -2437,7 +2732,7 @@ class SupabaseManager: ObservableObject {
     /// `daysOfWeek` nil leaves the column to its default (every day). Optionals
     /// are omitted from the encoded row, not sent as null, so a nil here never
     /// trips the NOT NULL constraint.
-    func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil) async throws {
+    func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil, requiresPhoto: Bool? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -2452,6 +2747,7 @@ class SupabaseManager: ObservableObject {
             let color: String?
             let notes: String?
             let days_of_week: [Int]?
+            let requires_photo: Bool?
         }
 
         let newChore = NewChoreRow(
@@ -2462,7 +2758,8 @@ class SupabaseManager: ObservableObject {
             icon: icon,
             color: color,
             notes: notes,
-            days_of_week: daysOfWeek.map { ChoreSchedule.normalized($0) }
+            days_of_week: daysOfWeek.map { ChoreSchedule.normalized($0) },
+            requires_photo: requiresPhoto
         )
         
         try await client
@@ -2478,7 +2775,7 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
-    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil) async throws {
+    func updateChore(choreId: UUID, name: String?, childId: UUID?, rewardCents: Int?, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil, requiresPhoto: Bool? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
@@ -2493,6 +2790,7 @@ class SupabaseManager: ObservableObject {
             let color: String?
             let notes: String?
             let days_of_week: [Int]?
+            let requires_photo: Bool?
             let updated_at: String
         }
 
@@ -2505,6 +2803,7 @@ class SupabaseManager: ObservableObject {
             color: color,
             notes: notes,
             days_of_week: daysOfWeek.map { ChoreSchedule.normalized($0) },
+            requires_photo: requiresPhoto,
             updated_at: ISO8601DateFormatter().string(from: Date())
         )
         

@@ -368,6 +368,11 @@ struct DayCell: View {
         return manager.isChoreCompleted(chore, forDay: dayIndex)
     }
 
+    /// Ticked by the kid, waiting for a parent's OK. Tapping approves it.
+    private var isPending: Bool {
+        manager.isChorePending(chore, forDay: dayIndex)
+    }
+
     /// Off-day cells stay tappable (a parent can credit work done on another
     /// day) but read as "not scheduled": dashed and dimmed.
     private var isDue: Bool {
@@ -396,18 +401,25 @@ struct DayCell: View {
         }) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isCompleted ? Color.choreStarSuccess : (isDue ? Color.choreStarBackground : Color.clear))
+                    .fill(isCompleted ? Color.choreStarSuccess : (isPending ? Color.choreStarWarning.opacity(0.18) : (isDue ? Color.choreStarBackground : Color.clear)))
                     .frame(width: cellSize, height: cellSize)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(
-                                isCompleted ? Color.choreStarSuccess : (isToday ? Color.choreStarPrimary.opacity(0.5) : Color.choreStarTextSecondary.opacity(isDue ? 0.2 : 0.35)),
-                                style: StrokeStyle(lineWidth: isToday ? 3 : 1.5, dash: (isDue || isCompleted) ? [] : [4, 3])
+                                isCompleted ? Color.choreStarSuccess : (isPending ? Color.choreStarWarning : (isToday ? Color.choreStarPrimary.opacity(0.5) : Color.choreStarTextSecondary.opacity(isDue ? 0.2 : 0.35))),
+                                style: StrokeStyle(lineWidth: isToday ? 3 : 1.5, dash: (isDue || isCompleted || isPending) ? [] : [4, 3])
                             )
                     )
-                    .opacity(isDue || isCompleted ? 1 : 0.6)
+                    .opacity(isDue || isCompleted || isPending ? 1 : 0.6)
                     .shadow(color: isCompleted ? Color.choreStarSuccess.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
-                
+
+                if isPending {
+                    Image(systemName: "clock.fill")
+                        .font(.system(size: cellSize * 0.42, weight: .bold))
+                        .foregroundColor(.choreStarWarning)
+                        .accessibilityLabel("Waiting for your OK, tap to approve")
+                }
+
                 if isCompleted {
                     Image(systemName: "checkmark")
                         .font(.system(size: cellSize * 0.5, weight: .bold))

@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
     const { data: chores, error: choresError } = await admin
       .from('chores')
-      .select('id, name, icon, category, reward_cents, sort_order, days_of_week')
+      .select('id, name, icon, category, reward_cents, sort_order, days_of_week, requires_photo')
       .eq('child_id', session.childId)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
@@ -48,11 +48,11 @@ export async function GET(request: Request) {
     }
 
     const choreIds = (chores ?? []).map(c => c.id)
-    let completions: { chore_id: string; day_of_week: number | null }[] = []
+    let completions: { chore_id: string; day_of_week: number | null; status?: string | null }[] = []
     if (choreIds.length > 0) {
       const { data, error } = await admin
         .from('chore_completions')
-        .select('chore_id, day_of_week')
+        .select('chore_id, day_of_week, status')
         .in('chore_id', choreIds)
         .eq('week_start', weekStart)
       if (error) {

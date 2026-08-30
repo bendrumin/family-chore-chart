@@ -5,6 +5,7 @@ import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { computeStreaks } from '@/lib/utils/streak'
 import { checkAchievements, type EarnedAchievement } from '@/lib/utils/achievement-tracker'
 import { ACHIEVEMENTS } from '@/lib/constants/achievements'
+import type { Database } from '@/lib/supabase/database.types'
 
 /**
  * GET /api/kid/stats?weekStart=YYYY-MM-DD&dayOfWeek=N
@@ -67,13 +68,8 @@ export async function GET(request: Request) {
     const choreList = chores ?? []
     const choreIds = choreList.map(c => c.id)
 
-    let completions: Array<{
-      id: string
-      chore_id: string
-      day_of_week: number
-      week_start: string
-      completed_at: string
-    }> = []
+    type CompletionRow = Database['public']['Tables']['chore_completions']['Row']
+    let completions: CompletionRow[] = []
     if (choreIds.length > 0) {
       const { data } = await admin
         .from('chore_completions')
@@ -150,6 +146,7 @@ export async function GET(request: Request) {
           chore_id: c.chore_id,
           week_start: c.week_start,
           day_of_week: c.day_of_week,
+          status: c.status ?? 'approved',
         })),
         earnedBadges: persisted,
       },

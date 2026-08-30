@@ -33,6 +33,7 @@ struct AddChoreWizardView: View {
     @State private var selectedColor = "blue"
     @State private var notes = ""
     @State private var daysOfWeek: [Int] = ChoreSchedule.everyDay
+    @State private var requiresPhoto = false
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
@@ -433,6 +434,23 @@ struct AddChoreWizardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
+            Toggle(isOn: $requiresPhoto) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "camera.fill")
+                            .foregroundColor(requiresPhoto ? .choreStarAccent : .choreStarTextSecondary)
+                        Text("Ask for a photo")
+                            .font(.headline)
+                    }
+                    Text("Kids snap a picture when they check this off; it waits for your OK.")
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                }
+            }
+            .padding(12)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
             VStack(alignment: .leading, spacing: 10) {
                 Text("Notes (optional)")
                     .font(.headline)
@@ -481,7 +499,8 @@ struct AddChoreWizardView: View {
                     icon: selectedIcon,
                     color: selectedColor,
                     notes: notes.isEmpty ? nil : notes,
-                    daysOfWeek: daysOfWeek
+                    daysOfWeek: daysOfWeek,
+                    requiresPhoto: requiresPhoto
                 )
                 await MainActor.run {
                     dismiss()

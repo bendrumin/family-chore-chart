@@ -21,6 +21,8 @@ export interface StreakCompletion {
   chore_id: string
   week_start: string | null
   day_of_week: number | null
+  /** Review state; only missing/'approved' rows count (migration 016). */
+  status?: string | null
 }
 
 /** One calendar day, addressed the way the schema addresses it. */
@@ -69,6 +71,7 @@ export function groupDoneByDayKey(completions: StreakCompletion[]): Map<string, 
   const map = new Map<string, Set<string>>()
   for (const c of completions) {
     if (!c.week_start || c.day_of_week === null || c.day_of_week === undefined) continue
+    if (c.status && c.status !== 'approved') continue
     const key = `${c.week_start}|${c.day_of_week}`
     let set = map.get(key)
     if (!set) {

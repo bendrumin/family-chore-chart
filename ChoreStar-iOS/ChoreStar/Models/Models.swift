@@ -50,6 +50,9 @@ struct Chore: Codable, Identifiable {
     /// `var` with a default so the memberwise init keeps working for callers
     /// that predate the column.
     var daysOfWeek: [Int] = ChoreSchedule.everyDay
+    /// Kids attach a photo when checking this off; the tick waits for review.
+    /// Migration 016. Defaults false so older rows and callers keep working.
+    var requiresPhoto: Bool = false
     let createdAt: Date
     let updatedAt: Date
 
@@ -65,6 +68,7 @@ struct Chore: Codable, Identifiable {
         case notes
         case sortOrder = "sort_order"
         case daysOfWeek = "days_of_week"
+        case requiresPhoto = "requires_photo"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -104,6 +108,7 @@ extension Chore {
         notes = try c.decodeIfPresent(String.self, forKey: .notes)
         sortOrder = try c.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
         daysOfWeek = ChoreSchedule.normalized(try c.decodeIfPresent([Int].self, forKey: .daysOfWeek))
+        requiresPhoto = try c.decodeIfPresent(Bool.self, forKey: .requiresPhoto) ?? false
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         updatedAt = try c.decode(Date.self, forKey: .updatedAt)
     }
@@ -232,6 +237,8 @@ struct ChoreRow: Codable {
     let sort_order: Int?
     /// Optional so a database that has not run migration 015 still decodes.
     let days_of_week: [Int]?
+    /// Migration 016; optional for the same reason.
+    let requires_photo: Bool?
     let created_at: String
     let updated_at: String
 }
@@ -242,6 +249,12 @@ struct ChoreCompletionRow: Codable {
     let day_of_week: Int
     let week_start: String
     let completed_at: String?
+    /// 'pending' waits for a parent; 'approved' (or nil, pre-migration) counts.
+    /// Migration 016. nil on encode is omitted, so the column default applies.
+    var status: String? = nil
+    var proof_path: String? = nil
+
+    var isPending: Bool { status == "pending" }
 }
 
 struct AchievementBadgeRow: Codable {
@@ -285,6 +298,8 @@ struct FamilySettings: Codable {
     let weeklyBonusLabel: String?
     /// APNs activity alerts (all-chores-done / routine-complete). Default on.
     let activityPushEnabled: Bool?
+    /// Kid ticks wait for a parent before they count. Migration 016; nil = off.
+    let requireApproval: Bool?
     
     var isPerChoreMode: Bool { rewardMode == "per_chore" }
     /// nil (pre-migration row) means enabled.
@@ -324,5 +339,6 @@ struct FamilySettings: Codable {
         case customTheme = "custom_theme"
         case weeklyBonusLabel = "weekly_bonus_label"
         case activityPushEnabled = "activity_push_enabled"
+        case requireApproval = "require_approval"
     }
 }

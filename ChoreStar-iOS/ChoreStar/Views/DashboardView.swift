@@ -203,6 +203,11 @@ struct DashboardView: View {
                         .transition(.opacity)
                     }
 
+                    // Ticks waiting for the parent's OK (approval mode / photo
+                    // chores). Renders nothing when there is nothing to review.
+                    ApprovalTrayView()
+                        .padding(.horizontal, 20)
+
                     // Family: avatar ring chips, Fitness sharing-style
                     if !manager.children.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -407,7 +412,12 @@ struct ChoreCard: View {
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
     }
-    
+
+    /// The kid ticked it; it is waiting for this parent. Tapping approves.
+    private var isPending: Bool {
+        manager.isChorePending(chore)
+    }
+
     private var childName: String {
         manager.children.first(where: { $0.id == chore.childId })?.name ?? "Unknown"
     }
@@ -419,12 +429,13 @@ struct ChoreCard: View {
     var body: some View {
         Button(action: toggle) {
             HStack(spacing: 12) {
-                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : (isPending ? "clock.fill" : "circle"))
                     .font(.system(size: 26, weight: .medium))
-                    .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
+                    .foregroundColor(isCompleted ? .choreStarSuccess : (isPending ? .choreStarWarning : Color.choreStarTextSecondary.opacity(0.45)))
                     .symbolEffect(.bounce, value: isCompleted)
                     .contentShape(Circle())
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+                    .accessibilityLabel(isPending ? "Waiting for your OK, tap to approve" : (isCompleted ? "Done" : "Not done"))
 
                 AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 26)
                     .font(.title3)
@@ -495,4 +506,177 @@ struct ChoreCard: View {
     DashboardView()
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
+}
+
+// MARK: - Needs your OK
+
+/// The parent's approval tray: every chore a kid checked off that is waiting
+/// (approval mode, or a chore that asks for a photo). Approve makes it count;
+/// Send back removes it so the chore reappears on the kid's list. Mirrors the
+/// web dashboard's ApprovalTray.
+struct ApprovalTrayView: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @State private var lightbox: SupabaseManager.PendingApproval?
+
+    var body: some View {
+        Group {
+            if !manager.pendingApprovals.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "clock.badge.checkmark.fill")
+                            .foregroundColor(.choreStarWarning)
+                        Text("Needs your OK")
+                            .font(.headline)
+                            .foregroundColor(.choreStarTextPrimary)
+                        Spacer()
+                        Text("\(manager.pendingApprovals.count)")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+
+                    ForEach(manager.pendingApprovals) { item in
+                        HStack(spacing: 12) {
+                            if item.hasPhoto, let urlString = item.photoUrl, let url = URL(string: urlString) {
+                                Button { lightbox = item } label: {
+                                    AsyncImage(url: url) { phase in
+                                        if let image = phase.image {
+                                            image.resizable().scaledToFill()
+                                        } else {
+                                            Color.choreStarBackground
+                                        }
+                                    }
+                                    .frame(width: 52, height: 52)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("See \(item.childName)'s photo for \(item.choreName)")
+                            } else {
+                                AdaptiveIcon(icon: item.choreIcon, fallbackSymbol: "checklist", tint: Color.fromString(item.childColor ?? ""), iconSize: 26)
+                                    .frame(width: 52, height: 52)
+                                    .background(Color.choreStarBackground)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.choreName)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(.choreStarTextPrimary)
+                                    .lineLimit(1)
+                                HStack(spacing: 4) {
+                                    Text(item.childName)
+                                        .foregroundColor(Color.fromString(item.childColor ?? ""))
+                                    Text("· \(item.dayName)")
+                                        .foregroundColor(.choreStarTextSecondary)
+                                    if item.hasPhoto {
+                                        Image(systemName: "camera.fill")
+                                            .foregroundColor(.choreStarTextSecondary)
+                                    }
+                                }
+                                .font(.caption.weight(.medium))
+                            }
+
+                            Spacer(minLength: 4)
+
+                            Button {
+                                Haptics.light()
+                                Task { await manager.rejectCompletion(id: item.id) }
+                            } label: {
+                                Image(systemName: "arrow.uturn.backward")
+                                    .font(.subheadline.weight(.semibold))
+                                    .frame(width: 40, height: 40)
+                                    .background(Color.choreStarTextSecondary.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Send \(item.choreName) back to \(item.childName)")
+
+                            Button {
+                                Haptics.success()
+                                Task { await manager.approveCompletion(id: item.id) }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "checkmark")
+                                        .font(.subheadline.weight(.bold))
+                                    Text("Approve")
+                                        .font(.subheadline.weight(.bold))
+                                }
+                                .padding(.horizontal, 12)
+                                .frame(height: 40)
+                                .background(Color.choreStarSuccess)
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Approve \(item.choreName) for \(item.childName)")
+                        }
+                        .padding(10)
+                        .background(Color.choreStarBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                }
+                .appCard()
+            }
+        }
+        .task { await manager.loadPendingApprovals() }
+        // A kid's tick on this device lands in pendingCompletions first; refresh
+        // the tray so the parent sees it without pulling.
+        .onChange(of: manager.pendingCompletions.count) { _, _ in
+            Task { await manager.loadPendingApprovals() }
+        }
+        .sheet(item: $lightbox) { item in
+            NavigationStack {
+                VStack(spacing: 16) {
+                    if let urlString = item.photoUrl, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().scaledToFit()
+                            } else {
+                                ProgressView()
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .padding(.horizontal, 16)
+                    }
+                    HStack(spacing: 12) {
+                        Button {
+                            Task { await manager.rejectCompletion(id: item.id) }
+                            lightbox = nil
+                        } label: {
+                            Text("Send back")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.choreStarTextSecondary.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            Haptics.success()
+                            Task { await manager.approveCompletion(id: item.id) }
+                            lightbox = nil
+                        } label: {
+                            Text("Approve")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.choreStarSuccess)
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+                }
+                .navigationTitle("\(item.childName) · \(item.choreName)")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { lightbox = nil }
+                    }
+                }
+            }
+        }
+    }
 }

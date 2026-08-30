@@ -31,10 +31,12 @@ export interface AchievementProgress {
  */
 export function checkAchievements(
   chores: Chore[],
-  completions: ChoreCompletion[],
+  allCompletions: ChoreCompletion[],
   childId: string,
   earnedAchievements: EarnedAchievement[] = []
 ): AchievementProgress[] {
+  // A tick waiting for a parent's OK is not a completion yet (migration 016).
+  const completions = allCompletions.filter(c => !c.status || c.status === 'approved')
   const results: AchievementProgress[] = []
 
   for (const achievement of ACHIEVEMENTS) {

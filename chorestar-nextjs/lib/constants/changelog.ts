@@ -20,6 +20,11 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
     title: 'Chores on Their Own Days',
     features: [
       {
+        icon: '✅',
+        title: 'Approve Chores Before They Count (Optional)',
+        description: 'Turn on "Ask me to approve" in Settings › Family and chores your kids check off wait for your OK before they earn anything. A "Needs your OK" tray appears on your dashboard, your phone gets a tap-to-approve alert, and you can send a chore back with one tap. Any chore can also ask for a photo: kids snap it right from their list, and you see it in the tray.',
+      },
+      {
         icon: '🔥',
         title: 'Kids See Their Streak, Money, and Badges',
         description: 'The kid dashboard now opens with the numbers that matter to them: their day streak (with their personal best), what they have earned this week, and how many badges they have unlocked. Tap the badges tile for the full cabinet, with a progress bar on every badge still to earn. Finishing the whole list for the day gets its own celebration.',

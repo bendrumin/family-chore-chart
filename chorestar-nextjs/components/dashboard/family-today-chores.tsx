@@ -149,9 +149,10 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
     return children
       .map(child => {
         const childChores = byChild.get(child.id) || []
+        // Approved only: a tick waiting for the parent's OK is not done yet.
         const done = childChores.filter(chore =>
           (completionsByChoreId.get(chore.id) || []).some(
-            c => c.day_of_week === dayOfWeek && c.week_start === weekStart
+            c => c.day_of_week === dayOfWeek && c.week_start === weekStart && (!c.status || c.status === 'approved')
           )
         ).length
         return { child, chores: childChores, done }

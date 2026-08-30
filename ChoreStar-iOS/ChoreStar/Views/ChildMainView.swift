@@ -373,11 +373,25 @@ struct BigChoreCard: View {
     private var isCompleted: Bool {
         manager.isChoreCompleted(chore)
     }
-    
+
+    /// Ticked, waiting for a grown-up (approval mode or a photo chore).
+    private var isPending: Bool {
+        manager.isChorePending(chore)
+    }
+
+    @State private var showCamera = false
+    @State private var proofError: String?
+
     var body: some View {
         Button(action: {
             let impact = UIImpactFeedbackGenerator(style: .heavy)
             impact.impactOccurred()
+            // A photo chore opens the camera first; the tick rides along with
+            // the picture. Un-ticking (done or waiting) goes the normal way.
+            if !isCompleted && !isPending && chore.requiresPhoto {
+                showCamera = true
+                return
+            }
             Task {
                 let _ = await manager.toggleChoreCompletion(chore)
             }
@@ -410,24 +424,59 @@ struct BigChoreCard: View {
                     
                     Spacer()
                     
-                    // Completion checkmark
+                    // Completion checkmark (or the waiting clock / camera hint)
                     ZStack {
                         Circle()
                             .strokeBorder(
-                                isCompleted ? Color.choreStarSuccess : Color.choreStarTextSecondary.opacity(0.3),
+                                isCompleted ? Color.choreStarSuccess : (isPending ? Color.choreStarWarning : Color.choreStarTextSecondary.opacity(0.3)),
                                 lineWidth: 3
                             )
                             .frame(width: 40, height: 40)
-                        
+
                         if isCompleted {
                             Image(systemName: "checkmark")
                                 .font(.title3)
                                 .fontWeight(.bold)
                                 .foregroundColor(.choreStarSuccess)
                                 .transition(.scale.combined(with: .opacity))
+                        } else if isPending {
+                            Image(systemName: "clock.fill")
+                                .font(.title3)
+                                .foregroundColor(.choreStarWarning)
+                        } else if chore.requiresPhoto {
+                            Image(systemName: "camera.fill")
+                                .font(.subheadline)
+                                .foregroundColor(.choreStarTextSecondary)
                         }
                     }
                     .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isCompleted)
+                }
+
+                if isPending {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hourglass")
+                        Text("Waiting for a grown-up")
+                            .fontWeight(.bold)
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarWarning)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else if !isCompleted && chore.requiresPhoto {
+                    HStack(spacing: 6) {
+                        Image(systemName: "camera.fill")
+                        Text("Take a photo to check it off")
+                            .fontWeight(.semibold)
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if let proofError {
+                    Text(proofError)
+                        .font(.caption)
+                        .foregroundColor(.choreStarDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
                 // Reward — per-chore mode only. On the flat rate, promising a kid
@@ -475,6 +524,22 @@ struct BigChoreCard: View {
         .buttonStyle(PlainButtonStyle())
         .scaleEffect(isCompleted ? 0.98 : 1.0)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isCompleted)
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker(
+                onCapture: { image in
+                    Task {
+                        let error = await manager.submitChoreProof(chore: chore, image: image)
+                        await MainActor.run {
+                            proofError = error
+                            if error == nil { SoundManager.shared.play(.success) }
+                        }
+                    }
+                },
+                cameraDevice: .rear,
+                allowsEditing: false
+            )
+            .ignoresSafeArea()
+        }
     }
 }
 

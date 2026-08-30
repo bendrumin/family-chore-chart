@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
     @State private var activityPushEnabled = true
+    @State private var requireApproval = false
 
     private var reminderTimeBinding: Binding<Date> {
         Binding(
@@ -236,6 +237,25 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $requireApproval) {
+                        HStack {
+                            Image(systemName: "checkmark.shield.fill")
+                                .foregroundColor(requireApproval ? .choreStarPrimary : .choreStarTextSecondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Approve Chores First")
+                                Text("Kids' ticks wait in a Needs Your OK list before they count.")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                        }
+                    }
+                    .onChange(of: requireApproval) { _, enabled in
+                        guard enabled != (manager.familySettings?.requireApproval ?? false) else { return }
+                        Task { await manager.setRequireApproval(enabled) }
+                    }
+                }
+
+                Section {
                     Toggle(isOn: $activityPushEnabled) {
                         HStack {
                             Image(systemName: "iphone.radiowaves.left.and.right")
@@ -356,6 +376,7 @@ struct SettingsView: View {
                     customAccent = c
                 }
                 activityPushEnabled = manager.familySettings?.activityPushOn ?? true
+                requireApproval = manager.familySettings?.requireApproval ?? false
             }
             .onChange(of: manager.familySettings?.activityPushOn) { _, enabled in
                 if let enabled {

@@ -8,3 +8,6 @@
 
 /** Private bucket for uploaded child profile photos (migration 008). */
 export const CHILD_AVATAR_BUCKET = 'child-avatars'
+
+/** Private bucket for chore proof photos (migration 016). */
+export const CHORE_PROOF_BUCKET = 'chore-proofs'

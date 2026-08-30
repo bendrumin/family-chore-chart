@@ -16,6 +16,7 @@ import { AmbientBackground } from '@/components/ui/ambient-background'
 import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
+import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { SettingsMenu } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import dynamic from 'next/dynamic'
@@ -499,6 +500,10 @@ function DashboardContent({
                 weekStart={weekStart}
               />
             )}
+
+            {/* Ticks waiting for a parent's OK (approval mode / photo chores).
+                Renders nothing when there is nothing to review. */}
+            <ApprovalTray />
 
             {/* Main — family overview OR selected-child tabs */}
             <div>

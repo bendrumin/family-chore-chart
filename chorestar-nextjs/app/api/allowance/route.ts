@@ -51,7 +51,7 @@ async function computeBalance(
   if (choreList.length) {
     const { data: completions } = await supabase
       .from('chore_completions')
-      .select('chore_id, day_of_week, week_start')
+      .select('chore_id, day_of_week, week_start, status')
       .in('chore_id', choreList.map((c: { id: string }) => c.id))
 
     const { data: settings } = await supabase

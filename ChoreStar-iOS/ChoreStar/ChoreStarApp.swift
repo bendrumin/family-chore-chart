@@ -120,8 +120,28 @@ final class PushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCen
         // kid finishes would see nothing at all, which is the exact moment the
         // buzz matters most.
         UNUserNotificationCenter.current().delegate = self
+
+        // "Needs your OK" alerts carry an Approve button so a parent can act
+        // from the lock screen. The category id matches the server's
+        // CHORE_APPROVAL_CATEGORY (lib/push/notify.ts).
+        let approve = UNNotificationAction(
+            identifier: PushDelegate.approveActionId,
+            title: "Approve",
+            options: [.authenticationRequired]
+        )
+        let category = UNNotificationCategory(
+            identifier: PushDelegate.choreApprovalCategory,
+            actions: [approve],
+            intentIdentifiers: [],
+            options: []
+        )
+        UNUserNotificationCenter.current().setNotificationCategories([category])
         return true
     }
+
+    static let choreApprovalCategory = "CHORE_APPROVAL"
+    static let approveActionId = "APPROVE"
+
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -135,6 +155,15 @@ final class PushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCen
         didReceive response: UNNotificationResponse
     ) async {
         let userInfo = response.notification.request.content.userInfo
+
+        // Approve straight from the notification, no app launch needed.
+        if response.actionIdentifier == PushDelegate.approveActionId,
+           let idString = userInfo["completionId"] as? String,
+           let completionId = UUID(uuidString: idString) {
+            await SupabaseManager.shared.approveCompletion(id: completionId)
+            return
+        }
+
         await MainActor.run {
             DeepLinkRouter.shared.handlePushUserInfo(userInfo)
         }

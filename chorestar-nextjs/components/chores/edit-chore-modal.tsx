@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { RewardAmountInput } from '@/components/chores/reward-amount-input'
 import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
-import { Edit3, DollarSign, FileText, Palette, CalendarDays } from 'lucide-react'
+import { Edit3, DollarSign, FileText, Palette, CalendarDays, Camera } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
@@ -39,6 +39,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     icon: chore.icon || '📝',
     category: (chore.category || 'household_chores') as ChoreCategory,
     days: scheduleDays(chore),
+    requiresPhoto: Boolean(chore.requires_photo),
   })
 
   const categories = getCategoryList()
@@ -51,6 +52,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
       icon: chore.icon || '📝',
       category: (chore.category || 'household_chores') as ChoreCategory,
       days: scheduleDays(chore),
+      requiresPhoto: Boolean(chore.requires_photo),
     })
   }, [chore])
 
@@ -68,6 +70,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
           icon: formData.icon,
           category: formData.category,
           days_of_week: formData.days,
+          requires_photo: formData.requiresPhoto,
         })
         .eq('id', chore.id)
 
@@ -186,6 +189,25 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 value={formData.days}
                 onChange={(days) => setFormData({ ...formData, days })}
               />
+
+              <label className="mt-4 flex items-start gap-3 cursor-pointer">
+                <input
+                  id="edit-requires-photo"
+                  type="checkbox"
+                  checked={formData.requiresPhoto}
+                  onChange={(e) => setFormData({ ...formData, requiresPhoto: e.target.checked })}
+                  className="mt-0.5 w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden />
+                    Ask for a photo
+                  </span>
+                  <span className="block text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Kids snap a picture when they check this off, and it waits for your OK.
+                  </span>
+                </span>
+              </label>
             </div>
 
             {/* Appearance Section - Purple accent */}

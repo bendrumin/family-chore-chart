@@ -172,7 +172,8 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         .in('chore_id', choreIds)
         .eq('week_start', weekStart)
 
-      const totalCompletions = completions?.length || 0
+      // Approved ticks only; pending ones are waiting for the parent's OK.
+      const totalCompletions = (completions ?? []).filter(c => !c.status || c.status === 'approved').length
 
       // Get family settings for reward calculation
       const { data: user } = await supabase.auth.getUser()
@@ -238,13 +239,14 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
 
       const { data: completions } = await supabase
         .from('chore_completions')
-        .select('day_of_week, week_start')
+        .select('day_of_week, week_start, status')
         .in('chore_id', choreIds)
         .gte('week_start', earliestWeekStart.toISOString().split('T')[0])
 
-      // Build a set of "weekStart|dayOfWeek" keys for O(1) lookup
+      // Build a set of "weekStart|dayOfWeek" keys for O(1) lookup (approved only)
       const completionKeys = new Set<string>()
       completions?.forEach(c => {
+        if (c.status && c.status !== 'approved') return
         completionKeys.add(`${c.week_start}|${c.day_of_week}`)
       })
 

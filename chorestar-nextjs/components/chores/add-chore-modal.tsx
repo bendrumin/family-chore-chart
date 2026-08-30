@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Sparkles, DollarSign, FileText, Palette, CalendarDays } from 'lucide-react'
+import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera } from 'lucide-react'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
@@ -35,6 +35,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     icon: '📝',
     category: 'household_chores' as ChoreCategory,
     days: [...ALL_DAYS],
+    requiresPhoto: false,
   })
 
   // The default follows the family's reward mode.
@@ -51,7 +52,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
 
   useEffect(() => {
     if (!open) return
-    setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS] })
+    setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS], requiresPhoto: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultRewardCents])
 
@@ -71,13 +72,14 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
         icon: formData.icon,
         category: formData.category,
         days_of_week: formData.days,
+        requires_photo: formData.requiresPhoto,
       })
 
       if (error) throw error
 
       playSound('success')
       toast.success(`🎉 ${formData.name} added successfully!`)
-      setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS] })
+      setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS], requiresPhoto: false })
       onSuccess()
     } catch (error: any) {
       console.error('Error adding chore:', error)
@@ -169,6 +171,25 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 value={formData.days}
                 onChange={(days) => setFormData({ ...formData, days })}
               />
+
+              <label className="mt-4 flex items-start gap-3 cursor-pointer">
+                <input
+                  id="add-requires-photo"
+                  type="checkbox"
+                  checked={formData.requiresPhoto}
+                  onChange={(e) => setFormData({ ...formData, requiresPhoto: e.target.checked })}
+                  className="mt-0.5 w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden />
+                    Ask for a photo
+                  </span>
+                  <span className="block text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Kids snap a picture when they check this off, and it waits for your OK.
+                  </span>
+                </span>
+              </label>
             </div>
 
             {/* Appearance Section - Purple accent */}

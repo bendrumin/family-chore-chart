@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Check, Edit, CalendarDays } from 'lucide-react'
+import { Check, Edit, CalendarDays, Clock, Camera } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
+import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { CategoryBadge } from '@/components/ui/category-badge'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
@@ -66,12 +67,37 @@ export const ChoreCard = memo(function ChoreCard({
 
   const days = getLast7Days()
 
-  const isCompleted = (dayOfWeek: number) => {
-    return completions.some(c => c.chore_id === chore.id && c.day_of_week === dayOfWeek && c.week_start === weekStart)
-  }
+  const completionFor = (dayOfWeek: number) =>
+    completions.find(c => c.chore_id === chore.id && c.day_of_week === dayOfWeek && c.week_start === weekStart)
+
+  const isCompleted = (dayOfWeek: number) => Boolean(completionFor(dayOfWeek))
+
+  /** The kid ticked it and it is waiting for a parent (migration 016). */
+  const isAwaitingApproval = (dayOfWeek: number) => completionFor(dayOfWeek)?.status === 'pending'
 
   const toggleCompletion = async (dayOfWeek: number) => {
     if (pendingDays.has(dayOfWeek)) return // ignore double-taps while saving
+
+    // A parent tapping a pending cell is approving it: that is what the tick
+    // means here, so it goes through the review endpoint, not a delete.
+    const awaiting = completionFor(dayOfWeek)
+    if (awaiting?.status === 'pending') {
+      setPendingDays(prev => new Set(prev).add(dayOfWeek))
+      const ok = await reviewCompletion(awaiting.id, 'approve')
+      setPendingDays(prev => {
+        const next = new Set(prev)
+        next.delete(dayOfWeek)
+        return next
+      })
+      if (ok) {
+        playSound('success')
+        toast.success(`Approved ${chore.name}`)
+        onRefresh()
+      } else {
+        toast.error('Could not approve that one')
+      }
+      return
+    }
 
     const completed = optimistic[dayOfWeek] ?? isCompleted(dayOfWeek)
 
@@ -145,7 +171,9 @@ export const ChoreCard = memo(function ChoreCard({
     }
   }
 
-  const choreCompletions = completions.filter(c => c.chore_id === chore.id && c.week_start === weekStart)
+  const choreCompletions = completions.filter(
+    c => c.chore_id === chore.id && c.week_start === weekStart && (!c.status || c.status === 'approved')
+  )
 
   return (
     <>
@@ -196,6 +224,16 @@ export const ChoreCard = memo(function ChoreCard({
                       {formatSchedule(chore.days_of_week)}
                     </span>
                   )}
+                  {chore.requires_photo && (
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-semibold"
+                      style={{ color: 'var(--text-secondary)' }}
+                      title="Kids attach a photo when they check this off"
+                    >
+                      <Camera className="w-3.5 h-3.5" aria-hidden />
+                      Photo
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -204,8 +242,24 @@ export const ChoreCard = memo(function ChoreCard({
           {/* 7-Day Grid - Professional */}
           <div className="grid grid-cols-7 gap-1.5 mb-2.5">
             {days.map((day) => {
-              const completed = optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek)
+              const awaiting = isAwaitingApproval(day.dayOfWeek)
+              const completed = !awaiting && (optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek))
               const due = isDueOn(chore, day.dayOfWeek)
+
+              if (awaiting) {
+                return (
+                  <button
+                    key={day.dayOfWeek}
+                    onClick={() => toggleCompletion(day.dayOfWeek)}
+                    aria-label={`${chore.name} ${day.dayName}, waiting for your OK, click to approve`}
+                    className="h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation border-2 border-dashed border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
+                    title={`${day.dayName} - Waiting for your OK. Click to approve`}
+                  >
+                    <div className="text-xs font-bold">{day.dayName}</div>
+                    <Clock className="w-4 h-4" aria-hidden />
+                  </button>
+                )
+              }
 
               // An off-day cell is still tappable (a parent can credit work done
               // on a different day) but reads as "not scheduled": dashed and

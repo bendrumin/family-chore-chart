@@ -84,7 +84,8 @@ export function InsightsTab() {
 
       const children = childrenRes.data || []
       const chores = choresRes.data || []
-      const completions = completionsRes.data || []
+      // Ticks waiting for a parent's OK are not completions yet (migration 016).
+      const completions = (completionsRes.data || []).filter(c => !c.status || c.status === 'approved')
       const familySettings = familySettingsRes.data
       const currentWeekStart = getWeekStart()
 
@@ -220,7 +221,8 @@ export function InsightsTab() {
 
       const children = childrenRes.data || []
       const chores = choresRes.data || []
-      const completions = completionsRes.data || []
+      // Ticks waiting for a parent's OK are not completions yet (migration 016).
+      const completions = (completionsRes.data || []).filter(c => !c.status || c.status === 'approved')
 
       if (children.length === 0) {
         setAchievementProgress([])

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
@@ -422,6 +422,40 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Approvals — saved immediately, not part of the Save button below */}
+      <div className="space-y-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+        <div className="flex items-center gap-2 mb-3">
+          <ShieldCheck className="w-5 h-5" style={{ color: settings?.require_approval ? 'var(--primary)' : 'var(--text-secondary)' }} />
+          <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+            Approvals
+          </h5>
+        </div>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={Boolean(settings?.require_approval)}
+            onChange={async (e) => {
+              const next = e.target.checked
+              try {
+                await updateSettings({ require_approval: next })
+                toast.success(next ? 'Chores now wait for your OK' : 'Chores count as soon as kids check them off')
+              } catch {
+                toast.error('Could not save that setting')
+              }
+            }}
+            className="mt-0.5 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+          />
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Ask me to approve chores my kids check off
+            </span>
+            <span className="block text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+              Their ticks wait in a "Needs your OK" tray on the dashboard (and a tap-to-approve alert on your phone) before they count toward the day or the allowance. Chores you tick yourself never wait. Any chore can also ask for a photo, from its editor.
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Sound Settings */}

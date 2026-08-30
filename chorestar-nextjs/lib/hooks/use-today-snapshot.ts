@@ -63,12 +63,15 @@ export function useTodaySnapshot(children: Child[], settings?: EarningsSettings 
       const choreIds = choreList.map(c => c.id)
       const { data: completions } = await supabase
         .from('chore_completions')
-        .select('chore_id')
+        .select('chore_id, status')
         .in('chore_id', choreIds)
         .eq('week_start', weekStart)
         .eq('day_of_week', today)
 
-      const doneChoreIds = new Set((completions ?? []).map(c => c.chore_id))
+      // A tick waiting for a parent's OK is not done yet (migration 016).
+      const doneChoreIds = new Set(
+        (completions ?? []).filter(c => !c.status || c.status === 'approved').map(c => c.chore_id)
+      )
 
       const perChild: TodaySnapshot['perChild'] = {}
       ids.forEach(id => { perChild[id] = { done: 0, total: 0 } })

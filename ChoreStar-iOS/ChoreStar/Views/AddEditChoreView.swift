@@ -14,6 +14,7 @@ struct AddEditChoreView: View {
     @State private var selectedColor: String
     @State private var notes: String
     @State private var daysOfWeek: [Int]
+    @State private var requiresPhoto: Bool
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
@@ -65,6 +66,7 @@ struct AddEditChoreView: View {
         _selectedColor = State(initialValue: chore?.color ?? "blue")
         _notes = State(initialValue: chore?.notes ?? "")
         _daysOfWeek = State(initialValue: chore?.daysOfWeek ?? ChoreSchedule.everyDay)
+        _requiresPhoto = State(initialValue: chore?.requiresPhoto ?? false)
     }
     
     var isEditing: Bool {
@@ -238,6 +240,18 @@ struct AddEditChoreView: View {
                     Text("Only the days you pick count toward a perfect day. Web and iOS share the same schedule.")
                 }
 
+                Section {
+                    Toggle(isOn: $requiresPhoto) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "camera.fill")
+                                .foregroundColor(requiresPhoto ? .choreStarAccent : .choreStarTextSecondary)
+                            Text("Ask for a photo")
+                        }
+                    }
+                } footer: {
+                    Text("Kids snap a picture when they check this off, and it waits for your OK before it counts.")
+                }
+
                 Section("Category") {
                     Picker("Category", selection: $category) {
                         ForEach(ChoreCategory.allCases) { cat in
@@ -388,7 +402,8 @@ struct AddEditChoreView: View {
                         icon: selectedIcon,
                         color: selectedColor,
                         notes: notes.isEmpty ? nil : notes,
-                        daysOfWeek: daysOfWeek
+                        daysOfWeek: daysOfWeek,
+                        requiresPhoto: requiresPhoto
                     )
                 } else {
                     // Create new chore
@@ -400,7 +415,8 @@ struct AddEditChoreView: View {
                         icon: selectedIcon,
                         color: selectedColor,
                         notes: notes.isEmpty ? nil : notes,
-                        daysOfWeek: daysOfWeek
+                        daysOfWeek: daysOfWeek,
+                        requiresPhoto: requiresPhoto
                     )
                 }
                 

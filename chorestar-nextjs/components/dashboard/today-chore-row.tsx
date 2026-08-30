@@ -2,10 +2,11 @@
 
 import { useEffect, useState, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Circle, CircleCheck } from 'lucide-react'
+import { Circle, CircleCheck, Clock } from 'lucide-react'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
 import { toast } from 'sonner'
+import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -37,9 +38,12 @@ export const TodayChoreRow = memo(function TodayChoreRow({
   iconTint,
   childName,
 }: TodayChoreRowProps) {
-  const serverDone = completions.some(
+  const todayRow = completions.find(
     c => c.chore_id === chore.id && c.day_of_week === dayOfWeek && c.week_start === weekStart
   )
+  // A kid's tick waiting for the parent's OK (migration 016).
+  const awaiting = todayRow?.status === 'pending'
+  const serverDone = Boolean(todayRow) && !awaiting
   const [optimistic, setOptimistic] = useState<boolean | null>(null)
   const [pending, setPending] = useState(false)
   const done = optimistic ?? serverDone
@@ -50,6 +54,22 @@ export const TodayChoreRow = memo(function TodayChoreRow({
 
   const toggle = async () => {
     if (pending) return
+
+    // Tapping a waiting row approves it: the parent's tick is the review.
+    if (awaiting && todayRow) {
+      setPending(true)
+      const ok = await reviewCompletion(todayRow.id, 'approve')
+      setPending(false)
+      if (ok) {
+        playSound('success')
+        toast.success(`Approved ${chore.name}`)
+        onRefresh()
+      } else {
+        toast.error('Could not approve that one')
+      }
+      return
+    }
+
     const wasDone = done
     setOptimistic(!wasDone)
     setPending(true)
@@ -107,17 +127,23 @@ export const TodayChoreRow = memo(function TodayChoreRow({
       type="button"
       onClick={toggle}
       aria-pressed={done}
-      aria-label={`${chore.name}${childName ? ` for ${childName}` : ''}, ${done ? 'done, tap to undo' : 'not done, tap to complete'}`}
+      aria-label={`${chore.name}${childName ? ` for ${childName}` : ''}, ${
+        awaiting ? 'waiting for your OK, tap to approve' : done ? 'done, tap to undo' : 'not done, tap to complete'
+      }`}
       className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition-opacity duration-150 touch-manipulation ${
         done ? 'opacity-75' : 'opacity-100'
-      } hover:bg-black/[0.02] dark:hover:bg-white/[0.04] active:opacity-90`}
+      } hover:bg-black/[0.02] dark:hover:bg-white/[0.04] active:opacity-90 ${
+        awaiting ? 'ring-2 ring-inset ring-amber-400/70 dark:ring-amber-500/60' : ''
+      }`}
       style={{ background: 'var(--card-bg)' }}
     >
       <span
-        className="shrink-0 grid place-items-center"
-        style={{ color: done ? 'var(--primary)' : 'var(--text-tertiary, var(--text-secondary))' }}
+        className={`shrink-0 grid place-items-center ${awaiting ? 'text-amber-600 dark:text-amber-400' : ''}`}
+        style={awaiting ? undefined : { color: done ? 'var(--primary)' : 'var(--text-tertiary, var(--text-secondary))' }}
       >
-        {done ? (
+        {awaiting ? (
+          <Clock className="w-7 h-7" strokeWidth={2.25} aria-hidden />
+        ) : done ? (
           <CircleCheck className="w-7 h-7" strokeWidth={2.25} aria-hidden />
         ) : (
           <Circle className="w-7 h-7 opacity-45" strokeWidth={2} aria-hidden />
@@ -141,7 +167,11 @@ export const TodayChoreRow = memo(function TodayChoreRow({
         >
           {chore.name}
         </span>
-        {childName && (
+        {awaiting ? (
+          <span className="block text-xs font-semibold mt-0.5 truncate text-amber-700 dark:text-amber-300">
+            {childName ? `${childName} · ` : ''}Waiting for your OK{todayRow?.proof_path ? ' · photo in the tray' : ''}
+          </span>
+        ) : childName && (
           <span className="block text-xs font-medium mt-0.5 truncate" style={{ color: 'var(--text-secondary)' }}>
             {childName}
           </span>

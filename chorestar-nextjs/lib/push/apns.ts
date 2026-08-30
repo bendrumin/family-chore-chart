@@ -86,6 +86,14 @@ export interface ApnsSendResult {
 export type ApnsCustomData = {
   type?: string
   childId?: string
+  /** The chore_completions row a "needs your OK" alert is about. */
+  completionId?: string
+  /**
+   * APNs category. The app registers matching UNNotificationCategory actions
+   * (e.g. CHORE_APPROVAL with an Approve button) so a parent can act from the
+   * lock screen without opening the app.
+   */
+  category?: string
 }
 
 /**
@@ -109,9 +117,14 @@ export async function sendApnsAlert(
       : 'https://api.push.apple.com'
 
   const payload = JSON.stringify({
-    aps: { alert: { title, body }, sound: 'default' },
+    aps: {
+      alert: { title, body },
+      sound: 'default',
+      ...(custom?.category ? { category: custom.category } : {}),
+    },
     ...(custom?.type ? { type: custom.type } : {}),
     ...(custom?.childId ? { childId: custom.childId } : {}),
+    ...(custom?.completionId ? { completionId: custom.completionId } : {}),
   })
 
   return new Promise<ApnsSendResult>((resolve) => {

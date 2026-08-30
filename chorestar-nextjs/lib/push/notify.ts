@@ -96,6 +96,39 @@ export async function notifyRoutineCompleted(childId: string, routineName: strin
   }
 }
 
+/** APNs category the iOS app registers with an Approve action button. */
+export const CHORE_APPROVAL_CATEGORY = 'CHORE_APPROVAL'
+
+/**
+ * A kid's tick is waiting for a parent (approval mode, or a chore that asks
+ * for a photo). One alert per tick: the whole point is that the parent looks.
+ */
+export async function notifyPendingApproval(
+  childId: string,
+  choreName: string,
+  completionId: string,
+  hasPhoto: boolean
+): Promise<void> {
+  if (!apnsConfigured()) return
+  try {
+    const admin = createServiceRoleClient()
+    const { data: child } = await admin
+      .from('children')
+      .select('name, user_id')
+      .eq('id', childId)
+      .maybeSingle()
+    if (!child) return
+    await sendPushToUser(
+      child.user_id,
+      hasPhoto ? '📸 Needs your OK' : '⏳ Needs your OK',
+      `${child.name} finished ${choreName}${hasPhoto ? ' and sent a photo' : ''}`,
+      { type: 'chore_approval', childId, completionId, category: CHORE_APPROVAL_CATEGORY }
+    )
+  } catch (error) {
+    console.error('[push] notifyPendingApproval failed:', error)
+  }
+}
+
 /**
  * After a kid checks a chore off: if that completed their whole list for the
  * day, tell the parent. Per-chore pings would be noise; "finished everything"
@@ -125,14 +158,19 @@ export async function notifyIfAllChoresDone(
 
     const { data: completions } = await admin
       .from('chore_completions')
-      .select('chore_id')
+      .select('chore_id, status')
       .in('chore_id', due.map(c => c.id))
       .eq('week_start', weekStart)
       .eq('day_of_week', dayOfWeek)
 
     // Membership, not row count — duplicate completion rows must not fake a
-    // finished day (same rule as lib/utils/earnings.ts isPerfectDay).
-    const done = new Set((completions ?? []).map(c => c.chore_id))
+    // finished day (same rule as lib/utils/earnings.ts isPerfectDay). Ticks
+    // still waiting for approval do not finish the day.
+    const done = new Set(
+      (completions ?? [])
+        .filter(c => !c.status || c.status === 'approved')
+        .map(c => c.chore_id)
+    )
     if (!due.every(c => done.has(c.id))) return
 
     const { data: child } = await admin

@@ -122,6 +122,8 @@ export interface Database {
           color: string | null
           /** Days the chore is due, 0=Sunday .. 6=Saturday. Migration 015. */
           days_of_week: number[]
+          /** Kids attach a photo when checking this off. Migration 016. */
+          requires_photo: boolean
           created_at: string
           updated_at: string
         }
@@ -137,6 +139,7 @@ export interface Database {
           notes?: string | null
           color?: string | null
           days_of_week?: number[]
+          requires_photo?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -152,6 +155,7 @@ export interface Database {
           notes?: string | null
           color?: string | null
           days_of_week?: number[]
+          requires_photo?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -172,6 +176,11 @@ export interface Database {
           day_of_week: number
           week_start: string
           completed_at: string
+          /** pending = waiting for a parent; approved counts. Migration 016. */
+          status: string
+          proof_path: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
         }
         Insert: {
           id?: string
@@ -179,6 +188,10 @@ export interface Database {
           day_of_week: number
           week_start: string
           completed_at?: string
+          status?: string
+          proof_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
         }
         Update: {
           id?: string
@@ -186,6 +199,10 @@ export interface Database {
           day_of_week?: number
           week_start?: string
           completed_at?: string
+          status?: string
+          proof_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
         }
         Relationships: [
           {
@@ -212,6 +229,8 @@ export interface Database {
           language: string | null
           custom_theme: Json | null
           activity_push_enabled: boolean
+          /** Kid ticks wait for a parent before they count. Migration 016. */
+          require_approval: boolean
           created_at: string
           updated_at: string
         }
@@ -229,6 +248,7 @@ export interface Database {
           language?: string | null
           custom_theme?: Json | null
           activity_push_enabled?: boolean
+          require_approval?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -246,6 +266,7 @@ export interface Database {
           language?: string | null
           custom_theme?: Json | null
           activity_push_enabled?: boolean
+          require_approval?: boolean
           created_at?: string
           updated_at?: string
         }

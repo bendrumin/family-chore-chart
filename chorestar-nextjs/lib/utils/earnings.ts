@@ -48,6 +48,16 @@ export interface ChoreReward extends Scheduled {
 export interface DayCompletion {
   chore_id: string
   day_of_week: number | null
+  /**
+   * Review state (migration 016). Missing or 'approved' counts; 'pending'
+   * is a tick waiting for a parent and earns nothing yet.
+   */
+  status?: string | null
+}
+
+/** Only approved ticks count toward money, perfect days, streaks, or badges. */
+export function isApprovedCompletion(c: { status?: string | null }): boolean {
+  return !c.status || c.status === 'approved'
 }
 
 export function isPerChoreMode(settings?: EarningsSettings | null): boolean {
@@ -106,6 +116,7 @@ export function groupDoneByDay(completions: DayCompletion[]): Map<number, Set<st
   const byDay = new Map<number, Set<string>>()
   for (const c of completions) {
     if (c.day_of_week === null || c.day_of_week === undefined) continue
+    if (!isApprovedCompletion(c)) continue
     let set = byDay.get(c.day_of_week)
     if (!set) {
       set = new Set<string>()

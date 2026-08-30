@@ -29,7 +29,9 @@ interface ExportOptions {
  * Export family report as CSV
  */
 export function exportFamilyReportCSV(options: ExportOptions) {
-  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
+  const { children, chores, completions: rawCompletions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
+  // Only approved ticks count (migration 016); pending ones are not done yet.
+  const completions = rawCompletions.filter(c => !c.status || c.status === 'approved')
 
   // Filter children if specific child selected
   const filteredChildren = childId === 'all' ? children : children.filter(c => c.id === childId)
@@ -135,7 +137,8 @@ export function exportFamilyReportCSV(options: ExportOptions) {
  * Note: Requires jsPDF library to be loaded
  */
 export async function exportFamilyReportPDF(options: ExportOptions) {
-  const { children, chores, completions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0, rewardMode = null } = options
+  const { children, chores, completions: rawCompletions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0, rewardMode = null } = options
+  const completions = rawCompletions.filter(c => !c.status || c.status === 'approved')
 
   // Dynamically import jsPDF
   let jsPDF: any

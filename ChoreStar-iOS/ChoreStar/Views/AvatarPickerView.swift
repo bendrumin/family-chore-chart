@@ -278,13 +278,16 @@ struct EmojiAvatarOption: View {
  */
 struct CameraPicker: UIViewControllerRepresentable {
     let onCapture: (UIImage) -> Void
+    /// Front for a selfie avatar; rear for photographing a made bed.
+    var cameraDevice: UIImagePickerController.CameraDevice = .front
+    var allowsEditing: Bool = true
     @Environment(\.dismiss) private var dismiss
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
-        picker.cameraDevice = .front          // a child photographing themselves
-        picker.allowsEditing = true           // free framing before we square-crop
+        picker.cameraDevice = UIImagePickerController.isCameraDeviceAvailable(cameraDevice) ? cameraDevice : .rear
+        picker.allowsEditing = allowsEditing  // free framing before we square-crop
         picker.delegate = context.coordinator
         return picker
     }
