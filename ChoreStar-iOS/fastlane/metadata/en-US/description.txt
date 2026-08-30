@@ -4,15 +4,21 @@ Now native on iPhone and iPad, with a home screen widget and routine timers in t
 
 For parents
 • Add each child with a color avatar or a photo
-• Assign daily and weekly chores, each with its own reward amount
+• Assign chores with their own reward amounts, due every day or only on the days you pick
 • Build morning, bedtime, and after-school routines
+• Approve chores first if you like: kids' check-offs wait for your OK, and any chore can ask for a photo
 • Review earnings, streaks, and history at a glance
 • Manage several children, each with a separate schedule
 • Share access with a co-parent so you both stay in sync
 
+Somewhere for the money to go
+• Goals: kids pick what they are saving for and watch the bar fill as their unspent allowance grows. When it is full, you pay it out from their page
+• Reward Store: price the things money cannot buy, like screen time, picking dinner, or staying up late. Kids ask with a tap, you answer from Needs Your OK, and the price comes off their balance
+
 A simple view for your children
 • They sign in with a 4-digit PIN, so no email address is required
 • Chores can be checked off as they are finished
+• Their dashboard shows their streak, this week's earnings, their badges, and their goal
 • Routines guide them through one step at a time, with optional countdown timers
 • Badges are awarded for streaks and for completing a full week
 
@@ -23,7 +29,7 @@ Routines that run themselves
 Build a routine from named steps with icons and optional timers, ordered by drag and drop. Children can then work through it independently, and the timer for the current step appears on the Lock Screen and in the Dynamic Island.
 
 Make it your own
-A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, and a custom accent color carries across your devices.
+A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, carry into kid mode, and a custom accent color follows you across devices.
 
 Works with chorestar.app
 Family data syncs between the web app, iPhone, and iPad, so everyone sees the same information.
@@ -32,8 +38,8 @@ Privacy
 Family data is never shared or sold. Because children sign in with a PIN, no child provides an email address or any personal information.
 
 Free and Premium
-• Free: up to 3 children, 20 chores, badges, and routines
-• Premium: unlimited children and chores, premium themes, and co-parent sharing
+• Free: up to 3 children, 20 chores, badges, routines, a goal for each child, and a starter reward store
+• Premium: unlimited children, chores, and store items, premium themes, and co-parent sharing
 
 Built by a parent, for families who would like less nagging and more cooperation.
 
