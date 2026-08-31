@@ -8,6 +8,7 @@ import {
   UserPlus, Shuffle, Palette, Sun, ListChecks, PenLine,
   PlusCircle, Key, Link2, Smartphone, Play, CheckCircle2,
   PartyPopper, Settings, Copy, Edit3,
+  Wallet, Banknote, HandCoins, Target, Gift, Camera, CalendarDays,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -106,6 +107,70 @@ const tutorials: Tutorial[] = [
       { text: 'Update a PIN anytime if your child forgets it.', icon: <Key className="w-4 h-4" /> },
     ],
     tip: "Every child gets their own unique PIN. This is how ChoreStar tells kids apart at login.",
+  },
+  {
+    emoji: '💰',
+    title: 'Seeing & Paying Out Allowance',
+    slug: 'allowance-payout',
+    accent: '#f97316',
+    intro:
+      "ChoreStar keeps a running balance for every child: everything they have ever earned, minus everything you have already handed over. Here is where to find it and how to settle up.",
+    steps: [
+      { text: "Open your dashboard and scroll to a child's weekly stats.", icon: <Wallet className="w-4 h-4" /> },
+      { text: 'The balance tile shows what they have earned, what you have paid, and what is still owed.', icon: <Banknote className="w-4 h-4" /> },
+      { text: 'That number never resets with the week. Unpaid allowance stays visible until you pay it.', icon: <CheckCircle2 className="w-4 h-4" /> },
+      { text: 'When you hand over real money, tap Pay out to clear the balance.', icon: <HandCoins className="w-4 h-4" /> },
+      { text: 'If they are saving for a goal, Pay out the goal sends the money there instead.', icon: <Target className="w-4 h-4" /> },
+    ],
+    tip: 'On iOS the same balance shows on each child\'s card in the Family tab, under their chip on Home, and on their detail page next to the Pay out button.',
+  },
+  {
+    emoji: '🎯',
+    title: "Kids' Goals & the Reward Store",
+    slug: 'goals-store',
+    accent: '#06b6d4',
+    intro:
+      'New in 2.0: allowance finally has somewhere to go. Kids save toward a goal they picked, or spend in a store you stocked with things money cannot buy.',
+    steps: [
+      { text: 'Open Settings, then the Rewards tab, to stock your Reward Store.', icon: <Settings className="w-4 h-4" /> },
+      { text: 'Add items like 30 minutes of screen time or picking the family movie, and set your own prices.', icon: <Gift className="w-4 h-4" /> },
+      { text: 'In kid mode, your child picks a goal and watches the bar fill as unspent allowance grows.', icon: <Target className="w-4 h-4" /> },
+      { text: 'When a kid taps Get it! on a store item, the request lands in Needs your OK on your dashboard.', icon: <ListChecks className="w-4 h-4" /> },
+      { text: 'Approve it and the price comes off their balance automatically.', icon: <CheckCircle2 className="w-4 h-4" /> },
+    ],
+    tip: 'Starter store items are one tap to add, and every title and price stays editable. The free plan includes one goal per child and a small store.',
+  },
+  {
+    emoji: '✅',
+    title: 'Approve Chores First',
+    slug: 'approval-mode',
+    accent: '#14b8a6',
+    intro:
+      'Want a look before a tick counts? Approval mode holds kid check-offs for your OK. It is optional and off by default.',
+    steps: [
+      { text: 'Open Settings, then the Rewards tab, and turn on Approve Chores First.', icon: <Settings className="w-4 h-4" /> },
+      { text: 'Kid check-offs now land as pending instead of counting right away.', icon: <ListChecks className="w-4 h-4" /> },
+      { text: 'Pending ticks appear in Needs your OK at the top of your dashboard.', icon: <PlusCircle className="w-4 h-4" /> },
+      { text: 'Approve to count it toward money, streaks, and badges, or send it back to try again.', icon: <CheckCircle2 className="w-4 h-4" /> },
+      { text: 'Want proof? Mark any chore as Ask for a photo, and the picture arrives with the tick.', icon: <Camera className="w-4 h-4" /> },
+    ],
+    tip: 'Photo chores always go through review, even when the approval toggle is off, because a photo is meant to be looked at.',
+  },
+  {
+    emoji: '📅',
+    title: 'Chores on Their Own Days',
+    slug: 'chore-days',
+    accent: '#6366f1',
+    intro:
+      'Trash goes out on Tuesday, piano is Monday and Wednesday. Chores can now live on a schedule instead of nagging every day.',
+    steps: [
+      { text: 'Add a chore, or edit one, and find the Days section.', icon: <PenLine className="w-4 h-4" /> },
+      { text: 'Pick the days it is due. Leave all seven selected for everyday chores.', icon: <CalendarDays className="w-4 h-4" /> },
+      { text: "Kids only see what is due today, so today's list stays honest.", icon: <ListChecks className="w-4 h-4" /> },
+      { text: 'The week grid and widgets follow the schedule too.', icon: <CheckCircle2 className="w-4 h-4" /> },
+      { text: 'A day with nothing due never breaks a streak or a perfect week.', icon: <PartyPopper className="w-4 h-4" /> },
+    ],
+    tip: 'Existing chores keep working exactly as before: a chore with no schedule is simply due every day.',
   },
 ]
 
