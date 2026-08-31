@@ -160,6 +160,11 @@ switch (cmd) {
     out(await api('GET', args[0]));
     break;
   }
+  case 'rawx': {
+    const [method, path, body] = args;
+    out(await api(method.toUpperCase(), path, body ? JSON.parse(body) : undefined));
+    break;
+  }
   default:
     out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | raw <path>`);
 }
