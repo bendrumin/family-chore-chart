@@ -174,6 +174,24 @@ struct ChildDetailCard: View {
                 .padding(.vertical, 6)
                 .background(Color.choreStarAccent.opacity(0.1))
                 .cornerRadius(12)
+
+                // Unpaid balance: lifetime earned minus paid out. Unlike the
+                // daily earnings above, this never resets with the week, so
+                // money owed to the kid stays visible until Pay out.
+                if let wallet = manager.wallets[child.id], wallet.owedCents > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "banknote.fill")
+                            .foregroundColor(.choreStarWarning)
+                        Text("\(manager.formatMoney(Double(wallet.owedCents) / 100.0)) unpaid")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.choreStarTextPrimary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.choreStarWarning.opacity(0.12))
+                    .cornerRadius(12)
+                }
             }
         }
         .padding(20)

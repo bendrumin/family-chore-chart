@@ -60,6 +60,14 @@ struct DashboardView: View {
         return "\(done)/\(childChores.count)"
     }
 
+    /// "$2.01 unpaid" under a child's Home chip, nil when settled. The
+    /// lifetime balance (earned minus paid out) deliberately does not reset
+    /// with the week, so unpaid allowance stays visible until it is paid.
+    private func childOwedText(_ child: Child) -> String? {
+        guard let owed = manager.wallets[child.id]?.owedCents, owed > 0 else { return nil }
+        return "\(manager.formatMoney(Double(owed) / 100.0)) unpaid"
+    }
+
     private var earnedTodayText: String {
         let total = manager.children.reduce(0.0) { $0 + manager.calculateTodayEarnings(for: $1.id) }
         return manager.formatMoney(total)
@@ -221,7 +229,8 @@ struct DashboardView: View {
                                             AvatarRingChip(
                                                 child: child,
                                                 progress: childProgress(child),
-                                                detailText: childProgressText(child)
+                                                detailText: childProgressText(child),
+                                                owedText: childOwedText(child)
                                             )
                                         }
                                         .buttonStyle(PlainButtonStyle())

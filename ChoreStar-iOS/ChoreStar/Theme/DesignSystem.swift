@@ -119,6 +119,8 @@ struct AvatarRingChip: View {
     let child: Child
     let progress: Double
     let detailText: String
+    /// Extra warning-tinted line, e.g. "$2.01 unpaid". Hidden when nil.
+    var owedText: String? = nil
 
     var body: some View {
         VStack(spacing: 8) {
@@ -137,6 +139,15 @@ struct AvatarRingChip: View {
                 Text(detailText)
                     .font(.caption2)
                     .foregroundColor(.choreStarTextSecondary)
+
+                if let owedText {
+                    Text(owedText)
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.choreStarWarning)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
             }
         }
         .frame(width: 92)
