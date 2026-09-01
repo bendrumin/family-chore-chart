@@ -70,4 +70,35 @@ final class ReviewPrompterTests: XCTestCase {
 
         defaults.removePersistentDomain(forName: "ReviewPrompterTests")
     }
+
+    func testMoneyMomentPromptsAfterThreeDays() {
+        XCTAssertTrue(ReviewPrompter.shouldPromptAfterMoneyMoment(
+            firstLaunch: now.addingTimeInterval(-4 * day), lastPrompt: nil, now: now
+        ), "The first payout after a few days of real use is the moment to ask")
+    }
+
+    func testMoneyMomentTooSoonAfterInstallOrUnstamped() {
+        XCTAssertFalse(ReviewPrompter.shouldPromptAfterMoneyMoment(
+            firstLaunch: now.addingTimeInterval(-2 * day), lastPrompt: nil, now: now
+        ))
+        XCTAssertFalse(ReviewPrompter.shouldPromptAfterMoneyMoment(
+            firstLaunch: nil, lastPrompt: nil, now: now
+        ))
+    }
+
+    func testMoneyMomentSharesCooldownWithPerfectDayAsk() {
+        let defaults = UserDefaults(suiteName: "ReviewPrompterTests.money")!
+        defaults.removePersistentDomain(forName: "ReviewPrompterTests.money")
+
+        ReviewPrompter.recordLaunch(defaults: defaults, now: now.addingTimeInterval(-10 * day))
+        XCTAssertFalse(ReviewPrompter.recordPerfectDayAndCheck(defaults: defaults, now: now))
+        XCTAssertTrue(ReviewPrompter.recordPerfectDayAndCheck(defaults: defaults, now: now), "Perfect-day ask fires")
+        XCTAssertFalse(
+            ReviewPrompter.recordMoneyMomentAndCheck(defaults: defaults, now: now.addingTimeInterval(day)),
+            "A payout the next day must not ask again inside the shared cooldown"
+        )
+        XCTAssertTrue(ReviewPrompter.recordMoneyMomentAndCheck(defaults: defaults, now: now.addingTimeInterval(91 * day)))
+
+        defaults.removePersistentDomain(forName: "ReviewPrompterTests.money")
+    }
 }

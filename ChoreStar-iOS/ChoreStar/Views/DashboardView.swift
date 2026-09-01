@@ -526,6 +526,7 @@ struct ChoreCard: View {
 struct ApprovalTrayView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var lightbox: SupabaseManager.PendingApproval?
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         Group {
@@ -592,6 +593,11 @@ struct ApprovalTrayView: View {
                                 Task {
                                     if let err = await manager.reviewRedemption(id: r.id, action: "approve") {
                                         await MainActor.run { manager.debugLastError = err }
+                                    } else if ReviewPrompter.recordMoneyMomentAndCheck() {
+                                        // Store request approved: money moved.
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                                            requestReview()
+                                        }
                                     }
                                 }
                             } label: {

@@ -2,8 +2,8 @@ import Foundation
 
 /// Decides when to ask for an App Store rating. The ask itself goes through
 /// StoreKit's requestReview — which Apple already caps at 3 prompts per year —
-/// but this gate keeps our calls rarer still, and only at happy moments:
-/// a perfect-day celebration on the PARENT dashboard. Kid-mode surfaces must
+/// but this gate keeps our calls rarer still, and only at happy PARENT-side
+/// moments: a perfect-day celebration, a payout, an approved store request. Kid-mode surfaces must
 /// never prompt; kids can't leave reviews and shouldn't be interrupted.
 enum ReviewPrompter {
 
@@ -81,6 +81,39 @@ enum ReviewPrompter {
             defaults.set(now, forKey: lastPromptKey)
         }
         return decision
+    }
+
+    /// Call after a successful money moment on the parent side: a payout, or
+    /// an approved Reward Store request. Real money changed hands, which is a
+    /// stronger signal than a perfect day, so a single moment qualifies. The
+    /// prompt date is SHARED with the perfect-day path, so the two asks can
+    /// never stack inside one cooldown window.
+    static func recordMoneyMomentAndCheck(defaults: UserDefaults = .standard, now: Date = Date()) -> Bool {
+        let decision = shouldPromptAfterMoneyMoment(
+            firstLaunch: defaults.object(forKey: firstLaunchKey) as? Date,
+            lastPrompt: defaults.object(forKey: lastPromptKey) as? Date,
+            now: now
+        )
+        if decision {
+            defaults.set(now, forKey: lastPromptKey)
+        }
+        return decision
+    }
+
+    /// Pure decision core for money moments, unit-tested: a few days of real
+    /// use and no recent ask. No event-count threshold on purpose; the FIRST
+    /// payout is exactly the moment worth asking at.
+    static func shouldPromptAfterMoneyMoment(firstLaunch: Date?, lastPrompt: Date?, now: Date) -> Bool {
+        let day: TimeInterval = 86_400
+        guard let firstLaunch,
+              now.timeIntervalSince(firstLaunch) >= TimeInterval(minDaysSinceFirstLaunch) * day else {
+            return false
+        }
+        if let lastPrompt,
+           now.timeIntervalSince(lastPrompt) < TimeInterval(minDaysBetweenPrompts) * day {
+            return false
+        }
+        return true
     }
 
     /// Pure decision core, unit-tested: prompt only when the family has used

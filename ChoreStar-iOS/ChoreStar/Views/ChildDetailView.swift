@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 struct ChildDetailView: View {
     let child: Child
@@ -511,6 +512,7 @@ struct ParentGoalSection: View {
     @State private var busy = false
     @State private var message: String?
     @State private var editing = false
+    @Environment(\.requestReview) private var requestReview
 
     private var wallet: SupabaseManager.KidWallet? { manager.wallets[child.id] }
     private func money(_ cents: Int) -> String { manager.formatMoney(Double(cents) / 100.0) }
@@ -627,6 +629,13 @@ struct ParentGoalSection: View {
                 message = goalId == nil
                     ? "Paid \(child.name) \(money(paid))."
                     : "Paid \(child.name) \(money(paid)) toward the goal. Goal reached!"
+                // Money just changed hands, the happiest parent-side moment
+                // there is. ReviewPrompter keeps the ask rare.
+                if ReviewPrompter.recordMoneyMomentAndCheck() {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                        requestReview()
+                    }
+                }
             } else {
                 message = result.error
             }
