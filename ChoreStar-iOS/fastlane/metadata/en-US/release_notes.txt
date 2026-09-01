@@ -1,11 +1,7 @@
-Version 2.0 gives the cents somewhere to go, and gives kids a screen that is really theirs.
+Version 2.0.1 is a polish pass on 2.0.
 
-• Goals: kids pick what they are saving for and watch the bar fill as their unspent allowance grows. You get a nudge when it is full, then pay it out from their page
-• Reward Store: price the things money cannot buy (screen time, pick dinner, stay up late). Kids ask with a tap, you say yes or no from Needs Your OK, and the price comes off their balance
-• Chores on their own days: pick the days a chore is due. Today's list, the week grid, and the widget only show what is due, and a day with nothing due never breaks a streak
-• Kids see their streak, this week's earnings, and their badges on their dashboard
-• Kid mode wears your theme: header, celebration, confetti, widgets, and Live Activity follow your seasonal or accent theme
-• Optional approval: turn on Approve Chores First and kids' ticks wait for your OK (with a tap-to-approve alert). Any chore can also ask for a photo
-• The medium widget shows each kid's goal progress; the small one shows the family's best streak
+• Home chips and Family cards show unpaid allowance at a glance, so you always know who is owed what
+• Manage your subscription right from Settings: switch plans or cancel without digging through the App Store
+• Small fixes and smoother edges throughout
 
 Questions or feedback are welcome at hi@chorestar.app

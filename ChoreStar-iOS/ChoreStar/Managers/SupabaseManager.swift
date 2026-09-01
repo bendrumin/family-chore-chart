@@ -3472,6 +3472,14 @@ class SupabaseManager: ObservableObject {
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
             }
 
+            // A verified App Store entitlement can upgrade a stale "free"
+            // profile (family sharing, offer codes, a renewal or ask-to-buy
+            // approval processed while the app was closed). Runs here, after
+            // the profile row lands, so the upgrade-only guard inside
+            // syncEntitlement compares against fresh state instead of the
+            // "free" default it would see at cold launch.
+            await StoreKitManager.shared.syncEntitlement()
+
             // Accounts created before signup seeded kid_login_code have none,
             // which made kid login impossible from an iOS-only family. The
             // endpoint mints one on demand (owners only — shared members use
@@ -3780,6 +3788,40 @@ class SupabaseManager: ObservableObject {
         } catch {
             await MainActor.run {
                 debugLastError = "Subscription update error: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Records the Apple subscription's original transaction id on the profile
+    /// so App Store Server Notifications can map renewals and cancellations to
+    /// this family (a purchase made before appAccountToken existed carries
+    /// nothing else that identifies us). Deduped per user so it writes once,
+    /// not on every entitlement sync; a failed write retries next launch
+    /// because the dedupe key is only set on success.
+    func recordAppleOriginalTransactionId(_ transactionId: String) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        let dedupeKey = "apple.originalTransactionIdSynced.\(uid)"
+        if UserDefaults.standard.string(forKey: dedupeKey) == transactionId { return }
+
+        struct ProfileUpdate: Encodable {
+            let apple_original_transaction_id: String
+        }
+
+        do {
+            try await client
+                .from("profiles")
+                .update(ProfileUpdate(apple_original_transaction_id: transactionId))
+                .eq("id", value: uid)
+                .execute()
+            UserDefaults.standard.set(transactionId, forKey: dedupeKey)
+        } catch {
+            await MainActor.run {
+                debugLastError = "Apple txn id sync error: \(error.localizedDescription)"
             }
         }
         #endif

@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
@@ -10,6 +11,8 @@ struct SettingsView: View {
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
+    @State private var showingManageSubscriptions = false
+    @State private var hasAppleSubscription = false
     @State private var showingWhatsNew = false
     @State private var showingDeleteAccount = false
     @State private var customAccent: Color = .choreStarPrimary
@@ -166,7 +169,21 @@ struct SettingsView: View {
                                 .foregroundColor(.choreStarPrimary)
                         }
                     }
-                    
+
+                    // Only Apple-billed subscribers get the sheet; Stripe
+                    // subscribers would see an empty "no subscriptions" page.
+                    if manager.isPremium && hasAppleSubscription {
+                        Button(action: { showingManageSubscriptions = true }) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Manage Subscription")
+                                    .foregroundColor(.choreStarPrimary)
+                                Text("Change plans or cancel. Billed by Apple.")
+                                    .font(.caption)
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                        }
+                    }
+
                     HStack {
                         Text("Children")
                             .foregroundColor(.choreStarTextSecondary)
@@ -405,6 +422,10 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingDeleteAccount) {
                 DeleteAccountView()
+            }
+            .manageSubscriptionsSheet(isPresented: $showingManageSubscriptions)
+            .task {
+                hasAppleSubscription = await StoreKitManager.shared.hasActiveAppleSubscription()
             }
         }
     }

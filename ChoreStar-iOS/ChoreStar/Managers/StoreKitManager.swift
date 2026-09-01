@@ -80,7 +80,14 @@ final class StoreKitManager: ObservableObject {
         defer { purchaseInProgress = false }
 
         do {
-            let result = try await product.purchase()
+            // Stamp the purchase with the profile id so App Store Server
+            // Notifications can map every later renewal, refund, or expiry to
+            // this family server-side (/api/apple/notifications).
+            var options: Set<Product.PurchaseOption> = []
+            if let uid = SupabaseManager.shared.debugUserId, let token = UUID(uuidString: uid) {
+                options.insert(.appAccountToken(token))
+            }
+            let result = try await product.purchase(options: options)
 
             switch result {
             case .success(let verification):
@@ -135,19 +142,24 @@ final class StoreKitManager: ObservableObject {
 
     /// Checks current entitlements and pushes an upgrade to the profile if needed.
     func syncEntitlement() async {
-        var isEntitled = false
+        var entitled: Transaction?
 
         for await entitlement in Transaction.currentEntitlements {
             guard case .verified(let transaction) = entitlement,
                   ProductID.all.contains(transaction.productID) else { continue }
-            isEntitled = true
+            entitled = transaction
             break
         }
 
-        guard isEntitled else { return }
+        guard let entitled else { return }
 
         let manager = SupabaseManager.shared
-        // Upgrade-only: never downgrade. Stripe's webhook owns cancellations.
+        // The Apple webhook maps notifications to profiles by this id — it is
+        // all a pre-2.0.1 purchase carries, so recording it here heals older
+        // subscribers on their next launch.
+        await manager.recordAppleOriginalTransactionId(String(entitled.originalID))
+        // Upgrade-only: never downgrade. Cancellations are handled server-side:
+        // /api/apple/notifications for Apple billing, Stripe's webhook for web.
         if manager.subscriptionType == "free" {
             await manager.updateSubscriptionType("premium")
         }

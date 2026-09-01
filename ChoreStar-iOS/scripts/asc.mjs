@@ -41,6 +41,37 @@ async function api(method, path, body) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// The App Store SERVER API (api.storekit.itunes.apple.com — transactions,
+// server notifications) takes the same key as ASC but its JWT also needs the
+// bundle id as `bid`.
+const BUNDLE_ID = 'com.chorestar.ChoreStar';
+function serverToken() {
+  const now = Math.floor(Date.now() / 1000);
+  const input = `${b64u({ alg: 'ES256', kid: KEY_ID, typ: 'JWT' })}.${b64u({
+    iss: ISSUER,
+    iat: now - 30,
+    exp: now + 1140,
+    aud: 'appstoreconnect-v1',
+    bid: BUNDLE_ID,
+  })}`;
+  const key = createPrivateKey(readFileSync(KEY_PATH));
+  const sig = createSign('sha256').update(input).sign({ key, dsaEncoding: 'ieee-p1363' });
+  return `${input}.${sig.toString('base64url')}`;
+}
+
+async function serverApi(method, path, body) {
+  const res = await fetch(`https://api.storekit.itunes.apple.com${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${serverToken()}`, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  const json = text ? JSON.parse(text) : {};
+  if (!res.ok)
+    throw new Error(`${method} ${path} -> ${res.status}\n${JSON.stringify(json, null, 2)}`);
+  return json;
+}
+
 async function findVersion(v) {
   const j = await api(
     'GET',
@@ -156,6 +187,50 @@ switch (cmd) {
     out(`SUBMITTED for review: version ${args[0]}, reviewSubmission ${sub.data.id}`);
     break;
   }
+  case 'set-whatsnew': {
+    // set-whatsnew <version> <file> — writes the file's text as the version's
+    // en-US "What's New". PATCHing the loc directly avoids fastlane deliver,
+    // whose metadata overwrite re-uploads duplicate screenshots (the 1.5/2.0
+    // gotcha). A fresh version usually inherits an en-US loc; create if not.
+    const [vs, file] = args;
+    const v = await findVersion(vs);
+    if (!v) throw new Error(`no appStoreVersion ${vs}`);
+    const text = readFileSync(file, 'utf8').trim();
+    const locs = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=10`);
+    const loc = locs.data.find((l) => l.attributes.locale === 'en-US');
+    if (!loc) {
+      const j = await api('POST', '/v1/appStoreVersionLocalizations', {
+        data: {
+          type: 'appStoreVersionLocalizations',
+          attributes: { locale: 'en-US', whatsNew: text },
+          relationships: { appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } },
+        },
+      });
+      out(`created en-US loc ${j.data.id} with whatsNew (${text.length} chars)`);
+    } else {
+      await api('PATCH', `/v1/appStoreVersionLocalizations/${loc.id}`, {
+        data: { type: 'appStoreVersionLocalizations', id: loc.id, attributes: { whatsNew: text } },
+      });
+      out(`whatsNew set on en-US loc ${loc.id} (${text.length} chars)`);
+    }
+    break;
+  }
+  case 'test-notification': {
+    // Asks Apple to POST a TEST notification to the server URL configured in
+    // ASC (App Information > App Store Server Notifications). Verify receipt
+    // with test-notification-status <token> and the apple_notifications table.
+    const j = await serverApi('POST', '/inApps/v1/notifications/test');
+    out(j);
+    break;
+  }
+  case 'test-notification-status': {
+    const j = await serverApi('GET', `/inApps/v1/notifications/test/${args[0]}`);
+    out({
+      sendAttempts: j.sendAttempts,
+      firstSendAttemptResult: j.firstSendAttemptResult,
+    });
+    break;
+  }
   case 'raw': {
     out(await api('GET', args[0]));
     break;
@@ -166,5 +241,5 @@ switch (cmd) {
     break;
   }
   default:
-    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | raw <path>`);
+    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | set-whatsnew <v> <file> | test-notification | test-notification-status <token> | raw <path> | rawx <method> <path> [json]`);
 }
