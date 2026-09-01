@@ -1,6 +1,6 @@
 # ChoreStar
 
-A family chore-tracking app that gamifies household tasks for kids — parents assign chores and build step-by-step routines, and kids log in **without an email or password** (just a family code + PIN) to check off tasks, run routines, earn allowance, and unlock badges.
+A family chore-tracking app that gamifies household tasks for kids — parents assign chores and build step-by-step routines, and kids log in **without an email or password** (just a family code + PIN) to check off tasks, run routines, earn allowance, save it toward goals, spend it in a parent-priced reward store, and unlock badges.
 
 **Live:** [chorestar.app](https://chorestar.app) · **Web** (Next.js) + **iOS** (native SwiftUI) + **Android** (Capacitor), all on one shared backend.
 
@@ -35,6 +35,11 @@ A single Supabase (Postgres + RLS) instance backs the web app, the native iOS ap
 
 Key files: [`lib/ai/suggest-chores.ts`](chorestar-nextjs/lib/ai/suggest-chores.ts), [`app/api/ai/suggest-chores/`](chorestar-nextjs/app/api/ai/suggest-chores), [`evals/`](chorestar-nextjs/evals).
 
+### 5. The allowance wallet — derived, never stored (2.0)
+2.0 gave the money somewhere to go: kids save toward **goals** and spend in a **reward store** parents stock with things money can't buy (screen time, movie night, staying up late). The rule underneath: **the balance is never stored**. What a child is owed is derived on every read as *earned minus paid*, where *earned* re-runs the shared earnings rules — only parent-approved ticks, only chores due on their scheduled weekdays — and *paid* is the sum of `allowance_payouts` rows. Goal payouts and store redemptions aren't balance mutations; they're just payout rows tagged with `goal_id` / `reward_item_id`. A stored running total would drift the moment history changed underneath it (a pending tick, an edited reward, a deleted chore); a derivation can't, and there are no reconciliation jobs. Both clients read the same server endpoints, so web and iOS can never disagree about money.
+
+Approval mode rides the same rails: with review on (or on any photo-proof chore), a kid's tick lands as `status='pending'` and **only approved rows count anywhere** — money, streaks, badges, perfect days. Key files: [`lib/utils/wallet.ts`](chorestar-nextjs/lib/utils/wallet.ts), [`lib/utils/earnings.ts`](chorestar-nextjs/lib/utils/earnings.ts), [`app/api/allowance/`](chorestar-nextjs/app/api/allowance), [`database-migrations/017_goals_and_reward_store.sql`](database-migrations/017_goals_and_reward_store.sql).
+
 ---
 
 ## Architecture
@@ -56,7 +61,7 @@ family-chore-chart/
 **Android:** Capacitor 8 shell loading the deployed web app in a native WebView.
 
 ### Data model (core tables)
-`profiles` · `children` · `chores` · `chore_completions` (7-day grid) · `routines` / `routine_steps` / `routine_completions` · `child_pins` / `kid_sessions` (kid auth) · `family_settings` · `family_members` / `family_invites` (co-parent sharing) · `achievement_badges`. Row-level security on all of them.
+`profiles` · `children` · `chores` (per-weekday schedules) · `chore_completions` (7-day grid + approval status) · `goals` / `reward_items` / `reward_redemptions` / `allowance_payouts` (the 2.0 wallet) · `routines` / `routine_steps` / `routine_completions` · `child_pins` / `kid_sessions` (kid auth) · `family_settings` · `family_members` / `family_invites` (co-parent sharing) · `achievement_badges`. Row-level security on all of them.
 
 ---
 
@@ -67,6 +72,7 @@ family-chore-chart/
 - **Optimistic UI + TanStack Query** — checking off a chore updates instantly and reconciles with the server, which matters for the kid-facing flows.
 - **Capacitor for Android, native for iOS** — iOS gets a first-class SwiftUI app (widgets, Live Activities, StoreKit); Android reuses the web app to avoid a third parallel codebase, trading some native polish for velocity.
 - **Dual monetization** — Stripe on web, StoreKit 2 on iOS, entitlement synced upgrade-only (Stripe stays source of truth for downgrades).
+- **Derived money over stored totals** — what a kid is owed is computed from history (approved completions minus payouts) on every read; goals and store purchases append payout rows rather than mutating a balance. No drift, no reconciliation, and both platforms agree by construction.
 - **AI as an enhancement, not a dependency** — the Claude-powered suggestions sit behind a `503`-triggered fallback to a local rule-based engine, so the feature still works (just less personalized) with no API key or a rate-limited API. One cheap, cached, schema-validated model call per refresh — chosen over a "call on every keystroke" design to keep token cost negligible.
 
 ---
