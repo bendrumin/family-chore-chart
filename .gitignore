@@ -82,3 +82,10 @@ temp/
 # Minted App Store Connect JWTs — short-lived credentials, never commit
 asc.jwt
 *.jwt
+
+# App Review contact details for deliver. Personal data on a public repo, so
+# these live only on the release machine, same policy as KidCanvas.
+ChoreStar-iOS/fastlane/metadata/review_information/first_name.txt
+ChoreStar-iOS/fastlane/metadata/review_information/last_name.txt
+ChoreStar-iOS/fastlane/metadata/review_information/phone_number.txt
+ChoreStar-iOS/fastlane/metadata/review_information/email_address.txt
