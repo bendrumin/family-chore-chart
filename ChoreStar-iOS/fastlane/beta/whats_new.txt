@@ -1,0 +1,4 @@
+NEW IN THIS BUILD:
+
+- See the App Store version notes for this release; TestFlight builds track the
+  same changes until a beta-specific note replaces this file.

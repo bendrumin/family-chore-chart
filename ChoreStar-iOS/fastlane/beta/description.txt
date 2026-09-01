@@ -1,0 +1,3 @@
+ChoreStar is a family chore chart: parents set up the chores and rewards, kids check them off, and everyone can see where the stars stand.
+
+Feedback goes to the email below. The demo account in the review notes is pre-seeded with a family and chores.

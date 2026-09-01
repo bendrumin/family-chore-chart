@@ -1,0 +1,3 @@
+Sign in with the demo account from the review information; it is pre-seeded
+with a family, children, and chores. Everything is family-scoped; there is no
+public content.
