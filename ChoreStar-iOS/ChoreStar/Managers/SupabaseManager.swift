@@ -251,7 +251,7 @@ class SupabaseManager: ObservableObject {
         let familyCode = await MainActor.run { kidLoginCode }
 
         guard let familyCode = familyCode, !familyCode.isEmpty else {
-            return "Kid login isn't set up yet. Open Settings on chorestar.app to get your family code."
+            return String(localized: "Kid login isn't set up yet. Open Settings on chorestar.app to get your family code.")
         }
 
         let outcome = await verifyPinViaAPI(familyCode: familyCode, pin: pin)
@@ -266,11 +266,11 @@ class SupabaseManager: ObservableObject {
             // only accept it if it belongs to the child that was selected.
             guard let matchedId = result.child.flatMap({ UUID(uuidString: $0.id) }),
                   matchedId == childId else {
-                return "Incorrect PIN. Try again!"
+                return String(localized: "Incorrect PIN. Try again!")
             }
 
             let child = await MainActor.run { children.first(where: { $0.id == childId }) }
-            guard let child = child else { return "Something went wrong. Try again!" }
+            guard let child = child else { return String(localized: "Something went wrong. Try again!") }
 
             await MainActor.run {
                 self.currentChild = child
@@ -311,7 +311,7 @@ class SupabaseManager: ObservableObject {
 
     private func verifyPinViaAPI(familyCode: String, pin: String) async -> PinVerifyOutcome {
         guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/child-pin/verify") else {
-            return .failure("Something went wrong. Try again!")
+            return .failure(String(localized: "Something went wrong. Try again!"))
         }
 
         var request = URLRequest(url: url)
@@ -322,21 +322,21 @@ class SupabaseManager: ObservableObject {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure("Couldn't reach ChoreStar. Check your connection.")
+                return .failure(String(localized: "Couldn't reach ChoreStar. Check your connection."))
             }
             if httpResponse.statusCode == 429 {
-                return .failure("Too many tries. Please wait a few minutes and try again.")
+                return .failure(String(localized: "Too many tries. Please wait a few minutes and try again."))
             }
             let decoded = try? JSONDecoder().decode(PinVerifyResponse.self, from: data)
             guard httpResponse.statusCode == 200, let decoded = decoded, decoded.success == true else {
-                return .failure(decoded?.error ?? "Incorrect PIN. Try again!")
+                return .failure(decoded?.error ?? String(localized: "Incorrect PIN. Try again!"))
             }
             return .success(decoded)
         } catch {
             await MainActor.run {
                 debugLastError = "PIN API verify failed: \(error.localizedDescription)"
             }
-            return .failure("Couldn't reach ChoreStar. Check your connection.")
+            return .failure(String(localized: "Couldn't reach ChoreStar. Check your connection."))
         }
     }
 
@@ -478,7 +478,7 @@ class SupabaseManager: ObservableObject {
             guard let apiChild = result.child,
                   let childId = UUID(uuidString: apiChild.id),
                   let kidToken = result.kidToken else {
-                return "Something went wrong. Try again!"
+                return String(localized: "Something went wrong. Try again!")
             }
 
             let session = KidModeSession(
@@ -2928,12 +2928,13 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
-    /// Reward mode, daily/weekly amounts, and currency — previously web-only.
+    /// Reward mode, daily/weekly amounts, currency, and timezone — previously web-only.
     func updateFamilyRewards(
         rewardMode: String,
         dailyRewardCents: Int,
         weeklyBonusCents: Int,
-        currencyCode: String
+        currencyCode: String,
+        timezone: String? = nil
     ) async -> String? {
         #if canImport(Supabase)
         guard let client = client else { return "Something went wrong." }
@@ -2949,6 +2950,7 @@ class SupabaseManager: ObservableObject {
             let daily_reward_cents: Int
             let weekly_bonus_cents: Int
             let currency_code: String
+            let timezone: String
         }
 
         do {
@@ -2959,7 +2961,8 @@ class SupabaseManager: ObservableObject {
                     reward_mode: rewardMode,
                     daily_reward_cents: dailyRewardCents,
                     weekly_bonus_cents: weeklyBonusCents,
-                    currency_code: currencyCode
+                    currency_code: currencyCode,
+                    timezone: timezone ?? TimeZone.current.identifier
                 ), onConflict: "user_id")
                 .execute()
             await loadFamilySettings()

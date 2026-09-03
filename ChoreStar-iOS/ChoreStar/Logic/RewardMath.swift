@@ -54,14 +54,75 @@ enum RewardMath {
 /// A missing or empty schedule means every day: that is what every chore was
 /// before `chores.days_of_week` existed, and it keeps old rows behaving the
 /// same way.
+/// Which two days "Weekends" means. The chore grid is still Sunday=0; this
+/// only changes the Weekdays/Weekends presets and their labels.
+enum WeekendStyle: Equatable {
+    /// Saturday–Sunday. US, Europe, most of the world. Days 0 and 6.
+    case saturdaySunday
+    /// Friday–Saturday. Saudi Arabia, UAE, and much of the Gulf. Days 5 and 6.
+    case fridaySaturday
+
+    var weekends: [Int] {
+        switch self {
+        case .saturdaySunday: return [0, 6]
+        case .fridaySaturday: return [5, 6]
+        }
+    }
+
+    var weekdays: [Int] {
+        switch self {
+        case .saturdaySunday: return [1, 2, 3, 4, 5]
+        case .fridaySaturday: return [0, 1, 2, 3, 4]
+        }
+    }
+
+    /// IANA zones whose civil weekend is Friday–Saturday.
+    /// Iran (Thu–Fri) is intentionally not in this set.
+    static let fridaySaturdayTimeZones: Set<String> = [
+        "Asia/Riyadh", "Asia/Dubai", "Asia/Qatar", "Asia/Bahrain",
+        "Asia/Kuwait", "Asia/Muscat", "Asia/Aden",
+        "Asia/Amman", "Asia/Baghdad", "Asia/Damascus",
+        "Asia/Gaza", "Asia/Hebron", "Asia/Jerusalem",
+        "Africa/Cairo", "Africa/Khartoum", "Africa/Tripoli", "Africa/Djibouti",
+    ]
+
+    /// Family timezone wins when it is a real IANA zone (not the web default
+    /// of `UTC`). Otherwise the iPhone's zone — so a Riyadh phone still gets
+    /// Friday–Saturday presets before anyone opens Settings.
+    static func inferred(
+        familyTimezone: String?,
+        deviceTimezone: String = TimeZone.current.identifier
+    ) -> WeekendStyle {
+        let id: String
+        if let familyTimezone,
+           familyTimezone != "UTC",
+           !familyTimezone.isEmpty,
+           TimeZone(identifier: familyTimezone) != nil {
+            id = familyTimezone
+        } else {
+            id = deviceTimezone
+        }
+        return fridaySaturdayTimeZones.contains(id) ? .fridaySaturday : .saturdaySunday
+    }
+}
+
 enum ChoreSchedule {
 
     static let everyDay: [Int] = [0, 1, 2, 3, 4, 5, 6]
-    static let weekdays: [Int] = [1, 2, 3, 4, 5]
-    static let weekends: [Int] = [0, 6]
+    static let weekdays: [Int] = WeekendStyle.saturdaySunday.weekdays
+    static let weekends: [Int] = WeekendStyle.saturdaySunday.weekends
 
     static let shortNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     static let longNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+    /// The order the seven day slots render in, honoring the calendar's first
+    /// weekday (Monday-first in the UK and most of Europe, Sunday-first in the
+    /// US and the Gulf). Data stays Sunday=0 everywhere; this is presentation
+    /// only, so a stored schedule never changes meaning across locales.
+    static func displayOrder(calendar: Calendar = .current) -> [Int] {
+        let first = (calendar.firstWeekday - 1) % 7 // Calendar.firstWeekday is 1-based, 1 = Sunday
+        return (0..<7).map { (first + $0) % 7 }
+    }
 
     /// Sorted, de-duplicated, in range. Empty (or nil) becomes every day.
     static func normalized(_ days: [Int]?) -> [Int] {
@@ -78,11 +139,13 @@ enum ChoreSchedule {
     }
 
     /// "Every day", "Weekdays", "Weekends", "Tuesdays", or "Mon, Wed, Fri".
-    static func label(for days: [Int]) -> String {
+    /// `weekendStyle` only affects what counts as Weekdays/Weekends; a Sat–Sun
+    /// chore in a Gulf family still labels as "Sun, Sat", not "Weekends".
+    static func label(for days: [Int], weekendStyle: WeekendStyle = .saturdaySunday) -> String {
         let d = normalized(days)
         if d.count == 7 { return "Every day" }
-        if d == weekdays { return "Weekdays" }
-        if d == weekends { return "Weekends" }
+        if d == weekendStyle.weekdays { return "Weekdays" }
+        if d == weekendStyle.weekends { return "Weekends" }
         if d.count == 1 { return longNames[d[0]] + "s" }
         return d.map { shortNames[$0] }.joined(separator: ", ")
     }

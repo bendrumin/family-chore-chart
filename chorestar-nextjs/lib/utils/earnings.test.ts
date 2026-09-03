@@ -196,6 +196,13 @@ t('zero-decimal currencies do not show a fractional part', () => {
   assert.equal(formatMoney(500000, 'KRW'), '₩5000')
 })
 
+t('Gulf currencies format with their own symbols', () => {
+  assert.equal(findCurrency('SAR').symbol, 'ر.س')
+  assert.equal(formatMoney(100, 'SAR'), 'ر.س1.00')
+  assert.equal(findCurrency('AED').symbol, 'د.إ')
+  assert.equal(formatMoney(250, 'AED'), 'د.إ2.50')
+})
+
 t('an unknown or missing currency falls back to USD rather than throwing', () => {
   assert.equal(currencySymbol(null), '$')
   assert.equal(currencySymbol(undefined), '$')

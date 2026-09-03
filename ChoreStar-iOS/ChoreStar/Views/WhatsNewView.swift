@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.0"
+    static let latestVersion = "2.1"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,23 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.1",
+            date: "September 2026",
+            title: "Allowance in Your Money",
+            features: [
+                Feature(
+                    icon: "💰",
+                    title: "More Currencies, Including the Gulf",
+                    description: "Pick Saudi Riyal, UAE Dirham, and dozens more in Settings > Rewards & Currency. Rewards and allowance use that symbol everywhere on iPhone."
+                ),
+                Feature(
+                    icon: "🌍",
+                    title: "Family Time Zone",
+                    description: "Set your city's time zone in the same screen. In the Gulf, Weekdays and Weekends on a new chore mean Sunday–Thursday and Friday–Saturday."
+                ),
+            ]
+        ),
         Entry(
             version: "2.0",
             date: "September 2026",

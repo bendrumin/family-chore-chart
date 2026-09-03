@@ -166,7 +166,7 @@ struct WeekCalendarView: View {
                 } else if viewMode == .daily {
                     // DAILY LIST VIEW
                     VStack(spacing: 16) {
-                        ForEach(0..<7) { dayIndex in
+                        ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
                             DayBreakdownCard(
                                 dayIndex: dayIndex,
                                 dayName: fullDays[dayIndex],
@@ -200,7 +200,7 @@ struct WeekCalendarView: View {
                                 .padding(.leading, 16)
                                 
                                 // Day headers
-                                ForEach(0..<7) { dayIndex in
+                                ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
                                     VStack(spacing: 6) {
                                         Text(days[dayIndex])
                                             .font(.subheadline)
@@ -332,7 +332,7 @@ struct ChoreWeekRow: View {
             .padding(.leading, 16)
             
             // Day cells
-            ForEach(0..<7) { dayIndex in
+            ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
                 DayCell(
                     chore: chore,
                     dayIndex: dayIndex,

@@ -283,6 +283,80 @@ struct CustomThemePayload: Codable {
     var autoSeasonal: Bool?
 }
 
+/// One catalog for the Rewards picker, symbols, and decimals. Keep in sync
+/// with `chorestar-nextjs/lib/constants/currencies.ts`. Storage is always
+/// integer cents (hundredths), so 3-decimal dinars (KWD/BHD/OMR) stay out.
+struct FamilyCurrency: Identifiable, Equatable {
+    let code: String
+    let symbol: String
+    let flag: String
+    let name: String
+    /// Display decimals. JPY/KRW/CLP have none. Storage is still cents.
+    let decimals: Int
+
+    var id: String { code }
+    var pickerLabel: String { "\(flag) \(name) (\(symbol))" }
+
+    static let all: [FamilyCurrency] = [
+        FamilyCurrency(code: "USD", symbol: "$", flag: "🇺🇸", name: "US Dollar", decimals: 2),
+        FamilyCurrency(code: "EUR", symbol: "€", flag: "🇪🇺", name: "Euro", decimals: 2),
+        FamilyCurrency(code: "GBP", symbol: "£", flag: "🇬🇧", name: "British Pound", decimals: 2),
+        FamilyCurrency(code: "CAD", symbol: "$", flag: "🇨🇦", name: "Canadian Dollar", decimals: 2),
+        FamilyCurrency(code: "AUD", symbol: "$", flag: "🇦🇺", name: "Australian Dollar", decimals: 2),
+        FamilyCurrency(code: "NZD", symbol: "$", flag: "🇳🇿", name: "New Zealand Dollar", decimals: 2),
+        FamilyCurrency(code: "SAR", symbol: "ر.س", flag: "🇸🇦", name: "Saudi Riyal", decimals: 2),
+        FamilyCurrency(code: "AED", symbol: "د.إ", flag: "🇦🇪", name: "UAE Dirham", decimals: 2),
+        FamilyCurrency(code: "QAR", symbol: "ر.ق", flag: "🇶🇦", name: "Qatari Riyal", decimals: 2),
+        FamilyCurrency(code: "EGP", symbol: "E£", flag: "🇪🇬", name: "Egyptian Pound", decimals: 2),
+        FamilyCurrency(code: "ILS", symbol: "₪", flag: "🇮🇱", name: "Israeli Shekel", decimals: 2),
+        FamilyCurrency(code: "TRY", symbol: "₺", flag: "🇹🇷", name: "Turkish Lira", decimals: 2),
+        FamilyCurrency(code: "JPY", symbol: "¥", flag: "🇯🇵", name: "Japanese Yen", decimals: 0),
+        FamilyCurrency(code: "CNY", symbol: "¥", flag: "🇨🇳", name: "Chinese Yuan", decimals: 2),
+        FamilyCurrency(code: "KRW", symbol: "₩", flag: "🇰🇷", name: "Korean Won", decimals: 0),
+        FamilyCurrency(code: "INR", symbol: "₹", flag: "🇮🇳", name: "Indian Rupee", decimals: 2),
+        FamilyCurrency(code: "SGD", symbol: "$", flag: "🇸🇬", name: "Singapore Dollar", decimals: 2),
+        FamilyCurrency(code: "HKD", symbol: "$", flag: "🇭🇰", name: "Hong Kong Dollar", decimals: 2),
+        FamilyCurrency(code: "TWD", symbol: "NT$", flag: "🇹🇼", name: "Taiwan Dollar", decimals: 2),
+        FamilyCurrency(code: "THB", symbol: "฿", flag: "🇹🇭", name: "Thai Baht", decimals: 2),
+        FamilyCurrency(code: "PHP", symbol: "₱", flag: "🇵🇭", name: "Philippine Peso", decimals: 2),
+        FamilyCurrency(code: "MYR", symbol: "RM", flag: "🇲🇾", name: "Malaysian Ringgit", decimals: 2),
+        FamilyCurrency(code: "IDR", symbol: "Rp", flag: "🇮🇩", name: "Indonesian Rupiah", decimals: 2),
+        FamilyCurrency(code: "CHF", symbol: "Fr", flag: "🇨🇭", name: "Swiss Franc", decimals: 2),
+        FamilyCurrency(code: "SEK", symbol: "kr", flag: "🇸🇪", name: "Swedish Krona", decimals: 2),
+        FamilyCurrency(code: "NOK", symbol: "kr", flag: "🇳🇴", name: "Norwegian Krone", decimals: 2),
+        FamilyCurrency(code: "DKK", symbol: "kr", flag: "🇩🇰", name: "Danish Krone", decimals: 2),
+        FamilyCurrency(code: "PLN", symbol: "zł", flag: "🇵🇱", name: "Polish Zloty", decimals: 2),
+        FamilyCurrency(code: "CZK", symbol: "Kč", flag: "🇨🇿", name: "Czech Koruna", decimals: 2),
+        FamilyCurrency(code: "MXN", symbol: "$", flag: "🇲🇽", name: "Mexican Peso", decimals: 2),
+        FamilyCurrency(code: "BRL", symbol: "R$", flag: "🇧🇷", name: "Brazilian Real", decimals: 2),
+        FamilyCurrency(code: "COP", symbol: "$", flag: "🇨🇴", name: "Colombian Peso", decimals: 2),
+        FamilyCurrency(code: "ARS", symbol: "$", flag: "🇦🇷", name: "Argentine Peso", decimals: 2),
+        FamilyCurrency(code: "PEN", symbol: "S/", flag: "🇵🇪", name: "Peruvian Sol", decimals: 2),
+        FamilyCurrency(code: "CLP", symbol: "$", flag: "🇨🇱", name: "Chilean Peso", decimals: 0),
+        FamilyCurrency(code: "ZAR", symbol: "R", flag: "🇿🇦", name: "South African Rand", decimals: 2),
+    ]
+
+    /// Known code, or a system-derived fallback. Never silently becomes USD/$
+    /// for a real but unlisted code (that is how a SAR family saw dollar signs).
+    static func find(_ code: String?) -> FamilyCurrency {
+        let normalized = (code ?? "USD").uppercased()
+        if let match = all.first(where: { $0.code == normalized }) {
+            return match
+        }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = normalized
+        let name = Locale.current.localizedString(forCurrencyCode: normalized) ?? normalized
+        return FamilyCurrency(
+            code: normalized,
+            symbol: formatter.currencySymbol ?? normalized,
+            flag: "💱",
+            name: name,
+            decimals: 2
+        )
+    }
+}
+
 struct FamilySettings: Codable {
     let id: UUID
     let userId: UUID
@@ -304,26 +378,9 @@ struct FamilySettings: Codable {
     var isPerChoreMode: Bool { rewardMode == "per_chore" }
     /// nil (pre-migration row) means enabled.
     var activityPushOn: Bool { activityPushEnabled != false }
-    var currencySymbol: String {
-        switch currencyCode?.uppercased() {
-        case "GBP": return "£"
-        case "EUR": return "€"
-        case "JPY", "CNY": return "¥"
-        case "INR": return "₹"
-        case "KRW": return "₩"
-        case "CHF": return "Fr"
-        case "BRL": return "R$"
-        case "CAD", "AUD", "MXN", "USD", .none: return "$"
-        default: return "$"
-        }
-    }
-    /// Minor-unit decimals for formatting (JPY/KRW have none).
-    var currencyDecimals: Int {
-        switch currencyCode?.uppercased() {
-        case "JPY", "KRW": return 0
-        default: return 2
-        }
-    }
+    var currencySymbol: String { FamilyCurrency.find(currencyCode).symbol }
+    /// Minor-unit decimals for formatting (JPY/KRW/CLP have none).
+    var currencyDecimals: Int { FamilyCurrency.find(currencyCode).decimals }
     
     enum CodingKeys: String, CodingKey {
         case id

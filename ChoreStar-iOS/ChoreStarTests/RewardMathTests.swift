@@ -123,6 +123,57 @@ final class RewardMathTests: XCTestCase {
         XCTAssertEqual(ChoreSchedule.label(for: [5, 1, 3]), "Mon, Wed, Fri")
     }
 
+    func testGulfWeekendStyleRelabelsFridaySaturday() {
+        XCTAssertEqual(
+            ChoreSchedule.label(for: [5, 6], weekendStyle: .fridaySaturday),
+            "Weekends"
+        )
+        XCTAssertEqual(
+            ChoreSchedule.label(for: [0, 1, 2, 3, 4], weekendStyle: .fridaySaturday),
+            "Weekdays"
+        )
+        // A Sat–Sun chore in a Gulf family is not their weekend.
+        XCTAssertEqual(
+            ChoreSchedule.label(for: [0, 6], weekendStyle: .fridaySaturday),
+            "Sun, Sat"
+        )
+    }
+
+    func testWeekendStyleInfersGulfFromFamilyTimezone() {
+        XCTAssertEqual(
+            WeekendStyle.inferred(familyTimezone: "Asia/Riyadh", deviceTimezone: "America/New_York"),
+            .fridaySaturday
+        )
+        XCTAssertEqual(
+            WeekendStyle.inferred(familyTimezone: "Asia/Dubai", deviceTimezone: "America/New_York"),
+            .fridaySaturday
+        )
+        XCTAssertEqual(
+            WeekendStyle.inferred(familyTimezone: "Europe/London", deviceTimezone: "Asia/Riyadh"),
+            .saturdaySunday
+        )
+        // Web default UTC must not win over a Riyadh iPhone.
+        XCTAssertEqual(
+            WeekendStyle.inferred(familyTimezone: "UTC", deviceTimezone: "Asia/Riyadh"),
+            .fridaySaturday
+        )
+        XCTAssertEqual(
+            WeekendStyle.inferred(familyTimezone: "UTC", deviceTimezone: "America/New_York"),
+            .saturdaySunday
+        )
+    }
+
+    func testFamilyCurrencyCatalogIncludesGulfAndDoesNotInventDollars() {
+        XCTAssertEqual(FamilyCurrency.find("SAR").symbol, "ر.س")
+        XCTAssertEqual(FamilyCurrency.find("AED").symbol, "د.إ")
+        XCTAssertEqual(FamilyCurrency.find("QAR").symbol, "ر.ق")
+        XCTAssertEqual(FamilyCurrency.find("JPY").decimals, 0)
+        XCTAssertEqual(FamilyCurrency.find("USD").symbol, "$")
+        XCTAssertEqual(FamilyCurrency.find(nil).code, "USD")
+        // An unlisted but real code must not silently become $.
+        XCTAssertNotEqual(FamilyCurrency.find("SAR").symbol, "$")
+    }
+
     func testChoreDecodesWithoutDaysOfWeekAsEveryDay() throws {
         // A row from before migration 015, or from the kid API before it sent
         // the column, must still decode and default to every day.
@@ -147,5 +198,22 @@ final class RewardMathTests: XCTestCase {
         XCTAssertEqual(ChoreSchedule.dueDayCount([mon, fri]), 2)
         XCTAssertEqual(ChoreSchedule.due([mon, fri], on: 1).map(\.name), ["Trash"])
         XCTAssertEqual(ChoreSchedule.due([mon, fri], on: 3).count, 0)
+    }
+
+    func testDisplayOrderFollowsCalendarFirstWeekday() {
+        func calendar(firstWeekday: Int) -> Calendar {
+            var c = Calendar(identifier: .gregorian)
+            c.firstWeekday = firstWeekday
+            return c
+        }
+        // US, Mexico, Brazil, and the Gulf: Sunday-first, the stored order.
+        XCTAssertEqual(ChoreSchedule.displayOrder(calendar: calendar(firstWeekday: 1)),
+                       [0, 1, 2, 3, 4, 5, 6])
+        // UK, Switzerland, most of Europe: Monday-first.
+        XCTAssertEqual(ChoreSchedule.displayOrder(calendar: calendar(firstWeekday: 2)),
+                       [1, 2, 3, 4, 5, 6, 0])
+        // Saturday-first calendars still cover all seven days exactly once.
+        XCTAssertEqual(ChoreSchedule.displayOrder(calendar: calendar(firstWeekday: 7)),
+                       [6, 0, 1, 2, 3, 4, 5])
     }
 }

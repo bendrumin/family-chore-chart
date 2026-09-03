@@ -1,6 +1,7 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
+import { useWeekDisplayOrder } from '@/lib/hooks/use-week-display-order'
 import {
   ALL_DAYS,
   DAY_LONG,
@@ -37,6 +38,9 @@ function sameSet(a: readonly number[], b: readonly number[]): boolean {
  * picker keeps the user out of that state instead of surfacing an error later.
  */
 export function DayOfWeekPicker({ value, onChange, idPrefix = 'days' }: DayOfWeekPickerProps) {
+  // Toggle order follows the viewer's locale (Monday-first in en-GB, ...);
+  // the day values stay the stored 0=Sunday indexes.
+  const weekOrder = useWeekDisplayOrder()
   const selected = normalizeDays(value)
   const isLastSelected = (day: number) => selected.length === 1 && selected[0] === day
 
@@ -69,7 +73,7 @@ export function DayOfWeekPicker({ value, onChange, idPrefix = 'days' }: DayOfWee
         aria-label="Days of the week"
         className="grid grid-cols-7 gap-1.5"
       >
-        {ALL_DAYS.map(day => {
+        {weekOrder.map(day => {
           const on = selected.includes(day)
           const locked = isLastSelected(day)
           return (

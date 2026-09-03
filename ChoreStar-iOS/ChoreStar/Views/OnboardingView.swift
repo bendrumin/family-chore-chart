@@ -98,9 +98,17 @@ struct OnboardingView: View {
                 rewardMode: mode,
                 dailyRewardCents: cents,
                 weeklyBonusCents: existing?.weeklyBonusCents ?? 0,
-                currencyCode: existing?.currencyCode ?? "USD"
+                currencyCode: existing?.currencyCode ?? "USD",
+                timezone: Self.resolvedTimezone(stored: existing?.timezone)
             )
         }
+    }
+
+    private static func resolvedTimezone(stored: String?) -> String {
+        if let stored, stored != "UTC", !stored.isEmpty, TimeZone(identifier: stored) != nil {
+            return stored
+        }
+        return TimeZone.current.identifier
     }
 
     // MARK: - Pages

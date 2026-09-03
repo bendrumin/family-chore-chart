@@ -947,7 +947,7 @@ struct DeleteAccountView: View {
 
 // MARK: - Rewards & Currency (was web-only)
 
-/// Lets parents edit reward mode, daily/weekly amounts, and currency on device.
+/// Lets parents edit reward mode, amounts, currency, and time zone on device.
 /// Writes the same family_settings columns the web Family tab already uses.
 struct FamilyRewardsSettingsView: View {
     @EnvironmentObject var manager: SupabaseManager
@@ -955,23 +955,74 @@ struct FamilyRewardsSettingsView: View {
     @State private var dailyCentsText: String = "100"
     @State private var weeklyCentsText: String = "1"
     @State private var currencyCode: String = "USD"
+    @State private var timezoneId: String = TimeZone.current.identifier
     @State private var isSaving = false
     @State private var statusMessage: String?
 
-    private let currencies: [(code: String, label: String)] = [
-        ("USD", "US Dollar ($)"),
-        ("EUR", "Euro (€)"),
-        ("GBP", "British Pound (£)"),
-        ("CAD", "Canadian Dollar ($)"),
-        ("AUD", "Australian Dollar ($)"),
-        ("JPY", "Japanese Yen (¥)"),
-        ("INR", "Indian Rupee (₹)"),
-        ("MXN", "Mexican Peso ($)"),
-        ("BRL", "Brazilian Real (R$)"),
-        ("CHF", "Swiss Franc (Fr)"),
-        ("CNY", "Chinese Yuan (¥)"),
-        ("KRW", "Korean Won (₩)"),
+    /// City labels for the zones families actually pick. If the stored/device
+    /// zone is not in this list it is inserted at the top so the picker can
+    /// still show the current value.
+    private static let commonTimeZones: [(id: String, label: String)] = [
+        ("America/New_York", "New York"),
+        ("America/Chicago", "Chicago"),
+        ("America/Denver", "Denver"),
+        ("America/Los_Angeles", "Los Angeles"),
+        ("America/Toronto", "Toronto"),
+        ("America/Vancouver", "Vancouver"),
+        ("America/Mexico_City", "Mexico City"),
+        ("America/Sao_Paulo", "São Paulo"),
+        ("America/Buenos_Aires", "Buenos Aires"),
+        ("Europe/London", "London"),
+        ("Europe/Dublin", "Dublin"),
+        ("Europe/Paris", "Paris"),
+        ("Europe/Berlin", "Berlin"),
+        ("Europe/Amsterdam", "Amsterdam"),
+        ("Europe/Madrid", "Madrid"),
+        ("Europe/Rome", "Rome"),
+        ("Europe/Stockholm", "Stockholm"),
+        ("Europe/Warsaw", "Warsaw"),
+        ("Africa/Cairo", "Cairo"),
+        ("Africa/Johannesburg", "Johannesburg"),
+        ("Africa/Lagos", "Lagos"),
+        ("Asia/Riyadh", "Riyadh"),
+        ("Asia/Dubai", "Dubai"),
+        ("Asia/Qatar", "Doha"),
+        ("Asia/Kuwait", "Kuwait City"),
+        ("Asia/Bahrain", "Manama"),
+        ("Asia/Muscat", "Muscat"),
+        ("Asia/Jerusalem", "Jerusalem"),
+        ("Asia/Istanbul", "Istanbul"),
+        ("Asia/Karachi", "Karachi"),
+        ("Asia/Kolkata", "Mumbai"),
+        ("Asia/Bangkok", "Bangkok"),
+        ("Asia/Jakarta", "Jakarta"),
+        ("Asia/Singapore", "Singapore"),
+        ("Asia/Hong_Kong", "Hong Kong"),
+        ("Asia/Shanghai", "Shanghai"),
+        ("Asia/Tokyo", "Tokyo"),
+        ("Asia/Seoul", "Seoul"),
+        ("Australia/Sydney", "Sydney"),
+        ("Australia/Melbourne", "Melbourne"),
+        ("Pacific/Auckland", "Auckland"),
     ]
+
+    private var pickerCurrencies: [FamilyCurrency] {
+        let selected = FamilyCurrency.find(currencyCode)
+        if FamilyCurrency.all.contains(where: { $0.code == selected.code }) {
+            return FamilyCurrency.all
+        }
+        return [selected] + FamilyCurrency.all
+    }
+
+    private var timezoneOptions: [(id: String, label: String)] {
+        var options = Self.commonTimeZones
+        if !options.contains(where: { $0.id == timezoneId }) {
+            let name = TimeZone(identifier: timezoneId)?.localizedName(for: .generic, locale: .current)
+                ?? timezoneId
+            options.insert((timezoneId, name), at: 0)
+        }
+        return options
+    }
 
     var body: some View {
         Form {
@@ -1014,12 +1065,28 @@ struct FamilyRewardsSettingsView: View {
                 Text("Enter amounts in cents, e.g. 100 = \(manager.formatMoney(1.0)). Synced with the web app.")
             }
 
-            Section("Currency") {
+            Section {
                 Picker("Currency", selection: $currencyCode) {
-                    ForEach(currencies, id: \.code) { item in
-                        Text(item.label).tag(item.code)
+                    ForEach(pickerCurrencies) { item in
+                        Text(item.pickerLabel).tag(item.code)
                     }
                 }
+            } header: {
+                Text("Currency")
+            } footer: {
+                Text("Allowance and chore rewards use this symbol on iPhone and the web.")
+            }
+
+            Section {
+                Picker("Time zone", selection: $timezoneId) {
+                    ForEach(timezoneOptions, id: \.id) { item in
+                        Text(item.label).tag(item.id)
+                    }
+                }
+            } header: {
+                Text("Time zone")
+            } footer: {
+                Text(timezoneFooter)
             }
 
             Section {
@@ -1054,6 +1121,26 @@ struct FamilyRewardsSettingsView: View {
         dailyCentsText = String(s.dailyRewardCents)
         weeklyCentsText = String(s.weeklyBonusCents)
         currencyCode = s.currencyCode ?? "USD"
+        timezoneId = Self.resolvedTimezone(stored: s.timezone)
+    }
+
+    /// Web defaults new rows to `UTC`. Treat that as "not set" and show the
+    /// iPhone's zone so a Riyadh family is not saving UTC by accident.
+    private static func resolvedTimezone(stored: String?) -> String {
+        if let stored, stored != "UTC", !stored.isEmpty, TimeZone(identifier: stored) != nil {
+            return stored
+        }
+        return TimeZone.current.identifier
+    }
+
+    private var timezoneFooter: String {
+        let style = WeekendStyle.inferred(familyTimezone: timezoneId)
+        switch style {
+        case .fridaySaturday:
+            return "Weekdays / Weekends on new chores will be Sunday–Thursday and Friday–Saturday."
+        case .saturdaySunday:
+            return "Weekdays / Weekends on new chores will be Monday–Friday and Saturday–Sunday."
+        }
     }
 
     private func save() async {
@@ -1065,7 +1152,8 @@ struct FamilyRewardsSettingsView: View {
             rewardMode: rewardMode,
             dailyRewardCents: max(0, daily),
             weeklyBonusCents: max(0, weekly),
-            currencyCode: currencyCode
+            currencyCode: currencyCode,
+            timezone: timezoneId
         )
         await MainActor.run {
             isSaving = false

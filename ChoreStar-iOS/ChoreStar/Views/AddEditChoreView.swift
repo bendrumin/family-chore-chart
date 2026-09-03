@@ -233,7 +233,10 @@ struct AddEditChoreView: View {
                 }
                 
                 Section {
-                    DaysOfWeekPicker(selection: $daysOfWeek)
+                    DaysOfWeekPicker(
+                        selection: $daysOfWeek,
+                        weekendStyle: WeekendStyle.inferred(familyTimezone: manager.familySettings?.timezone)
+                    )
                 } header: {
                     Text("Which Days")
                 } footer: {
@@ -442,17 +445,20 @@ struct AddEditChoreView: View {
 /// user out of that state instead of surfacing an error on save.
 struct DaysOfWeekPicker: View {
     @Binding var selection: [Int]
+    var weekendStyle: WeekendStyle = .saturdaySunday
 
     private struct Preset: Identifiable {
         let id: String
         let days: [Int]
     }
 
-    private let presets = [
-        Preset(id: "Every day", days: ChoreSchedule.everyDay),
-        Preset(id: "Weekdays", days: ChoreSchedule.weekdays),
-        Preset(id: "Weekends", days: ChoreSchedule.weekends),
-    ]
+    private var presets: [Preset] {
+        [
+            Preset(id: "Every day", days: ChoreSchedule.everyDay),
+            Preset(id: "Weekdays", days: weekendStyle.weekdays),
+            Preset(id: "Weekends", days: weekendStyle.weekends),
+        ]
+    }
 
     private var normalized: [Int] { ChoreSchedule.normalized(selection) }
 
@@ -471,7 +477,7 @@ struct DaysOfWeekPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(ChoreSchedule.label(for: normalized))
+                Text(ChoreSchedule.label(for: normalized, weekendStyle: weekendStyle))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.choreStarTextSecondary)
@@ -479,7 +485,7 @@ struct DaysOfWeekPicker: View {
             }
 
             HStack(spacing: 6) {
-                ForEach(0..<7, id: \.self) { day in
+                ForEach(ChoreSchedule.displayOrder(), id: \.self) { day in
                     let on = normalized.contains(day)
                     Button {
                         toggle(day)

@@ -82,6 +82,41 @@ function sameSet(a: readonly number[], b: readonly number[]): boolean {
 }
 
 /**
+ * The seven day indexes (0=Sunday .. 6=Saturday, the storage convention above)
+ * in the order the locale DISPLAYS a week: en-US starts on Sunday, en-GB on
+ * Monday, ar-EG on Saturday. Presentation only — an index keeps its stored
+ * meaning everywhere, only the iteration order changes.
+ *
+ * Reads Intl.Locale weekInfo (firstDay: 1=Monday .. 7=Sunday), via either the
+ * `weekInfo` property or the `getWeekInfo()` method depending on the engine,
+ * and falls back to Sunday-first when it is unavailable (SSR, older engines)
+ * or the locale is unknown. With no argument it uses `navigator.language`,
+ * which on the server does not exist, so a server render is always the
+ * deterministic Sunday-first fallback.
+ */
+export function weekDisplayOrder(locale?: string): number[] {
+  let firstDay = 7 // Intl's 7 = Sunday: the fallback
+  try {
+    const tag = locale ?? (typeof navigator !== 'undefined' ? navigator.language : undefined)
+    if (tag) {
+      const loc = new Intl.Locale(tag) as Intl.Locale & {
+        weekInfo?: { firstDay?: number }
+        getWeekInfo?: () => { firstDay?: number }
+      }
+      const info = loc.weekInfo ?? loc.getWeekInfo?.()
+      const day = info?.firstDay
+      if (typeof day === 'number' && Number.isInteger(day) && day >= 1 && day <= 7) {
+        firstDay = day
+      }
+    }
+  } catch {
+    // Bad tag or no Intl.Locale: keep the Sunday-first fallback.
+  }
+  const start = firstDay % 7 // maps Intl's 7 (Sunday) to storage index 0
+  return ALL_DAYS.map((_, i) => (start + i) % 7)
+}
+
+/**
  * Human label for a schedule: "Every day", "Weekdays", "Weekends",
  * "Mon, Wed, Fri", or "Tuesdays" for a single day.
  */

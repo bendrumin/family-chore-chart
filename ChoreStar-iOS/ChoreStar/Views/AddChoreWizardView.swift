@@ -428,7 +428,10 @@ struct AddChoreWizardView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Which days?")
                     .font(.headline)
-                DaysOfWeekPicker(selection: $daysOfWeek)
+                DaysOfWeekPicker(
+                    selection: $daysOfWeek,
+                    weekendStyle: WeekendStyle.inferred(familyTimezone: manager.familySettings?.timezone)
+                )
                     .padding(12)
                     .background(Color(.secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12))

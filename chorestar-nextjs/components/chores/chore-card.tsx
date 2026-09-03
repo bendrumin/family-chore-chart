@@ -11,7 +11,8 @@ import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { CategoryBadge } from '@/components/ui/category-badge'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { playSound } from '@/lib/utils/sound'
-import { isDueOn, isEveryDay, formatSchedule } from '@/lib/utils/schedule'
+import { DAY_SHORT, isDueOn, isEveryDay, formatSchedule } from '@/lib/utils/schedule'
+import { useWeekDisplayOrder } from '@/lib/hooks/use-week-display-order'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -56,16 +57,12 @@ export const ChoreCard = memo(function ChoreCard({
     })
   }, [completions, pendingDays])
 
-  // Get last 7 days with day of week
-  const getLast7Days = () => {
-    const days = []
-    for (let i = 0; i < 7; i++) {
-      days.push({ dayOfWeek: i, dayName: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i] })
-    }
-    return days
-  }
-
-  const days = getLast7Days()
+  // The week's columns in the viewer's display order (Monday-first in en-GB,
+  // Saturday-first in ar-EG, ...). dayOfWeek stays the stored 0=Sunday index —
+  // completions and toggles keep mapping to the same day; only the column
+  // order is localized.
+  const weekOrder = useWeekDisplayOrder()
+  const days = weekOrder.map(dayOfWeek => ({ dayOfWeek, dayName: DAY_SHORT[dayOfWeek] }))
 
   const completionFor = (dayOfWeek: number) =>
     completions.find(c => c.chore_id === chore.id && c.day_of_week === dayOfWeek && c.week_start === weekStart)

@@ -5,7 +5,7 @@
 
 import type { Database } from '@/lib/supabase/database.types'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
-import { isDueOn, isEveryDay, scheduleDays } from '@/lib/utils/schedule'
+import { isDueOn, isEveryDay, scheduleDays, weekDisplayOrder } from '@/lib/utils/schedule'
 
 type Child = Database['public']['Tables']['children']['Row']
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -291,6 +291,9 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
 
   const filteredChildren = childId === 'all' ? children : children.filter((c) => c.id === childId);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Columns follow the viewer's locale (Monday-first in en-GB, ...); the
+  // values stay the stored 0=Sunday day indexes.
+  const dayOrder = weekDisplayOrder();
 
   let jsPDF: any;
   try {
@@ -316,8 +319,8 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
   doc.text('Child / Chore', margin, y);
-  for (let d = 0; d < 7; d++) {
-    doc.text(dayNames[d], margin + colW * (d + 1) + colW / 2 - 4, y);
+  for (let col = 0; col < 7; col++) {
+    doc.text(dayNames[dayOrder[col]], margin + colW * (col + 1) + colW / 2 - 4, y);
   }
   y += rowH;
   doc.setFont(undefined, 'normal');
@@ -335,9 +338,9 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
     doc.setFont(undefined, 'normal');
     for (const chore of childChores) {
       doc.text(chore.name, margin + 5, y);
-      for (let d = 0; d < 7; d++) {
-        const x = margin + colW * (d + 1) + 2;
-        if (isDueOn(chore, d)) {
+      for (let col = 0; col < 7; col++) {
+        const x = margin + colW * (col + 1) + 2;
+        if (isDueOn(chore, dayOrder[col])) {
           doc.rect(x, y - 4, 6, 6);
         } else {
           // Not scheduled: a filled grey square, nothing to tick.
@@ -379,6 +382,9 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
 
   const filteredChildren = childId === 'all' ? children : children.filter((c) => c.id === childId);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Columns follow the viewer's locale (Monday-first in en-GB, ...); the
+  // values stay the stored 0=Sunday day indexes.
+  const dayOrder = weekDisplayOrder();
   const colors = TEMPLATE_COLORS[style];
 
   let jsPDF: any;
@@ -434,9 +440,9 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
     doc.setFont(undefined, 'bold');
     doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
     doc.text('Chore', margin + 2, gridTop + 4);
-    for (let d = 0; d < 7; d++) {
-      const x = margin + colW * (d + 1);
-      doc.text(dayNames[d], x + colW / 2 - 4, gridTop + 4);
+    for (let col = 0; col < 7; col++) {
+      const x = margin + colW * (col + 1);
+      doc.text(dayNames[dayOrder[col]], x + colW / 2 - 4, gridTop + 4);
     }
 
     // Chore rows
@@ -472,13 +478,13 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
       doc.setTextColor(0, 0, 0);
 
       // Checkboxes for each day
-      for (let d = 0; d < 7; d++) {
-        const cx = margin + colW * (d + 1) + colW / 2 - 4;
+      for (let col = 0; col < 7; col++) {
+        const cx = margin + colW * (col + 1) + colW / 2 - 4;
         const cy = y - 1;
         const size = 8;
 
         // Not scheduled that day: a quiet dash instead of a box.
-        if (!isDueOn(chore, d)) {
+        if (!isDueOn(chore, dayOrder[col])) {
           doc.setDrawColor(200, 200, 200);
           doc.setLineWidth(0.5);
           doc.line(cx + 1.5, cy + size / 2, cx + size - 1.5, cy + size / 2);

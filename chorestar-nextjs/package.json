@@ -10,7 +10,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "icons:manifest": "node scripts/gen-icon-manifest.mjs",
-    "test:unit": "tsx lib/utils/earnings.test.ts && tsx lib/utils/streak.test.ts && tsx lib/utils/theme.test.ts",
+    "test:unit": "tsx lib/utils/earnings.test.ts && tsx lib/utils/streak.test.ts && tsx lib/utils/theme.test.ts && tsx lib/utils/schedule.test.ts",
     "eval:ai": "tsx evals/suggest-chores.eval.ts",
     "test:e2e": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=setup --project=kid-login --project=kid-dashboard --project=run-routine --project=create-routine --project=add-edit-child --project=add-edit-chore --project=family-settings",
     "test:e2e:create-routine": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=create-routine",
