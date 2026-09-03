@@ -1,14 +1,14 @@
 #!/bin/bash
-# ChoreStar 2.1 (build 28) to TESTFLIGHT ONLY: archive -> re-stamp -> upload.
+# ChoreStar 2.1 (build 28): archive -> re-stamp -> upload -> notes in four
+# languages -> attach -> submit for review.
 #
 # RUN THIS FROM YOUR OWN TERMINAL, not from Claude Code (its safety layer
 # refuses to touch a re-stamped archive, even to poll it).
 #
-# This build carries the international pass (kid mode in es/pt-BR/ar,
-# currencies/timezones/Gulf weekends, locale week grids) for on-device
-# testing. It does NOT attach or submit anything: 2.1's remaining scope
-# (recap, Siri, PWA, seasonal icons) ships later on a higher build via a
-# ship script that adds the attach/submit steps from ship-b27.sh.
+# 2.1 ships as the international release: kid mode in es/pt-BR/ar,
+# currencies/timezones/Gulf weekends, locale week grids, and the localized
+# listings (es-MX, pt-BR, ar-SA) go live with it. The holiday scope
+# (recap, Siri, PWA, seasonal icons) moves to 2.2.
 #
 # Why the re-stamp: this Mac runs beta macOS, and xcodebuild records the host
 # build (BuildMachineOSBuild) into every Info.plist. ASC's validator rejects
@@ -29,14 +29,14 @@ KEY_ID="${ASC_KEY_ID:-P8NYU5K555}"
 ISSUER="${ASC_ISSUER_ID:-69a6de6f-7e14-47e3-e053-5b8c7c11a4d1}"
 KEY_PATH="${ASC_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8}"
 
-echo "==> [1/4] Archiving ${VERSION} (${BUILD}) with $(xcodebuild -version | head -1)"
+echo "==> [1/7] Archiving ${VERSION} (${BUILD}) with $(xcodebuild -version | head -1)"
 rm -rf "$ARCHIVE"
 xcodebuild archive \
   -project ChoreStar.xcodeproj -scheme ChoreStar \
   -destination 'generic/platform=iOS' \
   -archivePath "$ARCHIVE" | tail -3
 
-echo "==> [2/4] Re-stamping BuildMachineOSBuild -> ${GOOD_STAMP}"
+echo "==> [2/7] Re-stamping BuildMachineOSBuild -> ${GOOD_STAMP}"
 find "$ARCHIVE" -name Info.plist -print0 | while IFS= read -r -d '' plist; do
   if /usr/libexec/PlistBuddy -c 'Print :BuildMachineOSBuild' "$plist" >/dev/null 2>&1; then
     /usr/libexec/PlistBuddy -c "Set :BuildMachineOSBuild ${GOOD_STAMP}" "$plist"
@@ -44,7 +44,7 @@ find "$ARCHIVE" -name Info.plist -print0 | while IFS= read -r -d '' plist; do
   fi
 done
 
-echo "==> [3/4] Exporting + uploading to App Store Connect (this re-signs)"
+echo "==> [3/7] Exporting + uploading to App Store Connect (this re-signs)"
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE" \
   -exportOptionsPlist scripts/ExportOptions.plist \
@@ -54,13 +54,22 @@ xcodebuild -exportArchive \
   -authenticationKeyID "$KEY_ID" \
   -authenticationKeyIssuerID "$ISSUER" | tail -5
 
-echo "==> [4/4] Waiting for ASC processing (VALID means the re-stamp took)"
+echo "==> [4/7] Waiting for ASC processing (VALID means the re-stamp took)"
 node scripts/asc.mjs wait-build "$VERSION" "$BUILD"
 
+echo "==> [5/7] Release notes: en-US + the three localized listings"
+node scripts/asc.mjs ensure-version "$VERSION"
+node scripts/asc.mjs set-whatsnew "$VERSION" fastlane/metadata/en-US/release_notes.txt
+node scripts/asc.mjs push-locales "$VERSION" es-MX pt-BR ar-SA
+
+echo "==> [6/7] Attaching build ${BUILD} to version ${VERSION}"
+node scripts/asc.mjs attach-build "$VERSION" "$BUILD"
+
+echo "==> [7/7] Phased release + submit for review"
+node scripts/asc.mjs phased "$VERSION"
+node scripts/asc.mjs submit-version "$VERSION"
+
 echo ""
-echo "DONE. ${VERSION} (build ${BUILD}) is VALID on TestFlight — internal"
-echo "testers get it automatically (no export-compliance questions: the"
-echo "encryption key is already declared in Info.plist)."
-echo "Test the localization on device: Settings > General > Language & Region"
-echo "  -> Español / Português (Brasil) / العربية, then relaunch ChoreStar."
-echo "NOT attached, NOT submitted: 2.1 review submission happens later."
+echo "DONE. ${VERSION} (build ${BUILD}) is WAITING_FOR_REVIEW with listings"
+echo "in en-US, es-MX, pt-BR, and ar-SA."
+echo "Check state anytime with: node scripts/asc.mjs status ${VERSION}"
