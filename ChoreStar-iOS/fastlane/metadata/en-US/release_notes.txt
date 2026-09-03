@@ -1,7 +1,9 @@
-Version 2.0.1 is a polish pass on 2.0.
+Version 2.1 takes ChoreStar around the world.
 
-• Home chips and Family cards show unpaid allowance at a glance, so you always know who is owed what
-• Manage your subscription right from Settings: switch plans or cancel without digging through the App Store
+• Kid mode now speaks Spanish, Portuguese, and Arabic. The kid dashboard, routines, celebrations, and widgets follow the device language, and Arabic runs right to left
+• Pick from dozens of currencies in Settings > Rewards & Currency, with the right symbol and decimals everywhere, widgets included
+• Set your family's time zone, and the Weekdays and Weekends presets understand Friday-Saturday weekends in the Gulf
+• The week grid starts on your calendar's first day: Monday in Europe, Sunday in the Americas
 • Small fixes and smoother edges throughout
 
 Questions or feedback are welcome at hi@chorestar.app

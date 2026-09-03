@@ -1,7 +1,9 @@
-La versión 2.0.1 pule los detalles de 2.0.
+La versión 2.1 lleva ChoreStar por todo el mundo.
 
-• Las tarjetas de inicio y de familia muestran la mesada pendiente de un vistazo, para que siempre sepas cuánto le debes a cada quien
-• Administra tu suscripción directo desde Ajustes: cambia de plan o cancela sin buscar en el App Store
+• El modo niños ahora habla español, portugués y árabe. Su tablero, rutinas, celebraciones y widgets siguen el idioma del dispositivo
+• Elige entre decenas de monedas en Ajustes, con el símbolo y los decimales correctos en todas partes, widgets incluidos
+• Configura la zona horaria de tu familia; en el Golfo, Entre semana y Fin de semana entienden el viernes y sábado
+• La cuadrícula de la semana empieza en el primer día de tu calendario: lunes en Europa, domingo en América
 • Pequeñas correcciones y mejoras por toda la app
 
 Preguntas y comentarios son bienvenidos en hi@chorestar.app

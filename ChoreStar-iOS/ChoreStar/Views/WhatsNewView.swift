@@ -36,6 +36,16 @@ enum Changelog {
                     title: "Family Time Zone",
                     description: "Set your city's time zone in the same screen. In the Gulf, Weekdays and Weekends on a new chore mean Sunday–Thursday and Friday–Saturday."
                 ),
+                Feature(
+                    icon: "🗣️",
+                    title: "Kid Mode in 3 More Languages",
+                    description: "The kid dashboard, routines, celebrations, and widgets now speak Spanish, Portuguese, and Arabic, following each device's language. Arabic runs right to left."
+                ),
+                Feature(
+                    icon: "📅",
+                    title: "Weeks Start Where You Live",
+                    description: "The week grid and day pickers begin on your calendar's first day: Monday in Europe, Sunday in the Americas and the Gulf."
+                ),
             ]
         ),
         Entry(
