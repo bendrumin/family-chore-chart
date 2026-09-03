@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
-import { type PlanType, formatPlanPrice, getPlanSavings } from '@/lib/utils/stripe'
+import { type PlanType } from '@/lib/utils/stripe'
+import { useDisplayPrices } from '@/lib/hooks/use-display-prices'
 
 interface PricingCardProps {
   planType: PlanType
@@ -38,10 +39,13 @@ const PLAN_TITLES = {
 }
 
 export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading = false }: PricingCardProps) {
-  const features = PLAN_FEATURES[planType]
+  const prices = useDisplayPrices()
+  const savings = planType === 'annual' ? prices.annualSavings : null
+  const features = PLAN_FEATURES[planType].map((f) =>
+    f === 'Save $10 per year' && savings ? savings : f
+  )
   const title = PLAN_TITLES[planType]
-  const price = formatPlanPrice(planType)
-  const savings = getPlanSavings(planType)
+  const price = planType === 'monthly' ? prices.monthly : prices.annual
 
   return (
     <div

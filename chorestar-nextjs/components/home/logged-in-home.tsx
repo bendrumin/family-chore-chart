@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { AppStoreBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
+import { UpgradePriceLabel } from '@/components/payment/upgrade-price-label'
 import {
   LayoutDashboard,
   BookOpen,
@@ -137,7 +138,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
               href="/dashboard"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-600 dark:text-indigo-400"
             >
-              Upgrade from $4.99/mo
+              Upgrade from <UpgradePriceLabel />
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
