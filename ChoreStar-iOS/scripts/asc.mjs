@@ -231,6 +231,90 @@ switch (cmd) {
     });
     break;
   }
+  case 'push-locales': {
+    // Usage: push-locales <versionString> <locale...>   e.g. push-locales 2.1 es-MX pt-BR ar-SA
+    // Creates/updates App Store metadata for the given locales from
+    // fastlane/metadata/<locale>/ WITHOUT touching screenshots (never re-run
+    // `deliver metadata` against a live listing: it duplicates screenshot
+    // sets). Locales without screenshots fall back to the primary locale's.
+    // description/keywords/promotional_text/release_notes go on the version;
+    // name/subtitle/privacy_url live on the appInfo, which is only writable
+    // while an editable (pre-submission) appInfo exists.
+    const [vs, ...locales] = args;
+    if (!vs || locales.length === 0) throw new Error('usage: push-locales <version> <locale...>');
+    const metaDir = new URL('../fastlane/metadata/', import.meta.url);
+    const read = (loc, f) => {
+      try { return readFileSync(new URL(`${loc}/${f}`, metaDir), 'utf8').trim() || undefined; }
+      catch { return undefined; }
+    };
+    const v = await findVersion(vs);
+    if (!v) throw new Error(`no appStoreVersion ${vs} — run ensure-version first`);
+    const existing = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=50`);
+    const byLocale = Object.fromEntries(existing.data.map((l) => [l.attributes.locale, l.id]));
+    const infos = await api('GET', `/v1/apps/${APP_ID}/appInfos?limit=5`);
+    const editable = infos.data.find((i) => {
+      const s = i.attributes.appStoreState ?? i.attributes.state;
+      return ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'].includes(s);
+    });
+    for (const loc of locales) {
+      const vAttrs = {
+        description: read(loc, 'description.txt'),
+        keywords: read(loc, 'keywords.txt'),
+        promotionalText: read(loc, 'promotional_text.txt'),
+        whatsNew: read(loc, 'release_notes.txt'),
+        supportUrl: read(loc, 'support_url.txt'),
+        marketingUrl: read(loc, 'marketing_url.txt'),
+      };
+      if (byLocale[loc]) {
+        await api('PATCH', `/v1/appStoreVersionLocalizations/${byLocale[loc]}`, {
+          data: { type: 'appStoreVersionLocalizations', id: byLocale[loc], attributes: vAttrs },
+        });
+        out(`${loc}: version metadata updated`);
+      } else {
+        await api('POST', '/v1/appStoreVersionLocalizations', {
+          data: {
+            type: 'appStoreVersionLocalizations',
+            attributes: { locale: loc, ...vAttrs },
+            relationships: { appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } },
+          },
+        });
+        out(`${loc}: version metadata created`);
+      }
+      const iAttrs = {
+        name: read(loc, 'name.txt'),
+        subtitle: read(loc, 'subtitle.txt'),
+        privacyPolicyUrl: read(loc, 'privacy_url.txt'),
+      };
+      if (!editable) {
+        out(`${loc}: no editable appInfo — name/subtitle skipped, re-run at the next editable window`);
+        continue;
+      }
+      // Creating the version localization above auto-creates the app-info
+      // localization for a brand-new locale, so decide POST vs PATCH against
+      // a FRESH read, never a snapshot taken before the version POSTs.
+      const cur = await api(
+        'GET',
+        `/v1/appInfos/${editable.id}/appInfoLocalizations?filter[locale]=${loc}&limit=1`
+      );
+      const curId = cur.data[0]?.id;
+      if (curId) {
+        await api('PATCH', `/v1/appInfoLocalizations/${curId}`, {
+          data: { type: 'appInfoLocalizations', id: curId, attributes: iAttrs },
+        });
+        out(`${loc}: app info (name/subtitle) updated`);
+      } else {
+        await api('POST', '/v1/appInfoLocalizations', {
+          data: {
+            type: 'appInfoLocalizations',
+            attributes: { locale: loc, ...iAttrs },
+            relationships: { appInfo: { data: { type: 'appInfos', id: editable.id } } },
+          },
+        });
+        out(`${loc}: app info (name/subtitle) created`);
+      }
+    }
+    break;
+  }
   case 'raw': {
     out(await api('GET', args[0]));
     break;
@@ -241,5 +325,5 @@ switch (cmd) {
     break;
   }
   default:
-    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | set-whatsnew <v> <file> | test-notification | test-notification-status <token> | raw <path> | rawx <method> <path> [json]`);
+    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | set-whatsnew <v> <file> | push-locales <v> <locale...> | test-notification | test-notification-status <token> | raw <path> | rawx <method> <path> [json]`);
 }
