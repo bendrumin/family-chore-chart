@@ -119,7 +119,7 @@ struct ChildMainView: View {
                             StatBubble(
                                 icon: "checkmark.circle.fill",
                                 value: "\(completedChores.count)",
-                                label: "Done",
+                                label: String(localized: "stat.done", defaultValue: "Done"),
                                 color: .choreStarSuccess,
                                 onGradient: true
                             )
@@ -127,7 +127,7 @@ struct ChildMainView: View {
                             StatBubble(
                                 icon: "clock.fill",
                                 value: "\(pendingChores.count)",
-                                label: "To Do",
+                                label: String(localized: "To Do"),
                                 color: .choreStarWarning,
                                 onGradient: true
                             )
@@ -135,7 +135,7 @@ struct ChildMainView: View {
                             StatBubble(
                                 icon: "star.fill",
                                 value: manager.formatMoney(totalEarnings),
-                                label: "Earned",
+                                label: String(localized: "Earned"),
                                 color: .choreStarAccent,
                                 onGradient: true
                             )
@@ -143,7 +143,7 @@ struct ChildMainView: View {
                             StatBubble(
                                 icon: "flame.fill",
                                 value: "\(streak)",
-                                label: "Streak",
+                                label: String(localized: "Streak"),
                                 color: .orange,
                                 onGradient: true
                             )
@@ -662,7 +662,7 @@ struct KidGoalCardView: View {
                     }
 
                     if !wallet.reachedGoals.isEmpty {
-                        Text("🏆 \(wallet.reachedGoals.count == 1 ? "1 goal reached" : "\(wallet.reachedGoals.count) goals reached")")
+                        Text("🏆 \(wallet.reachedGoals.count == 1 ? String(localized: "1 goal reached") : String(localized: "\(wallet.reachedGoals.count) goals reached"))")
                             .font(.caption.weight(.bold))
                             .foregroundColor(.choreStarTextSecondary)
                     }
@@ -968,7 +968,7 @@ struct KidStoreSection: View {
                                 if let err { notice = err } else {
                                     SoundManager.shared.play(.success)
                                     Haptics.success()
-                                    notice = "Asked! A grown-up will say yes or no to \(item.title)."
+                                    notice = String(localized: "Asked! A grown-up will say yes or no to \(item.title).")
                                 }
                             }
                         }

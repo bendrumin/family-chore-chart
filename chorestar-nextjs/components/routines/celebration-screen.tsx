@@ -6,6 +6,16 @@ import confetti from 'canvas-confetti';
 import { prefersReducedMotion } from '@/lib/utils/motion';
 import { Trophy, Star, Home, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useKidT, type KidKey } from '@/lib/i18n/kid';
+
+const ENCOURAGEMENTS: KidKey[] = [
+  'celebrate.msg1',
+  'celebrate.msg2',
+  'celebrate.msg3',
+  'celebrate.msg4',
+  'celebrate.msg5',
+  'celebrate.msg6',
+];
 
 interface CelebrationScreenProps {
   routineName: string;
@@ -25,6 +35,7 @@ export function CelebrationScreen({
   color = '#6366f1',
 }: CelebrationScreenProps) {
   const [showContent, setShowContent] = useState(false);
+  const t = useKidT();
 
   useEffect(() => {
     // Trigger confetti
@@ -109,7 +120,7 @@ export function CelebrationScreen({
           transition={{ delay: 0.3 }}
           className="text-6xl md:text-7xl font-black text-white mb-4"
         >
-          You Did It!
+          {t('celebrate.youDidIt')}
         </motion.h1>
 
         <motion.p
@@ -118,7 +129,7 @@ export function CelebrationScreen({
           transition={{ delay: 0.4 }}
           className="text-3xl font-bold text-white mb-8"
         >
-          {routineName} Complete!
+          {t('celebrate.complete', { name: routineName })}
         </motion.p>
 
         {/* Stats Cards */}
@@ -134,14 +145,14 @@ export function CelebrationScreen({
             <div className="text-5xl font-black mb-2" style={{ color }}>
               +{pointsEarned}¢
             </div>
-            <div className="text-sm font-bold text-gray-600">Points Earned</div>
+            <div className="text-sm font-bold text-gray-600">{t('celebrate.pointsEarned')}</div>
           </div>
 
           {/* Steps Completed */}
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
             <Trophy className="w-12 h-12 mx-auto mb-3 text-green-500" />
             <div className="text-5xl font-black text-green-600 mb-2">{totalSteps}</div>
-            <div className="text-sm font-bold text-gray-600">Steps Done</div>
+            <div className="text-sm font-bold text-gray-600">{t('celebrate.stepsDone')}</div>
           </div>
 
           {/* Time Taken */}
@@ -149,7 +160,7 @@ export function CelebrationScreen({
             <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 shadow-2xl">
               <Star className="w-12 h-12 mx-auto mb-3 text-blue-500" />
               <div className="text-5xl font-black text-blue-600 mb-2">{formatDuration(duration)}</div>
-              <div className="text-sm font-bold text-gray-600">Time</div>
+              <div className="text-sm font-bold text-gray-600">{t('celebrate.time')}</div>
             </div>
           )}
         </motion.div>
@@ -163,14 +174,7 @@ export function CelebrationScreen({
         >
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/30">
             <p className="text-2xl font-bold text-white">
-              {[
-                '🌟 Amazing work!',
-                '💪 You\'re a superstar!',
-                '🎯 Great job!',
-                '✨ Fantastic!',
-                '🏆 You rock!',
-                '🚀 Awesome!',
-              ][Math.floor(Math.random() * 6)]}
+              {t(ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)])}
             </p>
           </div>
         </motion.div>
@@ -187,7 +191,7 @@ export function CelebrationScreen({
             style={{ backgroundColor: color }}
           >
             <Home className="w-8 h-8 mr-3" />
-            Back to Home
+            {t('celebrate.backHome')}
           </Button>
         </motion.div>
 

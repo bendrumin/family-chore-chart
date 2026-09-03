@@ -95,7 +95,7 @@ struct AchievementProgressCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.caption)
-                        Text(info.earnedAt.map { "Earned \(formatDate($0))" } ?? "Earned!")
+                        Text(info.earnedAt.map { String(localized: "Earned \(formatDate($0))") } ?? String(localized: "Earned!"))
                             .font(.caption2)
                             .fontWeight(.semibold)
                     }

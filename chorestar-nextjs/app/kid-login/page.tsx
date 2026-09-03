@@ -6,17 +6,19 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useKidT } from '@/lib/i18n/kid';
 
 export default function KidLoginPage() {
   const [familyCode, setFamilyCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useKidT();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const code = familyCode.trim().toLowerCase();
     if (!code) {
-      setError('Please enter your family code');
+      setError(t('login.noCode'));
       return;
     }
     setError(null);
@@ -33,12 +35,12 @@ export default function KidLoginPage() {
           className="text-center"
         >
           <div className="text-8xl mb-6">👋</div>
-          <h1 className="text-4xl font-black text-white mb-2">Kid Login</h1>
+          <h1 className="text-4xl font-black text-white mb-2">{t('login.title')}</h1>
           <p className="text-xl text-white mb-8">
-            Enter your family code to get started
+            {t('login.subtitle')}
           </p>
           <p className="text-sm text-white/90 mb-6">
-            Ask a parent for your family&apos;s kid login link. It looks like<br />
+            {t('login.linkHint')}<br />
             <code className="bg-white/20 px-2 py-1 rounded">chorestar.app/kid-login/abc123</code>
           </p>
         </motion.div>
@@ -52,7 +54,7 @@ export default function KidLoginPage() {
         >
           <div>
             <Label htmlFor="familyCode" className="text-white font-semibold">
-              Family code
+              {t('login.codeLabel')}
             </Label>
             <Input
               id="familyCode"
@@ -62,7 +64,7 @@ export default function KidLoginPage() {
                 setFamilyCode(e.target.value);
                 setError(null);
               }}
-              placeholder="e.g. abc12345"
+              placeholder={t('login.codePlaceholder')}
               className="mt-2 h-14 text-lg font-mono bg-white/90"
               maxLength={12}
             />
@@ -78,7 +80,7 @@ export default function KidLoginPage() {
             size="lg"
             className="w-full h-14 text-xl font-bold text-white"
           >
-            Continue
+            {t('login.continue')}
           </Button>
         </motion.form>
 
@@ -88,7 +90,7 @@ export default function KidLoginPage() {
           transition={{ delay: 0.4 }}
           className="mt-8 text-center text-white/90 text-sm"
         >
-          Parents: Get your family&apos;s link in Settings → Family
+          {t('login.parentsHint')}
         </motion.p>
 
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

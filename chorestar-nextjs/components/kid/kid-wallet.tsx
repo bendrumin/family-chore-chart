@@ -6,6 +6,7 @@ import { Target, Pencil, ShoppingBag, X, Check, Clock } from 'lucide-react'
 import { formatMoney, currencySymbol } from '@/lib/constants/currencies'
 import { GOAL_EMOJIS, GOAL_PRESET_CENTS, GOAL_MAX_CENTS } from '@/lib/constants/rewards'
 import { playSound } from '@/lib/utils/sound'
+import { useKidT } from '@/lib/i18n/kid'
 import type { KidWallet, KidGoal, KidStoreItem } from '@/lib/hooks/use-kid-wallet'
 
 /**
@@ -30,6 +31,7 @@ interface CommonProps {
 const CELEBRATED_KEY = (goalId: string) => `chorestar-kid-goal-celebrated:${goalId}`
 
 export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
+  const t = useKidT()
   const [sheet, setSheet] = useState<'new' | 'edit' | null>(null)
   const goal = wallet.goal
   const money = (c: number) => formatMoney(c, wallet.currencyCode)
@@ -66,7 +68,7 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-4xl leading-none" aria-hidden>{goal.emoji ?? '🎯'}</span>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold uppercase tracking-wide text-gray-500">Saving for</div>
+                  <div className="text-xs font-bold uppercase tracking-wide text-gray-500">{t('goal.savingFor')}</div>
                   <h2 id="kid-goal-title" className="text-2xl font-black text-gray-900 leading-tight truncate">
                     {goal.title}
                   </h2>
@@ -76,13 +78,13 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
                 type="button"
                 onClick={() => setSheet('edit')}
                 className="shrink-0 min-w-[44px] min-h-[44px] grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100"
-                aria-label="Change goal"
+                aria-label={t('goal.changeAria')}
               >
                 <Pencil className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="mt-4" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={goal.percent} aria-label={`${money(goal.progressCents)} of ${money(goal.targetCents)}`}>
+            <div className="mt-4" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={goal.percent} aria-label={t('common.xOfY', { x: money(goal.progressCents), y: money(goal.targetCents) })}>
               <div className="h-5 rounded-full bg-gray-100 overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${goal.reached ? 'bg-gradient-to-r from-yellow-400 to-amber-500' : 'accent-fill'}`}
@@ -93,17 +95,17 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
               </div>
               <div className="mt-2 flex items-baseline justify-between gap-3">
                 <span className="text-xl font-black text-gray-900 tabular-nums">
-                  {money(goal.progressCents)} <span className="text-gray-400 font-bold">of {money(goal.targetCents)}</span>
+                  {money(goal.progressCents)} <span className="text-gray-400 font-bold">{t('goal.ofTarget', { target: money(goal.targetCents) })}</span>
                 </span>
                 <span className="text-sm font-bold text-gray-600 tabular-nums">
-                  {goal.reached ? 'You did it! 🎉' : `${money(goal.targetCents - goal.progressCents)} to go`}
+                  {goal.reached ? t('goal.youDidIt') : t('goal.toGo', { money: money(goal.targetCents - goal.progressCents) })}
                 </span>
               </div>
             </div>
 
             {goal.reached && (
               <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
-                Ask a grown-up to pay it out and pick your next goal!
+                {t('goal.payItOut')}
               </p>
             )}
           </>
@@ -111,15 +113,15 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
           <button
             type="button"
             onClick={() => setSheet('new')}
-            className="w-full flex items-center gap-4 text-left"
+            className="w-full flex items-center gap-4 text-start"
           >
             <span className="grid place-items-center w-14 h-14 rounded-2xl accent-fill shrink-0">
               <Target className="w-7 h-7" aria-hidden />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-2xl font-black text-gray-900 leading-tight">What are you saving for?</span>
+              <span className="block text-2xl font-black text-gray-900 leading-tight">{t('goal.whatSaving')}</span>
               <span className="block text-sm font-bold text-gray-500 mt-0.5">
-                You have {money(wallet.owedCents)}. Pick a goal and watch the bar fill up.
+                {t('goal.pickWatch', { money: money(wallet.owedCents) })}
               </span>
             </span>
           </button>
@@ -127,7 +129,7 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
 
         {wallet.reachedGoals.length > 0 && (
           <div className="mt-3 text-xs font-bold text-gray-500">
-            🏆 {wallet.reachedGoals.length === 1 ? '1 goal reached' : `${wallet.reachedGoals.length} goals reached`}
+            🏆 {wallet.reachedGoals.length === 1 ? t('goal.oneReached') : t('goal.manyReached', { count: wallet.reachedGoals.length })}
             {wallet.reachedGoals[0] ? `: ${wallet.reachedGoals[0].emoji ?? ''} ${wallet.reachedGoals[0].title}` : ''}
           </div>
         )}
@@ -165,6 +167,7 @@ function GoalSheet({
   onClose: () => void
   onSaved: () => void
 }) {
+  const t = useKidT()
   const [emoji, setEmoji] = useState<string>(goal?.emoji ?? GOAL_EMOJIS[0])
   const [title, setTitle] = useState(goal?.title ?? '')
   const [cents, setCents] = useState<number>(goal?.targetCents ?? GOAL_PRESET_CENTS[1])
@@ -201,14 +204,14 @@ function GoalSheet({
       })
       if (res.status === 409) {
         const data = await res.json().catch(() => ({}))
-        setError(data.message || 'One goal at a time. Reach it or change it first.')
+        setError(data.message || t('goal.oneAtATime'))
         return
       }
       if (!res.ok) throw new Error(String(res.status))
       playSound('success')
       onSaved()
     } catch {
-      setError('Could not save that. Try again.')
+      setError(t('goal.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -226,7 +229,7 @@ function GoalSheet({
       if (!res.ok) throw new Error(String(res.status))
       onSaved()
     } catch {
-      setError('Could not remove that goal. Try again.')
+      setError(t('goal.removeFailed'))
     } finally {
       setBusy(false)
     }
@@ -250,17 +253,17 @@ function GoalSheet({
       >
         <div className="flex items-start justify-between gap-4 mb-5">
           <h2 id="goal-sheet-title" className="text-3xl font-black text-gray-900">
-            {mode === 'new' ? 'Pick a goal' : 'Change your goal'}
+            {mode === 'new' ? t('goal.pickTitle') : t('goal.changeTitle')}
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-2 text-gray-500 hover:bg-gray-100 min-w-[44px] min-h-[44px] grid place-items-center">
+          <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded-full p-2 text-gray-500 hover:bg-gray-100 min-w-[44px] min-h-[44px] grid place-items-center">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="space-y-5">
           <div>
-            <div className="text-sm font-bold text-gray-500 mb-2">Pick a picture</div>
-            <div className="grid grid-cols-6 gap-2" role="radiogroup" aria-label="Goal picture">
+            <div className="text-sm font-bold text-gray-500 mb-2">{t('goal.pickPicture')}</div>
+            <div className="grid grid-cols-6 gap-2" role="radiogroup" aria-label={t('goal.pictureAria')}>
               {GOAL_EMOJIS.map(e => (
                 <button
                   key={e}
@@ -280,19 +283,19 @@ function GoalSheet({
           </div>
 
           <div>
-            <label htmlFor="goal-title" className="block text-sm font-bold text-gray-500 mb-2">What is it?</label>
+            <label htmlFor="goal-title" className="block text-sm font-bold text-gray-500 mb-2">{t('goal.whatIsIt')}</label>
             <input
               id="goal-title"
               value={title}
               onChange={e => setTitle(e.target.value.slice(0, 60))}
-              placeholder="A Lego set, a scooter, a book..."
+              placeholder={t('goal.titlePlaceholder')}
               className="w-full h-14 rounded-xl border-2 border-gray-200 px-4 text-xl font-bold text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none"
             />
           </div>
 
           <div>
-            <div className="text-sm font-bold text-gray-500 mb-2">How much?</div>
-            <div className="grid grid-cols-4 gap-2 mb-2" role="radiogroup" aria-label="Goal amount">
+            <div className="text-sm font-bold text-gray-500 mb-2">{t('goal.howMuch')}</div>
+            <div className="grid grid-cols-4 gap-2 mb-2" role="radiogroup" aria-label={t('goal.amountAria')}>
               {GOAL_PRESET_CENTS.map(c => (
                 <button
                   key={c}
@@ -314,8 +317,8 @@ function GoalSheet({
                 inputMode="decimal"
                 value={custom}
                 onChange={e => applyCustom(e.target.value)}
-                placeholder="or type an amount"
-                aria-label="Custom amount"
+                placeholder={t('goal.customPlaceholder')}
+                aria-label={t('goal.customAria')}
                 className="flex-1 h-12 rounded-xl border-2 border-gray-200 px-3 text-lg font-bold text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none"
               />
             </div>
@@ -331,7 +334,7 @@ function GoalSheet({
                 disabled={busy}
                 className="min-h-[52px] px-4 rounded-2xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               >
-                Remove goal
+                {t('goal.remove')}
               </button>
             )}
             <button
@@ -340,7 +343,7 @@ function GoalSheet({
               disabled={busy || !title.trim() || cents < 100}
               className="flex-1 min-h-[52px] rounded-2xl font-black text-lg accent-fill disabled:opacity-50"
             >
-              {busy ? 'Saving...' : mode === 'new' ? 'Start saving!' : 'Save changes'}
+              {busy ? t('common.saving') : mode === 'new' ? t('goal.startSaving') : t('goal.saveChanges')}
             </button>
           </div>
         </div>
@@ -354,6 +357,7 @@ function GoalSheet({
 /* ------------------------------------------------------------------------ */
 
 export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
+  const t = useKidT()
   const [confirm, setConfirm] = useState<KidStoreItem | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -372,7 +376,7 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
       })
       if (res.status === 409) {
         const data = await res.json().catch(() => ({}))
-        setNotice(data.shortByCents ? `You need ${money(data.shortByCents)} more for that one.` : 'Not quite enough yet.')
+        setNotice(data.shortByCents ? t('store.needMore', { money: money(data.shortByCents) }) : t('store.notEnough'))
         return
       }
       if (!res.ok) throw new Error(String(res.status))
@@ -380,10 +384,10 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
       import('@/lib/utils/celebrations')
         .then(({ getCelebrationManager }) => getCelebrationManager().celebrateWithConfetti('normal'))
         .catch(() => {})
-      setNotice(`Asked! A grown-up will say yes or no to ${item.title}.`)
+      setNotice(t('store.asked', { title: item.title }))
       onChanged()
     } catch {
-      setNotice('Could not send that. Try again.')
+      setNotice(t('store.sendFailed'))
       playSound('error')
     } finally {
       setBusy(null)
@@ -414,9 +418,9 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
     <section aria-labelledby="kid-store-title" className="max-w-2xl mx-auto mb-10">
       <div className="flex items-baseline justify-between mb-4 px-1">
         <h2 id="kid-store-title" className="text-2xl font-black text-white drop-shadow-sm flex items-center gap-2">
-          <ShoppingBag className="w-6 h-6" aria-hidden /> Reward Store
+          <ShoppingBag className="w-6 h-6" aria-hidden /> {t('store.title')}
         </h2>
-        <span className="text-white/90 font-bold tabular-nums">{money(wallet.owedCents)} to spend</span>
+        <span className="text-white/90 font-bold tabular-nums">{t('store.toSpend', { money: money(wallet.owedCents) })}</span>
       </div>
 
       {notice && (
@@ -446,16 +450,16 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
               {pending ? (
                 <div className="mt-auto flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-700">
-                    <Clock className="w-4 h-4" aria-hidden /> Asked!
+                    <Clock className="w-4 h-4" aria-hidden /> {t('store.askedBadge')}
                   </span>
                   <button
                     type="button"
                     onClick={() => cancel(item)}
                     disabled={busy === item.id}
                     className="min-h-[36px] px-3 rounded-lg text-xs font-bold text-gray-600 bg-white hover:bg-gray-100 disabled:opacity-50"
-                    aria-label={`Never mind about ${item.title}`}
+                    aria-label={t('store.neverMindAria', { title: item.title })}
                   >
-                    Never mind
+                    {t('store.neverMind')}
                   </button>
                 </div>
               ) : item.affordable ? (
@@ -464,12 +468,12 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
                   onClick={() => setConfirm(item)}
                   disabled={busy === item.id}
                   className="mt-auto min-h-[44px] rounded-xl font-black accent-fill disabled:opacity-50"
-                  aria-label={`Get ${item.title} for ${money(item.priceCents)}`}
+                  aria-label={t('store.getAria', { title: item.title, money: money(item.priceCents) })}
                 >
-                  Get it!
+                  {t('store.getIt')}
                 </button>
               ) : (
-                <div className="mt-auto text-xs font-bold text-gray-500 tabular-nums">{money(item.shortByCents)} more</div>
+                <div className="mt-auto text-xs font-bold text-gray-500 tabular-nums">{t('store.more', { money: money(item.shortByCents) })}</div>
               )}
             </motion.li>
           )
@@ -494,16 +498,16 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
             <div className="text-6xl mb-2" aria-hidden>{confirm.emoji ?? '🎁'}</div>
             <h3 id="redeem-title" className="text-2xl font-black text-gray-900">{confirm.title}</h3>
             <p className="mt-1 text-gray-600 font-bold">
-              Spend {money(confirm.priceCents)} of your {money(wallet.owedCents)}?
+              {t('store.spendConfirm', { price: money(confirm.priceCents), balance: money(wallet.owedCents) })}
             </p>
-            <p className="mt-1 text-sm text-gray-500 font-semibold">A grown-up will say yes or no.</p>
+            <p className="mt-1 text-sm text-gray-500 font-semibold">{t('store.grownUpDecides')}</p>
             <div className="mt-5 flex gap-3">
               <button
                 type="button"
                 onClick={() => setConfirm(null)}
                 className="flex-1 min-h-[52px] rounded-2xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"
               >
-                Not now
+                {t('store.notNow')}
               </button>
               <button
                 type="button"
@@ -511,7 +515,7 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
                 disabled={busy === confirm.id}
                 className="flex-1 min-h-[52px] rounded-2xl font-black accent-fill inline-flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Check className="w-5 h-5 stroke-[3]" aria-hidden /> Yes, please!
+                <Check className="w-5 h-5 stroke-[3]" aria-hidden /> {t('store.yesPlease')}
               </button>
             </div>
           </motion.div>

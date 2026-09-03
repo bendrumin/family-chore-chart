@@ -21,12 +21,12 @@ struct RoutineCelebrationView: View {
     
     private var encouragingMessage: String {
         let messages = [
-            "Amazing job! You're a superstar!",
-            "Way to go! Keep up the great work!",
-            "Fantastic! You crushed it!",
-            "Incredible! You're on fire!",
-            "Awesome! Your parents will be so proud!",
-            "You did it! High five!",
+            String(localized: "Amazing job! You're a superstar!"),
+            String(localized: "Way to go! Keep up the great work!"),
+            String(localized: "Fantastic! You crushed it!"),
+            String(localized: "Incredible! You're on fire!"),
+            String(localized: "Awesome! Your parents will be so proud!"),
+            String(localized: "You did it! High five!"),
         ]
         return messages.randomElement() ?? messages[0]
     }
@@ -96,9 +96,9 @@ struct RoutineCelebrationView: View {
                 
                 // Stats
                 HStack(spacing: 20) {
-                    statCard(icon: "checkmark.circle.fill", value: "\(stepsCompleted)/\(routine.steps.count)", label: "Steps", color: .choreStarSuccess)
-                    statCard(icon: "clock.fill", value: formattedDuration, label: "Time", color: .choreStarPrimary)
-                    statCard(icon: "star.fill", value: manager.formatMoney(Double(pointsEarned) / 100.0), label: "Earned", color: .choreStarAccent)
+                    statCard(icon: "checkmark.circle.fill", value: "\(stepsCompleted)/\(routine.steps.count)", label: String(localized: "Steps"), color: .choreStarSuccess)
+                    statCard(icon: "clock.fill", value: formattedDuration, label: String(localized: "Time"), color: .choreStarPrimary)
+                    statCard(icon: "star.fill", value: manager.formatMoney(Double(pointsEarned) / 100.0), label: String(localized: "Earned"), color: .choreStarAccent)
                 }
                 .padding(.horizontal, 20)
                 .opacity(showContent ? 1 : 0)

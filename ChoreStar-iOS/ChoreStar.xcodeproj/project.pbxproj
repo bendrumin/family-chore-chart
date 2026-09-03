@@ -14,6 +14,7 @@
 		9EA025CB301135A2008215CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025CA301135A2008215CE /* SwiftUI.framework */; };
 		9EA025DC301135A3008215CE /* ChoreStarWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A1234567890ABCDEF1234567 /* ChoreStarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234566 /* ChoreStarApp.swift */; };
+		A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F6 /* Localizable.xcstrings */; };
 		A1234567890ABCDEF1234569 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234568 /* ContentView.swift */; };
 		A1234567890ABCDEF123456B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123456A /* Assets.xcassets */; };
 		A1234567890ABCDEF123456E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123456D /* Preview Assets.xcassets */; };
@@ -169,6 +170,7 @@
 		A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineActivityController.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F2 /* FamilySharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingView.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF12345F6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A39725F7A81983AC08C2BD8A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -303,6 +305,7 @@
 				A1234567890ABCDEF1234584 /* Views */,
 				A1234567890ABCDEF1234585 /* Theme */,
 				A1234567890ABCDEF123456A /* Assets.xcassets */,
+				A1234567890ABCDEF12345F6 /* Localizable.xcstrings */,
 				A1234567890ABCDEF1234581 /* Info.plist */,
 				A1234567890ABCDEF123456C /* Preview Content */,
 				FD5C4A47D33D172A27E212BC /* Logic */,
@@ -527,6 +530,9 @@
 			knownRegions = (
 				en,
 				Base,
+				ar,
+				es,
+				"pt-BR",
 			);
 			mainGroup = A1234567890ABCDEF1234559;
 			packageReferences = (
@@ -572,6 +578,7 @@
 			files = (
 				A1234567890ABCDEF123456E /* Preview Assets.xcassets in Resources */,
 				A1234567890ABCDEF123456B /* Assets.xcassets in Resources */,
+				A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */,
 				A1234567890ABCDEF12345C2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

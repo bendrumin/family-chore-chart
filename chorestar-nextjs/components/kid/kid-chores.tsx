@@ -7,6 +7,7 @@ import { ChoreIcon } from '@/components/ui/chore-icon'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { dueOn } from '@/lib/utils/schedule'
 import { playSound } from '@/lib/utils/sound'
+import { useKidT } from '@/lib/i18n/kid'
 
 /**
  * Today's chores, on the kid dashboard.
@@ -78,6 +79,7 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
   const [pending, setPending] = useState<Set<string>>(new Set())
   const [photoFor, setPhotoFor] = useState<KidChore | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useKidT()
 
   const weekStart = getWeekStart()
   const dayOfWeek = new Date().getDay()
@@ -250,9 +252,10 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
       />
 
       <div className="flex items-baseline justify-between mb-4 px-1">
-        <h2 className="text-2xl font-black text-white drop-shadow-sm">Today&apos;s Chores</h2>
+        <h2 className="text-2xl font-black text-white drop-shadow-sm">{t('chores.title')}</h2>
         <span className="text-white/90 font-bold tabular-nums">
-          {doneCount} / {chores.length} done{waitingCount > 0 ? ` · ${waitingCount} waiting` : ''}
+          {t('chores.doneCount', { done: doneCount, total: chores.length })}
+          {waitingCount > 0 ? ` · ${t('chores.waiting', { count: waitingCount })}` : ''}
         </span>
       </div>
 
@@ -270,9 +273,9 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
               onClick={() => toggle(chore)}
               aria-pressed={done || waiting}
               aria-label={`${chore.name}, ${
-                waiting ? 'waiting for a grown-up to approve' : done ? 'done' : chore.requires_photo ? 'not done, takes a photo' : 'not done'
+                waiting ? t('chores.ariaWaiting') : done ? t('chores.ariaDone') : chore.requires_photo ? t('chores.ariaNotDonePhoto') : t('chores.ariaNotDone')
               }`}
-              className={`w-full flex items-center gap-4 rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98] ${
+              className={`w-full flex items-center gap-4 rounded-2xl p-4 text-start shadow-lg transition-all active:scale-[0.98] ${
                 done ? 'bg-white/70' : waiting ? 'bg-amber-50' : 'bg-white'
               }`}
             >
@@ -292,11 +295,11 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
                   {chore.name}
                 </span>
                 {waiting ? (
-                  <span className="block text-sm font-bold text-amber-700">Waiting for a grown-up ⏳</span>
+                  <span className="block text-sm font-bold text-amber-700">{t('chores.waitingBadge')}</span>
                 ) : (
                   !done && chore.requires_photo && (
                     <span className="inline-flex items-center gap-1 text-sm font-bold text-gray-500">
-                      <Camera className="w-4 h-4" aria-hidden /> Take a photo
+                      <Camera className="w-4 h-4" aria-hidden /> {t('chores.takePhoto')}
                     </span>
                   )
                 )}

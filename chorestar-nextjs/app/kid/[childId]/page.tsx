@@ -11,6 +11,7 @@ import { KidStats } from '@/components/kid/kid-stats';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
+import { useKidT } from '@/lib/i18n/kid';
 
 interface ChildData {
   id: string;
@@ -26,6 +27,7 @@ interface ChildData {
 export default function KidDashboardPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = use(params);
   const router = useRouter();
+  const t = useKidT();
   const [child, setChild] = useState<ChildData | null>(null);
   const [kidToken, setKidToken] = useState<string | null>(null);
   // Bumped whenever a chore is ticked so the stats strip refetches.
@@ -157,7 +159,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             transition={{ delay: 0.2 }}
             className="text-5xl md:text-6xl font-black text-white mb-2"
           >
-            Hi, {child.name}! 👋
+            {t('dash.hi', { name: child.name })}
           </motion.h1>
 
           <motion.p
@@ -166,7 +168,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             transition={{ delay: 0.3 }}
             className="text-2xl text-white font-bold"
           >
-            Ready for your routines?
+            {t('dash.ready')}
           </motion.p>
         </motion.div>
 
@@ -178,7 +180,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             className="text-white hover:bg-white/20 rounded-xl gap-2"
           >
             <LogOut className="w-5 h-5" />
-            Logout
+            {t('dash.logout')}
           </Button>
         </motion.div>
       </div>
@@ -219,7 +221,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             >
               ⭐
             </motion.div>
-            <span className="sr-only">Loading routines...</span>
+            <span className="sr-only">{t('dash.loadingRoutines')}</span>
           </div>
         ) : activeRoutines.length === 0 ? (
           <motion.div
@@ -228,8 +230,8 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
             className="text-center py-20"
           >
             <div className="text-8xl mb-4">📋</div>
-            <h2 className="text-4xl font-black text-white mb-4">No Routines Yet</h2>
-            <p className="text-xl text-white">Ask a grownup to add routines for you!</p>
+            <h2 className="text-4xl font-black text-white mb-4">{t('dash.noRoutinesTitle')}</h2>
+            <p className="text-xl text-white">{t('dash.noRoutinesBody')}</p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -253,7 +255,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handlePlayRoutine(routine.id)}
-                    className="w-full bg-white rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all text-left relative overflow-hidden"
+                    className="w-full bg-white rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all text-start relative overflow-hidden"
                   >
                     {/* Background Pattern */}
                     <div
@@ -283,7 +285,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
 
                     {/* Steps Count */}
                     <p className="text-gray-600 font-bold mb-4 relative z-10">
-                      {routine.routine_steps?.length || 0} steps
+                      {t('dash.steps', { count: routine.routine_steps?.length || 0 })}
                     </p>
 
                     {/* Play Button */}
@@ -293,7 +295,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
                         style={{ color: routine.color }}
                       >
                         <Play className="w-6 h-6" fill={routine.color} />
-                        Start
+                        {t('dash.start')}
                       </div>
 
                       {/* Reward */}
@@ -304,9 +306,9 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
 
                     {/* Completed Badge */}
                     {completedToday && (
-                      <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full flex items-center gap-1 text-sm font-bold">
+                      <div className="absolute top-4 end-4 bg-green-500 text-white px-3 py-1 rounded-full flex items-center gap-1 text-sm font-bold">
                         <CheckCircle2 className="w-4 h-4" />
-                        Done!
+                        {t('dash.doneBadge')}
                       </div>
                     )}
                   </motion.button>

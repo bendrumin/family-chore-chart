@@ -9,7 +9,14 @@ enum AchievementRarity: String, Codable {
     case epic
     case legendary
 
-    var label: String { rawValue.capitalized }
+    var label: String {
+        switch self {
+        case .common: return String(localized: "Common")
+        case .rare: return String(localized: "Rare")
+        case .epic: return String(localized: "Epic")
+        case .legendary: return String(localized: "Legendary")
+        }
+    }
 
     var color: Color {
         switch self {
@@ -85,57 +92,57 @@ struct AchievementDefinition: Identifiable {
     /// The 10 achievements, matching web's ACHIEVEMENTS list.
     static let all: [AchievementDefinition] = [
         AchievementDefinition(
-            id: "first_steps", name: "First Steps",
-            description: "Complete your first chore",
+            id: "first_steps", name: String(localized: "First Steps"),
+            description: String(localized: "Complete your first chore"),
             icon: "👶", rarity: .common, requirement: .firstChore
         ),
         AchievementDefinition(
-            id: "week_warrior", name: "Week Warrior",
-            description: "Complete all chores for a full week",
+            id: "week_warrior", name: String(localized: "Week Warrior"),
+            description: String(localized: "Complete all chores for a full week"),
             icon: "⚔️", rarity: .rare, requirement: .weekComplete
         ),
         AchievementDefinition(
-            id: "streak_master", name: "Streak Master",
-            description: "Maintain a 10-day streak",
+            id: "streak_master", name: String(localized: "Streak Master"),
+            description: String(localized: "Maintain a 10-day streak"),
             icon: "🔥", rarity: .epic, requirement: .streak(days: 10)
         ),
         AchievementDefinition(
-            id: "perfect_week", name: "Perfect Week",
-            description: "Complete every single chore for a week",
+            id: "perfect_week", name: String(localized: "Perfect Week"),
+            description: String(localized: "Complete every single chore for a week"),
             icon: "⭐", rarity: .legendary, requirement: .weekComplete
         ),
         AchievementDefinition(
-            id: "family_helper", name: "Family Helper",
-            description: "Complete 50 household chores",
+            id: "family_helper", name: String(localized: "Family Helper"),
+            description: String(localized: "Complete 50 household chores"),
             icon: "🏠", rarity: .rare,
             requirement: .categoryCount(category: .household, count: 50)
         ),
         AchievementDefinition(
-            id: "little_scholar", name: "Little Scholar",
-            description: "Complete 25 learning activities",
+            id: "little_scholar", name: String(localized: "Little Scholar"),
+            description: String(localized: "Complete 25 learning activities"),
             icon: "📚", rarity: .rare,
             requirement: .categoryCount(category: .learning, count: 25)
         ),
         AchievementDefinition(
-            id: "creative_artist", name: "Creative Artist",
-            description: "Complete 20 creative activities",
+            id: "creative_artist", name: String(localized: "Creative Artist"),
+            description: String(localized: "Complete 20 creative activities"),
             icon: "🎨", rarity: .rare,
             requirement: .categoryCount(category: .creative, count: 20)
         ),
         AchievementDefinition(
-            id: "young_athlete", name: "Young Athlete",
-            description: "Complete 30 physical activities",
+            id: "young_athlete", name: String(localized: "Young Athlete"),
+            description: String(localized: "Complete 30 physical activities"),
             icon: "🏃", rarity: .rare,
             requirement: .categoryCount(category: .physical, count: 30)
         ),
         AchievementDefinition(
-            id: "chore_champion", name: "Chore Champion",
-            description: "Complete 100 total chores",
+            id: "chore_champion", name: String(localized: "Chore Champion"),
+            description: String(localized: "Complete 100 total chores"),
             icon: "🏆", rarity: .epic, requirement: .totalCount(100)
         ),
         AchievementDefinition(
-            id: "super_star", name: "Super Star",
-            description: "Complete 250 total chores",
+            id: "super_star", name: String(localized: "Super Star"),
+            description: String(localized: "Complete 250 total chores"),
             icon: "🌟", rarity: .legendary, requirement: .totalCount(250)
         ),
     ]

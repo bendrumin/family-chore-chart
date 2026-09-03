@@ -59,10 +59,10 @@ struct Routine: Codable, Identifiable {
 
     var typeDisplayName: String {
         switch type {
-        case "morning": return "Morning"
-        case "bedtime": return "Bedtime"
-        case "afterschool": return "After School"
-        case "custom": return "Custom"
+        case "morning": return String(localized: "Morning")
+        case "bedtime": return String(localized: "Bedtime")
+        case "afterschool": return String(localized: "After School")
+        case "custom": return String(localized: "Custom")
         default: return type.capitalized
         }
     }

@@ -11,6 +11,7 @@ import { CelebrationScreen } from '@/components/routines/celebration-screen';
 import { useRoutine, useCompleteRoutine } from '@/lib/hooks/useRoutines';
 import { useSound } from '@/lib/hooks/useSound';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
+import { useKidT } from '@/lib/i18n/kid';
 import { toast } from 'sonner';
 
 export default function RoutinePlayerPage({
@@ -20,6 +21,7 @@ export default function RoutinePlayerPage({
 }) {
   const { childId, routineId } = use(params);
   const router = useRouter();
+  const t = useKidT();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showCelebration, setShowCelebration] = useState(false);
@@ -75,9 +77,9 @@ export default function RoutinePlayerPage({
       <div className="min-h-screen flex items-center justify-center kid-mode-bg text-white text-center p-4">
         <div>
           <div className="text-8xl mb-4">😕</div>
-          <h1 className="text-3xl font-bold mb-4">Oops! Routine not found</h1>
+          <h1 className="text-3xl font-bold mb-4">{t('player.notFound')}</h1>
           <Button onClick={() => router.push(`/kid/${childId}`)} className="kid-button">
-            Go Back
+            {t('player.goBack')}
           </Button>
         </div>
       </div>
@@ -129,7 +131,7 @@ export default function RoutinePlayerPage({
           onError: () => {
             // Never fail silently: tell the kid it didn't save so they can retry.
             // The mutation resets isPending, so the "Finish!" button re-enables.
-            toast.error("Oops! We couldn't save that. Tap Finish to try again. 💫", {
+            toast.error(t('player.saveFailed'), {
               duration: 6000,
             });
           },
@@ -139,7 +141,7 @@ export default function RoutinePlayerPage({
   };
 
   const handleExit = () => {
-    if (confirm('Are you sure you want to exit? Your progress will be lost.')) {
+    if (confirm(t('player.exitConfirm'))) {
       router.push(`/kid/${childId}`);
     }
   };
@@ -241,16 +243,16 @@ export default function RoutinePlayerPage({
                 disabled={completeMutation.isPending}
               >
                 {completeMutation.isPending
-                  ? '✨ Saving...'
+                  ? t('player.saving')
                   : currentStepIndex === steps.length - 1
-                  ? '🎉 Finish!'
-                  : '✓ Done!'}
+                  ? t('player.finish')
+                  : t('player.done')}
               </Button>
             </motion.div>
 
             {/* Step Counter */}
             <div className="mt-8 text-white/60 text-xl font-bold">
-              Step {currentStepIndex + 1} of {steps.length}
+              {t('player.stepOf', { current: currentStepIndex + 1, total: steps.length })}
             </div>
           </motion.div>
         </AnimatePresence>

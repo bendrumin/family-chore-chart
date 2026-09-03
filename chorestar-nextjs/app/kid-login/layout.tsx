@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { KidDirection } from '@/components/kid/kid-direction'
 
 export const metadata: Metadata = {
   title: 'Kid Login',
@@ -7,5 +8,6 @@ export const metadata: Metadata = {
 }
 
 export default function KidLoginLayout({ children }: { children: React.ReactNode }) {
-  return children
+  // Flips to dir="rtl" after hydration when the kid locale is Arabic.
+  return <KidDirection>{children}</KidDirection>
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
+import { useKidT } from '@/lib/i18n/kid';
 
 interface VisualTimerProps {
   durationSeconds: number;
@@ -19,6 +20,7 @@ export function VisualTimer({
 }: VisualTimerProps) {
   const [secondsLeft, setSecondsLeft] = useState(durationSeconds);
   const [isRunning, setIsRunning] = useState(autoStart);
+  const t = useKidT();
 
   useEffect(() => {
     if (!isRunning || secondsLeft <= 0) return;
@@ -102,7 +104,7 @@ export function VisualTimer({
       <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: currentColor }}>
         <Clock className="w-4 h-4" />
         <span>
-          {secondsLeft === 0 ? "Time's up!" : isRunning ? 'Running...' : 'Paused'}
+          {secondsLeft === 0 ? t('timer.timesUp') : isRunning ? t('timer.running') : t('timer.paused')}
         </span>
       </div>
     </div>

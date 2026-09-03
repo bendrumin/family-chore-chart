@@ -6,6 +6,7 @@ import { Flame, Lock, Trophy, Wallet, X } from 'lucide-react'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { formatMoney } from '@/lib/constants/currencies'
 import { RARITY_COLORS } from '@/lib/constants/achievements'
+import { useKidT, type KidKey } from '@/lib/i18n/kid'
 
 /**
  * The kid's own numbers: streak, this week's money, badges.
@@ -50,6 +51,7 @@ interface KidStatsProps {
 }
 
 export function KidStats({ kidToken, childName, refreshKey = 0 }: KidStatsProps) {
+  const t = useKidT()
   const [stats, setStats] = useState<KidStatsData | null>(null)
   const [failed, setFailed] = useState(false)
   const [cabinetOpen, setCabinetOpen] = useState(false)
@@ -110,27 +112,27 @@ export function KidStats({ kidToken, childName, refreshKey = 0 }: KidStatsProps)
           icon={<Flame className="w-6 h-6" aria-hidden />}
           iconClass="text-orange-500"
           value={String(stats.streak)}
-          label="day streak"
-          sub={stats.bestStreak > stats.streak ? `best: ${stats.bestStreak}` : stats.streak > 0 ? 'your best!' : 'finish today to start'}
-          ariaLabel={`${stats.streak} day streak, best ${stats.bestStreak}`}
+          label={t('stats.dayStreak')}
+          sub={stats.bestStreak > stats.streak ? t('stats.best', { count: stats.bestStreak }) : stats.streak > 0 ? t('stats.yourBest') : t('stats.finishToStart')}
+          ariaLabel={t('stats.streakAria', { streak: stats.streak, best: stats.bestStreak })}
         />
         <Tile
           index={1}
           icon={<Wallet className="w-6 h-6" aria-hidden />}
           iconClass="text-emerald-600"
           value={money}
-          label="this week"
-          sub={stats.todayPerfect ? 'today is done!' : `${stats.todayDone} of ${stats.todayDue} today`}
-          ariaLabel={`${money} earned this week`}
+          label={t('stats.thisWeek')}
+          sub={stats.todayPerfect ? t('stats.todayDone') : t('stats.todayProgress', { done: stats.todayDone, due: stats.todayDue })}
+          ariaLabel={t('stats.weekAria', { money })}
         />
         <Tile
           index={2}
           icon={<Trophy className="w-6 h-6" aria-hidden />}
           iconClass="text-yellow-500"
           value={`${stats.earnedCount}/${stats.totalCount}`}
-          label="badges"
-          sub={stats.next ? `next: ${stats.next.name}` : 'all earned!'}
-          ariaLabel={`${stats.earnedCount} of ${stats.totalCount} badges earned. Open badge cabinet`}
+          label={t('stats.badges')}
+          sub={stats.next ? t('stats.next', { name: stats.next.name }) : t('stats.allEarned')}
+          ariaLabel={t('stats.badgesAria', { earned: stats.earnedCount, total: stats.totalCount })}
           onClick={() => setCabinetOpen(true)}
         />
       </div>
@@ -201,6 +203,13 @@ function Tile({
   )
 }
 
+const RARITY_KEY: Record<KidBadge['rarity'], KidKey> = {
+  common: 'rarity.common',
+  rare: 'rarity.rare',
+  epic: 'rarity.epic',
+  legendary: 'rarity.legendary',
+}
+
 function BadgeCabinet({
   childName,
   badges,
@@ -212,6 +221,7 @@ function BadgeCabinet({
   earnedCount: number
   onClose: () => void
 }) {
+  const t = useKidT()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -237,23 +247,23 @@ function BadgeCabinet({
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h2 id="badge-cabinet-title" className="text-3xl font-black text-gray-900">
-              {childName}&apos;s Badges
+              {t('stats.cabinetTitle', { name: childName })}
             </h2>
             <p className="text-gray-600 font-bold">
-              {earnedCount} of {badges.length} earned
+              {t('stats.earnedOfTotal', { earned: earnedCount, total: badges.length })}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.close')}
             className="rounded-full p-2 text-gray-500 hover:bg-gray-100 min-w-[44px] min-h-[44px] grid place-items-center"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <ul className="grid grid-cols-2 gap-3" aria-label="Badges">
+        <ul className="grid grid-cols-2 gap-3" aria-label={t('stats.badgesListAria')}>
           {badges.map((badge, i) => {
             const colors = RARITY_COLORS[badge.rarity]
             return (
@@ -281,7 +291,7 @@ function BadgeCabinet({
                   {badge.description}
                 </div>
                 {!badge.earned && (
-                  <div className="w-full mt-1" aria-label={`${badge.currentCount} of ${badge.requiredCount}`}>
+                  <div className="w-full mt-1" aria-label={t('common.xOfY', { x: badge.currentCount, y: badge.requiredCount })}>
                     <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
                       <div
                         className="h-full rounded-full accent-fill"
@@ -295,7 +305,7 @@ function BadgeCabinet({
                 )}
                 {badge.earned && (
                   <span className="text-[11px] font-black uppercase tracking-wider text-white/90">
-                    {badge.rarity}
+                    {t(RARITY_KEY[badge.rarity])}
                   </span>
                 )}
               </motion.li>

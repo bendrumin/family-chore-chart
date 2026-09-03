@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { KidDirection } from '@/components/kid/kid-direction'
 import { KidThemeLoader } from '@/components/kid/kid-theme'
 
 // Kid-mode pages carry per-child URLs that can be shared outside the family.
@@ -14,7 +15,8 @@ export default function KidLayout({ children }: { children: React.ReactNode }) {
       {/* Paints the family's theme onto every kid page (dashboard and routine
           player alike) and drifts the season's particles over it. */}
       <KidThemeLoader />
-      {children}
+      {/* Flips to dir="rtl" after hydration when the kid locale is Arabic. */}
+      <KidDirection>{children}</KidDirection>
     </>
   )
 }

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Delete } from 'lucide-react';
 import { useVerifyChildPin } from '@/lib/hooks/useChildPin';
 import { useSound } from '@/lib/hooks/useSound';
+import { useKidT } from '@/lib/i18n/kid';
 
 export default function KidLoginWithFamilyPage({
   params,
@@ -19,6 +20,7 @@ export default function KidLoginWithFamilyPage({
   const router = useRouter();
   const verifyMutation = useVerifyChildPin(familyCode);
   const { playClick, playError, playRoutineComplete } = useSound();
+  const t = useKidT();
 
   const handleNumberClick = (num: number) => {
     if (pin.length < 6) {
@@ -59,7 +61,7 @@ export default function KidLoginWithFamilyPage({
       }
     } catch (err: any) {
       playError();
-      setError(err?.message?.includes('Invalid family code') ? 'Wrong link. Get your link from your parent.' : 'Oops! Try again');
+      setError(err?.message?.includes('Invalid family code') ? t('pin.wrongLink') : t('pin.tryAgain'));
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       setPin('');
@@ -90,10 +92,10 @@ export default function KidLoginWithFamilyPage({
             {error ? '😅' : '👋'}
           </motion.div>
           <h1 className="text-4xl font-black text-white mb-2">
-            {error ? 'Oops!' : 'Welcome!'}
+            {error ? t('pin.oops') : t('pin.welcome')}
           </h1>
           <p className="text-xl text-white/90">
-            {error ? error : 'Enter your 4-6 digit PIN'}
+            {error ? error : t('pin.enterPin')}
           </p>
         </motion.div>
 
@@ -138,7 +140,7 @@ export default function KidLoginWithFamilyPage({
             onClick={handleClear}
             className="kid-button aspect-square rounded-2xl bg-red-500 text-white text-xl font-bold shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
           >
-            Clear
+            {t('pin.clear')}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -152,7 +154,7 @@ export default function KidLoginWithFamilyPage({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleDelete}
-            aria-label="Delete last digit"
+            aria-label={t('pin.deleteDigit')}
             className="kid-button aspect-square rounded-2xl bg-orange-500 text-white shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
           >
             <Delete className="w-10 h-10" aria-hidden="true" />
@@ -167,7 +169,7 @@ export default function KidLoginWithFamilyPage({
               exit={{ opacity: 0, y: -20 }}
               className="text-center mt-8 text-white text-lg font-bold"
             >
-              Checking... ✨
+              {t('pin.checking')}
             </motion.div>
           )}
         </AnimatePresence>
@@ -179,7 +181,7 @@ export default function KidLoginWithFamilyPage({
           onClick={() => router.push('/kid-login')}
           className="mt-8 text-white/70 hover:text-white text-sm font-semibold mx-auto block"
         >
-          ← Different family? Enter code
+          {t('pin.differentFamily')}
         </motion.button>
       </div>
 
