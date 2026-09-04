@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.1'
+export const LATEST_CHANGELOG_VERSION = '2026.9.2'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.2': {
+    version: '2026.9.2',
+    date: 'September 2026',
+    title: 'ChoreStar Around the World',
+    features: [
+      {
+        icon: '🗣️',
+        title: 'Kid Mode in Spanish, Portuguese, and Arabic',
+        description: 'The kid dashboard, routines, celebrations, and store now follow each device\'s language, so kids can use ChoreStar on their own long before their English catches up. Arabic runs right to left. Parent screens stay in English for now.',
+      },
+      {
+        icon: '💰',
+        title: 'Dozens of Currencies',
+        description: 'Pick your family\'s currency in Settings, from riyals to reais, and every reward, goal, and payout shows the right symbol and decimals. Yen and Chilean pesos skip the decimals entirely, as they should.',
+      },
+      {
+        icon: '📅',
+        title: 'Weeks That Match Your Calendar',
+        description: 'The chore grid, day pickers, and printable charts now start the week on your calendar\'s first day: Monday in Europe, Sunday in the Americas. In the Gulf, the Weekdays and Weekends presets mean Sunday to Thursday and Friday to Saturday.',
+      },
+    ],
+  },
   '2026.9.1': {
     version: '2026.9.1',
     date: 'September 2026',
