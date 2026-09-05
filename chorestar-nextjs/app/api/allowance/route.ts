@@ -9,11 +9,17 @@ import { computeBalance, loadChild, activeGoal, goalView } from '@/lib/utils/wal
  * already been handed over, and the difference still owed.
  *
  * GET  /api/allowance?childId=...          — current balance (+ active goal)
- * POST /api/allowance { childId, note? }    — record a payout, clearing the balance
+ * POST /api/allowance { childId, note?, amountCents? }
+ *                                           — record a payout. amountCents (a
+ *                                             positive integer, at most what is
+ *                                             owed, recomputed server-side) pays
+ *                                             part of the balance and leaves the
+ *                                             rest owed; omitted pays it all
  * POST /api/allowance { childId, goalId }   — pay out toward a goal: the goal's
  *                                             target (or what is owed, if less),
  *                                             tagged with the goal, which is then
- *                                             marked reached
+ *                                             marked reached (amountCents is
+ *                                             ignored on this path)
  *
  * The balance is derived on every read rather than stored (see lib/utils/wallet).
  *
@@ -56,7 +62,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    let body: { childId?: unknown; note?: unknown; goalId?: unknown } | null = null
+    let body: { childId?: unknown; note?: unknown; goalId?: unknown; amountCents?: unknown } | null = null
     try {
       body = await request.json()
     } catch {
@@ -117,9 +123,29 @@ export async function POST(request: Request) {
       })
     }
 
+    // Partial payout: the client may name an amount, but never more than the
+    // owed balance the server just recomputed. Omitted = pay everything owed.
+    let amountCents = balance.owedCents
+    if (body?.amountCents !== undefined && body?.amountCents !== null) {
+      const requested = body.amountCents
+      if (typeof requested !== 'number' || !Number.isInteger(requested) || requested <= 0) {
+        return NextResponse.json(
+          { error: 'amountCents must be a positive whole number of cents' },
+          { status: 400 }
+        )
+      }
+      if (requested > balance.owedCents) {
+        return NextResponse.json(
+          { error: `Only ${balance.owedCents} cents are owed right now` },
+          { status: 400 }
+        )
+      }
+      amountCents = requested
+    }
+
     const { error } = await admin
       .from('allowance_payouts')
-      .insert({ child_id: auth.child.id, amount_cents: balance.owedCents, note })
+      .insert({ child_id: auth.child.id, amount_cents: amountCents, note })
     if (error) {
       console.error('[allowance] payout insert failed:', error.message)
       return NextResponse.json({ error: 'Could not record the payout' }, { status: 500 })
@@ -127,9 +153,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       childId: auth.child.id,
-      paidCents: balance.owedCents,
+      paidCents: amountCents,
       earnedCents: balance.earnedCents,
-      owedCents: 0,
+      owedCents: balance.owedCents - amountCents,
     })
   } catch (error) {
     console.error('[allowance] POST failed:', error)

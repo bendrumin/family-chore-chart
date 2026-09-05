@@ -512,6 +512,7 @@ struct ParentGoalSection: View {
     @State private var busy = false
     @State private var message: String?
     @State private var editing = false
+    @State private var payingOut = false
     @Environment(\.requestReview) private var requestReview
 
     private var wallet: SupabaseManager.KidWallet? { manager.wallets[child.id] }
@@ -574,7 +575,7 @@ struct ParentGoalSection: View {
 
                 HStack(spacing: 10) {
                     Button {
-                        Task { await pay(goalId: nil) }
+                        payingOut = true
                     } label: {
                         Text("Paid Out")
                             .font(.subheadline.weight(.bold))
@@ -616,12 +617,23 @@ struct ParentGoalSection: View {
                 GoalEditorSheet(child: child, goal: wallet.goal)
                     .environmentObject(manager)
             }
+            .sheet(isPresented: $payingOut) {
+                PayoutSheet(child: child, owedCents: wallet.owedCents) { amountCents in
+                    // Omit amountCents when paying everything: the exact
+                    // long-standing full-payout request.
+                    await pay(
+                        goalId: nil,
+                        amountCents: amountCents == wallet.owedCents ? nil : amountCents
+                    )
+                }
+                .environmentObject(manager)
+            }
         }
     }
 
-    private func pay(goalId: UUID?) async {
+    private func pay(goalId: UUID?, amountCents: Int? = nil) async {
         busy = true
-        let result = await manager.payOut(childId: child.id, goalId: goalId)
+        let result = await manager.payOut(childId: child.id, goalId: goalId, amountCents: amountCents)
         await MainActor.run {
             busy = false
             if let paid = result.paidCents {
@@ -638,6 +650,140 @@ struct ParentGoalSection: View {
                 }
             } else {
                 message = result.error
+            }
+        }
+    }
+}
+
+/// Record a full or partial payout. The amount starts at everything owed;
+/// a smaller amount leaves the rest on the child's balance. Validation
+/// mirrors the API: more than zero, no more than owed.
+struct PayoutSheet: View {
+    let child: Child
+    let owedCents: Int
+    /// Called with the cents to pay. The caller maps "everything owed" back
+    /// to the plain full-payout request.
+    let onPay: (Int) async -> Void
+
+    @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.dismiss) private var dismiss
+    @State private var amountText = ""
+    @State private var busy = false
+    @FocusState private var amountFocused: Bool
+
+    private var decimals: Int { manager.familySettings?.currencyDecimals ?? 2 }
+    private func money(_ cents: Int) -> String { manager.formatMoney(Double(cents) / 100.0) }
+
+    /// "2.40" for the text field: no symbol, the currency's own decimals.
+    private func plainAmount(_ cents: Int) -> String {
+        decimals == 0
+            ? String(format: "%.0f", (Double(cents) / 100.0).rounded())
+            : String(format: "%.\(decimals)f", Double(cents) / 100.0)
+    }
+
+    private var enteredCents: Int? {
+        let cleaned = amountText
+            .replacingOccurrences(of: ",", with: ".")
+            .trimmingCharacters(in: .whitespaces)
+        guard let value = Double(cleaned), value > 0 else { return nil }
+        return Int((value * 100).rounded())
+    }
+
+    /// 0 < amount <= owed, the same rule the server enforces.
+    private var isValid: Bool {
+        guard let cents = enteredCents else { return false }
+        return cents > 0 && cents <= owedCents
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                Text("\(child.name) is owed \(money(owedCents)).")
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarTextSecondary)
+
+                HStack(spacing: 8) {
+                    Text(manager.currencySymbol)
+                        .font(.title2.weight(.semibold))
+                        .foregroundColor(.choreStarTextSecondary)
+                    TextField("Amount", text: $amountText)
+                        .font(.title2.weight(.bold))
+                        .keyboardType(.decimalPad)
+                        .focused($amountFocused)
+                        .foregroundColor(.choreStarTextPrimary)
+                        .accessibilityLabel("Amount to pay")
+                }
+                .padding(14)
+                .background(Color.choreStarBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            isValid ? Color.choreStarTextSecondary.opacity(0.2) : Color.choreStarWarning,
+                            lineWidth: 1.5
+                        )
+                )
+
+                // Make the arithmetic obvious before anything is written.
+                Group {
+                    if let cents = enteredCents, cents <= owedCents {
+                        if cents == owedCents {
+                            Text("That pays everything owed.")
+                                .foregroundColor(.choreStarTextSecondary)
+                        } else {
+                            Text("\(money(owedCents - cents)) will remain.")
+                                .foregroundColor(.choreStarTextSecondary)
+                        }
+                    } else {
+                        Text("Enter an amount up to \(money(owedCents)).")
+                            .foregroundColor(.choreStarWarning)
+                    }
+                }
+                .font(.caption.weight(.semibold))
+
+                Spacer(minLength: 0)
+
+                Button {
+                    guard let cents = enteredCents, isValid, !busy else { return }
+                    busy = true
+                    Task {
+                        await onPay(cents)
+                        await MainActor.run {
+                            busy = false
+                            dismiss()
+                        }
+                    }
+                } label: {
+                    Text(isValid ? "Pay \(money(enteredCents ?? 0))" : "Pay")
+                        .font(.subheadline.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                        .background(
+                            isValid && !busy
+                                ? AnyShapeStyle(ThemeManager.shared.gradient)
+                                : AnyShapeStyle(Color.choreStarTextSecondary.opacity(0.25))
+                        )
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(!isValid || busy)
+            }
+            .padding(20)
+            .background(Color.choreStarCardBackground)
+            .navigationTitle("Record a Payout")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .disabled(busy)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .onAppear {
+            if amountText.isEmpty {
+                amountText = plainAmount(owedCents)
             }
         }
     }

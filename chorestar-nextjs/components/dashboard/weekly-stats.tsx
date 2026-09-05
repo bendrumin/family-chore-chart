@@ -5,11 +5,16 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Trophy, Star, TrendingUp, DollarSign, Flame, Wallet } from 'lucide-react'
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { dueOn } from '@/lib/utils/schedule'
+import { useSettings } from '@/lib/contexts/settings-context'
+import { formatMoney, currencySymbol, amountToCents, sanitizeAmountInput } from '@/lib/constants/currencies'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -23,6 +28,8 @@ interface WeeklyStatsProps {
 }
 
 export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
+  const { settings } = useSettings()
+  const currencyCode = settings?.currency_code
   const [stats, setStats] = useState({
     totalCompletions: 0,
     totalEarnings: 0,
@@ -43,6 +50,11 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   const [goal, setGoal] = useState<{ id: string; title: string; emoji: string | null; targetCents: number; progressCents: number; percent: number; reached: boolean } | null>(null)
   const [balanceUnavailable, setBalanceUnavailable] = useState(false)
   const [payingOut, setPayingOut] = useState(false)
+  // The pay-out dialog (partial payouts): amount defaults to the full owed
+  // balance; paying less leaves the remainder as the balance.
+  const [payoutOpen, setPayoutOpen] = useState(false)
+  const [amountInput, setAmountInput] = useState('')
+  const [noteInput, setNoteInput] = useState('')
 
   const loadBalance = useCallback(async () => {
     try {
@@ -61,30 +73,71 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
 
   useEffect(() => { loadBalance() }, [loadBalance, stats.totalEarnings])
 
-  const handlePayOut = async (goalId?: string) => {
-    if (!balance || balance.owedCents <= 0) return
+  const handlePayOut = async (goalId?: string, amountCents?: number, note?: string): Promise<boolean> => {
+    if (!balance || balance.owedCents <= 0) return false
     setPayingOut(true)
     try {
       const res = await fetch('/api/allowance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goalId ? { childId: child.id, goalId } : { childId: child.id }),
+        body: JSON.stringify(
+          goalId
+            ? { childId: child.id, goalId }
+            : {
+                childId: child.id,
+                ...(amountCents !== undefined ? { amountCents } : {}),
+                ...(note ? { note } : {}),
+              }
+        ),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || 'failed')
       playSound('success')
       if (goalId && goal) {
         getCelebrationManager().celebrateWithConfetti('epic')
-        toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)} for ${goal.emoji ?? ''} ${goal.title}. Goal reached!`)
+        toast.success(`Paid ${child.name} ${formatMoney(data.paidCents, currencyCode)} for ${goal.emoji ?? ''} ${goal.title}. Goal reached!`)
       } else {
-        toast.success(`Paid ${child.name} $${(data.paidCents / 100).toFixed(2)}`)
+        const remaining = data.owedCents ?? 0
+        toast.success(
+          `Paid ${child.name} ${formatMoney(data.paidCents, currencyCode)}` +
+            (remaining > 0 ? ` · ${formatMoney(remaining, currencyCode)} still owed` : '')
+        )
       }
       await loadBalance()
-    } catch {
-      toast.error('Could not record the payout')
+      return true
+    } catch (e) {
+      toast.error(e instanceof Error && e.message !== 'failed' ? e.message : 'Could not record the payout')
+      return false
     } finally {
       setPayingOut(false)
     }
+  }
+
+  // ── Pay-out dialog derived state ───────────────────────────────────────────
+  const owedCents = balance?.owedCents ?? 0
+  const payoutCents = amountToCents(sanitizeAmountInput(amountInput))
+  const payoutValid = payoutCents !== null && payoutCents > 0 && payoutCents <= owedCents
+  const remainderCents = payoutValid ? owedCents - payoutCents : 0
+
+  const openPayoutDialog = () => {
+    if (!balance || balance.owedCents <= 0) return
+    // Default to the full owed amount; storage is always hundredths, so this
+    // round-trips exactly through amountToCents.
+    setAmountInput((balance.owedCents / 100).toFixed(2))
+    setNoteInput('')
+    setPayoutOpen(true)
+  }
+
+  const submitPayout = async () => {
+    if (!payoutValid || payoutCents === null) return
+    // Paying exactly what is owed uses the existing full-payout path, so a
+    // balance that moved since the dialog opened is still fully cleared.
+    const ok = await handlePayOut(
+      undefined,
+      payoutCents === owedCents ? undefined : payoutCents,
+      noteInput.trim() || undefined
+    )
+    if (ok) setPayoutOpen(false)
   }
 
   const previousPerfectDays = useRef(0)
@@ -307,6 +360,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   }
 
   return (
+    <>
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -391,7 +445,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePayOut()}
+              onClick={openPayoutDialog}
               disabled={payingOut || balance.owedCents <= 0}
               className="font-semibold"
             >
@@ -476,5 +530,72 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         </div>
       </CardContent>
     </Card>
+
+    {/* Pay-out dialog — amount defaults to everything owed; paying less
+        leaves the remainder as the balance (owed is derived, so nothing
+        else needs to change). */}
+    <Dialog open={payoutOpen} onOpenChange={setPayoutOpen}>
+      <DialogContent className="max-w-md" onClose={() => setPayoutOpen(false)}>
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            Pay {child.name}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {child.name} is owed {formatMoney(owedCents, currencyCode)}. Record the full amount,
+            or just what was spent.
+          </p>
+          <div className="space-y-1.5">
+            <Label htmlFor="payout-amount" className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Amount
+            </Label>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                {currencySymbol(currencyCode)}
+              </span>
+              <Input
+                id="payout-amount"
+                value={amountInput}
+                onChange={e => setAmountInput(sanitizeAmountInput(e.target.value))}
+                inputMode="decimal"
+                className="w-32 text-right tabular-nums"
+                aria-describedby="payout-amount-hint"
+              />
+            </div>
+            <p
+              id="payout-amount-hint"
+              className={`text-xs ${payoutValid ? 'text-gray-500 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}
+            >
+              {!payoutValid
+                ? `Enter an amount over zero, up to ${formatMoney(owedCents, currencyCode)}`
+                : remainderCents > 0
+                ? `${formatMoney(remainderCents, currencyCode)} will remain in ${child.name}'s balance`
+                : 'This clears the balance'}
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="payout-note" className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Note (optional)
+            </Label>
+            <Input
+              id="payout-note"
+              value={noteInput}
+              onChange={e => setNoteInput(e.target.value.slice(0, 200))}
+              placeholder="Dollar store run"
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setPayoutOpen(false)} disabled={payingOut} className="font-semibold">
+            Cancel
+          </Button>
+          <Button variant="gradient" onClick={() => void submitPayout()} disabled={payingOut || !payoutValid} className="font-bold">
+            {payingOut ? 'Recording…' : 'Record payout'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
