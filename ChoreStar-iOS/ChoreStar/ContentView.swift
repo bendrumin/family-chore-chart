@@ -310,8 +310,7 @@ struct MainTabs: View {
             selectedTab = 0
             deepLinks.consumeWantToday()
         }
-        if let id = deepLinks.pendingChildId {
-            deepLinks.consumePendingChildId()
+        if let id = deepLinks.consumePendingChildId() {
             if let child = manager.children.first(where: { $0.id == id }) {
                 selectedTab = 0
                 deepLinkChild = child

@@ -2600,6 +2600,9 @@ class SupabaseManager: ObservableObject {
                     completed_at: ISO8601DateFormatter().string(from: now)
                 )
                 if waits { completion.status = "pending" }
+                // Immutable copy for the MainActor closure below: capturing the
+                // mutable `completion` var is an error in Swift 6 concurrency.
+                let completionId = completion.id
 
                 try await client
                     .from("chore_completions")
@@ -2617,7 +2620,7 @@ class SupabaseManager: ObservableObject {
                         }) {
                             allTimeCompletions.remove(at: idx)
                         }
-                        pendingCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek, id: completion.id))
+                        pendingCompletions.append((choreId: chore.id, dayOfWeek: dayOfWeek, id: completionId))
                     }
                     return []
                 }
