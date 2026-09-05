@@ -5,7 +5,7 @@
  * locale's display order — the values never change meaning, only their order.
  */
 import assert from 'node:assert/strict'
-import { ALL_DAYS, weekDisplayOrder } from './schedule'
+import { ALL_DAYS, missingDueCells, weekDisplayOrder } from './schedule'
 
 let passed = 0
 let failed = 0
@@ -65,6 +65,106 @@ t('display order is consecutive: each column is the previous day plus one', () =
       assert.equal(order[i], (order[i - 1] + 1) % 7, `${tag} column ${i}`)
     }
   }
+})
+
+group('missingDueCells: schedule masks')
+
+// 0=Sunday .. 6=Saturday, same convention as the rest of this module.
+const everyday = { id: 'everyday', days_of_week: null }
+const tuesdays = { id: 'tuesdays', days_of_week: [2] }
+const weekdays = { id: 'weekdays', days_of_week: [1, 2, 3, 4, 5] }
+
+t('a Tuesdays-only chore contributes at most one cell across the whole week', () => {
+  const cells = missingDueCells([tuesdays], [], 6)
+  assert.deepEqual(cells, [{ choreId: 'tuesdays', dayOfWeek: 2 }])
+})
+
+t('a Tuesdays-only chore contributes nothing before Tuesday', () => {
+  assert.deepEqual(missingDueCells([tuesdays], [], 1), [])
+})
+
+t('an empty schedule means every day (the pre-migration fallback)', () => {
+  const cells = missingDueCells([{ id: 'legacy', days_of_week: [] }], [], 2)
+  assert.deepEqual(
+    cells.map(c => c.dayOfWeek),
+    [0, 1, 2]
+  )
+})
+
+t('off-days are never emitted, even when other chores are due then', () => {
+  const cells = missingDueCells([everyday, weekdays], [], 0)
+  // Sunday: only the everyday chore is due.
+  assert.deepEqual(cells, [{ choreId: 'everyday', dayOfWeek: 0 }])
+})
+
+group('missingDueCells: throughDay cutoff')
+
+t('throughDay 2 stops after Tuesday', () => {
+  const cells = missingDueCells([everyday], [], 2)
+  assert.deepEqual(
+    cells.map(c => c.dayOfWeek),
+    [0, 1, 2]
+  )
+})
+
+t('throughDay 0 is Sunday only', () => {
+  assert.deepEqual(missingDueCells([everyday], [], 0), [{ choreId: 'everyday', dayOfWeek: 0 }])
+})
+
+t('a negative throughDay yields nothing', () => {
+  assert.deepEqual(missingDueCells([everyday], [], -1), [])
+})
+
+t('throughDay past Saturday is clamped to the seven real days', () => {
+  assert.equal(missingDueCells([everyday], [], 99).length, 7)
+})
+
+group('missingDueCells: existing rows count as filled')
+
+t('an already-completed cell is skipped', () => {
+  const cells = missingDueCells([everyday], [{ chore_id: 'everyday', day_of_week: 1 }], 2)
+  assert.deepEqual(
+    cells.map(c => c.dayOfWeek),
+    [0, 2]
+  )
+})
+
+t('a pending row counts as present, so its cell is not refilled', () => {
+  const pending = { chore_id: 'everyday', day_of_week: 1, status: 'pending' }
+  const cells = missingDueCells([everyday], [pending], 2)
+  assert.deepEqual(
+    cells.map(c => c.dayOfWeek),
+    [0, 2]
+  )
+})
+
+t('completions only fill the chore they belong to', () => {
+  const cells = missingDueCells(
+    [everyday, tuesdays],
+    [{ chore_id: 'everyday', day_of_week: 2 }],
+    2
+  )
+  assert.deepEqual(cells, [
+    { choreId: 'everyday', dayOfWeek: 0 },
+    { choreId: 'everyday', dayOfWeek: 1 },
+    { choreId: 'tuesdays', dayOfWeek: 2 },
+  ])
+})
+
+t('a row with a null day_of_week fills nothing', () => {
+  const cells = missingDueCells([everyday], [{ chore_id: 'everyday', day_of_week: null }], 0)
+  assert.deepEqual(cells, [{ choreId: 'everyday', dayOfWeek: 0 }])
+})
+
+group('missingDueCells: empty inputs')
+
+t('no chores means no cells', () => {
+  assert.deepEqual(missingDueCells([], [], 6), [])
+})
+
+t('a fully completed week has nothing missing', () => {
+  const done = ALL_DAYS.map(day => ({ chore_id: 'everyday', day_of_week: day }))
+  assert.deepEqual(missingDueCells([everyday], done, 6), [])
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

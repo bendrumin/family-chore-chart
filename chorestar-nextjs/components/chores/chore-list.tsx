@@ -6,13 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { WeekNavigator } from '@/components/ui/week-navigator'
 import { ChoreIcon } from '@/components/ui/chore-icon'
-import { Plus, Filter } from 'lucide-react'
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
+import { Plus, Filter, CheckCheck, CalendarCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { AddChoreModal } from './add-chore-modal'
 import { ChoreCard } from './chore-card'
+import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import { useSettings } from '@/lib/contexts/settings-context'
+import { missingDueCells, isDueOn, type MissingDueCell } from '@/lib/utils/schedule'
+import { childWeekEarningsCents } from '@/lib/utils/earnings'
+import { formatMoney } from '@/lib/constants/currencies'
+import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -23,9 +29,22 @@ interface ChoreListProps {
   userId: string
   /** Child avatar color — passed through to tint chore icons like iOS. */
   iconTint?: string | null
+  /** For bulk-action copy ("Marked 12 chores done for Maya"). */
+  childName?: string | null
 }
 
-export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
+/** One prepared bulk fill, held while the parent reads the confirm dialog. */
+interface BulkPlan {
+  scope: 'today' | 'week'
+  /** Due, unfilled cells to insert as parent completions. */
+  cells: MissingDueCell[]
+  /** Existing pending ticks in range, to approve. */
+  pendingIds: string[]
+  /** Earnings after minus earnings before, via the shared rules. */
+  deltaCents: number
+}
+
+export function ChoreList({ childId, userId, iconTint, childName }: ChoreListProps) {
   const { settings } = useSettings()
   const rewardMode = (settings?.reward_mode as 'flat' | 'per_chore') || 'flat'
   const [chores, setChores] = useState<Chore[]>([])
@@ -34,6 +53,8 @@ export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<ChoreCategory | 'all'>('all')
+  const [bulkPlan, setBulkPlan] = useState<BulkPlan | null>(null)
+  const [bulkBusy, setBulkBusy] = useState(false)
 
   const categories = getCategoryList()
 
@@ -125,6 +146,120 @@ export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
     loadCompletionsRef.current()
   }, [])
 
+  // ── Bulk completion ("Mark today done" / "Mark week so far done") ─────────
+  // Backfills the CURRENT week only, so the actions hide on other weeks.
+  const isCurrentWeek = weekStart === getWeekStart()
+  const kidLabel = childName || 'this child'
+
+  /**
+   * Work out what a bulk action would do, and either open the confirm dialog
+   * or say "all caught up". The earnings delta is earnings(after) minus
+   * earnings(before) through the shared week rules, so daily mode (which pays
+   * per perfect day, plus the weekly bonus) is priced correctly, never as a
+   * naive per-chore sum.
+   */
+  const prepareBulk = (scope: 'today' | 'week') => {
+    const today = new Date().getDay()
+
+    // Due cells with no row at all: these get inserted.
+    const allMissing = missingDueCells(chores, completions, today)
+    const cells = scope === 'today' ? allMissing.filter(c => c.dayOfWeek === today) : allMissing
+
+    // Due cells that already hold a kid's pending tick: a parent bulk action
+    // carries parent-tick semantics, so these get approved instead.
+    const choreById = new Map(chores.map(c => [c.id, c]))
+    const pendingRows = completions.filter(c => {
+      if (c.status !== 'pending') return false
+      if (c.day_of_week === null || c.day_of_week === undefined) return false
+      const chore = choreById.get(c.chore_id)
+      if (!chore || !isDueOn(chore, c.day_of_week)) return false
+      return scope === 'today' ? c.day_of_week === today : c.day_of_week <= today
+    })
+
+    if (cells.length === 0 && pendingRows.length === 0) {
+      toast.success(`All caught up. Nothing to mark ${scope === 'today' ? 'for today' : 'for the week so far'}.`)
+      return
+    }
+
+    const approvedIds = new Set(pendingRows.map(r => r.id))
+    const after = [
+      ...completions.map(c => (approvedIds.has(c.id) ? { ...c, status: 'approved' } : c)),
+      ...cells.map(cell => ({ chore_id: cell.choreId, day_of_week: cell.dayOfWeek, status: null })),
+    ]
+    const deltaCents =
+      childWeekEarningsCents(chores, after, settings).earnedCents -
+      childWeekEarningsCents(chores, completions, settings).earnedCents
+
+    setBulkPlan({ scope, cells, pendingIds: pendingRows.map(r => r.id), deltaCents })
+  }
+
+  const executeBulk = async (plan: BulkPlan) => {
+    setBulkBusy(true)
+    try {
+      // Mirror the single-cell parent tick: same fields, same client, batched.
+      if (plan.cells.length > 0) {
+        const supabase = createClient()
+        const { error } = await supabase.from('chore_completions').insert(
+          plan.cells.map(cell => ({
+            chore_id: cell.choreId,
+            day_of_week: cell.dayOfWeek,
+            week_start: weekStart,
+          }))
+        )
+        if (error) throw error
+      }
+
+      // Pending ticks go through the same review endpoint the single-cell tap
+      // uses, so status/reviewed_at/reviewed_by are set exactly the same way
+      // (and it works for shared family members, who have no RLS update path).
+      const results = await Promise.all(plan.pendingIds.map(id => reviewCompletion(id, 'approve')))
+      const approvedCount = results.filter(Boolean).length
+      const failedApprovals = plan.pendingIds.length - approvedCount
+
+      // Same follow-up as a single parent tick: ask the server whether each
+      // filled day completed the list so APNs can buzz the parent's phone.
+      const daysFilled = [...new Set(plan.cells.map(c => c.dayOfWeek))]
+      for (const dayOfWeek of daysFilled) {
+        void fetch('/api/push/chores-done', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ childId, weekStart, dayOfWeek }),
+        }).catch(() => {})
+      }
+
+      handleRefresh()
+      const total = plan.cells.length + approvedCount
+      if (failedApprovals > 0) {
+        toast.error(`Marked ${total} done, but ${failedApprovals} could not be approved`)
+      } else {
+        playSound('success')
+        toast.success(`Marked ${total} ${total === 1 ? 'chore' : 'chores'} done for ${kidLabel}`)
+      }
+    } catch (error) {
+      console.error('Error bulk-completing chores:', error)
+      toast.error('Could not mark those chores done')
+      handleRefresh()
+    } finally {
+      setBulkBusy(false)
+    }
+  }
+
+  const bulkDescription = (plan: BulkPlan) => {
+    const parts: string[] = []
+    if (plan.cells.length > 0) {
+      parts.push(`mark ${plan.cells.length} ${plan.cells.length === 1 ? 'chore' : 'chores'} done`)
+    }
+    if (plan.pendingIds.length > 0) {
+      parts.push(`approve ${plan.pendingIds.length} waiting for your OK`)
+    }
+    const when = plan.scope === 'today' ? 'today' : 'for the week so far'
+    const money =
+      plan.deltaCents > 0
+        ? `That adds ${formatMoney(plan.deltaCents, settings?.currency_code)} to ${kidLabel}'s earnings.`
+        : `${kidLabel}'s earnings stay the same.`
+    return `This will ${parts.join(' and ')} for ${kidLabel} ${when}. ${money}`
+  }
+
   useEffect(() => {
     loadChores()
   }, [childId])
@@ -199,6 +334,34 @@ export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
         <CardContent className="space-y-4">
           {/* Week Navigator */}
           <WeekNavigator weekStart={weekStart} onWeekChange={setWeekStart} />
+
+          {/* Catch-up bulk actions — current week only */}
+          {chores.length > 0 && isCurrentWeek && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => prepareBulk('today')}
+                disabled={bulkBusy}
+                className="font-semibold"
+                aria-label={`Mark all of ${kidLabel}'s chores due today as done`}
+              >
+                <CheckCheck className="w-4 h-4" aria-hidden />
+                Mark today done
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => prepareBulk('week')}
+                disabled={bulkBusy}
+                className="font-semibold"
+                aria-label={`Mark all of ${kidLabel}'s chores due so far this week as done`}
+              >
+                <CalendarCheck className="w-4 h-4" aria-hidden />
+                Mark week so far done
+              </Button>
+            </div>
+          )}
 
           {/* Category Filter */}
           {chores.length > 0 && (
@@ -324,6 +487,26 @@ export function ChoreList({ childId, userId, iconTint }: ChoreListProps) {
           loadChores()
         }}
       />
+
+      {/* Bulk completion confirm — states the count and the money before writing */}
+      {bulkPlan && (
+        <ConfirmationDialog
+          open
+          onOpenChange={open => {
+            if (!open) setBulkPlan(null)
+          }}
+          onConfirm={() => {
+            const plan = bulkPlan
+            setBulkPlan(null)
+            void executeBulk(plan)
+          }}
+          title={bulkPlan.scope === 'today' ? 'Mark today done?' : 'Mark week so far done?'}
+          description={bulkDescription(bulkPlan)}
+          confirmText="Mark done"
+          cancelText="Cancel"
+          variant="success"
+        />
+      )}
     </>
   )
 }

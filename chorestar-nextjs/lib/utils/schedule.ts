@@ -81,6 +81,59 @@ function sameSet(a: readonly number[], b: readonly number[]): boolean {
   return a.length === b.length && a.every((d, i) => d === b[i])
 }
 
+/** A chore that can be matched against completion rows. */
+export interface ScheduledChore extends Scheduled {
+  id: string
+}
+
+/** The slice of a completion row this module needs to mark a cell as filled. */
+export interface CompletionCell {
+  chore_id: string
+  day_of_week: number | null
+}
+
+/** One unfilled grid cell: this chore, on this day, has no completion row yet. */
+export interface MissingDueCell {
+  choreId: string
+  dayOfWeek: number
+}
+
+/**
+ * The week-grid cells that are DUE but not yet filled, through `throughDay`
+ * inclusive (0=Sunday .. 6=Saturday, the storage convention above): the input
+ * to "mark the week so far done".
+ *
+ * A cell is due when the chore's schedule includes that day, and filled when
+ * ANY completion row exists for it — a 'pending' tick counts as filled here,
+ * because it is a row the parent should approve, not duplicate. Callers must
+ * pass completions already scoped to the one week being filled.
+ *
+ * Cells come back day-by-day, in chore order within each day, so the result is
+ * deterministic. A `throughDay` below 0 yields nothing; above 6 is clamped.
+ */
+export function missingDueCells(
+  chores: readonly ScheduledChore[],
+  completions: readonly CompletionCell[],
+  throughDay: number
+): MissingDueCell[] {
+  const filled = new Set<string>()
+  for (const c of completions) {
+    if (c.day_of_week === null || c.day_of_week === undefined) continue
+    filled.add(`${c.chore_id}|${c.day_of_week}`)
+  }
+
+  const cells: MissingDueCell[] = []
+  const last = Math.min(throughDay, 6)
+  for (let day = 0; day <= last; day++) {
+    for (const chore of dueOn(chores, day)) {
+      if (!filled.has(`${chore.id}|${day}`)) {
+        cells.push({ choreId: chore.id, dayOfWeek: day })
+      }
+    }
+  }
+  return cells
+}
+
 /**
  * The seven day indexes (0=Sunday .. 6=Saturday, the storage convention above)
  * in the order the locale DISPLAYS a week: en-US starts on Sunday, en-GB on

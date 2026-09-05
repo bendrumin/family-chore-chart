@@ -159,4 +159,50 @@ enum ChoreSchedule {
     static func dueDayCount(_ chores: [Chore]) -> Int {
         (0..<7).filter { day in chores.contains { $0.isDue(on: day) } }.count
     }
+
+    /**
+     The cells "Mark Today Done" / "Mark Week So Far Done" should insert.
+     Mirrors the web's bulk-complete helper so both apps agree on what a
+     parent's bulk tick covers:
+
+     - a cell is (chore, dayOfWeek) in the CURRENT week;
+     - only days `fromDay...throughDay` are considered (0 = Sunday .. 6 =
+       Saturday; `fromDay` defaults to 0, so plain `throughDay` means
+       "the week so far");
+     - only cells where the chore is due per its `daysOfWeek` schedule;
+     - any cell that already has a completion row of ANY status (approved,
+       pending, pre-migration nil) is skipped — pending rows are the approve
+       flow's job, not an insert's.
+
+     Order is deterministic: by day, then by the order the chores were given.
+     Out-of-range day indexes are clamped; an empty range returns [].
+     */
+    static func missingDueCells(
+        chores: [Chore],
+        existing: Set<ChoreDayCell>,
+        throughDay: Int,
+        fromDay: Int = 0
+    ) -> [ChoreDayCell] {
+        let first = max(fromDay, 0)
+        let last = min(throughDay, 6)
+        guard first <= last else { return [] }
+
+        var missing: [ChoreDayCell] = []
+        for day in first...last {
+            for chore in chores where chore.isDue(on: day) {
+                let cell = ChoreDayCell(choreId: chore.id, dayOfWeek: day)
+                if !existing.contains(cell) {
+                    missing.append(cell)
+                }
+            }
+        }
+        return missing
+    }
+}
+
+/// One cell of the weekly grid: a chore on a weekday (0 = Sunday .. 6 =
+/// Saturday), the unit `chore_completions` rows are keyed by within a week.
+struct ChoreDayCell: Hashable {
+    let choreId: UUID
+    let dayOfWeek: Int
 }

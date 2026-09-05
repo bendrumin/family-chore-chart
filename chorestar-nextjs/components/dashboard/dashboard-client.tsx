@@ -575,6 +575,7 @@ function DashboardContent({
                         childId={selectedChildId}
                         userId={effectiveUserId}
                         iconTint={children.find((c: Child) => c.id === selectedChildId)?.avatar_color}
+                        childName={children.find((c: Child) => c.id === selectedChildId)?.name}
                       />
                     </div>
                     <div

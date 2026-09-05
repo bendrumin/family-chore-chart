@@ -7,6 +7,12 @@ struct WeekCalendarView: View {
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
     @State private var viewMode: ViewMode = .daily
+    // Bulk completion ("Mark Today Done" / "Mark Week So Far Done")
+    @State private var bulkPlan: SupabaseManager.BulkCompletePlan?
+    @State private var bulkTodayOnly = false
+    @State private var showBulkConfirm = false
+    @State private var showAllCaughtUp = false
+    @State private var bulkBusy = false
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     enum ViewMode {
@@ -271,12 +277,124 @@ struct WeekCalendarView: View {
         }
         .navigationTitle("Week View")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        prepareBulk(todayOnly: true)
+                    } label: {
+                        Label("Mark Today Done", systemImage: "checkmark.circle")
+                    }
+                    Button {
+                        prepareBulk(todayOnly: false)
+                    } label: {
+                        Label("Mark Week So Far Done", systemImage: "calendar.badge.checkmark")
+                    }
+                } label: {
+                    Image(systemName: "checkmark.circle")
+                }
+                .accessibilityLabel("Mark chores done in bulk")
+                .disabled(childChores.isEmpty || bulkBusy)
+            }
+        }
+        .overlay(alignment: .top) {
+            if showAllCaughtUp {
+                Label("All caught up", systemImage: "checkmark.seal.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarSuccess)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(Color.choreStarCardBackground)
+                            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 3)
+                    )
+                    .padding(.top, 10)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .confetti(isPresented: $showConfetti)
+        .alert(
+            bulkTodayOnly ? "Mark Today Done" : "Mark Week So Far Done",
+            isPresented: $showBulkConfirm,
+            presenting: bulkPlan
+        ) { _ in
+            Button("Cancel", role: .cancel) { }
+            Button("Mark Done") { runBulk() }
+        } message: { plan in
+            Text(bulkConfirmMessage(plan))
+        }
         .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
             Button("Awesome!", role: .cancel) { }
         } message: {
             if let first = earnedAchievements.first {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
+            }
+        }
+    }
+
+    // MARK: - Bulk completion
+
+    /// Compute the plan and either confirm it or say there is nothing to do.
+    private func prepareBulk(todayOnly: Bool) {
+        let fromDay = todayOnly ? currentDayOfWeek : 0
+        let plan = manager.bulkCompletePlan(for: child, throughDay: currentDayOfWeek, fromDay: fromDay)
+        if plan.isEmpty {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                showAllCaughtUp = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    showAllCaughtUp = false
+                }
+            }
+            return
+        }
+        bulkTodayOnly = todayOnly
+        bulkPlan = plan
+        showBulkConfirm = true
+    }
+
+    /// "This will check off 3 chores for Emma and add $0.75 to the week's
+    /// earnings." The money comes from the real reward math, so daily mode
+    /// (paid per perfect day) reads right too.
+    private func bulkConfirmMessage(_ plan: SupabaseManager.BulkCompletePlan) -> String {
+        let count = plan.cellCount
+        let choreText = count == 1 ? "1 chore" : "\(count) chores"
+        var text = "This will check off \(choreText) for \(child.name)"
+        if plan.earningsDeltaCents > 0 {
+            text += " and add \(manager.formatMoney(Double(plan.earningsDeltaCents) / 100.0)) to the week's earnings."
+        } else {
+            text += "."
+        }
+        if !plan.pendingIds.isEmpty {
+            let waiting = plan.pendingIds.count
+            text += waiting == 1
+                ? " 1 chore waiting for your OK will be approved."
+                : " \(waiting) chores waiting for your OK will be approved."
+        }
+        return text
+    }
+
+    private func runBulk() {
+        let fromDay = bulkTodayOnly ? currentDayOfWeek : 0
+        bulkBusy = true
+        Task {
+            let achievements = await manager.markComplete(
+                child: child,
+                throughDay: currentDayOfWeek,
+                fromDay: fromDay
+            )
+            await MainActor.run {
+                bulkBusy = false
+                bulkPlan = nil
+                Haptics.success()
+                SoundManager.shared.play(.success)
+                showConfetti = true
+                if !achievements.isEmpty {
+                    earnedAchievements = achievements
+                    showAchievementAlert = true
+                }
             }
         }
     }

@@ -200,6 +200,94 @@ final class RewardMathTests: XCTestCase {
         XCTAssertEqual(ChoreSchedule.due([mon, fri], on: 3).count, 0)
     }
 
+    // MARK: - Bulk completion (missingDueCells)
+
+    private func makeChore(_ name: String, days: [Int], reward: Double = 0.25) -> Chore {
+        Chore(id: UUID(), name: name, childId: UUID(), reward: reward, description: nil,
+              category: nil, icon: nil, color: nil, notes: nil, sortOrder: 0,
+              daysOfWeek: days, createdAt: Date(), updatedAt: Date())
+    }
+
+    func testMissingDueCellsRespectsScheduleMasks() {
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        let monOnly = makeChore("Trash", days: [1])
+        let cells = ChoreSchedule.missingDueCells(
+            chores: [daily, monOnly], existing: [], throughDay: 2
+        )
+        // Sun/Mon/Tue for the daily chore, Monday alone for the Monday chore.
+        XCTAssertEqual(cells.count, 4)
+        XCTAssertEqual(
+            cells.filter { $0.choreId == monOnly.id }.map(\.dayOfWeek),
+            [1],
+            "A Monday-only chore must not be inserted on other days"
+        )
+        XCTAssertEqual(
+            cells.filter { $0.choreId == daily.id }.map(\.dayOfWeek),
+            [0, 1, 2]
+        )
+    }
+
+    func testMissingDueCellsStopsAtThroughDay() {
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        let cells = ChoreSchedule.missingDueCells(chores: [daily], existing: [], throughDay: 3)
+        XCTAssertEqual(cells.map(\.dayOfWeek), [0, 1, 2, 3], "Days after throughDay stay untouched")
+    }
+
+    func testMissingDueCellsSkipsCompletedAndPendingCells() {
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        // Day 0 is done, day 1 is a pending kid tick: both already have a row,
+        // so neither may be inserted again.
+        let existing: Set<ChoreDayCell> = [
+            ChoreDayCell(choreId: daily.id, dayOfWeek: 0),
+            ChoreDayCell(choreId: daily.id, dayOfWeek: 1),
+        ]
+        let cells = ChoreSchedule.missingDueCells(chores: [daily], existing: existing, throughDay: 2)
+        XCTAssertEqual(cells, [ChoreDayCell(choreId: daily.id, dayOfWeek: 2)])
+    }
+
+    func testMissingDueCellsEmptyCases() {
+        // No chores at all.
+        XCTAssertTrue(ChoreSchedule.missingDueCells(chores: [], existing: [], throughDay: 6).isEmpty)
+
+        // Everything through the day already has a row.
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        let allDone: Set<ChoreDayCell> = [
+            ChoreDayCell(choreId: daily.id, dayOfWeek: 0),
+            ChoreDayCell(choreId: daily.id, dayOfWeek: 1),
+        ]
+        XCTAssertTrue(
+            ChoreSchedule.missingDueCells(chores: [daily], existing: allDone, throughDay: 1).isEmpty,
+            "All caught up means nothing to insert"
+        )
+
+        // Nothing due in range: a Friday chore before Friday.
+        let fri = makeChore("Piano", days: [5])
+        XCTAssertTrue(ChoreSchedule.missingDueCells(chores: [fri], existing: [], throughDay: 3).isEmpty)
+    }
+
+    func testMissingDueCellsFromDayScopesToTodayOnly() {
+        // "Mark Today Done" passes fromDay == throughDay: earlier gaps in the
+        // week stay open.
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        let cells = ChoreSchedule.missingDueCells(
+            chores: [daily], existing: [], throughDay: 3, fromDay: 3
+        )
+        XCTAssertEqual(cells, [ChoreDayCell(choreId: daily.id, dayOfWeek: 3)])
+    }
+
+    func testMissingDueCellsClampsOutOfRangeDays() {
+        let daily = makeChore("Make bed", days: ChoreSchedule.everyDay)
+        XCTAssertEqual(
+            ChoreSchedule.missingDueCells(chores: [daily], existing: [], throughDay: 42).count,
+            7,
+            "throughDay clamps to Saturday"
+        )
+        XCTAssertTrue(
+            ChoreSchedule.missingDueCells(chores: [daily], existing: [], throughDay: -1).isEmpty,
+            "A negative throughDay is an empty range, not a crash"
+        )
+    }
+
     func testDisplayOrderFollowsCalendarFirstWeekday() {
         func calendar(firstWeekday: Int) -> Calendar {
             var c = Calendar(identifier: .gregorian)

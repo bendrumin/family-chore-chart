@@ -1699,14 +1699,18 @@ class SupabaseManager: ObservableObject {
         return result
     }
 
-    /// Parent records a payout: everything owed, or toward a goal (its target
-    /// or what is owed, whichever is less; the goal is then reached).
+    /// Parent records a payout: everything owed, part of it (`amountCents`,
+    /// plain payouts only; the API validates it as positive and no more than
+    /// owed), or toward a goal (its target or what is owed, whichever is
+    /// less; the goal is then reached). Omitting `amountCents` keeps the
+    /// long-standing pay-everything behavior.
     /// Returns the cents paid, or nil with a message.
-    func payOut(childId: UUID, goalId: UUID? = nil) async -> (paidCents: Int?, error: String?) {
+    func payOut(childId: UUID, goalId: UUID? = nil, amountCents: Int? = nil) async -> (paidCents: Int?, error: String?) {
         guard let token = await parentBearerToken(),
               let url = URL(string: "\(SupabaseManager.appBaseURL)/api/allowance") else { return (nil, "Not signed in.") }
         var body: [String: Any] = ["childId": childId.uuidString.lowercased()]
         if let goalId { body["goalId"] = goalId.uuidString.lowercased() }
+        if goalId == nil, let amountCents { body["amountCents"] = amountCents }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -2666,6 +2670,189 @@ class SupabaseManager: ObservableObject {
     func toggleChoreCompletion(_ chore: Chore) async -> [Achievement] {
         let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
         return await toggleChoreCompletion(chore, forDay: currentDay)
+    }
+
+    // MARK: - Bulk completion ("Mark Today Done" / "Mark Week So Far Done")
+
+    /// What a bulk mark-done would do, so the confirmation alert can say it
+    /// before anything is written.
+    struct BulkCompletePlan {
+        /// Due cells with no completion row yet; these get inserted.
+        let missingCells: [ChoreDayCell]
+        /// Kid ticks in range still waiting for a parent; these get approved
+        /// (a parent bulk action carries parent-tick semantics).
+        let pendingIds: [UUID]
+        /// Earnings(after) minus earnings(before), through the real reward
+        /// math. Daily mode pays per perfect day, so this is never a naive
+        /// sum of chore rewards.
+        let earningsDeltaCents: Int
+
+        /// Chores the action will check off (inserts plus approvals).
+        var cellCount: Int { missingCells.count + pendingIds.count }
+        var isEmpty: Bool { cellCount == 0 }
+    }
+
+    /// Compute (without writing) what `markComplete` would do for `child`
+    /// through `throughDay`. `fromDay` defaults to 0 (the week so far);
+    /// "Mark Today Done" passes today for both.
+    func bulkCompletePlan(for child: Child, throughDay: Int, fromDay: Int = 0) -> BulkCompletePlan {
+        let childChores = chores.filter { $0.childId == child.id }
+        let childChoreIds = Set(childChores.map(\.id))
+
+        // Cells that already have a row, of any status. Approved cells also
+        // feed the "before" earnings; pending cells only block inserts.
+        var completedCells = Set<ChoreDayCell>()
+        for c in weekCompletions where childChoreIds.contains(c.choreId) {
+            completedCells.insert(ChoreDayCell(choreId: c.choreId, dayOfWeek: c.dayOfWeek))
+        }
+        var existing = completedCells
+        var pendingIds: [UUID] = []
+        var approvedPendingCells = Set<ChoreDayCell>()
+        for p in pendingCompletions where childChoreIds.contains(p.choreId) {
+            let cell = ChoreDayCell(choreId: p.choreId, dayOfWeek: p.dayOfWeek)
+            existing.insert(cell)
+            if p.dayOfWeek >= fromDay, p.dayOfWeek <= throughDay,
+               let chore = childChores.first(where: { $0.id == p.choreId }),
+               chore.isDue(on: p.dayOfWeek) {
+                pendingIds.append(p.id)
+                approvedPendingCells.insert(cell)
+            }
+        }
+
+        let missing = ChoreSchedule.missingDueCells(
+            chores: childChores,
+            existing: existing,
+            throughDay: throughDay,
+            fromDay: fromDay
+        )
+
+        // Money delta with the existing reward math: per-chore mode pays each
+        // new cell, daily mode pays the flat rate only on days that BECOME
+        // perfect. Cells outside the range cancel out of both sides.
+        var after = completedCells
+        after.formUnion(approvedPendingCells)
+        after.formUnion(missing)
+
+        let isPerChore = familySettings?.isPerChoreMode == true
+        let dailyCents = familySettings?.dailyRewardCents
+        var deltaCents = 0
+        let first = max(fromDay, 0)
+        let last = min(throughDay, 6)
+        if first <= last {
+            for day in first...last {
+                let pool = isPerChore ? childChores : ChoreSchedule.due(childChores, on: day)
+                func cents(_ done: Set<ChoreDayCell>) -> Int {
+                    RewardMath.dayEarningsCents(
+                        completedRewards: pool
+                            .filter { done.contains(ChoreDayCell(choreId: $0.id, dayOfWeek: day)) }
+                            .map(\.reward),
+                        totalChoreCount: pool.count,
+                        isPerChoreMode: isPerChore,
+                        dailyRewardCents: dailyCents
+                    )
+                }
+                deltaCents += cents(after) - cents(completedCells)
+            }
+        }
+
+        return BulkCompletePlan(
+            missingCells: missing,
+            pendingIds: pendingIds,
+            earningsDeltaCents: deltaCents
+        )
+    }
+
+    /**
+     "Mark Today Done" / "Mark Week So Far Done" (parent action).
+
+     Batch-inserts a completion row for every due cell in
+     `fromDay...throughDay` that has none, with the same fields as the
+     single-cell toggle (parent tick, so status stays at the approved column
+     default), and approves any kid ticks in that range still waiting, the
+     same way the pending tray does. Then refreshes the same published state
+     the single toggle path feeds. Skips the "all chores done" push on
+     purpose: the parent is the one tapping.
+
+     Returns achievements earned, like the single toggle does.
+     */
+    @discardableResult
+    func markComplete(child: Child, throughDay: Int, fromDay: Int = 0) async -> [Achievement] {
+        #if canImport(Supabase)
+        guard let client = client else { return [] }
+        let plan = await MainActor.run { bulkCompletePlan(for: child, throughDay: throughDay, fromDay: fromDay) }
+        guard !plan.isEmpty else { return [] }
+
+        let calendar = Calendar.current
+        let now = Date()
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let weekStartString = formatter.string(from: weekStart)
+        let completedAt = ISO8601DateFormatter().string(from: now)
+
+        // Same shape as the single insert in toggleChoreCompletion. UUIDs
+        // travel as typed uuid columns here (no text comparison), so no
+        // lowercasing is needed on this path.
+        let rows = plan.missingCells.map { cell in
+            ChoreCompletionRow(
+                id: UUID(),
+                chore_id: cell.choreId,
+                day_of_week: cell.dayOfWeek,
+                week_start: weekStartString,
+                completed_at: completedAt
+            )
+        }
+
+        if !rows.isEmpty {
+            do {
+                try await client
+                    .from("chore_completions")
+                    .insert(rows)
+                    .execute()
+            } catch let error as PostgrestError where error.code == "23505" {
+                // Another device raced us into one of these cells; a batch
+                // fails whole. Retry one by one and let duplicates pass —
+                // a duplicate is a cell that is already done.
+                for row in rows {
+                    do {
+                        try await client.from("chore_completions").insert(row).execute()
+                    } catch let error as PostgrestError where error.code == "23505" {
+                        continue
+                    } catch {
+                        await MainActor.run { debugLastError = "Bulk complete failed: \(error.localizedDescription)" }
+                    }
+                }
+            } catch {
+                await MainActor.run { debugLastError = "Bulk complete failed: \(error.localizedDescription)" }
+                return []
+            }
+        }
+
+        // Waiting kid ticks flip to approved through the same web API the
+        // pending tray uses (it lowercases the uuid for the text-compare
+        // path server-side).
+        for id in plan.pendingIds {
+            _ = await reviewCompletion(id: id, action: "approve")
+        }
+
+        // Refresh everything the single toggle path publishes.
+        await loadCurrentDayCompletions()
+        await loadAllTimeCompletions()
+        if !plan.pendingIds.isEmpty {
+            await loadPendingApprovals()
+        }
+
+        var achievements: [Achievement] = []
+        let today = RewardMath.dayIndex(of: now, calendar: calendar)
+        if fromDay <= today, today <= throughDay {
+            achievements = await checkAndAwardAchievements(for: child.id)
+        }
+
+        await MainActor.run { publishWidgetSnapshot() }
+        return achievements
+        #else
+        return []
+        #endif
     }
     
     func isChoreCompleted(_ chore: Chore) -> Bool {
