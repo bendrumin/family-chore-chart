@@ -1,9 +1,7 @@
-Version 2.1 takes ChoreStar around the world.
+Version 2.1.1 is for the weeks that get away from you.
 
-• Kid mode now speaks Spanish, Portuguese, and Arabic. The kid dashboard, routines, celebrations, and widgets follow the device language, and Arabic runs right to left
-• Pick from dozens of currencies in Settings > Rewards & Currency, with the right symbol and decimals everywhere, widgets included
-• Set your family's time zone, and the Weekdays and Weekends presets understand Friday-Saturday weekends in the Gulf
-• The week grid starts on your calendar's first day: Monday in Europe, Sunday in the Americas
+• Mark Today Done and Mark Week So Far Done: one tap checks off everything due, approves anything waiting for your OK, and shows exactly how much allowance it adds before you commit
+• Pay out any amount: your kid spent a dollar at the dollar store? Subtract exactly that dollar. The payout sheet starts at the full balance and shows what will remain
 • Small fixes and smoother edges throughout
 
 Questions or feedback are welcome at hi@chorestar.app
