@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.2'
+export const LATEST_CHANGELOG_VERSION = '2026.9.3'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.3': {
+    version: '2026.9.3',
+    date: 'September 2026',
+    title: 'Catch-Up Tools for Busy Weeks',
+    features: [
+      {
+        icon: '✅',
+        title: 'Mark Today or the Week Done',
+        description: 'Life happens and the chart falls behind. Two new buttons above the week grid check off everything due through today in one tap: only scheduled days count, anything waiting for your OK gets approved, and the confirmation shows exactly how much allowance it adds before you commit.',
+      },
+      {
+        icon: '💵',
+        title: 'Pay Out Any Amount',
+        description: 'Your kid spends a dollar at the dollar store? Subtract exactly that dollar. The Paid Out button now asks how much, defaults to the full balance, and shows what will remain. Goals and balances update everywhere on their own.',
+      },
+    ],
+  },
   '2026.9.2': {
     version: '2026.9.2',
     date: 'September 2026',
