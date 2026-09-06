@@ -20,9 +20,14 @@ if (!KEY) {
   process.exit(1);
 }
 
+// inr added 2026-09-06 (₹99 / ₹999, mirroring the Apple India change).
+// Note: recurring card charges on Indian cards often fail regardless of
+// currency (RBI auto-pay rules) — Apple is where Indian subscriptions
+// actually convert; the INR option here is for display parity and the
+// cards that do work.
 const targets = [
-  { env: 'STRIPE_PRICE_MONTHLY', name: 'monthly', mxn: 6900, brl: 1490 },
-  { env: 'STRIPE_PRICE_ANNUAL', name: 'annual', mxn: 69900, brl: 14990 },
+  { env: 'STRIPE_PRICE_MONTHLY', name: 'monthly', mxn: 6900, brl: 1490, inr: 9900 },
+  { env: 'STRIPE_PRICE_ANNUAL', name: 'annual', mxn: 69900, brl: 14990, inr: 99900 },
 ];
 const mask = (id) => `…${id.slice(-4)}`;
 
@@ -58,19 +63,21 @@ for (const t of targets) {
       `  options: ${fmt(before.currency_options)}`
   );
   if (!apply) {
-    console.log(`  would add: mxn=${(t.mxn / 100).toFixed(2)}  brl=${(t.brl / 100).toFixed(2)}`);
+    console.log(`  would add: mxn=${(t.mxn / 100).toFixed(2)}  brl=${(t.brl / 100).toFixed(2)}  inr=${(t.inr / 100).toFixed(2)}`);
     continue;
   }
   await stripe('POST', `/v1/prices/${id}`, {
     'currency_options[mxn][unit_amount]': String(t.mxn),
     'currency_options[brl][unit_amount]': String(t.brl),
+    'currency_options[inr][unit_amount]': String(t.inr),
   });
   const after = await stripe('GET', `/v1/prices/${id}?expand[]=currency_options`);
   const ok =
     after.currency === before.currency &&
     after.unit_amount === before.unit_amount &&
     after.currency_options?.mxn?.unit_amount === t.mxn &&
-    after.currency_options?.brl?.unit_amount === t.brl;
+    after.currency_options?.brl?.unit_amount === t.brl &&
+    after.currency_options?.inr?.unit_amount === t.inr;
   console.log(`  -> ${ok ? 'APPLIED' : 'WROTE, BUT VERIFY FAILED — check the dashboard'}: ${fmt(after.currency_options)}`);
 }
 if (!apply) console.log('\nDry run only. Re-run with "apply" to write.');

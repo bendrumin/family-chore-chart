@@ -48,7 +48,13 @@ const changes = [
   { sub: MONTHLY, name: 'monthly', territory: 'BRA', price: 14.9 },
   { sub: YEARLY, name: 'yearly', territory: 'MEX', price: 699.0 },
   { sub: YEARLY, name: 'yearly', territory: 'BRA', price: 149.9 },
+  // India, added 2026-09-06 (was auto-converted to 499/mo): pass "IND" as the
+  // second arg to touch only these two, e.g. `apply-latam-prices.mjs apply IND`.
+  { sub: MONTHLY, name: 'monthly', territory: 'IND', price: 99.0 },
+  { sub: YEARLY, name: 'yearly', territory: 'IND', price: 999.0 },
 ];
+const onlyTerritory = process.argv[3];
+const active = onlyTerritory ? changes.filter((c) => c.territory === onlyTerritory) : changes;
 
 const apply = process.argv[2] === 'apply';
 let startDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -67,7 +73,7 @@ function post(sub, pointId, date) {
   });
 }
 
-for (const c of changes) {
+for (const c of active) {
   const pts = await api('GET',
     `/v1/subscriptions/${c.sub}/pricePoints?filter[territory]=${c.territory}&limit=8000&fields[subscriptionPricePoints]=customerPrice,proceeds`);
   const hit = pts.data.find((p) => parseFloat(p.attributes.customerPrice) === c.price);
@@ -96,7 +102,7 @@ for (const c of changes) {
 // Show what ASC now reports for the touched territories.
 for (const sub of [MONTHLY, YEARLY]) {
   const j = await api('GET',
-    `/v1/subscriptions/${sub}/prices?include=subscriptionPricePoint,territory&filter[territory]=MEX,BRA&limit=50`);
+    `/v1/subscriptions/${sub}/prices?include=subscriptionPricePoint,territory&filter[territory]=MEX,BRA,IND&limit=50`);
   const pts = Object.fromEntries((j.included ?? []).filter((i) => i.type === 'subscriptionPricePoints').map((i) => [i.id, i.attributes]));
   for (const p of j.data) {
     const t = p.relationships.territory.data.id;
