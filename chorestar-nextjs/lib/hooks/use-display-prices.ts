@@ -14,6 +14,8 @@ const REGIONAL_PRICES: Record<string, { monthly: string; annual: string; savings
   MX: { monthly: 'MX$69/mo', annual: 'MX$699/yr', savings: 'Save MX$129/year' },
   BR: { monthly: 'R$14.90/mo', annual: 'R$149.90/yr', savings: 'Save R$28.90/year' },
   IN: { monthly: '₹99/mo', annual: '₹999/yr', savings: 'Save ₹189/year' },
+  CL: { monthly: 'CLP $1.990/mo', annual: 'CLP $19.900/yr', savings: 'Save CLP $3.980/year' },
+  CO: { monthly: 'COP $9.900/mo', annual: 'COP $99.900/yr', savings: 'Save COP $18.900/year' },
 }
 
 export function useDisplayPrices() {

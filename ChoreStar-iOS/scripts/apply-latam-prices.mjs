@@ -52,9 +52,37 @@ const changes = [
   // second arg to touch only these two, e.g. `apply-latam-prices.mjs apply IND`.
   { sub: MONTHLY, name: 'monthly', territory: 'IND', price: 99.0 },
   { sub: YEARLY, name: 'yearly', territory: 'IND', price: 999.0 },
+  // Tier 2, added 2026-09-06 after the full-territory audit: ten markets whose
+  // auto-converted price was at or above the US price in real terms. All
+  // twenty price points verified to exist exactly. `apply TIER2` touches
+  // only these.
+  { sub: MONTHLY, name: 'monthly', territory: 'CHL', price: 1990, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'CHL', price: 19900, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'COL', price: 9900, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'COL', price: 99900, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'ARG', price: 1.99, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'ARG', price: 19.99, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'TUR', price: 79.99, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'TUR', price: 799.99, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'EGY', price: 99.99, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'EGY', price: 999.99, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'IDN', price: 29000, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'IDN', price: 299000, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'PHL', price: 99, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'PHL', price: 999, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'VNM', price: 49000, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'VNM', price: 499000, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'PAK', price: 400, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'PAK', price: 3900, tier2: true },
+  { sub: MONTHLY, name: 'monthly', territory: 'NGA', price: 1900, tier2: true },
+  { sub: YEARLY, name: 'yearly', territory: 'NGA', price: 19900, tier2: true },
 ];
-const onlyTerritory = process.argv[3];
-const active = onlyTerritory ? changes.filter((c) => c.territory === onlyTerritory) : changes;
+const filterArg = process.argv[3];
+const active = !filterArg
+  ? changes
+  : filterArg === 'TIER2'
+    ? changes.filter((c) => c.tier2)
+    : changes.filter((c) => c.territory === filterArg);
 
 const apply = process.argv[2] === 'apply';
 let startDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

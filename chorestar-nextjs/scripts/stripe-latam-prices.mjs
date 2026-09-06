@@ -25,10 +25,17 @@ if (!KEY) {
 // currency (RBI auto-pay rules) — Apple is where Indian subscriptions
 // actually convert; the INR option here is for display parity and the
 // cards that do work.
+// clp/cop added 2026-09-06 with the tier-2 Apple batch (Chile has real web
+// users; Colombia rides along). CLP is ZERO-decimal in Stripe: unit_amount
+// 1990 means CLP 1,990. COP is two-decimal: 990000 means COP 9,900.00.
+// The other tier-2 markets (TRY, EGP, IDR, PHP, VND, PKR, NGN, ARS) stay
+// Apple-only: card recurring billing there is unreliable and web traffic
+// from them is negligible.
 const targets = [
-  { env: 'STRIPE_PRICE_MONTHLY', name: 'monthly', mxn: 6900, brl: 1490, inr: 9900 },
-  { env: 'STRIPE_PRICE_ANNUAL', name: 'annual', mxn: 69900, brl: 14990, inr: 99900 },
+  { env: 'STRIPE_PRICE_MONTHLY', name: 'monthly', mxn: 6900, brl: 1490, inr: 9900, clp: 1990, cop: 990000 },
+  { env: 'STRIPE_PRICE_ANNUAL', name: 'annual', mxn: 69900, brl: 14990, inr: 99900, clp: 19900, cop: 9990000 },
 ];
+const CURRENCIES = ['mxn', 'brl', 'inr', 'clp', 'cop'];
 const mask = (id) => `…${id.slice(-4)}`;
 
 async function stripe(method, path, form) {
@@ -45,9 +52,11 @@ async function stripe(method, path, form) {
   return json;
 }
 
+// Stripe zero-decimal currencies store whole units in unit_amount.
+const ZERO_DECIMAL = new Set(['clp', 'jpy', 'krw', 'vnd', 'pyg', 'bif', 'djf', 'gnf', 'kmf', 'mga', 'rwf', 'ugx', 'vuv', 'xaf', 'xof', 'xpf']);
 const fmt = (opts = {}) =>
   Object.entries(opts)
-    .map(([cur, o]) => `${cur}=${(o.unit_amount / 100).toFixed(2)}`)
+    .map(([cur, o]) => `${cur}=${ZERO_DECIMAL.has(cur) ? o.unit_amount.toLocaleString('en-US') : (o.unit_amount / 100).toFixed(2)}`)
     .join('  ') || '(none beyond the base currency)';
 
 const apply = process.argv[2] === 'apply';
@@ -63,21 +72,17 @@ for (const t of targets) {
       `  options: ${fmt(before.currency_options)}`
   );
   if (!apply) {
-    console.log(`  would add: mxn=${(t.mxn / 100).toFixed(2)}  brl=${(t.brl / 100).toFixed(2)}  inr=${(t.inr / 100).toFixed(2)}`);
+    console.log(`  would set: ${CURRENCIES.map((c) => `${c}=${t[c]}`).join('  ')} (raw unit_amounts)`);
     continue;
   }
-  await stripe('POST', `/v1/prices/${id}`, {
-    'currency_options[mxn][unit_amount]': String(t.mxn),
-    'currency_options[brl][unit_amount]': String(t.brl),
-    'currency_options[inr][unit_amount]': String(t.inr),
-  });
+  const form = {};
+  for (const c of CURRENCIES) form[`currency_options[${c}][unit_amount]`] = String(t[c]);
+  await stripe('POST', `/v1/prices/${id}`, form);
   const after = await stripe('GET', `/v1/prices/${id}?expand[]=currency_options`);
   const ok =
     after.currency === before.currency &&
     after.unit_amount === before.unit_amount &&
-    after.currency_options?.mxn?.unit_amount === t.mxn &&
-    after.currency_options?.brl?.unit_amount === t.brl &&
-    after.currency_options?.inr?.unit_amount === t.inr;
+    CURRENCIES.every((c) => after.currency_options?.[c]?.unit_amount === t[c]);
   console.log(`  -> ${ok ? 'APPLIED' : 'WROTE, BUT VERIFY FAILED — check the dashboard'}: ${fmt(after.currency_options)}`);
 }
 if (!apply) console.log('\nDry run only. Re-run with "apply" to write.');
