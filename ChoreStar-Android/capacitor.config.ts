@@ -20,11 +20,18 @@ const config: CapacitorConfig = {
   appName: 'ChoreStar',
   webDir: 'www',
   server: {
-    url: 'https://chorestar.app',
+    // /login, not the marketing homepage: the landing pages carry pricing
+    // copy that Play's consumption-only policy must never show in-app.
+    // Logged-in users are redirected straight to the dashboard by the
+    // middleware, so returning users never see the login form either.
+    url: 'https://chorestar.app/login',
     androidScheme: 'https',
   },
   android: {
     backgroundColor: '#6366f1',
+    // The web app detects this marker (lib/utils/platform.ts) and hides
+    // every purchase surface: Play policy forbids non-Play purchase CTAs.
+    appendUserAgent: 'ChoreStarAndroid',
   },
   plugins: {
     SplashScreen: {
