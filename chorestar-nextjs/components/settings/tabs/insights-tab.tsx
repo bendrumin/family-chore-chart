@@ -10,7 +10,7 @@ import { AchievementsDisplay } from '@/components/achievements/achievements-disp
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
-import { weeklySlots } from '@/lib/utils/schedule'
+import { weekCompletionRate } from '@/lib/utils/schedule'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
@@ -98,29 +98,36 @@ export function InsightsTab() {
       const weekStarts = [...new Set(completions.map(c => c.week_start))].sort()
       const recentWeeks = weekStarts.slice(-8)
 
+      // Rates are per week: that week's filled due cells over that week's due
+      // slots (weekCompletionRate), so they are 0..100 by construction.
       const trends: WeeklyTrend[] = recentWeeks.map(ws => {
         const weekCompletions = completions.filter(c => c.week_start === ws)
-        // Total possible = each active chore once per day it is due
-        const totalPossible = weeklySlots(chores)
-        const rate = totalPossible > 0
-          ? Math.min(100, Math.round((weekCompletions.length / totalPossible) * 100))
-          : 0
         // Format the week label
         const d = new Date(ws)
         const label = `${d.getMonth() + 1}/${d.getDate()}`
-        return { week: label, rate }
+        return { week: label, rate: weekCompletionRate(chores, weekCompletions) }
       })
       setWeeklyTrends(trends)
 
       // ── Build per-child comparison ──────────────────────────
+      // A child's bar is the average of their weekly rates across the charted
+      // window, starting at their first week with data so a recently added
+      // child isn't dragged toward zero by weeks from before they existed.
       const childBars: ChildComparisonBar[] = children.map((child, idx) => {
         const childChores = chores.filter(c => c.child_id === child.id)
         const childCompletions = completions.filter(c =>
           childChores.some(ch => ch.id === c.chore_id)
         )
-        const totalPossible = weeklySlots(childChores)
-        const rate = totalPossible > 0
-          ? Math.min(100, Math.round((childCompletions.length / totalPossible) * 100))
+        const childWeeks = new Set(childCompletions.map(c => c.week_start))
+        const firstActive = recentWeeks.findIndex(ws => childWeeks.has(ws))
+        const activeWeeks = firstActive === -1 ? [] : recentWeeks.slice(firstActive)
+        const rate = activeWeeks.length > 0
+          ? Math.round(
+              activeWeeks.reduce((sum, ws) => sum + weekCompletionRate(
+                childChores,
+                childCompletions.filter(c => c.week_start === ws)
+              ), 0) / activeWeeks.length
+            )
           : 0
         return {
           name: child.name,
@@ -130,17 +137,12 @@ export function InsightsTab() {
       })
       setChildComparison(childBars)
 
-      // ── Aggregate family metrics (existing logic) ───────────
+      // ── Aggregate family metrics ────────────────────────────
       const childMetrics = children.map(child => {
         const childChores = chores.filter(c => c.child_id === child.id)
         const childCompletions = completions.filter(c =>
           childChores.some(chore => chore.id === c.chore_id)
         )
-
-        const totalPossible = weeklySlots(childChores)
-        const completionRate = totalPossible > 0
-          ? Math.round((childCompletions.length / totalPossible) * 100)
-          : 0
 
         // Earnings are scoped to the current week to match the card's
         // "Total earned this week" label, and follow the family's reward mode
@@ -166,11 +168,14 @@ export function InsightsTab() {
         const totalEarnings = earnedCents
         const streak = calculateStreak(childCompletions)
 
-        return { totalEarnings, completionRate, perfectDays: perfectDayPattern, streak }
+        return { totalEarnings, perfectDays: perfectDayPattern, streak }
       })
 
-      const averageCompletionRate = childMetrics.length > 0
-        ? Math.round(childMetrics.reduce((sum, m) => sum + m.completionRate, 0) / childMetrics.length)
+      // The card is the mean of the weekly rates charted right below it. It
+      // used to divide a child's ALL-TIME completion count by ONE week's due
+      // slots, which is how a family gets told they are at 518%.
+      const averageCompletionRate = trends.length > 0
+        ? Math.round(trends.reduce((sum, t) => sum + t.rate, 0) / trends.length)
         : 0
       const totalEarnings = childMetrics.reduce((sum, m) => sum + m.totalEarnings, 0)
       const bestStreak = Math.max(...childMetrics.map(m => m.streak), 0)
@@ -305,7 +310,7 @@ export function InsightsTab() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700">
+            <div key={i} className="min-w-0 p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700">
               <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-3" />
               <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
               <div className="h-3 w-32 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
@@ -370,18 +375,24 @@ export function InsightsTab() {
       </div>
 
       {/* Analytics Cards — 2-up on phones so the row doesn't become a
-          full-screen stack before the charts */}
+          full-screen stack before the charts. min-w-0 on every card: a grid
+          child's min-width defaults to its content, so without it a wide stat
+          number widens its column until the grid overflows the dialog and the
+          left column gets clipped off screen. The stat numbers step down on
+          phones for the same reason. */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700">
+        <Card className="min-w-0 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4 shrink-0" />
               Weekly Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {metrics.averageCompletionRate}%
+            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {/* Display clamp only: the rate itself is 0..100 by construction
+                  (weekCompletionRate), this is the second line of defense. */}
+              {Math.min(100, Math.max(0, metrics.averageCompletionRate))}%
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               Average completion rate
@@ -389,15 +400,15 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-200 dark:border-green-700">
+        <Card className="min-w-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-200 dark:border-green-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <DollarSign className="w-4 h-4" />
+              <DollarSign className="w-4 h-4 shrink-0" />
               Total Earnings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               ${metrics.totalEarnings.toFixed(2)}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -406,15 +417,15 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 border-2 border-orange-200 dark:border-orange-700">
+        <Card className="min-w-0 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 border-2 border-orange-200 dark:border-orange-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <Flame className="w-4 h-4" />
+              <Flame className="w-4 h-4 shrink-0" />
               Best Streak
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               {metrics.bestStreak}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -423,15 +434,15 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-700">
+        <Card className="min-w-0 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <Star className="w-4 h-4" />
+              <Star className="w-4 h-4 shrink-0" />
               Perfect Days
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               {metrics.totalPerfectDays}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -445,7 +456,7 @@ export function InsightsTab() {
       {weeklyTrends.length > 1 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Weekly Completion Trend */}
-          <Card className="border-2 border-purple-200 dark:border-purple-700">
+          <Card className="min-w-0 border-2 border-purple-200 dark:border-purple-700">
             <CardHeader>
               <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 📈 Completion Trend
@@ -488,7 +499,7 @@ export function InsightsTab() {
 
           {/* Per-Child Comparison */}
           {childComparison.length > 0 && (
-            <Card className="border-2 border-blue-200 dark:border-blue-700">
+            <Card className="min-w-0 border-2 border-blue-200 dark:border-blue-700">
               <CardHeader>
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   👦 Per-Child Progress
@@ -519,7 +530,7 @@ export function InsightsTab() {
                 </ResponsiveContainer>
                 </div>
                 <p className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400">
-                  Overall completion rate by child
+                  Average weekly completion rate by child
                 </p>
               </CardContent>
             </Card>

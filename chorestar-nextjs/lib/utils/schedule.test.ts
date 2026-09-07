@@ -5,7 +5,7 @@
  * locale's display order — the values never change meaning, only their order.
  */
 import assert from 'node:assert/strict'
-import { ALL_DAYS, missingDueCells, weekDisplayOrder } from './schedule'
+import { ALL_DAYS, missingDueCells, weekCompletionRate, weekDisplayOrder } from './schedule'
 
 let passed = 0
 let failed = 0
@@ -165,6 +165,80 @@ t('no chores means no cells', () => {
 t('a fully completed week has nothing missing', () => {
   const done = ALL_DAYS.map(day => ({ chore_id: 'everyday', day_of_week: day }))
   assert.deepEqual(missingDueCells([everyday], done, 6), [])
+})
+
+group('weekCompletionRate: the denominator is one week of due slots')
+
+t('an everyday chore done all seven days is 100%', () => {
+  const done = ALL_DAYS.map(day => ({ chore_id: 'everyday', day_of_week: day }))
+  assert.equal(weekCompletionRate([everyday], done), 100)
+})
+
+t('nothing done is 0%', () => {
+  assert.equal(weekCompletionRate([everyday], []), 0)
+})
+
+t('no chores means 0%, not a division by zero', () => {
+  assert.equal(weekCompletionRate([], [{ chore_id: 'everyday', day_of_week: 1 }]), 0)
+})
+
+t('partial weeks round to whole percents', () => {
+  // Weekdays chore: 5 slots, 2 filled = 40%.
+  const done = [
+    { chore_id: 'weekdays', day_of_week: 1 },
+    { chore_id: 'weekdays', day_of_week: 2 },
+  ]
+  assert.equal(weekCompletionRate([weekdays], done), 40)
+})
+
+t('mixed schedules pool their slots', () => {
+  // everyday (7 slots) + tuesdays (1 slot) = 8; fill 4 = 50%.
+  const done = [
+    { chore_id: 'everyday', day_of_week: 0 },
+    { chore_id: 'everyday', day_of_week: 1 },
+    { chore_id: 'everyday', day_of_week: 2 },
+    { chore_id: 'tuesdays', day_of_week: 2 },
+  ]
+  assert.equal(weekCompletionRate([everyday, tuesdays], done), 50)
+})
+
+group('weekCompletionRate: can never exceed 100')
+
+t('duplicate rows for the same cell count once', () => {
+  const done = [
+    { chore_id: 'tuesdays', day_of_week: 2 },
+    { chore_id: 'tuesdays', day_of_week: 2 },
+    { chore_id: 'tuesdays', day_of_week: 2 },
+  ]
+  assert.equal(weekCompletionRate([tuesdays], done), 100)
+})
+
+t('many weeks of rows accidentally passed at once still cap at 100 (the 518% bug)', () => {
+  // Five weeks of a fully-done everyday chore, unscoped: 35 rows, 7 slots.
+  // The old math said 500%; distinct due cells say 100%.
+  const fiveWeeks = Array.from({ length: 5 }, () =>
+    ALL_DAYS.map(day => ({ chore_id: 'everyday', day_of_week: day }))
+  ).flat()
+  assert.equal(weekCompletionRate([everyday], fiveWeeks), 100)
+})
+
+group('weekCompletionRate: only due cells of listed chores count')
+
+t('an off-schedule tick fills no due cell', () => {
+  // Tuesday's chore ticked on Wednesday: real work, but not schedule adherence.
+  assert.equal(weekCompletionRate([tuesdays], [{ chore_id: 'tuesdays', day_of_week: 3 }]), 0)
+})
+
+t('rows from chores not in the list (deleted or inactive) are ignored', () => {
+  const done = [
+    { chore_id: 'deleted-chore', day_of_week: 2 },
+    { chore_id: 'tuesdays', day_of_week: 2 },
+  ]
+  assert.equal(weekCompletionRate([tuesdays], done), 100)
+})
+
+t('a row with a null day_of_week fills nothing', () => {
+  assert.equal(weekCompletionRate([everyday], [{ chore_id: 'everyday', day_of_week: null }]), 0)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

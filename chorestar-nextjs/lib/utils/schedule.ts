@@ -68,6 +68,36 @@ export function weeklySlots(chores: readonly Scheduled[]): number {
   return chores.reduce((n, c) => n + scheduleDays(c).length, 0)
 }
 
+/**
+ * The share of ONE week's due grid cells that are filled, as a whole percent,
+ * 0..100 by construction. The denominator is weeklySlots(chores); the
+ * numerator counts DISTINCT (chore, due day) cells with a completion row, so
+ * duplicate rows can't double-count, an off-schedule tick doesn't inflate the
+ * rate, and rows from chores not in `chores` (deleted or inactive) are
+ * ignored. Callers must pass completions already scoped to the one week being
+ * rated and already filtered to approved ticks. 0 when nothing is due.
+ *
+ * This exists because the Insights tab once divided a child's ALL-TIME
+ * completion count by one week's slots, proudly reporting 518%.
+ */
+export function weekCompletionRate(
+  chores: readonly ScheduledChore[],
+  completions: readonly CompletionCell[]
+): number {
+  const totalSlots = weeklySlots(chores)
+  if (totalSlots === 0) return 0
+
+  const byId = new Map(chores.map(c => [c.id, c]))
+  const filled = new Set<string>()
+  for (const c of completions) {
+    if (c.day_of_week === null || c.day_of_week === undefined) continue
+    const chore = byId.get(c.chore_id)
+    if (!chore || !isDueOn(chore, c.day_of_week)) continue
+    filled.add(`${c.chore_id}|${c.day_of_week}`)
+  }
+  return Math.round((filled.size / totalSlots) * 100)
+}
+
 /** How many days this week have at least one chore due. 0..7. */
 export function dueDaysInWeek(chores: readonly Scheduled[]): number {
   let n = 0

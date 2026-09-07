@@ -133,13 +133,17 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
               </div>
             </div>
 
-            {/* Tab Content - Right Panel */}
+            {/* Tab Content - Right Panel. overflow-x-hidden: overflow-y auto
+                makes overflow-x compute to auto too, so any too-wide tab
+                content silently turns the whole panel into a horizontal
+                scroller on phones and swipe drift clips cards off the left
+                edge. Wide content must scroll inside its own container. */}
             <div
               role="tabpanel"
               id={`settings-panel-${activeTab}`}
               aria-labelledby={`settings-tab-${activeTab}`}
               tabIndex={0}
-              className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0"
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 min-h-0"
             >
               {activeTab === 'family' && <FamilyTab onClose={() => setIsOpen(false)} />}
               {activeTab === 'chores' && <ChoresTab />}
