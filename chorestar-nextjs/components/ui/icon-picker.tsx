@@ -248,7 +248,7 @@ export function IconPicker({ currentIcon, onSelect }: IconPickerProps) {
             aria-label={icon.e}
             aria-pressed={currentIcon === icon.e}
             title={icon.e}
-            className={`aspect-square rounded-lg border-2 flex items-center justify-center text-3xl transition-all hover:scale-110 hover:shadow-lg ${
+            className={`aspect-square rounded-lg border-2 flex items-center justify-center text-3xl transition-colors ${
               currentIcon === icon.e
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-300'
                 : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'

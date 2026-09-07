@@ -237,7 +237,7 @@ export function AppearanceTab() {
           {/* None option */}
           <button
             onClick={() => handleSeasonalThemeChange(null)}
-            className={`p-3 rounded-lg border-2 text-center transition-all duration-200 hover:scale-105 ${
+            className={`p-3 rounded-lg border-2 text-center transition-colors duration-200 ${
               seasonalTheme === null
                 ? 'border-transparent shadow-lg scale-105'
                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'
@@ -265,7 +265,7 @@ export function AppearanceTab() {
             <button
               key={theme.id}
               onClick={() => handleSeasonalThemeChange(theme.id)}
-              className={`p-3 rounded-lg border-2 text-center transition-all duration-200 hover:scale-105 ${
+              className={`p-3 rounded-lg border-2 text-center transition-colors duration-200 ${
                 seasonalTheme === theme.id
                   ? 'border-transparent shadow-lg scale-105'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'

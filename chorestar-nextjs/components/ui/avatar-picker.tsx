@@ -106,7 +106,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
             className={`w-10 h-10 rounded-full border-4 transition-all relative transparent-pattern ${
               selectedColor === 'transparent'
                 ? 'border-blue-500 scale-110'
-                : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                : 'border-gray-300 dark:border-gray-600'
             }`}
             title="No background color"
           >
@@ -120,7 +120,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
               className={`w-10 h-10 rounded-full border-4 transition-all ${
                 selectedColor === color
                   ? 'border-blue-500 scale-110'
-                  : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                  : 'border-gray-300 dark:border-gray-600'
               }`}
               style={{ backgroundColor: color }}
               title={color}
@@ -147,7 +147,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   key={variant}
                   onClick={() => onSelect(url, selectedColor)}
                   aria-label={`Select robot avatar ${variant}`}
-                  className={`aspect-square rounded-lg border-2 p-1 transition-all hover:scale-105 hover:shadow-lg ${
+                  className={`aspect-square rounded-lg border-2 p-1 transition-colors ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 dark:border-gray-600'
@@ -177,7 +177,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   key={variant}
                   onClick={() => onSelect(url, selectedColor)}
                   aria-label={`Select adventurer avatar ${variant}`}
-                  className={`aspect-square rounded-lg border-2 p-1 transition-all hover:scale-105 hover:shadow-lg ${
+                  className={`aspect-square rounded-lg border-2 p-1 transition-colors ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 dark:border-gray-600'
@@ -207,7 +207,7 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
                   key={emoji}
                   onClick={() => onSelect(url, selectedColor)}
                   aria-label={`Select ${emoji} emoji avatar`}
-                  className={`aspect-square rounded-lg border-2 flex items-center justify-center text-3xl transition-all hover:scale-105 hover:shadow-lg ${
+                  className={`aspect-square rounded-lg border-2 flex items-center justify-center text-3xl transition-colors ${
                     currentAvatarUrl === url
                       ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 dark:border-gray-600'

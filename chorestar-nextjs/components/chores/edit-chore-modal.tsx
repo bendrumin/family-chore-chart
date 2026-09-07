@@ -238,7 +238,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                         key={category.id}
                         type="button"
                         onClick={() => setFormData({ ...formData, category: category.id })}
-                        className={`p-3 rounded-xl border-2 text-left transition-all duration-200 hover:scale-105 ${
+                        className={`p-3 rounded-xl border-2 text-left transition-colors duration-200 ${
                           formData.category === category.id
                             ? 'border-transparent shadow-lg scale-105'
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'

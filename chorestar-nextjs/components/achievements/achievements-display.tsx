@@ -88,7 +88,7 @@ export function AchievementsDisplay({ achievementProgress, isLoading }: Achievem
               key={progress.achievement.id}
               className={`
                 relative overflow-hidden transition-all duration-300
-                ${isLocked ? 'opacity-60 hover:opacity-80' : 'hover:scale-105 hover:shadow-lg'}
+                ${isLocked ? 'opacity-60 hover:opacity-80' : ''}
                 border-2 ${colors.border}
                 bg-gradient-to-br ${colors.bg}
               `}

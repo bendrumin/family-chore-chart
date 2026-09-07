@@ -73,7 +73,7 @@ export function RoutineIconPicker({ currentIcon, onSelect, category }: RoutineIc
                 key={key}
                 type="button"
                 onClick={() => onSelect(key)}
-                className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center p-2 transition-all hover:scale-105 hover:shadow-md ${
+                className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center p-2 transition-colors ${
                   currentIcon === key
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-300'
                     : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'

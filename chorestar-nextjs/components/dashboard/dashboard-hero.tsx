@@ -65,13 +65,13 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
       <ThemeParticles />
 
       <div className="relative flex-1 min-w-0 w-full">
-        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] opacity-80">
+        <div className="text-xs font-semibold opacity-80">
           {dateLabel}
           <span className="opacity-60"> · </span>
           {familyName}
           {isSharedMember && (
             <span
-              className="ml-2 rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold normal-case tracking-normal"
+              className="ml-2 rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold"
               style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}
             >
               Shared

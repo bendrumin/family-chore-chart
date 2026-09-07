@@ -341,7 +341,7 @@ export function RoutineBuilderModal({
                       key={template.name}
                       type="button"
                       onClick={() => loadTemplate(index)}
-                      className="p-3 text-left border-2 rounded-lg hover:scale-105 transition-all bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-cyan-400"
+                      className="p-3 text-left border-2 rounded-lg transition-colors bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-cyan-400"
                     >
                       <div className="font-bold text-sm">{template.name}</div>
                       <div className="text-xs text-gray-500">{template.steps.length} steps</div>

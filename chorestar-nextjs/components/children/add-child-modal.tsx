@@ -210,7 +210,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-20 h-20 rounded-2xl border-4 border-white overflow-hidden shadow-lg transition-transform duration-300 hover:scale-110"
+                    className="w-20 h-20 rounded-2xl border-4 border-white overflow-hidden shadow-lg"
                     style={{
                       background: `linear-gradient(180deg, ${formData.avatarColor} 0%, ${formData.avatarColor}dd 100%)`
                     }}

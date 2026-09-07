@@ -127,13 +127,6 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                       >
-                        <div 
-                          className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-                          style={{
-                            background: 'linear-gradient(180deg, var(--primary), #8b5cf6)'
-                          }}
-                        />
-                        
                         <div className="flex-shrink-0 w-12 flex items-center justify-center text-4xl" aria-hidden="true">
                           {feature.icon}
                         </div>

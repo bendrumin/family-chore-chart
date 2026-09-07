@@ -132,11 +132,6 @@ export function SeasonalSuggestionsModal({
                 key={index}
                 className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm flex items-center gap-4 hover:border-orange-400 transition-all hover:shadow-lg relative overflow-hidden group"
               >
-                {/* Top border animation on hover */}
-                <div 
-                  className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-                />
-                
                 <div className="flex-shrink-0"><ChoreIcon emoji={activity.icon} className="w-10 h-10 text-indigo-500 dark:text-indigo-400" /></div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold mb-1 group-hover:text-orange-600 transition-colors" style={{ color: 'var(--text-primary)' }}>

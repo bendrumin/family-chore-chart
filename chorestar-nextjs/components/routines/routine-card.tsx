@@ -70,7 +70,7 @@ export const RoutineCard = memo(function RoutineCard({
 
   return (
     <Card
-      className="relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-200 dark:border-gray-700 shadow-md rounded-xl"
+      className="relative overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md rounded-xl"
       style={{
         background: `linear-gradient(180deg, ${routine.color}15 0%, ${routine.color}08 50%, white 100%)`,
       }}
@@ -133,7 +133,7 @@ export const RoutineCard = memo(function RoutineCard({
                 return (
                   <div
                     key={step.id}
-                    className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center transition-transform hover:scale-110 border border-gray-200 dark:border-gray-700"
+                    className="w-9 h-9 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center border border-gray-200 dark:border-gray-700"
                     style={{ borderLeftWidth: '3px', borderLeftColor: routine.color }}
                     title={step.title}
                   >
@@ -164,7 +164,7 @@ export const RoutineCard = memo(function RoutineCard({
               <Button
                 onClick={onPlay}
                 disabled={completedToday}
-                className="flex-1 gap-2 font-semibold rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+                className="flex-1 gap-2 font-semibold rounded-lg shadow-sm"
                 style={{
                   background: completedToday
                     ? undefined
@@ -182,7 +182,7 @@ export const RoutineCard = memo(function RoutineCard({
               size="sm"
               onClick={onEdit}
               aria-label={`Edit ${routine.name}`}
-              className="gap-1 rounded-lg font-medium hover:scale-[1.02] transition-all border-gray-300 dark:border-gray-600"
+              className="gap-1 rounded-lg font-medium border-gray-300 dark:border-gray-600"
             >
               <Edit className="w-3.5 h-3.5" />
             </Button>
@@ -193,7 +193,7 @@ export const RoutineCard = memo(function RoutineCard({
               onClick={() => setShowDeleteConfirm(true)}
               disabled={isDeleting}
               aria-label={`Delete ${routine.name}`}
-              className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium hover:scale-[1.02] transition-all border-gray-300 dark:border-gray-600"
+              className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium border-gray-300 dark:border-gray-600"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </Button>

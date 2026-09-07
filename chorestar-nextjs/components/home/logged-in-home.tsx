@@ -140,7 +140,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
               </p>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-600 dark:text-indigo-400"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg transition-colors shadow-lg text-indigo-600 dark:text-indigo-400"
               >
                 Upgrade from <UpgradePriceLabel />
                 <ArrowRight className="w-5 h-5" />
@@ -176,7 +176,7 @@ function QuickAction({ href, icon, title, description, primary = false }: {
   primary?: boolean
 }) {
   const isExternal = href.startsWith('mailto:') || href.startsWith('http')
-  const className = `group rounded-xl p-6 border-2 transition-all hover:shadow-lg hover:scale-[1.02] ${
+  const className = `group rounded-xl p-6 border-2 transition-colors ${
     primary
       ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20'
       : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
