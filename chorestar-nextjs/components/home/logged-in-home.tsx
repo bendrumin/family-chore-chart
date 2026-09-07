@@ -91,7 +91,8 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           </div>
         </div>
 
-        {/* iOS App — live on the App Store */}
+        {/* iOS App — live on the App Store (never promoted inside the Android shell) */}
+        <HideOnAndroidShell>
         <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 p-6 mb-10 shadow-lg">
           <div className="flex items-start gap-4">
             <div className="text-4xl shrink-0">🎉</div>
@@ -123,6 +124,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
             </div>
           </div>
         </div>
+        </HideOnAndroidShell>
 
         {/* Upgrade Banner (free users only; never in the Android shell) */}
         {!isPremium && (

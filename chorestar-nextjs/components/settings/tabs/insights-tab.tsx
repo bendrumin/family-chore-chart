@@ -303,7 +303,7 @@ export function InsightsTab() {
           <div className="h-7 w-56 mx-auto bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mb-2" />
           <div className="h-4 w-72 mx-auto bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700">
               <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-3" />
@@ -369,8 +369,9 @@ export function InsightsTab() {
         </p>
       </div>
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Analytics Cards — 2-up on phones so the row doesn't become a
+          full-screen stack before the charts */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
@@ -451,11 +452,15 @@ export function InsightsTab() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={weeklyTrends} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+              {/* CSS-sized wrapper: ~200px tall on phones, 220px from md up */}
+              <div className="h-[200px] md:h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrends} margin={{ top: 5, right: 12, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
+                  {/* preserveStartEnd + minTickGap drop labels instead of
+                      cramming eight week labels onto a phone-width axis */}
+                  <XAxis dataKey="week" tick={{ fontSize: 12 }} interval="preserveStartEnd" minTickGap={20} tickMargin={6} />
+                  <YAxis domain={[0, 100]} width={38} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
                   <Tooltip
                     formatter={(value: any) => [`${value}%`, 'Completion Rate']}
                     contentStyle={{
@@ -474,6 +479,7 @@ export function InsightsTab() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </div>
               <p className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400">
                 Family completion rate over the last {weeklyTrends.length} weeks
               </p>
@@ -489,11 +495,13 @@ export function InsightsTab() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={childComparison} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <div className="h-[200px] md:h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={childComparison} margin={{ top: 5, right: 12, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
+                    {/* interval={0}: every child keeps a label (few bars) */}
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} tickMargin={6} />
+                    <YAxis domain={[0, 100]} width={38} tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
                     <Tooltip
                       formatter={(value: any) => [`${value}%`, 'Completion Rate']}
                       contentStyle={{
@@ -509,6 +517,7 @@ export function InsightsTab() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
                 <p className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400">
                   Overall completion rate by child
                 </p>

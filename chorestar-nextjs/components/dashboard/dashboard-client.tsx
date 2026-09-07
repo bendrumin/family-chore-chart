@@ -17,8 +17,10 @@ import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
-import { SettingsMenu } from '@/components/settings/settings-menu'
+import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
+import { ShellTabBar, type ShellTab } from '@/components/dashboard/shell-tab-bar'
+import { useAndroidShell } from '@/lib/utils/platform'
 import dynamic from 'next/dynamic'
 
 const AddChildModal = dynamic(() => import('@/components/children/add-child-modal').then(m => ({ default: m.AddChildModal })), { ssr: false })
@@ -243,6 +245,33 @@ function DashboardContent({
 
   const [isNavOpen, setIsNavOpen] = useState(false)
 
+  // Android shell (Capacitor WebView): app-style chrome. The settings dialog
+  // state is lifted here so the header gear and the bottom tab bar drive the
+  // same dialog, and the Insights tab can deep-open the insights section.
+  const isShell = useAndroidShell()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>('family')
+
+  const activeShellTab: ShellTab = isSettingsOpen
+    ? (settingsTab === 'insights' ? 'insights' : 'settings')
+    : 'home'
+
+  const handleShellTab = (tab: ShellTab) => {
+    if (tab === 'home') {
+      // Back to the dashboard root: family overview, top of page.
+      setIsSettingsOpen(false)
+      setSelectedChildId(null)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else if (tab === 'insights') {
+      setSettingsTab('insights')
+      setIsSettingsOpen(true)
+    } else {
+      // Settings proper: never land on insights, that is the other tab's job.
+      if (settingsTab === 'insights') setSettingsTab('family')
+      setIsSettingsOpen(true)
+    }
+  }
+
   const handleAddRoutine = () => {
     setActiveTab('routines')
     setOpenRoutineBuilderTrigger(true)
@@ -302,7 +331,14 @@ function DashboardContent({
                 </span>
               </h1>
             </div>
-            <SettingsMenu buttonColor={settingsButtonColor} onLogout={handleLogout} />
+            <SettingsMenu
+              buttonColor={settingsButtonColor}
+              onLogout={handleLogout}
+              open={isSettingsOpen}
+              onOpenChange={setIsSettingsOpen}
+              tab={settingsTab}
+              onTabChange={setSettingsTab}
+            />
           </div>
         </div>
       </header>
@@ -341,35 +377,41 @@ function DashboardContent({
               </button>
             </div>
 
-            {/* Nav items */}
+            {/* Nav items. Inside the Android shell the drawer slims down to
+                functional items only: web pages (marketing home, guides,
+                partners) read as "a website in a box" there. */}
             <div className="flex-1 py-3 px-3 space-y-1">
-              <Link
-                href="/"
-                onClick={() => setIsNavOpen(false)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                <Home className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
-                Home
-              </Link>
-              <Link
-                href="/how-to"
-                onClick={() => setIsNavOpen(false)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                <BookOpen className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
-                How-To Guides
-              </Link>
-              <Link
-                href="/partners"
-                onClick={() => setIsNavOpen(false)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                <Handshake className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
-                Partners
-              </Link>
+              {!isShell && (
+                <>
+                  <Link
+                    href="/"
+                    onClick={() => setIsNavOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <Home className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                    Home
+                  </Link>
+                  <Link
+                    href="/how-to"
+                    onClick={() => setIsNavOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <BookOpen className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                    How-To Guides
+                  </Link>
+                  <Link
+                    href="/partners"
+                    onClick={() => setIsNavOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <Handshake className="w-5 h-5 shrink-0" style={{ color: 'var(--primary)' }} />
+                    Partners
+                  </Link>
+                </>
+              )}
               {isAdmin && (
                 <Link
                   href="/dashboard/admin"
@@ -382,7 +424,9 @@ function DashboardContent({
                 </Link>
               )}
 
-              <div className="my-2 border-t" style={{ borderColor: 'hsl(var(--border))' }} />
+              {(!isShell || isAdmin) && (
+                <div className="my-2 border-t" style={{ borderColor: 'hsl(var(--border))' }} />
+              )}
 
               <a
                 href="/support"
@@ -429,8 +473,12 @@ function DashboardContent({
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 relative z-10">
+      {/* Main Content — extra bottom padding in the shell so nothing hides
+          behind the fixed tab bar */}
+      <main
+        className="container mx-auto px-4 py-8 relative z-10"
+        style={isShell ? { paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))' } : undefined}
+      >
         <IosAppBanner />
         {children.length === 0 ? (
           <Card className="text-center animate-bounce-in">
@@ -464,18 +512,26 @@ function DashboardContent({
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-7">
+          /* Flex column so CSS `order` can move sections per breakpoint:
+             on phones the weekly stats drop below the chores/routines
+             section (the actionable grid stays above the fold); md+ keeps
+             the original order. Single instances only — WeeklyStats and
+             ApprovalTray fetch internally, so duplicating them would
+             double-fetch and double-subscribe. */
+          <div className="flex flex-col gap-7">
             {/* Hero — today at a glance */}
-            <DashboardHero
-              familyName={initialProfile?.family_name || 'My Family'}
-              done={todaySnapshot.familyDone}
-              total={todaySnapshot.familyTotal}
-              earnedCents={todaySnapshot.earnedTodayCents}
-              isSharedMember={isSharedMember}
-            />
+            <div className="order-1">
+              <DashboardHero
+                familyName={initialProfile?.family_name || 'My Family'}
+                done={todaySnapshot.familyDone}
+                total={todaySnapshot.familyTotal}
+                earnedCents={todaySnapshot.earnedTodayCents}
+                isSharedMember={isSharedMember}
+              />
+            </div>
 
             {/* Family — avatar-ring child switcher */}
-            <section className="space-y-3">
+            <section className="order-2 space-y-3">
               <div className="flex items-baseline justify-between gap-3 px-1">
                 <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                   Family
@@ -493,20 +549,23 @@ function DashboardContent({
               />
             </section>
 
-            {/* Weekly Stats — per-child drill-in only */}
+            {/* Weekly Stats — per-child drill-in only. Last on phones so the
+                chore grid isn't buried under stats. */}
             {selectedChildId && (
-              <WeeklyStats
-                child={children.find((c: Child) => c.id === selectedChildId)!}
-                weekStart={weekStart}
-              />
+              <div className="order-5 md:order-3">
+                <WeeklyStats
+                  child={children.find((c: Child) => c.id === selectedChildId)!}
+                  weekStart={weekStart}
+                />
+              </div>
             )}
 
             {/* Ticks waiting for a parent's OK (approval mode / photo chores).
                 Renders nothing when there is nothing to review. */}
-            <ApprovalTray currencyCode={settings?.currency_code} />
+            <ApprovalTray currencyCode={settings?.currency_code} className="order-3 md:order-4" />
 
             {/* Main — family overview OR selected-child tabs */}
-            <div>
+            <div className="order-4 md:order-5">
                 {!selectedChildId ? (
                   <FamilyTodayChores children={children} />
                 ) : (
@@ -598,6 +657,10 @@ function DashboardContent({
             </div>
         )}
       </main>
+
+      {/* App-style bottom tab bar — Android shell only (self-gating), and
+          only here on the parent dashboard, never on kid-mode routes */}
+      <ShellTabBar active={activeShellTab} onSelect={handleShellTab} />
 
       {/* Add Child Modal */}
       <AddChildModal

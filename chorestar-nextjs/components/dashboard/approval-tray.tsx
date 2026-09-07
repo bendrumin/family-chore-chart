@@ -76,7 +76,7 @@ export async function reviewCompletion(completionId: string, action: 'approve' |
   }
 }
 
-export function ApprovalTray({ onChanged, currencyCode }: { onChanged?: () => void; currencyCode?: string | null }) {
+export function ApprovalTray({ onChanged, currencyCode, className }: { onChanged?: () => void; currencyCode?: string | null; className?: string }) {
   const [items, setItems] = useState<PendingItem[] | null>(null)
   const [redemptions, setRedemptions] = useState<PendingRedemption[]>([])
   const [busy, setBusy] = useState<Set<string>>(new Set())
@@ -173,7 +173,7 @@ export function ApprovalTray({ onChanged, currencyCode }: { onChanged?: () => vo
     <>
       <section
         aria-labelledby="approval-tray-title"
-        className="rounded-2xl border p-4 space-y-3"
+        className={`rounded-2xl border p-4 space-y-3 ${className ?? ''}`}
         style={{ background: 'var(--card-bg)', borderColor: 'hsl(var(--border))' }}
       >
         <div className="flex items-center justify-between gap-3 px-1">

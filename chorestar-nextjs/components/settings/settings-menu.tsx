@@ -21,7 +21,7 @@ import { AccountTab } from '@/components/settings/tabs/account-tab'
 
 const InsightsTab = lazy(() => import('@/components/settings/tabs/insights-tab').then(m => ({ default: m.InsightsTab })))
 
-type SettingsTab = 'family' | 'chores' | 'rewards' | 'appearance' | 'insights' | 'downloads' | 'billing' | 'account'
+export type SettingsTab = 'family' | 'chores' | 'rewards' | 'appearance' | 'insights' | 'downloads' | 'billing' | 'account'
 
 const TABS = [
   { id: 'family' as SettingsTab, label: 'Family', icon: Users },
@@ -39,12 +39,24 @@ const TABS = [
 interface SettingsMenuProps {
   buttonColor?: 'white' | 'black'
   onLogout?: () => void
+  /** Controlled open state (Android shell tab bar). Omit for the default self-managed dialog. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** Controlled active tab, paired with onTabChange. */
+  tab?: SettingsTab
+  onTabChange?: (tab: SettingsTab) => void
 }
 
-export function SettingsMenu({ buttonColor = 'black', onLogout }: SettingsMenuProps) {
+export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChange, tab, onTabChange }: SettingsMenuProps) {
   const { settings, updateSettings } = useSettings()
-  const [isOpen, setIsOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<SettingsTab>('family')
+  const [internalOpen, setInternalOpen] = useState(false)
+  const [internalTab, setInternalTab] = useState<SettingsTab>('family')
+  // Controlled when the parent passes state (the dashboard's shell tab bar
+  // needs to open this dialog on a specific tab); self-managed otherwise.
+  const isOpen = open ?? internalOpen
+  const activeTab = tab ?? internalTab
+  const setIsOpen = onOpenChange ?? setInternalOpen
+  const setActiveTab = onTabChange ?? setInternalTab
 
   return (
     <>
