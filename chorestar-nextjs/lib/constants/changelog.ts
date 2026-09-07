@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.4'
+export const LATEST_CHANGELOG_VERSION = '2026.9.5'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.5': {
+    version: '2026.9.5',
+    date: 'September 2026',
+    title: 'Your Kids Lead the Dashboard',
+    features: [
+      {
+        icon: '👨‍👩‍👧‍👦',
+        title: 'A Hero Built Around Your Family',
+        description: 'The dashboard now opens with your family name and each kid\'s own progress ring around their avatar, so you see who\'s done what at a glance. Tap a kid to jump straight to their chores. Seasonal themes paint it exactly like before.',
+      },
+    ],
+  },
   '2026.9.4': {
     version: '2026.9.4',
     date: 'September 2026',

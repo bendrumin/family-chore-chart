@@ -2,6 +2,11 @@
 
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { ThemeParticles } from '@/components/dashboard/theme-particles'
+import { ChildAvatarContent } from '@/components/children/child-avatar-content'
+import { formatMoney } from '@/lib/constants/currencies'
+import type { Database } from '@/lib/supabase/database.types'
+
+type Child = Database['public']['Tables']['children']['Row']
 
 interface DashboardHeroProps {
   familyName: string
@@ -9,6 +14,10 @@ interface DashboardHeroProps {
   total: number
   earnedCents: number
   isSharedMember?: boolean
+  children?: Child[]
+  perChild?: Record<string, { done: number; total: number }>
+  onSelectChild?: (id: string) => void
+  currencyCode?: string | null
 }
 
 /**
@@ -24,25 +33,59 @@ function greeting(): { text: string; icon: string } {
   return { text: 'Good night', icon: '🌙' }
 }
 
-/**
- * Progress-first hero — greeting + count + ring. No pill clusters or holiday
- * sticker piles; seasonal feel comes from ThemeParticles + page aurora.
- */
-export function DashboardHero({ familyName, done, total, earnedCents, isSharedMember }: DashboardHeroProps) {
-  const { text: greetingText, icon: greetingIcon } = greeting()
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0
-  const R = 52
+/** Activity ring in the hero's own ink (white on the seasonal fill). */
+function HeroRing({ done, total, child }: { done: number; total: number; child: Child }) {
+  const R = 31
   const C = 2 * Math.PI * R
-  const offset = C * (1 - (total > 0 ? done / total : 0))
-  const dateLabel = new Date().toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
+  const p = total > 0 ? done / total : 0
+  const color = child.avatar_color || '#6366f1'
+  return (
+    <div className="relative h-[64px] w-[64px] sm:h-[72px] sm:w-[72px]">
+      <svg width="100%" height="100%" viewBox="0 0 70 70" style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx="35" cy="35" r={R} fill="none" strokeWidth="4"
+          stroke="color-mix(in srgb, currentColor 28%, transparent)"
+        />
+        <circle
+          cx="35" cy="35" r={R} fill="none" strokeWidth="4"
+          stroke="currentColor" strokeLinecap="round"
+          strokeDasharray={C} strokeDashoffset={C * (1 - p)}
+          style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
+        />
+      </svg>
+      <div
+        className="absolute inset-[7px] grid place-items-center overflow-hidden rounded-full text-lg font-bold"
+        style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
+      >
+        <ChildAvatarContent child={child} name={child.name} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Family-first hero: the family name leads, each kid carries their own
+ * progress as an activity ring around their avatar, and the family total
+ * sits to the right. Seasonal feel comes from the themed fill,
+ * ThemeParticles, and the page aurora, all unchanged.
+ */
+export function DashboardHero({
+  familyName,
+  done,
+  total,
+  earnedCents,
+  isSharedMember,
+  children = [],
+  perChild = {},
+  onSelectChild,
+  currencyCode,
+}: DashboardHeroProps) {
+  const { text: greetingText, icon: greetingIcon } = greeting()
+  const hasKids = children.length > 0
 
   return (
     <div
-      className="relative overflow-hidden rounded-[1.25rem] px-4 py-4 sm:px-6 sm:py-6 flex flex-row items-center gap-4 sm:gap-5"
+      className="relative overflow-hidden rounded-[1.25rem] px-4 py-4 sm:px-6 sm:py-5"
       style={{
         // iOS ThemeManager.gradient + white type. Fills are nudged just enough
         // for white ink to clear WCAG AA (summer teal darkens slightly rather
@@ -64,71 +107,83 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
 
       <ThemeParticles />
 
-      <div className="relative flex-1 min-w-0 w-full">
-        <div className="text-xs font-semibold opacity-80">
-          {dateLabel}
-          <span className="opacity-60"> · </span>
+      <div className="relative">
+        {/* Greeting left, date right */}
+        <div className="flex items-baseline justify-between gap-3">
+          <div className="flex items-center gap-1.5 text-sm font-medium opacity-90">
+            <ChoreIcon emoji={greetingIcon} className="w-4 h-4" />
+            <span>{greetingText}</span>
+          </div>
+          <div className="text-xs font-semibold opacity-75">
+            {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+
+        {/* The family leads */}
+        <h2 className="mt-1 text-2xl sm:text-[1.75rem] font-extrabold tracking-tight">
           {familyName}
           {isSharedMember && (
             <span
-              className="ml-2 rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold"
+              className="ml-2 align-middle rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold"
               style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}
             >
               Shared
             </span>
           )}
-        </div>
+        </h2>
 
-        <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium opacity-90">
-          <ChoreIcon emoji={greetingIcon} className="w-4 h-4" />
-          <span>{greetingText}</span>
-        </div>
+        {hasKids ? (
+          <div className="mt-3 flex items-center gap-4 sm:gap-6">
+            {/* Each kid carries their own progress */}
+            <div className="flex flex-1 gap-4 overflow-x-auto pb-1 sm:gap-6">
+              {children.map((child) => {
+                const prog = perChild[child.id] || { done: 0, total: 0 }
+                const ring = (
+                  <>
+                    <HeroRing done={prog.done} total={prog.total} child={child} />
+                    <div className="text-xs font-bold">
+                      {child.name}{' '}
+                      <span className="font-semibold opacity-75 tabular-nums">
+                        {prog.total > 0 ? `${prog.done}/${prog.total}` : 'none today'}
+                      </span>
+                    </div>
+                  </>
+                )
+                return onSelectChild ? (
+                  <button
+                    key={child.id}
+                    type="button"
+                    onClick={() => onSelectChild(child.id)}
+                    aria-label={`Show ${child.name}'s chores`}
+                    className="flex shrink-0 cursor-pointer flex-col items-center gap-1.5 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+                  >
+                    {ring}
+                  </button>
+                ) : (
+                  <div key={child.id} className="flex shrink-0 flex-col items-center gap-1.5">
+                    {ring}
+                  </div>
+                )
+              })}
+            </div>
 
-        <div className="mt-1 sm:mt-1.5 text-2xl sm:text-4xl font-bold tracking-tight tabular-nums">
-          {total === 0 ? (
-            <span className="text-base sm:text-xl font-semibold opacity-85">No chores yet today</span>
-          ) : (
-            <>
-              {done}
-              <span className="text-base sm:text-xl font-semibold opacity-70"> of {total} done</span>
-            </>
-          )}
-        </div>
-
-        {total > 0 && (
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium opacity-75 tabular-nums">
-            ${(earnedCents / 100).toFixed(2)} earned · {pct}% complete
+            {/* Family total */}
+            <div className="flex flex-none flex-col items-end gap-0.5 text-right">
+              <div className="font-display text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums">
+                {done} of {total}
+              </div>
+              <div className="text-xs font-semibold opacity-85 tabular-nums">
+                {total > 0
+                  ? `${formatMoney(earnedCents, currencyCode)} earned today`
+                  : 'No chores due today'}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm font-semibold opacity-85">
+            Add a child to start tracking chores.
           </p>
         )}
-      </div>
-
-      {/* Ring: 72px on phones (the iOS app's compact proportions), 112px from sm up. */}
-      <div className="relative h-[72px] w-[72px] sm:h-[112px] sm:w-[112px] flex-none">
-        <svg width="100%" height="100%" viewBox="0 0 118 118" style={{ transform: 'rotate(-90deg)' }}>
-          <circle
-            cx="59"
-            cy="59"
-            r={R}
-            fill="none"
-            stroke="color-mix(in srgb, currentColor 22%, transparent)"
-            strokeWidth="10"
-          />
-          <circle
-            cx="59"
-            cy="59"
-            r={R}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeDasharray={C}
-            strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
-          />
-        </svg>
-        <div className="absolute inset-0 grid place-items-center text-lg sm:text-[1.55rem] font-bold tracking-tight tabular-nums">
-          {pct}%
-        </div>
       </div>
     </div>
   )

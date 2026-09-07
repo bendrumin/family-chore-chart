@@ -521,6 +521,10 @@ function DashboardContent({
                 total={todaySnapshot.familyTotal}
                 earnedCents={todaySnapshot.earnedTodayCents}
                 isSharedMember={isSharedMember}
+                children={children}
+                perChild={todaySnapshot.perChild}
+                onSelectChild={setSelectedChildId}
+                currencyCode={settings?.currency_code}
               />
             </div>
 
@@ -539,7 +543,6 @@ function DashboardContent({
                 selectedChildId={selectedChildId}
                 onSelectChild={setSelectedChildId}
                 onRefresh={loadChildren}
-                progress={todaySnapshot.perChild}
               />
             </section>
 

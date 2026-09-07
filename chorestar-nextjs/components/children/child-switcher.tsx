@@ -14,26 +14,9 @@ interface ChildSwitcherProps {
   selectedChildId: string | null
   onSelectChild: (id: string | null) => void
   onRefresh: () => void
-  progress?: Record<string, { done: number; total: number }>
 }
 
-function Ring({ color, done, total }: { color: string; done: number; total: number }) {
-  const R = 29
-  const C = 2 * Math.PI * R
-  const p = total > 0 ? done / total : 0
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 66 66" style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx="33" cy="33" r={R} fill="none" stroke="currentColor" strokeWidth="5" className="text-gray-200 dark:text-gray-700" />
-      <circle
-        cx="33" cy="33" r={R} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
-        strokeDasharray={C} strokeDashoffset={C * (1 - p)}
-        style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1)' }}
-      />
-    </svg>
-  )
-}
-
-export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefresh, progress = {} }: ChildSwitcherProps) {
+export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefresh }: ChildSwitcherProps) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [editingChild, setEditingChild] = useState<Child | null>(null)
 
@@ -75,7 +58,6 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
 
         {children.map((child) => {
           const color = child.avatar_color || '#6366f1'
-          const prog = progress[child.id] || { done: 0, total: 0 }
           const isActive = selectedChildId === child.id
           return (
             <div key={child.id} className="group relative min-w-[86px] shrink-0 sm:min-w-[132px] sm:shrink">
@@ -93,22 +75,17 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
                     : 'var(--shadow-sm)',
                 }}
               >
-                <div className="relative h-[52px] w-[52px] sm:h-[66px] sm:w-[66px]">
-                  <Ring color={color} done={prog.done} total={prog.total} />
-                  <div
-                    className="absolute inset-[6px] grid place-items-center overflow-hidden rounded-full text-lg font-bold text-white sm:inset-[8px] sm:text-xl"
-                    style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
-                  >
-                    <ChildAvatarContent child={child} name={child.name} />
-                  </div>
+                {/* Progress moved up into the hero's per-kid rings; the chip
+                    is identity + selection only. */}
+                <div
+                  className="grid h-[52px] w-[52px] place-items-center overflow-hidden rounded-full text-lg font-bold text-white sm:h-[66px] sm:w-[66px] sm:text-xl"
+                  style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
+                >
+                  <ChildAvatarContent child={child} name={child.name} />
                 </div>
 
                 <div className="text-center">
                   <div className="text-sm font-bold sm:text-base" style={{ color: 'var(--text-primary)' }}>{child.name}</div>
-                  <div className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="sm:hidden">{prog.done}/{prog.total}</span>
-                    <span className="hidden sm:inline">{prog.done} / {prog.total} today</span>
-                  </div>
                 </div>
                 {child.age != null && (
                   <span
