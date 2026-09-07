@@ -71,18 +71,15 @@ struct WeekCalendarView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 20) {
-                    // Header
-                    VStack(spacing: 8) {
-                        Text("\(child.name)'s Week")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.choreStarTextPrimary)
-                        
-                    Text("Tap any cell to toggle completion")
-                        .font(.subheadline)
-                        .foregroundColor(.choreStarTextSecondary)
-                }
-                .padding(.top, 20)
+                    // Header: one compact line. The nav bar already says
+                    // "Week View" and the child pills sit above, so the old
+                    // title + "tap any cell" hint stacked three headers
+                    // before any content.
+                    Text("\(child.name)'s Week")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.choreStarTextPrimary)
+                        .padding(.top, 8)
                 
                 // View Mode Picker
                 Picker("View Mode", selection: $viewMode) {
@@ -151,14 +148,19 @@ struct WeekCalendarView: View {
                             .frame(maxWidth: .infinity)
                         }
                         
-                        // Show daily reward info
-                        HStack(spacing: 6) {
-                            Image(systemName: "info.circle.fill")
-                                .font(.caption)
-                            Text("Complete all chores in a day to earn \(manager.formatMoney(Double(manager.familySettings?.dailyRewardCents ?? 7) / 100.0))")
-                                .font(.caption)
+                        // The daily-bonus explainer only makes sense in flat
+                        // daily-rate mode; per-chore families were shown a
+                        // confusing "$0.07" line that had nothing to do with
+                        // their per-chore rewards.
+                        if manager.familySettings?.isPerChoreMode != true {
+                            HStack(spacing: 6) {
+                                Image(systemName: "info.circle.fill")
+                                    .font(.caption)
+                                Text("Complete all chores in a day to earn \(manager.formatMoney(Double(manager.familySettings?.dailyRewardCents ?? 100) / 100.0))")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.choreStarTextSecondary)
                         }
-                        .foregroundColor(.choreStarTextSecondary)
                     }
                     .padding(20)
                     .background(Color.choreStarCardBackground)
@@ -270,7 +272,9 @@ struct WeekCalendarView: View {
                     .padding(.horizontal, 16)
                 }
                 
-                    Spacer(minLength: 40)
+                    // Clear the floating tab bar so the last row's cells are
+                    // never trapped underneath it.
+                    Spacer(minLength: 110)
                 }
             }
             .background(Color.choreStarBackground)
