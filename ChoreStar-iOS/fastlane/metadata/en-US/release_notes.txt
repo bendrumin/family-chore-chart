@@ -1,7 +1,7 @@
-Version 2.1.1 is for the weeks that get away from you.
+Version 2.1.2 makes the week view feel right.
 
-• Mark Today Done and Mark Week So Far Done: one tap checks off everything due, approves anything waiting for your OK, and shows exactly how much allowance it adds before you commit
-• Pay out any amount: your kid spent a dollar at the dollar store? Subtract exactly that dollar. The payout sheet starts at the full balance and shows what will remain
-• Small fixes and smoother edges throughout
+• The week grid now fits your screen: all seven days at once, no more sideways scrolling, matching the web
+• Routine names and steps from our templates now speak Spanish, Portuguese, and Arabic along with the rest of kid mode
+• Less clutter above the grid, and per-chore families no longer see a daily-bonus note that did not apply to them
 
 Questions or feedback are welcome at hi@chorestar.app

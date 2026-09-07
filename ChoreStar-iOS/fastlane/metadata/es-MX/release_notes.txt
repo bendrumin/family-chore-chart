@@ -1,7 +1,7 @@
-La versión 2.1.1 es para las semanas que se te escapan.
+La versión 2.1.2 arregla la vista de la semana.
 
-• Marcar hoy y Marcar la semana: un toque palomea todo lo pendiente, aprueba lo que esperaba tu visto bueno y te muestra cuánta mesada suma antes de confirmar
-• Paga la cantidad que quieras: ¿tu hijo gastó un dólar en la tienda? Resta exactamente ese dólar. La hoja de pago inicia con el saldo completo y muestra cuánto quedará
-• Pequeñas correcciones y mejoras por toda la app
+• La cuadrícula semanal ahora cabe en tu pantalla: los siete días a la vez, sin desplazarte de lado, igual que en la web
+• Los nombres y pasos de las rutinas de plantilla ahora hablan español, portugués y árabe, junto con el resto del modo niños
+• Menos elementos arriba de la cuadrícula, y las familias con recompensa por tarea ya no ven una nota de bono diario que no les aplicaba
 
 Preguntas y comentarios son bienvenidos en hi@chorestar.app
