@@ -89,8 +89,12 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
       data-dialog-overlay="true"
     >
       {/* Backdrop */}
+      {/* No backdrop blur below sm: backdrop-filter on a full-screen fixed
+          layer corrupts Android WebView compositor tiles (content above it
+          paints ghosted/offset duplicates). The dim alone reads fine on
+          phones, and desktop keeps the blur. */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/50 sm:backdrop-blur-sm"
         data-dialog-backdrop="true"
         onClick={() => onOpenChange(false)}
       />
