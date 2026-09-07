@@ -25,7 +25,7 @@ struct RoutineCardView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(routine.name)
+                        Text(RoutineTemplate.localizedName(routine.name))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarTextPrimary)
@@ -144,7 +144,7 @@ struct KidRoutineCard: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(routine.name)
+                        Text(RoutineTemplate.localizedName(routine.name))
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarTextPrimary)

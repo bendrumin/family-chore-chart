@@ -628,3 +628,128 @@ export function useKidT(): KidTranslate {
     [locale]
   )
 }
+
+/**
+ * Template-created routines store their ENGLISH name and step titles as data
+ * (routine-icons.ts starter templates on the web, RoutineTemplate on iOS), so
+ * the kid dictionary never touched them and a Spanish kid saw "Morning
+ * Routine" under a Spanish UI. Known template strings localize at display
+ * time, per viewer; anything a parent typed renders exactly as typed. The
+ * union covers BOTH platforms' template strings, since routines cross
+ * platforms. Keep in sync with ChoreStar-iOS Models/Routine.swift.
+ */
+const TEMPLATE_STRINGS: Record<Exclude<KidLocale, 'en'>, Record<string, string>> = {
+  es: {
+    'Morning Routine': 'Rutina de la mañana',
+    'Bedtime Routine': 'Rutina de dormir',
+    'After School Routine': 'Rutina después de la escuela',
+    'Quick Hygiene': 'Higiene rápida',
+    'Wake Up': 'Despierta',
+    'Wake Up & Stretch': 'Despierta y estírate',
+    'Make Bed': 'Tiende tu cama',
+    'Brush Teeth': 'Lávate los dientes',
+    'Wash Face': 'Lávate la cara',
+    'Get Dressed': 'Vístete',
+    'Eat Breakfast': 'Desayuna',
+    'Pack Backpack': 'Prepara tu mochila',
+    'Put On Shoes': 'Ponte los zapatos',
+    'Put Away Toys': 'Guarda tus juguetes',
+    'Take Bath': 'Báñate',
+    'Take a Bath/Shower': 'Báñate o dúchate',
+    'Put On Pajamas': 'Ponte la pijama',
+    'Put on Pajamas': 'Ponte la pijama',
+    'Read Bedtime Story': 'Lee un cuento',
+    'Read a Book': 'Lee un libro',
+    'Hugs & Kisses': 'Abrazos y besos',
+    'Lights Out': 'Luces apagadas',
+    'Put Away Backpack': 'Guarda tu mochila',
+    'Unpack Backpack': 'Vacía tu mochila',
+    'Wash Hands': 'Lávate las manos',
+    'Have a Snack': 'Come algo rico',
+    'Do Homework': 'Haz la tarea',
+    'Play Outside': 'Juega afuera',
+    'Free Time': 'Tiempo libre',
+    'Brush Hair': 'Péinate',
+    'Comb Hair': 'Péinate',
+  },
+  pt: {
+    'Morning Routine': 'Rotina da manhã',
+    'Bedtime Routine': 'Rotina de dormir',
+    'After School Routine': 'Rotina pós-escola',
+    'Quick Hygiene': 'Higiene rápida',
+    'Wake Up': 'Acordar',
+    'Wake Up & Stretch': 'Acordar e alongar',
+    'Make Bed': 'Arrumar a cama',
+    'Brush Teeth': 'Escovar os dentes',
+    'Wash Face': 'Lavar o rosto',
+    'Get Dressed': 'Vestir-se',
+    'Eat Breakfast': 'Tomar café da manhã',
+    'Pack Backpack': 'Arrumar a mochila',
+    'Put On Shoes': 'Calçar os sapatos',
+    'Put Away Toys': 'Guardar os brinquedos',
+    'Take Bath': 'Tomar banho',
+    'Take a Bath/Shower': 'Tomar banho',
+    'Put On Pajamas': 'Colocar o pijama',
+    'Put on Pajamas': 'Colocar o pijama',
+    'Read Bedtime Story': 'Ler uma historinha',
+    'Read a Book': 'Ler um livro',
+    'Hugs & Kisses': 'Abraços e beijos',
+    'Lights Out': 'Apagar as luzes',
+    'Put Away Backpack': 'Guardar a mochila',
+    'Unpack Backpack': 'Esvaziar a mochila',
+    'Wash Hands': 'Lavar as mãos',
+    'Have a Snack': 'Fazer um lanche',
+    'Do Homework': 'Fazer a lição de casa',
+    'Play Outside': 'Brincar lá fora',
+    'Free Time': 'Tempo livre',
+    'Brush Hair': 'Pentear o cabelo',
+    'Comb Hair': 'Pentear o cabelo',
+  },
+  ar: {
+    'Morning Routine': 'روتين الصباح',
+    'Bedtime Routine': 'روتين النوم',
+    'After School Routine': 'روتين ما بعد المدرسة',
+    'Quick Hygiene': 'نظافة سريعة',
+    'Wake Up': 'استيقظ',
+    'Wake Up & Stretch': 'استيقظ وتمدد',
+    'Make Bed': 'رتب سريرك',
+    'Brush Teeth': 'نظف أسنانك',
+    'Wash Face': 'اغسل وجهك',
+    'Get Dressed': 'ارتدِ ملابسك',
+    'Eat Breakfast': 'تناول الفطور',
+    'Pack Backpack': 'جهز حقيبتك',
+    'Put On Shoes': 'البس حذاءك',
+    'Put Away Toys': 'رتب ألعابك',
+    'Take Bath': 'استحم',
+    'Take a Bath/Shower': 'استحم',
+    'Put On Pajamas': 'البس البيجاما',
+    'Put on Pajamas': 'البس البيجاما',
+    'Read Bedtime Story': 'اقرأ قصة قبل النوم',
+    'Read a Book': 'اقرأ كتابًا',
+    'Hugs & Kisses': 'أحضان وقبلات',
+    'Lights Out': 'أطفئ الأنوار',
+    'Put Away Backpack': 'ضع حقيبتك في مكانها',
+    'Unpack Backpack': 'أفرغ حقيبتك',
+    'Wash Hands': 'اغسل يديك',
+    'Have a Snack': 'تناول وجبة خفيفة',
+    'Do Homework': 'حل واجباتك',
+    'Play Outside': 'العب في الخارج',
+    'Free Time': 'وقت حر',
+    'Brush Hair': 'مشط شعرك',
+    'Comb Hair': 'مشط شعرك',
+  },
+}
+
+export function localizeTemplateString(s: string, locale: KidLocale): string {
+  if (locale === 'en') return s
+  return TEMPLATE_STRINGS[locale][s] ?? s
+}
+
+/** Display-time localizer for routine names and step titles (see above). */
+export function useKidTemplateString(): (s: string) => string {
+  const [locale, setLocale] = useState<KidLocale>('en')
+  useEffect(() => {
+    setLocale(detectKidLocale())
+  }, [])
+  return useCallback((s: string) => localizeTemplateString(s, locale), [locale])
+}

@@ -88,7 +88,7 @@ struct RoutinePlayerView: View {
                 
                 Spacer()
                 
-                Text(routine.name)
+                Text(RoutineTemplate.localizedName(routine.name))
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.choreStarTextPrimary)
@@ -154,7 +154,7 @@ struct RoutinePlayerView: View {
             .animation(.spring(response: 0.5, dampingFraction: 0.6), value: currentStepIndex)
             
             // Step title
-            Text(step.title)
+            Text(RoutineTemplate.localizedStepTitle(step.title))
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.choreStarTextPrimary)
                 .multilineTextAlignment(.center)

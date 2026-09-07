@@ -288,6 +288,36 @@ struct RoutineTemplate {
     )
 
     static let all: [RoutineTemplate] = [morning, bedtime, afterSchool, quickHygiene]
+
+    /// Template-created routines store their ENGLISH name and step titles as
+    /// data, so the string catalog never touches them and a Spanish kid saw
+    /// "Morning Routine" under a Spanish UI. Known template strings localize
+    /// at display time (each viewer sees their own language); anything the
+    /// parent typed renders exactly as typed. The keys live in
+    /// Localizable.xcstrings with es/pt-BR/ar entries; runtime lookup via
+    /// String.LocalizationValue falls back to the English key when a string
+    /// is not in the catalog.
+    static let localizableNames: Set<String> = Set(all.map(\.name))
+    /// The web app's starter templates use their own step titles, and a
+    /// routine created there is viewed here, so the lookup covers the UNION
+    /// of both platforms' template strings (kept in sync with
+    /// chorestar-nextjs/lib/constants/routine-icons.ts).
+    static let webTemplateStepTitles: Set<String> = [
+        "Wake Up", "Make Bed", "Wash Face", "Put On Shoes",
+        "Put Away Toys", "Take Bath", "Put On Pajamas", "Read Bedtime Story",
+        "Hugs & Kisses", "Lights Out", "Put Away Backpack", "Play Outside",
+        "Brush Hair",
+    ]
+    static let localizableStepTitles: Set<String> =
+        Set(all.flatMap { $0.steps.map(\.title) }).union(webTemplateStepTitles)
+
+    static func localizedName(_ name: String) -> String {
+        localizableNames.contains(name) ? String(localized: String.LocalizationValue(name)) : name
+    }
+
+    static func localizedStepTitle(_ title: String) -> String {
+        localizableStepTitles.contains(title) ? String(localized: String.LocalizationValue(title)) : title
+    }
 }
 
 struct WeeklyStats {

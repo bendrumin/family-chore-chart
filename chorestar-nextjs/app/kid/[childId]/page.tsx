@@ -11,7 +11,7 @@ import { KidStats } from '@/components/kid/kid-stats';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
-import { useKidT } from '@/lib/i18n/kid';
+import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
 
 interface ChildData {
   id: string;
@@ -27,7 +27,8 @@ interface ChildData {
 export default function KidDashboardPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = use(params);
   const router = useRouter();
-  const t = useKidT();
+  const t = useKidT()
+  const tpl = useKidTemplateString();
   const [child, setChild] = useState<ChildData | null>(null);
   const [kidToken, setKidToken] = useState<string | null>(null);
   // Bumped whenever a chore is ticked so the stats strip refetches.
@@ -280,7 +281,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
 
                     {/* Routine Name */}
                     <h3 className="text-3xl font-black mb-2 relative z-10" style={{ color: routine.color }}>
-                      {routine.name}
+                      {tpl(routine.name)}
                     </h3>
 
                     {/* Steps Count */}

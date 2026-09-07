@@ -11,7 +11,7 @@ import { CelebrationScreen } from '@/components/routines/celebration-screen';
 import { useRoutine, useCompleteRoutine } from '@/lib/hooks/useRoutines';
 import { useSound } from '@/lib/hooks/useSound';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
-import { useKidT } from '@/lib/i18n/kid';
+import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
 import { toast } from 'sonner';
 
 export default function RoutinePlayerPage({
@@ -21,7 +21,8 @@ export default function RoutinePlayerPage({
 }) {
   const { childId, routineId } = use(params);
   const router = useRouter();
-  const t = useKidT();
+  const t = useKidT()
+  const tpl = useKidTemplateString();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showCelebration, setShowCelebration] = useState(false);
@@ -149,7 +150,7 @@ export default function RoutinePlayerPage({
   if (showCelebration && completionData) {
     return (
       <CelebrationScreen
-        routineName={routine.name}
+        routineName={tpl(routine.name)}
         pointsEarned={completionData.pointsEarned}
         totalSteps={steps.length}
         duration={completionData.duration}
@@ -216,7 +217,7 @@ export default function RoutinePlayerPage({
             </motion.div>
 
             {/* Step Title */}
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 px-4">{currentStep.title}</h1>
+            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 px-4">{tpl(currentStep.title)}</h1>
 
             {/* Step Description */}
             {currentStep.description && (
