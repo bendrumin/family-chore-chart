@@ -167,12 +167,7 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
         className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             Smart Chore Suggestions
           </DialogTitle>
@@ -204,7 +199,6 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           {/* Loading state */}
           {(isLoading || isSuggesting) && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">🤖</div>
               <p className="text-gray-600 dark:text-gray-400 font-medium">
                 {isSuggesting ? 'Thinking up chores for your family...' : "Analyzing your family's chores..."}
               </p>
@@ -214,7 +208,6 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           {/* No children */}
           {!isLoading && children.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">👶</div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
                 Add a child first
               </h3>
@@ -307,12 +300,11 @@ export function AISuggestionsModal({ open, onOpenChange }: AISuggestionsModalPro
           {/* No suggestions available */}
           {!isLoading && !isSuggesting && suggestions.length === 0 && children.length > 0 && selectedChild && (
             <div className="text-center py-8">
-              <div className="text-6xl mb-4">🎉</div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                You've covered the bases!
+                No new suggestions
               </h3>
               <p style={{ color: 'var(--text-secondary)' }}>
-                {selectedChildData?.name} already has a great set of chores. Keep up the good work!
+                {selectedChildData?.name} already has a well-rounded set of chores.
               </p>
             </div>
           )}

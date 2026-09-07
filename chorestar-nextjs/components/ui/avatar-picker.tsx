@@ -132,9 +132,9 @@ export function AvatarPicker({ currentAvatarUrl, currentColor, onSelect }: Avata
       {/* Avatar Style Tabs */}
       <Tabs defaultValue="robots" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="robots">🤖 Robots</TabsTrigger>
-          <TabsTrigger value="adventurers">🧙 Adventurers</TabsTrigger>
-          <TabsTrigger value="emojis">😀 Emojis</TabsTrigger>
+          <TabsTrigger value="robots">Robots</TabsTrigger>
+          <TabsTrigger value="adventurers">Adventurers</TabsTrigger>
+          <TabsTrigger value="emojis">Emojis</TabsTrigger>
         </TabsList>
 
         <TabsContent value="robots" className="space-y-3">

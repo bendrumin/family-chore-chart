@@ -119,7 +119,7 @@ export function PhotoAvatarUpload({ child, onChanged }: PhotoAvatarUploadProps) 
       }
 
       setPathOverride(path)
-      toast.success(`📸 New photo for ${child.name}!`)
+      toast.success(`New photo for ${child.name}!`)
       onChanged()
     } catch (error) {
       console.error('Photo upload failed:', error)

@@ -48,7 +48,6 @@ export function AchievementsDisplay({ achievementProgress, isLoading }: Achievem
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="text-4xl mb-2">🏆</div>
         <p className="text-sm text-gray-600 dark:text-gray-400">Loading achievements...</p>
       </div>
     )
@@ -71,7 +70,7 @@ export function AchievementsDisplay({ achievementProgress, isLoading }: Achievem
           </p>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+          <div className="text-3xl font-black text-amber-600 dark:text-amber-400">
             {earnedCount}
           </div>
           <p className="text-xs text-gray-600 dark:text-gray-400">Earned</p>
@@ -148,7 +147,7 @@ export function AchievementsDisplay({ achievementProgress, isLoading }: Achievem
                     {/* Earned Date */}
                     {progress.earned && progress.earnedAt && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        ✅ Unlocked {new Date(progress.earnedAt).toLocaleDateString()}
+                        Unlocked {new Date(progress.earnedAt).toLocaleDateString()}
                       </p>
                     )}
                   </div>
@@ -167,7 +166,6 @@ export function AchievementsDisplay({ achievementProgress, isLoading }: Achievem
       {/* Empty State */}
       {displayProgress.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🏆</div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             No Achievements Yet
           </h3>

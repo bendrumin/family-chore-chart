@@ -88,7 +88,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh
 
     try {
       await setChildPin.mutateAsync({ childId: child.id, pin })
-      toast.success(`🔐 PIN set for ${child.name}!`)
+      toast.success(`PIN set for ${child.name}!`)
       setHasPinSet(true)
       setShowPinInput(false)
       setPin('')
@@ -181,12 +181,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh
         >
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
               <Button
                 type="button"
                 variant="ghost"
@@ -196,7 +191,6 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh
                 className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg p-2 flex-shrink-0"
                 title={`Delete ${child.name}`}
                 aria-label={`Delete ${child.name}`}
-                style={{ WebkitTextFillColor: 'initial' }}
               >
                 <Trash2 className="w-5 h-5" />
               </Button>
@@ -400,7 +394,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh
               size="lg"
               className="flex-1 font-bold"
             >
-              🗑️ Delete
+              Delete
             </Button>
             <Button
               type="button"
@@ -419,7 +413,7 @@ export function EditChildModal({ child, open, onOpenChange, onSuccess, onRefresh
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Saving...' : '✨ Save Changes'}
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>

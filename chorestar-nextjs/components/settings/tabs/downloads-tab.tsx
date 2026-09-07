@@ -116,7 +116,6 @@ export function DownloadsTab() {
     <>
     <div className="space-y-6">
       <div className="text-center py-8">
-        <div className="text-6xl mb-4">📄</div>
         <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
           Export &amp; Printable Reports
         </h3>
@@ -136,7 +135,7 @@ export function DownloadsTab() {
               disabled={isExporting}
               className="w-full font-bold"
             >
-              {isExporting ? 'Exporting...' : '📄 Export PDF'}
+              {isExporting ? 'Exporting...' : 'Export PDF'}
             </Button>
           </div>
 
@@ -151,7 +150,7 @@ export function DownloadsTab() {
               disabled={isExporting}
               className="w-full font-bold"
             >
-              {isExporting ? 'Exporting...' : '📊 Export CSV'}
+              {isExporting ? 'Exporting...' : 'Export CSV'}
             </Button>
           </div>
 
@@ -189,7 +188,7 @@ export function DownloadsTab() {
               disabled={isExporting}
               className="w-full font-bold"
             >
-              {isExporting ? 'Exporting...' : '📋 Print Chart'}
+              {isExporting ? 'Exporting...' : 'Print Chart'}
             </Button>
           </div>
 
@@ -199,9 +198,9 @@ export function DownloadsTab() {
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Themed printable templates</p>
             <div className="flex flex-col gap-2">
               {([
-                { style: 'stars' as WeeklyTemplateStyle, label: 'Stars', emoji: '⭐' },
-                { style: 'rainbow' as WeeklyTemplateStyle, label: 'Rainbow', emoji: '🌈' },
-                { style: 'minimal' as WeeklyTemplateStyle, label: 'Minimal', emoji: '📝' },
+                { style: 'stars' as WeeklyTemplateStyle, label: 'Stars' },
+                { style: 'rainbow' as WeeklyTemplateStyle, label: 'Rainbow' },
+                { style: 'minimal' as WeeklyTemplateStyle, label: 'Minimal' },
               ]).map(tmpl => (
                 <Button
                   key={tmpl.style}
@@ -235,7 +234,7 @@ export function DownloadsTab() {
                     }
                   }}
                 >
-                  {tmpl.emoji} {tmpl.label}
+                  {tmpl.label}
                 </Button>
               ))}
             </div>

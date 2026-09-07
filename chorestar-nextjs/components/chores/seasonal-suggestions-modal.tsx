@@ -64,7 +64,7 @@ export function SeasonalSuggestionsModal({
 
       if (error) throw error
 
-      toast.success(`🎉 Added ${activity.name} to your activities!`)
+      toast.success(`Added ${activity.name} to your activities!`)
       onSuccess?.()
     } catch (error: any) {
       console.error('Error adding seasonal activity:', error)
@@ -104,14 +104,9 @@ export function SeasonalSuggestionsModal({
         className="max-w-3xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
-            <span style={{ WebkitTextFillColor: 'initial' }}>{currentTheme.icon}</span> {currentTheme.name} Activity Suggestions
+            <span>{currentTheme.icon}</span> {currentTheme.name} Activity Suggestions
           </DialogTitle>
         </DialogHeader>
 
@@ -167,7 +162,7 @@ export function SeasonalSuggestionsModal({
           {!childId && (
             <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-200 dark:border-yellow-700 text-center">
               <p className="text-sm font-bold text-yellow-800 dark:text-yellow-300">
-                ⚠️ Please select a child first to add activities
+                Please select a child first to add activities
               </p>
             </div>
           )}

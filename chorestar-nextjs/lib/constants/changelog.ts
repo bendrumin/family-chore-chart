@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.3'
+export const LATEST_CHANGELOG_VERSION = '2026.9.4'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.4': {
+    version: '2026.9.4',
+    date: 'September 2026',
+    title: 'A Calmer Parent Dashboard',
+    features: [
+      {
+        icon: '🎨',
+        title: 'A Quieter, Sharper Look',
+        description: 'The parent dashboard traded its gradient buttons and rainbow accents for one solid indigo, clean white cards, and headings in a new display typeface. Your kids\' chore icons, avatars, and rewards keep every bit of their color, and kid mode is exactly as playful as before.',
+      },
+      {
+        icon: '📊',
+        title: 'Facts Over Fanfare',
+        description: 'Dashboard messages now tell you what happened instead of cheering at you. The stars still show perfect days at a glance, and the celebrations stayed where they belong: on your kids\' screens.',
+      },
+    ],
+  },
   '2026.9.3': {
     version: '2026.9.3',
     date: 'September 2026',
@@ -122,7 +139,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
   '2026.8.2': {
     version: '2026.8.2',
     date: 'August 2026',
-    title: 'ChoreStar is on the App Store! 🎉',
+    title: 'ChoreStar is on the App Store!',
     features: [
       {
         icon: '📱',

@@ -253,7 +253,7 @@ export function InsightsTab() {
             const celebrationManager = getCelebrationManager()
             celebrationManager.celebrateAchievement(achievement.name)
             playSound('celebration')
-            toast.success(`🏆 ${child.name} unlocked: ${achievement.name}!`, { duration: 5000 })
+            toast.success(`${child.name} unlocked: ${achievement.name}!`, { duration: 5000 })
           })
         }
 
@@ -284,7 +284,6 @@ export function InsightsTab() {
   if (loadError && !hasData) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">⚠️</div>
         <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
           Failed to Load Insights
         </h3>
@@ -333,7 +332,6 @@ export function InsightsTab() {
     return (
       <div className="space-y-6">
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📊</div>
           <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
             No Data Collected Yet
           </h3>
@@ -343,17 +341,14 @@ export function InsightsTab() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
             <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-purple-200 dark:border-purple-700">
-              <div className="text-5xl mb-3">👶</div>
               <div className="font-bold text-lg mb-1 text-gray-900 dark:text-gray-100">Add Children</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Create profiles for your kids</div>
             </div>
             <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-purple-200 dark:border-purple-700">
-              <div className="text-5xl mb-3">📝</div>
               <div className="font-bold text-lg mb-1 text-gray-900 dark:text-gray-100">Add Chores</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Create daily tasks</div>
             </div>
             <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-purple-200 dark:border-purple-700">
-              <div className="text-5xl mb-3">✅</div>
               <div className="font-bold text-lg mb-1 text-gray-900 dark:text-gray-100">Complete Chores</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Mark them as done</div>
             </div>
@@ -367,7 +362,7 @@ export function InsightsTab() {
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          📊 Analytics Dashboard
+          Analytics Dashboard
         </h3>
         <p className="text-gray-600 dark:text-gray-400">
           Track your family's progress and achievements
@@ -381,7 +376,7 @@ export function InsightsTab() {
           left column gets clipped off screen. The stat numbers step down on
           phones for the same reason. */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="min-w-0 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-2 border-purple-200 dark:border-purple-700">
+        <Card className="min-w-0 border-purple-200 dark:border-purple-800">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <TrendingUp className="w-4 h-4 shrink-0" />
@@ -389,7 +384,7 @@ export function InsightsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <div className="font-display text-2xl sm:text-3xl font-black break-words text-purple-600 dark:text-purple-400">
               {/* Display clamp only: the rate itself is 0..100 by construction
                   (weekCompletionRate), this is the second line of defense. */}
               {Math.min(100, Math.max(0, metrics.averageCompletionRate))}%
@@ -400,7 +395,7 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-200 dark:border-green-700">
+        <Card className="min-w-0 border-green-200 dark:border-green-800">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <DollarSign className="w-4 h-4 shrink-0" />
@@ -408,7 +403,7 @@ export function InsightsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <div className="font-display text-2xl sm:text-3xl font-black break-words text-green-600 dark:text-green-400">
               ${metrics.totalEarnings.toFixed(2)}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -417,7 +412,7 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 border-2 border-orange-200 dark:border-orange-700">
+        <Card className="min-w-0 border-orange-200 dark:border-orange-800">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <Flame className="w-4 h-4 shrink-0" />
@@ -425,7 +420,7 @@ export function InsightsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <div className="font-display text-2xl sm:text-3xl font-black break-words text-orange-600 dark:text-orange-400">
               {metrics.bestStreak}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -434,7 +429,7 @@ export function InsightsTab() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-700">
+        <Card className="min-w-0 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <Star className="w-4 h-4 shrink-0" />
@@ -442,7 +437,7 @@ export function InsightsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl sm:text-3xl font-black break-words bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            <div className="font-display text-2xl sm:text-3xl font-black break-words text-blue-600 dark:text-blue-400">
               {metrics.totalPerfectDays}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -459,7 +454,7 @@ export function InsightsTab() {
           <Card className="min-w-0 border-2 border-purple-200 dark:border-purple-700">
             <CardHeader>
               <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                📈 Completion Trend
+                Completion Trend
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -502,7 +497,7 @@ export function InsightsTab() {
             <Card className="min-w-0 border-2 border-blue-200 dark:border-blue-700">
               <CardHeader>
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                  👦 Per-Child Progress
+                  Per-Child Progress
                 </CardTitle>
               </CardHeader>
               <CardContent>

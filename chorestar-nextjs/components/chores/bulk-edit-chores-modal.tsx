@@ -122,7 +122,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
 
         if (error) throw error
         playSound('success')
-        toast.success(`✨ Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} category`)
+        toast.success(`Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} category`)
       } else if (bulkAction === 'reward') {
         const { error } = await supabase
           .from('chores')
@@ -131,7 +131,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
 
         if (error) throw error
         playSound('success')
-        toast.success(`💰 Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} reward`)
+        toast.success(`Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} reward`)
       } else if (bulkAction === 'delete') {
         const { error } = await supabase
           .from('chores')
@@ -140,7 +140,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
 
         if (error) throw error
         playSound('notification')
-        toast.success(`🗑️ Deleted ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''}`)
+        toast.success(`Deleted ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''}`)
       }
 
       setSelectedChoreIds(new Set())
@@ -167,12 +167,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
         className="overflow-y-auto max-w-4xl dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Edit2 className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             Bulk Edit Chores
           </DialogTitle>
@@ -288,7 +283,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
 
           {/* Bulk Actions */}
           {selectedChoreIds.size > 0 && (
-            <div className="space-y-4 p-4 rounded-xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+            <div className="space-y-4 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800" style={{ background: 'var(--card-bg)' }}>
               <Label className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                 Bulk Actions
               </Label>
@@ -329,14 +324,14 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
                     onChange={(e) => setNewCategory(e.target.value)}
                     className="w-full h-12 px-4 text-sm font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="household_chores">🏠 Household Chores</option>
-                    <option value="learning_education">📚 Learning & Education</option>
-                    <option value="physical_activity">🏃 Physical Activity</option>
-                    <option value="creative_time">🎨 Creative Time</option>
-                    <option value="games_play">🎮 Games & Play</option>
-                    <option value="reading">📖 Reading</option>
-                    <option value="family_time">❤️ Family Time</option>
-                    <option value="custom">⚙️ Custom</option>
+                    <option value="household_chores">Household Chores</option>
+                    <option value="learning_education">Learning & Education</option>
+                    <option value="physical_activity">Physical Activity</option>
+                    <option value="creative_time">Creative Time</option>
+                    <option value="games_play">Games & Play</option>
+                    <option value="reading">Reading</option>
+                    <option value="family_time">Family Time</option>
+                    <option value="custom">Custom</option>
                   </select>
                 </div>
               )}
@@ -358,7 +353,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
               {bulkAction === 'delete' && (
                 <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
                   <p className="text-sm font-bold text-red-900">
-                    ⚠️ This will delete {selectedChoreIds.size} chore{selectedChoreIds.size !== 1 ? 's' : ''}. This action cannot be undone.
+                    This will delete {selectedChoreIds.size} chore{selectedChoreIds.size !== 1 ? 's' : ''}. This action cannot be undone.
                   </p>
                 </div>
               )}
@@ -386,7 +381,7 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Updating...' : `✨ Apply ${bulkAction === 'delete' ? 'Delete' : 'Changes'}`}
+              {isLoading ? 'Updating...' : `Apply ${bulkAction === 'delete' ? 'Delete' : 'Changes'}`}
             </Button>
           )}
         </DialogFooter>

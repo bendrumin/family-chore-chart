@@ -80,7 +80,7 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
 
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            💡 Tip: These shortcuts work anywhere in the app
+            Tip: These shortcuts work anywhere in the app
           </p>
         </div>
       </DialogContent>

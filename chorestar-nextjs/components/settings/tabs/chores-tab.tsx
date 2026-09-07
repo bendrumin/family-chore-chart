@@ -16,7 +16,6 @@ export function ChoresTab() {
     <>
       <div className="space-y-6">
         <div className="text-center py-8">
-          <div className="text-6xl mb-4">✓</div>
           <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
             Chore Management
           </h3>

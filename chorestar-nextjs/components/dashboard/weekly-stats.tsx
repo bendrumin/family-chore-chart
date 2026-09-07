@@ -166,15 +166,15 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
               celebrationManager.celebratePerfectWeek()
               playSound('celebration')
               const bonusText = stats.weeklyBonusLabel
-                ? ` Bonus unlocked: ${stats.weeklyBonusLabel}! 🎁`
-                : ` All ${stats.dueDays} days! 🎉`
-              toast.success(`🎉 ${child.name} completed a PERFECT WEEK!${bonusText}`, {
+                ? ` Bonus unlocked: ${stats.weeklyBonusLabel}!`
+                : ` All ${stats.dueDays} days!`
+              toast.success(`${child.name} completed a PERFECT WEEK!${bonusText}`, {
                 duration: 5000,
               })
             }, 500)
             hasShownPerfectWeek.current = true
           } else {
-            toast.success(`⭐ ${child.name} earned a perfect day! All chores complete!`)
+            toast.success(`${child.name} earned a perfect day! All chores complete!`)
           }
         }
       }
@@ -378,7 +378,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             >
               <Star className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <div className="font-display text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.totalCompletions}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Completions</div>
@@ -389,7 +389,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <div className="w-8 h-8 rounded-lg grid place-items-center mb-2 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
               <DollarSign className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <div className="font-display text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               ${stats.totalEarnings.toFixed(2)}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Earned</div>
@@ -403,7 +403,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             >
               <TrendingUp className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <div className="font-display text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.completionRate}%
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Complete</div>
@@ -414,7 +414,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
             <div className="w-8 h-8 rounded-lg grid place-items-center mb-2 bg-amber-500/15 text-amber-600 dark:text-amber-400">
               <Flame className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+            <div className="font-display text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
               {stats.streak}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Day Streak</div>
@@ -432,7 +432,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
                 <Wallet className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-2xl font-bold tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
+                <div className="font-display text-2xl font-bold tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
                   ${(balance.owedCents / 100).toFixed(2)}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -514,16 +514,12 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
               )
             })}
           </div>
-          {stats.perfectDays > 0 && (
+          {stats.dueDays > 0 && stats.perfectDays === stats.dueDays && (
             <div className="mt-1.5 text-center">
               <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                {stats.dueDays > 0 && stats.perfectDays === stats.dueDays
-                  ? `🎉 Perfect week! ${stats.weeklyBonusLabel ? `Bonus: ${stats.weeklyBonusLabel}! 🎁` : 'All chores done every day!'}`
-                  : stats.perfectDays / Math.max(1, stats.dueDays) >= 0.7
-                  ? '🌟 Awesome progress! Keep it up!'
-                  : stats.perfectDays / Math.max(1, stats.dueDays) >= 0.4
-                  ? '✨ Great start! You\'re doing well!'
-                  : '💪 Good job! Keep going!'}
+                {stats.weeklyBonusLabel
+                  ? `Perfect week! Weekly bonus: ${stats.weeklyBonusLabel}`
+                  : 'Perfect week! All chores done every day.'}
               </span>
             </div>
           )}

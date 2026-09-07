@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail } from 'lucide-react'
+import { Mail, Clock, Globe } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ContactModalProps {
@@ -136,12 +136,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
         className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Mail className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             Contact Us
           </DialogTitle>
@@ -149,7 +144,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           {/* Contact Info */}
-          <div className="p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30">
+          <div className="p-6 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/20">
             <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
               Get in Touch
             </h3>
@@ -161,7 +156,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
-                <span className="text-2xl flex-shrink-0">📧</span>
+                <Mail className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--primary)' }} />
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Email Support
@@ -170,7 +165,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
-                <span className="text-2xl flex-shrink-0">⏰</span>
+                <Clock className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--primary)' }} />
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Response Time
@@ -179,7 +174,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-all hover:shadow-md">
-                <span className="text-2xl flex-shrink-0">🌍</span>
+                <Globe className="w-6 h-6 flex-shrink-0" style={{ color: 'var(--primary)' }} />
                 <div>
                   <strong className="block text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
                     Available

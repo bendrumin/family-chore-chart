@@ -243,12 +243,7 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
         className="max-w-lg dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-2xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Users className="w-7 h-7" style={{ color: 'var(--primary)' }} />
             Family Sharing
           </DialogTitle>

@@ -466,7 +466,7 @@ function ChildGoalRow({
 
       {reached.length > 0 && (
         <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-          🏆 Reached: {reached.slice(0, 3).map(g => `${g.emoji ?? ''} ${g.title}`).join(', ')}{reached.length > 3 ? ` +${reached.length - 3}` : ''}
+          Reached: {reached.slice(0, 3).map(g => `${g.emoji ?? ''} ${g.title}`).join(', ')}{reached.length > 3 ? ` +${reached.length - 3}` : ''}
         </div>
       )}
     </div>

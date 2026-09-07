@@ -94,7 +94,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
       if (error) throw error
 
       playSound('celebration')
-      toast.success(`🎉 ${formData.name} added successfully!`)
+      toast.success(`${formData.name} added successfully!`)
       setFormData({
         name: '',
         age: '',
@@ -119,12 +119,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
               <UserPlus className="w-8 h-8" style={{ color: 'var(--primary)' }} />
               Add Child
             </DialogTitle>
@@ -141,7 +136,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
             </div>
           )}
           {isAtLimit && !androidShell && (
-            <div className="my-6 p-5 rounded-2xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 dark:border-purple-700 dark:from-purple-900/30 dark:to-pink-900/30">
+            <div className="my-6 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800" style={{ background: 'var(--card-bg)' }}>
               <div className="flex items-start gap-3 mb-4">
                 <Crown className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
                 <div>
@@ -161,7 +156,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                 onClick={() => {
                   onOpenChange(false)
                   // User can upgrade via Settings > Billing tab
-                  toast.info('💡 Go to Settings → Billing to upgrade to Premium')
+                  toast.info('Go to Settings → Billing to upgrade to Premium')
                 }}
               >
                 <Crown className="w-5 h-5 mr-2" />
@@ -210,7 +205,8 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                 Avatar
               </Label>
               <div
-                className="flex items-center justify-between p-4 rounded-2xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 transition-all duration-300 hover:shadow-lg"
+                className="flex items-center justify-between p-4 rounded-2xl border border-indigo-200 dark:border-indigo-800 transition-colors duration-300"
+                style={{ background: 'var(--card-bg)' }}
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -244,7 +240,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                     setFormData({ ...formData, avatarSeed: newSeed, avatarColor: newColor })
                   }}
                 >
-                  🎲 Randomize
+                  Randomize
                 </Button>
               </div>
             </div>
@@ -268,7 +264,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Adding...' : isAtLimit ? (androidShell ? '🔒 Limit Reached' : '🔒 Upgrade Required') : '✨ Add Child'}
+              {isLoading ? 'Adding...' : isAtLimit ? (androidShell ? 'Limit Reached' : 'Upgrade Required') : 'Add Child'}
             </Button>
           </DialogFooter>
         </form>

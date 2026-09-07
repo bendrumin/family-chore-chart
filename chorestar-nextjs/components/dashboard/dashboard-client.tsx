@@ -483,15 +483,9 @@ function DashboardContent({
         {children.length === 0 ? (
           <Card className="text-center animate-bounce-in">
             <CardHeader className="pb-2">
-              <div className="text-7xl mb-4 animate-float">🎉</div>
               <CardTitle
                 className="text-4xl font-black mb-2"
-                style={{
-                  background: 'var(--gradient-primary)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
+                style={{ color: 'var(--text-primary)' }}
               >
                 Welcome to ChoreStar!
               </CardTitle>

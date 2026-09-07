@@ -147,7 +147,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
         }))
       }
 
-      toast.success('✨ Settings saved!')
+      toast.success('Settings saved!')
       router.refresh()
       onClose()
     } catch (error) {
@@ -387,7 +387,6 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       {/* Date Format */}
       <div className="space-y-2">
         <Label htmlFor="setting-date-format" className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-          <span>📅</span>
           Date Format
         </Label>
         <select
@@ -513,7 +512,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             onClick={handleSave}
             disabled={isSaving}
           >
-            {isSaving ? 'Saving…' : '💾 Save Settings'}
+            {isSaving ? 'Saving…' : 'Save Settings'}
           </Button>
         </div>
       </div>

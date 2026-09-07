@@ -97,7 +97,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
     const currentChild = children[currentIndex]
     try {
       await setChildPin.mutateAsync({ childId: currentChild.id, pin })
-      toast.success(`🔐 PIN set for ${currentChild.name}!`)
+      toast.success(`PIN set for ${currentChild.name}!`)
       setHasPinSet(true)
       setShowPinInput(false)
       setPin('')
@@ -173,14 +173,14 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
 
       if (error) throw error
 
-      toast.success(`✨ ${formData.name} updated!`)
+      toast.success(`${formData.name} updated!`)
 
       // Move to next child or close if this was the last one
       if (currentIndex < children.length - 1) {
         setCurrentIndex(currentIndex + 1)
       } else {
         // All done!
-        toast.success('🎉 All children updated!')
+        toast.success('All children updated!')
         onSuccess()
         onOpenChange(false)
       }
@@ -239,12 +239,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
       >
         <form onSubmit={handleSubmit} className="px-2">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
               {children.length > 0 && (
                 <Button
                   type="button"
@@ -255,12 +250,11 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg p-2 flex-shrink-0"
                   title={`Delete ${children[currentIndex]?.name}`}
                   aria-label={`Delete ${children[currentIndex]?.name}`}
-                  style={{ WebkitTextFillColor: 'initial' }}
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
               )}
-              👶 Edit Children
+              Edit Children
             </DialogTitle>
           </DialogHeader>
 
@@ -517,7 +511,7 @@ export function EditChildrenPage({ open, onOpenChange, onSuccess }: EditChildren
                   size="lg"
                   className="flex-1 font-bold hover-glow"
                 >
-                  {isLoading ? '⏳ Saving...' : currentIndex === children.length - 1 ? '✨ Save & Finish' : '✨ Save & Next'}
+                  {isLoading ? 'Saving...' : currentIndex === children.length - 1 ? 'Save & Finish' : 'Save & Next'}
                 </Button>
               </div>
             </>

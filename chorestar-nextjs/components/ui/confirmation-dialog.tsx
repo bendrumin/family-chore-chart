@@ -101,7 +101,7 @@ export function ConfirmationDialog({
             size="lg"
             className="flex-1 font-bold hover-glow"
           >
-            {isLoading ? '⏳ Processing...' : confirmText}
+            {isLoading ? 'Processing...' : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

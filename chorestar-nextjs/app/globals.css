@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -122,6 +122,11 @@
     --text-tertiary: #94a3b8;
     --text-inverse: #ffffff;
 
+    /* Display face for headings and big numbers (parent UI only; kid mode
+       keeps Nunito). Bricolage tops out at wght 800, so font-black resolves
+       to 800 via closest-match. Swap the face here, nowhere else. */
+    --font-display: 'Bricolage Grotesque', 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
     /* Professional Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -207,6 +212,21 @@
 
   html {
     background-color: hsl(var(--background));
+  }
+
+  /* Headings take the display face; body, labels, and buttons stay Nunito.
+     :where() keeps specificity at zero so any component-level font utility
+     still wins. Kid mode is excluded: its pages root on .kid-mode-bg. */
+  :where(h1, h2, h3):not(:where(.kid-mode-bg *)) {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Opt-in display face for big stat numbers (they are spans/divs, not
+     headings). Same kid-mode exclusion as above. */
+  :where(.font-display):not(:where(.kid-mode-bg *)) {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
   /* Accent-filled small elements — badges, checked boxes, active tab pills.
@@ -309,28 +329,17 @@
     animation: shimmer 2s infinite;
   }
 
-  /* Hover glow effect */
+  /* Formerly a white radial glow pulse; now a quiet brightness/lift hover.
+     The class name is kept so all consumers pick up the calmer effect. */
   .hover-glow {
-    position: relative;
-    overflow: hidden;
+    transition: filter 0.15s ease, transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
 
-  .hover-glow::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-  }
-
-  .hover-glow:hover::before {
-    width: 300px;
-    height: 300px;
+  @media (hover: hover) {
+    .hover-glow:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
   }
 
   /* Touch device optimizations */
@@ -482,11 +491,9 @@
     background: rgba(31, 41, 55, 0.98);
   }
 
+  /* Formerly gradient-clipped text; now solid ink. Class name kept for consumers. */
   .dialog-title-gradient {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
   }
 
   .dialog-title-icon {

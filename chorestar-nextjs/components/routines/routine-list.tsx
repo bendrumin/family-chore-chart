@@ -154,7 +154,6 @@ export function RoutineList({
       {/* Empty State */}
       {!isLoading && filteredRoutines?.length === 0 && (
         <div className="text-center py-12 px-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50/50 dark:bg-gray-800/50">
-          <div className="text-6xl mb-4">📋</div>
           <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">No routines yet</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
             Create your first routine to help {childName || 'your child'} build great habits!

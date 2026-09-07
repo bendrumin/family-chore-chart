@@ -214,7 +214,7 @@ export function RoutineBuilderModal({
       }))
     );
     playSound('success');
-    toast.success(`✨ Loaded ${template.name} template!`);
+    toast.success(`Loaded ${template.name} template!`);
   };
 
   // Add new step
@@ -279,7 +279,7 @@ export function RoutineBuilderModal({
           steps: orderedSteps,
         });
         playSound('success');
-        toast.success('🎉 Routine updated successfully!');
+        toast.success('Routine updated successfully!');
       } else {
         await createMutation.mutateAsync({
           routine: {
@@ -289,7 +289,7 @@ export function RoutineBuilderModal({
           steps: orderedSteps,
         });
         playSound('success');
-        toast.success('🎉 Routine created successfully!');
+        toast.success('Routine created successfully!');
       }
 
       onSuccess();
@@ -318,12 +318,7 @@ export function RoutineBuilderModal({
           <DialogHeader className="pb-2">
             <DialogTitle
               className="text-3xl font-black flex items-center gap-3"
-              style={{
-                background: 'var(--gradient-primary)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
+              style={{ color: 'var(--text-primary)' }}
             >
               <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
               {editRoutine ? 'Edit Routine' : 'Create New Routine'}
@@ -528,10 +523,10 @@ export function RoutineBuilderModal({
               className="flex-1 font-bold hover-glow"
             >
               {createMutation.isPending || updateMutation.isPending
-                ? '⏳ Saving...'
+                ? 'Saving...'
                 : editRoutine
-                ? '✨ Update Routine'
-                : '✨ Create Routine'}
+                ? 'Update Routine'
+                : 'Create Routine'}
             </Button>
           </DialogFooter>
         </form>

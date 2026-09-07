@@ -77,7 +77,7 @@ export function BillingTab() {
   if (isLoading) {
     return (
       <div className="space-y-8 animate-pulse min-h-[600px]">
-        <div className="h-40 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl" />
+        <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
         <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
         <div className="grid md:grid-cols-3 gap-6">
           <div className="h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl" />
@@ -94,11 +94,14 @@ export function BillingTab() {
   return (
     <div className="space-y-8 min-h-[600px]">
       {/* Current Plan Display */}
-      <div className={`p-6 rounded-2xl border-2 ${
-        isPremium
-          ? 'border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 dark:border-purple-700 dark:from-purple-900/30 dark:to-pink-900/30'
-          : 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/20'
-      }`}>
+      <div
+        className={`p-6 rounded-2xl border ${
+          isPremium
+            ? 'border-indigo-300 dark:border-indigo-700'
+            : 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/20'
+        }`}
+        style={isPremium ? { background: 'var(--card-bg)' } : undefined}
+      >
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -108,7 +111,7 @@ export function BillingTab() {
                 <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               )}
               <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                {isPremium ? '⭐ Premium' : 'Free Plan'}
+                {isPremium ? 'Premium' : 'Free Plan'}
               </h3>
             </div>
 

@@ -76,7 +76,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
 
       if (error) throw error
 
-      toast.success(`✨ ${formData.name} updated successfully!`)
+      toast.success(`${formData.name} updated successfully!`)
       onSuccess()
     } catch (error: any) {
       console.error('Error updating chore:', error)
@@ -98,7 +98,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
 
       if (error) throw error
 
-      toast.success(`🗑️ ${chore.name} deleted successfully`)
+      toast.success(`${chore.name} deleted successfully`)
       onSuccess()
     } catch (error: any) {
       console.error('Error deleting chore:', error)
@@ -116,12 +116,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
               <Edit3 className="w-8 h-8" style={{ color: 'var(--primary)' }} />
               Edit Chore
             </DialogTitle>
@@ -288,7 +283,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
               size="lg"
               className="flex-1 font-bold"
             >
-              {isDeleting ? '⏳ Deleting...' : '🗑️ Delete'}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
             <Button
               type="button"
@@ -307,7 +302,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Saving...' : '✨ Save Changes'}
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>

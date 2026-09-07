@@ -29,7 +29,7 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
         <CardHeader className="border-b pb-4" style={{ borderColor: 'hsl(var(--border))' }}>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              👨‍👩‍👧‍👦 Children
+              Children
             </CardTitle>
             <Button
               size="sm"
@@ -45,7 +45,6 @@ export function ChildList({ children, selectedChildId, onSelectChild, onRefresh 
         <CardContent className="space-y-3 p-4">
           {children.length === 0 ? (
             <div className="text-center py-8 px-4">
-              <div className="text-6xl mb-4 animate-float">👶</div>
               <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 No children yet!
               </p>

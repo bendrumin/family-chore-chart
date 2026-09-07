@@ -47,12 +47,7 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
         className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden dialog-content-bg"
       >
         <DialogHeader>
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             What's New in ChoreStar!
           </DialogTitle>
@@ -102,7 +97,7 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
                       background: 'rgba(255, 255, 255, 0.2)',
                       backdropFilter: 'blur(10px)'
                     }}>
-                      🎉 New in {entry.date}
+                      New in {entry.date}
                     </div>
                     <h3 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>
                       {entry.title}
@@ -181,7 +176,7 @@ export function NewFeaturesModal({ open, onOpenChange, onDismiss }: NewFeaturesM
               onClick={handleClose}
               className="font-bold hover-glow"
             >
-              Awesome! Let's Go! 🚀
+              Let's Go!
             </Button>
           </div>
         </div>

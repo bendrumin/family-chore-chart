@@ -62,7 +62,7 @@ export function AppearanceTab() {
       const granted = await notificationManager.requestPermission()
       if (granted) {
         setNotificationsEnabled(true)
-        toast.success('🔔 Notifications enabled!')
+        toast.success('Notifications enabled!')
       } else {
         toast.error('Notification permission denied')
       }
@@ -88,7 +88,7 @@ export function AppearanceTab() {
       const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, mode: theme }
       await updateSettings({ custom_theme: newCustomTheme })
-      toast.success(theme === 'auto' ? '🔄 Auto theme activated!' : theme === 'light' ? '☀️ Light theme activated!' : '🌙 Dark theme activated!')
+      toast.success(theme === 'auto' ? 'Auto theme activated!' : theme === 'light' ? 'Light theme activated!' : 'Dark theme activated!')
     } catch (error) {
       console.error('Error updating theme:', error)
       toast.error('Failed to update theme')
@@ -158,7 +158,7 @@ export function AppearanceTab() {
       const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
       const newCustomTheme = { ...currentCustomTheme, autoSeasonal: newValue }
       await updateSettings({ custom_theme: newCustomTheme })
-      toast.success(newValue ? '🔄 Auto seasonal themes enabled!' : '🔄 Auto seasonal themes disabled!')
+      toast.success(newValue ? 'Auto seasonal themes enabled!' : 'Auto seasonal themes disabled!')
     } catch (error) {
       console.error('Error updating auto seasonal:', error)
       toast.error('Failed to update auto seasonal setting')
@@ -229,7 +229,7 @@ export function AppearanceTab() {
             onClick={handleAutoSeasonalToggle}
             className="text-xs font-bold"
           >
-            {autoSeasonalEnabled ? '🔄 Auto: ON' : '🔄 Auto: OFF'}
+            {autoSeasonalEnabled ? 'Auto: ON' : 'Auto: OFF'}
           </Button>
         </div>
 

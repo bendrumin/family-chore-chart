@@ -152,12 +152,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
         className="max-w-4xl max-h-[90vh] dialog-content-bg flex flex-col"
       >
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <HelpCircle className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             Help & FAQ
           </DialogTitle>
@@ -198,7 +193,6 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
           <div className="space-y-3 overflow-y-auto flex-1 min-h-0">
             {filteredFAQ.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
                 <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                   No results found. Try a different search term.
                 </p>
@@ -247,15 +241,15 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
             href="/how-to"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 font-bold hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/50 dark:hover:to-indigo-900/50 transition-all"
-            style={{ color: 'var(--text-primary)' }}
+            className="flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 font-bold hover:bg-black/[0.03] dark:hover:bg-white/[0.05] transition-colors"
+            style={{ color: 'var(--text-primary)', background: 'var(--card-bg)' }}
           >
-            <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            <span>📖 How-To Guides</span>
+            <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <span>How-To Guides</span>
           </Link>
-          <div className="flex-1 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 text-center">
+          <div className="flex-1 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 text-center" style={{ background: 'var(--card-bg)' }}>
             <p className="text-sm font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-              💬 Still need help?
+              Still need help?
             </p>
             <Button
               variant="gradient"

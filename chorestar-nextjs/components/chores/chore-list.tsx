@@ -312,13 +312,8 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              <span style={{ WebkitTextFillColor: 'initial' }}>📋</span> Chores
+            <CardTitle className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              Chores
             </CardTitle>
             <Button
               size="lg"

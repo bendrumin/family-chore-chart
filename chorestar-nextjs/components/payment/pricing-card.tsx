@@ -49,16 +49,17 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
 
   return (
     <div
-      className={`relative rounded-2xl border-2 p-6 transition-all hover:shadow-lg ${
+      className={`relative rounded-2xl border p-6 transition-all hover:shadow-lg ${
         isPopular
-          ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 shadow-md'
-          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+          ? 'border-indigo-300 dark:border-indigo-700 shadow-sm'
+          : 'border-gray-200 dark:border-gray-700'
       }`}
+      style={{ background: 'var(--card-bg)' }}
     >
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="inline-block px-4 py-1 text-sm font-bold text-white rounded-full bg-gradient-to-r from-purple-600 to-pink-600">
-            ⭐ Most Popular
+          <span className="inline-block px-4 py-1 text-sm font-bold rounded-full accent-fill">
+            Most Popular
           </span>
         </div>
       )}
@@ -68,12 +69,7 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
           {title}
         </h3>
         <div className="flex items-baseline justify-center gap-1">
-          <span className="text-4xl font-black" style={{
-            background: 'var(--gradient-primary)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
+          <span className="text-4xl font-black" style={{ color: 'var(--primary)' }}>
             {price}
           </span>
         </div>
@@ -102,7 +98,7 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
         variant={isPopular ? 'gradient' : 'default'}
         size="lg"
       >
-        {isLoading ? '⏳ Processing...' : `Upgrade Now`}
+        {isLoading ? 'Processing...' : `Upgrade Now`}
       </Button>
     </div>
   )

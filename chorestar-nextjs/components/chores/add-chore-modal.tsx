@@ -78,7 +78,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
       if (error) throw error
 
       playSound('success')
-      toast.success(`🎉 ${formData.name} added successfully!`)
+      toast.success(`${formData.name} added successfully!`)
       setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS], requiresPhoto: false })
       onSuccess()
     } catch (error: any) {
@@ -98,12 +98,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
       >
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
+            <DialogTitle className="text-3xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
               <Sparkles className="w-8 h-8" style={{ color: 'var(--primary)' }} />
               Add New Chore
             </DialogTitle>
@@ -279,7 +274,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
               size="lg"
               className="flex-1 font-bold hover-glow"
             >
-              {isLoading ? '⏳ Adding...' : '✨ Add Chore'}
+              {isLoading ? 'Adding...' : 'Add Chore'}
             </Button>
           </DialogFooter>
         </form>
