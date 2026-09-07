@@ -9,11 +9,13 @@ import { PricingCard } from '@/components/payment/pricing-card'
 import { createCheckoutSession, createPortalSession, type PlanType } from '@/lib/utils/stripe'
 import { toast } from 'sonner'
 import { isPremium as checkPremium } from '@/lib/utils/subscription'
+import { useAndroidShell } from '@/lib/utils/platform'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 export function BillingTab() {
+  const androidShell = useAndroidShell()
   const { user } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -152,8 +154,9 @@ export function BillingTab() {
         </div>
       </div>
 
-      {/* Upgrade Options (if free) */}
-      {currentTier === 'free' && (
+      {/* Upgrade Options (if free) — never inside the Android shell:
+          Play policy forbids purchase CTAs that bypass Play Billing. */}
+      {currentTier === 'free' && !androidShell && (
         <>
           <div>
             <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -180,8 +183,9 @@ export function BillingTab() {
         </>
       )}
 
-      {/* Manage Subscription (if premium monthly/annual) */}
-      {currentTier === 'premium' && (
+      {/* Manage Subscription (if premium monthly/annual) — the Stripe portal
+          is an external billing flow, so it also hides in the Android shell. */}
+      {currentTier === 'premium' && !androidShell && (
         <div>
           <h4 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Manage Subscription

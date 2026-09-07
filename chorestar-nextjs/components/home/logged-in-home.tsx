@@ -6,6 +6,7 @@ import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { AppStoreBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { UpgradePriceLabel } from '@/components/payment/upgrade-price-label'
+import { HideOnAndroidShell } from '@/components/payment/hide-on-android-shell'
 import {
   LayoutDashboard,
   BookOpen,
@@ -123,25 +124,27 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           </div>
         </div>
 
-        {/* Upgrade Banner (free users only) */}
+        {/* Upgrade Banner (free users only; never in the Android shell) */}
         {!isPremium && (
-          <div
-            className="rounded-2xl p-8 text-white text-center mb-10"
-            style={ACCENT_SURFACE_STYLE}
-          >
-            <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
-            <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>
-            <p className="mb-5 max-w-lg mx-auto">
-              Get unlimited children, unlimited chores, family sharing, export reports, and more.
-            </p>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-600 dark:text-indigo-400"
+          <HideOnAndroidShell>
+            <div
+              className="rounded-2xl p-8 text-white text-center mb-10"
+              style={ACCENT_SURFACE_STYLE}
             >
-              Upgrade from <UpgradePriceLabel />
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
+              <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
+              <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>
+              <p className="mb-5 max-w-lg mx-auto">
+                Get unlimited children, unlimited chores, family sharing, export reports, and more.
+              </p>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-lg text-indigo-600 dark:text-indigo-400"
+              >
+                Upgrade from <UpgradePriceLabel />
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </HideOnAndroidShell>
         )}
 
         {/* Helpful Links */}
