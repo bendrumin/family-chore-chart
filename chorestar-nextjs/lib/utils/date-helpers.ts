@@ -4,23 +4,40 @@ export interface WeekInfo {
   displayText: string // e.g., "Week of Jan 15"
 }
 
+/**
+ * Date math here must stay in ONE frame: the user's local calendar.
+ * `new Date('2026-09-06')` parses as UTC midnight (so `.getDate()` says
+ * Sep 5 anywhere west of Greenwich), and `.toISOString()` converts back
+ * to UTC (so a local Sunday serializes as Saturday anywhere EAST of it,
+ * which shifted week keys for Gulf and India families). Parse and format
+ * locally, always.
+ */
+function parseLocalDate(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function formatLocalDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 export function getWeekStart(date: Date = new Date()): string {
-  const dayOfWeek = date.getDay()
-  const diff = date.getDate() - dayOfWeek
-  const sunday = new Date(date.setDate(diff))
+  const sunday = new Date(date)
+  sunday.setDate(sunday.getDate() - sunday.getDay())
   sunday.setHours(0, 0, 0, 0)
-  return sunday.toISOString().split('T')[0]
+  return formatLocalDate(sunday)
 }
 
 export function getWeekEnd(weekStartDate: string): string {
-  const date = new Date(weekStartDate)
+  const date = parseLocalDate(weekStartDate)
   date.setDate(date.getDate() + 6) // Saturday
-  return date.toISOString().split('T')[0]
+  return formatLocalDate(date)
 }
 
 export function getWeekInfo(weekStartDate: string): WeekInfo {
-  const start = new Date(weekStartDate)
-  const end = new Date(weekStartDate)
+  const start = parseLocalDate(weekStartDate)
+  const end = parseLocalDate(weekStartDate)
   end.setDate(end.getDate() + 6)
 
   const monthName = start.toLocaleDateString('en-US', { month: 'short' })
@@ -34,21 +51,21 @@ export function getWeekInfo(weekStartDate: string): WeekInfo {
 
   return {
     weekStart: weekStartDate,
-    weekEnd: end.toISOString().split('T')[0],
+    weekEnd: formatLocalDate(end),
     displayText,
   }
 }
 
 export function getPreviousWeek(weekStartDate: string): string {
-  const date = new Date(weekStartDate)
+  const date = parseLocalDate(weekStartDate)
   date.setDate(date.getDate() - 7)
-  return date.toISOString().split('T')[0]
+  return formatLocalDate(date)
 }
 
 export function getNextWeek(weekStartDate: string): string {
-  const date = new Date(weekStartDate)
+  const date = parseLocalDate(weekStartDate)
   date.setDate(date.getDate() + 7)
-  return date.toISOString().split('T')[0]
+  return formatLocalDate(date)
 }
 
 export function isCurrentWeek(weekStartDate: string): boolean {
