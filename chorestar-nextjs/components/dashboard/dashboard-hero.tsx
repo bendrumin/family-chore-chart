@@ -126,24 +126,39 @@ export function DashboardHero({
           </div>
         </div>
 
-        {/* The family leads */}
-        <h2 className="mt-1 text-2xl sm:text-[1.75rem] font-extrabold tracking-tight">
-          {familyName}
-          {isSharedMember && (
-            <span
-              className="ml-2 align-middle rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold"
-              style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}
-            >
-              Shared
-            </span>
+        {/* The family leads; the family total sits opposite it, so the ring
+            row below gets the full width. */}
+        <div className="mt-1 flex items-end justify-between gap-3">
+          <h2 className="min-w-0 text-2xl sm:text-[1.75rem] font-extrabold tracking-tight">
+            {familyName}
+            {isSharedMember && (
+              <span
+                className="ml-2 align-middle rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold"
+                style={{ background: 'color-mix(in srgb, currentColor 16%, transparent)' }}
+              >
+                Shared
+              </span>
+            )}
+          </h2>
+          {hasKids && (
+            <div className="flex flex-none flex-col items-end text-right">
+              <div className="font-display text-lg sm:text-2xl font-extrabold tracking-tight tabular-nums leading-tight">
+                {done} of {total}
+              </div>
+              <div className="text-xs font-semibold opacity-85 tabular-nums whitespace-nowrap">
+                {total > 0
+                  ? `${formatMoney(earnedCents, currencyCode)} earned today`
+                  : 'No chores due today'}
+              </div>
+            </div>
           )}
-        </h2>
+        </div>
 
         {hasKids ? (
-          <div className="mt-3 flex items-center gap-4 sm:gap-6">
+          <div className="mt-3">
             {/* The ring row IS the child switcher: All, each kid (with their
                 own progress), Add. Tapping a selected kid returns to All. */}
-            <div className="flex flex-1 items-start gap-3 overflow-x-auto pb-1 sm:gap-5">
+            <div className="flex items-start gap-3 overflow-x-auto pb-1 sm:gap-5">
               {onSelectChild && (
                 <button
                   type="button"
@@ -236,18 +251,6 @@ export function DashboardHero({
                   <div className="text-xs font-bold opacity-80">Add</div>
                 </button>
               )}
-            </div>
-
-            {/* Family total */}
-            <div className="flex flex-none flex-col items-end gap-0.5 text-right">
-              <div className="font-display text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums">
-                {done} of {total}
-              </div>
-              <div className="text-xs font-semibold opacity-85 tabular-nums">
-                {total > 0
-                  ? `${formatMoney(earnedCents, currencyCode)} earned today`
-                  : 'No chores due today'}
-              </div>
             </div>
           </div>
         ) : onAddChild ? (
