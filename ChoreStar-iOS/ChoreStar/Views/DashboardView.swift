@@ -28,44 +28,60 @@ struct DashboardView: View {
         choresToday.count
     }
 
-    private var completionPercentage: Double {
-        guard totalChores > 0 else { return 0 }
-        return Double(completedChores) / Double(totalChores)
-    }
-    
-    private var greeting: String {
+    /// Time-of-day greeting with its seasonal-system emoji. The icons run
+    /// sunrise → sun → sunset → moon so each slot reads at a glance (matches
+    /// the web hero; the old evening 🌆 rendered as a night skyline).
+    private var greeting: (emoji: String, text: String) {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 0..<12:
-            return "Good morning! ☀️"
+            return ("🌅", "Good morning")
         case 12..<17:
-            return "Good afternoon! 👋"
+            return ("☀️", "Good afternoon")
         case 17..<21:
-            return "Good evening! 🌆"
+            return ("🌇", "Good evening")
         default:
-            return "Good night! 🌙"
+            return ("🌙", "Good night")
         }
     }
 
-    private func childProgress(_ child: Child) -> Double {
-        let childChores = manager.dueChores(for: child.id)
-        guard !childChores.isEmpty else { return 0 }
-        let done = childChores.filter { manager.isChoreCompleted($0) }.count
-        return Double(done) / Double(childChores.count)
+    /// `profiles.family_name`, the same field the web hero leads with.
+    private var familyNameText: String {
+        let name = manager.familyName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return name.isEmpty ? "My Family" : name
     }
 
-    private func childProgressText(_ child: Child) -> String {
+    /// Chores done / due today for one child — the same per-child numbers the
+    /// Family chips' rings use (dueChores + isChoreCompleted).
+    private func childDayCounts(_ child: Child) -> (done: Int, total: Int) {
         let childChores = manager.dueChores(for: child.id)
         let done = childChores.filter { manager.isChoreCompleted($0) }.count
-        return "\(done)/\(childChores.count)"
+        return (done, childChores.count)
     }
 
-    /// "$2.01 unpaid" under a child's Home chip, nil when settled. The
-    /// lifetime balance (earned minus paid out) deliberately does not reset
-    /// with the week, so unpaid allowance stays visible until it is paid.
-    private func childOwedText(_ child: Child) -> String? {
-        guard let owed = manager.wallets[child.id]?.owedCents, owed > 0 else { return nil }
-        return "\(manager.formatMoney(Double(owed) / 100.0)) unpaid"
+    /// One hero ring: the child's avatar wrapped in their today-progress ring,
+    /// drawn in the hero's ink (white on the seasonal gradient).
+    private func heroChildRing(_ child: Child) -> some View {
+        let counts = childDayCounts(child)
+        let firstName = child.name.split(separator: " ").first.map(String.init) ?? child.name
+        let countText = counts.total > 0 ? "\(counts.done)/\(counts.total)" : "none today"
+
+        return VStack(spacing: 6) {
+            ProgressRing(
+                progress: counts.total > 0 ? Double(counts.done) / Double(counts.total) : 0,
+                lineWidth: 4.5,
+                tint: .white,
+                trackOpacity: 0.28
+            ) {
+                AvatarView(child: child, size: 50)
+            }
+            .frame(width: 62, height: 62)
+
+            (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
+                + Text(countText).fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
+                .font(.caption)
+                .lineLimit(1)
+        }
     }
 
     private var earnedTodayText: String {
@@ -73,101 +89,93 @@ struct DashboardView: View {
         return manager.formatMoney(total)
     }
 
-    /**
-     Whole family, whole week — the running total a parent actually pays out.
-
-     Summed per child from calculateWeeklyStats, which already applies the
-     canonical rules (flat mode pays the daily rate only on a perfect day; the
-     weekly bonus needs 7/7), so this figure always agrees with the Stats tab
-     and the web dashboard rather than being a fourth reimplementation.
-     */
-    private var earnedThisWeekText: String {
-        let total = manager.children.reduce(0.0) { $0 + manager.calculateWeeklyStats(for: $1.id).totalEarnings }
-        return manager.formatMoney(total)
-    }
-
-    private var familyStreak: Int {
-        manager.calculateAggregateWeeklyStats().streak
-    }
-
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 24) {
-                    // Hero: today at a glance, Activity-ring style
-                    HStack(spacing: 20) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .textCase(.uppercase)
-                                .foregroundColor(.white.opacity(0.75))
-
-                            Text(greeting)
+                    // Hero: family-first — the family name leads, each kid
+                    // carries their own progress ring, family total trails.
+                    // Mirrors the web DashboardHero.
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Greeting left, date right
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("\(greeting.emoji) \(greeting.text)")
                                 .font(.subheadline)
-                                .fontWeight(.semibold)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white.opacity(0.92))
 
-                            Text(totalChores == 0
-                                 ? "No chores yet"
-                                 : "\(completedChores) of \(totalChores) done")
-                                .font(.system(.title2, design: .rounded).weight(.bold))
+                            Spacer()
+
+                            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.75))
+                        }
+
+                        // The family leads
+                        HStack(spacing: 8) {
+                            Text(familyNameText)
+                                .font(.display(28, weight: .heavy))
                                 .foregroundColor(.white)
-                                .contentTransition(.numericText(value: Double(completedChores)))
-                                .animation(.snappy, value: completedChores)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
 
-                            HStack(spacing: 5) {
-                                Image(systemName: "star.circle.fill")
-                                    .font(.subheadline)
-                                    .foregroundColor(.yellow)
-                                Text("\(earnedTodayText) today")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                    .contentTransition(.numericText())
-                                    .animation(.snappy, value: earnedTodayText)
-
-                                Text("·")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.55))
-
-                                Text("\(earnedThisWeekText) this week")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.9))
-                                    .contentTransition(.numericText())
-                                    .animation(.snappy, value: earnedThisWeekText)
+                            if manager.memberOfFamilyId != nil {
+                                Text("Shared")
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.white.opacity(0.16))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                             }
+                        }
+                        .padding(.top, 4)
 
-                            if familyStreak >= 2 {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "flame.fill")
-                                        .font(.subheadline)
-                                        .foregroundColor(.yellow)
-                                        .symbolEffect(.pulse, options: .repeating)
-                                    Text("\(familyStreak)-day streak")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
+                        if manager.children.isEmpty {
+                            Text("Add a child to start tracking chores.")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.85))
+                                .padding(.top, 8)
+                        } else {
+                            HStack(alignment: .center, spacing: 16) {
+                                // Each kid carries their own progress
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(manager.children) { child in
+                                            NavigationLink(destination: ChildDetailView(child: child)) {
+                                                heroChildRing(child)
+                                            }
+                                            .buttonStyle(PlainButtonStyle())
+                                            .accessibilityLabel("Show \(child.name)'s chores")
+                                        }
+                                    }
+                                    .padding(.vertical, 2)
                                 }
-                                .padding(.top, 2)
-                            }
-                        }
 
-                        Spacer()
+                                // Family total
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("\(completedChores) of \(totalChores)")
+                                        .font(.display(24, weight: .heavy))
+                                        .foregroundColor(.white)
+                                        .contentTransition(.numericText(value: Double(completedChores)))
+                                        .animation(.snappy, value: completedChores)
 
-                        ProgressRing(progress: completionPercentage, lineWidth: 11, tint: .white) {
-                            if completionPercentage >= 1.0, totalChores > 0 {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 26, weight: .bold))
-                                    .foregroundColor(.white)
-                            } else {
-                                Text("\(Int(completionPercentage * 100))%")
-                                    .font(.system(.title3, design: .rounded).weight(.bold))
-                                    .foregroundColor(.white)
-                                    .contentTransition(.numericText(value: completionPercentage))
-                                    .animation(.snappy, value: completionPercentage)
+                                    Text(totalChores > 0
+                                         ? "\(earnedTodayText) earned today"
+                                         : "No chores due today")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .contentTransition(.numericText())
+                                        .animation(.snappy, value: earnedTodayText)
+                                }
+                                .fixedSize()
                             }
+                            .padding(.top, 12)
                         }
-                        .frame(width: 88, height: 88)
                     }
                     .padding(20)
                     .background(
@@ -215,31 +223,6 @@ struct DashboardView: View {
                     // chores). Renders nothing when there is nothing to review.
                     ApprovalTrayView()
                         .padding(.horizontal, 20)
-
-                    // Family: avatar ring chips, Fitness sharing-style
-                    if !manager.children.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            AppSectionHeader(title: "Family")
-                                .padding(.horizontal, 20)
-
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(manager.children) { child in
-                                        NavigationLink(destination: ChildDetailView(child: child)) {
-                                            AvatarRingChip(
-                                                child: child,
-                                                progress: childProgress(child),
-                                                detailText: childProgressText(child),
-                                                owedText: childOwedText(child)
-                                            )
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                }
-                                .padding(.horizontal, 20)
-                            }
-                        }
-                    }
 
                     // Today's Chores
                     if !manager.chores.isEmpty {

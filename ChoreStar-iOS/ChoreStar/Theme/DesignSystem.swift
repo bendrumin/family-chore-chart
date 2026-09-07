@@ -70,6 +70,9 @@ struct ProgressRing<Center: View>: View {
     let progress: Double // 0...1
     var lineWidth: CGFloat = 10
     var tint: Color = .choreStarPrimary
+    /// Track opacity relative to the tint. White-on-gradient rings (the hero)
+    /// need a stronger track than rings on card surfaces.
+    var trackOpacity: Double = 0.15
     @ViewBuilder var center: Center
 
     @State private var animatedProgress: Double = 0
@@ -77,7 +80,7 @@ struct ProgressRing<Center: View>: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(tint.opacity(0.15), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(tint.opacity(trackOpacity), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
 
             Circle()
                 .trim(from: 0, to: max(0.001, animatedProgress))
@@ -148,49 +151,6 @@ struct AppSectionHeader: View {
                     .foregroundColor(.choreStarTextSecondary)
             }
         }
-    }
-}
-
-// MARK: - Avatar Ring Chip (Fitness sharing-style)
-
-/// A child avatar wrapped in their personal progress ring — the Fitness
-/// "activity sharing" pattern, one per family member.
-struct AvatarRingChip: View {
-    let child: Child
-    let progress: Double
-    let detailText: String
-    /// Extra warning-tinted line, e.g. "$2.01 unpaid". Hidden when nil.
-    var owedText: String? = nil
-
-    var body: some View {
-        VStack(spacing: 8) {
-            ProgressRing(progress: progress, lineWidth: 5, tint: Color.fromString(child.avatarColor)) {
-                AvatarView(child: child, size: 58)
-            }
-            .frame(width: 74, height: 74)
-
-            VStack(spacing: 2) {
-                Text(child.name)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.choreStarTextPrimary)
-                    .lineLimit(1)
-
-                Text(detailText)
-                    .font(.caption2)
-                    .foregroundColor(.choreStarTextSecondary)
-
-                if let owedText {
-                    Text(owedText)
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.choreStarWarning)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-            }
-        }
-        .frame(width: 92)
     }
 }
 

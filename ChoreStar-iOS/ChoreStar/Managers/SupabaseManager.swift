@@ -69,6 +69,10 @@ class SupabaseManager: ObservableObject {
     @Published var childSession: ChildSession?
     @Published var kidLoginCode: String?
 
+    /// The family's display name from `profiles.family_name` (the owner's
+    /// name when this user is a shared member). Nil until the profile loads.
+    @Published var familyName: String?
+
     // Children that have a PIN set in child_pins (kid login enabled)
     @Published var childIdsWithPin: Set<UUID> = []
 
@@ -1276,6 +1280,7 @@ class SupabaseManager: ObservableObject {
                 routines = []
                 subscriptionType = "free"
                 kidLoginCode = nil
+                familyName = nil
                 debugLastError = "Signed out successfully"
             }
             signOutChild()
@@ -3653,15 +3658,16 @@ class SupabaseManager: ObservableObject {
         do {
             let profiles: [ProfileRow] = try await client
                 .from("profiles")
-                .select("id, subscription_type, kid_login_code")
+                .select("id, subscription_type, kid_login_code, family_name")
                 .eq("id", value: uid)
                 .limit(1)
                 .execute()
                 .value
-            
+
             await MainActor.run {
                 self.subscriptionType = profiles.first?.subscription_type ?? "free"
                 self.kidLoginCode = profiles.first?.kid_login_code
+                self.familyName = profiles.first?.family_name
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
             }
 
@@ -3684,10 +3690,11 @@ class SupabaseManager: ObservableObject {
 
             // Shared members use the family owner's kid login code
             // (readable once the family-sharing RLS migration is applied)
+            // and the owner's family name — the family they're a member of.
             if let ownerId = await MainActor.run(body: { memberOfFamilyId }) {
                 let ownerProfiles: [ProfileRow] = (try? await client
                     .from("profiles")
-                    .select("id, subscription_type, kid_login_code")
+                    .select("id, subscription_type, kid_login_code, family_name")
                     .eq("id", value: ownerId.uuidString)
                     .limit(1)
                     .execute()
@@ -3696,6 +3703,11 @@ class SupabaseManager: ObservableObject {
                 if let ownerCode = ownerProfiles.first?.kid_login_code {
                     await MainActor.run {
                         self.kidLoginCode = ownerCode
+                    }
+                }
+                if let ownerFamilyName = ownerProfiles.first?.family_name {
+                    await MainActor.run {
+                        self.familyName = ownerFamilyName
                     }
                 }
             }

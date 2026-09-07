@@ -20,4 +20,5 @@ struct ProfileRow: Codable {
     let id: UUID
     let subscription_type: String?
     let kid_login_code: String?
+    let family_name: String?
 }
