@@ -118,7 +118,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                   rel="noopener noreferrer"
                   className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
-                  Already using it? Rate it on the App Store ★
+                  Already using it? Rate it on the App Store
                 </a>
               </div>
             </div>

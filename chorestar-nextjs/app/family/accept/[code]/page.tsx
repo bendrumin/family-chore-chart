@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { AmbientBackground } from '@/components/ui/ambient-background'
+import { Loader2, Users, CheckCircle2, AlertCircle } from 'lucide-react'
 
 interface InviteDetails {
   status: string
@@ -77,7 +78,7 @@ export default function AcceptInvitePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-bounce">⭐</div>
+          <Loader2 className="w-10 h-10 mb-4 mx-auto animate-spin text-indigo-500 dark:text-indigo-400" />
           <p className="text-gray-600 dark:text-gray-300 font-medium">Loading invite...</p>
         </div>
       </div>
@@ -90,7 +91,7 @@ export default function AcceptInvitePage() {
       <div className="relative z-10 max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8 text-center">
-          <div className="text-5xl mb-3">👨‍👩‍👧‍👦</div>
+          <Users className="w-12 h-12 mb-3 mx-auto text-white" />
           <h1 className="text-2xl font-bold text-white">Family Invite</h1>
           <p className="text-indigo-200 text-sm mt-1">ChoreStar</p>
         </div>
@@ -98,7 +99,7 @@ export default function AcceptInvitePage() {
         <div className="p-8">
           {accepted ? (
             <div className="text-center">
-              <div className="text-5xl mb-4">🎉</div>
+              <CheckCircle2 className="w-12 h-12 mb-4 mx-auto text-green-500 dark:text-green-400" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">You're in!</h2>
               <p className="text-gray-600 dark:text-gray-300">
                 You've joined <strong>{invite?.familyName}</strong>'s family on ChoreStar. Redirecting to your dashboard...
@@ -106,7 +107,7 @@ export default function AcceptInvitePage() {
             </div>
           ) : error ? (
             <div className="text-center">
-              <div className="text-5xl mb-4">😕</div>
+              <AlertCircle className="w-12 h-12 mb-4 mx-auto text-amber-500 dark:text-amber-400" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invite unavailable</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
               <Link

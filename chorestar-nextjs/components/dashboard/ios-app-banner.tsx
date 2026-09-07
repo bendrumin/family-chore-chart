@@ -55,7 +55,7 @@ export function IosAppBanner() {
             rel="noopener noreferrer"
             className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"
           >
-            Get the iPhone &amp; iPad app →
+            Get the iPhone &amp; iPad app
           </a>{' '}
           <span className="text-gray-400 dark:text-gray-500">·</span>{' '}
           <a
@@ -64,7 +64,7 @@ export function IosAppBanner() {
             rel="noopener noreferrer"
             className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"
           >
-            Already have it? Rate it ★
+            Already have it? Rate it
           </a>
         </p>
       )}

@@ -502,14 +502,18 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
               return (
                 <div
                   key={index}
-                  className={`text-xl transition-all duration-300 ${
-                    isPerfect
-                      ? 'scale-110 animate-pulse-subtle'
-                      : 'opacity-30 grayscale'
+                  className={`transition-all duration-300 ${
+                    isPerfect ? 'scale-110' : 'opacity-40'
                   }`}
                   title={`Day ${index + 1}: ${isPerfect ? 'All chores completed!' : 'Not yet complete'}`}
                 >
-                  {isPerfect ? '⭐' : '☆'}
+                  <Star
+                    className={`w-5 h-5 ${
+                      isPerfect
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-gray-400 dark:text-gray-500'
+                    }`}
+                  />
                 </div>
               )
             })}

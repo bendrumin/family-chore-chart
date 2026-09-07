@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff } from 'lucide-react'
+import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff, CircleOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
 import { ChoreIcon } from '@/components/ui/chore-icon'
@@ -244,14 +244,17 @@ export function AppearanceTab() {
             }`}
             style={{
               background: seasonalTheme === null
-                ? 'rgba(99, 102, 241, 0.1)'
+                ? 'color-mix(in srgb, var(--primary) 10%, transparent)'
                 : undefined,
-              borderColor: seasonalTheme === null ? '#6366f1' : undefined
+              borderColor: seasonalTheme === null ? 'var(--primary)' : undefined
             }}
           >
-            <div className="text-2xl mb-1">✨</div>
+            <CircleOff
+              className="w-6 h-6 mb-1 mx-auto"
+              style={{ color: seasonalTheme === null ? 'var(--primary)' : 'var(--text-tertiary)' }}
+            />
             <div className="text-xs font-bold" style={{
-              color: seasonalTheme === null ? '#6366f1' : 'var(--text-primary)'
+              color: seasonalTheme === null ? 'var(--primary)' : 'var(--text-primary)'
             }}>
               None
             </div>

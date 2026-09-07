@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChildAvatarContent } from '@/components/children/child-avatar-content'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Pencil, Users } from 'lucide-react'
 import { AddChildModal } from './add-child-modal'
 import { EditChildModal } from './edit-child-modal'
 import type { Database } from '@/lib/supabase/database.types'
@@ -60,10 +60,10 @@ export function ChildSwitcher({ children, selectedChildId, onSelectChild, onRefr
           }}
         >
           <div
-            className="grid h-[52px] w-[52px] place-items-center rounded-full text-xl font-black text-white sm:h-[66px] sm:w-[66px] sm:text-2xl"
+            className="grid h-[52px] w-[52px] place-items-center rounded-full text-white sm:h-[66px] sm:w-[66px]"
             style={{ background: 'var(--gradient-primary)' }}
           >
-            ⭐
+            <Users className="h-6 w-6 text-white sm:h-7 sm:w-7" />
           </div>
           <div className="text-center">
             <div className="text-sm font-bold sm:text-base" style={{ color: 'var(--text-primary)' }}>Everyone</div>

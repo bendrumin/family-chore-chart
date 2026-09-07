@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Mail, Clock, Globe } from 'lucide-react'
+import { Mail, Clock, Globe, Star } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ContactModalProps {
@@ -284,15 +284,17 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                   key={value}
                   type="button"
                   onClick={() => handleRatingClick(value)}
-                  className={`text-2xl transition-all duration-200 hover:scale-125 ${
-                    rating >= value 
-                      ? 'text-yellow-400 filter drop-shadow-sm' 
-                      : 'text-gray-300 hover:text-yellow-200'
-                  }`}
+                  className="transition-transform duration-200 hover:scale-110"
                   aria-label={`${value} star${value > 1 ? 's' : ''}`}
                   title={value === 1 ? 'Poor' : value === 2 ? 'Fair' : value === 3 ? 'Good' : value === 4 ? 'Very Good' : 'Excellent'}
                 >
-                  ⭐
+                  <Star
+                    className={`w-7 h-7 transition-colors ${
+                      rating >= value
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300'
+                    }`}
+                  />
                 </button>
               ))}
             </div>
