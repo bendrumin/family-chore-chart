@@ -42,7 +42,7 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
 
   return (
     <div
-      className="relative overflow-hidden rounded-[1.25rem] px-6 py-6 flex items-center gap-5 flex-col sm:flex-row sm:items-center"
+      className="relative overflow-hidden rounded-[1.25rem] px-4 py-4 sm:px-6 sm:py-6 flex flex-row items-center gap-4 sm:gap-5"
       style={{
         // iOS ThemeManager.gradient + white type. Fills are nudged just enough
         // for white ink to clear WCAG AA (summer teal darkens slightly rather
@@ -84,26 +84,27 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
           <span>{greetingText}</span>
         </div>
 
-        <div className="mt-1.5 text-3xl sm:text-4xl font-bold tracking-tight tabular-nums">
+        <div className="mt-1 sm:mt-1.5 text-2xl sm:text-4xl font-bold tracking-tight tabular-nums">
           {total === 0 ? (
-            <span className="text-xl font-semibold opacity-85">No chores yet today</span>
+            <span className="text-base sm:text-xl font-semibold opacity-85">No chores yet today</span>
           ) : (
             <>
               {done}
-              <span className="text-xl font-semibold opacity-70"> of {total} done</span>
+              <span className="text-base sm:text-xl font-semibold opacity-70"> of {total} done</span>
             </>
           )}
         </div>
 
         {total > 0 && (
-          <p className="mt-2 text-sm font-medium opacity-75 tabular-nums">
+          <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium opacity-75 tabular-nums">
             ${(earnedCents / 100).toFixed(2)} earned · {pct}% complete
           </p>
         )}
       </div>
 
-      <div className="relative h-[112px] w-[112px] flex-none">
-        <svg width="112" height="112" viewBox="0 0 118 118" style={{ transform: 'rotate(-90deg)' }}>
+      {/* Ring: 72px on phones (the iOS app's compact proportions), 112px from sm up. */}
+      <div className="relative h-[72px] w-[72px] sm:h-[112px] sm:w-[112px] flex-none">
+        <svg width="100%" height="100%" viewBox="0 0 118 118" style={{ transform: 'rotate(-90deg)' }}>
           <circle
             cx="59"
             cy="59"
@@ -125,7 +126,7 @@ export function DashboardHero({ familyName, done, total, earnedCents, isSharedMe
             style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
           />
         </svg>
-        <div className="absolute inset-0 grid place-items-center text-[1.55rem] font-bold tracking-tight tabular-nums">
+        <div className="absolute inset-0 grid place-items-center text-lg sm:text-[1.55rem] font-bold tracking-tight tabular-nums">
           {pct}%
         </div>
       </div>
