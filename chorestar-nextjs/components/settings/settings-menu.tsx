@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Settings, Users, CheckSquare, Gift, Palette, BarChart3, FileDown, CreditCard, UserCog, LogOut, Loader2, ChevronRight } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
+import { useAndroidShell } from '@/lib/utils/platform'
 import { toast } from 'sonner'
 import { FamilyTab } from '@/components/settings/tabs/family-tab'
 import { ChoresTab } from '@/components/settings/tabs/chores-tab'
@@ -49,6 +50,7 @@ interface SettingsMenuProps {
 
 export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChange, tab, onTabChange }: SettingsMenuProps) {
   const { settings, updateSettings } = useSettings()
+  const androidShell = useAndroidShell()
   const [internalOpen, setInternalOpen] = useState(false)
   const [internalTab, setInternalTab] = useState<SettingsTab>('family')
   // Controlled when the parent passes state (the dashboard's shell tab bar
@@ -77,7 +79,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent
           onClose={() => setIsOpen(false)}
-          className="p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] md:min-w-[720px] max-w-6xl"
+          className={`p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] md:min-w-[720px] max-w-6xl${androidShell ? ' mb-20 max-h-[78vh]' : ''}`}
         >
           {/* Header - Fixed */}
           <DialogHeader className="dialog-header-settings">
