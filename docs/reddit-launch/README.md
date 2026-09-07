@@ -78,3 +78,6 @@ xcrun simctl terminate $UDID com.chorestar.ChoreStar
 xcrun simctl launch $UDID com.chorestar.ChoreStar -chorestar-tab family
 xcrun simctl io $UDID screenshot 05-parent-dashboard.png
 ```
+
+## Update (same day)
+The iOS week grid was rebuilt after the first capture round: chore info now sits above its row of seven flexible cells (the web grid shape), so nothing scrolls sideways. 04-parent-week-grid.png shows the full Sun-Sat week on one screen; 04-parent-week-daily.png is the stacked Daily List variant.

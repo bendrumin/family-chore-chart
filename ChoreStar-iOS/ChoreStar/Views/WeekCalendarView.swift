@@ -189,31 +189,21 @@ struct WeekCalendarView: View {
                     }
                     .padding(.horizontal, 20)
                 } else {
-                    // WEEK VIEW (GRID) - scrollable horizontally for small screens
-                    let gridWidth = choreColumnWidth + (cellSize * 7) + 40
-                    let needsScroll = gridWidth > geometry.size.width
-                    
-                    ScrollView(.horizontal, showsIndicators: needsScroll) {
-                        VStack(spacing: 0) {
-                            // Day headers
-                            HStack(spacing: 4) {
-                                // Chore column header
-                                VStack(spacing: 4) {
-                                    Text("Chore")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarTextPrimary)
-                                }
-                                .frame(width: choreColumnWidth, alignment: .leading)
-                                .padding(.leading, 16)
-                                
-                                // Day headers
+                    // WEEK VIEW (GRID): seven flexible columns that fit any
+                    // width, no horizontal scrolling. Chore info sits ABOVE
+                    // its row of cells (the web grid's shape), so the columns
+                    // share the full card width on iPhone; iPad caps the card
+                    // at a comfortable width instead of stretching cells.
+                    VStack(spacing: 0) {
+                            // Day headers — same spacing and padding as the
+                            // cell rows below so the columns line up.
+                            HStack(spacing: 6) {
                                 ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
                                     VStack(spacing: 6) {
                                         Text(days[dayIndex])
                                             .font(.subheadline)
                                             .fontWeight(.bold)
-                                        
+
                                         if dayIndex == currentDayOfWeek {
                                             Circle()
                                                 .fill(Color.choreStarPrimary)
@@ -223,28 +213,31 @@ struct WeekCalendarView: View {
                                                 .fill(Color.clear)
                                                 .frame(width: 6, height: 6)
                                         }
-                                        
+
                                         // Show earnings if perfect day
                                         if isDayPerfect(dayIndex) {
                                             Text(manager.formatMoney(dayEarnings(dayIndex)))
                                                 .font(.caption2)
                                                 .fontWeight(.bold)
                                                 .foregroundColor(.choreStarAccent)
-                                                .padding(.horizontal, 6)
+                                                .lineLimit(1)
+                                                .minimumScaleFactor(0.6)
+                                                .padding(.horizontal, 4)
                                                 .padding(.vertical, 2)
                                                 .background(Color.choreStarAccent.opacity(0.15))
                                                 .cornerRadius(6)
                                         }
                                     }
-                                    .frame(width: cellSize)
+                                    .frame(maxWidth: .infinity)
                                     .foregroundColor(dayIndex == currentDayOfWeek ? .choreStarPrimary : .choreStarTextSecondary)
                                 }
                             }
-                            .padding(.vertical, 16)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 14)
                             .background(Color.choreStarCardBackground)
-                        
+
                             Divider()
-                            
+
                             // Chore rows
                             ForEach(Array(childChores.enumerated()), id: \.element.id) { index, chore in
                                 ChoreWeekRow(
@@ -254,22 +247,22 @@ struct WeekCalendarView: View {
                                     earnedAchievements: $earnedAchievements,
                                     showAchievementAlert: $showAchievementAlert,
                                     showConfetti: $showConfetti,
-                                    choreColumnWidth: choreColumnWidth,
-                                    cellSize: cellSize,
+                                    cellHeight: cellSize,
                                     isEvenRow: index % 2 == 0
                                 )
-                                
+
                                 if index < childChores.count - 1 {
                                     Divider()
-                                        .padding(.leading, choreColumnWidth + 20)
+                                        .padding(.horizontal, 12)
                                 }
                             }
                         }
                         .background(Color.choreStarCardBackground)
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.08), radius: 15, x: 0, y: 5)
-                    }
-                    .padding(.horizontal, 16)
+                        .frame(maxWidth: horizontalSizeClass == .regular ? 560 : .infinity)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 16)
                 }
                 
                     // Clear the floating tab bar so the last row's cells are
@@ -411,63 +404,54 @@ struct ChoreWeekRow: View {
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
     @Binding var showConfetti: Bool
-    let choreColumnWidth: CGFloat
-    let cellSize: CGFloat
+    let cellHeight: CGFloat
     let isEvenRow: Bool
-    
+
     var body: some View {
-        HStack(spacing: 4) {
-            // Chore info
-            HStack(spacing: 12) {
-                AdaptiveIcon(icon: chore.icon ?? "📝", fallbackSymbol: "checklist", tint: Color.fromString(chore.color ?? ""), iconSize: 28)
-                    .frame(width: 32, height: 32)
+        VStack(alignment: .leading, spacing: 10) {
+            // Chore info on its own line, so the seven cells below share the
+            // full card width and the grid never scrolls sideways.
+            HStack(spacing: 8) {
+                AdaptiveIcon(icon: chore.icon ?? "📝", fallbackSymbol: "checklist", tint: Color.fromString(chore.color ?? ""), iconSize: 22)
+                    .frame(width: 26, height: 26)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(chore.name)
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.choreStarTextPrimary)
-                        .lineLimit(2)
-                    
-                    if let category = chore.category {
-                        HStack(spacing: 4) {
-                            Image(systemName: "tag.fill")
-                                .font(.system(size: 8))
-                            Text(ChoreCategory.label(for: category))
-                                .font(.caption)
-                        }
-                        .foregroundColor(.choreStarTextSecondary)
-                    }
+                Text(chore.name)
+                    .font(.callout)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.choreStarTextPrimary)
+                    .lineLimit(1)
 
-                    if !chore.isEveryDay {
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar")
-                                .font(.system(size: 8))
-                            Text(chore.scheduleLabel)
-                                .font(.caption)
-                        }
-                        .foregroundColor(.choreStarTextSecondary)
+                if !chore.isEveryDay {
+                    HStack(spacing: 3) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 9))
+                        Text(chore.scheduleLabel)
+                            .font(.caption)
                     }
+                    .foregroundColor(.choreStarTextSecondary)
+                    .lineLimit(1)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            // Day cells — seven flexible columns aligned with the header.
+            HStack(spacing: 6) {
+                ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
+                    DayCell(
+                        chore: chore,
+                        dayIndex: dayIndex,
+                        manager: manager,
+                        earnedAchievements: $earnedAchievements,
+                        showAchievementAlert: $showAchievementAlert,
+                        showConfetti: $showConfetti,
+                        cellHeight: cellHeight
+                    )
                 }
             }
-            .frame(width: choreColumnWidth, alignment: .leading)
-            .padding(.leading, 16)
-            
-            // Day cells
-            ForEach(ChoreSchedule.displayOrder(), id: \.self) { dayIndex in
-                DayCell(
-                    chore: chore,
-                    dayIndex: dayIndex,
-                    manager: manager,
-                    earnedAchievements: $earnedAchievements,
-                    showAchievementAlert: $showAchievementAlert,
-                    showConfetti: $showConfetti,
-                    cellSize: cellSize
-                )
-                .frame(width: cellSize)
-            }
         }
-        .padding(.vertical, 18)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
         .background(isEvenRow ? Color.choreStarBackground.opacity(0.3) : Color.clear)
     }
 }
@@ -479,7 +463,7 @@ struct DayCell: View {
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
     @Binding var showConfetti: Bool
-    let cellSize: CGFloat
+    let cellHeight: CGFloat
     
     private var isToday: Bool {
         let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
@@ -524,7 +508,8 @@ struct DayCell: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(isCompleted ? Color.choreStarSuccess : (isPending ? Color.choreStarWarning.opacity(0.18) : (isDue ? Color.choreStarBackground : Color.clear)))
-                    .frame(width: cellSize, height: cellSize)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: cellHeight)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .strokeBorder(
@@ -537,14 +522,14 @@ struct DayCell: View {
 
                 if isPending {
                     Image(systemName: "clock.fill")
-                        .font(.system(size: cellSize * 0.42, weight: .bold))
+                        .font(.system(size: cellHeight * 0.42, weight: .bold))
                         .foregroundColor(.choreStarWarning)
                         .accessibilityLabel("Waiting for your OK, tap to approve")
                 }
 
                 if isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.system(size: cellSize * 0.5, weight: .bold))
+                        .font(.system(size: cellHeight * 0.5, weight: .bold))
                         .foregroundColor(.white)
                 }
             }
