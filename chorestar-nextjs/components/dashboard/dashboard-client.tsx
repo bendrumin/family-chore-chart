@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingScreen } from '@/components/ui/loading-spinner'
 import { ChildList } from '@/components/children/child-list'
-import { ChildSwitcher } from '@/components/children/child-switcher'
 import { DashboardHero } from '@/components/dashboard/dashboard-hero'
 import { IosAppBanner } from '@/components/dashboard/ios-app-banner'
 import { AmbientBackground } from '@/components/ui/ambient-background'
@@ -24,6 +23,7 @@ import { useAndroidShell } from '@/lib/utils/platform'
 import dynamic from 'next/dynamic'
 
 const AddChildModal = dynamic(() => import('@/components/children/add-child-modal').then(m => ({ default: m.AddChildModal })), { ssr: false })
+const EditChildModal = dynamic(() => import('@/components/children/edit-child-modal').then(m => ({ default: m.EditChildModal })), { ssr: false })
 const FAQModal = dynamic(() => import('@/components/help/faq-modal').then(m => ({ default: m.FAQModal })), { ssr: false })
 const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-modal').then(m => ({ default: m.NewFeaturesModal })), { ssr: false })
 const ContactModal = dynamic(() => import('@/components/help/contact-modal').then(m => ({ default: m.ContactModal })), { ssr: false })
@@ -210,6 +210,7 @@ function DashboardContent({
 }: any) {
   const { settings } = useSettings()
   const todaySnapshot = useTodaySnapshot(children, settings)
+  const [editingChild, setEditingChild] = useState<Child | null>(null)
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&
@@ -523,28 +524,13 @@ function DashboardContent({
                 isSharedMember={isSharedMember}
                 children={children}
                 perChild={todaySnapshot.perChild}
+                selectedChildId={selectedChildId}
                 onSelectChild={setSelectedChildId}
+                onAddChild={() => setIsAddChildModalOpen(true)}
+                onEditChild={setEditingChild}
                 currencyCode={settings?.currency_code}
               />
             </div>
-
-            {/* Family — avatar-ring child switcher */}
-            <section className="order-2 space-y-3">
-              <div className="flex items-baseline justify-between gap-3 px-1">
-                <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                  Family
-                </h2>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-                  {children.length}
-                </span>
-              </div>
-              <ChildSwitcher
-                children={children}
-                selectedChildId={selectedChildId}
-                onSelectChild={setSelectedChildId}
-                onRefresh={loadChildren}
-              />
-            </section>
 
             {/* Weekly Stats — per-child drill-in only. Last on phones so the
                 chore grid isn't buried under stats. */}
@@ -668,6 +654,20 @@ function DashboardContent({
           loadChildren()
         }}
       />
+
+      {/* Edit Child Modal — opened from the pencil on the hero's selected ring */}
+      {editingChild && (
+        <EditChildModal
+          child={editingChild}
+          open={!!editingChild}
+          onOpenChange={(open: boolean) => !open && setEditingChild(null)}
+          onSuccess={() => {
+            setEditingChild(null)
+            loadChildren()
+          }}
+          onRefresh={loadChildren}
+        />
+      )}
 
       {/* FAQ Modal */}
       <FAQModal
