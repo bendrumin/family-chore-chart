@@ -23,12 +23,10 @@ struct PaywallView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 48))
-                            .foregroundStyle(
-                                LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            )
+                            .foregroundColor(.choreStarAccent)
 
                         Text("ChoreStar Premium")
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .font(.display(30, weight: .bold))
                             .foregroundColor(.choreStarTextPrimary)
 
                         Text("Everything your family needs to make chores fun")
@@ -85,7 +83,7 @@ struct PaywallView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.choreStarGradient)
+                            .background(Color.choreStarFill)
                             .cornerRadius(16)
                         }
                         .disabled(store.purchaseInProgress)
@@ -102,7 +100,7 @@ struct PaywallView: View {
                         Task { await store.restorePurchases() }
                     }
                     .font(.subheadline)
-                    .foregroundColor(.choreStarPrimary)
+                    .foregroundColor(.choreStarLink)
 
                     // Legal — Apple-required auto-renewal disclosure + functional links
                     VStack(spacing: 10) {
@@ -117,7 +115,7 @@ struct PaywallView: View {
                             Link("Privacy Policy", destination: URL(string: "https://chorestar.app/privacy")!)
                         }
                         .font(.caption2)
-                        .tint(.choreStarPrimary)
+                        .tint(.choreStarLink)
                     }
                     .padding(.bottom, 20)
                 }
@@ -137,8 +135,8 @@ struct PaywallView: View {
         .task {
             await store.loadProducts()
         }
-        .alert("Welcome to Premium! 🎉", isPresented: $showingSuccess) {
-            Button("Let's Go!") { dismiss() }
+        .alert("Welcome to Premium", isPresented: $showingSuccess) {
+            Button("Done") { dismiss() }
         } message: {
             Text("Your family now has unlimited children, chores, and premium themes.")
         }
@@ -200,7 +198,7 @@ struct PaywallView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Color.choreStarGradient)
+                .background(Color.choreStarFill)
                 .cornerRadius(16)
             }
             .padding(.top, 4)

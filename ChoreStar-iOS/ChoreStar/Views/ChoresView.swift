@@ -655,15 +655,15 @@ struct EmptyChoresView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Large emoji instead of SF Symbol
-            Text(emptyEmoji)
-                .font(.system(size: 80))
-            
+            Image(systemName: emptySymbol)
+                .font(.system(size: 48))
+                .foregroundColor(.choreStarTextSecondary)
+
             Text(emptyMessage)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
-            
+
             Text(emptySubtitle)
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
@@ -672,37 +672,37 @@ struct EmptyChoresView: View {
         }
         .padding(40)
     }
-    
-    private var emptyEmoji: String {
+
+    private var emptySymbol: String {
         switch filter {
         case .all:
-            return "📋"
+            return "list.bullet.clipboard"
         case .pending:
-            return "🎉"
+            return "checkmark.circle"
         case .completed:
-            return "⏰"
+            return "clock"
         }
     }
-    
+
     private var emptyMessage: String {
         switch filter {
         case .all:
-            return "No chores yet!"
+            return "No chores yet"
         case .pending:
-            return "All done! 🎉"
+            return "All done"
         case .completed:
             return "No completed chores"
         }
     }
-    
+
     private var emptySubtitle: String {
         switch filter {
         case .all:
-            return "Tap the + button to create your first chore and start earning rewards!"
+            return "Tap the + button to create your first chore."
         case .pending:
-            return "Awesome work! All chores are completed for today. Time to relax!"
+            return "All chores for today are done."
         case .completed:
-            return "Complete some chores to see them here and track your progress!"
+            return "Chores show up here once they're checked off."
         }
     }
 }

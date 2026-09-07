@@ -110,7 +110,7 @@ struct AuthView: View {
                 .padding(24)
                 .background(Color.choreStarCardBackground)
                 .cornerRadius(20)
-                .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 8)
+                .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
                 .frame(maxWidth: 560)
                 .padding(.horizontal, 24)
 
@@ -125,7 +125,7 @@ struct AuthView: View {
     private var kidLoginButton: some View {
         Button(action: { showingKidLogin = true }) {
             HStack(spacing: 8) {
-                Text("🧒")
+                Image(systemName: "figure.child.circle.fill")
                     .accessibilityHidden(true)
                 Text("I'm a Kid!")
                     .fontWeight(.bold)
@@ -304,12 +304,11 @@ struct AuthView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                // The darkening overlay keeps white text readable on the
-                // lighter seasonal gradients (summer coral failed the audit).
-                .background(themeManager.gradient.overlay(Color.black.opacity(0.15)))
+                // Solid accent fill (docs/DESIGN.md): #5e61e5 clears WCAG AA
+                // with white text on every theme, no darkening overlay needed.
+                .background(Color.choreStarFill)
                 .foregroundColor(.white)
                 .cornerRadius(12)
-                .shadow(color: themeManager.accentColor.opacity(0.4), radius: 12, x: 0, y: 4)
             }
             .accessibilityIdentifier("auth.submitButton")
             .disabled(!isFormValid || isLoading)
@@ -392,7 +391,7 @@ struct AuthView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(themeManager.gradient)
+                .background(Color.choreStarFill)
                 .foregroundColor(.white)
                 .cornerRadius(12)
             }

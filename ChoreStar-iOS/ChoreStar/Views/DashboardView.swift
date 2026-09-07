@@ -342,8 +342,8 @@ struct DashboardView: View {
             }
         }
         .confetti(isPresented: $showConfetti)
-        .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
-            Button("Awesome!", role: .cancel) { }
+        .alert("Achievement unlocked", isPresented: $showAchievementAlert) {
+            Button("OK", role: .cancel) { }
         } message: {
             if let first = earnedAchievements.first {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")

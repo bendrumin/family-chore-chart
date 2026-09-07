@@ -22,6 +22,9 @@ struct ChoreStarApp: App {
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault),
         ])
+        // Display face (Bricolage Grotesque) on large navigation titles —
+        // parent chrome only; kid screens use inline titles or custom headers.
+        AppTypography.installNavigationTitleFont()
         ReviewPrompter.recordLaunch()
     }
 

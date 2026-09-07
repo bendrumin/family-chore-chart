@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		075FA47F80C43135491BF7D0 /* BricolageGrotesque-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */; };
 		2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */; };
 		4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */; };
 		55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */; };
+		58282D57D5719FD63139F235 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9BF1F9D206F53790FB05FAFB /* OFL.txt */; };
+		6CAC4C97D8DBCFD9E9530759 /* BricolageGrotesque-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */; };
+		872128E9FDA90F7721851566 /* BricolageGrotesque-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */; };
 		9EA025C9301135A2008215CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025C8301135A2008215CE /* WidgetKit.framework */; };
 		9EA025CB301135A2008215CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025CA301135A2008215CE /* SwiftUI.framework */; };
 		9EA025DC301135A3008215CE /* ChoreStarWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A1234567890ABCDEF1234567 /* ChoreStarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234566 /* ChoreStarApp.swift */; };
-		A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F6 /* Localizable.xcstrings */; };
 		A1234567890ABCDEF1234569 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF1234568 /* ContentView.swift */; };
 		A1234567890ABCDEF123456B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123456A /* Assets.xcassets */; };
 		A1234567890ABCDEF123456E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF123456D /* Preview Assets.xcassets */; };
@@ -63,6 +66,7 @@
 		A1234567890ABCDEF12345F1 /* RoutineActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */; };
 		A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F2 /* FamilySharingView.swift */; };
 		A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F4 /* NotificationsManager.swift */; };
+		A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F6 /* Localizable.xcstrings */; };
 		C0DEC0DE0000000000000002 /* ChoreCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000001 /* ChoreCategory.swift */; };
 		C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000003 /* OnboardingView.swift */; };
 		C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */; };
@@ -115,6 +119,8 @@
 		21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChoreStarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarPathTests.swift; sourceTree = "<group>"; };
 		26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMathTests.swift; sourceTree = "<group>"; };
+		558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-ExtraBold.ttf"; sourceTree = "<group>"; };
+		9BF1F9D206F53790FB05FAFB /* OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = OFL.txt; sourceTree = "<group>"; };
 		9E8D645C30260BE3008767EC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChoreStarWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EA025C8301135A2008215CE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -172,11 +178,13 @@
 		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A39725F7A81983AC08C2BD8A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-SemiBold.ttf"; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreWizardView.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterRoutinesView.swift; sourceTree = "<group>"; };
 		E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReviewPrompterTests.swift; sourceTree = "<group>"; };
+		F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-Bold.ttf"; sourceTree = "<group>"; };
 		FBE84969912EF41FC2706235 /* ReviewPrompter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReviewPrompter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -309,6 +317,7 @@
 				A1234567890ABCDEF1234581 /* Info.plist */,
 				A1234567890ABCDEF123456C /* Preview Content */,
 				FD5C4A47D33D172A27E212BC /* Logic */,
+				E136A6C17A7F3066D68D1E33 /* Fonts */,
 			);
 			path = ChoreStar;
 			sourceTree = "<group>";
@@ -406,6 +415,18 @@
 				A1234567890ABCDEF12345EC /* DesignSystem.swift */,
 			);
 			path = Theme;
+			sourceTree = "<group>";
+		};
+		E136A6C17A7F3066D68D1E33 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */,
+				F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */,
+				558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */,
+				9BF1F9D206F53790FB05FAFB /* OFL.txt */,
+			);
+			name = Fonts;
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		FD5C4A47D33D172A27E212BC /* Logic */ = {
@@ -580,6 +601,10 @@
 				A1234567890ABCDEF123456B /* Assets.xcassets in Resources */,
 				A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */,
 				A1234567890ABCDEF12345C2 /* PrivacyInfo.xcprivacy in Resources */,
+				075FA47F80C43135491BF7D0 /* BricolageGrotesque-SemiBold.ttf in Resources */,
+				6CAC4C97D8DBCFD9E9530759 /* BricolageGrotesque-Bold.ttf in Resources */,
+				872128E9FDA90F7721851566 /* BricolageGrotesque-ExtraBold.ttf in Resources */,
+				58282D57D5719FD63139F235 /* OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

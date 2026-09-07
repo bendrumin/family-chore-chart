@@ -66,7 +66,7 @@ struct ChildDetailView: View {
                                 )
                             )
                             .frame(width: 100, height: 100)
-                            .shadow(color: Color.fromString(child.avatarColor).opacity(0.4), radius: 15, x: 0, y: 8)
+                            .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
                         
                         Text(child.initials)
                             .font(.system(size: 40, weight: .bold, design: .rounded))
@@ -75,7 +75,7 @@ struct ChildDetailView: View {
                     
                     VStack(spacing: 8) {
                         Text(child.name)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .font(.display(32, weight: .bold))
                             .foregroundColor(.choreStarTextPrimary)
                         
                         Text("Age \(child.age)")
@@ -127,7 +127,7 @@ struct ChildDetailView: View {
                             Text("\(Int(completionPercentage * 100))%")
                                 .font(.headline)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.choreStarGradient)
+                                .foregroundColor(.choreStarTextPrimary)
                         }
                         
                         GeometryReader { geometry in
@@ -137,13 +137,7 @@ struct ChildDetailView: View {
                                     .frame(height: 12)
                                 
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.fromString(child.avatarColor), Color.fromString(child.avatarColor).opacity(0.7)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
+                                    .fill(Color.fromString(child.avatarColor))
                                     .frame(width: geometry.size.width * completionPercentage, height: 12)
                                     .animation(.spring(response: 0.6, dampingFraction: 0.8), value: completionPercentage)
                             }
@@ -153,7 +147,7 @@ struct ChildDetailView: View {
                     .padding(16)
                     .background(Color.choreStarCardBackground)
                     .cornerRadius(16)
-                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+                    .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -165,8 +159,7 @@ struct ChildDetailView: View {
                         .task { await manager.loadWallet(for: child.id) }
 
                     Text("\(child.name)'s Chores")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(.display(22, weight: .bold))
                         .foregroundColor(.choreStarTextPrimary)
                         .padding(.horizontal, 20)
                     
@@ -259,7 +252,7 @@ struct ChildDetailView: View {
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(Color.choreStarGradient)
+                            .foregroundColor(.choreStarPrimary)
                     }
                 }
             }
@@ -345,7 +338,7 @@ struct StatCard: View {
         .padding(.vertical, 16)
         .background(Color.choreStarCardBackground)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
     }
 }
 
@@ -411,11 +404,11 @@ struct ChildChoreCard: View {
             HStack(spacing: 4) {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.caption)
-                    .foregroundStyle(Color.choreStarWarningGradient)
+                    .foregroundColor(.choreStarAccent)
                 Text(String(format: "%.2f", chore.reward))
                     .font(.subheadline)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color.choreStarWarningGradient)
+                    .foregroundColor(.choreStarAccent)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -424,16 +417,7 @@ struct ChildChoreCard: View {
             }
         }
         .padding(14)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.choreStarCardBackground,
-                    isCompleted ? Color.choreStarSuccess.opacity(0.05) : Color.choreStarCardBackground
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
+        .background(Color.choreStarCardBackground)
         .cornerRadius(14)
         .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
         .overlay(
@@ -462,15 +446,15 @@ struct EmptyChoresMessage: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle")
+            Image(systemName: "checklist")
                 .font(.system(size: 50))
-                .foregroundColor(.choreStarSuccess)
-            
-            Text("All Done!")
+                .foregroundColor(.choreStarTextSecondary)
+
+            Text("No chores yet")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
-            
+
             Text("\(childName) has no chores assigned yet")
                 .font(.body)
                 .foregroundColor(.choreStarTextSecondary)
@@ -539,7 +523,7 @@ struct ParentGoalSection: View {
                                 Text("Saving for \(goal.title)")
                                     .font(.subheadline.weight(.bold))
                                     .foregroundColor(.choreStarTextPrimary)
-                                Text("\(money(goal.progressCents)) of \(money(goal.targetCents))\(goal.reached ? " · reached!" : "")")
+                                Text("\(money(goal.progressCents)) of \(money(goal.targetCents))\(goal.reached ? " · reached" : "")")
                                     .font(.caption)
                                     .foregroundColor(.choreStarTextSecondary)
                             }
@@ -596,8 +580,8 @@ struct ParentGoalSection: View {
                                 .font(.subheadline.weight(.bold))
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 42)
-                                .background(goal.reached ? AnyShapeStyle(ThemeManager.shared.gradient) : AnyShapeStyle(Color.choreStarPrimary.opacity(0.12)))
-                                .foregroundColor(goal.reached ? .white : .choreStarPrimary)
+                                .background(goal.reached ? AnyShapeStyle(Color.choreStarFill) : AnyShapeStyle(Color.choreStarPrimary.opacity(0.12)))
+                                .foregroundColor(goal.reached ? .white : .choreStarLink)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .buttonStyle(.plain)
@@ -640,7 +624,7 @@ struct ParentGoalSection: View {
                 Haptics.success()
                 message = goalId == nil
                     ? "Paid \(child.name) \(money(paid))."
-                    : "Paid \(child.name) \(money(paid)) toward the goal. Goal reached!"
+                    : "Paid \(child.name) \(money(paid)) toward the goal. Goal reached."
                 // Money just changed hands, the happiest parent-side moment
                 // there is. ReviewPrompter keeps the ask rare.
                 if ReviewPrompter.recordMoneyMomentAndCheck() {
@@ -760,7 +744,7 @@ struct PayoutSheet: View {
                         .frame(height: 46)
                         .background(
                             isValid && !busy
-                                ? AnyShapeStyle(ThemeManager.shared.gradient)
+                                ? AnyShapeStyle(Color.choreStarFill)
                                 : AnyShapeStyle(Color.choreStarTextSecondary.opacity(0.25))
                         )
                         .foregroundColor(.white)

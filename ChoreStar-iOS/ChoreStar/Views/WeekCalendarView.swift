@@ -76,8 +76,7 @@ struct WeekCalendarView: View {
                     // title + "tap any cell" hint stacked three headers
                     // before any content.
                     Text("\(child.name)'s Week")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(.display(22, weight: .bold))
                         .foregroundColor(.choreStarTextPrimary)
                         .padding(.top, 8)
                 
@@ -95,10 +94,10 @@ struct WeekCalendarView: View {
                         HStack(spacing: 16) {
                             VStack(spacing: 4) {
                                 Text("\(weekCompletionStats.perfectDays)")
-                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .font(.display(30, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
-                                    .foregroundStyle(Color.choreStarGradient)
+                                    .foregroundColor(.choreStarTextPrimary)
                                 Image(systemName: "star.fill")
                                     .font(.caption)
                                     .foregroundColor(.choreStarAccent)
@@ -116,10 +115,10 @@ struct WeekCalendarView: View {
                                 // column at a fixed 36pt and wrapped to two
                                 // lines; scale down instead of wrapping.
                                 Text(manager.formatMoney(weekCompletionStats.earnings))
-                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .font(.display(30, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
-                                    .foregroundStyle(Color.choreStarWarningGradient)
+                                    .foregroundColor(.choreStarTextPrimary)
                                 Image(systemName: "dollarsign.circle.fill")
                                     .font(.caption)
                                     .foregroundColor(.choreStarAccent)
@@ -134,10 +133,10 @@ struct WeekCalendarView: View {
                             
                             VStack(spacing: 4) {
                                 Text("\(weekCompletionStats.percentage)%")
-                                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                                    .font(.display(30, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
-                                    .foregroundStyle(Color.choreStarSuccessGradient)
+                                    .foregroundColor(.choreStarTextPrimary)
                                 Image(systemName: "chart.bar.fill")
                                     .font(.caption)
                                     .foregroundColor(.choreStarSuccess)
@@ -165,7 +164,7 @@ struct WeekCalendarView: View {
                     .padding(20)
                     .background(Color.choreStarCardBackground)
                     .cornerRadius(20)
-                    .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
+                    .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
                     .padding(.horizontal, 20)
                 }
                 
@@ -259,7 +258,7 @@ struct WeekCalendarView: View {
                         }
                         .background(Color.choreStarCardBackground)
                         .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.08), radius: 15, x: 0, y: 5)
+                        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
                         .frame(maxWidth: horizontalSizeClass == .regular ? 560 : .infinity)
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, 16)
@@ -321,8 +320,8 @@ struct WeekCalendarView: View {
         } message: { plan in
             Text(bulkConfirmMessage(plan))
         }
-        .alert("🏆 Achievement Unlocked!", isPresented: $showAchievementAlert) {
-            Button("Awesome!", role: .cancel) { }
+        .alert("Achievement unlocked", isPresented: $showAchievementAlert) {
+            Button("OK", role: .cancel) { }
         } message: {
             if let first = earnedAchievements.first {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
@@ -518,7 +517,6 @@ struct DayCell: View {
                             )
                     )
                     .opacity(isDue || isCompleted || isPending ? 1 : 0.6)
-                    .shadow(color: isCompleted ? Color.choreStarSuccess.opacity(0.3) : .clear, radius: 4, x: 0, y: 2)
 
                 if isPending {
                     Image(systemName: "clock.fill")
@@ -598,7 +596,7 @@ struct DayBreakdownCard: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.choreStarPrimary)
+                                .background(Color.choreStarFill)
                                 .cornerRadius(8)
                         }
                     }
@@ -672,21 +670,13 @@ struct DayBreakdownCard: View {
             }
         }
         .padding(16)
-        .background(
-            LinearGradient(
-                colors: isToday ? 
-                    [Color.choreStarPrimary.opacity(0.05), Color.choreStarCardBackground] :
-                    [Color.choreStarCardBackground, Color.choreStarCardBackground],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .background(Color.choreStarCardBackground)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(isToday ? Color.choreStarPrimary.opacity(0.3) : Color.clear, lineWidth: 2)
         )
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
     }
 }
 
@@ -783,14 +773,14 @@ struct EmptyWeekView: View {
         VStack(spacing: 16) {
             Image(systemName: "calendar")
                 .font(.system(size: 60))
-                .foregroundStyle(Color.choreStarGradient)
-            
-            Text("No Chores Yet")
+                .foregroundColor(.choreStarTextSecondary)
+
+            Text("No chores yet")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
-            
-            Text("\(childName) doesn't have any chores assigned yet.\nAdd some chores to get started!")
+
+            Text("\(childName) doesn't have any chores assigned yet.\nAdd a chore to fill in their week.")
                 .font(.body)
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)

@@ -13,8 +13,7 @@ struct ChildrenView: View {
                         HStack {
                             VStack(alignment: .leading) {
                                 Text("Family Members")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
+                                    .font(.display(22, weight: .bold))
                                     .foregroundColor(.choreStarTextPrimary)
 
                                 Text("Manage your family and track their progress")
@@ -59,7 +58,6 @@ struct ChildrenView: View {
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(Color.choreStarGradient)
                     }
                     .accessibilityLabel("Add Child")
                     .accessibilityIdentifier("family.addChildButton")
@@ -107,12 +105,11 @@ struct ChildDetailCard: View {
             // Avatar with edit button overlay
             ZStack(alignment: .topTrailing) {
                 AvatarView(child: child, size: 80)
-                    .shadow(color: Color.fromString(child.avatarColor).opacity(0.4), radius: 8, x: 0, y: 4)
-                
+
                 // Edit button
                 Button(action: { showingEditSheet = true }) {
                     Circle()
-                        .fill(Color.choreStarPrimary)
+                        .fill(Color.choreStarFill)
                         .frame(width: 28, height: 28)
                         .overlay(
                             Image(systemName: "pencil")
@@ -120,7 +117,6 @@ struct ChildDetailCard: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
                         )
-                        .shadow(color: Color.choreStarPrimary.opacity(0.4), radius: 4, x: 0, y: 2)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .offset(x: 8, y: -8)
@@ -225,16 +221,16 @@ struct ChildDetailCard: View {
 struct EmptyChildrenView: View {
     var body: some View {
         VStack(spacing: 20) {
-            // Large emoji instead of SF Symbol for more playfulness
-            Text("👨‍👩‍👧‍👦")
-                .font(.system(size: 80))
-            
-            Text("No family members yet!")
+            Image(systemName: "figure.2.and.child.holdinghands")
+                .font(.system(size: 48))
+                .foregroundColor(.choreStarTextSecondary)
+
+            Text("No family members yet")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
-            
-            Text("Tap the + button to add your first kiddo and start tracking chores together!")
+
+            Text("Tap the + button to add your first child.")
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)

@@ -234,13 +234,7 @@ struct EmojiAvatarOption: View {
         Button(action: onTap) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.choreStarSecondary.opacity(0.3), Color.choreStarPrimary.opacity(0.2)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.choreStarPrimary.opacity(0.12))
                     .frame(width: 70, height: 70)
                 
                 Text(emoji)
@@ -387,7 +381,7 @@ struct PhotoAvatarPicker: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 15)
                                 .foregroundColor(.white)
-                                .background(Color.choreStarPrimary)
+                                .background(Color.choreStarFill)
                                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         }
                         .disabled(isUploading)

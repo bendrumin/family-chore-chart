@@ -204,7 +204,7 @@ struct AddChoreWizardView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(canAdvance ? Color.choreStarPrimary : Color.gray.opacity(0.4))
+                    .background(canAdvance ? Color.choreStarFill : Color.gray.opacity(0.4))
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
@@ -239,7 +239,7 @@ struct AddChoreWizardView: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 10)
                                 .background(
-                                    Capsule().fill(isSelected ? Color.choreStarPrimary : Color(.secondarySystemGroupedBackground))
+                                    Capsule().fill(isSelected ? Color.choreStarFill : Color(.secondarySystemGroupedBackground))
                                 )
                                 .foregroundColor(isSelected ? .white : .choreStarTextPrimary)
                             }

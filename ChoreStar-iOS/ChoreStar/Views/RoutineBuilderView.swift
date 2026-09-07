@@ -165,7 +165,7 @@ struct RoutineBuilderView: View {
                                 .font(.body)
                                 .foregroundColor(selectedIcon == icon ? .white : .choreStarTextPrimary)
                                 .frame(width: 36, height: 36)
-                                .background(selectedIcon == icon ? Color.choreStarPrimary : Color.choreStarBackground)
+                                .background(selectedIcon == icon ? Color.choreStarFill : Color.choreStarBackground)
                                 .cornerRadius(8)
                         }
                         .buttonStyle(PlainButtonStyle())

@@ -1,6 +1,47 @@
 import SwiftUI
 import UIKit
 
+// MARK: - Display Typography (Bricolage Grotesque)
+
+/// The display face for parent surfaces: large headings and big stat numbers.
+/// Body, labels, and buttons stay SF; kid-facing views keep their fonts.
+/// Bundled under Fonts/ (SIL OFL); PostScript names verified from the TTFs.
+/// Bricolage has no 900/black — .heavy and .black resolve to ExtraBold (800).
+extension Font {
+    static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+        .custom(UIFont.displayFontName(for: weight), size: size)
+    }
+}
+
+extension UIFont {
+    /// PostScript name for a display-face weight. Anything below .bold maps
+    /// to SemiBold (600); .bold to Bold (700); heavier to ExtraBold (800).
+    static func displayFontName(for weight: Font.Weight) -> String {
+        switch weight {
+        case .heavy, .black:
+            return "BricolageGrotesque-ExtraBold"
+        case .bold:
+            return "BricolageGrotesque-Bold"
+        default:
+            return "BricolageGrotesque-SemiBold"
+        }
+    }
+}
+
+enum AppTypography {
+    /// Puts the display face on large navigation titles, app-wide, once at
+    /// launch. Kid-facing screens only use inline titles (or custom headers
+    /// on gradients), so this touches parent chrome only. Falls back to the
+    /// system font silently if the bundled font failed to register.
+    static func installNavigationTitleFont() {
+        guard let font = UIFont(name: UIFont.displayFontName(for: .bold), size: 34) else { return }
+        UINavigationBar.appearance().largeTitleTextAttributes = [
+            .font: font,
+            .foregroundColor: UIColor.label,
+        ]
+    }
+}
+
 // MARK: - Haptics
 
 /// Centralized haptic feedback so every interaction feels native.
@@ -95,8 +136,7 @@ struct AppSectionHeader: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(.display(20, weight: .bold))
                 .foregroundColor(.choreStarTextPrimary)
 
             Spacer()
@@ -381,7 +421,7 @@ struct RateChoreStarCard: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Color.choreStarPrimary)
+                        .background(Color.choreStarFill)
                         .clipShape(Capsule())
                 }
                 .simultaneousGesture(TapGesture().onEnded { onRate() })
@@ -420,10 +460,10 @@ struct PerfectDayOverlay: View {
                     .rotationEffect(.degrees(appeared ? 0 : -30))
 
                 Text("Perfect Day!")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .font(.display(36, weight: .heavy))
                     .foregroundColor(.white)
 
-                Text("Every single chore is done. Amazing!")
+                Text("Every chore for today is done.")
                     .font(.headline)
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
@@ -487,7 +527,7 @@ struct StatTile: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(value)
-                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .font(.display(22, weight: .bold))
                     .foregroundColor(.choreStarTextPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)

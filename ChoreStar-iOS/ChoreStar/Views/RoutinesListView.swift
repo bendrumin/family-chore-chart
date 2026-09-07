@@ -59,7 +59,7 @@ struct RoutinesListView: View {
                                 .padding(.vertical, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .fill(filterType == type ? Color.choreStarPrimary : Color.clear)
+                                        .fill(filterType == type ? Color.choreStarFill : Color.clear)
                                 )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -165,9 +165,9 @@ struct RoutinesListView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
-                    .background(Color.choreStarGradient)
+                    .background(Color.choreStarFill)
                     .clipShape(Circle())
-                    .shadow(color: Color.choreStarPrimary.opacity(0.4), radius: 12, x: 0, y: 4)
+                    .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
             }
             .padding(.trailing, 20)
             .padding(.bottom, 20)
@@ -189,18 +189,18 @@ struct RoutinesListView: View {
             
             Image(systemName: "repeat.circle.fill")
                 .font(.system(size: 60))
-                .foregroundStyle(Color.choreStarGradient)
-            
-            Text("No Routines Yet")
+                .foregroundColor(.choreStarTextSecondary)
+
+            Text("No routines yet")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.choreStarTextPrimary)
-            
-            Text("Create a morning or bedtime routine\nto help your kids build great habits!")
+
+            Text("Create a morning or bedtime routine\nthat your kids can run on their own.")
                 .font(.subheadline)
                 .foregroundColor(.choreStarTextSecondary)
                 .multilineTextAlignment(.center)
-            
+
             Button(action: { showingStarters = true }) {
                 HStack {
                     Image(systemName: "sparkles")
@@ -210,7 +210,7 @@ struct RoutinesListView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 14)
-                .background(Color.choreStarGradient)
+                .background(Color.choreStarFill)
                 .cornerRadius(14)
             }
             .padding(.top, 8)
@@ -222,7 +222,7 @@ struct RoutinesListView: View {
                 }
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(.choreStarPrimary)
+                .foregroundColor(.choreStarLink)
             }
 
             Spacer()

@@ -98,7 +98,7 @@ struct ChangePasswordView: View {
                 try await manager.changePassword(newPassword: newPassword)
                 
                 await MainActor.run {
-                    successMessage = "Password changed successfully!"
+                    successMessage = "Password changed."
                     isChanging = false
                     
                     // Auto-dismiss after 1 second

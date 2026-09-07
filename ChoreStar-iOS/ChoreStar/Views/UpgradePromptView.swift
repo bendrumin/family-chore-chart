@@ -39,12 +39,11 @@ struct UpgradePromptView: View {
             
             Image(systemName: limitType.icon)
                 .font(.system(size: 60))
-                .foregroundStyle(Color.choreStarGradient)
-            
+                .foregroundColor(.choreStarPrimary)
+
             VStack(spacing: 8) {
                 Text(limitType.title)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.display(22, weight: .bold))
                     .foregroundColor(.choreStarTextPrimary)
                 
                 Text("You've reached the free plan limit of \(limit) \(limitType.itemName).")
@@ -65,11 +64,11 @@ struct UpgradePromptView: View {
                     upgradeFeature(icon: "chart.bar.fill", text: "Export reports")
                 }
                 .padding(20)
-                .background(Color.choreStarPrimary.opacity(0.08))
+                .background(Color.choreStarCardBackground)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .strokeBorder(Color.choreStarPrimary.opacity(0.2), lineWidth: 1)
+                        .strokeBorder(Color.choreStarPrimary.opacity(0.25), lineWidth: 1)
                 )
             }
             .padding(.horizontal, 32)
@@ -86,7 +85,7 @@ struct UpgradePromptView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.choreStarGradient)
+                .background(Color.choreStarFill)
                 .cornerRadius(14)
             }
             .padding(.horizontal, 32)

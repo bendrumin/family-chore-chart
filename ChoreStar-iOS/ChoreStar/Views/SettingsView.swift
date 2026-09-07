@@ -150,7 +150,7 @@ struct SettingsView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Upgrade to Premium")
                                         .fontWeight(.semibold)
-                                        .foregroundColor(.choreStarPrimary)
+                                        .foregroundColor(.choreStarLink)
                                     Text("Unlimited children, chores & more")
                                         .font(.caption)
                                         .foregroundColor(.choreStarTextSecondary)
@@ -166,7 +166,7 @@ struct SettingsView: View {
                         }) {
                             Text("Restore Purchases")
                                 .font(.subheadline)
-                                .foregroundColor(.choreStarPrimary)
+                                .foregroundColor(.choreStarLink)
                         }
                     }
 
@@ -176,7 +176,7 @@ struct SettingsView: View {
                         Button(action: { showingManageSubscriptions = true }) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Manage Subscription")
-                                    .foregroundColor(.choreStarPrimary)
+                                    .foregroundColor(.choreStarLink)
                                 Text("Change plans or cancel. Billed by Apple.")
                                     .font(.caption)
                                     .foregroundColor(.choreStarTextSecondary)
@@ -389,7 +389,7 @@ struct SettingsView: View {
                 } header: {
                     Text("About")
                 } footer: {
-                    Text("Ratings and reviews are how other families find ChoreStar. A quick rating helps more than you'd think. Thank you!")
+                    Text("Ratings and reviews are how other families find ChoreStar.")
                 }
                 
                 Section {
@@ -800,7 +800,7 @@ struct DeleteAccountView: View {
                         dismiss()
                     }
                     .font(.headline)
-                    .foregroundColor(.choreStarPrimary)
+                    .foregroundColor(.choreStarLink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .disabled(isDeleting)

@@ -192,8 +192,7 @@ struct WhatsNewView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(entry.title)
-                                    .font(.title2)
-                                    .fontWeight(.bold)
+                                    .font(.display(22, weight: .bold))
                                     .foregroundColor(.choreStarTextPrimary)
 
                                 Text("Version \(entry.version) · \(entry.date)")
@@ -226,13 +225,13 @@ struct WhatsNewView: View {
                     }
 
                     Button(action: { dismiss() }) {
-                        Text("Awesome!")
+                        Text("Done")
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.choreStarGradient)
+                            .background(Color.choreStarFill)
                             .cornerRadius(16)
                     }
                     .padding(.top, 8)

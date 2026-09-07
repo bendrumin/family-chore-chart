@@ -43,8 +43,9 @@ struct StarterRoutinesView: View {
 
     private var noChildrenState: some View {
         VStack(spacing: 12) {
-            Text("👨‍👩‍👧‍👦")
-                .font(.system(size: 50))
+            Image(systemName: "figure.2.and.child.holdinghands")
+                .font(.system(size: 44))
+                .foregroundColor(.choreStarTextSecondary)
             Text("Add a child first")
                 .font(.headline)
             Text("Routines belong to a kid. Add one on the Family tab, then come back here.")
@@ -79,7 +80,7 @@ struct StarterRoutinesView: View {
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 10)
                                     .background(
-                                        Capsule().fill(isSelected ? Color.choreStarPrimary : Color(.secondarySystemGroupedBackground))
+                                        Capsule().fill(isSelected ? Color.choreStarFill : Color(.secondarySystemGroupedBackground))
                                     )
                                     .foregroundColor(isSelected ? .white : .choreStarTextPrimary)
                                 }

@@ -3,6 +3,14 @@ import SwiftUI
 extension Color {
     // Brand colors matching web app (indigo/purple palette)
     static let choreStarPrimary = Color(red: 0.388, green: 0.400, blue: 0.945)      // #6366f1 (Indigo)
+
+    /// The solid accent fill for buttons, pills, and selected controls that
+    /// carry white text. Matches the web's --primary-fill. #6366f1 is only
+    /// ~4.1:1 against white — short of WCAG AA (4.5:1) — so filled controls
+    /// use this darker step instead. See docs/DESIGN.md.
+    static let choreStarFill = Color(red: 0.369, green: 0.380, blue: 0.898)         // #5e61e5
+    /// Pressed/highlighted state of choreStarFill (web --primary-fill-hover).
+    static let choreStarFillPressed = Color(red: 0.337, green: 0.353, blue: 0.824)  // #565ad2
     static let choreStarPrimaryLight = Color(red: 0.506, green: 0.549, blue: 0.973) // #818cf8 (Light Indigo)
     static let choreStarPurple = Color(red: 0.545, green: 0.361, blue: 0.965)       // #8b5cf6 (Purple)
     static let choreStarSecondary = Color(red: 0.063, green: 0.725, blue: 0.506)    // #10b981 (Emerald)

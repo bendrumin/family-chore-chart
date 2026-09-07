@@ -60,6 +60,12 @@
 	<string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5emdtaGNpc21ybmpsbmRkeXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwNDUxOTMsImV4cCI6MjA2ODYyMTE5M30.WejJ7dZjVeHP4wN990woeld4GBqT8GAHB1HDvJjv_K4</string>
 	<key>SUPABASE_URL</key>
 	<string>https://kyzgmhcismrnjlnddyyl.supabase.co</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>BricolageGrotesque-SemiBold.ttf</string>
+		<string>BricolageGrotesque-Bold.ttf</string>
+		<string>BricolageGrotesque-ExtraBold.ttf</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

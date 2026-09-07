@@ -107,7 +107,7 @@ struct RoutineCardView: View {
             }
             .background(Color.choreStarCardBackground)
             .cornerRadius(16)
-            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
+            .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(routineColor.opacity(0.2), lineWidth: 1)

@@ -110,8 +110,7 @@ struct HistoryView: View {
                     // Weekly completion trend
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Completions This Week")
-                            .font(.title3)
-                            .fontWeight(.bold)
+                            .font(.display(20, weight: .bold))
                             .foregroundColor(.choreStarTextPrimary)
 
                         Chart(weeklyTrend) { item in
@@ -165,7 +164,7 @@ struct HistoryView: View {
                                         .padding(.vertical, 6)
                                         .background(Color.choreStarCardBackground)
                                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                                        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
                                     }
                             }
                         }
@@ -195,8 +194,7 @@ struct HistoryView: View {
                     if selectedChild == nil && manager.children.count > 1 {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("By Child")
-                                .font(.title3)
-                                .fontWeight(.bold)
+                                .font(.display(20, weight: .bold))
                                 .foregroundColor(.choreStarTextPrimary)
 
                             Chart(completionsByChild) { item in
@@ -240,8 +238,7 @@ struct HistoryView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             Text("Perfect Days")
-                                .font(.title2)
-                                .fontWeight(.bold)
+                                .font(.display(22, weight: .bold))
                                 .foregroundColor(.choreStarTextPrimary)
                             
                             Spacer()
@@ -274,7 +271,7 @@ struct HistoryView: View {
                         .padding(.horizontal, 20)
                         
                         if stats.perfectDays == 7 {
-                            Text("Perfect week! Amazing job!")
+                            Text("Perfect week: all 7 days complete.")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.choreStarSuccess)
@@ -295,7 +292,7 @@ struct HistoryView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.choreStarTextPrimary)
                                 
-                                Text("Keep it going!")
+                                Text("Consecutive days with every chore done")
                                     .font(.subheadline)
                                     .foregroundColor(.choreStarTextSecondary)
                             }
@@ -315,8 +312,7 @@ struct HistoryView: View {
                     // Leaderboard
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Family Leaderboard")
-                            .font(.title2)
-                            .fontWeight(.bold)
+                            .font(.display(22, weight: .bold))
                             .foregroundColor(.choreStarTextPrimary)
                             .padding(.horizontal, 20)
                         
@@ -360,7 +356,7 @@ struct HistoryView: View {
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(selectedChild == id ? Color.choreStarPrimary : Color.choreStarSecondary.opacity(0.2))
+                        .fill(selectedChild == id ? Color.choreStarFill : Color.choreStarSecondary.opacity(0.2))
                 )
         }
         .buttonStyle(PlainButtonStyle())
@@ -438,7 +434,6 @@ struct LeaderboardRow: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                 )
-                .shadow(color: Color.fromString(child.avatarColor).opacity(0.3), radius: 6, x: 0, y: 3)
             
             // Info
             VStack(alignment: .leading, spacing: 4) {

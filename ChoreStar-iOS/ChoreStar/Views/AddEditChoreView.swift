@@ -522,9 +522,9 @@ struct DaysOfWeekPicker: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
                                 .background(
-                                    Capsule().fill(active ? Color.choreStarPrimary : Color.choreStarPrimary.opacity(0.12))
+                                    Capsule().fill(active ? Color.choreStarFill : Color.choreStarPrimary.opacity(0.12))
                                 )
-                                .foregroundColor(active ? .white : .choreStarPrimary)
+                                .foregroundColor(active ? .white : .choreStarLink)
                         }
                         .buttonStyle(.plain)
                         .accessibilityAddTraits(active ? [.isSelected] : [])
@@ -559,14 +559,7 @@ struct IconOption: View {
                 
                 if isSelected {
                     RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [Color.choreStarPrimary, Color.choreStarSecondary],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 3
-                        )
+                        .strokeBorder(Color.choreStarPrimary, lineWidth: 3)
                         .frame(width: 55, height: 55)
                 }
             }

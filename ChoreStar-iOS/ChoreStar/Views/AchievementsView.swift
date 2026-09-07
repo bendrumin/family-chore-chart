@@ -17,12 +17,12 @@ struct AchievementsView: View {
             VStack(spacing: 24) {
                 //  Header
                 VStack(spacing: 12) {
-                    Text("🏆")
-                        .font(.system(size: 60))
+                    Image(systemName: "trophy.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(.choreStarAccent)
 
                     Text("\(child.name)'s Achievements")
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(.display(28, weight: .bold))
                         .foregroundColor(.choreStarTextPrimary)
 
                     Text("\(earnedCount) of \(AchievementDefinition.all.count) badges earned")
@@ -95,7 +95,7 @@ struct AchievementProgressCard: View {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.caption)
-                        Text(info.earnedAt.map { String(localized: "Earned \(formatDate($0))") } ?? String(localized: "Earned!"))
+                        Text(info.earnedAt.map { String(localized: "Earned \(formatDate($0))") } ?? String(localized: "Earned"))
                             .font(.caption2)
                             .fontWeight(.semibold)
                     }

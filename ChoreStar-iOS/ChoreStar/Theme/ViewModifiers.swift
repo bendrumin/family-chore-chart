@@ -1,11 +1,13 @@
 import SwiftUI
 
 // MARK: - Card Modifier
+// Restraint pass (docs/DESIGN.md): hairline shadows only — radius ≤ 6,
+// y ≤ 2, opacity ≤ 0.08.
 struct CardModifier: ViewModifier {
     var padding: CGFloat = 16
-    var shadowRadius: CGFloat = 12
-    var shadowY: CGFloat = 4
-    
+    var shadowRadius: CGFloat = 6
+    var shadowY: CGFloat = 2
+
     func body(content: Content) -> some View {
         content
             .padding(padding)
@@ -21,10 +23,14 @@ struct CardModifier: ViewModifier {
 }
 
 // MARK: - Gradient Button Style
+/// Historical name, solid fill. The restraint pass (docs/DESIGN.md) reserves
+/// the brand gradient for the seasonal hero and celebrations; primary buttons
+/// are flat choreStarFill, darkening to choreStarFillPressed while pressed.
 struct GradientButtonStyle: ButtonStyle {
-    var gradient: LinearGradient
+    var fill: Color = .choreStarFill
+    var pressedFill: Color = .choreStarFillPressed
     var foregroundColor: Color = .white
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
@@ -32,14 +38,9 @@ struct GradientButtonStyle: ButtonStyle {
             .foregroundColor(foregroundColor)
             .padding(.horizontal, 24)
             .padding(.vertical, 14)
-            .background(gradient)
+            .background(configuration.isPressed ? pressedFill : fill)
             .cornerRadius(12)
-            .shadow(
-                color: Color.choreStarPrimary.opacity(0.3),
-                radius: configuration.isPressed ? 8 : 12,
-                x: 0,
-                y: configuration.isPressed ? 2 : 4
-            )
+            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 2)
             .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
     }
@@ -126,26 +127,19 @@ struct FloatingModifier: ViewModifier {
 
 // MARK: - View Extensions
 extension View {
-    func cardStyle(padding: CGFloat = 16, shadowRadius: CGFloat = 12, shadowY: CGFloat = 4) -> some View {
+    func cardStyle(padding: CGFloat = 16, shadowRadius: CGFloat = 6, shadowY: CGFloat = 2) -> some View {
         modifier(CardModifier(padding: padding, shadowRadius: shadowRadius, shadowY: shadowY))
     }
-    
-    /// Enhanced card shadow with more depth and playfulness
+
+    /// Card shadows, all clamped to the hairline budget (radius ≤ 6, y ≤ 2,
+    /// opacity ≤ 0.08). The old "playful" indigo glow is retired — glow
+    /// effects are out per docs/DESIGN.md.
     func cardShadow(intensity: ShadowIntensity = .medium) -> some View {
         switch intensity {
         case .light:
             return AnyView(self.shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2))
-        case .medium:
-            return AnyView(self.shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4))
-        case .heavy:
-            return AnyView(self.shadow(color: Color.black.opacity(0.15), radius: 16, x: 0, y: 8))
-        case .playful:
-            // Multiple layers for depth
-            return AnyView(
-                self
-                    .shadow(color: Color.choreStarPrimary.opacity(0.2), radius: 16, x: 0, y: 8)
-                    .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
-            )
+        case .medium, .heavy, .playful:
+            return AnyView(self.shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 2))
         }
     }
     
