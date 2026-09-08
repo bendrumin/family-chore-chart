@@ -54,6 +54,11 @@ const en = {
   'dash.start': 'Start',
   'dash.doneBadge': 'Done!',
 
+  // Vacation mode (family-wide pause window)
+  'vacation.title': "You're on vacation!",
+  'vacation.noChores': 'No chores until {day}.',
+  'vacation.streakSafe': 'Your {count}-day streak is safe and waiting for you. 🔥',
+
   // Routine player
   'player.notFound': 'Oops! Routine not found',
   'player.goBack': 'Go Back',
@@ -202,6 +207,10 @@ const es: Record<KidKey, string> = {
   'dash.start': 'Empezar',
   'dash.doneBadge': '¡Listo!',
 
+  'vacation.title': '¡Estás de vacaciones!',
+  'vacation.noChores': 'No hay tareas hasta el {day}.',
+  'vacation.streakSafe': 'Tu racha de {count} días está a salvo y te espera. 🔥',
+
   'player.notFound': '¡Uy! No encontramos esa rutina',
   'player.goBack': 'Volver',
   'player.saveFailed': '¡Uy! No se guardó. Toca Terminar para intentarlo otra vez. 💫',
@@ -339,6 +348,10 @@ const pt: Record<KidKey, string> = {
   'dash.start': 'Começar',
   'dash.doneBadge': 'Pronto!',
 
+  'vacation.title': 'Você está de férias!',
+  'vacation.noChores': 'Sem tarefas até {day}.',
+  'vacation.streakSafe': 'Sua sequência de {count} dias está segura, esperando por você. 🔥',
+
   'player.notFound': 'Opa! Não encontramos essa rotina',
   'player.goBack': 'Voltar',
   'player.saveFailed': 'Opa! Não deu para salvar. Toque em Terminar para tentar de novo. 💫',
@@ -475,6 +488,10 @@ const ar: Record<KidKey, string> = {
   'dash.steps': '{count} خطوات',
   'dash.start': 'ابدأ',
   'dash.doneBadge': 'تم!',
+
+  'vacation.title': 'أنت في إجازة!',
+  'vacation.noChores': 'لا توجد مهام حتى {day}.',
+  'vacation.streakSafe': 'سلسلتك من {count} أيام في أمان وتنتظرك. 🔥',
 
   'player.notFound': 'أوبس! لم نجد هذا الروتين',
   'player.goBack': 'رجوع',

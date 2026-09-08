@@ -5,6 +5,7 @@ import { ChoreIcon } from '@/components/ui/chore-icon'
 import { ThemeParticles } from '@/components/dashboard/theme-particles'
 import { ChildAvatarContent } from '@/components/children/child-avatar-content'
 import { formatMoney } from '@/lib/constants/currencies'
+import { parseLocalDate } from '@/lib/utils/date-helpers'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Child = Database['public']['Tables']['children']['Row']
@@ -22,6 +23,10 @@ interface DashboardHeroProps {
   onAddChild?: () => void
   onEditChild?: (child: Child) => void
   currencyCode?: string | null
+  /** Set when a vacation window covers today: the hero goes quiet. */
+  vacation?: { endsOn: string } | null
+  /** Clears the vacation window ("End vacation early"). */
+  onEndVacation?: () => void
 }
 
 /**
@@ -37,26 +42,32 @@ function greeting(): { text: string; icon: string } {
   return { text: 'Good night', icon: '🌙' }
 }
 
-/** Activity ring in the hero's own ink (white on the seasonal fill). */
-function HeroRing({ done, total, child }: { done: number; total: number; child: Child }) {
+/**
+ * Activity ring in the hero's own ink (white on the seasonal fill). On
+ * vacation the ring and its progress disappear and the avatar rests, dimmed:
+ * there is no list to fill, so there is nothing to measure.
+ */
+function HeroRing({ done, total, child, resting }: { done: number; total: number; child: Child; resting?: boolean }) {
   const R = 31
   const C = 2 * Math.PI * R
   const p = total > 0 ? done / total : 0
   const color = child.avatar_color || '#6366f1'
   return (
-    <div className="relative h-[64px] w-[64px] sm:h-[72px] sm:w-[72px]">
-      <svg width="100%" height="100%" viewBox="0 0 70 70" style={{ transform: 'rotate(-90deg)' }}>
-        <circle
-          cx="35" cy="35" r={R} fill="none" strokeWidth="4"
-          stroke="color-mix(in srgb, currentColor 28%, transparent)"
-        />
-        <circle
-          cx="35" cy="35" r={R} fill="none" strokeWidth="4"
-          stroke="currentColor" strokeLinecap="round"
-          strokeDasharray={C} strokeDashoffset={C * (1 - p)}
-          style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
-        />
-      </svg>
+    <div className={`relative h-[64px] w-[64px] sm:h-[72px] sm:w-[72px] ${resting ? 'opacity-[0.85]' : ''}`}>
+      {!resting && (
+        <svg width="100%" height="100%" viewBox="0 0 70 70" style={{ transform: 'rotate(-90deg)' }}>
+          <circle
+            cx="35" cy="35" r={R} fill="none" strokeWidth="4"
+            stroke="color-mix(in srgb, currentColor 28%, transparent)"
+          />
+          <circle
+            cx="35" cy="35" r={R} fill="none" strokeWidth="4"
+            stroke="currentColor" strokeLinecap="round"
+            strokeDasharray={C} strokeDashoffset={C * (1 - p)}
+            style={{ transition: 'stroke-dashoffset 0.7s cubic-bezier(0.22,1,0.36,1)' }}
+          />
+        </svg>
+      )}
       <div
         className="absolute inset-[7px] grid place-items-center overflow-hidden rounded-full text-lg font-bold"
         style={{ background: `linear-gradient(180deg, ${color} 0%, ${color}dd 100%)` }}
@@ -65,6 +76,15 @@ function HeroRing({ done, total, child }: { done: number; total: number; child: 
       </div>
     </div>
   )
+}
+
+/** "through Sunday, June 14" from a YYYY-MM-DD end date, in local time. */
+function formatThrough(endsOn: string): string {
+  return parseLocalDate(endsOn).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 /**
@@ -86,8 +106,13 @@ export function DashboardHero({
   onAddChild,
   onEditChild,
   currencyCode,
+  vacation = null,
+  onEndVacation,
 }: DashboardHeroProps) {
-  const { text: greetingText, icon: greetingIcon } = greeting()
+  // On vacation the greeting slot states the mode instead of the time of day.
+  const { text: greetingText, icon: greetingIcon } = vacation
+    ? { text: 'On vacation', icon: '🏖️' }
+    : greeting()
   const hasKids = children.length > 0
 
   return (
@@ -122,7 +147,9 @@ export function DashboardHero({
             <span>{greetingText}</span>
           </div>
           <div className="text-xs font-semibold opacity-75">
-            {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+            {vacation
+              ? `through ${formatThrough(vacation.endsOn)}`
+              : new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </div>
         </div>
 
@@ -140,7 +167,22 @@ export function DashboardHero({
               </span>
             )}
           </h2>
-          {hasKids && (
+          {hasKids && (vacation ? (
+            <div className="flex flex-none flex-col items-end text-right">
+              <div className="text-sm font-bold leading-tight">
+                Nothing due. Streaks are safe.
+              </div>
+              {onEndVacation && (
+                <button
+                  type="button"
+                  onClick={onEndVacation}
+                  className="mt-0.5 cursor-pointer text-xs font-bold underline underline-offset-2 opacity-85 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-current rounded"
+                >
+                  End vacation early
+                </button>
+              )}
+            </div>
+          ) : (
             <div className="flex flex-none flex-col items-end text-right">
               <div className="font-display text-lg sm:text-2xl font-extrabold tracking-tight tabular-nums leading-tight">
                 {done} of {total}
@@ -151,7 +193,7 @@ export function DashboardHero({
                   : 'No chores due today'}
               </div>
             </div>
-          )}
+          ))}
         </div>
 
         {hasKids ? (
@@ -190,15 +232,20 @@ export function DashboardHero({
                 const dimmed = selectedChildId !== null && !isSelected
                 const ring = (
                   <>
-                    <HeroRing done={prog.done} total={prog.total} child={child} />
+                    <HeroRing done={prog.done} total={prog.total} child={child} resting={Boolean(vacation)} />
                     <div
                       className="rounded-full px-2 py-0.5 text-xs font-bold whitespace-nowrap"
                       style={isSelected ? { background: 'color-mix(in srgb, currentColor 18%, transparent)' } : undefined}
                     >
-                      {child.name}{' '}
-                      <span className="font-semibold opacity-75 tabular-nums">
-                        {prog.total > 0 ? `${prog.done}/${prog.total}` : 'none today'}
-                      </span>
+                      {child.name}
+                      {!vacation && (
+                        <>
+                          {' '}
+                          <span className="font-semibold opacity-75 tabular-nums">
+                            {prog.total > 0 ? `${prog.done}/${prog.total}` : 'none today'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </>
                 )

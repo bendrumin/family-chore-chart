@@ -34,8 +34,10 @@ import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import type { CustomTheme } from '@/lib/supabase/database.types'
+import type { CustomTheme, Database } from '@/lib/supabase/database.types'
 import type { Profile, Child } from '@/lib/types'
+import { isOnVacation, vacationWindowFromSettings } from '@/lib/utils/schedule'
+import { trimVacationHistory } from '@/lib/utils/vacation'
 import { RoutineList } from '@/components/routines/routine-list'
 import { applyThemeMode, clearStoredThemeMode, clearStoredThemeVars } from '@/lib/utils/theme-mode'
 
@@ -208,9 +210,32 @@ function DashboardContent({
   handleOnboardingComplete,
   isAdmin,
 }: any) {
-  const { settings } = useSettings()
+  const { settings, updateSettings } = useSettings()
   const todaySnapshot = useTodaySnapshot(children, settings)
   const [editingChild, setEditingChild] = useState<Child | null>(null)
+
+  // Vacation mode (migration 019): the live window rides on family_settings
+  // and is read loosely, so a pre-migration row simply means "no vacation".
+  // Only a window covering TODAY changes the dashboard; an expired or future
+  // one leaves everything as-is.
+  const vacationWindow = vacationWindowFromSettings(settings)
+  const onVacationToday = vacationWindow ? isOnVacation(new Date(), [vacationWindow]) : false
+
+  const handleEndVacation = async () => {
+    if (!vacationWindow) return
+    try {
+      type FamilySettingsRow = Database['public']['Tables']['family_settings']['Row']
+      await updateSettings({
+        vacation_starts_on: null,
+        vacation_ends_on: null,
+      } as unknown as Partial<FamilySettingsRow>)
+      // History stays, but records the vacation actually taken (best-effort).
+      void trimVacationHistory(settings?.user_id ?? initialUser.id, vacationWindow)
+      toast.success('Vacation ended. Chores are due again today.')
+    } catch {
+      toast.error('Could not end the vacation. Try again.')
+    }
+  }
 
   const detectDarkMode = () =>
     typeof window !== 'undefined' &&
@@ -529,6 +554,8 @@ function DashboardContent({
                 onAddChild={() => setIsAddChildModalOpen(true)}
                 onEditChild={setEditingChild}
                 currencyCode={settings?.currency_code}
+                vacation={onVacationToday && vacationWindow ? { endsOn: vacationWindow.ends_on } : null}
+                onEndVacation={handleEndVacation}
               />
             </div>
 

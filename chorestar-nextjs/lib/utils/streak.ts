@@ -1,4 +1,4 @@
-import { dueOn, type Scheduled } from '@/lib/utils/schedule'
+import { dueOn, type Scheduled, type VacationWindow } from '@/lib/utils/schedule'
 
 /**
  * Streaks, the kid-facing kind.
@@ -7,6 +7,11 @@ import { dueOn, type Scheduled } from '@/lib/utils/schedule'
  * with nothing due is skipped, not broken: a weekdays-only kid keeps their
  * streak over the weekend. Today is special: if it is not finished yet it is
  * simply not counted, so a streak does not "break" at breakfast.
+ *
+ * Vacation days (migration 019: family_settings live window + the
+ * vacation_periods history) are days with nothing due, so they are skipped the
+ * same way weekends are for a weekdays-only kid. The optional `vacations`
+ * parameter is a list of windows; omitting it keeps the old behavior exactly.
  *
  * Everything here is pure and works on (week_start, day_of_week) pairs, the
  * same coordinates `chore_completions` uses, so the caller supplies "today" in
@@ -66,6 +71,20 @@ export function dayKey(ref: DayRef): string {
   return `${ref.weekStart}|${ref.dayOfWeek}`
 }
 
+/**
+ * Is this day inside any vacation window? The module's date math is UTC-keyed
+ * YYYY-MM-DD strings (see parseUtc/formatUtc), and windows are date-only
+ * strings, so the comparison is lexicographic — inclusive on both ends.
+ */
+export function isVacationDay(
+  ref: DayRef,
+  vacations?: readonly VacationWindow[] | null
+): boolean {
+  if (!vacations || vacations.length === 0) return false
+  const ymd = formatUtc(parseUtc(ref.weekStart) + ref.dayOfWeek * DAY_MS)
+  return vacations.some(w => w.starts_on <= ymd && ymd <= w.ends_on)
+}
+
 /** chore-ids done per day, keyed by dayKey. */
 export function groupDoneByDayKey(completions: StreakCompletion[]): Map<string, Set<string>> {
   const map = new Map<string, Set<string>>()
@@ -84,14 +103,16 @@ export function groupDoneByDayKey(completions: StreakCompletion[]): Map<string, 
 }
 
 /**
- * Was this day finished? `null` means nothing was due, so the day neither
- * extends nor breaks a run.
+ * Was this day finished? `null` means nothing was due (nothing scheduled, or a
+ * vacation day), so the day neither extends nor breaks a run.
  */
 export function dayStatus(
   chores: StreakChore[],
   doneByDay: Map<string, Set<string>>,
-  ref: DayRef
+  ref: DayRef,
+  vacations?: readonly VacationWindow[] | null
 ): boolean | null {
+  if (isVacationDay(ref, vacations)) return null
   const due = dueOn(chores, ref.dayOfWeek)
   if (due.length === 0) return null
   const done = doneByDay.get(dayKey(ref))
@@ -105,11 +126,14 @@ const MAX_LOOKBACK_DAYS = 1000
 export function computeStreaks(
   chores: StreakChore[],
   completions: StreakCompletion[],
-  today: DayRef
+  today: DayRef,
+  vacations?: readonly VacationWindow[] | null
 ): StreakSummary {
   const doneByDay = groupDoneByDayKey(completions)
 
-  const todayDueList = dueOn(chores, today.dayOfWeek)
+  // On a vacation day nothing is due today, so today can't be perfect and the
+  // due/done counts read zero — the same shape as a nothing-scheduled day.
+  const todayDueList = isVacationDay(today, vacations) ? [] : dueOn(chores, today.dayOfWeek)
   const todayDoneSet = doneByDay.get(dayKey(today)) ?? new Set<string>()
   const todayDone = todayDueList.filter(c => todayDoneSet.has(c.id)).length
   const todayPerfect = todayDueList.length > 0 && todayDone === todayDueList.length
@@ -120,7 +144,7 @@ export function computeStreaks(
   if (chores.length > 0) {
     let ref = today
     for (let i = 0; i < MAX_LOOKBACK_DAYS; i++) {
-      const status = dayStatus(chores, doneByDay, ref)
+      const status = dayStatus(chores, doneByDay, ref, vacations)
       if (status === true) current++
       else if (status === false && i > 0) break
       // status null (nothing due) or an unfinished today: keep walking
@@ -141,7 +165,7 @@ export function computeStreaks(
       let ref: DayRef = { weekStart: formatUtc(earliest), dayOfWeek: 0 }
       let abs = earliest
       while (abs <= todayAbs) {
-        const status = dayStatus(chores, doneByDay, ref)
+        const status = dayStatus(chores, doneByDay, ref, vacations)
         if (status === true) {
           run++
           if (run > best) best = run

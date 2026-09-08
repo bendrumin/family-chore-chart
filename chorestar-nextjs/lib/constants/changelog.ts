@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.5'
+export const LATEST_CHANGELOG_VERSION = '2026.9.6'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.6': {
+    version: '2026.9.6',
+    date: 'September 2026',
+    title: 'Vacation Mode',
+    features: [
+      {
+        icon: '🏖️',
+        title: 'Pause the Chart, Keep the Streaks',
+        description: 'Going away? Set a date range in Settings and nothing is due while you\'re gone: no misses, no broken streaks, no red grid to come home to. Kids see a friendly note that their streak is safe, the reward store stays open, and it all ends on its own.',
+      },
+    ],
+  },
   '2026.9.5': {
     version: '2026.9.5',
     date: 'September 2026',

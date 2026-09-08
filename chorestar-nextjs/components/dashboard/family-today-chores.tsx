@@ -3,8 +3,13 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { TodayChoreRow } from '@/components/dashboard/today-chore-row'
-import { getWeekStart } from '@/lib/utils/date-helpers'
-import { dueOn } from '@/lib/utils/schedule'
+import { getWeekStart, parseLocalDate } from '@/lib/utils/date-helpers'
+import {
+  dueOn,
+  isOnVacation,
+  vacationDaysOfWeek,
+  vacationWindowFromSettings,
+} from '@/lib/utils/schedule'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { toast } from 'sonner'
 import { Columns2, Columns3, Rows3 } from 'lucide-react'
@@ -57,6 +62,14 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
   const dailyRewardCents = settings?.daily_reward_cents ?? 0
   const weekStart = getWeekStart()
   const dayOfWeek = new Date().getDay()
+  // Vacation mode: a live window turns due days off for this week's grid.
+  const vacationWindow = vacationWindowFromSettings(settings)
+  const vacationWindows = useMemo(
+    () => (vacationWindow ? [vacationWindow] : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [vacationWindow?.starts_on, vacationWindow?.ends_on]
+  )
+  const onVacationToday = isOnVacation(new Date(), vacationWindows)
   const [chores, setChores] = useState<Chore[]>([])
   const [completions, setCompletions] = useState<ChoreCompletion[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -140,8 +153,9 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
    * a kid whose chores all fall on other days is omitted for the day.
    */
   const groups = useMemo(() => {
+    const vacationDays = vacationDaysOfWeek(weekStart, vacationWindows)
     const byChild = new Map<string, Chore[]>()
-    for (const chore of dueOn(chores, dayOfWeek)) {
+    for (const chore of dueOn(chores, dayOfWeek, vacationDays)) {
       const list = byChild.get(chore.child_id)
       if (list) list.push(chore)
       else byChild.set(chore.child_id, [chore])
@@ -158,7 +172,7 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
         return { child, chores: childChores, done }
       })
       .filter(g => g.chores.length > 0)
-  }, [children, chores, completionsByChoreId, dayOfWeek, weekStart])
+  }, [children, chores, completionsByChoreId, dayOfWeek, weekStart, vacationWindows])
 
   const totalChores = groups.reduce((n, g) => n + g.chores.length, 0)
   const doneToday = groups.reduce((n, g) => n + g.done, 0)
@@ -178,6 +192,14 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
   }
 
   if (groups.length === 0) {
+    const through =
+      onVacationToday && vacationWindow
+        ? parseLocalDate(vacationWindow.ends_on).toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+          })
+        : null
     return (
       <section className="space-y-3">
         <SectionHeader title="Today's Chores" />
@@ -185,7 +207,9 @@ export function FamilyTodayChores({ children }: { children: Child[] }) {
           className="rounded-2xl px-4 py-8 text-center text-sm"
           style={{ background: 'var(--card-bg)', color: 'var(--text-secondary)' }}
         >
-          No chores yet. Tap a child above, then add their first chore.
+          {through
+            ? `On vacation through ${through}. No chores due today.`
+            : 'No chores yet. Tap a child above, then add their first chore.'}
         </div>
       </section>
     )

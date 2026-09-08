@@ -12,12 +12,12 @@ export interface WeekInfo {
  * which shifted week keys for Gulf and India families). Parse and format
  * locally, always.
  */
-function parseLocalDate(iso: string): Date {
+export function parseLocalDate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number)
   return new Date(y, m - 1, d)
 }
 
-function formatLocalDate(date: Date): string {
+export function formatLocalDate(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }

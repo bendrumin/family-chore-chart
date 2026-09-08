@@ -5,7 +5,19 @@
  * locale's display order — the values never change meaning, only their order.
  */
 import assert from 'node:assert/strict'
-import { ALL_DAYS, missingDueCells, weekCompletionRate, weekDisplayOrder } from './schedule'
+import {
+  ALL_DAYS,
+  dueToday,
+  isDueOn,
+  isOnVacation,
+  missingDueCells,
+  vacationDaysOfWeek,
+  vacationWindowFromSettings,
+  weekCompletionRate,
+  weekDisplayOrder,
+  weeklySlots,
+} from './schedule'
+import { computeStreaks } from './streak'
 
 let passed = 0
 let failed = 0
@@ -239,6 +251,165 @@ t('rows from chores not in the list (deleted or inactive) are ignored', () => {
 
 t('a row with a null day_of_week fills nothing', () => {
   assert.equal(weekCompletionRate([everyday], [{ chore_id: 'everyday', day_of_week: null }]), 0)
+})
+
+// ── Vacation mode (migration 019) ────────────────────────────────────────────
+// 2026-07-05 is a Sunday, so the week is Sun 07-05 .. Sat 07-11. The window
+// under test is Tue 07-07 through Thu 07-09, inclusive on both ends.
+const WEEK = '2026-07-05'
+const WINDOW = { starts_on: '2026-07-07', ends_on: '2026-07-09' }
+const localDate = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+group('vacation mode: the window is date-only and inclusive on both ends')
+
+t('the starts_on and ends_on days are both inside', () => {
+  assert.equal(isOnVacation(localDate('2026-07-07'), [WINDOW]), true)
+  assert.equal(isOnVacation(localDate('2026-07-09'), [WINDOW]), true)
+})
+
+t('the days on either side are both outside', () => {
+  assert.equal(isOnVacation(localDate('2026-07-06'), [WINDOW]), false)
+  assert.equal(isOnVacation(localDate('2026-07-10'), [WINDOW]), false)
+})
+
+t('no windows means never on vacation', () => {
+  assert.equal(isOnVacation(localDate('2026-07-07'), []), false)
+  assert.equal(isOnVacation(localDate('2026-07-07'), null), false)
+  assert.equal(isOnVacation(localDate('2026-07-07'), undefined), false)
+})
+
+t('a single-day window covers exactly that day', () => {
+  const oneDay = { starts_on: '2026-07-08', ends_on: '2026-07-08' }
+  assert.equal(isOnVacation(localDate('2026-07-08'), [oneDay]), true)
+  assert.equal(isOnVacation(localDate('2026-07-07'), [oneDay]), false)
+  assert.equal(isOnVacation(localDate('2026-07-09'), [oneDay]), false)
+})
+
+group('vacation mode: reading the settings row')
+
+t('a pre-migration row (no columns) means no window', () => {
+  assert.equal(vacationWindowFromSettings({}), null)
+  assert.equal(vacationWindowFromSettings(null), null)
+  assert.equal(vacationWindowFromSettings(undefined), null)
+})
+
+t('a half-set or inverted pair means no window', () => {
+  assert.equal(vacationWindowFromSettings({ vacation_starts_on: '2026-07-07' }), null)
+  assert.equal(vacationWindowFromSettings({ vacation_ends_on: '2026-07-09' }), null)
+  assert.equal(
+    vacationWindowFromSettings({ vacation_starts_on: '2026-07-09', vacation_ends_on: '2026-07-07' }),
+    null
+  )
+})
+
+t('garbage values mean no window', () => {
+  assert.equal(
+    vacationWindowFromSettings({ vacation_starts_on: 'soon', vacation_ends_on: 'later' }),
+    null
+  )
+})
+
+t('a valid pair round-trips', () => {
+  assert.deepEqual(
+    vacationWindowFromSettings({ vacation_starts_on: '2026-07-07', vacation_ends_on: '2026-07-09' }),
+    WINDOW
+  )
+})
+
+group('vacation mode: due-cell derivations')
+
+t('the window maps to day indexes for its week, boundaries included', () => {
+  assert.deepEqual([...vacationDaysOfWeek(WEEK, [WINDOW])].sort(), [2, 3, 4])
+})
+
+t('a window elsewhere leaves the week untouched', () => {
+  assert.equal(vacationDaysOfWeek('2026-08-02', [WINDOW]).size, 0)
+})
+
+t('a window spanning the whole week turns every day off', () => {
+  const wholeWeek = { starts_on: '2026-07-05', ends_on: '2026-07-11' }
+  assert.equal(vacationDaysOfWeek(WEEK, [wholeWeek]).size, 7)
+})
+
+t('isDueOn is false inside the window, including both boundary days', () => {
+  const vacationDays = vacationDaysOfWeek(WEEK, [WINDOW])
+  assert.equal(isDueOn(everyday, 2, vacationDays), false) // starts_on day
+  assert.equal(isDueOn(everyday, 4, vacationDays), false) // ends_on day
+  assert.equal(isDueOn(everyday, 1, vacationDays), true)
+  assert.equal(isDueOn(everyday, 5, vacationDays), true)
+})
+
+t('a vacation week holds no due slots and scores no due cells', () => {
+  const wholeWeek = vacationDaysOfWeek(WEEK, [{ starts_on: '2026-07-05', ends_on: '2026-07-11' }])
+  assert.equal(weeklySlots([everyday, weekdays], wholeWeek), 0)
+  assert.equal(missingDueCells([everyday, weekdays], [], 6, wholeWeek).length, 0)
+  // Nothing due means a 0% rate by construction, and ticks made anyway
+  // cannot fill cells that do not exist.
+  const done = ALL_DAYS.map(day => ({ chore_id: 'everyday', day_of_week: day }))
+  assert.equal(weekCompletionRate([everyday], done, wholeWeek), 0)
+})
+
+t('a partial window removes exactly its days from the backfill', () => {
+  const vacationDays = vacationDaysOfWeek(WEEK, [WINDOW])
+  const cells = missingDueCells([everyday], [], 6, vacationDays)
+  assert.deepEqual(cells.map(c => c.dayOfWeek), [0, 1, 5, 6])
+})
+
+t('rates ignore vacation days in both the numerator and the denominator', () => {
+  // Everyday chore, Tue-Thu on vacation: 4 slots. Done Sun+Mon = 50%.
+  const vacationDays = vacationDaysOfWeek(WEEK, [WINDOW])
+  const done = [
+    { chore_id: 'everyday', day_of_week: 0 },
+    { chore_id: 'everyday', day_of_week: 1 },
+    { chore_id: 'everyday', day_of_week: 3 }, // ticked on vacation: fills nothing
+  ]
+  assert.equal(weekCompletionRate([everyday], done, vacationDays), 50)
+})
+
+t('dueToday is empty on a vacation day and unchanged off it', () => {
+  assert.deepEqual(dueToday([everyday], localDate('2026-07-08'), [WINDOW]), [])
+  assert.deepEqual(dueToday([everyday], localDate('2026-07-10'), [WINDOW]), [everyday])
+})
+
+t('omitting the vacation parameter keeps the old behavior exactly', () => {
+  assert.equal(isDueOn(everyday, 2), true)
+  assert.equal(weeklySlots([everyday]), 7)
+  assert.equal(missingDueCells([everyday], [], 6).length, 7)
+})
+
+group('vacation mode: streaks skip the window')
+
+// Everyday chore, done Sun 07-05, Mon 07-06, Fri 07-10, Sat 07-11; the
+// Tue-Thu gap in between is the vacation.
+const streakChores = [{ id: 'everyday', days_of_week: null }]
+const streakCompletions = [0, 1, 5, 6].map(day => ({
+  chore_id: 'everyday',
+  week_start: WEEK,
+  day_of_week: day,
+  status: 'approved',
+}))
+const saturday = { weekStart: WEEK, dayOfWeek: 6 }
+
+t('a streak survives a vacation window', () => {
+  const s = computeStreaks(streakChores, streakCompletions, saturday, [WINDOW])
+  assert.equal(s.current, 4)
+  assert.equal(s.best, 4)
+})
+
+t('the same gap without a window breaks the streak (sanity check)', () => {
+  const s = computeStreaks(streakChores, streakCompletions, saturday)
+  assert.equal(s.current, 2)
+})
+
+t('on a vacation day nothing is due today and the day is not "perfect"', () => {
+  const wednesday = { weekStart: WEEK, dayOfWeek: 3 }
+  const s = computeStreaks(streakChores, streakCompletions, wednesday, [WINDOW])
+  assert.equal(s.todayDue, 0)
+  assert.equal(s.todayDone, 0)
+  assert.equal(s.todayPerfect, false)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

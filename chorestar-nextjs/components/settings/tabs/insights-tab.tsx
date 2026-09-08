@@ -10,7 +10,8 @@ import { AchievementsDisplay } from '@/components/achievements/achievements-disp
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
-import { weekCompletionRate } from '@/lib/utils/schedule'
+import { weekCompletionRate, vacationDaysOfWeek } from '@/lib/utils/schedule'
+import { fetchVacationWindows } from '@/lib/utils/vacation'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { toast } from 'sonner'
 import type { Database } from '@/lib/supabase/database.types'
@@ -98,6 +99,14 @@ export function InsightsTab() {
       const weekStarts = [...new Set(completions.map(c => c.week_start))].sort()
       const recentWeeks = weekStarts.slice(-8)
 
+      // Vacation windows (migration 019): a paused stretch holds no due slots,
+      // so a trip does not read as a completion collapse. Best-effort — [] when
+      // the migration is not applied yet.
+      const vacations = await fetchVacationWindows(user!.id)
+      const vacationDaysByWeek = new Map(
+        recentWeeks.map(ws => [ws, vacationDaysOfWeek(ws, vacations)])
+      )
+
       // Rates are per week: that week's filled due cells over that week's due
       // slots (weekCompletionRate), so they are 0..100 by construction.
       const trends: WeeklyTrend[] = recentWeeks.map(ws => {
@@ -105,7 +114,7 @@ export function InsightsTab() {
         // Format the week label
         const d = new Date(ws)
         const label = `${d.getMonth() + 1}/${d.getDate()}`
-        return { week: label, rate: weekCompletionRate(chores, weekCompletions) }
+        return { week: label, rate: weekCompletionRate(chores, weekCompletions, vacationDaysByWeek.get(ws)) }
       })
       setWeeklyTrends(trends)
 
@@ -125,7 +134,8 @@ export function InsightsTab() {
           ? Math.round(
               activeWeeks.reduce((sum, ws) => sum + weekCompletionRate(
                 childChores,
-                childCompletions.filter(c => c.week_start === ws)
+                childCompletions.filter(c => c.week_start === ws),
+                vacationDaysByWeek.get(ws)
               ), 0) / activeWeeks.length
             )
           : 0

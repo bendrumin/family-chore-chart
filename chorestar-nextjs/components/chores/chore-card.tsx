@@ -28,6 +28,8 @@ interface ChoreCardProps {
   iconTint?: string | null
   /** Shown under the title in family overview mode. */
   childName?: string | null
+  /** Day indexes of this week covered by a vacation window: not due. */
+  vacationDays?: ReadonlySet<number>
 }
 
 export const ChoreCard = memo(function ChoreCard({
@@ -38,6 +40,7 @@ export const ChoreCard = memo(function ChoreCard({
   onRefresh,
   iconTint,
   childName,
+  vacationDays,
 }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   // Optimistic overrides so the grid responds instantly, before the DB round-trip
@@ -241,7 +244,9 @@ export const ChoreCard = memo(function ChoreCard({
             {days.map((day) => {
               const awaiting = isAwaitingApproval(day.dayOfWeek)
               const completed = !awaiting && (optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek))
-              const due = isDueOn(chore, day.dayOfWeek)
+              // A vacation day reads as an off-day: dashed, dimmed, still
+              // tappable so a parent can credit work anyway.
+              const due = isDueOn(chore, day.dayOfWeek, vacationDays)
 
               if (awaiting) {
                 return (

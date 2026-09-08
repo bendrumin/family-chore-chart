@@ -2,6 +2,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { validateKidToken } from '@/lib/utils/kid-auth'
 import { signChildAvatarForChild } from '@/lib/utils/child-avatar'
+import { vacationWindowFromSettings, type VacationWindow } from '@/lib/utils/schedule'
 
 /**
  * GET /api/kid/child — the signed-in kid's own profile, with a fresh avatar URL.
@@ -46,25 +47,31 @@ export async function GET(request: Request) {
 
     // The family's theme, so kid mode on the kid's own device wears the same
     // colors the parent picked. Kids are not Supabase users, so they cannot
-    // read family_settings themselves; the theme rides along here. Best-effort:
-    // a settings read failure leaves the kid on the default palette.
+    // read family_settings themselves; the theme rides along here, and so does
+    // the vacation window (migration 019). The row is read with select('*') on
+    // purpose: naming the vacation columns would 400 on a pre-migration
+    // database, while a '*' row just lacks them. Best-effort: a settings read
+    // failure leaves the kid on the default palette with no vacation.
     let theme: unknown = null
+    let vacation: VacationWindow | null = null
     try {
       const { data: settings } = await admin
         .from('family_settings')
-        .select('custom_theme')
+        .select('*')
         .eq('user_id', child.user_id)
         .maybeSingle()
       theme = settings?.custom_theme ?? null
+      vacation = vacationWindowFromSettings(settings)
     } catch {
       theme = null
+      vacation = null
     }
 
     const { user_id: _familyId, ...publicChild } = child
     void _familyId
 
     return NextResponse.json(
-      { child: { ...publicChild, avatar_signed_url }, theme },
+      { child: { ...publicChild, avatar_signed_url }, theme, vacation },
       // A signed URL is per-request and short-lived; caching this response would
       // hand out a URL that expires before the cache does.
       { headers: { 'Cache-Control': 'no-store' } }

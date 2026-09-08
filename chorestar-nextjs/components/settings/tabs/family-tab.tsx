@@ -6,13 +6,19 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck, Palmtree } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
 import { toast } from 'sonner'
 import { CURRENCIES, currencySymbol } from '@/lib/constants/currencies'
+import { formatLocalDate, getWeekEnd, getWeekStart } from '@/lib/utils/date-helpers'
+import { vacationWindowFromSettings } from '@/lib/utils/schedule'
+import { recordVacationPeriod, trimVacationHistory } from '@/lib/utils/vacation'
+import type { Database } from '@/lib/supabase/database.types'
+
+type FamilySettingsRow = Database['public']['Tables']['family_settings']['Row']
 
 
 const DATE_FORMATS = [
@@ -48,6 +54,12 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [localWeeklyBonusLabel, setLocalWeeklyBonusLabel] = useState('')
   const [localSoundEnabled, setLocalSoundEnabled] = useState(true)
   const [localSoundVolume, setLocalSoundVolume] = useState(50)
+  // Vacation mode (migration 019). The live window is a pair of date columns
+  // on family_settings; both are read loosely so a pre-migration row simply
+  // means "off". An expired window shows as off and is cleared on next save.
+  const [vacationOn, setVacationOn] = useState(false)
+  const [vacationFrom, setVacationFrom] = useState('')
+  const [vacationThrough, setVacationThrough] = useState('')
   const [isEditChildrenPageOpen, setIsEditChildrenPageOpen] = useState(false)
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
   const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
@@ -96,7 +108,16 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       setLocalWeeklyBonus((settings.weekly_bonus_cents || 1).toString())
       setLocalRewardMode((settings.reward_mode as 'flat' | 'per_chore') || 'flat')
       setLocalWeeklyBonusLabel(settings.weekly_bonus_label || '')
-      
+
+      // Vacation mode: a window that already ended reads as off.
+      const today = formatLocalDate(new Date())
+      const storedWindow = vacationWindowFromSettings(settings)
+      const liveWindow = storedWindow && storedWindow.ends_on >= today ? storedWindow : null
+      setVacationOn(Boolean(liveWindow))
+      setVacationFrom(liveWindow?.starts_on ?? today)
+      setVacationThrough(liveWindow?.ends_on ?? today)
+
+
       // Load sound settings from localStorage (sound settings are client-side only)
       if (typeof window !== 'undefined') {
         const soundSettings = localStorage.getItem('chorestar_sound_settings')
@@ -113,8 +134,49 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
     }
   }, [settings])
 
+  /** Quick presets for the vacation window. Both are "starting today". */
+  const applyVacationPreset = (preset: 'rest-of-week' | 'next-7-days') => {
+    const now = new Date()
+    const today = formatLocalDate(now)
+    setVacationFrom(today)
+    if (preset === 'rest-of-week') {
+      setVacationThrough(getWeekEnd(getWeekStart(now)))
+    } else {
+      const end = new Date(now)
+      end.setDate(end.getDate() + 6)
+      setVacationThrough(formatLocalDate(end))
+    }
+  }
+
   const handleSave = async () => {
     if (isSaving) return // guard against double-tap firing two save sequences
+
+    // Vacation mode: validate before anything is written. The saved window is
+    // the LIVE switch; a history row rides along for streak math (best-effort).
+    const today = formatLocalDate(new Date())
+    const prevWindow = vacationWindowFromSettings(settings)
+    let vacationChange: { starts_on: string | null; ends_on: string | null } | null = null
+    if (vacationOn) {
+      if (!vacationFrom || !vacationThrough) {
+        toast.error('Pick a start and end date for the vacation.')
+        return
+      }
+      if (vacationThrough < vacationFrom) {
+        toast.error('The vacation end date must be on or after the start date.')
+        return
+      }
+      if (vacationThrough < today) {
+        toast.error('That vacation already ended. Pick an end date of today or later.')
+        return
+      }
+      if (!prevWindow || prevWindow.starts_on !== vacationFrom || prevWindow.ends_on !== vacationThrough) {
+        vacationChange = { starts_on: vacationFrom, ends_on: vacationThrough }
+      }
+    } else if (prevWindow) {
+      // Turning it off, or lazily clearing a window that already expired.
+      vacationChange = { starts_on: null, ends_on: null }
+    }
+
     setIsSaving(true)
     try {
       await updateSettings({
@@ -145,6 +207,34 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
           enabled: localSoundEnabled,
           volume: localSoundVolume,
         }))
+      }
+
+      // Vacation mode is written separately: the columns come from migration
+      // 019, so on an unmigrated database this write fails without dragging
+      // the rest of the settings down with it.
+      if (vacationChange) {
+        try {
+          await updateSettings({
+            vacation_starts_on: vacationChange.starts_on,
+            vacation_ends_on: vacationChange.ends_on,
+          } as unknown as Partial<FamilySettingsRow>)
+          const ownerId = settings?.user_id
+          if (ownerId) {
+            if (vacationChange.starts_on && vacationChange.ends_on) {
+              void recordVacationPeriod(
+                ownerId,
+                { starts_on: vacationChange.starts_on, ends_on: vacationChange.ends_on },
+                prevWindow
+              )
+            } else if (prevWindow) {
+              void trimVacationHistory(ownerId, prevWindow)
+            }
+          }
+        } catch {
+          toast.error('Could not save vacation mode. Everything else was saved.')
+          router.refresh()
+          return
+        }
       }
 
       toast.success('Settings saved!')
@@ -362,6 +452,86 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
               Manage Sharing
             </Button>
           </div>
+        </div>
+
+        {/* Vacation Mode — saved with the Save Settings button below */}
+        <div className="space-y-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+          <div className="flex items-center gap-2 mb-1">
+            <Palmtree className="w-5 h-5" style={{ color: vacationOn ? 'var(--primary)' : 'var(--text-secondary)' }} />
+            <h5 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              Vacation mode
+            </h5>
+          </div>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={vacationOn}
+              onChange={(e) => setVacationOn(e.target.checked)}
+              className="mt-0.5 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Pause every chore for a set window
+              </span>
+              <span className="block text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                No chores due, streaks safe, alerts quiet. It turns itself off after the last day.
+              </span>
+            </span>
+          </label>
+          {vacationOn && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="vacation-from" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                    From
+                  </Label>
+                  <Input
+                    id="vacation-from"
+                    type="date"
+                    value={vacationFrom}
+                    onChange={(e) => setVacationFrom(e.target.value)}
+                    className="h-12 text-base font-semibold border-2 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="vacation-through" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Through
+                  </Label>
+                  <Input
+                    id="vacation-through"
+                    type="date"
+                    min={vacationFrom || undefined}
+                    value={vacationThrough}
+                    onChange={(e) => setVacationThrough(e.target.value)}
+                    className="h-12 text-base font-semibold border-2 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyVacationPreset('rest-of-week')}
+                  className="font-semibold"
+                >
+                  Rest of this week
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyVacationPreset('next-7-days')}
+                  className="font-semibold"
+                >
+                  Next 7 days
+                </Button>
+              </div>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                Both days are included. Chores are due again the day after it ends.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Currency Selection */}

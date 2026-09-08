@@ -15,7 +15,15 @@ import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
 import { useSettings } from '@/lib/contexts/settings-context'
-import { missingDueCells, isDueOn, type MissingDueCell } from '@/lib/utils/schedule'
+import {
+  missingDueCells,
+  isDueOn,
+  vacationDaysOfWeek,
+  vacationWindowFromSettings,
+  type MissingDueCell,
+  type VacationWindow,
+} from '@/lib/utils/schedule'
+import { fetchVacationWindows } from '@/lib/utils/vacation'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { formatMoney } from '@/lib/constants/currencies'
 import { playSound } from '@/lib/utils/sound'
@@ -55,8 +63,28 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
   const [selectedCategory, setSelectedCategory] = useState<ChoreCategory | 'all'>('all')
   const [bulkPlan, setBulkPlan] = useState<BulkPlan | null>(null)
   const [bulkBusy, setBulkBusy] = useState(false)
+  // Vacation history (migration 019), so the week grid and the catch-up
+  // actions treat vacation days as not due. Best-effort: [] pre-migration.
+  const [vacationHistory, setVacationHistory] = useState<VacationWindow[]>([])
 
   const categories = getCategoryList()
+
+  useEffect(() => {
+    let active = true
+    void fetchVacationWindows(userId).then(windows => {
+      if (active) setVacationHistory(windows)
+    })
+    return () => { active = false }
+  }, [userId])
+
+  // History plus the live window from settings (in case the history write was
+  // refused, e.g. for a shared family member). Duplicates are harmless.
+  const liveVacation = vacationWindowFromSettings(settings)
+  const vacationDays = useMemo(
+    () => vacationDaysOfWeek(weekStart, liveVacation ? [...vacationHistory, liveVacation] : vacationHistory),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [weekStart, vacationHistory, liveVacation?.starts_on, liveVacation?.ends_on]
+  )
 
   // Filter chores by selected category
   const filteredChores = useMemo(() => {
@@ -161,8 +189,9 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
   const prepareBulk = (scope: 'today' | 'week') => {
     const today = new Date().getDay()
 
-    // Due cells with no row at all: these get inserted.
-    const allMissing = missingDueCells(chores, completions, today)
+    // Due cells with no row at all: these get inserted. Vacation days hold no
+    // due cells, so a catch-up never backfills a pause.
+    const allMissing = missingDueCells(chores, completions, today, vacationDays)
     const cells = scope === 'today' ? allMissing.filter(c => c.dayOfWeek === today) : allMissing
 
     // Due cells that already hold a kid's pending tick: a parent bulk action
@@ -172,7 +201,7 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
       if (c.status !== 'pending') return false
       if (c.day_of_week === null || c.day_of_week === undefined) return false
       const chore = choreById.get(c.chore_id)
-      if (!chore || !isDueOn(chore, c.day_of_week)) return false
+      if (!chore || !isDueOn(chore, c.day_of_week, vacationDays)) return false
       return scope === 'today' ? c.day_of_week === today : c.day_of_week <= today
     })
 
@@ -465,6 +494,7 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                   rewardMode={rewardMode}
                   onRefresh={handleRefresh}
                   iconTint={iconTint}
+                  vacationDays={vacationDays}
                 />
               ))}
             </div>

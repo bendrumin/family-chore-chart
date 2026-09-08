@@ -10,7 +10,16 @@
  * A missing, null, or empty schedule is treated as every day: that is what
  * every chore was before the column existed, and it keeps code that predates
  * the migration behaving the same way.
+ *
+ * Vacation mode (migration 019) rides on the same rule: a family-wide pause
+ * window during which NOTHING is due. Because every streak / perfect-day /
+ * weekly-rate derivation already skips days with nothing due, vacation mode is
+ * simply "isDueOn returns false inside the window" — nothing is deleted, and
+ * it ends by itself when the window ends. The vacation parameters below are
+ * optional everywhere, so callers that predate the feature behave the same.
  */
+
+import { formatLocalDate, parseLocalDate } from '@/lib/utils/date-helpers'
 
 export const ALL_DAYS: readonly number[] = [0, 1, 2, 3, 4, 5, 6]
 export const WEEKDAYS: readonly number[] = [1, 2, 3, 4, 5]
@@ -24,6 +33,77 @@ export const DAY_LONG = [
 /** Anything with an optional schedule. Chore rows satisfy this. */
 export interface Scheduled {
   days_of_week?: number[] | null
+}
+
+/** A family-wide pause window. Date-only (YYYY-MM-DD), inclusive both ends. */
+export interface VacationWindow {
+  starts_on: string
+  ends_on: string
+}
+
+/**
+ * The slice of family_settings vacation mode reads. The columns come from
+ * migration 019 and are ABSENT pre-migration (and from the generated types),
+ * which is why they are optional here and read loosely: a `select('*')` row
+ * from an unmigrated database simply yields undefined for both.
+ */
+export interface VacationSettings {
+  vacation_starts_on?: string | null
+  vacation_ends_on?: string | null
+}
+
+const YMD = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * The live window from a family_settings row, or null when there is none.
+ * Tolerates missing columns (pre-migration), half-set pairs, malformed values,
+ * and inverted ranges — all of those mean "no vacation". Takes any object so a
+ * generated-types settings Row (which does not know the 019 columns) can be
+ * passed straight in; the fields are validated here, not by the type.
+ */
+export function vacationWindowFromSettings(
+  settings: VacationSettings | object | null | undefined
+): VacationWindow | null {
+  const s = settings as VacationSettings | null | undefined
+  const starts = s?.vacation_starts_on
+  const ends = s?.vacation_ends_on
+  if (!starts || !ends || !YMD.test(starts) || !YMD.test(ends)) return null
+  if (ends < starts) return null
+  return { starts_on: starts, ends_on: ends }
+}
+
+/**
+ * Is this calendar date inside any vacation window? Date-only comparison in
+ * the user's LOCAL calendar (see lib/utils/date-helpers.ts for why), inclusive
+ * on both ends: the starts_on and ends_on days are both off.
+ */
+export function isOnVacation(
+  date: Date,
+  windows: readonly VacationWindow[] | null | undefined
+): boolean {
+  if (!windows || windows.length === 0) return false
+  const ymd = formatLocalDate(date)
+  return windows.some(w => w.starts_on <= ymd && ymd <= w.ends_on)
+}
+
+/**
+ * The day indexes (0=Sunday .. 6=Saturday, the storage convention) of ONE week
+ * that fall inside a vacation window. This is how a date-based window reaches
+ * the day-of-week world the completion grid lives in: compute it once for the
+ * week being rendered, then pass it to the due helpers below.
+ */
+export function vacationDaysOfWeek(
+  weekStart: string,
+  windows: readonly VacationWindow[] | null | undefined
+): Set<number> {
+  const days = new Set<number>()
+  if (!windows || windows.length === 0 || !YMD.test(weekStart)) return days
+  const date = parseLocalDate(weekStart)
+  for (let i = 0; i < 7; i++) {
+    if (isOnVacation(date, windows)) days.add(date.getDay())
+    date.setDate(date.getDate() + 1)
+  }
+  return days
 }
 
 /** Sorted, de-duplicated, in range. Empty input stays empty. */
@@ -46,26 +126,54 @@ export function isEveryDay(days: readonly number[] | null | undefined): boolean 
   return normalizeDays(days).length === 7 || normalizeDays(days).length === 0
 }
 
-export function isDueOn(chore: Scheduled, dayOfWeek: number): boolean {
+/**
+ * Is this chore due on this day of the week? `vacationDays` (from
+ * vacationDaysOfWeek, for the week under consideration) turns due days off:
+ * during a vacation nothing is due, so every derivation downstream — streaks,
+ * perfect days, weekly rates, catch-up backfills — skips the day the same way
+ * it skips a day with nothing scheduled.
+ */
+export function isDueOn(
+  chore: Scheduled,
+  dayOfWeek: number,
+  vacationDays?: ReadonlySet<number> | null
+): boolean {
+  if (vacationDays?.has(dayOfWeek)) return false
   return scheduleDays(chore).includes(dayOfWeek)
 }
 
 /** The chores from `chores` that are due on `dayOfWeek`. */
-export function dueOn<T extends Scheduled>(chores: readonly T[], dayOfWeek: number): T[] {
-  return chores.filter(c => isDueOn(c, dayOfWeek))
+export function dueOn<T extends Scheduled>(
+  chores: readonly T[],
+  dayOfWeek: number,
+  vacationDays?: ReadonlySet<number> | null
+): T[] {
+  return chores.filter(c => isDueOn(c, dayOfWeek, vacationDays))
 }
 
-/** The chores due today, in the browser's local time. */
-export function dueToday<T extends Scheduled>(chores: readonly T[], now: Date = new Date()): T[] {
+/** The chores due today, in the browser's local time. Empty on vacation. */
+export function dueToday<T extends Scheduled>(
+  chores: readonly T[],
+  now: Date = new Date(),
+  vacations?: readonly VacationWindow[] | null
+): T[] {
+  if (isOnVacation(now, vacations)) return []
   return dueOn(chores, now.getDay())
 }
 
 /**
  * How many chore-completions a week could hold: each chore counted once per
- * day it is due. The denominator for completion rates.
+ * day it is due. The denominator for completion rates. Vacation days hold no
+ * slots.
  */
-export function weeklySlots(chores: readonly Scheduled[]): number {
-  return chores.reduce((n, c) => n + scheduleDays(c).length, 0)
+export function weeklySlots(
+  chores: readonly Scheduled[],
+  vacationDays?: ReadonlySet<number> | null
+): number {
+  return chores.reduce(
+    (n, c) => n + scheduleDays(c).filter(d => !vacationDays?.has(d)).length,
+    0
+  )
 }
 
 /**
@@ -82,9 +190,10 @@ export function weeklySlots(chores: readonly Scheduled[]): number {
  */
 export function weekCompletionRate(
   chores: readonly ScheduledChore[],
-  completions: readonly CompletionCell[]
+  completions: readonly CompletionCell[],
+  vacationDays?: ReadonlySet<number> | null
 ): number {
-  const totalSlots = weeklySlots(chores)
+  const totalSlots = weeklySlots(chores, vacationDays)
   if (totalSlots === 0) return 0
 
   const byId = new Map(chores.map(c => [c.id, c]))
@@ -92,17 +201,20 @@ export function weekCompletionRate(
   for (const c of completions) {
     if (c.day_of_week === null || c.day_of_week === undefined) continue
     const chore = byId.get(c.chore_id)
-    if (!chore || !isDueOn(chore, c.day_of_week)) continue
+    if (!chore || !isDueOn(chore, c.day_of_week, vacationDays)) continue
     filled.add(`${c.chore_id}|${c.day_of_week}`)
   }
   return Math.round((filled.size / totalSlots) * 100)
 }
 
 /** How many days this week have at least one chore due. 0..7. */
-export function dueDaysInWeek(chores: readonly Scheduled[]): number {
+export function dueDaysInWeek(
+  chores: readonly Scheduled[],
+  vacationDays?: ReadonlySet<number> | null
+): number {
   let n = 0
   for (const day of ALL_DAYS) {
-    if (chores.some(c => isDueOn(c, day))) n++
+    if (chores.some(c => isDueOn(c, day, vacationDays))) n++
   }
   return n
 }
@@ -144,7 +256,8 @@ export interface MissingDueCell {
 export function missingDueCells(
   chores: readonly ScheduledChore[],
   completions: readonly CompletionCell[],
-  throughDay: number
+  throughDay: number,
+  vacationDays?: ReadonlySet<number> | null
 ): MissingDueCell[] {
   const filled = new Set<string>()
   for (const c of completions) {
@@ -155,7 +268,7 @@ export function missingDueCells(
   const cells: MissingDueCell[] = []
   const last = Math.min(throughDay, 6)
   for (let day = 0; day <= last; day++) {
-    for (const chore of dueOn(chores, day)) {
+    for (const chore of dueOn(chores, day, vacationDays)) {
       if (!filled.has(`${chore.id}|${day}`)) {
         cells.push({ choreId: chore.id, dayOfWeek: day })
       }

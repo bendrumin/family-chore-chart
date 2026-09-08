@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { useRoutines } from '@/lib/hooks/useRoutines';
 import { KidChores } from '@/components/kid/kid-chores';
 import { KidStats } from '@/components/kid/kid-stats';
+import { KidVacationCard } from '@/components/kid/kid-vacation-card';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
+import { isOnVacation, type VacationWindow } from '@/lib/utils/schedule';
 
 interface ChildData {
   id: string;
@@ -33,6 +35,10 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   const [kidToken, setKidToken] = useState<string | null>(null);
   // Bumped whenever a chore is ticked so the stats strip refetches.
   const [statsVersion, setStatsVersion] = useState(0);
+  // The family's vacation window (migration 019), from /api/kid/child. Null
+  // when there is none, when the endpoint predates the field, or when the
+  // fetch fails — all of which mean the normal dashboard.
+  const [vacation, setVacation] = useState<VacationWindow | null>(null);
 
   const { data: routines, isLoading } = useRoutines(childId);
   // Balance, goal, and store. Refetches whenever a chore is ticked (money
@@ -85,7 +91,10 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           })
           if (!res.ok) return
           const fresh = await res.json()
-          if (fresh?.child?.id === childId) setChild(fresh.child)
+          if (fresh?.child?.id === childId) {
+            setChild(fresh.child)
+            setVacation(fresh.vacation ?? null)
+          }
         } catch {
           // Decoration only — keep whatever the session already had.
         }
@@ -121,6 +130,10 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
   }
 
   const activeRoutines = routines?.filter((r) => r.is_active) || [];
+
+  // Vacation covering today: the chore list and routines rest behind a
+  // celebratory card. The goal, stats, and store stay available.
+  const onVacationToday = vacation ? isOnVacation(new Date(), [vacation]) : false;
 
   return (
     <div className="min-h-screen kid-mode-bg p-4 md:p-8">
@@ -186,6 +199,11 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         </motion.div>
       </div>
 
+      {/* Vacation covering today: the celebration takes the chores' place. */}
+      {kidToken && onVacationToday && vacation && (
+        <KidVacationCard kidToken={kidToken} endsOn={vacation.ends_on} />
+      )}
+
       {/* What the money is FOR: the goal the kid is saving toward. */}
       {kidToken && wallet && (
         <KidGoalCard kidToken={kidToken} wallet={wallet} onChanged={refreshWallet} />
@@ -197,8 +215,9 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
 
       {/* Today's chores — the half of kid mode that was missing entirely.
           Routines had kid-token endpoints; chores did not, so a kid on their
-          own device could never check off the things earning their allowance. */}
-      {kidToken && (
+          own device could never check off the things earning their allowance.
+          On vacation the list rests behind the card above. */}
+      {kidToken && !onVacationToday && (
         <KidChores
           kidToken={kidToken}
           iconTint={child.avatar_color}
@@ -211,7 +230,8 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
         <KidStore kidToken={kidToken} wallet={wallet} onChanged={refreshWallet} />
       )}
 
-      {/* Routines Grid */}
+      {/* Routines Grid — resting during a vacation, like the chores */}
+      {!onVacationToday && (
       <div className="max-w-6xl mx-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-20" role="status" aria-live="polite">
@@ -319,6 +339,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
           </div>
         )}
       </div>
+      )}
 
       {/* Background Decorations */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

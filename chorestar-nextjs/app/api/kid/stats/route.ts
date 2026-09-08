@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { validateKidToken } from '@/lib/utils/kid-auth'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { computeStreaks } from '@/lib/utils/streak'
+import { vacationWindowFromSettings, type VacationWindow } from '@/lib/utils/schedule'
 import { checkAchievements, type EarnedAchievement } from '@/lib/utils/achievement-tracker'
 import { ACHIEVEMENTS } from '@/lib/constants/achievements'
 import type { Database } from '@/lib/supabase/database.types'
@@ -52,11 +53,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 })
     }
 
+    // family_settings is read with select('*') so the vacation columns
+    // (migration 019) ride along when they exist and are simply absent when
+    // the migration has not been applied yet — naming them would 400.
     const [{ data: chores }, { data: settings }, { data: badgeRows }] = await Promise.all([
       admin.from('chores').select('*').eq('child_id', childId).eq('is_active', true),
       admin
         .from('family_settings')
-        .select('reward_mode, daily_reward_cents, weekly_bonus_cents, currency_code')
+        .select('*')
         .eq('user_id', child.user_id)
         .maybeSingle(),
       // achievement_badges has grown columns the generated types do not know
@@ -64,6 +68,30 @@ export async function GET(request: Request) {
       // the row loosely so a regenerated types file cannot break this.
       admin.from('achievement_badges').select('*').eq('child_id', childId),
     ])
+
+    // Vacation windows: the history table plus the live window from settings.
+    // The streak walk skips these days the way it skips days with nothing due.
+    // vacation_periods is not in the generated types and may not exist yet
+    // (pre-migration), so it is reached loosely and any failure means "none".
+    const vacations: VacationWindow[] = []
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: periods, error: periodsError } = await (admin as any)
+        .from('vacation_periods')
+        .select('starts_on, ends_on')
+        .eq('user_id', child.user_id)
+      if (!periodsError && Array.isArray(periods)) {
+        for (const row of periods as Array<{ starts_on?: unknown; ends_on?: unknown }>) {
+          if (typeof row.starts_on === 'string' && typeof row.ends_on === 'string') {
+            vacations.push({ starts_on: row.starts_on, ends_on: row.ends_on })
+          }
+        }
+      }
+    } catch {
+      // Table missing (pre-migration) or unreadable: no vacations.
+    }
+    const liveVacation = vacationWindowFromSettings(settings)
+    if (liveVacation) vacations.push(liveVacation)
 
     const choreList = chores ?? []
     const choreIds = choreList.map(c => c.id)
@@ -80,7 +108,7 @@ export async function GET(request: Request) {
       completions = data ?? []
     }
 
-    const streaks = computeStreaks(choreList, completions, { weekStart, dayOfWeek })
+    const streaks = computeStreaks(choreList, completions, { weekStart, dayOfWeek }, vacations)
 
     const week = childWeekEarningsCents(
       choreList,

@@ -4,7 +4,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { childDayEarningsCents, type EarningsSettings } from '@/lib/utils/earnings'
-import { dueOn } from '@/lib/utils/schedule'
+import {
+  dueToday,
+  vacationWindowFromSettings,
+  type VacationSettings,
+  type VacationWindow,
+} from '@/lib/utils/schedule'
 import type { Child } from '@/lib/types'
 
 export interface TodaySnapshot {
@@ -24,14 +29,22 @@ const EMPTY: TodaySnapshot = { familyDone: 0, familyTotal: 0, earnedTodayCents: 
  * and degrades to zeros on any error so it can't break the dashboard. Live via
  * a chore_completions subscription, mirroring WeeklyStats.
  */
-export function useTodaySnapshot(children: Child[], settings?: EarningsSettings | null): TodaySnapshot {
+export function useTodaySnapshot(
+  children: Child[],
+  settings?: (EarningsSettings & VacationSettings) | null
+): TodaySnapshot {
   const [snapshot, setSnapshot] = useState<TodaySnapshot>(EMPTY)
   const childIds = children.map(c => c.id).sort().join(',')
-  // Only the reward rules matter here; depend on them rather than the whole
-  // settings object so unrelated setting edits don't refetch.
+  // Only the reward rules and the vacation window matter here; depend on them
+  // rather than the whole settings object so unrelated edits don't refetch.
   const rewardMode = settings?.reward_mode ?? null
   const dailyReward = settings?.daily_reward_cents ?? null
   const weeklyBonus = settings?.weekly_bonus_cents ?? null
+  // Vacation mode (migration 019): the columns are read loosely so a
+  // pre-migration settings row simply yields no window.
+  const vacationWindow = vacationWindowFromSettings(settings)
+  const vacationStartsOn = vacationWindow?.starts_on ?? null
+  const vacationEndsOn = vacationWindow?.ends_on ?? null
 
   const load = useCallback(async () => {
     const ids = childIds ? childIds.split(',') : []
@@ -51,8 +64,13 @@ export function useTodaySnapshot(children: Child[], settings?: EarningsSettings 
         .eq('is_active', true)
 
       // Today's list is the chores DUE today. A Tuesday-only chore is not a
-      // hole in Wednesday's ring.
-      const choreList = dueOn(chores ?? [], today)
+      // hole in Wednesday's ring, and on vacation nothing at all is due, so
+      // the hero and rings read 0 of 0 and the empty branch below applies.
+      const vacations: VacationWindow[] =
+        vacationStartsOn && vacationEndsOn
+          ? [{ starts_on: vacationStartsOn, ends_on: vacationEndsOn }]
+          : []
+      const choreList = dueToday(chores ?? [], new Date(), vacations)
       if (choreList.length === 0) {
         const perChild: TodaySnapshot['perChild'] = {}
         ids.forEach(id => { perChild[id] = { done: 0, total: 0 } })
@@ -105,7 +123,7 @@ export function useTodaySnapshot(children: Child[], settings?: EarningsSettings 
     } catch {
       setSnapshot({ ...EMPTY, loading: false })
     }
-  }, [childIds, rewardMode, dailyReward, weeklyBonus])
+  }, [childIds, rewardMode, dailyReward, weeklyBonus, vacationStartsOn, vacationEndsOn])
 
   useEffect(() => { load() }, [load])
 

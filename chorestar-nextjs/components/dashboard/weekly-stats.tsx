@@ -12,7 +12,8 @@ import { Trophy, Star, TrendingUp, DollarSign, Flame, Wallet } from 'lucide-reac
 import { getCelebrationManager } from '@/lib/utils/celebrations'
 import { playSound } from '@/lib/utils/sound'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
-import { dueOn } from '@/lib/utils/schedule'
+import { dueOn, isOnVacation, vacationWindowFromSettings } from '@/lib/utils/schedule'
+import { fetchVacationWindows } from '@/lib/utils/vacation'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { formatMoney, currencySymbol, amountToCents, sanitizeAmountInput } from '@/lib/constants/currencies'
 import { toast } from 'sonner'
@@ -275,7 +276,8 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       console.error('Error loading stats:', error)
       setStats(prev => ({ ...prev, isLoading: false }))
     }
-  }, [child.id, child.name, weekStart])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [child.id, child.name, weekStart, settings])
 
   loadStatsRef.current = loadStats
 
@@ -289,6 +291,13 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       const choreIds = chores.map(c => c.id)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
+
+      // Vacation windows: history rows plus the live window from settings, so
+      // a paused stretch is skipped like a weekend. Best-effort ([] when the
+      // migration is not applied yet).
+      const vacations = await fetchVacationWindows(child.user_id)
+      const liveVacation = vacationWindowFromSettings(settings)
+      if (liveVacation) vacations.push(liveVacation)
 
       const thirtyDaysAgo = new Date(today)
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -319,6 +328,8 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         const dayOfWeek = checkDate.getDay()
         // Nothing due this weekday: not a miss, just not a day that counts.
         if (dueOn(chores, dayOfWeek).length === 0) continue
+        // Same rule for vacation days: skipped, never broken.
+        if (isOnVacation(checkDate, vacations)) continue
 
         const ws = new Date(checkDate)
         ws.setDate(checkDate.getDate() - dayOfWeek)
