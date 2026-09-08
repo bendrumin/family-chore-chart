@@ -2,6 +2,33 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Maintenance mode (MAINTENANCE_MODE=1 + redeploy): everything rewrites to
+  // the static /maintenance page and APIs answer 503, BEFORE any Supabase
+  // call below — during a database upgrade even the auth refresh would hang.
+  // Webhook callers (Apple, Stripe) treat 503 + Retry-After as "try again
+  // later", which is exactly right while the database is down.
+  if (process.env.MAINTENANCE_MODE === '1') {
+    const { pathname } = request.nextUrl
+    if (pathname.startsWith('/api/')) {
+      return new NextResponse(JSON.stringify({ error: 'maintenance' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '600' },
+      })
+    }
+    if (pathname !== '/maintenance') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/maintenance'
+      return NextResponse.rewrite(url)
+    }
+    return NextResponse.next()
+  }
+  // Outside maintenance, the page redirects home rather than 404ing.
+  if (request.nextUrl.pathname === '/maintenance') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
   // In middleware, request cookies are read-only. Only write cookies on the response.
   // This follows the Supabase SSR middleware pattern for Next.js.
   let supabaseResponse = NextResponse.next()
