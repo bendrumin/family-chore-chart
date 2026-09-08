@@ -29,6 +29,21 @@ interface Tutorial {
 
 const tutorials: Tutorial[] = [
   {
+    emoji: '🏖️',
+    title: 'Vacation Mode',
+    slug: 'vacation-mode',
+    accent: '#0ea5e9',
+    intro:
+      'Going away? Vacation mode pauses the whole chart for a date range: nothing is due, streaks and perfect weeks stay safe, and there is no wall of red to come home to.',
+    steps: [
+      { text: 'Open Settings and go to the Family tab.', icon: <Settings className="w-4 h-4" /> },
+      { text: 'Turn on Vacation mode and pick your dates, or tap a preset like Rest of this week.', icon: <CalendarDays className="w-4 h-4" /> },
+      { text: 'That is it. While you are away the dashboard says so, kids see that their streak is safe, and the reward store stays open.', icon: <CheckCircle2 className="w-4 h-4" /> },
+      { text: 'Home early? Tap End vacation early on the dashboard and chores pick up the next day.', icon: <Play className="w-4 h-4" /> },
+    ],
+    tip: 'It ends on its own after the last date, so nobody has to remember to turn it off.',
+  },
+  {
     emoji: '👧',
     title: 'Adding Your First Child',
     slug: 'add-child',

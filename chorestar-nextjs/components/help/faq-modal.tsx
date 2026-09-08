@@ -41,6 +41,11 @@ const FAQ_DATA: FAQItem[] = [
   },
   {
     category: 'Chores',
+    question: 'Can I pause chores while we are on vacation?',
+    answer: 'Yes. Go to Settings > Family and turn on Vacation mode with your travel dates. Nothing is due while you are away, so streaks and perfect weeks stay safe, and the grid shows no misses. Kids see a friendly note that their streak is waiting for them, and the reward store stays open. It ends on its own, or you can end it early from the dashboard.'
+  },
+  {
+    category: 'Chores',
     question: 'What are chore categories?',
     answer: 'Categories help organize chores into groups like Household Chores, Reading, Physical Activity, Creative Time, and more. This makes it easier to track different types of activities.'
   },
