@@ -1,7 +1,7 @@
-A versão 2.1.2 conserta a visão da semana.
+A versão 2.2 dá ao ChoreStar uma cara nova, com as crianças em primeiro lugar.
 
-• A grade semanal agora cabe na sua tela: os sete dias de uma vez, sem rolar para o lado, igual à web
-• Os nomes e passos das rotinas de modelo agora falam português, espanhol e árabe, junto com o resto do modo criança
-• Menos poluição acima da grade, e famílias com recompensa por tarefa não veem mais um aviso de bônus diário que não valia para elas
+• A tela inicial agora abre com o nome da sua família e um anel de progresso ao redor do avatar de cada criança. Toque em uma criança para ir direto às tarefas dela
+• Um visual mais limpo nas telas dos pais: uma só cor de destaque, cartões mais claros e títulos com uma nova tipografia. O modo criança mantém toda a cor e os confetes
+• Novas capturas na App Store e muitos pequenos ajustes
 
-Dúvidas e sugestões são bem-vindas em hi@chorestar.app
+Fale com a gente em hi@chorestar.app

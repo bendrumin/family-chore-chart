@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.1.2"
+    static let latestVersion = "2.2"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,23 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.2",
+            date: "September 2026",
+            title: "Your Kids Lead the Dashboard",
+            features: [
+                Feature(
+                    icon: "👨‍👩‍👧‍👦",
+                    title: "A Hero Built Around Your Family",
+                    description: "Home opens with your family name and each kid's own progress ring around their avatar. Tap a kid to jump straight to their chores. Seasonal themes paint it exactly like before."
+                ),
+                Feature(
+                    icon: "🎨",
+                    title: "A Quieter, Sharper Look",
+                    description: "One solid accent color, cleaner cards, softer shadows, and headings in a new typeface across the parent screens. Kid mode keeps every bit of its color and confetti."
+                ),
+            ]
+        ),
         Entry(
             version: "2.1.2",
             date: "September 2026",

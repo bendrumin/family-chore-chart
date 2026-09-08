@@ -1,7 +1,7 @@
-Version 2.1.2 makes the week view feel right.
+Version 2.2 gives ChoreStar a fresh face, led by your kids.
 
-• The week grid now fits your screen: all seven days at once, no more sideways scrolling, matching the web
-• Routine names and steps from our templates now speak Spanish, Portuguese, and Arabic along with the rest of kid mode
-• Less clutter above the grid, and per-chore families no longer see a daily-bonus note that did not apply to them
+• Home now opens with your family name and each kid's own progress ring around their avatar. Tap a kid to jump straight to their chores
+• A quieter, sharper look across the parent screens: one solid accent color, cleaner cards, and headings in a new typeface. Kid mode keeps every bit of its color and confetti
+• New App Store screenshots to match, and dozens of small polish fixes
 
 Questions or feedback are welcome at hi@chorestar.app

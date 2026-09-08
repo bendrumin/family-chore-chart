@@ -1,7 +1,7 @@
-La versión 2.1.2 arregla la vista de la semana.
+La versión 2.2 le da a ChoreStar una cara nueva, con tus hijos al frente.
 
-• La cuadrícula semanal ahora cabe en tu pantalla: los siete días a la vez, sin desplazarte de lado, igual que en la web
-• Los nombres y pasos de las rutinas de plantilla ahora hablan español, portugués y árabe, junto con el resto del modo niños
-• Menos elementos arriba de la cuadrícula, y las familias con recompensa por tarea ya no ven una nota de bono diario que no les aplicaba
+• La pantalla de inicio ahora abre con el nombre de tu familia y un anillo de progreso alrededor del avatar de cada niño. Toca un niño para ir directo a sus tareas
+• Un aspecto más limpio en las pantallas para padres: un solo color de acento, tarjetas más claras y títulos con una nueva tipografía. El modo niños conserva todo su color y su confeti
+• Nuevas capturas en el App Store y muchos pequeños ajustes
 
-Preguntas y comentarios son bienvenidos en hi@chorestar.app
+Escríbenos a hi@chorestar.app
