@@ -30,6 +30,10 @@ class SupabaseManager: ObservableObject {
     @Published var rewardItems: [RewardItem] = []
     @Published var achievements: [Achievement] = []
     @Published var familySettings: FamilySettings?
+    /// Past vacation windows (migration 019), for streak math looking back in
+    /// time. Empty until loaded — and stays empty, harmlessly, on a database
+    /// where the vacation_periods table does not exist yet.
+    @Published var vacationPeriods: [VacationPeriod] = []
     @Published var isChildSession = false
     @Published var currentChild: Child?
     @Published var routines: [Routine] = []
@@ -2400,6 +2404,7 @@ class SupabaseManager: ObservableObject {
         await loadAchievements()
         await loadAllWallets()
         await loadFamilySettings()
+        await loadVacationPeriods()
         await loadProfile()
         await loadRoutines()
         await loadChildPins()
@@ -2873,6 +2878,227 @@ class SupabaseManager: ObservableObject {
     /// Today's weekday index, 0 = Sunday.
     var todayIndex: Int { RewardMath.dayIndex(of: Date()) }
 
+    // MARK: - Vacation mode (migration 019)
+
+    /// The live vacation window from family_settings, as local calendar days
+    /// (start-of-day bounds, inclusive). nil when unset, invalid, or when the
+    /// columns predate the migration (they decode as nil).
+    var vacationWindow: ClosedRange<Date>? {
+        guard let start = VacationMode.parse(familySettings?.vacationStartsOn),
+              let end = VacationMode.parse(familySettings?.vacationEndsOn),
+              start <= end else { return nil }
+        return start...end
+    }
+
+    /// Whether `date` falls inside the live window. This is the switch the
+    /// due/perfect/earnings paths key off.
+    func isOnVacation(_ date: Date = Date()) -> Bool {
+        guard let window = vacationWindow else { return false }
+        return window.contains(Calendar.current.startOfDay(for: date))
+    }
+
+    var isOnVacationToday: Bool { isOnVacation(Date()) }
+
+    /// The first day chores come back (the day after the window ends).
+    var vacationResumeDate: Date? {
+        vacationWindow.flatMap { Calendar.current.date(byAdding: .day, value: 1, to: $0.upperBound) }
+    }
+
+    /// Whether `date` is covered by ANY vacation — the live window or a past
+    /// vacation_periods row. Streak and weekly math use this so a trip in the
+    /// past still reads as "nothing due", not a collapse.
+    func isVacationDay(_ date: Date) -> Bool {
+        if isOnVacation(date) { return true }
+        return vacationPeriods.contains {
+            VacationMode.covers(date, startsOn: $0.startsOn, endsOn: $0.endsOn)
+        }
+    }
+
+    /// Loads vacation history for streak math. A missing table (migration 019
+    /// not applied yet) or any other failure just means no history: the app
+    /// behaves exactly as before vacation mode existed.
+    func loadVacationPeriods() async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+
+        do {
+            let rows: [VacationPeriod] = try await client
+                .from("vacation_periods")
+                .select("id, starts_on, ends_on")
+                .eq("user_id", value: uid.lowercased())
+                .execute()
+                .value
+            await MainActor.run { self.vacationPeriods = rows }
+        } catch {
+            await MainActor.run {
+                self.vacationPeriods = []
+                debugLastError = "Vacation history unavailable: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
+    /// Turns vacation mode on (or moves the window): writes the live pair on
+    /// family_settings and records the window in vacation_periods. Editing an
+    /// already-set window updates its history row instead of stacking a new
+    /// one. Returns a user-facing error message, or nil on success.
+    func setVacation(from: Date, through: Date) async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid?.lowercased() else { return "Not signed in." }
+
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: from)
+        let end = max(start, calendar.startOfDay(for: through))
+        let newStart = VacationMode.string(from: start)
+        let newEnd = VacationMode.string(from: end)
+        let oldPair = await MainActor.run {
+            (familySettings?.vacationStartsOn, familySettings?.vacationEndsOn)
+        }
+
+        // Upsert, not update, for the same reason as updateFamilyRewards: a
+        // family created on iOS may have no family_settings row yet.
+        struct VacationUpsert: Encodable {
+            let user_id: String
+            let vacation_starts_on: String
+            let vacation_ends_on: String
+        }
+
+        do {
+            try await client
+                .from("family_settings")
+                .upsert(VacationUpsert(
+                    user_id: uid,
+                    vacation_starts_on: newStart,
+                    vacation_ends_on: newEnd
+                ), onConflict: "user_id")
+                .execute()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Vacation save failed: \(error.localizedDescription)"
+            }
+            return "Couldn't save vacation mode. Please try again."
+        }
+
+        // History for streak math. Failure here (the table may not exist yet)
+        // only costs history, never the live switch, so it does not fail the
+        // save.
+        struct PeriodInsert: Encodable {
+            let user_id: String
+            let starts_on: String
+            let ends_on: String
+        }
+
+        do {
+            var updatedExisting = false
+            if let oldStart = oldPair.0, let oldEnd = oldPair.1 {
+                let rows: [VacationPeriod] = try await client
+                    .from("vacation_periods")
+                    .update(["starts_on": newStart, "ends_on": newEnd])
+                    .eq("user_id", value: uid)
+                    .eq("starts_on", value: oldStart)
+                    .eq("ends_on", value: oldEnd)
+                    .select("id, starts_on, ends_on")
+                    .execute()
+                    .value
+                updatedExisting = !rows.isEmpty
+            }
+            if !updatedExisting {
+                try await client
+                    .from("vacation_periods")
+                    .insert(PeriodInsert(user_id: uid, starts_on: newStart, ends_on: newEnd))
+                    .execute()
+            }
+        } catch {
+            await MainActor.run {
+                debugLastError = "Vacation history write skipped: \(error.localizedDescription)"
+            }
+        }
+
+        await loadFamilySettings()
+        await loadVacationPeriods()
+        await MainActor.run { publishWidgetSnapshot() }
+        return nil
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
+    /// Turns vacation mode off: clears the live pair. The history row stays,
+    /// trimmed to the days that actually happened — ending early on day 3 of
+    /// 7 must not leave days 4–7 reading as vacation in future streak math,
+    /// and a window that never started leaves no history at all.
+    func clearVacation() async -> String? {
+        #if canImport(Supabase)
+        guard let client = client else { return "Something went wrong." }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid?.lowercased() else { return "Not signed in." }
+
+        let oldPair = await MainActor.run {
+            (familySettings?.vacationStartsOn, familySettings?.vacationEndsOn)
+        }
+        guard let oldStart = oldPair.0, let oldEnd = oldPair.1 else { return nil }
+
+        do {
+            try await client
+                .from("family_settings")
+                .update([
+                    "vacation_starts_on": AnyJSON.null,
+                    "vacation_ends_on": AnyJSON.null,
+                ])
+                .eq("user_id", value: uid)
+                .execute()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Vacation clear failed: \(error.localizedDescription)"
+            }
+            return "Couldn't end vacation mode. Please try again."
+        }
+
+        do {
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            if let start = VacationMode.parse(oldStart),
+               let end = VacationMode.parse(oldEnd),
+               end >= today {
+                if start >= today {
+                    // Never started: it never happened.
+                    try await client
+                        .from("vacation_periods")
+                        .delete()
+                        .eq("user_id", value: uid)
+                        .eq("starts_on", value: oldStart)
+                        .eq("ends_on", value: oldEnd)
+                        .execute()
+                } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: today) {
+                    try await client
+                        .from("vacation_periods")
+                        .update(["ends_on": VacationMode.string(from: yesterday)])
+                        .eq("user_id", value: uid)
+                        .eq("starts_on", value: oldStart)
+                        .eq("ends_on", value: oldEnd)
+                        .execute()
+                }
+            }
+            // A window that already ended keeps its history untouched.
+        } catch {
+            await MainActor.run {
+                debugLastError = "Vacation history trim skipped: \(error.localizedDescription)"
+            }
+        }
+
+        await loadFamilySettings()
+        await loadVacationPeriods()
+        await MainActor.run { publishWidgetSnapshot() }
+        return nil
+        #else
+        return "Supabase not available."
+        #endif
+    }
+
     /**
      Consecutive finished days ending today (or yesterday, when today is not
      done yet), across week boundaries, honoring each chore's schedule. The
@@ -2893,7 +3119,9 @@ class SupabaseManager: ObservableObject {
         var date = Date()
         for i in 0..<400 {
             let day = RewardMath.dayIndex(of: date, calendar: calendar)
-            let due = ChoreSchedule.due(childChores, on: day)
+            // A vacation day has nothing due, so it is skipped exactly like a
+            // day the schedule leaves empty — the run carries across it.
+            let due = isVacationDay(date) ? [] : ChoreSchedule.due(childChores, on: day)
             if !due.isEmpty {
                 let key = "\(SupabaseManager.kidWeekStartString(for: date))|\(day)"
                 let doneSet = done[key] ?? []
@@ -2912,14 +3140,19 @@ class SupabaseManager: ObservableObject {
     }
 
     /// A child's chores that are due on `dayOfWeek` (default: today). This is
-    /// "the list" everywhere the app asks whether the day is finished.
+    /// "the list" everywhere the app asks whether the day is finished — which
+    /// is why vacation mode lives here: a day inside the window has nothing
+    /// due, so streaks, perfect days, and earnings all skip it for free.
     func dueChores(for childId: UUID, on dayOfWeek: Int? = nil) -> [Chore] {
-        ChoreSchedule.due(chores.filter { $0.childId == childId }, on: dayOfWeek ?? todayIndex)
+        let day = dayOfWeek ?? todayIndex
+        guard !isVacationDay(RewardMath.dateInCurrentWeek(dayIndex: day)) else { return [] }
+        return ChoreSchedule.due(chores.filter { $0.childId == childId }, on: day)
     }
 
     /// Every family chore due today, across children. The parent Home list.
     var choresDueToday: [Chore] {
-        ChoreSchedule.due(chores, on: todayIndex)
+        guard !isVacationDay(Date()) else { return [] }
+        return ChoreSchedule.due(chores, on: todayIndex)
     }
 
     // Check if ALL chores due today are completed (perfect day)
@@ -2942,6 +3175,8 @@ class SupabaseManager: ObservableObject {
     // crediting Tuesday's trash on Wednesday is crediting real work). The flat
     // daily rate is judged against the chores DUE that day.
     func calculateDayEarnings(for childId: UUID, dayOfWeek: Int) -> Double {
+        // Nothing is due on a vacation day, so nothing is earned on one.
+        guard !isVacationDay(RewardMath.dateInCurrentWeek(dayIndex: dayOfWeek)) else { return 0 }
         let childChores = chores.filter { $0.childId == childId }
         let isPerChore = familySettings?.isPerChoreMode == true
         let pool = isPerChore ? childChores : ChoreSchedule.due(childChores, on: dayOfWeek)
@@ -2989,6 +3224,9 @@ class SupabaseManager: ObservableObject {
                 // Seasonal / classic / auto also live in that JSON — apply so a
                 // Halloween pick on the website lands on the phone.
                 ThemeManager.shared.applySeasonalFromCustomTheme(settings.first?.customTheme)
+                // Vacation days go quiet: re-sync the local daily reminder so
+                // it skips the window (a no-op when the reminder is off).
+                NotificationsManager.shared.refreshDailyReminder(vacationWindow: self.vacationWindow)
                 if let settings = settings.first {
                     debugLastError = "Loaded settings: \(settings.dailyRewardCents)¢ per day"
                 }
@@ -3561,7 +3799,8 @@ class SupabaseManager: ObservableObject {
             for: childId,
             chores: chores,
             completions: allTimeCompletions,
-            earnedBadges: achievements
+            earnedBadges: achievements,
+            isVacationDay: { [weak self] in self?.isVacationDay($0) ?? false }
         )
     }
 
@@ -4379,9 +4618,17 @@ class SupabaseManager: ObservableObject {
         var dailyStatus: [Bool] = []
         var daysWithCompletions = 0
         var totalCompletions = 0
+        // Vacation days in this week (live window or history) count as nothing
+        // due, so they drop out of perfect days, the "out of" denominator, the
+        // weekly bonus, and the streak — skipped, never broken.
+        let vacationDays: [Bool] = (0..<7).map { day in
+            isVacationDay(RewardMath.dateInCurrentWeek(dayIndex: day))
+        }
         // Days this week with at least one chore due: the "out of" for perfect
         // days and the perfect-week bonus. 7 for an unscheduled list.
-        let dueDayCount = ChoreSchedule.dueDayCount(childChores)
+        let dueDayCount = (0..<7).filter { day in
+            !vacationDays[day] && childChores.contains { $0.isDue(on: day) }
+        }.count
 
         for day in 0..<7 {
             let dayCompletions = weekCompletions.filter { completion in
@@ -4390,7 +4637,7 @@ class SupabaseManager: ObservableObject {
             totalCompletions += dayCompletions.count
 
             // Perfect = every chore DUE that day done. Nothing due: not perfect.
-            let due = ChoreSchedule.due(childChores, on: day)
+            let due = vacationDays[day] ? [] : ChoreSchedule.due(childChores, on: day)
             let allDone = !due.isEmpty && due.allSatisfy { chore in
                 dayCompletions.contains(where: { $0.choreId == chore.id })
             }
@@ -4398,13 +4645,13 @@ class SupabaseManager: ObservableObject {
             if allDone { perfectDayCount += 1 }
             if !dayCompletions.isEmpty { daysWithCompletions += 1 }
         }
-        
+
         let weeklyBonusCents = familySettings?.weeklyBonusCents ?? 0
         var earningsCents: Int
-        
+
         if familySettings?.isPerChoreMode == true {
             earningsCents = 0
-            for day in 0..<7 {
+            for day in 0..<7 where !vacationDays[day] {
                 let dayCompletions = weekCompletions.filter { completion in
                     completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })
                 }
@@ -4426,11 +4673,13 @@ class SupabaseManager: ObservableObject {
         let completionRate = dueDayCount > 0 ? Double(perfectDayCount) / Double(dueDayCount) : 0
 
         // Streak: consecutive days with at least one completion, counting
-        // backwards from today. A day with nothing due is skipped, not broken.
+        // backwards from today. A day with nothing due is skipped, not broken
+        // — and a vacation day is exactly that.
         let currentDay = calendar.component(.weekday, from: Date()) - 1
         var streak = 0
         for offset in 0..<7 {
             let day = (currentDay - offset + 7) % 7
+            if vacationDays[day] { continue }
             if ChoreSchedule.due(childChores, on: day).isEmpty { continue }
             let hasCompletion = weekCompletions.contains { completion in
                 completion.dayOfWeek == day && childChores.contains(where: { $0.id == completion.choreId })

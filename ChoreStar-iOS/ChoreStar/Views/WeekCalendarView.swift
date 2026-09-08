@@ -178,7 +178,7 @@ struct WeekCalendarView: View {
                                 dayIndex: dayIndex,
                                 dayName: fullDays[dayIndex],
                                 shortDayName: days[dayIndex],
-                                chores: ChoreSchedule.due(childChores, on: dayIndex),
+                                chores: manager.dueChores(for: child.id, on: dayIndex),
                                 manager: manager,
                                 earnedAchievements: $earnedAchievements,
                                 showAchievementAlert: $showAchievementAlert,

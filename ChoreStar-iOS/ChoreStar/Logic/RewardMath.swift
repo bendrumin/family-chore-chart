@@ -46,6 +46,72 @@ enum RewardMath {
     static func dayIndex(of date: Date, calendar: Calendar = .current) -> Int {
         calendar.component(.weekday, from: date) - 1
     }
+
+    /// The actual date (local start of day) that `dayIndex` (0 = Sunday) names
+    /// in the week containing `reference`. The weekly grid and stats treat
+    /// "day 3" as Wednesday of the CURRENT week; vacation checks need the
+    /// real date behind that index.
+    static func dateInCurrentWeek(
+        dayIndex: Int,
+        reference: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Date {
+        let weekday = calendar.component(.weekday, from: reference) - 1
+        let weekStart = calendar.date(
+            byAdding: .day,
+            value: -weekday,
+            to: calendar.startOfDay(for: reference)
+        ) ?? reference
+        return calendar.date(byAdding: .day, value: dayIndex, to: weekStart) ?? reference
+    }
+}
+
+/// Vacation mode (migration 019): a family-wide pause window during which
+/// nothing is due. The date pair travels as Postgres `date` strings
+/// (yyyy-MM-dd) and is compared as LOCAL calendar days, inclusive on both
+/// ends — the same "nothing due" rule that already carries weekday-only kids
+/// over weekends. Pure so it can be unit tested with injected calendars.
+enum VacationMode {
+
+    /// Parses a Postgres `date` string (yyyy-MM-dd) as a local calendar day.
+    /// Parsed by hand rather than DateFormatter so device locale/12-hour
+    /// settings can never bend it.
+    static func parse(_ raw: String?, calendar: Calendar = .current) -> Date? {
+        guard let raw else { return nil }
+        let parts = raw.split(separator: "-")
+        guard parts.count == 3,
+              let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]),
+              (1...12).contains(month), (1...31).contains(day) else { return nil }
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        guard let date = calendar.date(from: components) else { return nil }
+        return calendar.startOfDay(for: date)
+    }
+
+    /// Formats a local calendar day back to the yyyy-MM-dd shape the columns
+    /// store.
+    static func string(from date: Date, calendar: Calendar = .current) -> String {
+        let c = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+    }
+
+    /// Whether `date` falls inside the window, inclusive on both ends. A nil
+    /// or half-set pair (pre-migration rows decode the columns as nil) and an
+    /// inverted range are simply "not on vacation".
+    static func covers(
+        _ date: Date,
+        startsOn: String?,
+        endsOn: String?,
+        calendar: Calendar = .current
+    ) -> Bool {
+        guard let start = parse(startsOn, calendar: calendar),
+              let end = parse(endsOn, calendar: calendar),
+              start <= end else { return false }
+        let day = calendar.startOfDay(for: date)
+        return day >= start && day <= end
+    }
 }
 
 /// Chore scheduling: which weekdays a chore is due. Mirrors the web's

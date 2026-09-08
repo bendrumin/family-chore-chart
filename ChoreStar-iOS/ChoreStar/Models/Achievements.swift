@@ -174,7 +174,8 @@ enum AchievementEngine {
         for childId: UUID,
         chores: [Chore],
         completions: [HistoricalCompletion],
-        earnedBadges: [Achievement]
+        earnedBadges: [Achievement],
+        isVacationDay: (Date) -> Bool = { _ in false }
     ) -> [AchievementProgressInfo] {
         let childChoreIds = Set(chores.filter { $0.childId == childId }.map(\.id))
         let childCompletions = completions.filter { childChoreIds.contains($0.choreId) }
@@ -204,7 +205,7 @@ enum AchievementEngine {
                     return (hasFullWeek ? 1 : 0, 1)
 
                 case .streak(let days):
-                    return (currentStreak(childCompletions), days)
+                    return (currentStreak(childCompletions, isVacationDay: isVacationDay), days)
 
                 case .categoryCount(let category, let count):
                     let categoryChoreIds = Set(
@@ -235,25 +236,33 @@ enum AchievementEngine {
     }
 
     /// Consecutive days with at least one completion, counting back from today
-    /// (yesterday also counts as the anchor so an unfinished today doesn't zero it).
-    private static func currentStreak(_ completions: [HistoricalCompletion]) -> Int {
-        let calendar = Calendar.current
+    /// (an unfinished today doesn't zero it). Days covered by a family
+    /// vacation window are skipped, not broken — the same rule as a day with
+    /// nothing due. Internal (not private) so the test target can exercise it
+    /// with an injected calendar and reference day.
+    static func currentStreak(
+        _ completions: [HistoricalCompletion],
+        isVacationDay: (Date) -> Bool = { _ in false },
+        calendar: Calendar = .current,
+        today: Date = Date()
+    ) -> Int {
         let completionDays = Set(
             completions.compactMap { $0.date.map { calendar.startOfDay(for: $0) } }
         )
         guard !completionDays.isEmpty else { return 0 }
 
-        var anchor = calendar.startOfDay(for: Date())
-        if !completionDays.contains(anchor) {
-            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: anchor),
-                  completionDays.contains(yesterday) else { return 0 }
-            anchor = yesterday
-        }
-
         var streak = 0
-        var day = anchor
-        while completionDays.contains(day) {
-            streak += 1
+        var day = calendar.startOfDay(for: today)
+        for i in 0..<400 {
+            if isVacationDay(day) {
+                // Nothing due: the run carries across the day.
+            } else if completionDays.contains(day) {
+                streak += 1
+            } else if i > 0 {
+                // A missed day ends the run; an unfinished TODAY is simply
+                // not counted yet.
+                break
+            }
             guard let previous = calendar.date(byAdding: .day, value: -1, to: day) else { break }
             day = previous
         }

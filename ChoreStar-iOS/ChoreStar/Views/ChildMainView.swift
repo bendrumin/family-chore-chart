@@ -85,7 +85,11 @@ struct ChildMainView: View {
                                 // familySettings is nil in STANDALONE kid sessions (no parent
                                 // client), so this shows on a parent's device and hides rather
                                 // than guessing a wrong number when the rate is unknown.
-                                if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
+                                if manager.isOnVacationToday {
+                                    Text("No chores today. Enjoy your break! 🌴")
+                                        .font(.headline)
+                                        .foregroundColor(.white.opacity(0.92))
+                                } else if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
                                     Text("Finish ALL your chores to earn \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) today! 🌟")
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.92))
@@ -216,6 +220,18 @@ struct ChildMainView: View {
                     // Chores & Routines list
                     ScrollView {
                         VStack(spacing: 24) {
+                            // Vacation: nothing is due, the streak is parked,
+                            // and this card is the whole story. The reward
+                            // store below stays open for spending.
+                            if manager.isOnVacationToday {
+                                KidVacationCard(
+                                    streak: streak,
+                                    resumeDate: manager.vacationResumeDate
+                                )
+                                .padding(.horizontal, 20)
+                                .padding(.top, 20)
+                            }
+
                             // What the money is FOR (2.0).
                             KidGoalCardView(child: child)
                                 .padding(.top, 20)
@@ -286,12 +302,12 @@ struct ChildMainView: View {
                             // Things money cannot buy, priced by the family (2.0).
                             KidStoreSection(child: child)
 
-                            if childChores.isEmpty {
+                            if childChores.isEmpty && !manager.isOnVacationToday {
                                 VStack(spacing: 20) {
                                     Image(systemName: "party.popper.fill")
                                         .font(.system(size: 60))
                                         .foregroundStyle(Color.choreStarGradient)
-                                    
+
                                     Text("No Chores Yet!")
                                         .font(.title)
                                         .fontWeight(.bold)
@@ -331,6 +347,64 @@ struct ChildMainView: View {
             Text("No child selected")
                 .foregroundColor(.choreStarTextSecondary)
         }
+    }
+}
+
+/// The kid-mode vacation card: the one celebratory place that explains why
+/// today's list is empty. Localized like the rest of kid mode (es, pt-BR, ar).
+struct KidVacationCard: View {
+    /// The kid's current streak; the safe-and-waiting line only appears when
+    /// there is a streak to keep safe.
+    let streak: Int
+    /// First day chores come back (the day after the window ends).
+    let resumeDate: Date?
+
+    /// "Saturday" when chores come back within the week, else "September 21"
+    /// — both localized by the system formatter.
+    private var resumeDayText: String {
+        guard let resumeDate else { return "" }
+        let calendar = Calendar.current
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: Date()),
+            to: calendar.startOfDay(for: resumeDate)
+        ).day ?? 7
+        if days <= 6 {
+            return resumeDate.formatted(.dateTime.weekday(.wide))
+        }
+        return resumeDate.formatted(.dateTime.month(.wide).day())
+    }
+
+    private var subtitle: String {
+        var text = String(localized: "No chores until \(resumeDayText).")
+        if streak > 0 {
+            text += " " + String(localized: "Your \(streak)-day streak is safe and waiting for you. 🔥")
+        }
+        return text
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("🏖️")
+                .font(.system(size: 54))
+                .accessibilityHidden(true)
+
+            Text("You're on vacation!")
+                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .foregroundColor(.choreStarTextPrimary)
+                .multilineTextAlignment(.center)
+
+            Text(subtitle)
+                .font(.headline)
+                .foregroundColor(.choreStarTextSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(Color.choreStarCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
     }
 }
 

@@ -2,6 +2,7 @@ Version 2.2 gives ChoreStar a fresh face, led by your kids.
 
 • Home now opens with your family name and each kid's own progress ring around their avatar. Tap a kid to jump straight to their chores
 • A quieter, sharper look across the parent screens: one solid accent color, cleaner cards, and headings in a new typeface. Kid mode keeps every bit of its color and confetti
+• New: Vacation mode. Set a date range in Settings and nothing is due while you're away. Streaks stay safe, and it ends on its own
 • New App Store screenshots to match, and dozens of small polish fixes
 
 Questions or feedback are welcome at hi@chorestar.app

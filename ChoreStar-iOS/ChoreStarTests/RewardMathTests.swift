@@ -305,3 +305,188 @@ final class RewardMathTests: XCTestCase {
                        [6, 0, 1, 2, 3, 4, 5])
     }
 }
+
+// MARK: - Vacation mode (migration 019)
+
+final class VacationModeTests: XCTestCase {
+
+    private let calendar = Calendar(identifier: .gregorian)
+
+    private func day(_ year: Int, _ month: Int, _ dayOfMonth: Int) -> Date {
+        var c = DateComponents()
+        c.year = year
+        c.month = month
+        c.day = dayOfMonth
+        return calendar.startOfDay(for: calendar.date(from: c)!)
+    }
+
+    // MARK: Date-string parsing
+
+    func testParseReadsPostgresDateStringsAsLocalDays() {
+        XCTAssertEqual(VacationMode.parse("2026-09-08", calendar: calendar), day(2026, 9, 8))
+        XCTAssertNil(VacationMode.parse(nil, calendar: calendar))
+        XCTAssertNil(VacationMode.parse("", calendar: calendar))
+        XCTAssertNil(VacationMode.parse("not-a-date", calendar: calendar))
+        XCTAssertNil(VacationMode.parse("2026-13-01", calendar: calendar), "Month 13 is not a date")
+    }
+
+    func testStringRoundTripsThroughParse() {
+        let noon = calendar.date(byAdding: .hour, value: 12, to: day(2026, 12, 31))!
+        let encoded = VacationMode.string(from: noon, calendar: calendar)
+        XCTAssertEqual(encoded, "2026-12-31")
+        XCTAssertEqual(VacationMode.parse(encoded, calendar: calendar), day(2026, 12, 31))
+    }
+
+    // MARK: Window membership
+
+    func testCoversIsInclusiveOnBothEnds() {
+        let start = "2026-09-08"
+        let end = "2026-09-12"
+        XCTAssertTrue(VacationMode.covers(day(2026, 9, 8), startsOn: start, endsOn: end, calendar: calendar))
+        XCTAssertTrue(VacationMode.covers(day(2026, 9, 10), startsOn: start, endsOn: end, calendar: calendar))
+        XCTAssertTrue(VacationMode.covers(day(2026, 9, 12), startsOn: start, endsOn: end, calendar: calendar))
+        XCTAssertFalse(VacationMode.covers(day(2026, 9, 7), startsOn: start, endsOn: end, calendar: calendar))
+        XCTAssertFalse(VacationMode.covers(day(2026, 9, 13), startsOn: start, endsOn: end, calendar: calendar))
+    }
+
+    func testCoversComparesCalendarDaysNotInstants() {
+        // 11pm on the last day is still inside the window.
+        let lateNight = calendar.date(byAdding: .hour, value: 23, to: day(2026, 9, 12))!
+        XCTAssertTrue(VacationMode.covers(lateNight, startsOn: "2026-09-08", endsOn: "2026-09-12", calendar: calendar))
+    }
+
+    func testCoversToleratesMissingColumnsAndBadPairs() {
+        // A pre-migration row decodes both columns as nil: never on vacation.
+        XCTAssertFalse(VacationMode.covers(day(2026, 9, 10), startsOn: nil, endsOn: nil, calendar: calendar))
+        // A half-set or inverted pair is treated as no window, not a crash.
+        XCTAssertFalse(VacationMode.covers(day(2026, 9, 10), startsOn: "2026-09-08", endsOn: nil, calendar: calendar))
+        XCTAssertFalse(VacationMode.covers(day(2026, 9, 10), startsOn: "2026-09-12", endsOn: "2026-09-08", calendar: calendar))
+    }
+
+    // MARK: Pre-migration tolerance
+
+    func testFamilySettingsDecodesWithoutVacationColumns() throws {
+        // A row from a database that has not run migration 019: select("*")
+        // simply omits the columns. The pair must decode as nil, and nil must
+        // read as "not on vacation" — the app behaves exactly as before.
+        let row = """
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "user_id": "22222222-2222-2222-2222-222222222222",
+          "daily_reward_cents": 7,
+          "weekly_bonus_cents": 50,
+          "timezone": "UTC"
+        }
+        """
+        let settings = try JSONDecoder().decode(FamilySettings.self, from: Data(row.utf8))
+        XCTAssertNil(settings.vacationStartsOn)
+        XCTAssertNil(settings.vacationEndsOn)
+        XCTAssertFalse(VacationMode.covers(
+            Date(),
+            startsOn: settings.vacationStartsOn,
+            endsOn: settings.vacationEndsOn,
+            calendar: calendar
+        ))
+    }
+
+    func testFamilySettingsDecodesWithVacationColumns() throws {
+        let row = """
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "user_id": "22222222-2222-2222-2222-222222222222",
+          "daily_reward_cents": 7,
+          "weekly_bonus_cents": 50,
+          "timezone": "UTC",
+          "vacation_starts_on": "2026-09-08",
+          "vacation_ends_on": "2026-09-12"
+        }
+        """
+        let settings = try JSONDecoder().decode(FamilySettings.self, from: Data(row.utf8))
+        XCTAssertEqual(settings.vacationStartsOn, "2026-09-08")
+        XCTAssertEqual(settings.vacationEndsOn, "2026-09-12")
+        XCTAssertTrue(VacationMode.covers(
+            day(2026, 9, 10),
+            startsOn: settings.vacationStartsOn,
+            endsOn: settings.vacationEndsOn,
+            calendar: calendar
+        ))
+    }
+
+    // MARK: Week-index dates
+
+    func testDateInCurrentWeekMapsDayIndexesToRealDates() {
+        // 2026-09-08 is a Tuesday (day index 2); its week starts Sunday 09-06.
+        let tuesday = day(2026, 9, 8)
+        XCTAssertEqual(RewardMath.dateInCurrentWeek(dayIndex: 0, reference: tuesday, calendar: calendar), day(2026, 9, 6))
+        XCTAssertEqual(RewardMath.dateInCurrentWeek(dayIndex: 2, reference: tuesday, calendar: calendar), tuesday)
+        XCTAssertEqual(RewardMath.dateInCurrentWeek(dayIndex: 6, reference: tuesday, calendar: calendar), day(2026, 9, 12))
+    }
+
+    // MARK: Streak skip logic
+
+    private func completion(on date: Date) -> HistoricalCompletion {
+        HistoricalCompletion(choreId: UUID(), weekStart: "", dayOfWeek: 0, date: date)
+    }
+
+    func testStreakCarriesAcrossVacationDays() {
+        let today = day(2026, 9, 8)
+        // Done yesterday and today; a three-day trip before that; done the
+        // three days before the trip.
+        let doneOffsets = [0, -1, -5, -6, -7]
+        let vacationOffsets: Set<Int> = [-2, -3, -4]
+        let completions = doneOffsets.map {
+            completion(on: calendar.date(byAdding: .day, value: $0, to: today)!)
+        }
+        let vacationDays = Set(vacationOffsets.map {
+            calendar.date(byAdding: .day, value: $0, to: today)!
+        })
+
+        let withVacation = AchievementEngine.currentStreak(
+            completions,
+            isVacationDay: { vacationDays.contains(self.calendar.startOfDay(for: $0)) },
+            calendar: calendar,
+            today: today
+        )
+        XCTAssertEqual(withVacation, 5, "Vacation days are skipped, not broken: the runs join")
+
+        let withoutVacation = AchievementEngine.currentStreak(
+            completions,
+            calendar: calendar,
+            today: today
+        )
+        XCTAssertEqual(withoutVacation, 2, "Without the vacation record the same gap breaks the run")
+    }
+
+    func testStreakSurvivesAnUnfinishedTodayInsideVacation() {
+        let today = day(2026, 9, 8)
+        // On vacation today and yesterday; the three days before were done.
+        let completions = [-2, -3, -4].map {
+            completion(on: calendar.date(byAdding: .day, value: $0, to: today)!)
+        }
+        let vacationDays: Set<Date> = Set([0, -1].map {
+            calendar.date(byAdding: .day, value: $0, to: today)!
+        })
+
+        let streak = AchievementEngine.currentStreak(
+            completions,
+            isVacationDay: { vacationDays.contains(self.calendar.startOfDay(for: $0)) },
+            calendar: calendar,
+            today: today
+        )
+        XCTAssertEqual(streak, 3, "The streak waits through the whole window")
+    }
+
+    func testStreakStillBreaksOnARealMissedDay() {
+        let today = day(2026, 9, 8)
+        // Done today; a real miss yesterday; done before that.
+        let completions = [0, -2, -3].map {
+            completion(on: calendar.date(byAdding: .day, value: $0, to: today)!)
+        }
+        let streak = AchievementEngine.currentStreak(
+            completions,
+            calendar: calendar,
+            today: today
+        )
+        XCTAssertEqual(streak, 1, "A missed non-vacation day still ends the run")
+    }
+}

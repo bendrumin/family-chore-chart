@@ -2,6 +2,7 @@ A versão 2.2 dá ao ChoreStar uma cara nova, com as crianças em primeiro lugar
 
 • A tela inicial agora abre com o nome da sua família e um anel de progresso ao redor do avatar de cada criança. Toque em uma criança para ir direto às tarefas dela
 • Um visual mais limpo nas telas dos pais: uma só cor de destaque, cartões mais claros e títulos com uma nova tipografia. O modo criança mantém toda a cor e os confetes
+• Novo: modo férias. Escolha um período em Ajustes e nada fica pendente enquanto vocês estiverem fora. As sequências ficam seguras e ele termina sozinho
 • Novas capturas na App Store e muitos pequenos ajustes
 
 Fale com a gente em hi@chorestar.app

@@ -21,6 +21,13 @@ struct SettingsView: View {
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
     @State private var activityPushEnabled = true
     @State private var requireApproval = false
+    @State private var vacationOn = false
+    @State private var vacationFrom = Calendar.current.startOfDay(for: Date())
+    @State private var vacationThrough = Calendar.current.date(
+        byAdding: .day, value: 6, to: Calendar.current.startOfDay(for: Date())
+    ) ?? Date()
+    @State private var vacationSaveTask: Task<Void, Never>?
+    @State private var vacationError: String?
 
     private var reminderTimeBinding: Binding<Date> {
         Binding(
@@ -264,6 +271,51 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $vacationOn) {
+                        HStack {
+                            Image(systemName: "airplane")
+                                .foregroundColor(vacationOn ? .choreStarPrimary : .choreStarTextSecondary)
+                            Text("Vacation mode")
+                        }
+                    }
+                    .onChange(of: vacationOn) { _, on in
+                        vacationError = nil
+                        if on {
+                            scheduleVacationSave()
+                        } else {
+                            vacationSaveTask?.cancel()
+                            guard manager.vacationWindow != nil else { return }
+                            Task {
+                                let err = await manager.clearVacation()
+                                await MainActor.run { vacationError = err }
+                            }
+                        }
+                    }
+
+                    if vacationOn {
+                        DatePicker("From", selection: $vacationFrom, displayedComponents: .date)
+                            .onChange(of: vacationFrom) { _, newValue in
+                                if vacationThrough < newValue { vacationThrough = newValue }
+                                scheduleVacationSave()
+                            }
+                        DatePicker("Through", selection: $vacationThrough, in: vacationFrom..., displayedComponents: .date)
+                            .onChange(of: vacationThrough) { _, _ in
+                                scheduleVacationSave()
+                            }
+                    }
+
+                    if let vacationError {
+                        Text(vacationError)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                } header: {
+                    Text("Vacation")
+                } footer: {
+                    Text("No chores due, streaks safe, alerts quiet.")
+                }
+
+                Section {
                     Toggle(isOn: $requireApproval) {
                         HStack {
                             Image(systemName: "checkmark.shield.fill")
@@ -307,7 +359,8 @@ struct SettingsView: View {
                                 let granted = await NotificationsManager.shared.requestAuthorization()
                                 if granted {
                                     NotificationsManager.shared.scheduleDailyReminder(
-                                        at: Date(timeIntervalSinceReferenceDate: reminderTimeStorage)
+                                        at: Date(timeIntervalSinceReferenceDate: reminderTimeStorage),
+                                        pausedDuring: manager.vacationWindow
                                     )
                                 } else {
                                     reminderEnabled = false
@@ -326,7 +379,8 @@ struct SettingsView: View {
                         )
                         .onChange(of: reminderTimeStorage) { _, newValue in
                             NotificationsManager.shared.scheduleDailyReminder(
-                                at: Date(timeIntervalSinceReferenceDate: newValue)
+                                at: Date(timeIntervalSinceReferenceDate: newValue),
+                                pausedDuring: manager.vacationWindow
                             )
                         }
                     }
@@ -404,6 +458,7 @@ struct SettingsView: View {
                 }
                 activityPushEnabled = manager.familySettings?.activityPushOn ?? true
                 requireApproval = manager.familySettings?.requireApproval ?? false
+                seedVacationState()
             }
             .onChange(of: manager.familySettings?.activityPushOn) { _, enabled in
                 if let enabled {
@@ -430,6 +485,43 @@ struct SettingsView: View {
         }
     }
     
+    /// Reflects the stored window in the form. An expired window counts as
+    /// off: it already ended on its own and needs no cleanup to read that way.
+    private func seedVacationState() {
+        guard let window = manager.vacationWindow,
+              window.upperBound >= Calendar.current.startOfDay(for: Date()) else {
+            vacationOn = false
+            return
+        }
+        vacationFrom = window.lowerBound
+        vacationThrough = window.upperBound
+        vacationOn = true
+    }
+
+    /// Debounced save: writes the family_settings pair and the history row
+    /// once the parent settles on dates, not on every picker tick. Skips the
+    /// write when nothing changed (which also keeps onAppear seeding silent).
+    private func scheduleVacationSave() {
+        guard vacationOn else { return }
+        vacationSaveTask?.cancel()
+        let calendar = Calendar.current
+        let from = calendar.startOfDay(for: vacationFrom)
+        let through = max(from, calendar.startOfDay(for: vacationThrough))
+        vacationSaveTask = Task {
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            guard !Task.isCancelled else { return }
+            if let window = manager.vacationWindow,
+               window.lowerBound == from, window.upperBound == through {
+                return
+            }
+            let err = await manager.setVacation(from: from, through: through)
+            await MainActor.run {
+                vacationError = err
+                if err == nil { Haptics.success() }
+            }
+        }
+    }
+
     private func iconForPreference(_ preference: DarkModePreference) -> String {
         switch preference {
         case .light:

@@ -51,6 +51,13 @@ struct DashboardView: View {
         return name.isEmpty ? "My Family" : name
     }
 
+    /// "through Sunday, September 13" while today sits inside the family's
+    /// vacation window; nil the rest of the year.
+    private var vacationThroughText: String? {
+        guard manager.isOnVacationToday, let window = manager.vacationWindow else { return nil }
+        return window.upperBound.formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+
     /// Chores done / due today for one child — the same per-child numbers the
     /// Family chips' rings use (dueChores + isChoreCompleted).
     private func childDayCounts(_ child: Child) -> (done: Int, total: Int) {
@@ -60,27 +67,44 @@ struct DashboardView: View {
     }
 
     /// One hero ring: the child's avatar wrapped in their today-progress ring,
-    /// drawn in the hero's ink (white on the seasonal gradient).
+    /// drawn in the hero's ink (white on the seasonal gradient). On vacation
+    /// the ring and counts rest: a plain avatar circle, slightly dimmed.
+    @ViewBuilder
     private func heroChildRing(_ child: Child) -> some View {
-        let counts = childDayCounts(child)
         let firstName = child.name.split(separator: " ").first.map(String.init) ?? child.name
-        let countText = counts.total > 0 ? "\(counts.done)/\(counts.total)" : "none today"
 
-        return VStack(spacing: 6) {
-            ProgressRing(
-                progress: counts.total > 0 ? Double(counts.done) / Double(counts.total) : 0,
-                lineWidth: 4.5,
-                tint: .white,
-                trackOpacity: 0.28
-            ) {
+        if manager.isOnVacationToday {
+            VStack(spacing: 6) {
                 AvatarView(child: child, size: 50)
-            }
-            .frame(width: 62, height: 62)
+                    .frame(width: 62, height: 62)
 
-            (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
-                + Text(countText).fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
-                .font(.caption)
-                .lineLimit(1)
+                Text(firstName)
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+            }
+            .opacity(0.85)
+        } else {
+            let counts = childDayCounts(child)
+            let countText = counts.total > 0 ? "\(counts.done)/\(counts.total)" : "none today"
+
+            VStack(spacing: 6) {
+                ProgressRing(
+                    progress: counts.total > 0 ? Double(counts.done) / Double(counts.total) : 0,
+                    lineWidth: 4.5,
+                    tint: .white,
+                    trackOpacity: 0.28
+                ) {
+                    AvatarView(child: child, size: 50)
+                }
+                .frame(width: 62, height: 62)
+
+                (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
+                    + Text(countText).fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
+                    .font(.caption)
+                    .lineLimit(1)
+            }
         }
     }
 
@@ -97,19 +121,27 @@ struct DashboardView: View {
                     // carries their own progress ring, family total trails.
                     // Mirrors the web DashboardHero.
                     VStack(alignment: .leading, spacing: 0) {
-                        // Greeting left, date right
+                        // Greeting left, date right. On vacation the row says
+                        // so, with the through-date where the date usually sits.
                         HStack(alignment: .firstTextBaseline) {
-                            Text("\(greeting.emoji) \(greeting.text)")
+                            Text(vacationThroughText != nil ? "🏖️ On vacation" : "\(greeting.emoji) \(greeting.text)")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.white.opacity(0.92))
 
                             Spacer()
 
-                            Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white.opacity(0.75))
+                            if let vacationThroughText {
+                                Text("through \(vacationThroughText)")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white.opacity(0.75))
+                            } else {
+                                Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white.opacity(0.75))
+                            }
                         }
 
                         // The family leads
@@ -155,24 +187,46 @@ struct DashboardView: View {
                                     .padding(.vertical, 2)
                                 }
 
-                                // Family total
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text("\(completedChores) of \(totalChores)")
-                                        .font(.display(24, weight: .heavy))
-                                        .foregroundColor(.white)
-                                        .contentTransition(.numericText(value: Double(completedChores)))
-                                        .animation(.snappy, value: completedChores)
+                                // Family total — or, on vacation, the reason
+                                // there isn't one and the way out early.
+                                if manager.isOnVacationToday {
+                                    VStack(alignment: .trailing, spacing: 6) {
+                                        Text("Nothing due. Streaks are safe.")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white.opacity(0.85))
 
-                                    Text(totalChores > 0
-                                         ? "\(earnedTodayText) earned today"
-                                         : "No chores due today")
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .contentTransition(.numericText())
-                                        .animation(.snappy, value: earnedTodayText)
+                                        Button {
+                                            Task { _ = await manager.clearVacation() }
+                                        } label: {
+                                            Text("End vacation early")
+                                                .font(.caption)
+                                                .fontWeight(.bold)
+                                                .underline()
+                                                .foregroundColor(.white)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                    .fixedSize()
+                                } else {
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Text("\(completedChores) of \(totalChores)")
+                                            .font(.display(24, weight: .heavy))
+                                            .foregroundColor(.white)
+                                            .contentTransition(.numericText(value: Double(completedChores)))
+                                            .animation(.snappy, value: completedChores)
+
+                                        Text(totalChores > 0
+                                             ? "\(earnedTodayText) earned today"
+                                             : "No chores due today")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white.opacity(0.85))
+                                            .contentTransition(.numericText())
+                                            .animation(.snappy, value: earnedTodayText)
+                                    }
+                                    .fixedSize()
                                 }
-                                .fixedSize()
                             }
                             .padding(.top, 12)
                         }
@@ -231,8 +285,10 @@ struct DashboardView: View {
                                 .padding(.horizontal, 20)
 
                             // Flat rate: say what the day is worth, since the rows
-                            // deliberately carry no per-chore amounts.
-                            if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
+                            // deliberately carry no per-chore amounts. Rests on
+                            // vacation, when no day is worth anything.
+                            if !manager.isPerChoreRewardMode, !manager.isOnVacationToday,
+                               let settings = manager.familySettings {
                                 Text("Each child earns \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) for finishing all of their chores today.")
                                     .font(.caption)
                                     .foregroundColor(.choreStarTextSecondary)
@@ -240,7 +296,9 @@ struct DashboardView: View {
                             }
 
                             if choresToday.isEmpty {
-                                Text("Nothing is due today. Chores scheduled for other days show up on their day.")
+                                Text(manager.isOnVacationToday
+                                     ? "Vacation mode is on. Chores come back when it ends."
+                                     : "Nothing is due today. Chores scheduled for other days show up on their day.")
                                     .font(.subheadline)
                                     .foregroundColor(.choreStarTextSecondary)
                                     .padding(.horizontal, 20)

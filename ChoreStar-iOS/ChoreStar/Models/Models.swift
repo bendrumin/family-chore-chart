@@ -374,7 +374,14 @@ struct FamilySettings: Codable {
     let activityPushEnabled: Bool?
     /// Kid ticks wait for a parent before they count. Migration 016; nil = off.
     let requireApproval: Bool?
-    
+    /// Vacation mode window (migration 019): nothing is due between these two
+    /// LOCAL calendar dates, inclusive on both ends. Postgres `date` strings
+    /// (yyyy-MM-dd), both set or both nil. Optional so a row from a database
+    /// that has not run the migration still decodes (a select("*") without the
+    /// column simply omits the key).
+    let vacationStartsOn: String?
+    let vacationEndsOn: String?
+
     var isPerChoreMode: Bool { rewardMode == "per_chore" }
     /// nil (pre-migration row) means enabled.
     var activityPushOn: Bool { activityPushEnabled != false }
@@ -397,5 +404,22 @@ struct FamilySettings: Codable {
         case weeklyBonusLabel = "weekly_bonus_label"
         case activityPushEnabled = "activity_push_enabled"
         case requireApproval = "require_approval"
+        case vacationStartsOn = "vacation_starts_on"
+        case vacationEndsOn = "vacation_ends_on"
+    }
+}
+
+/// One vacation_periods row (migration 019): a past or present vacation
+/// window, kept so streak math looking back in time knows a quiet week was a
+/// trip, not a collapse. Dates are Postgres `date` strings (yyyy-MM-dd).
+struct VacationPeriod: Codable, Identifiable {
+    let id: UUID
+    let startsOn: String
+    let endsOn: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case startsOn = "starts_on"
+        case endsOn = "ends_on"
     }
 }

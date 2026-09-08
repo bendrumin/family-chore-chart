@@ -36,6 +36,11 @@ enum Changelog {
                     title: "A Quieter, Sharper Look",
                     description: "One solid accent color, cleaner cards, softer shadows, and headings in a new typeface across the parent screens. Kid mode keeps every bit of its color and confetti."
                 ),
+                Feature(
+                    icon: "🏖️",
+                    title: "Vacation Mode",
+                    description: "Set a date range in Settings and nothing is due while you're away. Streaks and perfect weeks stay safe, and it ends on its own."
+                ),
             ]
         ),
         Entry(
