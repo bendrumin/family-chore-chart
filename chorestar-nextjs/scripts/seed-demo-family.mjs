@@ -118,4 +118,41 @@ if (!items || items.length === 0) {
   console.log(`reward store: ${items.length} items already present`)
 }
 
+// 9. "Needs your OK" tray: one pending store request (Maya wants the movie
+//    pick) and one pending tick (Leo, Sunday). Leo's chore is Sundays-only so
+//    the hero still reads "Leo none today" on weekday captures.
+const leo = (kids ?? []).find((k) => k.name === 'Leo')
+if (leo) {
+  const { data: leoChores } = await admin.from('chores').select('id, name').eq('child_id', leo.id)
+  let putAwayId = (leoChores ?? []).find((c) => c.name === 'Put away toys')?.id
+  if (!putAwayId) {
+    const { data, error } = await admin.from('chores').insert({
+      child_id: leo.id, name: 'Put away toys', icon: '🧸', reward_cents: 25,
+      days_of_week: [0], is_active: true, sort_order: 0, category: 'household_chores',
+    }).select('id').single()
+    if (error) { console.error('Leo chore failed:', error.message); process.exit(1) }
+    putAwayId = data.id
+  }
+  await admin.from('chore_completions').delete().eq('chore_id', putAwayId).eq('week_start', '2026-09-06')
+  const { error: pendErr } = await admin.from('chore_completions').insert({
+    chore_id: putAwayId, week_start: '2026-09-06', day_of_week: 0,
+    status: 'pending', completed_at: '2026-09-06T19:30:00Z',
+  })
+  console.log('Leo pending tick:', pendErr ? `FAILED ${pendErr.message}` : 'ok')
+} else {
+  console.log('Leo not found; skipping pending tick')
+}
+
+const { data: movieItem } = await admin.from('reward_items')
+  .select('id').eq('user_id', uid).eq('title', 'Family movie pick').maybeSingle()
+if (movieItem) {
+  await admin.from('reward_redemptions').delete().eq('child_id', maya.id)
+  const { error: redErr } = await admin.from('reward_redemptions').insert({
+    child_id: maya.id, reward_item_id: movieItem.id, status: 'pending', price_cents: 400,
+  })
+  console.log('Maya store request:', redErr ? `FAILED ${redErr.message}` : 'ok')
+} else {
+  console.log('movie reward item not found; skipping store request')
+}
+
 console.log('SEED COMPLETE')

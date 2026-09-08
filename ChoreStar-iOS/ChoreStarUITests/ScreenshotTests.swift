@@ -15,10 +15,14 @@ import XCTest
 /// control execution order.
 final class ScreenshotTests: XCTestCase {
 
+    // The original +uitest-shots account was deleted; The Star Family now
+    // lives on the +uitest-preview account (same one the Reddit launch
+    // capture recipe uses — docs/reddit-launch/README.md). Reseed with
+    // chorestar-nextjs/scripts/seed-demo-family.mjs if the data drifts.
     private static let email =
-        ProcessInfo.processInfo.environment["CHORESTAR_SHOTS_EMAIL"] ?? "bsiegel13+uitest-shots@gmail.com"
+        ProcessInfo.processInfo.environment["CHORESTAR_SHOTS_EMAIL"] ?? "bsiegel13+uitest-preview@gmail.com"
     private static let password =
-        ProcessInfo.processInfo.environment["CHORESTAR_SHOTS_PASSWORD"] ?? "StarFamily-2026!"
+        ProcessInfo.processInfo.environment["CHORESTAR_SHOTS_PASSWORD"] ?? "RedditDemo2026!"
 
     private let dataTimeout: TimeInterval = 60
 
@@ -31,6 +35,9 @@ final class ScreenshotTests: XCTestCase {
     private func launch(_ extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         setupSnapshot(app)
+        // The rate-us card would photobomb the dashboard shot on a sim with
+        // old defaults; the argument domain pins its "done" flag for the run.
+        app.launchArguments += ["-review.rateCardDone", "YES"]
         app.launchArguments += ["-chorestar-signin", Self.email, Self.password] + extra
         app.launch()
         return app
@@ -124,7 +131,7 @@ final class ScreenshotTests: XCTestCase {
         let app = launch(["-chorestar-kid", "Maya"])
         waitFor(app, text: "Hi, Maya! 👋")
         // The goal card confirms the wallet fetch landed.
-        waitFor(app, text: "Lego set", settle: 3)
+        waitFor(app, text: "Lego Speed Champions", settle: 3)
         snapshot("02-kid-dashboard")
 
         // Scroll until the store is on screen.
