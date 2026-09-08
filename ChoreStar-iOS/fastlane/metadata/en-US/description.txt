@@ -10,6 +10,7 @@ For parents
 • Review earnings, streaks, and history at a glance
 • Manage several children, each with a separate schedule
 • Share access with a co-parent so you both stay in sync
+• Going away? Vacation mode pauses chores for a date range: nothing is due, streaks stay safe, and it ends on its own
 
 Somewhere for the money to go
 • Goals: kids pick what they are saving for and watch the bar fill as their unspent allowance grows. When it is full, you pay it out from their page
