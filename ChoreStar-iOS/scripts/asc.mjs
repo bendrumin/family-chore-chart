@@ -162,6 +162,23 @@ switch (cmd) {
     }
     break;
   }
+  case 'cancel-submission': {
+    // cancel-submission — withdraws the app's in-flight review submission
+    // (WAITING_FOR_REVIEW only; a submission already IN_REVIEW should be left
+    // to Apple). Used to swap a newer build onto a version before review.
+    const subs = await api(
+      'GET',
+      `/v1/apps/${APP_ID}/reviewSubmissions?filter[state]=WAITING_FOR_REVIEW,READY_FOR_REVIEW,UNRESOLVED_ISSUES&limit=5`
+    );
+    if (!subs.data.length) { out('no cancellable review submission found'); break; }
+    for (const sub of subs.data) {
+      await api('PATCH', `/v1/reviewSubmissions/${sub.id}`, {
+        data: { type: 'reviewSubmissions', id: sub.id, attributes: { canceled: true } },
+      });
+      out(`CANCELED reviewSubmission ${sub.id} (was ${sub.attributes.state})`);
+    }
+    break;
+  }
   case 'submit-version': {
     const v = await findVersion(args[0]);
     if (!v) throw new Error(`no appStoreVersion ${args[0]}`);
