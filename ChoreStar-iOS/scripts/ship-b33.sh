@@ -9,20 +9,15 @@
 # missed chore from an earlier week (like Saturday, seen from a Sunday) can
 # be checked off after the fact. Backfills count quietly, with no confetti.
 #
-# Why the re-stamp: this Mac runs beta macOS, and xcodebuild records the host
-# build (BuildMachineOSBuild) into every Info.plist. ASC's validator rejects
-# beta-machine builds after upload (ITMS-90111, "INVALID_BINARY"), so we stamp
-# the plists with a release-macOS build id before exporting. exportArchive
-# re-signs everything afterwards, so signatures stay valid. Same recipe that
-# shipped builds 22 through 32. Drop the re-stamp step once the Xcode 27
-# RC lands on release macOS.
+# The beta-macOS re-stamp that shipped builds 22 through 32 is retired: as of
+# 2026-09-13 this Mac runs release macOS 27.0 (26A428) with Xcode 27.0, so
+# BuildMachineOSBuild records a release id and ASC accepts it as-is.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer  # release Xcode, NOT Xcode-27
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer  # Xcode 27.0 release (27A266a)
 VERSION=2.2.1
 BUILD=33
-GOOD_STAMP=25A354   # a release macOS build id
 ARCHIVE="build/ChoreStar-${VERSION}-b${BUILD}.xcarchive"
 KEY_ID="${ASC_KEY_ID:-P8NYU5K555}"
 ISSUER="${ASC_ISSUER_ID:-69a6de6f-7e14-47e3-e053-5b8c7c11a4d1}"
@@ -35,13 +30,10 @@ xcodebuild archive \
   -destination 'generic/platform=iOS' \
   -archivePath "$ARCHIVE" | tail -3
 
-echo "==> [2/7] Re-stamping BuildMachineOSBuild -> ${GOOD_STAMP}"
-find "$ARCHIVE" -name Info.plist -print0 | while IFS= read -r -d '' plist; do
-  if /usr/libexec/PlistBuddy -c 'Print :BuildMachineOSBuild' "$plist" >/dev/null 2>&1; then
-    /usr/libexec/PlistBuddy -c "Set :BuildMachineOSBuild ${GOOD_STAMP}" "$plist"
-    echo "    stamped: ${plist#$ARCHIVE/}"
-  fi
-done
+echo "==> [2/7] Re-stamp skipped: this Mac now runs RELEASE macOS (26A428)"
+# The beta-macOS trap (ITMS-90111) is over: BuildMachineOSBuild records the
+# host macOS build, and release build ids pass ASC validation. If an upload
+# ever comes back INVALID_BINARY again, restore the loop from ship-b32.sh.
 
 echo "==> [3/7] Exporting + uploading to App Store Connect (this re-signs)"
 xcodebuild -exportArchive \
