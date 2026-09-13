@@ -2489,6 +2489,69 @@ class SupabaseManager: ObservableObject {
         return weekCompletions.contains(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
     }
 
+    /// Week-aware sibling of `isChoreCompleted(_:forDay:)` for the parent
+    /// week navigation. The current week reads the live `weekCompletions`;
+    /// any other week reads the in-memory history `loadAllTimeCompletions()`
+    /// filled (parent sessions load every approved row for the family's
+    /// chores, so a viewed past week is already in memory).
+    func isChoreCompleted(_ chore: Chore, forDay dayOfWeek: Int, weekStart: String) -> Bool {
+        if weekStart == RewardMath.weekStartString() {
+            return isChoreCompleted(chore, forDay: dayOfWeek)
+        }
+        return allTimeCompletions.contains {
+            $0.choreId == chore.id && $0.weekStart == weekStart && $0.dayOfWeek == dayOfWeek
+        }
+    }
+
+    /// Completed (approved) cells of `childId`'s chores in the week keyed by
+    /// `weekStart`. Feeds the week-aware stats and earnings.
+    func completedCells(for childId: UUID, weekStart: String) -> Set<ChoreDayCell> {
+        let childChoreIds = Set(chores.filter { $0.childId == childId }.map(\.id))
+        if weekStart == RewardMath.weekStartString() {
+            return Set(weekCompletions
+                .filter { childChoreIds.contains($0.choreId) }
+                .map { ChoreDayCell(choreId: $0.choreId, dayOfWeek: $0.dayOfWeek) })
+        }
+        return Set(allTimeCompletions
+            .filter { childChoreIds.contains($0.choreId) && $0.weekStart == weekStart }
+            .map { ChoreDayCell(choreId: $0.choreId, dayOfWeek: $0.dayOfWeek) })
+    }
+
+    /// The week-view summary numbers for any viewed week. The math lives in
+    /// `RewardMath.weekStats` so it is unit-testable; for the current week it
+    /// produces the same numbers the current-week-only card always showed.
+    /// Vacation flags come from the viewed week's REAL dates, so paused days
+    /// in past weeks read as off-days too.
+    func weekStats(for childId: UUID, weekStart: String) -> RewardMath.WeekStats {
+        let vacationFlags = (0..<7).map { day -> Bool in
+            guard let date = RewardMath.date(weekStart: weekStart, dayIndex: day) else { return false }
+            return isVacationDay(date)
+        }
+        return RewardMath.weekStats(
+            chores: chores.filter { $0.childId == childId },
+            completed: completedCells(for: childId, weekStart: weekStart),
+            vacationDays: vacationFlags,
+            isPerChoreMode: familySettings?.isPerChoreMode == true,
+            dailyRewardCents: familySettings?.dailyRewardCents
+        )
+    }
+
+    /// Week-aware sibling of `calculateDayEarnings(for:dayOfWeek:)`.
+    func calculateDayEarnings(for childId: UUID, dayOfWeek: Int, weekStart: String) -> Double {
+        guard (0..<7).contains(dayOfWeek) else { return 0 }
+        return Double(weekStats(for: childId, weekStart: weekStart).dayEarningsCents[dayOfWeek]) / 100.0
+    }
+
+    /// Chores due on `dayOfWeek` of the week keyed by `weekStart`: the same
+    /// schedule mask as today, with vacation checked against that week's
+    /// real date.
+    func dueChores(for childId: UUID, on dayOfWeek: Int, weekStart: String) -> [Chore] {
+        if let date = RewardMath.date(weekStart: weekStart, dayIndex: dayOfWeek), isVacationDay(date) {
+            return []
+        }
+        return ChoreSchedule.due(chores.filter { $0.childId == childId }, on: dayOfWeek)
+    }
+
     /// The kid ticked it and it is waiting for a parent (approval mode).
     func isChorePending(_ chore: Chore, forDay dayOfWeek: Int) -> Bool {
         pendingCompletions.contains(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
@@ -2504,13 +2567,25 @@ class SupabaseManager: ObservableObject {
         chore.requiresPhoto || familySettings?.requireApproval == true
     }
     
-    // Toggle completion for a specific day
-    func toggleChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int) async -> [Achievement] {
+    // Toggle completion for a specific day. `weekStart` names the week the
+    // tick belongs to (a yyyy-MM-dd Sunday); nil means the current week,
+    // which every pre-existing call site relies on. Only the parent week
+    // navigation passes a past week.
+    func toggleChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int, weekStart: String? = nil) async -> [Achievement] {
         #if canImport(Supabase)
         // Standalone kid session: no Supabase JWT, so the direct write below
-        // would fail RLS. Route through the kid API instead.
+        // would fail RLS. Route through the kid API instead. The kid path
+        // stays current-week only (week navigation is hidden in kid sessions).
         if let session = await MainActor.run(body: { kidModeSession }) {
             return await toggleChoreViaKidAPI(chore, forDay: dayOfWeek, session: session)
+        }
+
+        // A tick aimed at a week other than the current one takes the
+        // historical path: it writes that week's key, keeps the in-memory
+        // history in sync, and fires none of today's celebration side
+        // effects. The current week's own key falls through unchanged.
+        if let viewedWeek = weekStart, viewedWeek != RewardMath.weekStartString() {
+            return await toggleHistoricalChoreCompletion(chore, forDay: dayOfWeek, weekStart: viewedWeek)
         }
         guard let client = client else { return [] }
 
@@ -2683,6 +2758,99 @@ class SupabaseManager: ObservableObject {
     func toggleChoreCompletion(_ chore: Chore) async -> [Achievement] {
         let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
         return await toggleChoreCompletion(chore, forDay: currentDay)
+    }
+
+    /**
+     Insert or delete a completion in a week OTHER than the current one — the
+     parent's week navigation editing history.
+
+     Writes carry the viewed week's `week_start` and land as approved (parent
+     tick, column default), with `completed_at` set to noon of the real day
+     being credited. Local state changes touch `allTimeCompletions` only:
+     `weekCompletions`, `choreCompletions`, and `pendingCompletions` describe
+     the current week and stay out of it.
+
+     A backfilled tick earns normally (money math is derived from
+     completions) but celebrates nothing: no achievement check, no "all
+     chores done" push. Those belong to today's ticks.
+     */
+    private func toggleHistoricalChoreCompletion(_ chore: Chore, forDay dayOfWeek: Int, weekStart: String) async -> [Achievement] {
+        #if canImport(Supabase)
+        guard let client = client else { return [] }
+
+        let isCompleted = await MainActor.run {
+            allTimeCompletions.contains {
+                $0.choreId == chore.id && $0.weekStart == weekStart && $0.dayOfWeek == dayOfWeek
+            }
+        }
+
+        if isCompleted {
+            await MainActor.run {
+                objectWillChange.send()
+                if let idx = allTimeCompletions.firstIndex(where: {
+                    $0.choreId == chore.id && $0.weekStart == weekStart && $0.dayOfWeek == dayOfWeek
+                }) {
+                    allTimeCompletions.remove(at: idx)
+                }
+            }
+            do {
+                try await client
+                    .from("chore_completions")
+                    .delete()
+                    .eq("chore_id", value: chore.id.uuidString)
+                    .eq("day_of_week", value: dayOfWeek)
+                    .eq("week_start", value: weekStart)
+                    .execute()
+            } catch {
+                // Keep it removed locally; the row reconciles on next load.
+            }
+        } else {
+            let cellDate = RewardMath.date(weekStart: weekStart, dayIndex: dayOfWeek)
+            // Noon on the day being credited: a timestamp that stays on that
+            // calendar day in any nearby timezone the row is read back in.
+            let completedAt = cellDate.flatMap {
+                Calendar.current.date(byAdding: .hour, value: 12, to: $0)
+            } ?? Date()
+
+            await MainActor.run {
+                objectWillChange.send()
+                allTimeCompletions.append(HistoricalCompletion(
+                    choreId: chore.id,
+                    weekStart: weekStart,
+                    dayOfWeek: dayOfWeek,
+                    date: cellDate
+                ))
+            }
+            do {
+                try await client
+                    .from("chore_completions")
+                    .insert(ChoreCompletionRow(
+                        id: UUID(),
+                        chore_id: chore.id,
+                        day_of_week: dayOfWeek,
+                        week_start: weekStart,
+                        completed_at: ISO8601DateFormatter().string(from: completedAt)
+                    ))
+                    .execute()
+            } catch let error as PostgrestError where error.code == "23505" {
+                // The cell already has a row (another device); local state
+                // already shows it done.
+            } catch {
+                await MainActor.run {
+                    objectWillChange.send()
+                    if let idx = allTimeCompletions.lastIndex(where: {
+                        $0.choreId == chore.id && $0.weekStart == weekStart && $0.dayOfWeek == dayOfWeek
+                    }) {
+                        allTimeCompletions.remove(at: idx)
+                    }
+                }
+            }
+        }
+
+        // Streaks derive from history, so the widget may care.
+        await MainActor.run { publishWidgetSnapshot() }
+        #endif
+        return []
     }
 
     // MARK: - Bulk completion ("Mark Today Done" / "Mark Week So Far Done")

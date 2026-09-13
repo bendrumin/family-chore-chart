@@ -64,6 +64,123 @@ enum RewardMath {
         ) ?? reference
         return calendar.date(byAdding: .day, value: dayIndex, to: weekStart) ?? reference
     }
+
+    // MARK: - Week keys (chore_completions.week_start)
+
+    /// The Sunday starting the week that contains `date`, as the yyyy-MM-dd
+    /// string `chore_completions.week_start` is keyed by. Anchored to Sunday
+    /// explicitly rather than via `.yearForWeekOfYear` (whose first weekday
+    /// follows the device locale), matching the web's getWeekStart().
+    static func weekStartString(for date: Date = Date(), calendar: Calendar = .current) -> String {
+        let weekday = calendar.component(.weekday, from: date) - 1
+        let sunday = calendar.date(
+            byAdding: .day,
+            value: -weekday,
+            to: calendar.startOfDay(for: date)
+        ) ?? date
+        return VacationMode.string(from: sunday, calendar: calendar)
+    }
+
+    /// The real date (local start of day) behind `dayIndex` in the week keyed
+    /// by `weekStart` — the any-week sibling of `dateInCurrentWeek(dayIndex:)`.
+    /// Vacation and schedule rules for a viewed past week need actual dates,
+    /// not indexes. Nil only for a malformed key.
+    static func date(weekStart: String, dayIndex: Int, calendar: Calendar = .current) -> Date? {
+        guard let start = VacationMode.parse(weekStart, calendar: calendar) else { return nil }
+        return calendar.date(byAdding: .day, value: dayIndex, to: start)
+    }
+
+    /// The week key `weeks` whole weeks away from `weekStart` (negative =
+    /// earlier). A malformed key comes back unchanged rather than crashing.
+    static func weekStart(_ weekStart: String, offsetBy weeks: Int, calendar: Calendar = .current) -> String {
+        guard let start = VacationMode.parse(weekStart, calendar: calendar),
+              let moved = calendar.date(byAdding: .day, value: weeks * 7, to: start) else {
+            return weekStart
+        }
+        return VacationMode.string(from: moved, calendar: calendar)
+    }
+
+    // MARK: - Week summary stats
+
+    /// The summary numbers WeekCalendarView shows for one rendered week,
+    /// computed from that week's completed cells so a viewed past week runs
+    /// through exactly the rules the current week does.
+    struct WeekStats: Equatable {
+        let completedCount: Int
+        let totalPossible: Int
+        let percentage: Int
+        /// Per day 0...6: every chore due that day is done. A vacation day
+        /// has nothing due, so it is never perfect.
+        let perfectDays: [Bool]
+        /// Per day 0...6, in cents, through the same reward rules as today's
+        /// grid: per-chore mode pays each completed chore (due that day or
+        /// not), daily mode pays the flat rate only on a perfect day.
+        let dayEarningsCents: [Int]
+
+        var perfectDayCount: Int { perfectDays.filter { $0 }.count }
+
+        /// The header's "Earned" figure: day earnings counted on perfect days
+        /// only, matching the summary card's long-standing behavior.
+        var perfectDayEarningsCents: Int {
+            zip(perfectDays, dayEarningsCents).reduce(0) { $0 + ($1.0 ? $1.1 : 0) }
+        }
+    }
+
+    /// - Parameters:
+    ///   - chores: one child's chores.
+    ///   - completed: that child's approved completion cells in the week.
+    ///   - vacationDays: seven flags for the week's REAL dates — a paused day
+    ///     has nothing due and earns nothing, in past weeks exactly as today.
+    static func weekStats(
+        chores: [Chore],
+        completed: Set<ChoreDayCell>,
+        vacationDays: [Bool],
+        isPerChoreMode: Bool,
+        dailyRewardCents: Int?
+    ) -> WeekStats {
+        var perfectDays: [Bool] = []
+        var dayEarnings: [Int] = []
+        var completedCount = 0
+
+        for day in 0..<7 {
+            let onVacation = day < vacationDays.count && vacationDays[day]
+            let due = onVacation ? [] : ChoreSchedule.due(chores, on: day)
+            completedCount += chores.filter {
+                completed.contains(ChoreDayCell(choreId: $0.id, dayOfWeek: day))
+            }.count
+
+            let isPerfect = !due.isEmpty && due.allSatisfy { chore in
+                completed.contains(ChoreDayCell(choreId: chore.id, dayOfWeek: day))
+            }
+            perfectDays.append(isPerfect)
+
+            if onVacation {
+                // Nothing is due on a vacation day, so nothing is earned on one.
+                dayEarnings.append(0)
+            } else {
+                let pool = isPerChoreMode ? chores : due
+                let earnedRewards = pool
+                    .filter { completed.contains(ChoreDayCell(choreId: $0.id, dayOfWeek: day)) }
+                    .map(\.reward)
+                dayEarnings.append(dayEarningsCents(
+                    completedRewards: earnedRewards,
+                    totalChoreCount: pool.count,
+                    isPerChoreMode: isPerChoreMode,
+                    dailyRewardCents: dailyRewardCents
+                ))
+            }
+        }
+
+        let totalPossible = chores.count * 7
+        let percentage = totalPossible > 0 ? Int((Double(completedCount) / Double(totalPossible)) * 100) : 0
+        return WeekStats(
+            completedCount: completedCount,
+            totalPossible: totalPossible,
+            percentage: percentage,
+            perfectDays: perfectDays,
+            dayEarningsCents: dayEarnings
+        )
+    }
 }
 
 /// Vacation mode (migration 019): a family-wide pause window during which

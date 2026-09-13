@@ -13,60 +13,84 @@ struct WeekCalendarView: View {
     @State private var showBulkConfirm = false
     @State private var showAllCaughtUp = false
     @State private var bulkBusy = false
+    // The week the grid shows, keyed the way chore_completions.week_start is.
+    // Starts on (and for kid sessions stays on) the current week.
+    @State private var viewedWeekStart: String = RewardMath.weekStartString()
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    
+
     enum ViewMode {
         case daily, grid
     }
-    
+
     private let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     private let fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    
+
     private var childChores: [Chore] {
         manager.chores.filter { $0.childId == child.id }
     }
-    
+
     private var currentDayOfWeek: Int {
         Calendar.current.component(.weekday, from: Date()) - 1
     }
-    
+
+    private var currentWeekStart: String {
+        RewardMath.weekStartString()
+    }
+
+    private var isViewingCurrentWeek: Bool {
+        viewedWeekStart == currentWeekStart
+    }
+
+    /// Kids keep the today-focused view: no week navigation in a standalone
+    /// kid session or kid mode on the parent's device.
+    private var isKidSession: Bool {
+        manager.kidModeSession != nil || manager.isChildSession
+    }
+
+    /// "This week", or "Week of Sep 6" ("Week of Dec 28, 2025" across a year
+    /// boundary), matching the web navigator's label.
+    private var weekLabel: String {
+        if isViewingCurrentWeek { return "This week" }
+        guard let start = RewardMath.date(weekStart: viewedWeekStart, dayIndex: 0) else {
+            return "Week of \(viewedWeekStart)"
+        }
+        let calendar = Calendar.current
+        let sameYear = calendar.component(.year, from: start) == calendar.component(.year, from: Date())
+        let style: Date.FormatStyle = sameYear
+            ? .dateTime.month(.abbreviated).day()
+            : .dateTime.month(.abbreviated).day().year()
+        return "Week of \(start.formatted(style))"
+    }
+
+    private func goToWeek(offset: Int) {
+        let target = RewardMath.weekStart(viewedWeekStart, offsetBy: offset)
+        // Never past the current week. Keys are yyyy-MM-dd, so string order
+        // is date order.
+        viewedWeekStart = min(target, currentWeekStart)
+    }
+
     // Responsive sizing based on device
     private var choreColumnWidth: CGFloat {
         horizontalSizeClass == .regular ? 200 : 140
     }
-    
+
     private var cellSize: CGFloat {
         horizontalSizeClass == .regular ? 60 : 50
     }
-    
-    private var weekCompletionStats: (completed: Int, total: Int, percentage: Int, perfectDays: Int, earnings: Double) {
-        let totalPossible = childChores.count * 7
-        let completed = manager.weekCompletions.filter { completion in
-            childChores.contains(where: { $0.id == completion.choreId })
-        }.count
-        let percentage = totalPossible > 0 ? Int((Double(completed) / Double(totalPossible)) * 100) : 0
-        
-        // Count perfect days
-        var perfectDays = 0
-        var totalEarnings = 0.0
-        for day in 0..<7 {
-            if manager.isPerfectDay(for: child.id, dayOfWeek: day) {
-                perfectDays += 1
-                totalEarnings += manager.calculateDayEarnings(for: child.id, dayOfWeek: day)
-            }
-        }
-        
-        return (completed, totalPossible, percentage, perfectDays, totalEarnings)
+
+    /// Summary numbers for the VIEWED week; same rules as the current week.
+    private var weekCompletionStats: RewardMath.WeekStats {
+        manager.weekStats(for: child.id, weekStart: viewedWeekStart)
     }
-    
+
     private func isDayPerfect(_ dayIndex: Int) -> Bool {
-        return manager.isPerfectDay(for: child.id, dayOfWeek: dayIndex)
+        weekCompletionStats.perfectDays[dayIndex]
     }
-    
+
     private func dayEarnings(_ dayIndex: Int) -> Double {
-        return manager.calculateDayEarnings(for: child.id, dayOfWeek: dayIndex)
+        Double(weekCompletionStats.dayEarningsCents[dayIndex]) / 100.0
     }
-    
+
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
@@ -87,13 +111,19 @@ struct WeekCalendarView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
-                
+
+                // Week navigation (parents only; kids keep today's view).
+                // Back is unlimited, forward stops at the current week.
+                if !isKidSession {
+                    weekNavigator
+                }
+
                 // Week Summary Card
                 if !childChores.isEmpty {
                     VStack(spacing: 16) {
                         HStack(spacing: 16) {
                             VStack(spacing: 4) {
-                                Text("\(weekCompletionStats.perfectDays)")
+                                Text("\(weekCompletionStats.perfectDayCount)")
                                     .font(.display(30, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
@@ -114,7 +144,7 @@ struct WeekCalendarView: View {
                                 // Amounts like "$12.50" overflow the narrow
                                 // column at a fixed 36pt and wrapped to two
                                 // lines; scale down instead of wrapping.
-                                Text(manager.formatMoney(weekCompletionStats.earnings))
+                                Text(manager.formatMoney(Double(weekCompletionStats.perfectDayEarningsCents) / 100.0))
                                     .font(.display(30, weight: .bold))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.5)
@@ -178,7 +208,9 @@ struct WeekCalendarView: View {
                                 dayIndex: dayIndex,
                                 dayName: fullDays[dayIndex],
                                 shortDayName: days[dayIndex],
-                                chores: manager.dueChores(for: child.id, on: dayIndex),
+                                chores: manager.dueChores(for: child.id, on: dayIndex, weekStart: viewedWeekStart),
+                                weekStart: viewedWeekStart,
+                                isCurrentWeek: isViewingCurrentWeek,
                                 manager: manager,
                                 earnedAchievements: $earnedAchievements,
                                 showAchievementAlert: $showAchievementAlert,
@@ -203,7 +235,7 @@ struct WeekCalendarView: View {
                                             .font(.subheadline)
                                             .fontWeight(.bold)
 
-                                        if dayIndex == currentDayOfWeek {
+                                        if isViewingCurrentWeek && dayIndex == currentDayOfWeek {
                                             Circle()
                                                 .fill(Color.choreStarPrimary)
                                                 .frame(width: 6, height: 6)
@@ -228,7 +260,7 @@ struct WeekCalendarView: View {
                                         }
                                     }
                                     .frame(maxWidth: .infinity)
-                                    .foregroundColor(dayIndex == currentDayOfWeek ? .choreStarPrimary : .choreStarTextSecondary)
+                                    .foregroundColor(isViewingCurrentWeek && dayIndex == currentDayOfWeek ? .choreStarPrimary : .choreStarTextSecondary)
                                 }
                             }
                             .padding(.horizontal, 12)
@@ -242,6 +274,8 @@ struct WeekCalendarView: View {
                                 ChoreWeekRow(
                                     chore: chore,
                                     child: child,
+                                    weekStart: viewedWeekStart,
+                                    isCurrentWeek: isViewingCurrentWeek,
                                     manager: manager,
                                     earnedAchievements: $earnedAchievements,
                                     showAchievementAlert: $showAchievementAlert,
@@ -290,7 +324,9 @@ struct WeekCalendarView: View {
                     Image(systemName: "checkmark.circle")
                 }
                 .accessibilityLabel("Mark chores done in bulk")
-                .disabled(childChores.isEmpty || bulkBusy)
+                // Bulk actions describe the CURRENT week ("today", "so far");
+                // they stay off while a past week is on screen.
+                .disabled(childChores.isEmpty || bulkBusy || !isViewingCurrentWeek)
             }
         }
         .overlay(alignment: .top) {
@@ -327,6 +363,64 @@ struct WeekCalendarView: View {
                 Text("\(first.badgeIcon) \(first.badgeName)\n\(first.badgeDescription)")
             }
         }
+    }
+
+    // MARK: - Week navigation
+
+    /// Prev/next chevrons around a "Week of <date>" label, the iOS sibling of
+    /// the web's WeekNavigator: back unlimited, forward capped at the current
+    /// week, with a quiet jump back to today when viewing history.
+    private var weekNavigator: some View {
+        HStack(spacing: 8) {
+            Button {
+                goToWeek(offset: -1)
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.choreStarLink)
+                    .frame(width: 44, height: 44)
+                    .background(Color.choreStarBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .accessibilityLabel("Previous week")
+
+            VStack(spacing: 2) {
+                Text(weekLabel)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarTextPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                if !isViewingCurrentWeek {
+                    Button("Back to this week") {
+                        viewedWeekStart = currentWeekStart
+                    }
+                    .font(.caption)
+                    .foregroundColor(.choreStarLink)
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            Button {
+                goToWeek(offset: 1)
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.choreStarLink)
+                    .frame(width: 44, height: 44)
+                    .background(Color.choreStarBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(isViewingCurrentWeek)
+            .opacity(isViewingCurrentWeek ? 0.35 : 1)
+            .accessibilityLabel("Next week")
+        }
+        .padding(8)
+        .background(Color.choreStarCardBackground)
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 2)
+        .padding(.horizontal, 20)
+        .animation(.easeInOut(duration: 0.15), value: isViewingCurrentWeek)
     }
 
     // MARK: - Bulk completion
@@ -399,6 +493,8 @@ struct WeekCalendarView: View {
 struct ChoreWeekRow: View {
     let chore: Chore
     let child: Child
+    let weekStart: String
+    let isCurrentWeek: Bool
     @ObservedObject var manager: SupabaseManager
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
@@ -440,6 +536,8 @@ struct ChoreWeekRow: View {
                     DayCell(
                         chore: chore,
                         dayIndex: dayIndex,
+                        weekStart: weekStart,
+                        isCurrentWeek: isCurrentWeek,
                         manager: manager,
                         earnedAchievements: $earnedAchievements,
                         showAchievementAlert: $showAchievementAlert,
@@ -458,30 +556,39 @@ struct ChoreWeekRow: View {
 struct DayCell: View {
     let chore: Chore
     let dayIndex: Int
+    let weekStart: String
+    let isCurrentWeek: Bool
     @ObservedObject var manager: SupabaseManager
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
     @Binding var showConfetti: Bool
     let cellHeight: CGFloat
-    
+
     private var isToday: Bool {
         let currentDay = Calendar.current.component(.weekday, from: Date()) - 1
-        return dayIndex == currentDay
+        return isCurrentWeek && dayIndex == currentDay
     }
-    
+
     private var isCompleted: Bool {
-        return manager.isChoreCompleted(chore, forDay: dayIndex)
+        manager.isChoreCompleted(chore, forDay: dayIndex, weekStart: weekStart)
     }
 
     /// Ticked by the kid, waiting for a parent's OK. Tapping approves it.
+    /// Pending ticks only exist for the current week.
     private var isPending: Bool {
-        manager.isChorePending(chore, forDay: dayIndex)
+        isCurrentWeek && manager.isChorePending(chore, forDay: dayIndex)
     }
 
     /// Off-day cells stay tappable (a parent can credit work done on another
-    /// day) but read as "not scheduled": dashed and dimmed.
+    /// day) but read as "not scheduled": dashed and dimmed. A vacation day of
+    /// the viewed week (its REAL date) has nothing due, so it reads the same.
     private var isDue: Bool {
-        chore.isDue(on: dayIndex)
+        guard chore.isDue(on: dayIndex) else { return false }
+        if let date = RewardMath.date(weekStart: weekStart, dayIndex: dayIndex),
+           manager.isVacationDay(date) {
+            return false
+        }
+        return true
     }
 
     var body: some View {
@@ -491,8 +598,14 @@ struct DayCell: View {
 
             let wasCompleted = isCompleted
             Task {
-                let achievements = await manager.toggleChoreCompletion(chore, forDay: dayIndex)
-                if !wasCompleted && isToday {
+                let achievements = await manager.toggleChoreCompletion(
+                    chore,
+                    forDay: dayIndex,
+                    weekStart: isCurrentWeek ? nil : weekStart
+                )
+                // Celebrations belong to today's ticks in the current week;
+                // a backfilled tick in a past week earns quietly.
+                if !wasCompleted && isToday && isCurrentWeek {
                     SoundManager.shared.play(.success)
                     await MainActor.run {
                         if !achievements.isEmpty {
@@ -543,39 +656,41 @@ struct DayBreakdownCard: View {
     let dayName: String
     let shortDayName: String
     let chores: [Chore]
+    let weekStart: String
+    let isCurrentWeek: Bool
     @ObservedObject var manager: SupabaseManager
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
     @Binding var showConfetti: Bool
-    
+
     private var currentDayOfWeek: Int {
         Calendar.current.component(.weekday, from: Date()) - 1
     }
-    
+
     private var isToday: Bool {
-        dayIndex == currentDayOfWeek
+        isCurrentWeek && dayIndex == currentDayOfWeek
     }
-    
+
     private var completedChores: [Chore] {
-        chores.filter { manager.isChoreCompleted($0, forDay: dayIndex) }
+        chores.filter { manager.isChoreCompleted($0, forDay: dayIndex, weekStart: weekStart) }
     }
-    
+
     private var pendingChores: [Chore] {
-        chores.filter { !manager.isChoreCompleted($0, forDay: dayIndex) }
+        chores.filter { !manager.isChoreCompleted($0, forDay: dayIndex, weekStart: weekStart) }
     }
-    
+
     private var completionPercentage: Double {
         guard !chores.isEmpty else { return 0 }
         return Double(completedChores.count) / Double(chores.count)
     }
-    
+
     private var isPerfectDay: Bool {
         !chores.isEmpty && completedChores.count == chores.count
     }
-    
+
     private var dayEarnings: Double {
         guard isPerfectDay, let firstChore = chores.first else { return 0.0 }
-        return manager.calculateDayEarnings(for: firstChore.childId, dayOfWeek: dayIndex)
+        return manager.calculateDayEarnings(for: firstChore.childId, dayOfWeek: dayIndex, weekStart: weekStart)
     }
     
     var body: some View {
@@ -661,6 +776,8 @@ struct DayBreakdownCard: View {
                     DailyChoreRow(
                         chore: chore,
                         dayIndex: dayIndex,
+                        weekStart: weekStart,
+                        isCurrentWeek: isCurrentWeek,
                         manager: manager,
                         earnedAchievements: $earnedAchievements,
                         showAchievementAlert: $showAchievementAlert,
@@ -683,32 +800,40 @@ struct DayBreakdownCard: View {
 struct DailyChoreRow: View {
     let chore: Chore
     let dayIndex: Int
+    let weekStart: String
+    let isCurrentWeek: Bool
     @ObservedObject var manager: SupabaseManager
     @Binding var earnedAchievements: [Achievement]
     @Binding var showAchievementAlert: Bool
     @Binding var showConfetti: Bool
-    
+
     private var currentDayOfWeek: Int {
         Calendar.current.component(.weekday, from: Date()) - 1
     }
-    
+
     private var isToday: Bool {
-        dayIndex == currentDayOfWeek
+        isCurrentWeek && dayIndex == currentDayOfWeek
     }
-    
+
     private var isCompleted: Bool {
-        manager.isChoreCompleted(chore, forDay: dayIndex)
+        manager.isChoreCompleted(chore, forDay: dayIndex, weekStart: weekStart)
     }
-    
+
     var body: some View {
         Button(action: {
             let impact = UIImpactFeedbackGenerator(style: .medium)
             impact.impactOccurred()
-            
+
             let wasCompleted = isCompleted
             Task {
-                let achievements = await manager.toggleChoreCompletion(chore, forDay: dayIndex)
-                if !wasCompleted && isToday {
+                let achievements = await manager.toggleChoreCompletion(
+                    chore,
+                    forDay: dayIndex,
+                    weekStart: isCurrentWeek ? nil : weekStart
+                )
+                // Celebrations belong to today's ticks in the current week;
+                // a backfilled tick in a past week earns quietly.
+                if !wasCompleted && isToday && isCurrentWeek {
                     SoundManager.shared.play(.success)
                     await MainActor.run {
                         if !achievements.isEmpty {

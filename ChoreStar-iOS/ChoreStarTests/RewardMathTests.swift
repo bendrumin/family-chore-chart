@@ -490,3 +490,176 @@ final class VacationModeTests: XCTestCase {
         XCTAssertEqual(streak, 1, "A missed non-vacation day still ends the run")
     }
 }
+
+// MARK: - Week navigation (past-week view and editing)
+
+final class WeekNavigationMathTests: XCTestCase {
+
+    private let calendar = Calendar(identifier: .gregorian)
+
+    private func day(_ year: Int, _ month: Int, _ dayOfMonth: Int) -> Date {
+        var c = DateComponents()
+        c.year = year
+        c.month = month
+        c.day = dayOfMonth
+        return calendar.startOfDay(for: calendar.date(from: c)!)
+    }
+
+    private func chore(_ name: String, reward: Double = 0.25, days: [Int] = ChoreSchedule.everyDay) -> Chore {
+        Chore(id: UUID(), name: name, childId: UUID(), reward: reward, description: nil,
+              category: nil, icon: nil, color: nil, notes: nil, sortOrder: 0,
+              daysOfWeek: days, createdAt: Date(), updatedAt: Date())
+    }
+
+    private func cell(_ chore: Chore, _ day: Int) -> ChoreDayCell {
+        ChoreDayCell(choreId: chore.id, dayOfWeek: day)
+    }
+
+    // MARK: Week keys
+
+    func testWeekStartStringIsTheLocalSunday() {
+        // 2026-09-08 is a Tuesday; its week starts Sunday 2026-09-06.
+        XCTAssertEqual(RewardMath.weekStartString(for: day(2026, 9, 8), calendar: calendar), "2026-09-06")
+        // A Sunday is its own week start...
+        XCTAssertEqual(RewardMath.weekStartString(for: day(2026, 9, 6), calendar: calendar), "2026-09-06")
+        // ...and Saturday still belongs to the week that began six days
+        // earlier. THE bug this feature exists for: on a Sunday, yesterday
+        // lives in the previous week.
+        XCTAssertEqual(RewardMath.weekStartString(for: day(2026, 9, 12), calendar: calendar), "2026-09-06")
+        XCTAssertEqual(RewardMath.weekStartString(for: day(2026, 9, 13), calendar: calendar), "2026-09-13")
+    }
+
+    func testWeekStartStringIgnoresDeviceFirstWeekday() {
+        // A Monday-first device (UK, most of Europe) must still key weeks by
+        // Sunday: the schema and the web write Sunday keys.
+        var mondayFirst = Calendar(identifier: .gregorian)
+        mondayFirst.firstWeekday = 2
+        let tuesday = mondayFirst.startOfDay(
+            for: mondayFirst.date(from: DateComponents(year: 2026, month: 9, day: 8))!
+        )
+        XCTAssertEqual(RewardMath.weekStartString(for: tuesday, calendar: mondayFirst), "2026-09-06")
+    }
+
+    func testDateFromWeekStartMapsIndexesToRealDates() {
+        XCTAssertEqual(RewardMath.date(weekStart: "2026-09-06", dayIndex: 0, calendar: calendar), day(2026, 9, 6))
+        XCTAssertEqual(RewardMath.date(weekStart: "2026-09-06", dayIndex: 3, calendar: calendar), day(2026, 9, 9))
+        XCTAssertEqual(RewardMath.date(weekStart: "2026-09-06", dayIndex: 6, calendar: calendar), day(2026, 9, 12))
+        XCTAssertNil(RewardMath.date(weekStart: "not-a-date", dayIndex: 0, calendar: calendar))
+    }
+
+    func testWeekStartOffsetsWalkWholeWeeks() {
+        XCTAssertEqual(RewardMath.weekStart("2026-09-06", offsetBy: -1, calendar: calendar), "2026-08-30")
+        XCTAssertEqual(RewardMath.weekStart("2026-08-30", offsetBy: 1, calendar: calendar), "2026-09-06")
+        XCTAssertEqual(RewardMath.weekStart("2026-09-06", offsetBy: -4, calendar: calendar), "2026-08-09")
+        // Year boundary, both directions.
+        XCTAssertEqual(RewardMath.weekStart("2026-01-04", offsetBy: -1, calendar: calendar), "2025-12-28")
+        XCTAssertEqual(RewardMath.weekStart("2025-12-28", offsetBy: 1, calendar: calendar), "2026-01-04")
+        // A malformed key comes back unchanged rather than crashing.
+        XCTAssertEqual(RewardMath.weekStart("junk", offsetBy: -1, calendar: calendar), "junk")
+    }
+
+    func testWeekKeysRoundTripAndCompareChronologically() {
+        // The forward cap relies on yyyy-MM-dd string order being date order.
+        XCTAssertTrue("2025-12-28" < "2026-01-04")
+        XCTAssertTrue("2026-08-30" < "2026-09-06")
+        // date -> string -> date round trip.
+        let sunday = day(2026, 9, 6)
+        let key = RewardMath.weekStartString(for: sunday, calendar: calendar)
+        XCTAssertEqual(RewardMath.date(weekStart: key, dayIndex: 0, calendar: calendar), sunday)
+    }
+
+    // MARK: Viewed-week stats
+
+    func testWeekStatsDailyModeCountsPerfectDaysAndEarnings() {
+        let bed = chore("Make bed")
+        let dishes = chore("Dishes")
+        // Both done Sunday and Monday, only one done Tuesday.
+        let completed: Set<ChoreDayCell> = [
+            cell(bed, 0), cell(dishes, 0),
+            cell(bed, 1), cell(dishes, 1),
+            cell(bed, 2),
+        ]
+        let stats = RewardMath.weekStats(
+            chores: [bed, dishes],
+            completed: completed,
+            vacationDays: Array(repeating: false, count: 7),
+            isPerChoreMode: false,
+            dailyRewardCents: 50
+        )
+        XCTAssertEqual(stats.perfectDays, [true, true, false, false, false, false, false])
+        XCTAssertEqual(stats.perfectDayCount, 2)
+        XCTAssertEqual(stats.dayEarningsCents, [50, 50, 0, 0, 0, 0, 0])
+        XCTAssertEqual(stats.perfectDayEarningsCents, 100)
+        XCTAssertEqual(stats.completedCount, 5)
+        XCTAssertEqual(stats.totalPossible, 14)
+        XCTAssertEqual(stats.percentage, 35)
+    }
+
+    func testWeekStatsPerChoreModePaysEachTick() {
+        let bed = chore("Make bed", reward: 0.25)
+        let lawn = chore("Mow lawn", reward: 1.00)
+        // One chore done Sunday, both done Wednesday.
+        let completed: Set<ChoreDayCell> = [cell(bed, 0), cell(bed, 3), cell(lawn, 3)]
+        let stats = RewardMath.weekStats(
+            chores: [bed, lawn],
+            completed: completed,
+            vacationDays: Array(repeating: false, count: 7),
+            isPerChoreMode: true,
+            dailyRewardCents: nil
+        )
+        XCTAssertEqual(stats.dayEarningsCents[0], 25, "Per-chore mode pays an imperfect day too")
+        XCTAssertEqual(stats.dayEarningsCents[3], 125)
+        XCTAssertEqual(stats.perfectDays[0], false)
+        XCTAssertEqual(stats.perfectDays[3], true)
+        // The header's Earned figure keeps its perfect-days-only rule.
+        XCTAssertEqual(stats.perfectDayEarningsCents, 125)
+    }
+
+    func testWeekStatsSkipsVacationDays() {
+        let bed = chore("Make bed")
+        // Done Tuesday (a vacation day that week) and Thursday.
+        let completed: Set<ChoreDayCell> = [cell(bed, 2), cell(bed, 4)]
+        var vacation = Array(repeating: false, count: 7)
+        vacation[2] = true
+        let stats = RewardMath.weekStats(
+            chores: [bed],
+            completed: completed,
+            vacationDays: vacation,
+            isPerChoreMode: false,
+            dailyRewardCents: 50
+        )
+        XCTAssertFalse(stats.perfectDays[2], "Nothing is due on a paused day, so it is never perfect")
+        XCTAssertEqual(stats.dayEarningsCents[2], 0, "A paused day earns nothing")
+        XCTAssertTrue(stats.perfectDays[4])
+        XCTAssertEqual(stats.dayEarningsCents[4], 50)
+    }
+
+    func testWeekStatsHonorsScheduleMasks() {
+        let trash = chore("Trash", days: [1])
+        let stats = RewardMath.weekStats(
+            chores: [trash],
+            completed: [cell(trash, 1)],
+            vacationDays: Array(repeating: false, count: 7),
+            isPerChoreMode: false,
+            dailyRewardCents: 50
+        )
+        XCTAssertTrue(stats.perfectDays[1], "The Monday chore done on Monday makes Monday perfect")
+        XCTAssertFalse(stats.perfectDays[2], "A day with nothing due is not perfect")
+        XCTAssertEqual(stats.dayEarningsCents[1], 50)
+        XCTAssertEqual(stats.dayEarningsCents[2], 0)
+    }
+
+    func testWeekStatsWithNoChores() {
+        let stats = RewardMath.weekStats(
+            chores: [],
+            completed: [],
+            vacationDays: Array(repeating: false, count: 7),
+            isPerChoreMode: false,
+            dailyRewardCents: 50
+        )
+        XCTAssertEqual(stats.totalPossible, 0)
+        XCTAssertEqual(stats.percentage, 0)
+        XCTAssertEqual(stats.perfectDayCount, 0)
+        XCTAssertEqual(stats.perfectDayEarningsCents, 0)
+    }
+}
