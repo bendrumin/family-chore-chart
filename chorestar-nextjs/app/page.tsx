@@ -256,7 +256,7 @@ export default async function HomePage() {
         {/* Problem/Solution */}
         <div className="max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
-            Sound Familiar?
+            Before and After ChoreStar
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-red-50 dark:bg-gray-800 rounded-xl p-6 border-2 border-red-200 dark:border-red-900">
@@ -650,10 +650,10 @@ export default async function HomePage() {
           style={ACCENT_SURFACE_STYLE}
         >
           <h2 className="text-3xl font-bold mb-4">
-            Ready to Transform Chore Time?
+            Start Your Family on ChoreStar
           </h2>
           <p className="text-xl mb-8">
-            Join 117+ parents and kids who've said goodbye to chore battles
+            Join 117+ parents and kids who ended their chore battles
           </p>
           <Link
             href="/signup"

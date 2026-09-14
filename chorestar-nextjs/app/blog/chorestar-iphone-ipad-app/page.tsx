@@ -80,8 +80,8 @@ export default function ChoreStarIosAppPage() {
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               After months of building (and eight rounds with App Review), the native ChoreStar
-              app is live on the App Store. Here&apos;s what it does, and why it&apos;s not just
-              another chore checklist.
+              app is live on the App Store. Here&apos;s what it does, and what separates it from
+              the usual chore checklist.
             </p>
           </header>
 
@@ -176,9 +176,9 @@ export default function ChoreStarIosAppPage() {
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Already a ChoreStar family on the web? Just{' '}
+              Already a ChoreStar family on the web?{' '}
               <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline">
-                download the app
+                Download the app
               </a>{' '}
               and sign in with your existing account. Everything will be there.
             </p>

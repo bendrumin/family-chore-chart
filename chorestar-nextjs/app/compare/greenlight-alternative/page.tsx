@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'Does ChoreStar do allowance like Greenlight?',
-    a: 'ChoreStar tracks allowance rather than moving real money. You set a reward per chore or a flat daily rate, and it tallies each child’s earnings automatically with weekly summaries. You hand out the actual money however you prefer, so there is no card to load or lose.',
+    a: 'ChoreStar tracks allowance and never moves real money. You set a reward per chore or a flat daily rate, and it tallies each child’s earnings automatically with weekly summaries. You hand out the actual money however you prefer, so there is no card to load or lose.',
   },
   {
     q: 'When is Greenlight still the better choice?',

@@ -73,6 +73,9 @@ never fill a white-text control with it.
 
 ## Voice
 
+The full voice brief lives in docs/VOICE.md (hard bans, the product voice,
+worked examples, length discipline). It wins over this summary.
+
 - Parent copy states facts in active voice, sentence case. A CTA says exactly
   what happens: "Save changes", not "Submit". An action keeps its name through
   the whole flow.

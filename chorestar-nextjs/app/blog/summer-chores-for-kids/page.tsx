@@ -259,7 +259,7 @@ export default function SummerChoresPage() {
             </p>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Ready for summer structure?</p>
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Add summer structure</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 ChoreStar suggests age-appropriate summer chores, tracks rewards, and lets kids log in with a PIN, no
                 email required. Free for up to 3 kids and 20 chores. Works on any phone or tablet, no download needed.

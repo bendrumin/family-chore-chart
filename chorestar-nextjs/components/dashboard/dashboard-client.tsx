@@ -518,7 +518,7 @@ function DashboardContent({
             </CardHeader>
             <CardContent className="pb-8">
               <p className="mb-8 text-lg font-medium" style={{ color: 'var(--text-secondary)' }}>
-                Transform chore time into fun time! Get started by adding your first child.
+                Add your first child to start tracking chores, rewards, and routines.
               </p>
               <Button
                 variant="gradient"

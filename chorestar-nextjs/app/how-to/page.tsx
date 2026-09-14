@@ -49,7 +49,7 @@ const tutorials: Tutorial[] = [
     slug: 'add-child',
     accent: '#8b5cf6',
     intro:
-      'Ready to get your family set up? Adding a child to ChoreStar takes less than two minutes, and the fun part is picking their avatar.',
+      'Adding a child to ChoreStar takes less than two minutes, and the fun part is picking their avatar.',
     steps: [
       { text: 'From your dashboard, tap Add Child.', icon: <UserPlus className="w-4 h-4" /> },
       { text: "Enter your child's name and age.", icon: <PenLine className="w-4 h-4" /> },
@@ -73,7 +73,7 @@ const tutorials: Tutorial[] = [
       { text: "Add, remove, or rename steps to match your family's actual morning.", icon: <PenLine className="w-4 h-4" /> },
       { text: "Tap Create Routine. It's now ready to assign to your kids.", icon: <CheckCircle2 className="w-4 h-4" /> },
     ],
-    tip: 'Bedtime works exactly the same way. Just choose the Bedtime Routine template instead.',
+    tip: 'Bedtime works exactly the same way. Choose the Bedtime Routine template instead.',
   },
   {
     emoji: '🔑',
@@ -164,7 +164,7 @@ const tutorials: Tutorial[] = [
       'Want a look before a tick counts? Approval mode holds kid check-offs for your OK. It is optional and off by default.',
     steps: [
       { text: 'Open Settings, then the Rewards tab, and turn on Approve Chores First.', icon: <Settings className="w-4 h-4" /> },
-      { text: 'Kid check-offs now land as pending instead of counting right away.', icon: <ListChecks className="w-4 h-4" /> },
+      { text: 'Kid check-offs now land as pending and wait for your OK.', icon: <ListChecks className="w-4 h-4" /> },
       { text: 'Pending ticks appear in Needs your OK at the top of your dashboard.', icon: <PlusCircle className="w-4 h-4" /> },
       { text: 'Approve to count it toward money, streaks, and badges, or send it back to try again.', icon: <CheckCircle2 className="w-4 h-4" /> },
       { text: 'Want proof? Mark any chore as Ask for a photo, and the picture arrives with the tick.', icon: <Camera className="w-4 h-4" /> },
@@ -177,7 +177,7 @@ const tutorials: Tutorial[] = [
     slug: 'chore-days',
     accent: '#6366f1',
     intro:
-      'Trash goes out on Tuesday, piano is Monday and Wednesday. Chores can now live on a schedule instead of nagging every day.',
+      'Trash goes out on Tuesday, piano is Monday and Wednesday. Every chore can live on its own schedule.',
     steps: [
       { text: 'Add a chore, or edit one, and find the Days section.', icon: <PenLine className="w-4 h-4" /> },
       { text: 'Pick the days it is due. Leave all seven selected for everyday chores.', icon: <CalendarDays className="w-4 h-4" /> },
@@ -287,7 +287,7 @@ export default function HowToPage() {
         {/* CTA */}
         <div className="mt-12 rounded-2xl shadow-2xl p-10 text-center text-white" style={ACCENT_SURFACE_STYLE}>
           <h3 className="text-2xl font-bold mb-3">
-            Ready to Get Started?
+            Set Up Your Family in Minutes
           </h3>
           <p className="text-lg mb-6">
             Free to try, no credit card needed.

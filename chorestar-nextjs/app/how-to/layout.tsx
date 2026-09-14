@@ -36,7 +36,7 @@ const howToJsonLd = {
       '@type': 'HowTo',
       position: 1,
       name: 'Adding Your First Child',
-      description: 'Ready to get your family set up? Adding a child to ChoreStar takes less than two minutes.',
+      description: 'Adding a child to ChoreStar takes less than two minutes.',
       url: 'https://chorestar.app/how-to#add-child',
       step: [
         { '@type': 'HowToStep', position: 1, text: 'From your dashboard, tap Add Child.' },

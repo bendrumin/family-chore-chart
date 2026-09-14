@@ -51,7 +51,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '📊',
         title: 'Facts Over Fanfare',
-        description: 'Dashboard messages now tell you what happened instead of cheering at you. The stars still show perfect days at a glance, and the celebrations stayed where they belong: on your kids\' screens.',
+        description: 'Dashboard messages now tell you what happened, without the cheering. The stars still show perfect days at a glance, and the celebrations stayed where they belong: on your kids\' screens.',
       },
     ],
   },
@@ -156,7 +156,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '✨',
         title: 'A Calmer Dashboard',
-        description: 'Cards and buttons dropped the heavy glass and hover bounce. You get quiet surfaces, a soft theme glow in the background, and light seasonal particles on the hero instead of sticker clutter.',
+        description: 'Cards and buttons dropped the heavy glass and hover bounce. You get quiet surfaces, a soft theme glow in the background, and light seasonal particles on the hero. The sticker piles are gone.',
       },
     ],
   },

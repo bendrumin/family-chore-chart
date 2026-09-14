@@ -22,7 +22,7 @@ export default function NotFound() {
         </h2>
 
         <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Looks like this page is playing hide and seek! Let&apos;s get you back on track.
+          This page doesn&apos;t exist or has moved. Here are some ways back.
         </p>
 
         <div className="space-y-3">

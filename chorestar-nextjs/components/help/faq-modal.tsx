@@ -22,7 +22,7 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'How do I add my first child?',
-    answer: 'Click the "Add Child" button on the main dashboard. You can customize their name, age, and avatar. Each child can have their own unique avatar and color!'
+    answer: 'Click the "Add Child" button on the main dashboard. You can customize their name, age, and avatar. Each child can have their own unique avatar and color.'
   },
   {
     category: 'Getting Started',
@@ -77,17 +77,17 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Tracking',
     question: 'What do the weekly stats show?',
-    answer: 'Weekly stats display total completions, earnings, completion rate percentage, and current streak. You can also earn achievement badges for milestones!'
+    answer: 'Weekly stats display total completions, earnings, completion rate percentage, and current streak. Kids can also earn achievement badges for milestones.'
   },
   {
     category: 'Tracking',
     question: 'How are streaks calculated?',
-    answer: 'Streaks count consecutive days with at least one chore completion. Keep the streak going by completing chores every day!'
+    answer: 'Streaks count consecutive days with at least one chore completion. Completing chores every day keeps the streak going.'
   },
   {
     category: 'Tracking',
     question: 'What achievement badges can I earn?',
-    answer: '🔥 5+ Day Streak, ⭐ Perfect Week (100% completion), 🏆 Super Productive (10+ completions), and more! Badges appear automatically when you reach milestones.'
+    answer: '🔥 5+ Day Streak, ⭐ Perfect Week (100% completion), 🏆 Super Productive (10+ completions), and more. Badges appear automatically when you reach milestones.'
   },
   {
     category: 'Account',

@@ -38,11 +38,11 @@ export default function Error({
         </motion.div>
 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Oops! Something Went Wrong
+          Something went wrong
         </h1>
 
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Don't worry! Even the best apps have hiccups. Let's try to fix this.
+          The page hit an unexpected error. Try again, or head back to your dashboard.
         </p>
 
         <div className="space-y-3">

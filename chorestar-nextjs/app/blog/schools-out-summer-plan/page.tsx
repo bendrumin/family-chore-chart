@@ -241,7 +241,7 @@ export default function SchoolsOutSummerPlanPage() {
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-                Week two ready?
+                Set up week two
               </p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 Set up a simple morning routine and a short daily chore list in minutes. Kids can log in on their own

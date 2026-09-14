@@ -175,7 +175,7 @@ class NotificationManager {
   async sendWeeklyReport(completed: number, total: number): Promise<boolean> {
     return await this.sendLocalNotification(
       '📊 Weekly Progress Report',
-      `Great job this week! Your family completed ${completed} out of ${total} chores.`,
+      `Your family completed ${completed} out of ${total} chores this week.`,
       { type: 'weekly_report', url: '/' }
     )
   }

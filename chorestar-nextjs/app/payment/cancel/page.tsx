@@ -26,7 +26,7 @@ export default function PaymentCancelPage() {
         </h1>
 
         <p className="text-gray-600 dark:text-gray-400 mb-8">
-          No worries! Your payment was not processed and you have not been charged. You can upgrade anytime from your dashboard settings.
+          Your payment was not processed and you have not been charged. You can upgrade anytime from your dashboard settings.
         </p>
 
         <div className="space-y-3">

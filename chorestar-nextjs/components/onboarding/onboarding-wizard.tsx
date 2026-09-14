@@ -16,7 +16,7 @@ const STEPS = [
   {
     icon: Star,
     title: 'Welcome to ChoreStar!',
-    description: 'Transform chore time into fun time with rewards, tracking, and achievements!',
+    description: 'Turn chores into a game with rewards, tracking, and achievements.',
     content: (
       <div className="space-y-4 text-center">
         <p className="text-lg text-gray-600 dark:text-gray-400">
@@ -66,7 +66,7 @@ const STEPS = [
             3. Repeat for all children
           </h4>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Add as many children as you need!
+            Add as many children as you need
           </p>
         </div>
       </div>
@@ -113,7 +113,7 @@ const STEPS = [
       <div className="space-y-4">
         <div className="text-center mb-6">
           <p className="text-lg mb-4 text-gray-600 dark:text-gray-400">
-            Children can mark chores as complete each day and watch their progress!
+            Children mark chores as complete each day and watch their progress add up.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -140,7 +140,7 @@ const STEPS = [
         </div>
         <div className="mt-6 p-4 bg-green-50/50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 rounded-xl">
           <p className="text-center font-bold text-green-900 dark:text-green-100">
-            Ready to get started? Click "Let's Go!" below.
+            Click "Let's Go!" below to start setting up your family.
           </p>
         </div>
       </div>

@@ -192,7 +192,7 @@ export default function MorningRoutinePage() {
             </p>
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Ready to try it?</p>
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Set up your first routine</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 ChoreStar is free to start, up to 3 kids and 20 chores on the free plan, no credit card required.
                 Set up your family&apos;s morning routine in under two minutes.
