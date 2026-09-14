@@ -1,0 +1,70 @@
+# iOS 27 adoption plan
+
+Written 2026-09-14, the day iOS 27 shipped alongside the iPhone 18 Pro, 18
+Pro Max, and iPhone Duo. Sources: the iOS 27 SDK on this machine (symbol
+counts measured from swiftinterface availability annotations) and Apple/press
+coverage of the release. Status today: the app runs clean on iOS 27 (verified
+on the simulator runtime), and build 33 (2.2.1, live Sep 14) is our first
+binary archived on the iOS 27 SDK.
+
+## Tier 0: ship soon as 2.2.2 (compliance and trust)
+
+1. **DeclaredAgeRange + PermissionKit adoption.** State App Store
+   Accountability Acts (Texas first, effective Jan 1 2026, more states
+   following) push age-range and parental-consent APIs onto exactly our
+   category of app. Apple ships both frameworks in iOS 27:
+   - `DeclaredAgeRange`: `AgeRangeService` answers with an age band (never a
+     birth date); includes a `ParentalControls` surface.
+   - `PermissionKit`: `AskCenter` / `PermissionQuestion` / `PermissionFlow`,
+     plus a Significant Change API for re-requesting parental consent. This
+     maps naturally onto ChoreStar's approval model.
+   We have passed review through build 33 without them, so nothing is blocked
+   today, but a family app with kid users should be early here, and "adopted
+   Apple's new parental-consent APIs" is a parent-trust line worth having.
+   Scope the exact obligations from Apple's docs before building; the
+   frameworks are confirmed present in the SDK.
+2. **Deprecation sweep**: one non-quiet build on the iOS 27 SDK, fix warnings.
+3. **iPhone Duo QA** the moment its simulator appears in an Xcode 27.x point
+   release (not in 27.0). Expectation: fold/unfold presents as size-class
+   changes, which the app already handles for iPad; risk is polish, not
+   breakage.
+
+## Tier 1: the 2.3 holiday release ("built for iOS 27")
+
+Measured iOS-27-gated API additions in the SDK, ranked by fit:
+
+1. **FoundationModels, 241 new symbols (largest in the SDK).** New:
+   `PrivateCloudComputeLanguageModel`, image attachments, `ReasoningLevel`,
+   availability gating. Plan: Smart Suggestions get an on-device tier on
+   iOS 27 devices (private, offline, zero API cost), falling back to the
+   existing web Claude API (SupabaseManager ~line 1880) on older devices.
+   Prompts, structured outputs, and evals already exist; FoundationModels'
+   `Generable`/`GenerationSchema` is a structured-output system, so the port
+   is natural. 1-2 days.
+2. **AppIntents, 28 new symbols.** Lands on the already-planned Siri +
+   interactive widgets work. Baseline the intents at iOS 17, adopt the new
+   surface conditionally.
+3. **SwiftUI, 124 new symbols.** Sampled as mostly document/scene plumbing;
+   do a jewel hunt during 2.3 UI work rather than up front.
+
+## Tier 2: watch or skip
+
+- CarPlay video, Safari topics, Photos Spatial Reframing: system features,
+  no ChoreStar surface.
+- PaperKit (20 new symbols): a maybe-someday for kid drawings on completions.
+- MetricKit (102): perf monitoring, nice-to-have, not user-facing.
+
+## How users hear about it (the comms split)
+
+1. **Now:** a short blog post, "ChoreStar is ready for iOS 27 and the new
+   iPhones": day-one compatibility, tested on the new hardware sizes, what is
+   coming at the holidays. Honest, voice-brief compliant, and it rides the
+   iOS 27 news wave for search.
+2. **2.2.2:** What's New names the age/parental-consent adoption in parent
+   words ("built on Apple's new parental-consent system").
+3. **2.3 launch:** the full "built for iOS 27" story: suggestions that run on
+   your iPhone, Siri, tap-to-check widgets, seasonal icons. Blog + release
+   notes + a themed share card.
+
+Voice rules per docs/VOICE.md apply to all of it: no feature is announced
+before it ships, and every claim names what the user gets.
