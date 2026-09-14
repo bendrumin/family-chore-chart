@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { getAttribution } from '@/lib/utils/attribution'
 import { validatePassword } from '@/lib/utils/validation'
 
 export function SignupForm({ next = '/dashboard' }: { next?: string }) {
@@ -58,6 +59,7 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
           password: formData.password,
           familyName: formData.familyName.trim() || 'My Family',
           honeypot,
+          signupSource: getAttribution(),
         }),
       })
 

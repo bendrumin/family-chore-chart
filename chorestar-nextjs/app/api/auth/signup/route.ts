@@ -16,6 +16,28 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { email, password, familyName, honeypot } = body
 
+    // Signup attribution (migration 021): sanitize the client-supplied
+    // first-touch record (allowlisted keys, clipped strings) and tag the
+    // platform from the User-Agent, which also classifies iOS-app signups
+    // (CFNetwork/Darwin, no Mozilla) with no app change.
+    const ua = request.headers.get('user-agent') || ''
+    const platform = ua.includes('ChoreStarAndroid')
+      ? 'android_shell'
+      : /CFNetwork|Darwin/.test(ua) && !ua.includes('Mozilla')
+        ? 'ios_app'
+        : 'web'
+    const ALLOWED_SOURCE_KEYS = [
+      'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+      'referrer', 'landing', 'captured_at',
+    ] as const
+    const signupSource: Record<string, string> = { platform }
+    if (body.signupSource && typeof body.signupSource === 'object') {
+      for (const k of ALLOWED_SOURCE_KEYS) {
+        const v = (body.signupSource as Record<string, unknown>)[k]
+        if (typeof v === 'string' && v.length > 0) signupSource[k] = v.slice(0, 200)
+      }
+    }
+
     if (honeypot) {
       return NextResponse.json({ error: 'Invalid submission.' }, { status: 400 })
     }
@@ -75,14 +97,23 @@ export async function POST(request: Request) {
       // which only the web settings page called — a family created on iOS
       // had no code at all, and every code typed at kid login read "invalid".
       let profileError: PostgrestError | null = null
+      // Dropped automatically if migration 021 is not applied yet (PGRST204,
+      // "column not found") so attribution can never block account creation.
+      let includeSource = true
       for (let attempt = 0; attempt < 3; attempt++) {
-        const { error } = await admin.from('profiles').insert({
+        const row: Record<string, unknown> = {
           id: data.user.id,
           email: data.user.email || normalizedEmail,
           family_name: normalizedFamilyName,
           kid_login_code: crypto.randomBytes(4).toString('hex'),
-        })
+        }
+        if (includeSource) row.signup_source = signupSource
+        const { error } = await (admin.from('profiles') as ReturnType<typeof admin.from>).insert(row as never)
         profileError = error
+        if (error && includeSource && (error.code === 'PGRST204' || /signup_source/.test(error.message))) {
+          includeSource = false
+          continue
+        }
         if (!error || error.code !== '23505') break
         // 23505 is either "profile already exists" (keep original semantics,
         // handled below) or a code collision — only the latter retries.
