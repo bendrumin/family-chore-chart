@@ -110,7 +110,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                   href="/blog/chorestar-iphone-ipad-app"
                   className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
-                  See everything it can do →
+                  See everything it can do
                 </Link>
                 <a
                   href={APP_STORE_REVIEW_URL}
