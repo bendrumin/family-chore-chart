@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'chorestar-ios-27',
+    title: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
+    description:
+      'iOS 27 shipped today with the iPhone 18 Pro, Pro Max, and iPhone Duo. ChoreStar already runs on all of it, and the holiday update will use what iOS 27 makes possible.',
+    date: 'September 14, 2026',
+    isoDate: '2026-09-14',
+    readTime: '3 min read',
+    emoji: '📲',
+    category: 'Announcements',
+  },
+  {
     slug: 'chorestar-iphone-ipad-app',
     title: 'ChoreStar for iPhone & iPad Is Here: The Chore App Your Kid Can Run Themselves',
     description:
