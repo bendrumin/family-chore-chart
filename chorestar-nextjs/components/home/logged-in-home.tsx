@@ -134,7 +134,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
               style={ACCENT_SURFACE_STYLE}
             >
               <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
-              <h2 className="text-2xl font-bold mb-2">Unlock Premium</h2>
+              <h2 className="text-2xl font-bold mb-2">Upgrade to Premium</h2>
               <p className="mb-5 max-w-lg mx-auto">
                 Get unlimited children, unlimited chores, family sharing, export reports, and more.
               </p>

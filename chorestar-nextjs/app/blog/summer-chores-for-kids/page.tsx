@@ -215,7 +215,7 @@ export default function SummerChoresPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Screen-Time Swaps That Actually Work</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Summer screen-time battles are real. Instead of arguing every hour, tie device time to completed chores.
+              Summer screen-time battles are real. Tie device time to completed chores and skip the hourly argument.
               The rule should be simple enough that a kid can explain it back to you:
             </p>
             <ul className="space-y-2 text-gray-700 dark:text-gray-300">
@@ -248,7 +248,7 @@ export default function SummerChoresPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How to Keep Summer Chores From Becoming a Fight</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Keep outdoor chores short and specific. Give a time limit (&ldquo;10 minutes of yard pickup&rdquo;) instead of an
+              Keep outdoor chores short and specific. Give a time limit: &ldquo;10 minutes of yard pickup&rdquo; beats an
               open-ended project. Rotate the boring jobs. Nobody wants to take out trash every single day all summer.
               And celebrate completion, even for small wins. A streak, a few points, or a quick &ldquo;you&apos;re done, go
               swim&rdquo; goes further than a lecture about responsibility.

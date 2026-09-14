@@ -240,8 +240,8 @@ export default function AgeAppropriateChoresPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How ChoreStar Suggests Chores</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Instead of staring at a blank page trying to think of chores, ChoreStar&apos;s Smart Suggestions feature
-              does the work for you. It generates 5 age-appropriate, seasonal chore ideas tailored to each child,
+              ChoreStar&apos;s Smart Suggestions feature spares you the blank page.
+              It generates 5 age-appropriate, seasonal chore ideas tailored to each child,
               one tap to add them. The algorithm filters by your child&apos;s age, removes chores your family already
               has, boosts seasonal chores based on the current month, diversifies across categories, and even adjusts
               difficulty based on your child&apos;s completion rate. If they&apos;re completing more than 75% of their chores

@@ -180,7 +180,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '🌸',
         title: 'Spring, Summer, Fall & Winter Got Repainted',
-        description: 'Each season now uses a palette drawn from a real photograph (cherry blossom, flamingos at the water\'s edge, autumn maple, a frozen valley). They pair two colors instead of one, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Pick a season any time of year under Settings › Appearance.',
+        description: 'Each season now uses a palette drawn from a real photograph (cherry blossom, flamingos at the water\'s edge, autumn maple, a frozen valley). Each palette pairs two colors, so the soft background glow picks up a second shade: pink blossom against a powder-blue sky, blush against deep teal. Pick a season any time of year under Settings › Appearance.',
       },
     ],
   },

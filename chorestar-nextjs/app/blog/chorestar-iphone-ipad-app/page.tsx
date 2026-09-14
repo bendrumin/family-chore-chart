@@ -152,8 +152,8 @@ export default function ChoreStarIosAppPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Free to Start, Honest About Pricing</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              The free plan isn&apos;t a trial: up to 3 kids and 20 chores, with routines and badges
-              included, free forever. Premium (from $4.99/month, with annual and lifetime options)
+              The free plan is free forever: up to 3 kids and 20 chores, with routines and badges
+              included. Premium (from $4.99/month, with annual and lifetime options)
               adds unlimited children and chores, premium themes, and co-parent sharing. No
               paywall-by-day-two surprise.
             </p>

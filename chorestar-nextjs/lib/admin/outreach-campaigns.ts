@@ -143,7 +143,7 @@ chorestar.app`
       const hi = greeting(user)
       return `${hi}
 
-I'm Ben, the founder of ChoreStar. I had to reach out because your family did something almost nobody else has done yet.
+I'm Ben, the founder of ChoreStar. I'm writing because your family did something almost nobody else has done yet.
 
 You set up routines for your kids, turned on kid login (PIN) for ${user.kidPinsSet} child${user.kidPinsSet === 1 ? '' : 'ren'}, and logged ${user.routineCompletions} routine completion${user.routineCompletions === 1 ? '' : 's'}.
 

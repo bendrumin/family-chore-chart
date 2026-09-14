@@ -144,7 +144,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                     Upgrade to Premium
                   </h4>
                   <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    Free plan is limited to 3 children. Upgrade to add unlimited children and unlock all premium features!
+                    The free plan includes 3 children. Upgrade for unlimited children and chores, family sharing, and premium themes.
                   </p>
                 </div>
               </div>

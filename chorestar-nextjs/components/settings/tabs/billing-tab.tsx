@@ -166,7 +166,7 @@ export function BillingTab() {
               Upgrade to Premium
             </h4>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Unlock unlimited children, chores, and all premium features
+              Unlimited children and chores, family sharing, premium themes, and export reports
             </p>
           </div>
 

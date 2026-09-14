@@ -140,8 +140,8 @@ export default function ChoreRewardSystemPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Full Week Bonus</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              On top of daily or per-chore earnings, ChoreStar has a Full Week Bonus. Instead of a dollar amount,
-              you set a fun label, &ldquo;pizza night,&rdquo; &ldquo;movie night,&rdquo; &ldquo;stay up late,&rdquo; &ldquo;ice cream.&rdquo; When a child
+              On top of daily or per-chore earnings, ChoreStar has a Full Week Bonus. You set a fun label
+              for it, &ldquo;pizza night,&rdquo; &ldquo;movie night,&rdquo; &ldquo;stay up late,&rdquo; &ldquo;ice cream.&rdquo; When a child
               completes every chore every day for a full 7-day week, the bonus label pops up as a celebration.
             </p>
             <p className="text-gray-700 dark:text-gray-300">

@@ -79,7 +79,7 @@ export default function TermsPage() {
 
           <Section title="Subscriptions, Billing & Auto-Renewal">
             <p className="text-gray-700 dark:text-gray-300">
-              ChoreStar offers a free tier and optional paid subscriptions (&quot;ChoreStar Premium&quot;) that unlock
+              ChoreStar offers a free tier and optional paid subscriptions (&quot;ChoreStar Premium&quot;) that include
               additional features. Subscription options, billing periods, and current prices are shown on the purchase
               screen before you confirm. We currently offer monthly and annual auto-renewable subscriptions and, where
               available.
