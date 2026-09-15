@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
-import { FAQ_DATA } from '@/components/help/faq-modal'
+import { FAQ_DATA } from '@/lib/constants/faq'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
