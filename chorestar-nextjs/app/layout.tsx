@@ -23,6 +23,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chorestar.app'),
+  alternates: {
+    types: { 'application/rss+xml': 'https://chorestar.app/feed.xml' },
+  },
   // Safari's native Smart App Banner — links iOS visitors to the App Store listing.
   itunes: { appId: '6761279049' },
   title: {

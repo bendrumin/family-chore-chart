@@ -1,0 +1,41 @@
+# ChoreStar
+
+> ChoreStar is a family chore chart app for the web, iPhone, and iPad. Parents
+> set up chores with reward amounts and step-by-step routines; kids sign in
+> with a family code and a 4-digit PIN (no email address needed) and check off
+> their own work. The app tracks allowance automatically, keeps streaks and
+> badges, and pays out in real money the parent hands over. It never moves
+> real money and never gives a child a debit card.
+
+Key facts:
+- Free plan: up to 3 children and 20 chores, kid PIN login, routines,
+  achievement badges. Free forever, no card required.
+- Premium: $4.99/month or $49.99/year. Unlimited children and chores, family
+  sharing with a co-parent, premium themes, export reports.
+- Platforms: web app at https://chorestar.app and a native iOS app for iPhone
+  and iPad (App Store: https://apps.apple.com/app/id6761279049). One account
+  syncs both.
+- Kid login uses a family code plus a per-child PIN. Children never provide an
+  email address or personal information.
+- Kid mode is localized in English, Spanish, Portuguese, and Arabic.
+- Allowance modes: a reward per chore, or a flat daily rate, with an optional
+  full-week bonus. Goals let a kid save toward something; a reward store
+  prices things money cannot buy (screen time, picking dinner).
+- Vacation mode pauses chores for a date range so streaks stay safe.
+- Privacy: family data is never shared or sold. https://chorestar.app/privacy
+
+## Pages
+
+- [What ChoreStar is](https://chorestar.app/): overview, pricing, testimonials
+- [FAQ](https://chorestar.app/faq): plain answers about setup, rewards, kid
+  login, family sharing, and billing
+- [How-to guides](https://chorestar.app/how-to): step-by-step setup tutorials
+- [Compare](https://chorestar.app/compare): honest comparisons with other
+  chore and allowance apps
+- [Blog](https://chorestar.app/blog): chore lists by age, routine guides,
+  product announcements
+- [Terms](https://chorestar.app/terms) and [Privacy](https://chorestar.app/privacy)
+
+## Contact
+
+hi@chorestar.app

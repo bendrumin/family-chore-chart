@@ -22,6 +22,7 @@ export function getSitemapEntries(): SitemapEntry[] {
     { path: '', lastModified: fresh, changeFrequency: 'weekly', priority: '1.0' },
     { path: '/signup', lastModified: fresh, changeFrequency: 'monthly', priority: '0.9' },
     { path: '/how-to', lastModified: fresh, changeFrequency: 'weekly', priority: '0.8' },
+    { path: '/faq', lastModified: fresh, changeFrequency: 'monthly', priority: '0.7' },
     { path: '/blog', lastModified: fresh, changeFrequency: 'weekly', priority: '0.8' },
     { path: '/support', lastModified: fresh, changeFrequency: 'monthly', priority: '0.5' },
     { path: '/compare', lastModified: fresh, changeFrequency: 'monthly', priority: '0.8' },

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronDown, ChevronUp, Search, HelpCircle, BookOpen } from 'lucide-react'
 
-interface FAQItem {
+export interface FAQItem {
   question: string
   answer: string
   category: string
@@ -18,7 +18,7 @@ interface FAQModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-const FAQ_DATA: FAQItem[] = [
+export const FAQ_DATA: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'How do I add my first child?',
