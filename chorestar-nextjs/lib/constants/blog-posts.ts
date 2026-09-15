@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'best-free-chore-apps-for-kids',
+    title: 'Best Free Chore Apps for Kids in 2026: We Checked the Pricing Pages',
+    description:
+      'Twelve chore apps, every pricing page checked on September 15, 2026. Three are genuinely free, two rank for "free" with no free plan at all, and one looks parked. We make ChoreStar, and we say so up front.',
+    date: 'September 15, 2026',
+    isoDate: '2026-09-15',
+    readTime: '10 min read',
+    emoji: '🧹',
+    category: 'Comparisons',
+  },
+  {
     slug: 'chorestar-ios-27',
     title: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
     description:
