@@ -1,0 +1,68 @@
+# Directory listing copy
+
+Ready-to-paste submissions for the directories AI assistants cite. Written to
+docs/VOICE.md. Submitting is a Ben task (accounts required); tick each when
+done.
+
+- [ ] AlternativeTo: https://alternativeto.net/manage-item/ (create "ChoreStar")
+- [ ] Product Hunt: https://www.producthunt.com/posts/new
+
+## AlternativeTo
+
+**Name:** ChoreStar
+
+**Short description (one-liner):**
+Family chore chart with allowance tracking. Kids sign in with a family code
+and a 4-digit PIN, no email needed.
+
+**Full description:**
+ChoreStar is a chore chart app for families on the web, iPhone, and iPad.
+Parents set up chores with reward amounts and step-by-step routines (morning,
+bedtime, after school, each step with an optional timer). Kids sign in with a
+family code and a 4-digit PIN, so a seven-year-old can run their own day on a
+shared tablet with no email address and no account of their own.
+
+The app tracks allowance automatically: a reward per chore or a flat daily
+rate, with goals kids save toward and a reward store for things money cannot
+buy (screen time, picking dinner). It never moves real money and never gives
+a child a debit card; you hand over the actual allowance however you like.
+
+The free plan includes up to 3 children and 20 chores, kid login, routines,
+and achievement badges, free forever. Premium ($4.99/month or $49.99/year)
+adds unlimited children and chores, family sharing with a co-parent, premium
+themes, and export reports. Kid mode is localized in English, Spanish,
+Portuguese, and Arabic.
+
+**Tags:** chore-chart, allowance-tracker, family, kids, parenting, task-management, rewards
+
+**Platforms:** Web, iPhone, iPad
+
+**Pricing:** Freemium ($4.99/month premium)
+
+**Links:** https://chorestar.app · https://apps.apple.com/app/id6761279049
+
+## Product Hunt
+
+**Name:** ChoreStar
+
+**Tagline (60 chars max):**
+The chore app your kid can run themselves
+
+**Description:**
+Kids sign in with a family code and a 4-digit PIN (no email, they don't have
+one). They check off chores, run step-by-step routines with timers, watch
+their allowance grow toward a goal, and spend it in a reward store you price
+yourself: screen time, picking Friday dinner, staying up late. Parents get
+approval mode, weekly stats, and vacation mode that pauses everything with
+streaks kept safe. Web + native iOS, one account. Free for 3 kids and 20
+chores, forever.
+
+**Topics:** Parenting, Productivity, Kids, iOS, Web App
+
+**First comment (maker's note, posted by Ben):**
+I built ChoreStar because our fridge chart kept getting "lost" and the
+existing apps either wanted my kid to have an email address or wanted to give
+her a debit card. She's seven. ChoreStar's whole idea is that the kid is the
+user: she signs in with our family code and her PIN, runs her own morning
+routine, and watches her Lego fund fill up. The free plan is free forever (3
+kids, 20 chores). Happy to answer anything, including what it doesn't do.
