@@ -155,8 +155,8 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                 className="w-full font-bold hover-glow"
                 onClick={() => {
                   onOpenChange(false)
-                  // User can upgrade via Settings > Billing tab
-                  toast.info('Go to Settings → Billing to upgrade to Premium')
+                  // Land directly on Settings > Billing (dashboard listens)
+                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
                 }}
               >
                 <Crown className="w-5 h-5 mr-2" />

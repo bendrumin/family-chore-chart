@@ -15,6 +15,7 @@ import { AmbientBackground } from '@/components/ui/ambient-background'
 import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
 import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
+import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
@@ -277,6 +278,18 @@ function DashboardContent({
   const isShell = useAndroidShell()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState<SettingsTab>('family')
+
+  // Deep-open a settings tab from anywhere on the page (the add-child and
+  // add-chore modals use this to land upgraders directly on Billing).
+  useEffect(() => {
+    const onOpenSettings = (e: Event) => {
+      const tab = (e as CustomEvent).detail?.tab as SettingsTab | undefined
+      if (tab) setSettingsTab(tab)
+      setIsSettingsOpen(true)
+    }
+    window.addEventListener('chorestar:open-settings', onOpenSettings)
+    return () => window.removeEventListener('chorestar:open-settings', onOpenSettings)
+  }, [])
 
   const activeShellTab: ShellTab = isSettingsOpen
     ? (settingsTab === 'insights' ? 'insights' : 'settings')
@@ -556,6 +569,25 @@ function DashboardContent({
                 currencyCode={settings?.currency_code}
                 vacation={onVacationToday && vacationWindow ? { endsOn: vacationWindow.ends_on } : null}
                 onEndVacation={handleEndVacation}
+              />
+            </div>
+
+            {/* Setup checklist — renders only while the funnel is incomplete */}
+            <div className="order-2">
+              <GettingStartedCard
+                kids={children}
+                familyCode={initialProfile?.kid_login_code ?? null}
+                isSharedMember={isSharedMember}
+                todayTotal={todaySnapshot.familyTotal}
+                todayDone={todaySnapshot.familyDone}
+                onSelectChild={(id: string) => {
+                  setSelectedChildId(id)
+                  setActiveTab('chores')
+                }}
+                onOpenFamilySettings={() => {
+                  setSettingsTab('family')
+                  setIsSettingsOpen(true)
+                }}
               />
             </div>
 

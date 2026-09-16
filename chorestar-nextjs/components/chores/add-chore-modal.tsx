@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera } from 'lucide-react'
+import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera, Crown } from 'lucide-react'
+import { isPremium, getChoreLimit } from '@/lib/utils/subscription'
+import { useAndroidShell } from '@/lib/utils/platform'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
@@ -28,7 +30,12 @@ interface AddChoreModalProps {
 
 export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }: AddChoreModalProps) {
   const { settings } = useSettings()
+  const androidShell = useAndroidShell()
   const [isLoading, setIsLoading] = useState(false)
+  // Free-plan chore cap, counted family-wide to match the iOS gate
+  // (SupabaseManager.choreLimit). null = still loading or the check failed;
+  // the gate then stays open so a metadata hiccup can't block chore creation.
+  const [capState, setCapState] = useState<{ count: number; limit: number } | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     rewardCents: DEFAULT_CHORE_REWARD_CENTS,
@@ -56,10 +63,44 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultRewardCents])
 
+  useEffect(() => {
+    if (!open) return
+    setCapState(null)
+    const checkCap = async () => {
+      try {
+        const supabase = createClient()
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_type')
+          .eq('id', userId)
+          .single()
+        if (isPremium(profile?.subscription_type)) return
+        const { data: kids } = await supabase
+          .from('children')
+          .select('id')
+          .eq('user_id', userId)
+        const ids = (kids ?? []).map((k) => k.id)
+        if (ids.length === 0) return
+        const { count } = await supabase
+          .from('chores')
+          .select('id', { count: 'exact', head: true })
+          .in('child_id', ids)
+          .eq('is_active', true)
+        setCapState({ count: count ?? 0, limit: getChoreLimit(profile?.subscription_type) })
+      } catch {
+        // Leave capState null: no gate rather than a wrong one.
+      }
+    }
+    checkCap()
+  }, [open, userId])
+
+  const isAtCap = capState !== null && capState.count >= capState.limit
+
   const categories = getCategoryList()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isAtCap) return
     setIsLoading(true)
 
     try {
@@ -103,6 +144,48 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
               Add New Chore
             </DialogTitle>
           </DialogHeader>
+
+          {/* Free-plan cap. Inside the Android shell the limit is stated
+              without an upsell (Play policy: no purchase CTAs outside Play
+              Billing) — same split as the child cap in add-child-modal. */}
+          {isAtCap && androidShell && (
+            <div className="my-4 p-5 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                The free plan includes up to {capState?.limit} chores.
+              </p>
+            </div>
+          )}
+          {isAtCap && !androidShell && (
+            <div className="my-4 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800" style={{ background: 'var(--card-bg)' }}>
+              <div className="flex items-start gap-3 mb-4">
+                <Crown className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                    Your chore list is full
+                  </h4>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    The free plan holds {capState?.limit} chores across the family. You
+                    have {capState?.count}, and everything already on the list stays.
+                    Premium removes the cap and adds family sharing and export reports.
+                    $4.99 a month or $49.99 a year.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="gradient"
+                size="lg"
+                className="w-full font-bold hover-glow"
+                onClick={() => {
+                  onOpenChange(false)
+                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+                }}
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                Open Billing
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-6 mt-6 mb-6">
             {/* Basic Info Section - Blue accent */}
@@ -269,7 +352,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isAtCap}
               variant="gradient"
               size="lg"
               className="flex-1 font-bold hover-glow"
