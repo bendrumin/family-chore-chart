@@ -1,7 +1,7 @@
-Version 2.2.1 lets you go back and check it off.
+Version 2.2.2 helps new families get rolling.
 
-• The week view now travels: flip back to any earlier week and mark what actually got done. Especially handy on Sundays, when yesterday already belongs to last week
-• Backfilled chores count toward earnings and streaks quietly, with no confetti for last Tuesday
+• A getting-started checklist on the dashboard: add a kid, give them chores, let them check one off. It walks you to the next step and shows your family code so your kid can sign in
+• The checklist gets out of the way for good once your chart is running, or whenever you hide it
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app

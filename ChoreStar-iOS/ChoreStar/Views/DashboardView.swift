@@ -273,10 +273,18 @@ struct DashboardView: View {
                         .transition(.opacity)
                     }
 
-                    // Ticks waiting for the parent's OK (approval mode / photo
-                    // chores). Renders nothing when there is nothing to review.
-                    ApprovalTrayView()
-                        .padding(.horizontal, 20)
+                    // Grouped so the LazyVStack keeps its former child count:
+                    // its builder was already at the type-checker's budget.
+                    Group {
+                        // Setup checklist for new families. Renders nothing once
+                        // the funnel is complete or the parent hides it.
+                        GettingStartedCard()
+
+                        // Ticks waiting for the parent's OK (approval mode / photo
+                        // chores). Renders nothing when there is nothing to review.
+                        ApprovalTrayView()
+                    }
+                    .padding(.horizontal, 20)
 
                     // Today's Chores
                     if !manager.chores.isEmpty {

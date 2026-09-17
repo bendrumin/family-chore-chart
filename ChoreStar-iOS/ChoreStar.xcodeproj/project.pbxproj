@@ -8,10 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		075FA47F80C43135491BF7D0 /* BricolageGrotesque-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */; };
+		0F4524AC113D60FBDE4EC9EB /* GettingStartedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */; };
 		2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */; };
 		4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */; };
+		5465FC7C9A13DA94B7DA1566 /* GettingStartedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */; };
 		55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */; };
 		58282D57D5719FD63139F235 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9BF1F9D206F53790FB05FAFB /* OFL.txt */; };
+		65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */; };
 		6CAC4C97D8DBCFD9E9530759 /* BricolageGrotesque-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */; };
 		872128E9FDA90F7721851566 /* BricolageGrotesque-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */; };
 		9EA025C9301135A2008215CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025C8301135A2008215CE /* WidgetKit.framework */; };
@@ -116,9 +119,11 @@
 
 /* Begin PBXFileReference section */
 		01697ED45FA707F298E64E20 /* RewardMath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMath.swift; sourceTree = "<group>"; };
+		0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedProgress.swift; sourceTree = "<group>"; };
 		21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChoreStarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarPathTests.swift; sourceTree = "<group>"; };
 		26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMathTests.swift; sourceTree = "<group>"; };
+		40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedTests.swift; sourceTree = "<group>"; };
 		558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-ExtraBold.ttf"; sourceTree = "<group>"; };
 		9BF1F9D206F53790FB05FAFB /* OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = OFL.txt; sourceTree = "<group>"; };
 		9E8D645C30260BE3008767EC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
@@ -178,6 +183,7 @@
 		A1234567890ABCDEF12345F4 /* NotificationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsManager.swift; sourceTree = "<group>"; };
 		A1234567890ABCDEF12345F6 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A39725F7A81983AC08C2BD8A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedCard.swift; sourceTree = "<group>"; };
 		B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-SemiBold.ttf"; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -266,6 +272,7 @@
 				26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */,
 				264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */,
 				E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */,
+				40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */,
 			);
 			name = ChoreStarTests;
 			path = ChoreStarTests;
@@ -402,6 +409,7 @@
 				C0DEC0DE0000000000000003 /* OnboardingView.swift */,
 				C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */,
 				C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */,
+				AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -433,6 +441,7 @@
 			isa = PBXGroup;
 			children = (
 				01697ED45FA707F298E64E20 /* RewardMath.swift */,
+				0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */,
 			);
 			name = Logic;
 			path = Logic;
@@ -618,6 +627,7 @@
 				2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */,
 				4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */,
 				55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */,
+				5465FC7C9A13DA94B7DA1566 /* GettingStartedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -690,6 +700,8 @@
 				A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */,
 				E36B27BB0D14F23EB4E6E42A /* RewardMath.swift in Sources */,
 				DE4C06F4220C3DDAF16ACBE1 /* ReviewPrompter.swift in Sources */,
+				0F4524AC113D60FBDE4EC9EB /* GettingStartedProgress.swift in Sources */,
+				65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -753,7 +765,7 @@
 		9EA025DE301135A3008215CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -787,7 +799,7 @@
 		9EA025DF301135A3008215CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -821,7 +833,7 @@
 		9EB025C0301135A2008215CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -840,7 +852,7 @@
 		9EB025C0301135A2008215CB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -860,8 +872,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 33;
-				APP_VERSION = 2.2.1;
+				APP_BUILD = 34;
+				APP_VERSION = 2.2.2;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -929,8 +941,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 33;
-				APP_VERSION = 2.2.1;
+				APP_BUILD = 34;
+				APP_VERSION = 2.2.2;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -990,7 +1002,7 @@
 		A1234567890ABCDEF1234589 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
@@ -1026,7 +1038,7 @@
 		A1234567890ABCDEF123458A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 33;
+				APP_BUILD = 34;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;

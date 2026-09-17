@@ -1,7 +1,7 @@
-La versión 2.2.1 te deja volver atrás y marcarlo.
+La versión 2.2.2 ayuda a las familias nuevas a arrancar.
 
-• La vista semanal ahora viaja: regresa a cualquier semana anterior y marca lo que sí se hizo. Muy útil los domingos, cuando el día de ayer ya pertenece a la semana pasada
-• Las tareas marcadas con retraso cuentan para los ahorros y las rachas, sin confeti por el martes pasado
-• Pequeños ajustes y mejoras
+• Una lista de primeros pasos en el panel: agrega a tu hijo, asígnale tareas y deja que marque la primera. Te guía al siguiente paso y muestra tu código familiar para que tu hijo inicie sesión
+• La lista desaparece para siempre cuando tu tablero ya está en marcha, o cuando tú la ocultes
+• Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app

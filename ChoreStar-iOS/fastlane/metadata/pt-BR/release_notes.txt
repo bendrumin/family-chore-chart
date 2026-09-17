@@ -1,7 +1,7 @@
-A versão 2.2.1 deixa você voltar e marcar.
+A versão 2.2.2 ajuda famílias novas a começar.
 
-• A visão semanal agora viaja: volte para qualquer semana anterior e marque o que realmente foi feito. Muito útil aos domingos, quando o dia de ontem já pertence à semana passada
-• Tarefas marcadas depois contam para os ganhos e as sequências, sem confete pela terça passada
-• Pequenos ajustes e melhorias
+• Uma lista de primeiros passos no painel: adicione uma criança, crie as tarefas e deixe que ela marque a primeira. Ela guia você ao próximo passo e mostra o código da família para o login das crianças
+• A lista some de vez quando o quadro já está funcionando, ou quando você a esconder
+• Pequenas correções e melhorias
 
 Fale com a gente em hi@chorestar.app
