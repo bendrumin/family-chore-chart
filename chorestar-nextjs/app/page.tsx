@@ -159,7 +159,7 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-            ⭐ Join 117+ parents and kids already using ChoreStar
+            ⭐ Join 200+ parents and kids already using ChoreStar
           </p>
         </header>
 
@@ -173,7 +173,7 @@ export default async function HomePage() {
             Tired of reminding your kids to clean their rooms? ChoreStar turns chores into a game that kids actually want to play.
           </p>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            ✨ Kids complete chores, earn rewards, unlock achievements, and build responsibility<br/>
+            ✨ Kids check off chores, earn rewards, collect badges, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
             📱 Works on any device, and the native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">now on the App Store</a>!<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
@@ -653,7 +653,7 @@ export default async function HomePage() {
             Start Your Family on ChoreStar
           </h2>
           <p className="text-xl mb-8">
-            Join 117+ parents and kids who ended their chore battles
+            Join 200+ parents and kids who ended their chore battles
           </p>
           <Link
             href="/signup"
