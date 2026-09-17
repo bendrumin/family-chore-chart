@@ -308,8 +308,11 @@ export default function BestFreeChoreAppsPage() {
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">The Table</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 sm:hidden">
+              The table scrolls sideways on a phone.
+            </p>
             <div className="not-prose overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-800 text-left">
                     <th className="p-3 font-semibold text-gray-900 dark:text-white">App</th>
@@ -338,70 +341,70 @@ export default function BestFreeChoreAppsPage() {
                     <td className="p-3 font-medium text-gray-900 dark:text-white">Kikaroo</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">Unlimited kids, full rewards</td>
-                    <td className="p-3">$2.99/mo · $29.99/yr</td>
+                    <td className="p-3 whitespace-nowrap">$2.99/mo · $29.99/yr</td>
                     <td className="p-3">Per-child (method unclear)</td>
                   </tr>
                   <tr className="bg-indigo-50/50 dark:bg-indigo-950/30">
                     <td className="p-3 font-medium text-gray-900 dark:text-white">ChoreStar (ours)</td>
                     <td className="p-3">Web, iPhone, iPad</td>
                     <td className="p-3">3 kids, 20 chores</td>
-                    <td className="p-3">$4.99/mo · $49.99/yr</td>
+                    <td className="p-3 whitespace-nowrap">$4.99/mo · $49.99/yr</td>
                     <td className="p-3">Family code + 4-digit PIN</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">Chorsee</td>
                     <td className="p-3">iOS, iPad, Mac, Android</td>
                     <td className="p-3">Limits unstated</td>
-                    <td className="p-3">$8.99/mo · $39.99/yr · $119.99 life</td>
+                    <td className="p-3 whitespace-nowrap">$8.99/mo · $39.99/yr · $119.99 life</td>
                     <td className="p-3">Device mode + house PIN</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">S&apos;moresUp</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">Core free after 45-day trial</td>
-                    <td className="p-3">$9.99/mo · $99.99/yr</td>
+                    <td className="p-3 whitespace-nowrap">$9.99/mo · $99.99/yr</td>
                     <td className="p-3">Unclear</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">Kid Chore</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">Limits unstated</td>
-                    <td className="p-3">$3.99/mo · $29.99/yr · $69.99 life</td>
+                    <td className="p-3 whitespace-nowrap">$3.99/mo · $29.99/yr · $69.99 life</td>
                     <td className="p-3">6-character code</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">ChoresFlow</td>
                     <td className="p-3">Web</td>
                     <td className="p-3">1 child</td>
-                    <td className="p-3">$4.99/mo</td>
+                    <td className="p-3 whitespace-nowrap">$4.99/mo</td>
                     <td className="p-3">4-digit PIN</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">KidKarma</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">None (14-day trial)</td>
-                    <td className="p-3">$4.99 to $7.99/mo</td>
+                    <td className="p-3 whitespace-nowrap">$4.99 to $7.99/mo</td>
                     <td className="p-3">QR code scan</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">NestBoard</td>
                     <td className="p-3">Web, iOS, Android</td>
                     <td className="p-3">None (14-day trial)</td>
-                    <td className="p-3">$4.99/mo household</td>
+                    <td className="p-3 whitespace-nowrap">$4.99/mo household</td>
                     <td className="p-3">Free kid seats, no account</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">BusyKid</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">None</td>
-                    <td className="p-3">$4/mo billed annually</td>
+                    <td className="p-3 whitespace-nowrap">$4/mo billed annually</td>
                     <td className="p-3">Own login + prepaid card</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-medium text-gray-900 dark:text-white">Greenlight</td>
                     <td className="p-3">iOS, Android</td>
                     <td className="p-3">None</td>
-                    <td className="p-3">From $5.99/mo</td>
+                    <td className="p-3 whitespace-nowrap">From $5.99/mo</td>
                     <td className="p-3">Own login + debit card</td>
                   </tr>
                 </tbody>
