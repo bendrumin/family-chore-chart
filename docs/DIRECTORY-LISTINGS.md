@@ -57,6 +57,26 @@ Portuguese, and Arabic.
 
 **Links:** https://chorestar.app · https://apps.apple.com/app/id6761279049
 
+**List as an alternative to (in this order):**
+
+1. **OurHome** — the big free family chore app, dead since 2023 (unpublished
+   from Google Play). Its users are actively hunting for a replacement.
+2. **ChoreMonster** — the famous kids chore app, discontinued. Its
+   AlternativeTo page has a weak alternatives list, so a well-filled listing
+   can rank near the top there.
+3. **S'moresUp** — iOS app unchanged since Oct 2025, help center closed,
+   price raised to $9.99/mo. Alternative-seekers incoming.
+4. **Greenlight** — for families who want chores and allowance with no debit
+   card and no bank account (mirrors /compare/greenlight-alternative).
+5. **Skylight Calendar** — for families who want the chore chart without a
+   $300 wall device (mirrors /compare/skylight-alternative).
+6. **BusyKid** — same no-real-money angle as Greenlight.
+7. **Chorsee** — the active peer; ChoreStar differs with per-kid PIN logins
+   and a web app (Chorsee is device-mode, app-only).
+
+Skip the tiny apps (Tasklio, Kikaroo, KidKarma): almost nobody searches for
+alternatives to them, and the tag mostly advertises them on our page.
+
 ## Product Hunt
 
 **Name:** ChoreStar
