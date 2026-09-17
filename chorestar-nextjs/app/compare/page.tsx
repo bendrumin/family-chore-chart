@@ -286,6 +286,21 @@ export default function ComparePage() {
                   </span>
                 </Link>
               ))}
+              <Link
+                href="/blog/best-free-chore-apps-for-kids"
+                className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
+              >
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  Best free chore apps for kids in 2026
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Twelve apps, every pricing page checked. Three are genuinely free, and two
+                  that rank for &quot;free&quot; have no free plan at all.
+                </p>
+                <span className="inline-block mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                  Read more →
+                </span>
+              </Link>
             </div>
           </section>
         )}

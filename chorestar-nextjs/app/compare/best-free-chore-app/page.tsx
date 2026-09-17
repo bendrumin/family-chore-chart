@@ -133,6 +133,16 @@ export default function BestFreeChoreAppPage() {
               free-trial, or free-but-abandoned). Here&apos;s what actually makes a free chore app worth
               building your week around, and how ChoreStar&apos;s free plan measures up.
             </p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-4">
+              Want names and numbers? We checked twelve apps&apos; pricing pages, ours included:{' '}
+              <Link
+                href="/blog/best-free-chore-apps-for-kids"
+                className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                the 2026 free chore app roundup
+              </Link>
+              .
+            </p>
           </header>
 
           <div className="space-y-8">
