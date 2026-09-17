@@ -7,6 +7,22 @@ done.
 - [ ] AlternativeTo: https://alternativeto.net/manage-item/ (create "ChoreStar")
 - [ ] Product Hunt: https://www.producthunt.com/posts/new
 
+## Screenshots (ready to upload)
+
+Six web screenshots live in `docs/assets/screenshots/web/`, taken 2026-09-16
+against the live site on the App Review demo family (no real family data).
+1440x900 at 2x. Suggested upload order and captions:
+
+1. `01-homepage.png` — "The web app. The free plan covers 3 kids and 20 chores."
+2. `04-kid-dashboard.png` — "A kid's dashboard: today's chores, streak, wallet, badges."
+3. `02-kid-login-code.png` — "Kid login starts with a family code. No email."
+4. `03-kid-pin.png` — "Then a 4-digit PIN on a big keypad."
+5. `05-kid-dashboard-chores.png` — "The chore list from the kid's side."
+6. `01b-homepage-dark.png` — dark mode variant (optional)
+
+Product Hunt's gallery takes the same set; lead with the kid dashboard there.
+App Store screenshots for the iOS listing already exist on the App Store page.
+
 ## AlternativeTo
 
 **Name:** ChoreStar
