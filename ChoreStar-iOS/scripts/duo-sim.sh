@@ -24,7 +24,7 @@ BUNDLE=com.chorestar.ChoreStar
 # The Duo device type only exists in the beta's platform support.
 DUO_TYPE=$(xcrun simctl list devicetypes | grep -i "duo" | head -1 | sed -E 's/.*\((com\.apple[^)]+)\).*/\1/')
 [ -n "$DUO_TYPE" ] || { echo "This Xcode has no iPhone Duo device type. Is it the 27.1 beta or later?"; exit 1; }
-RUNTIME=$(xcrun simctl list runtimes | grep -i "iOS 27" | tail -1 | sed -E 's/.*\((com\.apple[^)]+)\).*/\1/')
+RUNTIME=$(xcrun simctl list runtimes | grep -i "iOS 27" | grep -oE 'com\.apple\.CoreSimulator\.SimRuntime\.iOS-[0-9-]+' | tail -1)
 
 DUO_ID=$(xcrun simctl list devices | grep -i "ChoreStar Duo" | head -1 | grep -oE '[0-9A-F-]{36}' || true)
 if [ -z "$DUO_ID" ]; then
@@ -40,7 +40,9 @@ fi
 echo "==> Quit the release Simulator if it is open: two CoreSimulator versions"
 echo "    at once produce 'connection became invalid' errors."
 xcrun simctl boot "$DUO_ID" 2>/dev/null || true
-open -a "$BETA/Contents/Developer/Applications/Simulator.app" --args -CurrentDeviceUDID "$DUO_ID"
+# The GUI is optional: simctl builds, installs and screenshots headless.
+SIM_APP=$(find "$BETA" -maxdepth 6 -name "Simulator.app" 2>/dev/null | head -1)
+[ -n "$SIM_APP" ] && open -a "$SIM_APP" --args -CurrentDeviceUDID "$DUO_ID" || echo "    (Simulator GUI not opened; continuing headless)"
 
 echo "==> Building with $(xcodebuild -version | head -1) into $DD"
 xcodebuild build \

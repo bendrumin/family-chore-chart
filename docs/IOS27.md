@@ -98,3 +98,23 @@ shipping the app. Rules that keep them apart:
 - Stale on this Mac as of 2026-09-18: `/Applications/Xcode-27.app` is the
   superseded 27.0 beta 5, and `~/Downloads` holds the old RC and beta 5
   xips (~7 GB together). Safe to delete; nothing references them.
+
+### First Duo run (2026-09-18, Xcode 27.1 beta 27A9269, iOS 27.1 runtime 24A94401)
+
+- Build, install, launch: clean. The app renders correctly on the Duo's
+  inner display (1398x2034 points, one physical display plus the usual
+  720x480 external port). iOS puts the status bar in a vertical rail beside
+  the camera cutout on the trailing edge and hands apps a trailing safe-area
+  inset; ChoreStar's content centers inside the safe area and the gradient
+  runs edge to edge underneath, which is the correct behavior.
+- `simctl` in 27.1 has no fold/pose verbs (`ui` covers appearance, contrast,
+  text size only), so fold and unfold transitions have to be exercised in
+  Xcode Beta's built-in simulator UI. There is no standalone Simulator.app
+  in Xcode 27.x, in either the release or the beta; `duo-sim.sh` runs
+  headless and skips the GUI.
+- The pbxproj guard fired on the very first run: a plain command-line
+  `xcodebuild build` under the beta rewrote `project.pbxproj`
+  (LastUpgradeCheck 2620 to 2710, groups converted to synced folders, an
+  analyzer flag added) and both shared schemes. `git checkout --
+  ChoreStar-iOS/ChoreStar.xcodeproj/` restored them. Expect this after every
+  beta session; never accept "Update to recommended settings" in the beta.
