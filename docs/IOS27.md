@@ -78,14 +78,14 @@ shipping the app. Rules that keep them apart:
 - `/Applications/Xcode.app` = release, ships the store build. `xcode-select`
   stays pointed here and every `scripts/ship-b*.sh` pins `DEVELOPER_DIR` to
   it, so nothing about shipping changes when a beta is installed.
-- `/Applications/Xcode-beta.app` = the beta (Apple's xip expands to that
-  name; keep it). Reach it only per shell or per process:
+- `/Applications/Xcode Beta.app` = the beta (installed 2026-09-18 under that
+  name; keep the space). Reach it only per shell or per process:
   `source scripts/xcode-beta.sh`, or `scripts/duo-sim.sh` which builds into
   `build/duo-dd` and never touches the release DerivedData.
 - Never `xcode-select -s` the beta, never archive for the store with it
   (beta SDK builds are TestFlight-only; build 21 proved that in August),
   never install the macOS beta (the BuildMachineOSBuild re-stamp trap).
-- Open the project in the beta with `open -a Xcode-beta ChoreStar.xcodeproj`
+- Open the project in the beta with `open -a "Xcode Beta" ChoreStar.xcodeproj`
   and decline "Update to recommended settings." Then `git diff
   ChoreStar.xcodeproj/project.pbxproj`; a rewritten project format breaks
   the release Xcode. `duo-sim.sh` flags this automatically.

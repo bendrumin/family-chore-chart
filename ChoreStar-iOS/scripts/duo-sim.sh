@@ -12,7 +12,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BETA=/Applications/Xcode-beta.app
+BETA="/Applications/Xcode Beta.app"
 [ -d "$BETA" ] || { echo "No Xcode beta at $BETA (see scripts/xcode-beta.sh)"; exit 1; }
 export DEVELOPER_DIR="$BETA/Contents/Developer"
 
