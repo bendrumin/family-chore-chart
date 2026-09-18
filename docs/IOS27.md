@@ -68,3 +68,33 @@ Measured iOS-27-gated API additions in the SDK, ranked by fit:
 
 Voice rules per docs/VOICE.md apply to all of it: no feature is announced
 before it ships, and every claim names what the user gets.
+
+## Two Xcodes, one ship lane
+
+The iPhone Duo simulator lives only in the Xcode 27.1 beta (released
+2026-09-18; Duo ships Oct 23 on iOS 27.1). The release Xcode 27.0 keeps
+shipping the app. Rules that keep them apart:
+
+- `/Applications/Xcode.app` = release, ships the store build. `xcode-select`
+  stays pointed here and every `scripts/ship-b*.sh` pins `DEVELOPER_DIR` to
+  it, so nothing about shipping changes when a beta is installed.
+- `/Applications/Xcode-beta.app` = the beta (Apple's xip expands to that
+  name; keep it). Reach it only per shell or per process:
+  `source scripts/xcode-beta.sh`, or `scripts/duo-sim.sh` which builds into
+  `build/duo-dd` and never touches the release DerivedData.
+- Never `xcode-select -s` the beta, never archive for the store with it
+  (beta SDK builds are TestFlight-only; build 21 proved that in August),
+  never install the macOS beta (the BuildMachineOSBuild re-stamp trap).
+- Open the project in the beta with `open -a Xcode-beta ChoreStar.xcodeproj`
+  and decline "Update to recommended settings." Then `git diff
+  ChoreStar.xcodeproj/project.pbxproj`; a rewritten project format breaks
+  the release Xcode. `duo-sim.sh` flags this automatically.
+- Quit the release Simulator before launching the beta's. Two CoreSimulator
+  versions at once produce "connection became invalid" errors.
+- Simulator runtimes are shared system-wide; device types are not. The Duo
+  device type is visible only through the beta's `simctl`.
+- Grab the **27.1** beta, not 27.2: Apple shipped a 27.2 beta first, and it is
+  the 27.1 line that carries the Duo SDK the October release needs.
+- Stale on this Mac as of 2026-09-18: `/Applications/Xcode-27.app` is the
+  superseded 27.0 beta 5, and `~/Downloads` holds the old RC and beta 5
+  xips (~7 GB together). Safe to delete; nothing references them.
