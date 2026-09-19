@@ -13,3 +13,18 @@ export function getChildLimit(tier: SubscriptionTier | string | undefined): numb
 export function getChoreLimit(tier: SubscriptionTier | string | undefined): number {
   return isPremium(tier) ? Infinity : 20
 }
+
+/**
+ * Which tier a completed Stripe Checkout grants. Subscriptions (monthly,
+ * annual) are premium; the one-time lifetime purchase is lifetime, which
+ * the cancellation path treats as permanent. Anything else grants nothing,
+ * so an unexpected session can never upgrade an account by accident.
+ */
+export function tierForCheckout(
+  mode: string | null | undefined,
+  planType: string | null | undefined
+): 'premium' | 'lifetime' | null {
+  if (mode === 'subscription') return 'premium'
+  if (mode === 'payment' && planType === 'lifetime') return 'lifetime'
+  return null
+}

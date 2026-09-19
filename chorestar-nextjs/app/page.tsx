@@ -39,7 +39,7 @@ const FAQS = [
   },
   {
     q: 'Can I try Premium before paying?',
-    a: 'Yes. Sign up for free and start a trial of Premium from your dashboard at any time. No credit card is required to create your account.',
+    a: 'There is no timed trial. The free plan is free forever, with 3 kids and 20 chores, so you can run your family on it for as long as you like. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
   },
 ]
 

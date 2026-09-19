@@ -6,7 +6,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { isPremium, getChildLimit, getChoreLimit } from './subscription'
+import { isPremium, getChildLimit, getChoreLimit, tierForCheckout } from './subscription'
 
 let passed = 0
 let failed = 0
@@ -53,6 +53,24 @@ t('premium and lifetime are unlimited', () => {
   assert.equal(getChoreLimit('premium'), Infinity)
   assert.equal(getChildLimit('lifetime'), Infinity)
   assert.equal(getChoreLimit('lifetime'), Infinity)
+})
+
+group('tierForCheckout (Stripe webhook)')
+
+t('monthly and annual subscriptions grant premium', () => {
+  assert.equal(tierForCheckout('subscription', 'monthly'), 'premium')
+  assert.equal(tierForCheckout('subscription', 'annual'), 'premium')
+})
+
+t('the one-time lifetime purchase grants lifetime (the $149.99 bug)', () => {
+  assert.equal(tierForCheckout('payment', 'lifetime'), 'lifetime')
+})
+
+t('anything unexpected grants nothing', () => {
+  assert.equal(tierForCheckout('payment', 'monthly'), null)
+  assert.equal(tierForCheckout('payment', undefined), null)
+  assert.equal(tierForCheckout('setup', 'lifetime'), null)
+  assert.equal(tierForCheckout(null, null), null)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

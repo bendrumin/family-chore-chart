@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import type Stripe from 'stripe'
+import { tierForCheckout } from '@/lib/utils/subscription'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium') {
+async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium' | 'lifetime') {
   const supabase = createServiceRoleClient()
   const { error } = await (supabase as any)
     .from('profiles')
@@ -81,9 +82,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
-  if (session.mode === 'subscription') {
-    await updateSubscriptionTier(userId, 'premium')
+  const tier = tierForCheckout(session.mode, planType)
+  if (!tier) {
+    console.error(`Checkout ${session.id} granted nothing: mode=${session.mode} planType=${planType}`)
+    return
   }
+  await updateSubscriptionTier(userId, tier)
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
