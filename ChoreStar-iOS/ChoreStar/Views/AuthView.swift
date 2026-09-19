@@ -22,7 +22,8 @@ struct AuthView: View {
 
     /// Fixed-size fonts don't respond to Dynamic Type; scaling the hero title
     /// relative to .largeTitle keeps the lockup while honoring the user's size.
-    @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 42
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 34
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     var body: some View {
         ZStack {
@@ -35,7 +36,7 @@ struct AuthView: View {
             // as the old fixed VStack did.
             GeometryReader { geo in
                 ScrollView(showsIndicators: false) {
-                    authContent
+                    authContent(compact: geo.size.height < 720 || verticalSizeClass == .compact)
                         .frame(maxWidth: .infinity, minHeight: geo.size.height)
                 }
                 .scrollDismissesKeyboard(.immediately)
@@ -68,38 +69,65 @@ struct AuthView: View {
         }
     }
 
-    private var authContent: some View {
-            VStack(spacing: 32) {
-                Spacer()
-                
-                VStack(spacing: 12) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 60))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.white, Color.choreStarAccent],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                    
-                    Text("ChoreStar")
-                        .font(.system(size: titleSize, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+    /// The sign-in screen at two densities. `compact` is for short viewports:
+    /// the iPhone Duo's cover display (678pt tall, wider than any iPhone),
+    /// landscape phones, and anything else under 720pt. There the header
+    /// folds into one line so the form, the thing the visitor came for, is
+    /// on screen without scrolling. Standard phones get a smaller header
+    /// than before as well; the old 60pt star plus 42pt title read as a
+    /// splash screen the user had to get past.
+    private func authContent(compact: Bool) -> some View {
+            VStack(spacing: compact ? 16 : 24) {
+                Spacer(minLength: compact ? 8 : 16)
 
-                    // Headline-bold qualifies as large text (3:1 contrast bar);
-                    // subheadline at 90% white failed the audit on the lighter
-                    // seasonal gradients.
-                    Text("Make chores fun!")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.35), radius: 2, x: 0, y: 1)
+                if compact {
+                    HStack(spacing: 10) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 26))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.white, Color.choreStarAccent],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
+                        Text("ChoreStar")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    }
+                    .accessibilityElement(children: .combine)
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.white, Color.choreStarAccent],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+
+                        Text("ChoreStar")
+                            .font(.system(size: titleSize, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+
+                        // Headline-bold qualifies as large text (3:1 contrast bar);
+                        // subheadline at 90% white failed the audit on the lighter
+                        // seasonal gradients.
+                        Text("Make chores fun!")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.35), radius: 2, x: 0, y: 1)
+                    }
+                    .padding(.bottom, 4)
                 }
-                .padding(.bottom, 20)
-                
+
                 VStack(spacing: 20) {
                     if authMode == .forgotPassword {
                         forgotPasswordCard
@@ -107,18 +135,18 @@ struct AuthView: View {
                         authCard
                     }
                 }
-                .padding(24)
+                .padding(compact ? 18 : 24)
                 .background(Color.choreStarCardBackground)
                 .cornerRadius(20)
                 .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 2)
                 .frame(maxWidth: 560)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, compact ? 20 : 24)
 
                 // Kid login entry — kids use a family code + PIN, no account
                 kidLoginButton
 
-                Spacer()
-                Spacer()
+                Spacer(minLength: compact ? 8 : 16)
+                if !compact { Spacer() }
             }
     }
 

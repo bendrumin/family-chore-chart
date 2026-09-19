@@ -59,6 +59,14 @@ struct HistoryView: View {
     
     var body: some View {
         NavigationStack {
+            if !manager.canUse(.analytics) {
+                ScrollView {
+                    PremiumFeatureGate(feature: .analytics)
+                        .padding(20)
+                }
+                .background(Color.choreStarBackground.ignoresSafeArea())
+                .navigationTitle("Stats")
+            } else {
             ScrollView {
                 VStack(spacing: 24) {
                     // Child picker
@@ -331,6 +339,7 @@ struct HistoryView: View {
             .background(ThemedScreenBackground())
             .navigationTitle("Stats & History")
             .navigationBarTitleDisplayMode(.large)
+            }
         }
     }
     

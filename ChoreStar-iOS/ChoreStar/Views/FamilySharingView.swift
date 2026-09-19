@@ -19,7 +19,15 @@ struct FamilySharingView: View {
             if manager.isSharedMember {
                 memberSection
             } else {
-                shareSection
+                if manager.canUse(.sharing) {
+                    shareSection
+                } else {
+                    Section {
+                        PremiumFeatureGate(feature: .sharing)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                    }
+                }
                 membersSection
                 joinSection
             }

@@ -47,6 +47,16 @@ class SupabaseManager: ObservableObject {
     var childLimit: Int { isPremium ? Int.max : 3 }
     var choreLimit: Int { isPremium ? Int.max : 20 }
 
+    /// When this account was created; drives the grandfathered feature gate.
+    @Published var profileCreatedAt: Date?
+
+    /// Premium-advertised features: premium, or an account older than the
+    /// 2026-09-19 cutoff (Logic/Entitlements.swift, docs/PREMIUM.md).
+    func canUse(_ feature: GatedFeature) -> Bool {
+        Entitlements.canUse(feature, isPremium: isPremium, createdAt: profileCreatedAt)
+    }
+
+
     // Family's currency symbol (falls back to $ until settings load)
     var currencySymbol: String { familySettings?.currencySymbol ?? "$" }
 
@@ -4065,7 +4075,7 @@ class SupabaseManager: ObservableObject {
         do {
             let profiles: [ProfileRow] = try await client
                 .from("profiles")
-                .select("id, subscription_type, kid_login_code, family_name")
+                .select("id, subscription_type, kid_login_code, family_name, created_at")
                 .eq("id", value: uid)
                 .limit(1)
                 .execute()
@@ -4075,6 +4085,7 @@ class SupabaseManager: ObservableObject {
                 self.subscriptionType = profiles.first?.subscription_type ?? "free"
                 self.kidLoginCode = profiles.first?.kid_login_code
                 self.familyName = profiles.first?.family_name
+                self.profileCreatedAt = profiles.first?.created_at.flatMap(Entitlements.parseTimestamp)
                 debugLastError = "Profile loaded: \(self.subscriptionType)"
             }
 

@@ -9,7 +9,10 @@ import UIKit
 /// Bricolage has no 900/black — .heavy and .black resolve to ExtraBold (800).
 extension Font {
     static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom(UIFont.displayFontName(for: weight), size: size)
+        // relativeTo: scales the display face with Dynamic Type. Without it
+        // every hero and section title was frozen at its point size, which
+        // the accessibility audit flags on each one (found 2026-09-19).
+        .custom(UIFont.displayFontName(for: weight), size: size, relativeTo: size >= 24 ? .largeTitle : .title2)
     }
 }
 

@@ -21,4 +21,5 @@ struct ProfileRow: Codable {
     let subscription_type: String?
     let kid_login_code: String?
     let family_name: String?
+    let created_at: String?
 }

@@ -15,8 +15,10 @@
 		55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */; };
 		58282D57D5719FD63139F235 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9BF1F9D206F53790FB05FAFB /* OFL.txt */; };
 		65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */; };
+		67AF48BABDEFFA9AA793BB73 /* PremiumFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */; };
 		6CAC4C97D8DBCFD9E9530759 /* BricolageGrotesque-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */; };
 		872128E9FDA90F7721851566 /* BricolageGrotesque-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */; };
+		8D89B23C2B6AC8EB8C9B54BF /* Entitlements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8969C68FE80311EA63473D4B /* Entitlements.swift */; };
 		9EA025C9301135A2008215CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025C8301135A2008215CE /* WidgetKit.framework */; };
 		9EA025CB301135A2008215CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA025CA301135A2008215CE /* SwiftUI.framework */; };
 		9EA025DC301135A3008215CE /* ChoreStarWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -70,6 +72,7 @@
 		A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F2 /* FamilySharingView.swift */; };
 		A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F4 /* NotificationsManager.swift */; };
 		A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F6 /* Localizable.xcstrings */; };
+		C00255ACF3C010CD1279EE92 /* EntitlementsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */; };
 		C0DEC0DE0000000000000002 /* ChoreCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000001 /* ChoreCategory.swift */; };
 		C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000003 /* OnboardingView.swift */; };
 		C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */; };
@@ -124,7 +127,10 @@
 		264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarPathTests.swift; sourceTree = "<group>"; };
 		26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMathTests.swift; sourceTree = "<group>"; };
 		40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedTests.swift; sourceTree = "<group>"; };
+		41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EntitlementsTests.swift; sourceTree = "<group>"; };
 		558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-ExtraBold.ttf"; sourceTree = "<group>"; };
+		8969C68FE80311EA63473D4B /* Entitlements.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Entitlements.swift; sourceTree = "<group>"; };
+		98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremiumFeatureGate.swift; sourceTree = "<group>"; };
 		9BF1F9D206F53790FB05FAFB /* OFL.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = OFL.txt; sourceTree = "<group>"; };
 		9E8D645C30260BE3008767EC /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		9EA025C6301135A2008215CE /* ChoreStarWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ChoreStarWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -273,6 +279,7 @@
 				264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */,
 				E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */,
 				40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */,
+				41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */,
 			);
 			name = ChoreStarTests;
 			path = ChoreStarTests;
@@ -410,6 +417,7 @@
 				C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */,
 				C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */,
 				AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */,
+				98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -442,6 +450,7 @@
 			children = (
 				01697ED45FA707F298E64E20 /* RewardMath.swift */,
 				0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */,
+				8969C68FE80311EA63473D4B /* Entitlements.swift */,
 			);
 			name = Logic;
 			path = Logic;
@@ -628,6 +637,7 @@
 				4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */,
 				55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */,
 				5465FC7C9A13DA94B7DA1566 /* GettingStartedTests.swift in Sources */,
+				C00255ACF3C010CD1279EE92 /* EntitlementsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -702,6 +712,8 @@
 				DE4C06F4220C3DDAF16ACBE1 /* ReviewPrompter.swift in Sources */,
 				0F4524AC113D60FBDE4EC9EB /* GettingStartedProgress.swift in Sources */,
 				65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */,
+				8D89B23C2B6AC8EB8C9B54BF /* Entitlements.swift in Sources */,
+				67AF48BABDEFFA9AA793BB73 /* PremiumFeatureGate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

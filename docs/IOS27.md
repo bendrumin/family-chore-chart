@@ -89,6 +89,11 @@ shipping the app. Rules that keep them apart:
   and decline "Update to recommended settings." Then `git diff
   ChoreStar.xcodeproj/project.pbxproj`; a rewritten project format breaks
   the release Xcode. `duo-sim.sh` flags this automatically.
+- Commit any pbxproj change (new file registrations, version bumps) BEFORE a
+  beta session. The recovery step, `git checkout -- ChoreStar.xcodeproj/`,
+  discards uncommitted project edits along with the beta's rewrite; that bit
+  once on 2026-09-19 (three new files vanished from the target and the next
+  build failed with "cannot find type").
 - Quit the release Simulator before launching the beta's. Two CoreSimulator
   versions at once produce "connection became invalid" errors.
 - Simulator runtimes are shared system-wide; device types are not. The Duo
@@ -118,3 +123,16 @@ shipping the app. Rules that keep them apart:
   analyzer flag added) and both shared schemes. `git checkout --
   ChoreStar-iOS/ChoreStar.xcodeproj/` restored them. Expect this after every
   beta session; never accept "Update to recommended settings" in the beta.
+
+### Accessibility audit debt (found 2026-09-19, fix in 2.2.3)
+
+`ChoreStarUITests/AccessibilityAuditTests.testSignedInTabsAudit` has been
+failing since the 2.2 redesign; nobody ran it between mid-August and today
+(unit runs use `-only-testing:ChoreStarTests`). Flagged on the signed-in
+Home tab in both appearances: white text on the lighter seasonal gradients
+(contrast), the Bricolage display font frozen at fixed sizes (Dynamic Type;
+`Font.display` now passes `relativeTo:`, which should clear most of these),
+truncated approval-tray titles ("Family mo..."), small hit targets in the
+tray, and a few decorative icons read as text. None of it is the premium
+gates or the checklist card; the audited family is grandfathered and sees
+neither. Run the audit again after the font change and work the rest down.
