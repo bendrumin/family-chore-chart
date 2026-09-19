@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEntitlements } from '@/lib/hooks/use-entitlements'
+import { PremiumGate } from '@/components/settings/premium-gate'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, Flame, Star } from 'lucide-react'
@@ -48,6 +50,7 @@ interface ChildComparisonBar {
 const CHILD_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444']
 
 export function InsightsTab() {
+  const entitlements = useEntitlements()
   const { user } = useAuth()
   const [metrics, setMetrics] = useState<AnalyticsMetrics>({
     averageCompletionRate: 0,
@@ -364,6 +367,17 @@ export function InsightsTab() {
             </div>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (!entitlements.loading && !entitlements.can('analytics')) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-2">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Analytics Dashboard</h3>
+        </div>
+        <div className="max-w-xl mx-auto"><PremiumGate feature="analytics" /></div>
       </div>
     )
   }

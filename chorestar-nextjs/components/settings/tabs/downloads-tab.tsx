@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useEntitlements } from '@/lib/hooks/use-entitlements'
+import { PremiumGate } from '@/components/settings/premium-gate'
 import { FileDown, FileText, Image, Calendar, Sparkles } from 'lucide-react'
 import { NewFeaturesModal } from '@/components/help/new-features-modal'
 import { exportFamilyReportCSV, exportFamilyReportPDF, exportPrintableChoreChart, exportWeeklyTemplate, type WeeklyTemplateStyle } from '@/lib/utils/export'
@@ -27,6 +29,9 @@ export function DownloadsTab() {
     }
     return currencies[settings.currency_code] || '$'
   }
+
+  const entitlements = useEntitlements()
+  const exportAllowed = entitlements.loading || entitlements.can('export')
 
   const handleExportPDF = async () => {
     if (!user) {
@@ -123,6 +128,10 @@ export function DownloadsTab() {
           Export PDF reports and CSV data. Print your family&#39;s chore charts and progress.
         </p>
 
+        {!entitlements.loading && !exportAllowed && (
+          <div className="max-w-2xl mx-auto mb-6 text-left"><PremiumGate feature="export" compact /></div>
+        )}
+
         <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
           <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 transition-all duration-200">
             <FileText className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
@@ -132,7 +141,7 @@ export function DownloadsTab() {
               variant="gradient"
               size="sm"
               onClick={handleExportPDF}
-              disabled={isExporting}
+              disabled={isExporting || !exportAllowed}
               className="w-full font-bold"
             >
               {isExporting ? 'Exporting...' : 'Export PDF'}
@@ -147,7 +156,7 @@ export function DownloadsTab() {
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={isExporting}
+              disabled={isExporting || !exportAllowed}
               className="w-full font-bold"
             >
               {isExporting ? 'Exporting...' : 'Export CSV'}

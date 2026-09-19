@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { DEFAULT_DAILY_REWARD_CENTS } from '@/lib/utils/earnings'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { useEntitlements } from '@/lib/hooks/use-entitlements'
+import { PremiumGate } from '@/components/settings/premium-gate'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck, Palmtree } from 'lucide-react'
@@ -147,6 +149,9 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       setVacationThrough(formatLocalDate(end))
     }
   }
+
+  const entitlements = useEntitlements()
+  const sharingAllowed = entitlements.loading || entitlements.can('sharing')
 
   const handleSave = async () => {
     if (isSaving) return // guard against double-tap firing two save sequences
@@ -443,15 +448,20 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 Invite co-parents or guardians to manage your family's chores and routines together.
               </p>
             </div>
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={() => setIsFamilySharingOpen(true)}
-              className="font-bold hover-glow whitespace-nowrap w-full sm:w-auto"
-            >
-              Manage Sharing
-            </Button>
+            {sharingAllowed && (
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={() => setIsFamilySharingOpen(true)}
+                className="font-bold hover-glow whitespace-nowrap w-full sm:w-auto"
+              >
+                Manage Sharing
+              </Button>
+            )}
           </div>
+          {!entitlements.loading && !sharingAllowed && (
+            <div className="mt-4"><PremiumGate feature="sharing" compact /></div>
+          )}
         </div>
 
         {/* Vacation Mode — saved with the Save Settings button below */}

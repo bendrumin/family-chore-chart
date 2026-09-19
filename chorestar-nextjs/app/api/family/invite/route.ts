@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { canUseFeature } from '@/lib/utils/subscription'
 
 // POST /api/family/invite — send an email invite to join the family
 export async function POST(request: Request) {
@@ -24,9 +25,15 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('family_name')
+    .select('family_name, subscription_type, created_at')
     .eq('id', user.id)
     .single()
+
+  // Family sharing is Premium for accounts created after the 2026-09-19
+  // cutoff (docs/PREMIUM.md). The UI hides the button; this is the wall.
+  if (!canUseFeature('sharing', profile?.subscription_type, profile?.created_at)) {
+    return NextResponse.json({ error: 'Family sharing is a Premium feature. Upgrade in Settings > Billing.' }, { status: 403 })
+  }
 
   const familyName = profile?.family_name || 'Your family'
 

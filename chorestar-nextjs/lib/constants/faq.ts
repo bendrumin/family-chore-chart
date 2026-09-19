@@ -50,7 +50,7 @@ export const FAQ_DATA: FAQItem[] = [
   {
     category: 'Account',
     question: 'What\'s included in Premium?',
-    answer: 'Premium includes unlimited children and chores (free plan has 3 kids and 20 chores), printable charts, PDF/CSV export reports, premium themes, and advanced analytics. Upgrade in Settings > Billing.'
+    answer: 'Premium includes unlimited children and chores (the free plan has 3 kids and 20 chores), unlimited reward store items and goals, family sharing with a co-parent, PDF and CSV export reports, advanced analytics, and the premium themes. Printable chore charts stay free. Upgrade in Settings > Billing.'
   },
   {
     category: 'Settings',

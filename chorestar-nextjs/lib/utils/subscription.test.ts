@@ -6,7 +6,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { isPremium, getChildLimit, getChoreLimit, tierForCheckout } from './subscription'
+import { isPremium, getChildLimit, getChoreLimit, tierForCheckout, isGrandfathered, canUseFeature, isPremiumTheme, PREMIUM_GATE_CUTOFF } from './subscription'
 
 let passed = 0
 let failed = 0
@@ -71,6 +71,37 @@ t('anything unexpected grants nothing', () => {
   assert.equal(tierForCheckout('payment', undefined), null)
   assert.equal(tierForCheckout('setup', 'lifetime'), null)
   assert.equal(tierForCheckout(null, null), null)
+})
+
+group('feature gates with grandfathering (docs/PREMIUM.md)')
+
+t('accounts created before the cutoff keep every gated feature on free', () => {
+  assert.equal(isGrandfathered('2026-09-10T13:35:00Z'), true)
+  assert.equal(canUseFeature('sharing', 'free', '2026-09-10T13:35:00Z'), true)
+  assert.equal(canUseFeature('themes', 'free', '2025-07-22T00:00:00Z'), true)
+})
+
+t('accounts created at or after the cutoff need premium', () => {
+  assert.equal(isGrandfathered(PREMIUM_GATE_CUTOFF), false)
+  assert.equal(canUseFeature('export', 'free', '2026-09-19T18:00:00Z'), false)
+  assert.equal(canUseFeature('analytics', 'free', '2026-10-01T00:00:00Z'), false)
+})
+
+t('premium and lifetime always pass, regardless of age', () => {
+  assert.equal(canUseFeature('sharing', 'premium', '2026-12-01T00:00:00Z'), true)
+  assert.equal(canUseFeature('themes', 'lifetime', undefined), true)
+})
+
+t('missing or garbage created_at is not grandfathered (fail closed for free)', () => {
+  assert.equal(isGrandfathered(undefined), false)
+  assert.equal(isGrandfathered('not a date'), false)
+  assert.equal(canUseFeature('export', 'free', null), false)
+})
+
+t('the six premium themes are the ones iOS locks', () => {
+  for (const id of ['ocean', 'sunset', 'forest', 'aurora', 'coral', 'lavender']) assert.equal(isPremiumTheme(id), true)
+  assert.equal(isPremiumTheme('christmas'), false)
+  assert.equal(isPremiumTheme(null), false)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

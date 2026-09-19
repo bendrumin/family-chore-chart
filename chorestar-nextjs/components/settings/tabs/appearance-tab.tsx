@@ -6,6 +6,10 @@ import { Label } from '@/components/ui/label'
 import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff, CircleOff } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
+import { Lock } from 'lucide-react'
+import { useEntitlements } from '@/lib/hooks/use-entitlements'
+import { isPremiumTheme } from '@/lib/utils/subscription'
+import { PremiumGate } from '@/components/settings/premium-gate'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import type { CustomTheme } from '@/lib/supabase/database.types'
 import { toast } from 'sonner'
@@ -98,7 +102,14 @@ export function AppearanceTab() {
     }
   }
 
+  const entitlements = useEntitlements()
+  const themesLocked = !entitlements.loading && !entitlements.can('themes')
+
   const handleSeasonalThemeChange = async (themeId: string | null) => {
+    if (themeId && themesLocked && isPremiumTheme(themeId)) {
+      window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+      return
+    }
     try {
       setSeasonalTheme(themeId)
       const currentCustomTheme = (settings?.custom_theme as CustomTheme) || {}
@@ -265,7 +276,7 @@ export function AppearanceTab() {
             <button
               key={theme.id}
               onClick={() => handleSeasonalThemeChange(theme.id)}
-              className={`p-3 rounded-lg border-2 text-center transition-colors duration-200 ${
+              className={`relative p-3 rounded-lg border-2 text-center transition-colors duration-200 ${
                 seasonalTheme === theme.id
                   ? 'border-transparent shadow-lg scale-105'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white/80 dark:bg-gray-800/80'
@@ -277,6 +288,9 @@ export function AppearanceTab() {
                 borderColor: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : undefined
               }}
             >
+              {themesLocked && isPremiumTheme(theme.id) && (
+                <Lock className="w-3.5 h-3.5 absolute top-1.5 right-1.5 text-purple-600 dark:text-purple-400" aria-label="Premium theme" />
+              )}
               <ChoreIcon emoji={theme.emoji} className="w-7 h-7 mx-auto mb-1" />
               <div className="text-xs font-bold" style={{
                 color: seasonalTheme === theme.id ? (localTheme === 'dark' ? theme.colors.dark.primary : theme.colors.light.primary) : 'var(--text-primary)'
@@ -286,6 +300,10 @@ export function AppearanceTab() {
             </button>
           ))}
         </div>
+
+        {themesLocked && (
+          <div className="mt-4"><PremiumGate feature="themes" compact /></div>
+        )}
 
         <p className="text-xs text-center px-4" style={{ color: 'var(--text-secondary)' }}>
           {seasonalTheme
