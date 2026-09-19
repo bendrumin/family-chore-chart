@@ -59,9 +59,9 @@ struct UpgradePromptView: View {
             
             VStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
-                    upgradeFeature(icon: "infinity", text: "Unlimited \(limitType.itemName)")
-                    upgradeFeature(icon: "paintbrush.fill", text: "Custom icons & categories")
-                    upgradeFeature(icon: "chart.bar.fill", text: "Export reports")
+                    upgradeFeature(icon: "infinity", text: "Unlimited children and chores")
+                    upgradeFeature(icon: "gift.fill", text: "Unlimited reward store items")
+                    upgradeFeature(icon: "paintbrush.fill", text: "Premium themes: Ocean, Sunset, Forest, and more")
                 }
                 .padding(20)
                 .background(Color.choreStarCardBackground)

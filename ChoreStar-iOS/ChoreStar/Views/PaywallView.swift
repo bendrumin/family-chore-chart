@@ -39,8 +39,8 @@ struct PaywallView: View {
                     // Features
                     VStack(alignment: .leading, spacing: 14) {
                         premiumFeature(icon: "infinity", text: "Unlimited children & chores")
-                        premiumFeature(icon: "paintbrush.fill", text: "Premium themes")
-                        premiumFeature(icon: "chart.bar.fill", text: "Full insights & analytics")
+                        premiumFeature(icon: "gift.fill", text: "Unlimited reward store items and goals")
+                        premiumFeature(icon: "paintbrush.fill", text: "Premium themes: Ocean, Sunset, Forest, and more")
                         premiumFeature(icon: "heart.fill", text: "Support an indie family app")
                     }
                     .padding(20)
