@@ -60,10 +60,24 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
   // Phones show the tabs as a horizontal strip; opening straight onto a tab
   // (Insights from the shell bar, Billing from an upgrade prompt) must bring
   // that tab into view or the active one sits off-screen to the right.
+  // The strip is scrolled directly rather than with scrollIntoView, which
+  // also scrolls every scrollable ancestor (the dialog body, the overlay)
+  // and, run while the dialog is still sizing itself, landed the strip at
+  // 0 or well past the tab on a real phone. A second pass after the dialog
+  // has settled (fonts, width) catches a layout that moved under the first.
   useEffect(() => {
     if (!isOpen) return
-    const el = document.getElementById(`settings-tab-${activeTab}`)
-    el?.scrollIntoView({ inline: 'center', block: 'nearest' })
+    const reveal = () => {
+      const el = document.getElementById(`settings-tab-${activeTab}`)
+      const strip = el?.closest<HTMLElement>('[data-settings-tab-strip]')
+      if (!el || !strip || strip.scrollWidth <= strip.clientWidth) return
+      const tab = el.getBoundingClientRect()
+      const box = strip.getBoundingClientRect()
+      strip.scrollLeft += (tab.left + tab.width / 2) - (box.left + box.width / 2)
+    }
+    const frame = requestAnimationFrame(reveal)
+    const settled = window.setTimeout(reveal, 250)
+    return () => { cancelAnimationFrame(frame); window.clearTimeout(settled) }
   }, [activeTab, isOpen])
   const setIsOpen = onOpenChange ?? setInternalOpen
   const setActiveTab = onTabChange ?? setInternalTab
@@ -103,7 +117,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
                 Wrapper is display:contents on desktop (no layout impact) and a
                 positioning context on mobile for the scroll-hint fade. */}
             <div className="relative flex-shrink-0 md:contents">
-            <div className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
+            <div data-settings-tab-strip className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
               <div role="tablist" aria-label="Settings sections" className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
                 {TABS.map((tab) => {
                   const Icon = tab.icon
