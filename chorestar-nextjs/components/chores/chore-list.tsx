@@ -52,12 +52,25 @@ interface BulkPlan {
   deltaCents: number
 }
 
+/** Today (one line per chore, the phone default) or the seven-day grid. */
+type ChoreView = 'today' | 'week'
+const CHORE_VIEW_KEY = 'chorestar_chore_view'
+
 export function ChoreList({ childId, userId, iconTint, childName }: ChoreListProps) {
   const { settings } = useSettings()
   const rewardMode = (settings?.reward_mode as 'flat' | 'per_chore') || 'flat'
   const [chores, setChores] = useState<Chore[]>([])
   const [completions, setCompletions] = useState<ChoreCompletion[]>([])
   const [weekStart, setWeekStart] = useState(getWeekStart())
+  // Server render and first paint agree on 'week'; the phone default is
+  // applied after mount so the markup never mismatches.
+  const [view, setView] = useState<ChoreView>('week')
+  useEffect(() => {
+    let stored: string | null = null
+    try { stored = localStorage.getItem(CHORE_VIEW_KEY) } catch { /* private mode */ }
+    if (stored === 'today' || stored === 'week') { setView(stored); return }
+    if (window.innerWidth < 640) setView('today')
+  }, [])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<ChoreCategory | 'all'>('all')
@@ -357,8 +370,31 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Week Navigator */}
-          <WeekNavigator weekStart={weekStart} onWeekChange={setWeekStart} />
+          {/* Today or the whole week. Phones open on Today, which is the shape
+              the iOS app uses; anything wider opens on the week grid. */}
+          <div role="tablist" aria-label="Chore view" className="flex gap-1 p-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 w-fit">
+            {(['today', 'week'] as const).map(mode => (
+              <button
+                key={mode}
+                role="tab"
+                aria-selected={view === mode}
+                onClick={() => {
+                  setView(mode)
+                  try { localStorage.setItem(CHORE_VIEW_KEY, mode) } catch { /* private mode */ }
+                }}
+                className={`min-h-[40px] px-4 rounded-md text-sm font-semibold capitalize transition-colors ${
+                  view === mode
+                    ? 'bg-white dark:bg-gray-900 shadow-sm text-gray-900 dark:text-gray-100'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {mode === 'today' ? 'Today' : 'Week'}
+              </button>
+            ))}
+          </div>
+
+          {/* Week Navigator — the week grid is what it steers */}
+          {view === 'week' && <WeekNavigator weekStart={weekStart} onWeekChange={setWeekStart} />}
 
           {/* Catch-up bulk actions — current week only. Side by side on phones
               with short labels: stacked full-width they took two rows of the
@@ -495,6 +531,7 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                 <ChoreCard
                   key={chore.id}
                   chore={chore}
+                  compact={view === 'today'}
                   completions={completionsByChoreId.get(chore.id) || []}
                   weekStart={weekStart}
                   rewardMode={rewardMode}

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Check, Edit, CalendarDays, Clock, Camera } from 'lucide-react'
+import { Check, Edit, CalendarDays, Clock, Camera, Circle, CheckCircle2 } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
 import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { CategoryBadge } from '@/components/ui/category-badge'
@@ -30,6 +30,8 @@ interface ChoreCardProps {
   childName?: string | null
   /** Day indexes of this week covered by a vacation window: not due. */
   vacationDays?: ReadonlySet<number>
+  /** One line about today instead of the seven-day grid (the phone default). */
+  compact?: boolean
 }
 
 export const ChoreCard = memo(function ChoreCard({
@@ -41,6 +43,7 @@ export const ChoreCard = memo(function ChoreCard({
   iconTint,
   childName,
   vacationDays,
+  compact = false,
 }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   // Optimistic overrides so the grid responds instantly, before the DB round-trip
@@ -174,6 +177,80 @@ export const ChoreCard = memo(function ChoreCard({
   const choreCompletions = completions.filter(
     c => c.chore_id === chore.id && c.week_start === weekStart && (!c.status || c.status === 'approved')
   )
+
+  if (compact) {
+    // The shape the iOS app uses: one tappable line about today. Seven
+    // day-boxes per chore cost 194px on a phone, so four chores filled the
+    // screen; this fits a dozen.
+    const today = new Date().getDay()
+    const awaiting = isAwaitingApproval(today)
+    const done = !awaiting && (optimistic[today] ?? isCompleted(today))
+    const due = isDueOn(chore, today, vacationDays)
+    return (
+      <>
+        <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04]">
+          <button
+            onClick={() => toggleCompletion(today)}
+            aria-pressed={done}
+            aria-label={`${chore.name} today${due ? '' : ', not scheduled'}, ${
+              awaiting ? 'waiting for your OK, click to approve' : done ? 'completed, click to unmark' : 'not completed, click to mark'
+            }`}
+            className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full touch-manipulation active:bg-black/[0.06] dark:active:bg-white/[0.08]"
+          >
+            {awaiting ? (
+              <Clock className="w-6 h-6 text-amber-500" aria-hidden />
+            ) : done ? (
+              <CheckCircle2 className="w-6 h-6" style={{ color: 'var(--primary)' }} aria-hidden />
+            ) : (
+              <Circle className={`w-6 h-6 text-gray-400 dark:text-gray-500 ${due ? '' : 'opacity-50'}`} aria-hidden />
+            )}
+          </button>
+
+          {chore.icon && (
+            <ChoreIcon
+              emoji={chore.icon}
+              className={`w-6 h-6 shrink-0 ${done ? 'opacity-50 saturate-50' : ''}`}
+              tint={iconTint || undefined}
+            />
+          )}
+
+          <span
+            className={`flex-1 min-w-0 truncate text-[0.95rem] font-semibold ${done ? 'line-through' : ''}`}
+            style={{ color: done ? 'var(--text-secondary)' : 'var(--text-primary)' }}
+            title={chore.name}
+          >
+            {chore.name}
+          </span>
+
+          {rewardMode === 'per_chore' && (
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-green-600 dark:text-green-400">
+              ${((chore.reward_cents || 0) / 100).toFixed(2)}
+            </span>
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsEditModalOpen(true)}
+            className="shrink-0 min-h-[44px] min-w-[44px] rounded-lg"
+            aria-label={`Edit ${chore.name}`}
+          >
+            <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+          </Button>
+        </div>
+
+        <EditChoreModal
+          chore={chore}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          onSuccess={() => {
+            setIsEditModalOpen(false)
+            onRefresh()
+          }}
+        />
+      </>
+    )
+  }
 
   return (
     <>
