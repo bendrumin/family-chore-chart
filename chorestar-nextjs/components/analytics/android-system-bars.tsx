@@ -35,16 +35,30 @@ function cssVar(name: string): string | null {
 }
 
 /**
- * The solid color painted at a point on screen: the topmost element there that
- * has an opaque background, walking up through transparent ancestors. Kid mode
- * paints a gradient (a background image, not a color), so its stops are read
- * from the theme variables instead.
+ * A gradient is a background image, so it has no computed color to read. Kid
+ * mode is painted that way, and its first stop is what sits under the status
+ * bar while its last stop sits under the navigation bar.
  */
-function colorAt(x: number, y: number, fallbackVars: string[]): string {
+function gradientStop(backgroundImage: string, edge: 'top' | 'bottom'): string | null {
+  const stops = backgroundImage.match(/rgba?\([^)]+\)/g)
+  if (!stops || stops.length === 0) return null
+  const parsed = parseColor(edge === 'top' ? stops[0] : stops[stops.length - 1])
+  return parsed && parsed.alpha >= 0.99 ? parsed.hex : null
+}
+
+/**
+ * The color painted at a point on screen: the topmost element there with an
+ * opaque background, walking up through transparent ancestors, taking a
+ * gradient's nearest stop when one is in the way.
+ */
+function colorAt(x: number, y: number, edge: 'top' | 'bottom', fallbackVars: string[]): string {
   let el = document.elementFromPoint(x, y) as HTMLElement | null
   while (el) {
     const style = getComputedStyle(el)
-    if (style.backgroundImage !== 'none') break
+    if (style.backgroundImage !== 'none') {
+      const stop = gradientStop(style.backgroundImage, edge)
+      if (stop) return stop
+    }
     const parsed = parseColor(style.backgroundColor)
     if (parsed && parsed.alpha >= 0.99) return parsed.hex
     el = el.parentElement
@@ -59,8 +73,8 @@ function colorAt(x: number, y: number, fallbackVars: string[]): string {
 
 function readBars() {
   const x = Math.round(window.innerWidth / 2)
-  const statusColor = colorAt(x, 1, ['--kid-bg-a', '--hero-fill', '--card-bg'])
-  const navColor = colorAt(x, window.innerHeight - 1, ['--kid-bg-c', '--card-bg'])
+  const statusColor = colorAt(x, 1, 'top', ['--kid-bg-a', '--hero-fill', '--card-bg'])
+  const navColor = colorAt(x, window.innerHeight - 1, 'bottom', ['--kid-bg-c', '--card-bg'])
   return {
     statusColor,
     navColor,

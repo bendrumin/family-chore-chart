@@ -38,7 +38,7 @@ export function particleGlyph(themeId: string | null | undefined): string | null
   return FALLBACK_GLYPH[themeId] ?? null
 }
 
-export function ThemeParticles({ count = 10 }: { count?: number }) {
+export function ThemeParticles({ count = 18 }: { count?: number }) {
   const { settings } = useSettings()
   const active = resolveActiveTheme((settings?.custom_theme ?? null) as CustomTheme | null)
   const glyph = particleGlyph(active?.id)
@@ -50,8 +50,10 @@ export function ThemeParticles({ count = 10 }: { count?: number }) {
       return {
         id: i,
         left: ((seed * 37) % 90) + 5,
-        delay: ((seed * 13) % 80) / 10,
-        duration: 14 + ((seed * 7) % 10),
+        // Short delays and a brisk fall: one glyph every second or so reads as
+        // weather, where the old 14-24s drift read as a single stray leaf.
+        delay: ((seed * 13) % 45) / 10,
+        duration: 8 + ((seed * 7) % 7),
         size: 11 + (seed % 10),
         opacity: 0.12 + ((seed % 5) * 0.03),
       }

@@ -164,7 +164,7 @@ export function KidThemeLoader() {
  * The season's glyphs drifting down the whole kid page. Same generator as the
  * parent hero's ThemeParticles, minus the settings context (kids have none).
  */
-function KidThemeParticles({ themeId, count = 14 }: { themeId: string | null; count?: number }) {
+function KidThemeParticles({ themeId, count = 24 }: { themeId: string | null; count?: number }) {
   const glyph = particleGlyph(themeId)
   const particles = useMemo(() => {
     if (!glyph) return []
@@ -173,8 +173,8 @@ function KidThemeParticles({ themeId, count = 14 }: { themeId: string | null; co
       return {
         id: i,
         left: ((seed * 37) % 92) + 4,
-        delay: ((seed * 13) % 90) / 10,
-        duration: 16 + ((seed * 7) % 12),
+        delay: ((seed * 13) % 50) / 10,
+        duration: 9 + ((seed * 7) % 8),
         size: 14 + (seed % 14),
         opacity: 0.16 + ((seed % 5) * 0.04),
       }
