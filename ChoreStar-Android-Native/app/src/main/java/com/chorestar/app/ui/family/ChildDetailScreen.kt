@@ -56,6 +56,7 @@ fun ChildDetailScreen(
     onEditChild: () -> Unit,
     onAddChore: () -> Unit,
     onEditChore: (Chore) -> Unit,
+    onAchievements: () -> Unit = {},
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val child = state.child(childId) ?: run { onBack(); return }
@@ -99,7 +100,7 @@ fun ChildDetailScreen(
                     StatCard(Modifier.weight(1f), "${done.size}", stringResource(R.string.stat_completed), Success)
                     StatCard(Modifier.weight(1f), "${todo.size}", stringResource(R.string.stat_pending), Warning)
                     StatCard(Modifier.weight(1f), Money.format(earned, state.currency), stringResource(R.string.stats_earned), MaterialTheme.colorScheme.primary)
-                    StatCard(Modifier.weight(1f), "0", stringResource(R.string.stat_badges), Warning)
+                    StatCard(Modifier.weight(1f).clickable(onClick = onAchievements), "${state.badgeCount(child.id)}", stringResource(R.string.stat_badges), Warning)
                 }
             }
             item {

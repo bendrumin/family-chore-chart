@@ -38,6 +38,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.chorestar.app.ChoreStarApp
 import com.chorestar.app.R
+import com.chorestar.app.ui.achievements.AchievementUnlockedDialog
+import com.chorestar.app.ui.achievements.AchievementsScreen
+import com.chorestar.app.ui.routines.RoutineBuilderScreen
+import com.chorestar.app.ui.routines.RoutinePlayerScreen
+import com.chorestar.app.ui.routines.StarterRoutinesScreen
 import com.chorestar.app.ui.settings.DeleteAccountScreen
 import com.chorestar.app.ui.settings.FamilySharingScreen
 import com.chorestar.app.ui.settings.PaywallScreen
@@ -80,6 +85,15 @@ object Routes {
     const val SETTINGS_STORE = "settings/store"
     const val SETTINGS_DELETE = "settings/delete"
     const val PAYWALL = "paywall"
+    const val ROUTINE_NEW = "routine/new?childId={childId}"
+    const val ROUTINE_EDIT = "routine/edit/{routineId}"
+    const val ROUTINES_STARTER = "routines/starter"
+    const val ROUTINE_PLAY = "routine/play/{routineId}"
+    const val ACHIEVEMENTS = "achievements/{childId}"
+    fun routineNew(childId: String?) = "routine/new" + (childId?.let { "?childId=$it" } ?: "")
+    fun routineEdit(id: String) = "routine/edit/$id"
+    fun routinePlay(id: String) = "routine/play/$id"
+    fun achievements(childId: String) = "achievements/$childId"
 }
 
 @Composable
@@ -129,7 +143,10 @@ fun MainTabs(repository: ChoreStarRepository) {
                     FamilyScreen(state, onAddChild = { nav.navigate(Routes.CHILD_NEW) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onEditChild = { nav.navigate(Routes.childEdit(it.id)) })
                 }
                 composable(Tab.Chores.route) {
-                    ChoresScreen(vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) })
+                    ChoresScreen(
+                        vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) },
+                        onBuildRoutine = { nav.navigate(Routes.routineNew(null)) }, onStarterRoutines = { nav.navigate(Routes.ROUTINES_STARTER) }, onEditRoutine = { nav.navigate(Routes.routineEdit(it.id)) },
+                    )
                 }
                 composable(Tab.Stats.route) { StatsScreen(state) }
                 composable(Tab.Settings.route) {
@@ -154,7 +171,25 @@ fun MainTabs(repository: ChoreStarRepository) {
                         onEditChild = { nav.navigate(Routes.childEdit(id)) },
                         onAddChore = { nav.navigate(Routes.choreNew(id)) },
                         onEditChore = { nav.navigate(Routes.choreEdit(it.id)) },
+                        onAchievements = { nav.navigate(Routes.achievements(id)) },
                     )
+                }
+                composable(Routes.ROUTINE_NEW, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
+                    RoutineBuilderScreen(vm, state, routine = null, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() })
+                }
+                composable(Routes.ROUTINE_EDIT, arguments = listOf(navArgument("routineId") { type = NavType.StringType })) { entry ->
+                    val r = state.routines.firstOrNull { it.id == entry.arguments?.getString("routineId") }
+                    RoutineBuilderScreen(vm, state, routine = r, preselectedChildId = null, onDone = { nav.popBackStack() })
+                }
+                composable(Routes.ROUTINES_STARTER) { StarterRoutinesScreen(vm, state, onDone = { nav.popBackStack() }) }
+                composable(Routes.ROUTINE_PLAY, arguments = listOf(navArgument("routineId") { type = NavType.StringType })) { entry ->
+                    val r = state.routines.firstOrNull { it.id == entry.arguments?.getString("routineId") } ?: return@composable
+                    RoutinePlayerScreen(r, childName = state.child(r.childId)?.name ?: "", currency = state.currency,
+                        onComplete = { done, secs -> vm.completeRoutine(r, r.childId, done, secs) }, onClose = { nav.popBackStack() })
+                }
+                composable(Routes.ACHIEVEMENTS, arguments = listOf(navArgument("childId") { type = NavType.StringType })) { entry ->
+                    val id = entry.arguments?.getString("childId") ?: return@composable
+                    AchievementsScreen(childName = state.child(id)?.name ?: "", progress = state.achievementProgress(id), onBack = { nav.popBackStack() })
                 }
                 composable(Routes.CHORE_NEW, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
                     ChoreEditorScreen(vm, chore = null, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() })
@@ -166,6 +201,8 @@ fun MainTabs(repository: ChoreStarRepository) {
             }
         }
     }
+
+    AchievementUnlockedDialog(state.unlocked, onDismiss = vm::clearUnlocked)
 
     state.upgradePrompt?.let { type ->
         UpgradePrompt(

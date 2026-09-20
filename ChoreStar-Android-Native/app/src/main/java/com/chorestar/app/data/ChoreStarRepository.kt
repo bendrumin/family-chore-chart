@@ -7,6 +7,12 @@ import com.chorestar.app.data.model.ChildPinRow
 import com.chorestar.app.data.model.Chore
 import com.chorestar.app.data.model.ChoreCompletion
 import com.chorestar.app.data.model.FamilyCodeRow
+import com.chorestar.app.data.model.NewRoutineCompletion
+import com.chorestar.app.data.model.NewRoutineRow
+import com.chorestar.app.data.model.NewStepRow
+import com.chorestar.app.data.model.Routine
+import com.chorestar.app.data.model.RoutineCompletionRef
+import com.chorestar.app.data.model.RoutineStep
 import com.chorestar.app.data.model.FamilyMemberRow
 import com.chorestar.app.data.model.FamilyMembership
 import com.chorestar.app.data.model.NewRewardItem
@@ -440,6 +446,78 @@ class ChoreStarRepository(
 
     suspend fun removeRewardItem(id: String) =
         supabase.from("reward_items").update({ set("is_active", false) }) { filter { eq("id", id) } }
+
+    // ── Routines (parent side, direct Postgres) ─────────────────────────────
+
+    suspend fun routines(childIds: List<String>): List<Routine> {
+        if (childIds.isEmpty()) return emptyList()
+        val routines = supabase.from("routines")
+            .select { filter { isIn("child_id", childIds); eq("is_active", true) }; order("created_at", Order.DESCENDING); limit(100) }
+            .decodeList<Routine>()
+        if (routines.isEmpty()) return emptyList()
+        val steps = supabase.from("routine_steps")
+            .select { filter { isIn("routine_id", routines.map { it.id }) }; order("order_index", Order.ASCENDING) }
+            .decodeList<RoutineStep>()
+            .groupBy { it.routineId }
+        return routines.map { it.copy(steps = steps[it.id].orEmpty()) }
+    }
+
+    suspend fun routinesCompletedToday(routineIds: List<String>): Set<String> {
+        if (routineIds.isEmpty()) return emptySet()
+        return supabase.from("routine_completions")
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("routine_id")) { filter { isIn("routine_id", routineIds); eq("date", Dates.today().toString()) } }
+            .decodeList<RoutineCompletionRef>().map { it.routineId }.toSet()
+    }
+
+    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): String {
+        val id = UUID.randomUUID().toString()
+        supabase.from("routines").insert(NewRoutineRow(id, childId, name, type, icon, color, rewardCents))
+        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(steps.map { it.copy(routineId = id) })
+        return id
+    }
+
+    /** Steps are deleted and re-inserted, as on iOS; their ids are not stable across edits. */
+    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>) {
+        supabase.from("routines").update({
+            set("name", name); set("child_id", childId); set("type", type); set("icon", icon); set("color", color)
+            set("reward_cents", rewardCents); set("updated_at", Instant.now().toString())
+        }) { filter { eq("id", id) } }
+        supabase.from("routine_steps").delete { filter { eq("routine_id", id) } }
+        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(steps.map { it.copy(routineId = id) })
+    }
+
+    suspend fun deleteRoutine(id: String) {
+        supabase.from("routine_steps").delete { filter { eq("routine_id", id) } }
+        supabase.from("routines").delete { filter { eq("id", id) } }
+    }
+
+    /** One completion per routine per child per day (unique index); a duplicate is "already done today". */
+    suspend fun completeRoutine(routine: Routine, childId: String, stepsCompleted: Int, durationSeconds: Int) {
+        val points = if (stepsCompleted == routine.steps.size) routine.rewardCents else 0
+        runCatching {
+            supabase.from("routine_completions").insert(NewRoutineCompletion(routine.id, childId, durationSeconds, stepsCompleted, routine.steps.size, points, Dates.today().toString()))
+        }.onFailure { e -> if (e.message?.contains("23505") != true && e.message?.contains("duplicate", true) != true) throw e }
+    }
+
+    // ── Achievements ─────────────────────────────────────────────────────────
+
+    suspend fun achievements(childIds: List<String>): List<AchievementBadge> {
+        if (childIds.isEmpty()) return emptyList()
+        return supabase.from("achievement_badges").select { filter { isIn("child_id", childIds) }; order("earned_at", Order.DESCENDING) }.decodeList()
+    }
+
+    suspend fun awardBadge(childId: String, def: BadgeDef) {
+        supabase.from("achievement_badges").insert(AchievementBadge(childId = childId, badgeType = def.id, badgeName = def.englishName, badgeDescription = def.englishDescription, badgeIcon = def.icon))
+    }
+
+    /** Everything approved the family ever ticked, for streaks, badges and past weeks. */
+    suspend fun allTimeCompletions(choreIds: List<String>): List<CompletionRef> {
+        if (choreIds.isEmpty()) return emptyList()
+        return supabase.from("chore_completions")
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("chore_id", "week_start", "day_of_week", "status")) { filter { isIn("chore_id", choreIds) }; limit(10000) }
+            .decodeList<CompletionRef>()
+            .filter { it.status != "pending" }
+    }
 
     // ── helpers ──────────────────────────────────────────────────────────────
 

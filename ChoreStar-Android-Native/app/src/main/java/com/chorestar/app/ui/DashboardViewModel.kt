@@ -19,6 +19,14 @@ import com.chorestar.app.data.model.NewCompletion
 import com.chorestar.app.data.model.PendingApproval
 import com.chorestar.app.data.model.Profile
 import com.chorestar.app.data.model.VacationPeriod
+import com.chorestar.app.data.AchievementBadge
+import com.chorestar.app.data.Achievements
+import com.chorestar.app.data.BadgeDef
+import com.chorestar.app.data.BadgeProgress
+import com.chorestar.app.data.CompletionRef
+import com.chorestar.app.data.model.NewStepRow
+import com.chorestar.app.data.model.Routine
+import com.chorestar.app.data.model.RoutineTemplate
 import com.chorestar.app.data.ThemePreference
 import com.chorestar.app.data.jsonBool
 import com.chorestar.app.data.jsonString
@@ -67,7 +75,22 @@ data class DashboardState(
     val joinCode: String? = null,
     val members: List<FamilyMemberRow> = emptyList(),
     val rewardItems: List<RewardItem> = emptyList(),
+    val routines: List<Routine> = emptyList(),
+    val completedRoutineIds: Set<String> = emptySet(),
+    val achievements: List<AchievementBadge> = emptyList(),
+    /** Every approved completion the family ever made (streaks, badges, stats). */
+    val allTime: List<CompletionRef> = emptyList(),
+    /** Badges just earned by a parent tick, waiting to be shown. */
+    val unlocked: List<BadgeDef> = emptyList(),
 ) {
+    fun routinesFor(childId: String) = routines.filter { it.childId == childId }
+    fun achievementProgress(childId: String): List<BadgeProgress> =
+        Achievements.progress(choresFor(childId), allTime, achievements.filter { it.childId == childId }, ::isVacationDay)
+    fun streak(childId: String): Int {
+        val ids = choresFor(childId).map { it.id }.toSet()
+        return Achievements.currentStreak(allTime.filter { it.choreId in ids }, ::isVacationDay)
+    }
+    fun badgeCount(childId: String) = achievements.count { it.childId == childId }
     val themePreference: ThemePreference get() = ThemePreference.from(settings?.customTheme)
     val rewardItemLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_REWARD_ITEM_LIMIT
     fun child(id: String?) = children.firstOrNull { it.id == id }
@@ -149,13 +172,18 @@ class DashboardViewModel(
                     c.avatarPhotoPath?.let { p -> repository.signedAvatarUrl(p)?.let { c.id to it } }
                 }.toMap()
                 val periods = repository.vacationPeriods(uid)
+                val routines = runCatching { repository.routines(children.map { it.id }) }.getOrDefault(emptyList())
+                val completedRoutines = runCatching { repository.routinesCompletedToday(routines.map { it.id }) }.getOrDefault(emptySet())
+                val achievements = runCatching { repository.achievements(children.map { it.id }) }.getOrDefault(emptyList())
+                val allTime = runCatching { repository.allTimeCompletions(chores.map { it.id }) }.getOrDefault(emptyList())
                 val viewed = _state.value.viewedWeekStart
                 val viewedCompletions = if (viewed != weekStart) repository.completions(chores.map { it.id }, viewed) else emptyList()
                 _state.update {
                     it.copy(loading = false, effectiveUserId = uid, profile = profile, children = children,
                         chores = chores, completions = completions, settings = settings, weekStart = weekStart,
                         pinChildIds = pins, photoUrls = photos, vacationPeriods = periods, viewedCompletions = viewedCompletions,
-                        isSharedMember = uid != repository.currentUserId)
+                        isSharedMember = uid != repository.currentUserId,
+                        routines = routines, completedRoutineIds = completedRoutines, achievements = achievements, allTime = allTime)
                 }
                 onTheme(ThemePreference.from(settings?.customTheme))
                 refreshApprovals()
@@ -329,6 +357,8 @@ class DashboardViewModel(
                     updateWeek(week) { it + placeholder }
                     val saved = repository.addCompletion(chore.id, day, week)
                     updateWeek(week) { list -> list.map { c -> if (c.id == placeholder.id) saved else c } }
+                    _state.update { it.copy(allTime = it.allTime + CompletionRef(chore.id, week, day)) }
+                    if (week == _state.value.weekStart && day == Dates.dayOfWeek()) checkAndAwardAchievements(chore.childId)
                 }
             }.onFailure { e ->
                 updateWeek(week) { list -> if (existing != null) list + existing else list.filterNot { c -> c.id == "local:$key" } }
@@ -379,6 +409,48 @@ class DashboardViewModel(
             onDone()
         }
     }
+
+    // ── Routines ─────────────────────────────────────────────────────────────
+
+    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): Result<Unit> =
+        runCatching { repository.createRoutine(childId, name, type, icon, color, rewardCents, steps); Unit }.onSuccess { refresh() }
+
+    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): Result<Unit> =
+        runCatching { repository.updateRoutine(id, childId, name, type, icon, color, rewardCents, steps) }.onSuccess { refresh() }
+
+    fun deleteRoutine(routine: Routine) {
+        viewModelScope.launch {
+            _state.update { it.copy(routines = it.routines - routine) }
+            runCatching { repository.deleteRoutine(routine.id) }.onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
+        }
+    }
+
+    suspend fun addTemplate(childId: String, template: RoutineTemplate): Result<Unit> = createRoutine(
+        childId, template.name, template.type.raw, template.icon, template.type.defaultColor, 7,
+        template.steps.mapIndexed { i, (title, icon, seconds) -> NewStepRow("", title, icon, i, seconds) },
+    )
+
+    /** Parent-device path: direct insert; the celebration screen calls this exactly once. */
+    fun completeRoutine(routine: Routine, childId: String, stepsCompleted: Int, durationSeconds: Int) {
+        _state.update { it.copy(completedRoutineIds = it.completedRoutineIds + routine.id) }
+        viewModelScope.launch { runCatching { repository.completeRoutine(routine, childId, stepsCompleted, durationSeconds) } }
+    }
+
+    // ── Achievements ─────────────────────────────────────────────────────────
+
+    /** Writes any badge the numbers now justify and queues it for the "Achievement unlocked" alert. */
+    private suspend fun checkAndAwardAchievements(childId: String) {
+        val s = _state.value
+        val fresh = s.achievementProgress(childId).filter { p -> p.earned && s.achievements.none { it.childId == childId && it.badgeType == p.def.id } }
+        if (fresh.isEmpty()) return
+        val written = fresh.filter { p -> runCatching { repository.awardBadge(childId, p.def) }.isSuccess }.map { it.def }
+        if (written.isEmpty()) return
+        val rows = runCatching { repository.achievements(s.children.map { it.id }) }.getOrDefault(s.achievements)
+        _state.update { it.copy(achievements = rows, unlocked = it.unlocked + written) }
+    }
+
+    fun clearUnlocked() = _state.update { it.copy(unlocked = emptyList()) }
 
     // ── Vacation ─────────────────────────────────────────────────────────────
 

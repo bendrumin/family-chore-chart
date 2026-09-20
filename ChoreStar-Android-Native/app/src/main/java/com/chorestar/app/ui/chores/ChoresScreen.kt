@@ -46,14 +46,15 @@ import com.chorestar.app.data.model.Chore
 import com.chorestar.app.ui.DashboardState
 import com.chorestar.app.ui.DashboardViewModel
 import com.chorestar.app.ui.week.WeekScreen
+import com.chorestar.app.ui.routines.RoutinesList
 import com.chorestar.app.ui.theme.Success
 import com.chorestar.app.ui.theme.Warning
 
-private enum class ChoresSegment(val label: Int) { Chores(R.string.chores_title), Week(R.string.segment_week) }
+private enum class ChoresSegment(val label: Int) { Chores(R.string.chores_title), Routines(R.string.segment_routines), Week(R.string.segment_week) }
 
 /** The iOS Chores tab: a Chores | Week switch; chores grouped under each child, tap to tick today, long-press to edit. */
 @Composable
-fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (Chore) -> Unit, onAddChore: () -> Unit, onEditChore: (Chore) -> Unit) {
+fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (Chore) -> Unit, onAddChore: () -> Unit, onEditChore: (Chore) -> Unit, onBuildRoutine: () -> Unit, onStarterRoutines: () -> Unit, onEditRoutine: (com.chorestar.app.data.model.Routine) -> Unit) {
     val today = state.today
     var segment by remember { mutableStateOf(ChoresSegment.Chores) }
     Box(Modifier.fillMaxSize()) {
@@ -64,6 +65,7 @@ fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (
                 }
             }
             if (segment == ChoresSegment.Week) { WeekScreen(vm, state); return@Column }
+            if (segment == ChoresSegment.Routines) { RoutinesList(vm, state, onBuild = onBuildRoutine, onStarter = onStarterRoutines, onEdit = onEditRoutine); return@Column }
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Text(stringResource(R.string.chores_title), style = MaterialTheme.typography.headlineMedium)
