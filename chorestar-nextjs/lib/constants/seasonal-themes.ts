@@ -235,7 +235,10 @@ export const SEASONAL_THEMES_DATA: Record<string, SeasonalTheme> = {
     id: 'fall',
     name: 'Fall',
     icon: '🍁',
-    startDate: '09-22',
+    // Meteorological autumn, picking up the day after summer ends. The
+    // astronomical equinox left 09-01 to 09-21 with no season at all, so
+    // auto-seasonal silently did nothing for three weeks every September.
+    startDate: '09-01',
     endDate: '12-20',
     colors: paletteFrom('#b31e11', { tint: '#ee9c15', highlight: '#fa6a18' }),
     isHoliday: false,

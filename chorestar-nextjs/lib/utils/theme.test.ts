@@ -69,6 +69,21 @@ const AUGUST = at('2026-08-02T18:30:00')
 
 group('a theme never touches a full-bleed surface')
 
+t('every day of the year has a season, so auto-seasonal is never a no-op', () => {
+  // Fall used to start at the equinox while summer ended 08-31, leaving
+  // 09-01..09-21 with no window: switching auto-seasonal on did nothing for
+  // three weeks every September.
+  const lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  const missing: string[] = []
+  for (let m = 1; m <= 12; m++) {
+    for (let d = 1; d <= lengths[m - 1]; d++) {
+      const date = new Date(2026, m - 1, d, 12)
+      if (!getCurrentSeasonalTheme(date)) missing.push(`${m}-${d}`)
+    }
+  }
+  assert.deepEqual(missing, [], `days with no seasonal theme: ${missing.join(', ')}`)
+})
+
 t('themeCssVars sets no gradient or header property', () => {
   const vars = themeCssVars(SEASONAL_THEMES_DATA.summer.colors, false)
   for (const banned of ['--gradient-primary', '--gradient-foreground', '--seasonal-gradient', '--header-gradient']) {
