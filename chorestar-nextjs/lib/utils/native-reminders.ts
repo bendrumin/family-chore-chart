@@ -87,6 +87,14 @@ export async function reminderState(): Promise<{ scheduled: boolean; time: Remin
   }
 }
 
+/** The next time today or tomorrow that the clock reads this hour and minute. */
+function nextOccurrence({ hour, minute }: ReminderTime): Date {
+  const next = new Date()
+  next.setHours(hour, minute, 0, 0)
+  if (next.getTime() <= Date.now()) next.setDate(next.getDate() + 1)
+  return next
+}
+
 export type EnableResult = 'ok' | 'denied' | 'unavailable'
 
 /**
@@ -128,7 +136,10 @@ export async function enableDailyReminder(time: ReminderTime): Promise<EnableRes
         channelId: CHANNEL_ID,
         title: 'Time for chores',
         body: "Open ChoreStar and check off what's done today.",
-        schedule: { on: { hour: time.hour, minute: time.minute } },
+        // An explicit next occurrence repeating daily. The calendar-match form
+        // (`on: { hour, minute }`) left Android holding nothing on a Galaxy S25
+        // Ultra, while an `at` date scheduled and fired correctly.
+        schedule: { at: nextOccurrence(time), repeats: true, every: 'day' },
         extra: { url: '/dashboard' },
       },
     ],
