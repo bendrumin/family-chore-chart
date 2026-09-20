@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { WeekNavigator } from '@/components/ui/week-navigator'
+import { WeekSummaryStrip } from '@/components/chores/week-summary-strip'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { Plus, Filter, CheckCheck, CalendarCheck } from 'lucide-react'
@@ -395,6 +396,16 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
 
           {/* Week Navigator — the week grid is what it steers */}
           {view === 'week' && <WeekNavigator weekStart={weekStart} onWeekChange={setWeekStart} />}
+
+          {/* How the week went, before the detail of how each chore went. */}
+          {view === 'week' && chores.length > 0 && (
+            <WeekSummaryStrip
+              chores={filteredChores}
+              completions={completions}
+              weekStart={weekStart}
+              vacationDays={vacationDays}
+            />
+          )}
 
           {/* Catch-up bulk actions — current week only. Side by side on phones
               with short labels: stacked full-width they took two rows of the

@@ -267,9 +267,9 @@ export const ChoreCard = memo(function ChoreCard({
           <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
         </Button>
 
-        <div className="p-3.5">
+        <div className="p-2.5 sm:p-3.5">
           {/* Header */}
-          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
+          <div className="flex items-center justify-between mb-2 sm:mb-2.5 pb-1.5 sm:pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
             <div className="flex-1 pr-10">
               <div className="flex items-center gap-2.5">
                 {chore.icon && (
@@ -317,7 +317,7 @@ export const ChoreCard = memo(function ChoreCard({
           </div>
 
           {/* 7-Day Grid - Professional */}
-          <div className="grid grid-cols-7 gap-1.5 mb-2.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5 mb-2 sm:mb-2.5">
             {days.map((day) => {
               const awaiting = isAwaitingApproval(day.dayOfWeek)
               const completed = !awaiting && (optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek))
@@ -331,7 +331,7 @@ export const ChoreCard = memo(function ChoreCard({
                     key={day.dayOfWeek}
                     onClick={() => toggleCompletion(day.dayOfWeek)}
                     aria-label={`${chore.name} ${day.dayName}, waiting for your OK, click to approve`}
-                    className="h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation border-2 border-dashed border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
+                    className="h-11 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation border-2 border-dashed border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
                     title={`${day.dayName} - Waiting for your OK. Click to approve`}
                   >
                     <div className="text-xs font-bold">{day.dayName}</div>
@@ -353,7 +353,7 @@ export const ChoreCard = memo(function ChoreCard({
                   onClick={() => toggleCompletion(day.dayOfWeek)}
                   aria-label={`${chore.name} ${day.dayName}${due ? '' : ', not scheduled'}, ${completed ? 'completed, click to unmark' : 'not completed, click to mark'}`}
                   aria-pressed={completed}
-                  className={`h-14 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation ${
+                  className={`h-11 sm:h-16 rounded-xl transition-colors duration-150 flex flex-col items-center justify-center gap-0.5 font-semibold touch-manipulation ${
                     completed ? 'accent-fill' : idle
                   }`}
                   title={
@@ -377,8 +377,8 @@ export const ChoreCard = memo(function ChoreCard({
           </div>
 
           {/* Stats */}
-          <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          <div className="pt-1.5 sm:pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+            <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
               <span className="font-bold text-base mr-1 text-gray-900 dark:text-gray-100">
                 {choreCompletions.length}
               </span>
