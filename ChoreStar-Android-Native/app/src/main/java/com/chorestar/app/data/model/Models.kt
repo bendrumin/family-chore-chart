@@ -173,7 +173,19 @@ data class PendingApproval(
 )
 
 @Serializable
-data class PendingResponse(val items: List<PendingApproval> = emptyList())
+data class PendingRedemption(
+    val id: String,
+    val childId: String,
+    val childName: String = "",
+    val childColor: String? = null,
+    val itemId: String = "",
+    val itemTitle: String = "",
+    val itemEmoji: String? = null,
+    val priceCents: Int = 0,
+)
+
+@Serializable
+data class PendingResponse(val items: List<PendingApproval> = emptyList(), val redemptions: List<PendingRedemption> = emptyList())
 
 @Serializable
 data class FamilyMemberRow(

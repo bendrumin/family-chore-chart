@@ -63,22 +63,46 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## Parity checklist (iOS → Android)
 
-Phase 1, first build: sign in / create family / forgot password, five tabs,
-Home (greeting, today's progress, per-child rows, needs-your-OK count), Chores
-(grouped by child, tick today), Family (children, kid login code), Stats
-(week per child), Settings (account, rewards, sign out).
+Done and device-verified (2026-09-20, commits fce56e1 → phase 2e):
 
-Then, in order: add/edit child (colour, photo, PIN); add/edit chore (days,
-reward, icon, category, photo proof); week board with any-day ticking and
-bulk catch-up; approvals (approve/reject, proof photo); vacation mode;
-reward settings and currency; theme (light/dark/seasonal/accent); kid mode
-(family code + PIN login, kid dashboard, wallet, goals, store, achievements);
-routines (list, builder with steps/timers/reorder, starter templates, player
-with celebration); achievements and history; family sharing (invite code,
-members); account (change password, delete); what's new; paywall and Play
-Billing; notifications (local reminders now, FCM once a Firebase project
-exists); App Links, shortcuts, themed icon, per-app language; home screen
-widget.
+- Phase 1: sign in / create family (via `/api/auth/signup`) / forgot
+  password, five tabs, Home, Chores, Family, Stats, Settings.
+- 2a `ui/family`, `ui/chores`: add/edit child (16 colours, DiceBear robots and
+  people, emoji, camera/gallery photo into `child-avatars`, kid PIN into
+  `child_pins`), add/edit chore (cents with presets, locale-ordered days with
+  Gulf weekends, photo proof, category enum, 167 icons, colour, notes),
+  suggestions (`/api/ai/suggest-chores` then the shared local catalogue),
+  child detail, free limits 3 / 20 with the upgrade prompt.
+- 2b `ui/week`, `ui/home`: week board (daily list and grid, any cell any
+  week, bulk catch-up), approvals tray (`/api/chores/pending`,
+  `/api/chores/approve`, proof lightbox), vacation masking, Home hero,
+  getting started.
+- 2c `ui/settings`: theme gallery and accent (read-merge-write into
+  `custom_theme`), dark mode / sound / daily reminder (device-local),
+  rewards & currency, family sharing (`family_codes`), reward store
+  (`reward_items`), change password, delete account, vacation window.
+- 2d `ui/routines`, `ui/achievements`, `ui/stats`: routines list / builder /
+  templates / player / celebration, the ten badges and engine, full stats.
+- 2e `ui/kid`: standalone kid session (`/api/child-pin/verify` + `/api/kid/*`)
+  and kid mode on the parent's phone (Supabase with `pending` status),
+  goals, store, wallet, camera proof, Perfect Day, synthesised sounds.
+- Parent allowance section (`/api/allowance`, `/api/kid/wallet`) and store
+  requests in the tray (`/api/rewards/redemptions`).
+
+Still to do, in rough order:
+
+1. **Play Billing + paywall.** `/api/google/verify` reads a cookie session
+   only; add the same Bearer fallback `/api/kid-login-code` has, then wire
+   `com.android.billingclient:billing-ktx` with products
+   `chorestar_premium_monthly` / `chorestar_premium_yearly` and
+   `obfuscatedAccountId` = profile id. Blocked on the Play Console products.
+2. **FCM push** for activity alerts (needs a Firebase project; the local
+   daily reminder already works).
+3. What's New sheet; an ongoing notification during the routine player (the
+   iOS Live Activity); home-screen widget; App Links / shortcuts / themed icon
+   are still only in the Capacitor shell's manifest and need copying over.
+4. iOS backfill: the strings only Android translated live in
+   `res/values-es|pt-rBR|ar/strings.xml`.
 
 ## Verifying on a phone
 

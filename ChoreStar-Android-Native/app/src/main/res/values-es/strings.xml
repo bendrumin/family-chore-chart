@@ -459,4 +459,5 @@
         <item quantity="one">%1$d meta alcanzada</item>
         <item quantity="other">%1$d metas alcanzadas</item>
     </plurals>
+    <string name="goal_reached">alcanzada</string>
 </resources>

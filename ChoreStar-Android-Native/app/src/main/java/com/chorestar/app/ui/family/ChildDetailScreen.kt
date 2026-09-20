@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +43,7 @@ import com.chorestar.app.data.model.Chore
 import com.chorestar.app.ui.DashboardViewModel
 import com.chorestar.app.ui.chores.ChoreRow
 import com.chorestar.app.ui.components.ChildAvatar
+import kotlinx.coroutines.launch
 import com.chorestar.app.ui.components.avatarColor
 import com.chorestar.app.ui.theme.Success
 import com.chorestar.app.ui.theme.Warning
@@ -116,6 +118,7 @@ fun ChildDetailScreen(
                     }
                 }
             }
+            item { AllowanceSection(vm, state, child.id, child.name) }
             item { Text(stringResource(R.string.childs_chores, child.name), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp)) }
             if (chores.isEmpty()) {
                 item {
@@ -162,6 +165,71 @@ private fun choreGroup(
                 }
             }
         }
+    }
+}
+
+/** iOS ParentGoalSection: what is owed, the active goal, and payouts. */
+@Composable
+private fun AllowanceSection(vm: DashboardViewModel, state: com.chorestar.app.ui.DashboardState, childId: String, childName: String) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    androidx.compose.runtime.LaunchedEffect(childId) { vm.loadWallet(childId) }
+    val w = state.wallets[childId]
+    var payoutDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var amount by androidx.compose.runtime.remember(w?.owedCents) { androidx.compose.runtime.mutableStateOf(w?.let { Money.plain(it.owedCents, state.currency) } ?: "") }
+    var busy by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var message by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    val cur = state.currency
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.allowance), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(if (w == null) "…" else if (w.owedCents > 0) stringResource(R.string.amount_owed, Money.format(w.owedCents, cur)) else stringResource(R.string.all_paid_up), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            val goal = w?.goal
+            if (goal != null) {
+                Spacer(Modifier.height(8.dp))
+                Text("${goal.emoji ?: "🎯"} " + stringResource(R.string.saving_for_title, goal.title), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.goal_progress, Money.format(goal.progressCents, cur), Money.format(goal.targetCents, cur)) + if (goal.reached) " · " + stringResource(R.string.goal_reached) else "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                LinearProgressIndicator(progress = { goal.percent / 100f }, modifier = Modifier.fillMaxWidth().padding(top = 6.dp).height(8.dp))
+            } else if (w != null) {
+                Text(stringResource(R.string.set_a_goal_for, childName), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+            }
+            if (w != null && w.owedCents > 0) {
+                Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    androidx.compose.material3.OutlinedButton(onClick = { payoutDialog = true }) { Text(stringResource(R.string.paid_out)) }
+                    if (goal != null) androidx.compose.material3.Button(onClick = {
+                        busy = true
+                        scope.launch { vm.payout(childId, null, null, goal.id).onSuccess { message = null }.onFailure { message = it.message }; busy = false }
+                    }, enabled = !busy) { Text(stringResource(if (goal.reached) R.string.pay_out_goal else R.string.pay_toward_goal)) }
+                }
+            }
+            message?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+        }
+    }
+    if (payoutDialog && w != null) {
+        val cents = Money.parseCents(amount) ?: 0
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { payoutDialog = false },
+            title = { Text(stringResource(R.string.record_a_payout)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.is_owed, childName, Money.format(w.owedCents, cur)))
+                    androidx.compose.material3.OutlinedTextField(amount, { amount = it }, label = { Text(stringResource(R.string.amount)) }, prefix = { Text(Money.symbol(cur)) }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal))
+                    Text(
+                        when { cents <= 0 || cents > w.owedCents -> stringResource(R.string.enter_amount_up_to, Money.format(w.owedCents, cur)); cents == w.owedCents -> stringResource(R.string.pays_everything); else -> stringResource(R.string.will_remain, Money.format(w.owedCents - cents, cur)) },
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(enabled = cents in 1..w.owedCents && !busy, onClick = {
+                    busy = true
+                    scope.launch { vm.payout(childId, cents, null, null).onFailure { message = it.message }; busy = false; payoutDialog = false }
+                }) { Text(stringResource(R.string.pay_amount, Money.format(cents.coerceAtLeast(0), cur))) }
+            },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = { payoutDialog = false }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 }
 

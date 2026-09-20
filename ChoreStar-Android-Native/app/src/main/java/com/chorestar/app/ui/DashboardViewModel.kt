@@ -17,6 +17,8 @@ import com.chorestar.app.data.model.FamilySettings
 import com.chorestar.app.data.model.NewChoreRow
 import com.chorestar.app.data.model.NewCompletion
 import com.chorestar.app.data.model.PendingApproval
+import com.chorestar.app.data.model.PendingRedemption
+import com.chorestar.app.data.KidApi
 import com.chorestar.app.data.model.Profile
 import com.chorestar.app.data.model.VacationPeriod
 import com.chorestar.app.data.AchievementBadge
@@ -63,6 +65,9 @@ data class DashboardState(
     val viewedCompletions: List<ChoreCompletion> = emptyList(),
     val vacationPeriods: List<VacationPeriod> = emptyList(),
     val pendingApprovals: List<PendingApproval> = emptyList(),
+    val pendingRedemptions: List<PendingRedemption> = emptyList(),
+    /** Parent-side wallet views, by child id, for the child detail Allowance section. */
+    val wallets: Map<String, KidApi.WalletView> = emptyMap(),
     /** Cells a write is in flight for, so a double tap does not double-write. */
     val saving: Set<String> = emptySet(),
     val pinChildIds: Set<String> = emptySet(),
@@ -320,7 +325,7 @@ class DashboardViewModel(
 
     fun refreshApprovals() {
         viewModelScope.launch {
-            runCatching { repository.pendingApprovals() }.onSuccess { list -> _state.update { it.copy(pendingApprovals = list) } }
+            runCatching { repository.pendingApprovals() }.onSuccess { r -> _state.update { it.copy(pendingApprovals = r.items, pendingRedemptions = r.redemptions) } }
         }
     }
 
@@ -480,6 +485,28 @@ class DashboardViewModel(
     }
 
     // ── Approvals ────────────────────────────────────────────────────────────
+
+    fun reviewRedemption(id: String, approve: Boolean) {
+        _state.update { s -> s.copy(pendingRedemptions = s.pendingRedemptions.filterNot { it.id == id }) }
+        viewModelScope.launch {
+            runCatching { repository.reviewCompletionOrRedemption(id, approve) }
+                .onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refreshApprovals()
+        }
+    }
+
+    // ── Allowance (parent side of the kid wallet) ────────────────────────────
+
+    fun loadWallet(childId: String) {
+        viewModelScope.launch {
+            val token = repository.accessTokenOrNull() ?: return@launch
+            runCatching { repository.kid.wallet(KidApi.Auth(token, childId)) }
+                .onSuccess { w -> _state.update { it.copy(wallets = it.wallets + (childId to w)) } }
+        }
+    }
+
+    suspend fun payout(childId: String, amountCents: Int?, note: String?, goalId: String?): Result<Unit> =
+        repository.payout(childId, amountCents, note, goalId).onSuccess { loadWallet(childId) }
 
     fun approve(completionId: String) = review(completionId, approve = true)
     fun reject(completionId: String) = review(completionId, approve = false)

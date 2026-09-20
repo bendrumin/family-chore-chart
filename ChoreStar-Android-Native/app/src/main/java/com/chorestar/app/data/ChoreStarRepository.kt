@@ -177,11 +177,41 @@ class ChoreStarRepository(
 
     // ── Approvals (the web app owns the rule, so both go through it) ─────────
 
-    suspend fun pendingApprovals(): List<PendingApproval> {
-        val token = accessToken ?: return emptyList()
+    suspend fun pendingApprovals(): PendingResponse {
+        val token = accessToken ?: return PendingResponse()
         val response = web.get("${BuildConfig.WEB_API_BASE}/api/chores/pending") { header("Authorization", "Bearer $token") }
-        if (response.status.value != 200) return emptyList()
-        return SupabaseModule.json.decodeFromString(PendingResponse.serializer(), response.bodyAsText()).items
+        if (response.status.value != 200) return PendingResponse()
+        return SupabaseModule.json.decodeFromString(PendingResponse.serializer(), response.bodyAsText())
+    }
+
+    /** A kid asked for a store item: yes takes the price off their balance, no just clears it. */
+    suspend fun reviewRedemption(redemptionId: String, approve: Boolean) {
+        val token = accessToken ?: error("Not signed in")
+        val response = web.post("${BuildConfig.WEB_API_BASE}/api/rewards/redemptions") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $token")
+            setBody(RedemptionBody(redemptionId.lowercase(), if (approve) "approve" else "reject"))
+        }
+        if (response.status.value !in 200..299) error(errorMessage(response.bodyAsText()) ?: "Could not update (${response.status.value})")
+    }
+
+    suspend fun reviewCompletionOrRedemption(redemptionId: String, approve: Boolean) = reviewRedemption(redemptionId, approve)
+
+    /** Records a payout; with a goalId the goal is paid out and marked reached, otherwise amountCents (default: everything owed). */
+    suspend fun payout(childId: String, amountCents: Int?, note: String?, goalId: String?): Result<Unit> {
+        val token = accessToken ?: return Result.failure(IllegalStateException("Not signed in"))
+        return runCatching {
+            val body = buildMap<String, kotlinx.serialization.json.JsonElement> {
+                put("childId", kotlinx.serialization.json.JsonPrimitive(childId.lowercase()))
+                amountCents?.let { put("amountCents", kotlinx.serialization.json.JsonPrimitive(it)) }
+                note?.takeIf { it.isNotBlank() }?.let { put("note", kotlinx.serialization.json.JsonPrimitive(it)) }
+                goalId?.let { put("goalId", kotlinx.serialization.json.JsonPrimitive(it.lowercase())) }
+            }
+            val response = web.post("${BuildConfig.WEB_API_BASE}/api/allowance") {
+                contentType(ContentType.Application.Json); header("Authorization", "Bearer $token"); setBody(kotlinx.serialization.json.JsonObject(body))
+            }
+            if (response.status.value !in 200..299) error(errorMessage(response.bodyAsText()) ?: "Could not record the payout")
+        }
     }
 
     /** approve → status approved (and the server pings the all-done push); reject → the row and its proof are deleted. */
@@ -540,6 +570,9 @@ class ChoreStarRepository(
 
     @Serializable
     private data class ReviewBody(val completionId: String, val action: String)
+
+    @Serializable
+    private data class RedemptionBody(val redemptionId: String, val action: String)
 
     @Serializable
     private data class NewPendingCompletion(

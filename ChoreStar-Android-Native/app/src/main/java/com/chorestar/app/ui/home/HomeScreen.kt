@@ -98,7 +98,7 @@ fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -
 
             if (state.children.isEmpty() || state.chores.isEmpty()) item { GettingStartedCard(state, onOpenFamily, onOpenChores) }
 
-            if (state.pendingApprovals.isNotEmpty()) item { ApprovalTray(vm, state) }
+            if (state.pendingApprovals.isNotEmpty() || state.pendingRedemptions.isNotEmpty()) item { ApprovalTray(vm, state) }
 
             if (state.chores.isNotEmpty()) {
                 item {
@@ -267,7 +267,20 @@ fun ApprovalTray(vm: DashboardViewModel, state: DashboardState) {
                 Icon(Icons.Filled.Schedule, contentDescription = null, tint = Warning)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.home_needs_your_ok), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text("${state.pendingApprovals.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${state.pendingApprovals.size + state.pendingRedemptions.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            state.pendingRedemptions.forEach { r ->
+                HorizontalDivider(Modifier.padding(vertical = 10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) { Text(r.itemEmoji ?: "🎁", style = MaterialTheme.typography.headlineSmall) }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(r.itemTitle, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Row { Text(stringResource(R.string.wants_this, r.childName), style = MaterialTheme.typography.bodySmall, color = avatarColor(r.childColor)); Text(" · " + Money.format(r.priceCents, state.currency), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    }
+                    TextButton(onClick = { vm.reviewRedemption(r.id, false) }) { Text(stringResource(R.string.not_now)) }
+                    Button(onClick = { vm.reviewRedemption(r.id, true) }, colors = ButtonDefaults.buttonColors(containerColor = Success), contentPadding = PaddingValues(horizontal = 14.dp)) { Text(stringResource(R.string.yes_label)) }
+                }
             }
             state.pendingApprovals.forEach { item ->
                 HorizontalDivider(Modifier.padding(vertical = 10.dp))

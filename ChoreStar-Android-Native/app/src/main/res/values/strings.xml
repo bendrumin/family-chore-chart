@@ -555,4 +555,25 @@
     <string name="yes_please">@string/yes_please_ba541</string>
     <string name="spend_confirm">@string/spend_of_your_a_grown_up_will_say_yes_or_cd794</string>
     <string name="asked_notice">Asked! A grown-up will say yes or no to %1$s.</string>
+
+    <!-- Allowance + store requests (parent side) -->
+    <string name="allowance">@string/allowance_0fa0f</string>
+    <string name="amount_owed">@string/owed_bcf27</string>
+    <string name="all_paid_up">@string/all_paid_up_bcc70</string>
+    <string name="saving_for_title">@string/saving_for_e76d2</string>
+    <string name="goal_progress">@string/of_ad8cc</string>
+    <string name="goal_reached">reached</string>
+    <string name="set_a_goal_for">@string/set_a_goal_for_8211a</string>
+    <string name="paid_out">@string/paid_out_a421c</string>
+    <string name="pay_toward_goal">@string/pay_toward_goal_a29d8</string>
+    <string name="pay_out_goal">@string/pay_out_the_goal_babb2</string>
+    <string name="record_a_payout">@string/record_a_payout_b8260</string>
+    <string name="is_owed">@string/is_owed_ee534</string>
+    <string name="amount">@string/amount_43dc8</string>
+    <string name="pays_everything">@string/that_pays_everything_owed_25b56</string>
+    <string name="will_remain">@string/will_remain_2fbd9</string>
+    <string name="enter_amount_up_to">@string/enter_an_amount_up_to_1f5bf</string>
+    <string name="pay_amount">@string/pay_3140b</string>
+    <string name="wants_this">@string/wants_this_981b7</string>
+    <string name="yes_label">@string/yes_5397e</string>
 </resources>
