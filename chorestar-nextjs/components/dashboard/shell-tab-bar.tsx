@@ -1,13 +1,16 @@
 'use client'
 
-import { Home, BarChart3, Settings } from 'lucide-react'
+import { Home, Users, ClipboardList, BarChart3, Settings } from 'lucide-react'
 import { useAndroidShell } from '@/lib/utils/platform'
 
-export type ShellTab = 'home' | 'insights' | 'settings'
+/** The five the iOS app has, in the same order. */
+export type ShellTab = 'home' | 'family' | 'chores' | 'stats' | 'settings'
 
 const TABS: Array<{ id: ShellTab; label: string; icon: typeof Home }> = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'insights', label: 'Insights', icon: BarChart3 },
+  { id: 'family', label: 'Family', icon: Users },
+  { id: 'chores', label: 'Chores', icon: ClipboardList },
+  { id: 'stats', label: 'Stats', icon: BarChart3 },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
@@ -39,11 +42,11 @@ export function ShellTabBar({ active, onSelect }: {
               type="button"
               onClick={() => onSelect(id)}
               aria-current={isActive ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] py-1.5 transition-colors active:bg-black/[0.05] dark:active:bg-white/[0.08]"
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 min-h-[56px] py-1.5 px-0.5 transition-colors active:bg-black/[0.05] dark:active:bg-white/[0.08]"
               style={{ color: isActive ? 'var(--primary)' : 'var(--text-secondary)' }}
             >
               <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-              <span className={`text-[11px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>
+              <span className={`text-[10px] leading-tight truncate max-w-full ${isActive ? 'font-bold' : 'font-medium'}`}>
                 {label}
               </span>
             </button>

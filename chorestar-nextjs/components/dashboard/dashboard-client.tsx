@@ -291,9 +291,17 @@ function DashboardContent({
     return () => window.removeEventListener('chorestar:open-settings', onOpenSettings)
   }, [])
 
+  // Which of the five shell tabs is lit. A settings tab wins while the dialog
+  // is open, because that is what the person is looking at.
   const activeShellTab: ShellTab = isSettingsOpen
-    ? (settingsTab === 'insights' ? 'insights' : 'settings')
-    : 'home'
+    ? settingsTab === 'insights'
+      ? 'stats'
+      : settingsTab === 'family'
+        ? 'family'
+        : 'settings'
+    : selectedChildId && activeTab === 'chores'
+      ? 'chores'
+      : 'home'
 
   const handleShellTab = (tab: ShellTab) => {
     if (tab === 'home') {
@@ -301,14 +309,33 @@ function DashboardContent({
       setIsSettingsOpen(false)
       setSelectedChildId(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else if (tab === 'insights') {
+      return
+    }
+    if (tab === 'family') {
+      // The children live in the Family settings tab, behind Edit Children.
+      setSettingsTab('family')
+      setIsSettingsOpen(true)
+      return
+    }
+    if (tab === 'chores') {
+      // A child's chores, which is what the iOS tab shows. Falls back to the
+      // first child so the tab always lands somewhere.
+      setIsSettingsOpen(false)
+      setActiveTab('chores')
+      if (!selectedChildId && children.length > 0) setSelectedChildId(children[0].id)
+      requestAnimationFrame(() => {
+        document.getElementById('tab-panel-chores')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+      return
+    }
+    if (tab === 'stats') {
       setSettingsTab('insights')
       setIsSettingsOpen(true)
-    } else {
-      // Settings proper: never land on insights, that is the other tab's job.
-      if (settingsTab === 'insights') setSettingsTab('family')
-      setIsSettingsOpen(true)
+      return
     }
+    // Settings proper: never land on insights or family, those are their own tabs.
+    if (settingsTab === 'insights' || settingsTab === 'family') setSettingsTab('chores')
+    setIsSettingsOpen(true)
   }
 
   const handleAddRoutine = () => {
