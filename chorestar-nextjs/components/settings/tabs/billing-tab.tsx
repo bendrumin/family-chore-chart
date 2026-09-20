@@ -10,6 +10,8 @@ import { createCheckoutSession, createPortalSession, type PlanType } from '@/lib
 import { toast } from 'sonner'
 import { isPremium as checkPremium } from '@/lib/utils/subscription'
 import { useAndroidShell } from '@/lib/utils/platform'
+import { playBillingAvailable } from '@/lib/utils/play-billing-client'
+import { PlayBillingPlans } from '@/components/settings/play-billing-plans'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -156,6 +158,17 @@ export function BillingTab() {
           </div>
         </div>
       </div>
+
+      {/* Inside the Android shell with Play Billing present, plans and
+          management go through Google Play (prices from Play). */}
+      {androidShell && playBillingAvailable() && user && (
+        <PlayBillingPlans
+          userId={user.id}
+          tier={currentTier}
+          googleBilled={!!(profile as unknown as { google_purchase_token?: string | null })?.google_purchase_token}
+          onPurchased={loadProfile}
+        />
+      )}
 
       {/* Upgrade Options (if free) — never inside the Android shell:
           Play policy forbids purchase CTAs that bypass Play Billing. */}

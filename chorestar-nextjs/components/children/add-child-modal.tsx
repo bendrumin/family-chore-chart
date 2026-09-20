@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { UserPlus, Sparkles, Crown, AlertCircle } from 'lucide-react'
 import Image from 'next/image'
 import { getChildLimit } from '@/lib/utils/subscription'
+import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import { useAndroidShell } from '@/lib/utils/platform'
 import { playSound } from '@/lib/utils/sound'
 import type { Database } from '@/lib/supabase/database.types'
@@ -128,14 +129,14 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
           {/* Upgrade Prompt for Free Users at Limit — hidden in the Android
               shell (Play policy: no purchase CTAs outside Play Billing);
               the limit itself still applies, stated without an upsell. */}
-          {isAtLimit && androidShell && (
+          {isAtLimit && androidShell && !playBillingAvailable() && (
             <div className="my-6 p-5 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                 The free plan includes up to 3 children.
               </p>
             </div>
           )}
-          {isAtLimit && !androidShell && (
+          {isAtLimit && (!androidShell || playBillingAvailable()) && (
             <div className="my-6 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800" style={{ background: 'var(--card-bg)' }}>
               <div className="flex items-start gap-3 mb-4">
                 <Crown className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />

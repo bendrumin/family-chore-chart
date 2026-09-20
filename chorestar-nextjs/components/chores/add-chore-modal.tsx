@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera, Crown } from 'lucide-react'
 import { isPremium, getChoreLimit } from '@/lib/utils/subscription'
 import { useAndroidShell } from '@/lib/utils/platform'
+import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
@@ -148,14 +149,14 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
           {/* Free-plan cap. Inside the Android shell the limit is stated
               without an upsell (Play policy: no purchase CTAs outside Play
               Billing) — same split as the child cap in add-child-modal. */}
-          {isAtCap && androidShell && (
+          {isAtCap && androidShell && !playBillingAvailable() && (
             <div className="my-4 p-5 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                 The free plan includes up to {capState?.limit} chores.
               </p>
             </div>
           )}
-          {isAtCap && !androidShell && (
+          {isAtCap && (!androidShell || playBillingAvailable()) && (
             <div className="my-4 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-800" style={{ background: 'var(--card-bg)' }}>
               <div className="flex items-start gap-3 mb-4">
                 <Crown className="w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-1" />
@@ -167,7 +168,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                     The free plan holds {capState?.limit} chores across the family. You
                     have {capState?.count}, and everything already on the list stays.
                     Premium removes the cap and adds family sharing and export reports.
-                    $4.99 a month or $49.99 a year.
+                    {!androidShell && ' $4.99 a month or $49.99 a year.'}
                   </p>
                 </div>
               </div>

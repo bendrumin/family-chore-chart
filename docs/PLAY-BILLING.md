@@ -19,62 +19,75 @@ shell automatically, because the shell is the web app.
 Cost: a new Android family that hits a gate sees a dead end. Fees: none.
 Review: simplest possible.
 
-## v1.1: Google Play Billing (build during the closed-test window)
+## Google Play Billing: built 2026-09-20, waiting on the Console
 
-Mirror the Apple design so there is one architecture, not two.
+Decision: ship v1 WITH billing. Everything that does not need Play Console
+access exists in the repo now; the rest is Ben's clicks plus one on-device
+test once the app is on a testing track.
 
-Console (Ben):
-1. Monetize > Subscriptions: create `chorestar_premium_monthly` and
-   `chorestar_premium_yearly`, one base plan each (monthly / yearly,
-   auto-renewing). Prices: US $4.99 / $49.99, then the same PPP table as
-   Apple (LATAM, India, tier-2 from `apply-latam-prices.mjs`).
-2. Monetize > Monetization setup > Real-time developer notifications:
-   create a Google Cloud Pub/Sub topic, grant
-   `google-play-developer-notifications@system.gserviceaccount.com`
-   publish rights, add a push subscription to
-   `https://chorestar.app/api/google/notifications`. Use "Send test
-   notification" the way we used Apple's.
-3. Setup > API access: a service account with "View financial data" and
-   "Manage orders and subscriptions", JSON key -> Vercel env
-   `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (name only here; the value never
-   enters the repo).
-4. Setup > License testing: add Ben's Google account so purchases are free
-   and renew every 5 minutes.
+### What is built
 
-Server (mirrors `app/api/apple/notifications/route.ts`):
-- Migration 022: `profiles.google_purchase_token text`, unique partial
-  index; `google_notifications` log table (same shape as
-  `apple_notifications`: notification_type, subtype, product_id,
-  purchase_token, user_id, action, created_at).
-- `/api/google/notifications`: Pub/Sub push (JSON, base64 `message.data`),
-  verify the push token or OIDC audience, decode
-  `subscriptionNotification`, call
-  `purchases.subscriptionsv2.get(packageName, token)` with the service
-  account (google-auth-library + fetch; not the full googleapis package),
-  map `obfuscatedExternalAccountId` (= profile UUID, set at purchase time)
-  or the stored token to a profile, then: ACTIVE/RENEWED/RECOVERED ->
-  premium; EXPIRED/REVOKED -> free (never downgrade lifetime or an active
-  Stripe/Apple sub). Log every message.
-- Billing tab: when billed through Google, show "Manage in Google Play"
-  (`https://play.google.com/store/account/subscriptions?sku=<id>&package=com.chorestar.app`),
-  the way Apple-billed users get the manage sheet.
+- `lib/google/play-billing.ts` (pure, tested): product ids
+  `chorestar_premium_monthly` / `chorestar_premium_yearly`, RTDN type names,
+  subscriptionState -> tier (ACTIVE/CANCELED/GRACE keep premium; EXPIRED/
+  ON_HOLD/PAUSED downgrade; PENDING no-op), Pub/Sub push decoding.
+- `lib/google/play-api.ts`: service-account JWT -> access token (no SDK),
+  `purchases.subscriptionsv2.get`, server-side acknowledge.
+- `POST /api/google/notifications?token=…`: Pub/Sub push handler. Verifies
+  the shared token, re-reads the subscription from Google (never trusts the
+  notification type alone), maps token -> profile (stored token, then the
+  obfuscated account id = profile UUID), sets the tier with the same
+  lifetime/active-Stripe downgrade guard as Apple, logs everything to
+  `google_notifications`. Test-purchase notifications are logged, not
+  honored, unless `GOOGLE_PLAY_HONOR_TEST_PURCHASES=1` (set it during the
+  closed test, unset it for launch).
+- `POST /api/google/verify`: the shell calls it right after a purchase;
+  it verifies with Google, links the token to the signed-in profile, flips
+  premium immediately, and acknowledges.
+- `database-migrations/022_google_play_billing.sql` (Ben applies).
+- Web bridge `lib/utils/play-billing-client.ts` over `cordova-plugin-purchase`
+  (installed in ChoreStar-Android): registers the two subscriptions, sets the
+  profile id as the account identifier, verifies every approved transaction
+  through `/api/google/verify` before finishing it, exposes plans with Play's
+  localized prices, buy, and restore.
+- Billing tab: inside the shell, shows Play plans (prices from Play, never
+  hard-coded) and "Manage in Google Play" for Google-billed families. The
+  gates and cap prompts open the Billing tab in the shell only when the
+  plugin is present; without it they stay statement-only, so a build without
+  the plugin remains consumption-only compliant.
 
-Client (the shell):
-- Plugin: `cordova-plugin-purchase` (Play Billing Library 7, works under
-  Capacitor, free) is the default choice; RevenueCat's Capacitor SDK is the
-  faster alternative if we want receipts handled for us across all three
-  rails (free under $2.5k MRR). Decision pending.
-- Web side: `useAndroidShell()` currently hides purchase surfaces. With
-  billing, the shell instead renders Play plans (prices from the plugin,
-  never hard-coded), and `purchase()` passes the profile UUID as
-  `obfuscatedExternalAccountId`.
-- Testing needs the app on a Play testing track with license testers, so
-  none of this can be verified before the first upload. That is why it is
-  v1.1: build it while the 14-day closed test runs.
+### Ben's Console steps (in order)
 
-## Before anyone relies on the web rail
+1. Monetize > Subscriptions: create `chorestar_premium_monthly` (base plan
+   `monthly`, auto-renew, 1 month) and `chorestar_premium_yearly` (base plan
+   `yearly`, 1 year). US $4.99 / $49.99; then the PPP table from
+   `apply-latam-prices.mjs` (MX, BR, IN, tier-2).
+2. Google Cloud: enable the Google Play Android Developer API on a project;
+   create a Pub/Sub topic; grant
+   `google-play-developer-notifications@system.gserviceaccount.com` the
+   Pub/Sub Publisher role on it; create a PUSH subscription to
+   `https://chorestar.app/api/google/notifications?token=<random>`.
+3. Play Console > Monetize > Monetization setup: set the topic, click
+   "Send test notification"; expect a `TEST -> test-logged` row in
+   `google_notifications`.
+4. Play Console > Setup > API access: link the Cloud project, create a
+   service account with "View financial data, orders, and cancellation
+   survey responses" + "Manage orders and subscriptions", download its JSON
+   key.
+5. Vercel env (production): `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`,
+   `GOOGLE_PUBSUB_PUSH_TOKEN` (the `<random>` from step 2),
+   `GOOGLE_PLAY_HONOR_TEST_PURCHASES=1` during testing. Redeploy from the
+   repo root.
+6. Supabase SQL editor: run migration 022.
+7. Setup > License testing: add your Google account. Install the closed-test
+   build, buy Premium (free for license testers, renews every 5 minutes),
+   confirm the profile flips and a `SUBSCRIPTION_PURCHASED` row appears, then
+   cancel and watch `SUBSCRIPTION_EXPIRED -> free` arrive.
 
-The Stripe path has never seen a real charge. One live test purchase of
-Premium Monthly by Ben, refunded in the Stripe dashboard, proves
-Checkout -> webhook -> premium end to end. Ten minutes, and it settles a
-question every Android user implicitly depends on.
+### Fees and policy
+
+Play takes 15% (the 15% tier applies automatically under $1M/year). Because
+the shell sells through Play, it may also show prices and upgrade buttons in
+the shell; the consumption-only restrictions no longer apply once the
+plugin is present.
+

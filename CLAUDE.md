@@ -136,6 +136,9 @@ npm run dev                         # http://localhost:3000
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_ANNUAL` / `STRIPE_PRICE_LIFETIME` | Stripe Price IDs |
 | `RESEND_API_KEY` | Email sending via Resend |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Play Developer API service account key (JSON or base64) for verifying Android subscriptions |
+| `GOOGLE_PLAY_PACKAGE_NAME` | Android package, defaults to `com.chorestar.app` |
+| `GOOGLE_PUBSUB_PUSH_TOKEN` | Shared secret in the RTDN Pub/Sub push URL (`/api/google/notifications?token=`) |
 
 ### Testing
 
@@ -248,6 +251,7 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 
 ## Known Gotchas
 
+- Google Play-billed subscriptions (Android shell) are reconciled by `app/api/google/notifications/route.ts` (Pub/Sub push, verified against `purchases.subscriptionsv2`) and linked at purchase time by `app/api/google/verify/route.ts`; the `google_notifications` table and `profiles.google_purchase_token` (migration 022) are not in the generated types, so the routes use `as any` like the Apple and Stripe handlers. The shell's plugin is `cordova-plugin-purchase`, bridged by `lib/utils/play-billing-client.ts`; in a normal browser every call there is a no-op.
 - Apple-billed subscriptions are reconciled server-side by `app/api/apple/notifications/route.ts` (App Store Server Notifications V2, verified against pinned Apple root CAs in `lib/apple/`). The `apple_notifications` table and the `profiles.apple_original_transaction_id` column (migration 018) are **not** in the generated types — the route uses `as any` casts like the Stripe webhook does. iOS maps purchases to profiles via `appAccountToken` (the profile UUID) and records `originalTransactionID` during entitlement sync.
 - The `testflight_waitlist` table is **not** in the auto-generated Supabase types (`database.types.ts`). The signup route was removed after the iOS launch, but the table still exists and holds emails — the account-delete purge casts the client with `as any` to reach it. If you regenerate types, this table will still be absent unless you add it manually or run `npx supabase gen types` against the live database.
 - Kid-mode pages (`/kid/*`, `/kid-login/*`) intentionally use light-only `bg-white` buttons on gradient backgrounds — this is by design, not a dark mode gap.

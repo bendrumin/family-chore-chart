@@ -3,6 +3,7 @@
 import { Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAndroidShell } from '@/lib/utils/platform'
+import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
 
 const COPY: Record<GatedFeature, { title: string; body: string }> = {
@@ -12,7 +13,7 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
   },
   sharing: {
     title: 'Family sharing is part of Premium',
-    body: 'Invite a co-parent or guardian with their own login to the same family. $4.99 a month or $49.99 a year.',
+    body: 'Invite a co-parent or guardian with their own login to the same family.',
   },
   export: {
     title: 'Export reports come with Premium',
@@ -33,7 +34,10 @@ export function PremiumGate({ feature, compact = false }: { feature: GatedFeatur
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 
-  if (androidShell) {
+  // Shell without Play Billing (plugin absent): state the limit, no CTA.
+  // With Play Billing present the button opens the Billing tab, which
+  // sells through Play, so this is policy-clean either way.
+  if (androidShell && !playBillingAvailable()) {
     return (
       <div className="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
         <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
