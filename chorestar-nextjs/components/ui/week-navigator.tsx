@@ -34,25 +34,28 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
         size="sm"
         onClick={handlePrevious}
         aria-label="Previous week"
-        className="min-h-[44px] min-w-[44px] justify-center active:bg-gray-100 dark:active:bg-gray-700"
+        className="shrink-0 min-h-[44px] min-w-[44px] justify-center active:bg-gray-100 dark:active:bg-gray-700"
       >
         <ChevronLeft className="w-4 h-4" />
         <span className="hidden sm:inline">Previous</span>
       </Button>
 
-      <div className="flex items-center gap-2 min-w-0">
+      {/* One line at every width. Without the nowrap the "This Week" pill broke
+          across two lines on a 384px phone and sat under the next-week arrow. */}
+      <div className="flex items-center gap-2 min-w-0 shrink">
         <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
-        <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+        <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap truncate">
           {weekInfo.displayText}
         </span>
         {isCurrent && (
-          <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-medium">
-            This Week
+          <span className="shrink-0 whitespace-nowrap text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-medium">
+            <span className="sm:hidden">Now</span>
+            <span className="hidden sm:inline">This Week</span>
           </span>
         )}
       </div>
 
-      <div className="flex gap-1">
+      <div className="flex gap-1 shrink-0">
         {!isCurrent && (
           <Button
             variant="outline"

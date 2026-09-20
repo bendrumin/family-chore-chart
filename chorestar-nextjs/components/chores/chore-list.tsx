@@ -344,11 +344,12 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
             <CardTitle className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               Chores
             </CardTitle>
+            {/* Phones get the standard height: at size="lg" this button was
+                taller than the card title next to it. */}
             <Button
-              size="lg"
               variant="gradient"
               onClick={() => setIsAddModalOpen(true)}
-              className="hover-glow font-bold"
+              className="hover-glow font-bold sm:h-12 sm:px-8 sm:text-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Chore
@@ -359,30 +360,35 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
           {/* Week Navigator */}
           <WeekNavigator weekStart={weekStart} onWeekChange={setWeekStart} />
 
-          {/* Catch-up bulk actions — current week only */}
+          {/* Catch-up bulk actions — current week only. Side by side on phones
+              with short labels: stacked full-width they took two rows of the
+              little vertical space a phone has, above the week grid the screen
+              is actually about. */}
           {chores.length > 0 && isCurrentWeek && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => prepareBulk('today')}
                 disabled={bulkBusy}
-                className="font-semibold"
+                className="font-semibold flex-1 sm:flex-none justify-center"
                 aria-label={`Mark all of ${kidLabel}'s chores due today as done`}
               >
-                <CheckCheck className="w-4 h-4" aria-hidden />
-                Mark today done
+                <CheckCheck className="w-4 h-4 shrink-0" aria-hidden />
+                <span className="sm:hidden">Today</span>
+                <span className="hidden sm:inline">Mark today done</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => prepareBulk('week')}
                 disabled={bulkBusy}
-                className="font-semibold"
+                className="font-semibold flex-1 sm:flex-none justify-center"
                 aria-label={`Mark all of ${kidLabel}'s chores due so far this week as done`}
               >
-                <CalendarCheck className="w-4 h-4" aria-hidden />
-                Mark week so far done
+                <CalendarCheck className="w-4 h-4 shrink-0" aria-hidden />
+                <span className="sm:hidden">Week so far</span>
+                <span className="hidden sm:inline">Mark week so far done</span>
               </Button>
             </div>
           )}
