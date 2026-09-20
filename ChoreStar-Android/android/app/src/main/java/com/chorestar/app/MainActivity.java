@@ -11,6 +11,10 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Local plugins register before the bridge starts, or the web layer
+        // cannot see them.
+        registerPlugin(SystemBarsThemePlugin.class);
+
         super.onCreate(savedInstanceState);
 
         // Android's autofill overlay fights the IME inside a WebView: the
