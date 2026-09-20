@@ -4,4 +4,8 @@
     <string name="title_activity_main">ChoreStar</string>
     <string name="package_name">com.chorestar.app</string>
     <string name="custom_url_scheme">com.chorestar.app</string>
+    <string name="shortcut_kid_short">Kid mode</string>
+    <string name="shortcut_kid_long">Open kid login</string>
+    <string name="shortcut_today_short">Today</string>
+    <string name="shortcut_today_long">Today\'s chores</string>
 </resources>
