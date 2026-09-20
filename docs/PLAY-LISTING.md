@@ -122,11 +122,13 @@ User interaction: users can communicate only within their own family
 content visible to others. Shares location: No. Digital purchases: **No**
 (none in the Android app). Expected rating: Everyone.
 
-## Graphics still to produce
+## Graphics (ready in docs/assets/play/)
 
-- Feature graphic 1024x500: brand gradient, the star mark, "The chore app
-  your kid can run themselves", a phone showing the kid dashboard.
-- Phone screenshots: capture from the emulator (CDP recipe in the
-  android-app memory; the emulator's own screenshots corrupt WebView
-  tiles under dialogs): kid dashboard, parent Home, routine player, kid
-  login, week view. 1080x1920 or the device's native size.
+- `feature-graphic-1024x500.png`: brand gradient, the star mark, the tagline,
+  three chips, and a kid-dashboard card. Rendered from HTML (Playwright).
+- `phone-01.png` to `phone-04.png` (1080x2338, 9:19.5): kid login code entry,
+  PIN pad, Emma's kid dashboard (goal card, streak, wallet, badges), chore
+  list. Captured from the live site at phone width on the demo family; the
+  Android app is this exact UI in a shell. Suggested order: 03, 04, 01, 02.
+- App icon 512x512: export from the existing icon set (ChoreStar-Android
+  already ships the adaptive icon).
