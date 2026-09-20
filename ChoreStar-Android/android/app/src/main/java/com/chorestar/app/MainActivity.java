@@ -29,16 +29,35 @@ public class MainActivity extends BridgeActivity {
                 .setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
         }
 
-        // DEBUG ONLY: the Android emulator's GPU translation corrupts the
+        // EMULATOR ONLY: the Android emulator's GPU translation corrupts the
         // WebView's hardware-composited tiles when a dialog stacks over the
         // page (ghost card halves, clipped borders, background bleed-through).
         // DevTools captures of the same frame are pixel-perfect, and both
         // host-GPU and SwiftShader modes corrupt identically, so it is the
-        // emulator's compositing path, not the page. A software layer
-        // bypasses it for local testing; release builds keep hardware.
+        // emulator's compositing path, not the page. A software layer bypasses
+        // it there.
+        //
+        // It must not reach real hardware. A debug build on a Galaxy S25 Ultra
+        // scrolled at 17fps with 99% janky frames and the GPU idle at 2ms,
+        // because every WebView pixel was being drawn on the CPU. Release
+        // builds were always fine; this keeps debug builds on a phone honest
+        // as well, so what we test is what ships.
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        if (debuggable) {
+        if (debuggable && isEmulator()) {
             getBridge().getWebView().setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+    }
+
+    private static boolean isEmulator() {
+        return Build.FINGERPRINT.startsWith("generic")
+            || Build.FINGERPRINT.startsWith("unknown")
+            || Build.FINGERPRINT.contains("emulator")
+            || Build.MODEL.contains("Emulator")
+            || Build.MODEL.contains("Android SDK built for")
+            || Build.MANUFACTURER.contains("Genymotion")
+            || Build.PRODUCT.contains("sdk_gphone")
+            || Build.PRODUCT.startsWith("sdk")
+            || "goldfish".equals(Build.HARDWARE)
+            || "ranchu".equals(Build.HARDWARE);
     }
 }
