@@ -459,6 +459,19 @@
     .dark .dialog-content-settings {
       background: rgb(31,41,55);
     }
+
+    /* Phones: the settings dialog floats instead of filling the screen.
+       The centered flex wrapper (py-4) splits the leftover height evenly,
+       so this cap reads as equal breathing room above and below. In the
+       Android shell the bottom tab bar (5rem) needs clearing as well. */
+    .dialog-content-settings {
+      max-height: calc(100dvh - 5rem);
+      width: min(92vw, 1152px);
+    }
+    .dialog-content-settings.dialog-shell {
+      max-height: calc(100dvh - 11rem);
+      margin-bottom: 5rem;
+    }
   }
 
   /* Card Background - Glass effect */

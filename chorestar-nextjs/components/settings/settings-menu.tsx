@@ -79,7 +79,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent
           onClose={() => setIsOpen(false)}
-          className={`p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] md:min-w-[720px] max-w-6xl${androidShell ? ' mb-20 max-h-[78vh]' : ''}`}
+          className={`p-0 overflow-hidden flex flex-col dialog-content-settings w-[min(95vw,1152px)] md:min-w-[720px] max-w-6xl${androidShell ? ' dialog-shell' : ''}`}
         >
           {/* Header - Fixed */}
           <DialogHeader className="dialog-header-settings">
