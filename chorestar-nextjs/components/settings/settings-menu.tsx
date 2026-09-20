@@ -57,6 +57,14 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
   // needs to open this dialog on a specific tab); self-managed otherwise.
   const isOpen = open ?? internalOpen
   const activeTab = tab ?? internalTab
+  // Phones show the tabs as a horizontal strip; opening straight onto a tab
+  // (Insights from the shell bar, Billing from an upgrade prompt) must bring
+  // that tab into view or the active one sits off-screen to the right.
+  useEffect(() => {
+    if (!isOpen) return
+    const el = document.getElementById(`settings-tab-${activeTab}`)
+    el?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [activeTab, isOpen])
   const setIsOpen = onOpenChange ?? setInternalOpen
   const setActiveTab = onTabChange ?? setInternalTab
 

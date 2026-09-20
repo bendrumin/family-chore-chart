@@ -28,11 +28,7 @@ export function ShellTabBar({ active, onSelect }: {
   return (
     <nav
       aria-label="App navigation"
-      className="fixed bottom-0 inset-x-0 z-[10005] border-t border-black/[0.06] dark:border-white/[0.08] shadow-[0_-2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_-2px_12px_rgba(0,0,0,0.35)]"
-      style={{
-        background: 'var(--card-bg)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
+      className="fixed bottom-0 inset-x-0 bg-white dark:bg-gray-900 z-[10005] border-t border-black/[0.06] dark:border-white/[0.08] shadow-[0_-2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_-2px_12px_rgba(0,0,0,0.35)]"
     >
       <div className="flex items-stretch">
         {TABS.map(({ id, label, icon: Icon }) => {
