@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Languages ChoreStar can present. Kid mode (the screens children actually use)
+  is translated; parent settings stay English, the same as in a browser set to
+  one of these languages. Declaring them gives Android 13+ a per-app language
+  picker, so a family on an English phone can still hand their kid a Spanish
+  ChoreStar.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en"/>
+    <locale android:name="es"/>
+    <locale android:name="pt-BR"/>
+    <locale android:name="ar"/>
+</locale-config>

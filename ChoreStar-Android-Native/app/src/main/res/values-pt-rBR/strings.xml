@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phrases the iOS catalog does not have. Aliases in values/strings.xml pick up iOS translations on their own. -->
+<resources>
+    <string name="tagline">Tarefas que as crianças realmente querem fazer</string>
+    <string name="auth_create_family">Criar família</string>
+    <string name="auth_account_created">Conta criada. Confira seu e-mail para confirmá-la e depois entre.</string>
+    <string name="auth_could_not_create">Não foi possível criar a conta</string>
+    <string name="auth_reset_sent">Link de redefinição enviado para %1$s</string>
+    <string name="auth_wrong_credentials">E-mail ou senha incorretos</string>
+    <string name="auth_confirm_email_first">Confirme seu e-mail primeiro (veja sua caixa de entrada)</string>
+    <string name="error_generic">Algo deu errado</string>
+    <string name="error_no_connection">Sem conexão</string>
+    <string name="error_load_family">Não foi possível carregar sua família</string>
+    <string name="error_could_not_save">Não foi possível salvar: %1$s</string>
+    <string name="greeting_morning">Bom dia</string>
+    <string name="greeting_afternoon">Boa tarde</string>
+    <string name="greeting_evening">Boa noite</string>
+    <string name="home_your_family">Sua família</string>
+    <string name="home_done_of_due">%1$d de %2$d</string>
+    <string name="home_chores_done_today">tarefas feitas hoje</string>
+    <plurals name="home_pending_count">
+        <item quantity="one">%1$d tarefa marcada por uma criança, aguardando seu OK</item>
+        <item quantity="other">%1$d tarefas marcadas por uma criança, aguardando seu OK</item>
+    </plurals>
+    <string name="home_today">Hoje</string>
+    <string name="home_child_done_of_due">%1$d de %2$d feitas</string>
+    <string name="home_no_children">Nenhuma criança ainda. Adicione a primeira na aba Família.</string>
+    <string name="chore_state_waiting">Aguardando seu OK</string>
+    <plurals name="family_chore_count">
+        <item quantity="one">%1$d tarefa</item>
+        <item quantity="other">%1$d tarefas</item>
+    </plurals>
+    <string name="family_kid_login_hint">As crianças abrem chorestar.app/kid-login, digitam este código e depois o PIN.</string>
+    <string name="stats_week_of">Semana de %1$s</string>
+    <string name="settings_plan">Plano: %1$s</string>
+    <string name="settings_rewards">Recompensas</string>
+    <string name="settings_daily_rate">Valor diário: %1$s por um dia perfeito</string>
+    <string name="settings_currency">Moeda: %1$s</string>
+    <string name="settings_require_approval">As marcações das crianças aguardam seu OK</string>
+
+    <!-- Keys the iOS catalog has only in English. Translated here so the Android app is fully Portuguese. -->
+    <string name="tab_home">Início</string>
+    <string name="tab_family">Família</string>
+    <string name="tab_chores">Tarefas</string>
+    <string name="tab_stats">Estatísticas</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="auth_sign_in">Entrar</string>
+    <string name="auth_create_account">Criar conta</string>
+    <string name="auth_family_name">Nome da família</string>
+    <string name="auth_email">E-mail</string>
+    <string name="auth_password">Senha</string>
+    <string name="auth_forgot_password">Esqueceu a senha?</string>
+    <string name="home_earned_today">%1$s ganho hoje</string>
+    <string name="home_needs_your_ok">Precisa do seu OK</string>
+    <string name="home_nothing_due_today">Nada previsto para hoje</string>
+    <string name="chores_title">Tarefas</string>
+    <string name="chores_none">Nenhuma tarefa ainda</string>
+    <string name="chore_state_done">Feita</string>
+    <string name="chore_state_not_done">Não feita</string>
+    <string name="family_title">Família</string>
+    <string name="family_age">%1$d anos</string>
+    <string name="family_kid_login_code">Código de acesso das crianças</string>
+    <string name="stats_title">Estatísticas</string>
+    <string name="stats_perfect_days">Dias perfeitos</string>
+    <string name="stats_complete">Concluído</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_account">Conta</string>
+    <string name="settings_per_chore">Por tarefa</string>
+</resources>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App-level names for every string the native UI shows.
+
+  Where the iOS catalog (strings_shared.xml, generated from Localizable.xcstrings)
+  already has the phrase, the entry here is an alias to that key so the iOS
+  translations flow through untouched. Only phrases iOS does not have are
+  written out in English here; translate those in values-<locale>/strings.xml.
+-->
+<resources>
+    <string name="app_name">ChoreStar</string>
+    <string name="tagline">Chores kids actually want to do</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">@string/home_70f8b</string>
+    <string name="tab_family">@string/family_4efb6</string>
+    <string name="tab_chores">@string/chores_33cec</string>
+    <string name="tab_stats">@string/stats_be763</string>
+    <string name="tab_settings">@string/settings_c7f73</string>
+
+    <!-- Auth -->
+    <string name="auth_sign_in">@string/sign_in_f8492</string>
+    <string name="auth_create_account">@string/create_account_eff4f</string>
+    <string name="auth_create_family">Create family</string>
+    <string name="auth_family_name">@string/family_name_2e477</string>
+    <string name="auth_email">@string/email_84add</string>
+    <string name="auth_password">@string/password_8be3c</string>
+    <string name="auth_forgot_password">@string/forgot_password_1cc8d</string>
+    <string name="auth_account_created">Account created. Check your email to confirm it, then sign in.</string>
+    <string name="auth_could_not_create">Could not create the account</string>
+    <string name="auth_reset_sent">Reset link sent to %1$s</string>
+    <string name="auth_wrong_credentials">Wrong email or password</string>
+    <string name="auth_confirm_email_first">Confirm your email first (check your inbox)</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_no_connection">No connection</string>
+    <string name="error_load_family">Could not load your family</string>
+    <string name="error_could_not_save">Could not save: %1$s</string>
+
+    <!-- Home -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="home_your_family">Your family</string>
+    <string name="home_done_of_due">%1$d of %2$d</string>
+    <string name="home_chores_done_today">chores done today</string>
+    <string name="home_earned_today">@string/earned_today_3b202</string>
+    <string name="home_needs_your_ok">@string/needs_your_ok_0ff3d</string>
+    <plurals name="home_pending_count">
+        <item quantity="one">%1$d chore ticked by a kid, waiting for you</item>
+        <item quantity="other">%1$d chores ticked by a kid, waiting for you</item>
+    </plurals>
+    <string name="home_today">Today</string>
+    <string name="home_nothing_due_today">@string/nothing_due_today_b422c</string>
+    <string name="home_child_done_of_due">%1$d of %2$d done</string>
+    <string name="home_no_children">No children yet. Add your first from the Family tab.</string>
+
+    <!-- Chores -->
+    <string name="chores_title">@string/chores_33cec</string>
+    <string name="chores_none">@string/no_chores_yet_83688</string>
+    <string name="chore_state_waiting">Waiting for your OK</string>
+    <string name="chore_state_done">@string/done_e9b45</string>
+    <string name="chore_state_not_done">@string/not_done_bb967</string>
+
+    <!-- Family -->
+    <string name="family_title">@string/family_4efb6</string>
+    <string name="family_age">@string/age_lld_5425d</string>
+    <plurals name="family_chore_count">
+        <item quantity="one">%1$d chore</item>
+        <item quantity="other">%1$d chores</item>
+    </plurals>
+    <string name="family_kid_login_code">@string/kid_login_code_865f4</string>
+    <string name="family_kid_login_hint">Kids open chorestar.app/kid-login, enter this code, then their PIN.</string>
+
+    <!-- Stats -->
+    <string name="stats_title">@string/stats_be763</string>
+    <string name="stats_week_of">Week of %1$s</string>
+    <string name="stats_perfect_days">@string/perfect_days_8edc1</string>
+    <string name="stats_earned">@string/earned_257f3</string>
+    <string name="stats_complete">@string/complete_1f5a1</string>
+
+    <!-- Settings -->
+    <string name="settings_title">@string/settings_c7f73</string>
+    <string name="settings_account">@string/account_85dfa</string>
+    <string name="settings_plan">Plan: %1$s</string>
+    <string name="settings_rewards">Rewards</string>
+    <string name="settings_per_chore">@string/per_chore_93bc5</string>
+    <string name="settings_daily_rate">Daily rate: %1$s for a perfect day</string>
+    <string name="settings_currency">Currency: %1$s</string>
+    <string name="settings_require_approval">Kid ticks wait for your OK</string>
+    <string name="settings_sign_out">@string/sign_out_dc164</string>
+</resources>

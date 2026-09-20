@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phrases the iOS catalog does not have. Aliases in values/strings.xml pick up iOS translations on their own. -->
+<resources>
+    <string name="tagline">Tareas que los niños sí quieren hacer</string>
+    <string name="auth_create_family">Crear familia</string>
+    <string name="auth_account_created">Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.</string>
+    <string name="auth_could_not_create">No se pudo crear la cuenta</string>
+    <string name="auth_reset_sent">Enlace de restablecimiento enviado a %1$s</string>
+    <string name="auth_wrong_credentials">Correo o contraseña incorrectos</string>
+    <string name="auth_confirm_email_first">Confirma tu correo primero (revisa tu bandeja de entrada)</string>
+    <string name="error_generic">Algo salió mal</string>
+    <string name="error_no_connection">Sin conexión</string>
+    <string name="error_load_family">No se pudo cargar tu familia</string>
+    <string name="error_could_not_save">No se pudo guardar: %1$s</string>
+    <string name="greeting_morning">Buenos días</string>
+    <string name="greeting_afternoon">Buenas tardes</string>
+    <string name="greeting_evening">Buenas noches</string>
+    <string name="home_your_family">Tu familia</string>
+    <string name="home_done_of_due">%1$d de %2$d</string>
+    <string name="home_chores_done_today">tareas hechas hoy</string>
+    <plurals name="home_pending_count">
+        <item quantity="one">%1$d tarea marcada por un niño, esperando tu visto bueno</item>
+        <item quantity="other">%1$d tareas marcadas por un niño, esperando tu visto bueno</item>
+    </plurals>
+    <string name="home_today">Hoy</string>
+    <string name="home_child_done_of_due">%1$d de %2$d hechas</string>
+    <string name="home_no_children">Aún no hay niños. Agrega el primero desde la pestaña Familia.</string>
+    <string name="chore_state_waiting">Esperando tu visto bueno</string>
+    <plurals name="family_chore_count">
+        <item quantity="one">%1$d tarea</item>
+        <item quantity="other">%1$d tareas</item>
+    </plurals>
+    <string name="family_kid_login_hint">Los niños abren chorestar.app/kid-login, escriben este código y luego su PIN.</string>
+    <string name="stats_week_of">Semana del %1$s</string>
+    <string name="settings_plan">Plan: %1$s</string>
+    <string name="settings_rewards">Recompensas</string>
+    <string name="settings_daily_rate">Tarifa diaria: %1$s por un día perfecto</string>
+    <string name="settings_currency">Moneda: %1$s</string>
+    <string name="settings_require_approval">Las marcas de los niños esperan tu visto bueno</string>
+
+    <!-- Keys the iOS catalog has only in English. Translated here so the Android app is fully Spanish. -->
+    <string name="tab_home">Inicio</string>
+    <string name="tab_family">Familia</string>
+    <string name="tab_chores">Tareas</string>
+    <string name="tab_stats">Estadísticas</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="auth_sign_in">Iniciar sesión</string>
+    <string name="auth_create_account">Crear cuenta</string>
+    <string name="auth_family_name">Nombre de la familia</string>
+    <string name="auth_email">Correo electrónico</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="home_earned_today">%1$s ganado hoy</string>
+    <string name="home_needs_your_ok">Necesita tu visto bueno</string>
+    <string name="home_nothing_due_today">Nada pendiente hoy</string>
+    <string name="chores_title">Tareas</string>
+    <string name="chores_none">Aún no hay tareas</string>
+    <string name="chore_state_done">Hecha</string>
+    <string name="chore_state_not_done">Sin hacer</string>
+    <string name="family_title">Familia</string>
+    <string name="family_age">%1$d años</string>
+    <string name="family_kid_login_code">Código de acceso para niños</string>
+    <string name="stats_title">Estadísticas</string>
+    <string name="stats_perfect_days">Días perfectos</string>
+    <string name="stats_complete">Completado</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_per_chore">Por tarea</string>
+</resources>

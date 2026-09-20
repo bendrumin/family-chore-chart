@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Phrases the iOS catalog does not have. Aliases in values/strings.xml pick up iOS translations on their own. -->
+<resources>
+    <string name="tagline">مهام يرغب الأطفال فعلًا في إنجازها</string>
+    <string name="auth_create_family">إنشاء عائلة</string>
+    <string name="auth_account_created">تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيده ثم سجّل الدخول.</string>
+    <string name="auth_could_not_create">تعذّر إنشاء الحساب</string>
+    <string name="auth_reset_sent">تم إرسال رابط إعادة التعيين إلى %1$s</string>
+    <string name="auth_wrong_credentials">البريد الإلكتروني أو كلمة المرور غير صحيحة</string>
+    <string name="auth_confirm_email_first">أكّد بريدك الإلكتروني أولًا (تحقق من صندوق الوارد)</string>
+    <string name="error_generic">حدث خطأ ما</string>
+    <string name="error_no_connection">لا يوجد اتصال</string>
+    <string name="error_load_family">تعذّر تحميل عائلتك</string>
+    <string name="error_could_not_save">تعذّر الحفظ: %1$s</string>
+    <string name="greeting_morning">صباح الخير</string>
+    <string name="greeting_afternoon">مساء الخير</string>
+    <string name="greeting_evening">مساء الخير</string>
+    <string name="home_your_family">عائلتك</string>
+    <string name="home_done_of_due">%1$d من %2$d</string>
+    <string name="home_chores_done_today">مهام أُنجزت اليوم</string>
+    <plurals name="home_pending_count">
+        <item quantity="zero">لا توجد مهام بانتظار موافقتك</item>
+        <item quantity="one">مهمة واحدة علّمها طفل، بانتظار موافقتك</item>
+        <item quantity="two">مهمتان علّمهما طفل، بانتظار موافقتك</item>
+        <item quantity="few">%1$d مهام علّمها طفل، بانتظار موافقتك</item>
+        <item quantity="many">%1$d مهمة علّمها طفل، بانتظار موافقتك</item>
+        <item quantity="other">%1$d مهمة علّمها طفل، بانتظار موافقتك</item>
+    </plurals>
+    <string name="home_today">اليوم</string>
+    <string name="home_child_done_of_due">%1$d من %2$d أُنجزت</string>
+    <string name="home_no_children">لا يوجد أطفال بعد. أضف أول طفل من تبويب العائلة.</string>
+    <string name="chore_state_waiting">بانتظار موافقتك</string>
+    <plurals name="family_chore_count">
+        <item quantity="zero">لا مهام</item>
+        <item quantity="one">مهمة واحدة</item>
+        <item quantity="two">مهمتان</item>
+        <item quantity="few">%1$d مهام</item>
+        <item quantity="many">%1$d مهمة</item>
+        <item quantity="other">%1$d مهمة</item>
+    </plurals>
+    <string name="family_kid_login_hint">يفتح الأطفال chorestar.app/kid-login ويدخلون هذا الرمز ثم رمز PIN الخاص بهم.</string>
+    <string name="stats_week_of">أسبوع %1$s</string>
+    <string name="settings_plan">الخطة: %1$s</string>
+    <string name="settings_rewards">المكافآت</string>
+    <string name="settings_daily_rate">المعدل اليومي: %1$s ليوم مثالي</string>
+    <string name="settings_currency">العملة: %1$s</string>
+    <string name="settings_require_approval">علامات الأطفال تنتظر موافقتك</string>
+
+    <!-- Keys the iOS catalog has only in English. Translated here so the Android app is fully Arabic. -->
+    <string name="tab_home">الرئيسية</string>
+    <string name="tab_family">العائلة</string>
+    <string name="tab_chores">المهام</string>
+    <string name="tab_stats">الإحصائيات</string>
+    <string name="tab_settings">الإعدادات</string>
+    <string name="auth_sign_in">تسجيل الدخول</string>
+    <string name="auth_create_account">إنشاء حساب</string>
+    <string name="auth_family_name">اسم العائلة</string>
+    <string name="auth_email">البريد الإلكتروني</string>
+    <string name="auth_password">كلمة المرور</string>
+    <string name="auth_forgot_password">هل نسيت كلمة المرور؟</string>
+    <string name="home_earned_today">%1$s مكسب اليوم</string>
+    <string name="home_needs_your_ok">بحاجة إلى موافقتك</string>
+    <string name="home_nothing_due_today">لا شيء مستحق اليوم</string>
+    <string name="chores_title">المهام</string>
+    <string name="chores_none">لا توجد مهام بعد</string>
+    <string name="chore_state_done">تم</string>
+    <string name="chore_state_not_done">لم يتم</string>
+    <string name="family_title">العائلة</string>
+    <string name="family_age">%1$d سنوات</string>
+    <string name="family_kid_login_code">رمز دخول الأطفال</string>
+    <string name="stats_title">الإحصائيات</string>
+    <string name="stats_perfect_days">أيام مثالية</string>
+    <string name="stats_complete">مكتمل</string>
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_account">الحساب</string>
+    <string name="settings_per_chore">لكل مهمة</string>
+</resources>
