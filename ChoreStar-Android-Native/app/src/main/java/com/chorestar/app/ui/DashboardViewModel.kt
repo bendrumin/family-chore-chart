@@ -82,6 +82,8 @@ data class DashboardState(
     val allTime: List<CompletionRef> = emptyList(),
     /** Badges just earned by a parent tick, waiting to be shown. */
     val unlocked: List<BadgeDef> = emptyList(),
+    /** Kid mode on this phone: the child whose dashboard is showing, or null. */
+    val kidModeChildId: String? = null,
 ) {
     fun routinesFor(childId: String) = routines.filter { it.childId == childId }
     fun achievementProgress(childId: String): List<BadgeProgress> =
@@ -581,6 +583,34 @@ class DashboardViewModel(
             val ai = repository.aiSuggestions(child.name, child.age, existing, rate)
             val list = ai ?: ChoreSuggestionEngine.suggestions(child.name, child.age, existing, rate)
             _state.update { it.copy(suggestions = list, suggestionsPersonalized = ai != null) }
+        }
+    }
+
+    // ── Kid mode on the parent's phone ───────────────────────────────────────
+
+    fun enterKidMode(childId: String) = _state.update { it.copy(kidModeChildId = childId) }
+    fun exitKidMode() = _state.update { it.copy(kidModeChildId = null) }
+
+    /**
+     * A kid ticking on the parent's phone: the family rule decides whether it waits
+     * (photo chore or approve-first) and no badge is awarded until a parent says OK.
+     * Un-ticking a pending cell deletes it.
+     */
+    fun kidToggle(chore: Chore, tickOn: Boolean) {
+        val s = _state.value
+        val day = Dates.dayOfWeek()
+        val existing = s.completion(chore.id, day)
+        viewModelScope.launch {
+            runCatching {
+                if (!tickOn || existing != null) {
+                    if (existing != null) { updateWeek(s.weekStart) { it - existing }; repository.removeCompletion(existing.id) }
+                } else {
+                    val needsOk = chore.requiresPhoto || s.settings?.requireApproval == true
+                    val saved = if (needsOk) repository.addPendingCompletion(chore.id, day, s.weekStart) else repository.addCompletion(chore.id, day, s.weekStart)
+                    updateWeek(s.weekStart) { it + saved }
+                    if (!needsOk) _state.update { it.copy(allTime = it.allTime + CompletionRef(chore.id, s.weekStart, day)) }
+                }
+            }.onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
         }
     }
 

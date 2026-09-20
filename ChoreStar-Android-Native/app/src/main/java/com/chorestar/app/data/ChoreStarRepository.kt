@@ -63,6 +63,8 @@ class ChoreStarRepository(
     val currentUserId: String? get() = supabase.auth.currentUserOrNull()?.id
     val currentEmail: String? get() = supabase.auth.currentUserOrNull()?.email
     private val accessToken: String? get() = supabase.auth.currentAccessTokenOrNull()
+    fun accessTokenOrNull(): String? = accessToken
+    val kid: KidApi by lazy { KidApi(web) }
 
     // ── Auth ────────────────────────────────────────────────────────────────
 
@@ -153,6 +155,12 @@ class ChoreStarRepository(
     suspend fun addCompletion(choreId: String, dayOfWeek: Int, weekStart: String): ChoreCompletion =
         supabase.from("chore_completions")
             .insert(NewCompletion(choreId, dayOfWeek, weekStart)) { select() }
+            .decodeSingle()
+
+    /** Kid mode on a parent's phone with approvals on: the tick waits for a parent. */
+    suspend fun addPendingCompletion(choreId: String, dayOfWeek: Int, weekStart: String): ChoreCompletion =
+        supabase.from("chore_completions")
+            .insert(NewPendingCompletion(choreId, dayOfWeek, weekStart)) { select() }
             .decodeSingle()
 
     suspend fun removeCompletion(id: String) {
@@ -532,6 +540,14 @@ class ChoreStarRepository(
 
     @Serializable
     private data class ReviewBody(val completionId: String, val action: String)
+
+    @Serializable
+    private data class NewPendingCompletion(
+        @SerialName("chore_id") val choreId: String,
+        @SerialName("day_of_week") val dayOfWeek: Int,
+        @SerialName("week_start") val weekStart: String,
+        val status: String = "pending",
+    )
 
     sealed class JoinError(message: String) : Exception(message) {
         data object NotFound : JoinError("not_found")

@@ -439,4 +439,24 @@
     <string name="day_streak">Sequência de %1$d dias</string>
     <string name="streak_subtitle">Dias seguidos com todas as tarefas feitas</string>
     <string name="family_leaderboard">Ranking da família</string>
+
+    <!-- Phase 2e: kid mode -->
+    <string name="next_badge">Próxima: %1$s</string>
+    <string name="streak_safe">Sua sequência de %1$d dias está segura e esperando por você. 🔥</string>
+    <string name="pick_goal_hint">Você tem %1$s. Escolha uma meta e veja a barra encher.</string>
+    <string name="pick_a_goal">Escolha uma meta</string>
+    <string name="change_your_goal">Mudar sua meta</string>
+    <string name="pick_a_picture">Escolha uma figura</string>
+    <string name="what_is_it">O que é?</string>
+    <string name="goal_placeholder">Um Lego, um patinete, um livro…</string>
+    <string name="how_much">Quanto custa?</string>
+    <string name="or_type_amount">ou digite um valor</string>
+    <string name="start_saving">Começar a juntar!</string>
+    <string name="save_changes">Salvar alterações</string>
+    <string name="remove_goal">Remover meta</string>
+    <string name="asked_notice">Pedido feito! Um adulto vai dizer sim ou não para %1$s.</string>
+    <plurals name="goals_reached">
+        <item quantity="one">%1$d meta alcançada</item>
+        <item quantity="other">%1$d metas alcançadas</item>
+    </plurals>
 </resources>

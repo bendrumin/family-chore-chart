@@ -41,7 +41,7 @@ import com.chorestar.app.data.ChoreStarRepository
 import com.chorestar.app.ui.asString
 
 @Composable
-fun AuthScreen(repository: ChoreStarRepository) {
+fun AuthScreen(repository: ChoreStarRepository, onKidLogin: () -> Unit = {}) {
     val vm: AuthViewModel = viewModel(factory = viewModelFactory { initializer { AuthViewModel(repository) } })
     val state by vm.state.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
@@ -110,6 +110,11 @@ fun AuthScreen(repository: ChoreStarRepository) {
             TextButton(onClick = { vm.forgotPassword(email) }, enabled = email.isNotBlank() && !state.busy) {
                 Text(stringResource(R.string.auth_forgot_password))
             }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        androidx.compose.material3.OutlinedButton(onClick = onKidLogin, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            Text("🧒 " + stringResource(R.string.im_a_kid))
         }
 
         state.message?.let {

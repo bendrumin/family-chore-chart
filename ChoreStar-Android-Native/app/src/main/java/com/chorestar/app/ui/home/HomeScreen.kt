@@ -78,7 +78,7 @@ import java.util.Locale
 
 /** iOS DashboardView: hero, getting started, needs-your-OK tray, today's chores. */
 @Composable
-fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -> Unit, onOpenChild: (Child) -> Unit, onOpenFamily: () -> Unit) {
+fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -> Unit, onOpenChild: (Child) -> Unit, onOpenFamily: () -> Unit, onKidMode: () -> Unit = {}) {
     PullToRefreshBox(isRefreshing = state.loading, onRefresh = vm::refresh, modifier = Modifier.fillMaxSize()) {
         if (state.loading && state.children.isEmpty()) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { CircularProgressIndicator() }
@@ -92,6 +92,9 @@ fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -
 
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item { HeroCard(vm, state, familyDone, dueToday.size, earnedToday, onVacation, onOpenChild) }
+            if (state.pinChildIds.isNotEmpty()) item {
+                OutlinedButton(onClick = onKidMode, modifier = Modifier.fillMaxWidth()) { Text("🧒 " + stringResource(R.string.kid_mode)) }
+            }
 
             if (state.children.isEmpty() || state.chores.isEmpty()) item { GettingStartedCard(state, onOpenFamily, onOpenChores) }
 

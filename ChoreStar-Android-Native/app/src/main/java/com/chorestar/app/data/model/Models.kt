@@ -53,7 +53,8 @@ data class NewChildRow(
 @Serializable
 data class Chore(
     val id: String,
-    @SerialName("child_id") val childId: String,
+    /** Absent from the kid API's rows, which are always the signed-in kid's. */
+    @SerialName("child_id") val childId: String = "",
     val name: String,
     @SerialName("reward_cents") val rewardCents: Int = 0,
     @SerialName("is_active") val isActive: Boolean = true,

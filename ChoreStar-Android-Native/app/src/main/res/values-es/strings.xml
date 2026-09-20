@@ -439,4 +439,24 @@
     <string name="day_streak">Racha de %1$d días</string>
     <string name="streak_subtitle">Días seguidos con todas las tareas hechas</string>
     <string name="family_leaderboard">Tabla familiar</string>
+
+    <!-- Phase 2e: kid mode -->
+    <string name="next_badge">Siguiente: %1$s</string>
+    <string name="streak_safe">Tu racha de %1$d días está a salvo y te espera. 🔥</string>
+    <string name="pick_goal_hint">Tienes %1$s. Elige una meta y mira cómo se llena la barra.</string>
+    <string name="pick_a_goal">Elige una meta</string>
+    <string name="change_your_goal">Cambia tu meta</string>
+    <string name="pick_a_picture">Elige una imagen</string>
+    <string name="what_is_it">¿Qué es?</string>
+    <string name="goal_placeholder">Un set de Lego, un patinete, un libro…</string>
+    <string name="how_much">¿Cuánto cuesta?</string>
+    <string name="or_type_amount">o escribe una cantidad</string>
+    <string name="start_saving">¡Empezar a ahorrar!</string>
+    <string name="save_changes">Guardar cambios</string>
+    <string name="remove_goal">Quitar la meta</string>
+    <string name="asked_notice">¡Pedido! Un adulto dirá sí o no a %1$s.</string>
+    <plurals name="goals_reached">
+        <item quantity="one">%1$d meta alcanzada</item>
+        <item quantity="other">%1$d metas alcanzadas</item>
+    </plurals>
 </resources>

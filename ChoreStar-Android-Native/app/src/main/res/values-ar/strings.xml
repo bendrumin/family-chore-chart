@@ -447,4 +447,24 @@
     <string name="day_streak">سلسلة %1$d أيام</string>
     <string name="streak_subtitle">أيام متتالية أُنجزت فيها كل المهام</string>
     <string name="family_leaderboard">لوحة صدارة العائلة</string>
+
+    <!-- Phase 2e: kid mode -->
+    <string name="next_badge">التالي: %1$s</string>
+    <string name="streak_safe">سلسلتك التي تبلغ %1$d أيام في أمان وبانتظارك. 🔥</string>
+    <string name="pick_goal_hint">لديك %1$s. اختر هدفًا وشاهد الشريط يمتلئ.</string>
+    <string name="pick_a_goal">اختر هدفًا</string>
+    <string name="change_your_goal">غيّر هدفك</string>
+    <string name="pick_a_picture">اختر صورة</string>
+    <string name="what_is_it">ما هو؟</string>
+    <string name="goal_placeholder">مجموعة ليغو، سكوتر، كتاب…</string>
+    <string name="how_much">كم ثمنه؟</string>
+    <string name="or_type_amount">أو اكتب مبلغًا</string>
+    <string name="start_saving">ابدأ الادخار!</string>
+    <string name="save_changes">حفظ التغييرات</string>
+    <string name="remove_goal">إزالة الهدف</string>
+    <string name="asked_notice">تم الطلب! سيوافق شخص بالغ على %1$s أو يرفضه.</string>
+    <plurals name="goals_reached">
+        <item quantity="one">تم بلوغ %1$d هدف</item>
+        <item quantity="other">تم بلوغ %1$d أهداف</item>
+    </plurals>
 </resources>

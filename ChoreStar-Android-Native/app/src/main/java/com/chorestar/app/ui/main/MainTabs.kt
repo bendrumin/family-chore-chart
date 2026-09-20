@@ -58,6 +58,10 @@ import com.chorestar.app.ui.family.ChildDetailScreen
 import com.chorestar.app.ui.family.ChildEditorScreen
 import com.chorestar.app.ui.family.FamilyScreen
 import com.chorestar.app.ui.home.HomeScreen
+import com.chorestar.app.ui.kid.ChildAuthScreen
+import com.chorestar.app.ui.kid.ChildMainScreen
+import com.chorestar.app.ui.kid.KidBackend
+import com.chorestar.app.ui.kid.KidViewModel
 import com.chorestar.app.ui.settings.SettingsScreen
 import com.chorestar.app.ui.stats.StatsScreen
 
@@ -85,6 +89,7 @@ object Routes {
     const val SETTINGS_STORE = "settings/store"
     const val SETTINGS_DELETE = "settings/delete"
     const val PAYWALL = "paywall"
+    const val KID_AUTH = "kid/auth"
     const val ROUTINE_NEW = "routine/new?childId={childId}"
     const val ROUTINE_EDIT = "routine/edit/{routineId}"
     const val ROUTINES_STARTER = "routines/starter"
@@ -112,6 +117,20 @@ fun MainTabs(repository: ChoreStarRepository) {
 
     val onTab = backStack?.destination?.route?.let { r -> Tab.entries.any { it.route == r } } ?: true
 
+    // Kid mode on this phone replaces the whole parent UI until the kid signs out.
+    state.kidModeChildId?.let { childId ->
+        val kidVm: KidViewModel = viewModel(key = "kidmode-$childId", factory = viewModelFactory {
+            initializer {
+                KidViewModel(KidBackend.OnParentDevice(childId), repository, repository.kid, parentState = { vm.state.value },
+                    onParentToggle = { chore, on -> vm.kidToggle(chore, on) }, onParentRoutineDone = { r, done, secs -> vm.completeRoutine(r, childId, done, secs) },
+                    onTheme = {}, onSignOut = { vm.exitKidMode() })
+            }
+        })
+        LaunchedEffect(state.completions, state.completedRoutineIds, state.achievements) { kidVm.syncFromParent() }
+        CompositionLocalProvider(LocalAvatarPhotoUrls provides state.photoUrls) { ChildMainScreen(kidVm) }
+        return
+    }
+
     CompositionLocalProvider(LocalAvatarPhotoUrls provides state.photoUrls) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbar) },
@@ -137,7 +156,8 @@ fun MainTabs(repository: ChoreStarRepository) {
         ) { padding ->
             NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
                 composable(Tab.Home.route) {
-                    HomeScreen(vm, state, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onOpenFamily = { nav.navigate(Tab.Family.route) })
+                    HomeScreen(vm, state, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onOpenFamily = { nav.navigate(Tab.Family.route) },
+                        onKidMode = { nav.navigate(Routes.KID_AUTH) })
                 }
                 composable(Tab.Family.route) {
                     FamilyScreen(state, onAddChild = { nav.navigate(Routes.CHILD_NEW) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onEditChild = { nav.navigate(Routes.childEdit(it.id)) })
@@ -157,6 +177,9 @@ fun MainTabs(repository: ChoreStarRepository) {
                 composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }) }
                 composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
                 composable(Routes.PAYWALL) { PaywallScreen(state, onBack = { nav.popBackStack() }) }
+                composable(Routes.KID_AUTH) {
+                    ChildAuthScreen(state, repository.kid, onBack = { nav.popBackStack() }, onAuthenticated = { c -> nav.popBackStack(); vm.enterKidMode(c.id) })
+                }
 
                 composable(Routes.CHILD_NEW) { ChildEditorScreen(vm, child = null, onDone = { nav.popBackStack() }) }
                 composable(Routes.CHILD_EDIT, arguments = listOf(navArgument("childId") { type = NavType.StringType })) { entry ->
