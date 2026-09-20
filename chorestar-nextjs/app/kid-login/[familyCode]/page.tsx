@@ -3,6 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FloatingSparkles } from '@/components/kid/floating-sparkles';
 import { Delete } from 'lucide-react';
 import { useVerifyChildPin } from '@/lib/hooks/useChildPin';
 import { useSound } from '@/lib/hooks/useSound';
@@ -185,29 +186,7 @@ export default function KidLoginWithFamilyPage({
         </motion.button>
       </div>
 
-      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-6xl opacity-10"
-            initial={{
-              x: Math.random() * 1000,
-              y: Math.random() * 1000,
-            }}
-            animate={{
-              y: [null, Math.random() * 1000],
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: 15 + Math.random() * 10,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          >
-            {['⭐', '✨', '🌟', '💫'][Math.floor(Math.random() * 4)]}
-          </motion.div>
-        ))}
-      </div>
+      <FloatingSparkles />
     </div>
   );
 }

@@ -467,6 +467,11 @@
     .dialog-content-settings {
       max-height: calc(100dvh - 5rem);
       width: min(92vw, 1152px);
+      /* Own compositing layer. Android WebView painted this box (rounded,
+         overflow hidden, two scrollers inside) about 24px shorter than its
+         layout, so tab content showed below the modal's bottom edge on a
+         Galaxy S25 Ultra (2026-09-20). contain: paint did not help. */
+      will-change: transform;
     }
     .dialog-content-settings.dialog-shell {
       max-height: calc(100dvh - 11rem);

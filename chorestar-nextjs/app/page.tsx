@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: 'What devices does ChoreStar work on?',
-    a: 'ChoreStar works in any web browser on a phone, tablet, or computer. No app download is required. Bookmark the page and it works like an app on any device. There\'s also a native iPhone and iPad app on the App Store, synced to the same family account.',
+    a: 'ChoreStar works in any web browser on a phone, tablet, or computer. No app download is required. Bookmark the page and it works like an app on any device. There\'s also a native iPhone and iPad app on the App Store, synced to the same family account, and an Android app is in the works.',
   },
   {
     q: 'Can I add chores that repeat daily or weekly?',
@@ -584,6 +584,10 @@ export default async function HomePage() {
                 >
                   Rate ChoreStar on the App Store ★
                 </a>
+              </p>
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                On Android? The Google Play app is in the works. Until it lands, ChoreStar runs
+                in Chrome on any Android phone with the same family account.
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -81,6 +81,22 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
   }, [activeTab, isOpen])
   const setIsOpen = onOpenChange ?? setInternalOpen
   const setActiveTab = onTabChange ?? setInternalTab
+  // Mobile scroll hint: fades out once the strip is scrolled to its end so
+  // the last tab (Account) is not left sitting under the gradient. Measured
+  // on open (after the reveal above has run) and on every strip scroll.
+  const stripRef = useRef<HTMLDivElement>(null)
+  const [stripAtEnd, setStripAtEnd] = useState(false)
+  const updateStripEnd = useCallback(() => {
+    const el = stripRef.current
+    if (!el) return
+    setStripAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2)
+  }, [])
+  useEffect(() => {
+    if (!isOpen) { setStripAtEnd(false); return }
+    const frame = requestAnimationFrame(updateStripEnd)
+    const settled = window.setTimeout(updateStripEnd, 300)
+    return () => { cancelAnimationFrame(frame); window.clearTimeout(settled) }
+  }, [isOpen, activeTab, updateStripEnd])
 
   return (
     <>
@@ -117,7 +133,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
                 Wrapper is display:contents on desktop (no layout impact) and a
                 positioning context on mobile for the scroll-hint fade. */}
             <div className="relative flex-shrink-0 md:contents">
-            <div data-settings-tab-strip className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
+            <div ref={stripRef} onScroll={updateStripEnd} data-settings-tab-strip className="md:w-48 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-2 md:p-4 flex md:flex-col flex-shrink-0 overflow-x-auto md:overflow-x-visible md:overflow-y-auto">
               <div role="tablist" aria-label="Settings sections" className="flex md:flex-col gap-1 md:space-y-1 md:gap-0 flex-1">
                 {TABS.map((tab) => {
                   const Icon = tab.icon
@@ -151,7 +167,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
               )}
             </div>
               {/* Mobile-only scroll hint so people know the tab row swipes */}
-              <div className="md:hidden pointer-events-none absolute inset-y-0 right-0 w-14 flex items-center justify-end pr-1 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent">
+              <div className={`md:hidden pointer-events-none absolute inset-y-0 right-0 w-14 flex items-center justify-end pr-1 bg-gradient-to-l from-gray-100 dark:from-gray-900 to-transparent transition-opacity ${stripAtEnd ? 'opacity-0' : 'opacity-100'}`}>
                 <ChevronRight className="w-5 h-5 text-indigo-500 dark:text-indigo-300 animate-pulse" aria-hidden="true" />
               </div>
             </div>

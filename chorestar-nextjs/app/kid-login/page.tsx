@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { FloatingSparkles } from '@/components/kid/floating-sparkles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,29 +94,7 @@ export default function KidLoginPage() {
           {t('login.parentsHint')}
         </motion.p>
 
-        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute text-6xl opacity-10"
-              initial={{
-                x: Math.random() * 1000,
-                y: Math.random() * 1000,
-              }}
-              animate={{
-                y: [null, Math.random() * 1000],
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 15 + Math.random() * 10,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            >
-              {['⭐', '✨', '🌟', '💫'][Math.floor(Math.random() * 4)]}
-            </motion.div>
-          ))}
-        </div>
+        <FloatingSparkles />
       </div>
     </div>
   );

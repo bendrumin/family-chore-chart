@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { FloatingSparkles } from '@/components/kid/floating-sparkles';
 import { Play, LogOut, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRoutines } from '@/lib/hooks/useRoutines';
@@ -342,29 +343,7 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       )}
 
       {/* Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-6xl opacity-10"
-            initial={{
-              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
-            }}
-            animate={{
-              y: [null, Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000)],
-              rotate: [0, 360],
-            }}
-            transition={{
-              duration: 15 + Math.random() * 10,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          >
-            {['⭐', '✨', '🌟', '💫'][Math.floor(Math.random() * 4)]}
-          </motion.div>
-        ))}
-      </div>
+      <FloatingSparkles />
     </div>
   );
 }
