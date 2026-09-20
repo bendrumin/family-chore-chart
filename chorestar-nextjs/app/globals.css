@@ -449,12 +449,14 @@
      S25 Ultra, 2026-09-20) the blur does not smear enough, so chore names
      ghosted through the Settings dialog. Nothing is lost visually. */
   @media (max-width: 639px) {
-    .dialog-content-bg {
+    .dialog-content-bg,
+    .dialog-content-settings {
       background: rgb(255,255,255);
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
-    .dark .dialog-content-bg {
+    .dark .dialog-content-bg,
+    .dark .dialog-content-settings {
       background: rgb(31,41,55);
     }
   }
