@@ -411,7 +411,10 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                 aria-label={`Mark all of ${kidLabel}'s chores due today as done`}
               >
                 <CheckCheck className="w-4 h-4 shrink-0" aria-hidden />
-                <span className="sm:hidden">Today</span>
+                {/* "Mark", not "Today": the view switch directly above already
+                    has a Today tab, and two neighbours with the same word read
+                    as the same control. */}
+                <span className="sm:hidden">Mark today</span>
                 <span className="hidden sm:inline">Mark today done</span>
               </Button>
               <Button
@@ -423,7 +426,7 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                 aria-label={`Mark all of ${kidLabel}'s chores due so far this week as done`}
               >
                 <CalendarCheck className="w-4 h-4 shrink-0" aria-hidden />
-                <span className="sm:hidden">Week so far</span>
+                <span className="sm:hidden">Mark week</span>
                 <span className="hidden sm:inline">Mark week so far done</span>
               </Button>
             </div>
