@@ -404,6 +404,7 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
               completions={completions}
               weekStart={weekStart}
               vacationDays={vacationDays}
+              settings={settings}
             />
           )}
 
