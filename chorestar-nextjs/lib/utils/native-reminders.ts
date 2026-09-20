@@ -114,7 +114,13 @@ export async function enableDailyReminder(time: ReminderTime): Promise<EnableRes
     // Channels exist from Android 8; a failure here is not worth blocking on.
   }
 
-  await api.cancel({ notifications: [{ id: DAILY_ID }] })
+  // Clearing a reminder that was never set throws on some plugin versions,
+  // and that must not stop the new one being scheduled.
+  try {
+    await api.cancel({ notifications: [{ id: DAILY_ID }] })
+  } catch {
+    // Nothing to clear.
+  }
   await api.schedule({
     notifications: [
       {

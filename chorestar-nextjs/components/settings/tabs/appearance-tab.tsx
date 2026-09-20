@@ -82,20 +82,29 @@ export function AppearanceTab() {
   }, [])
 
   const handleReminderToggle = async () => {
-    if (reminderOn) {
-      await disableDailyReminder()
-      setReminderOn(false)
-      toast.success('Daily reminder turned off')
-      return
-    }
-    const result = await enableDailyReminder(reminderTime)
-    if (result === 'ok') {
-      setReminderOn(true)
-      toast.success(`Reminder set for ${formatReminderTime(reminderTime)} every day`)
-    } else if (result === 'denied') {
-      toast.error('Android blocked notifications for ChoreStar. Turn them on in Android Settings > Apps > ChoreStar > Notifications.')
-    } else {
-      toast.error('Reminders are not available on this device')
+    // Every branch reports. A rejected plugin call used to leave the click
+    // handler's promise unhandled, so a reminder that never scheduled looked
+    // exactly like one that did.
+    try {
+      if (reminderOn) {
+        await disableDailyReminder()
+        setReminderOn(false)
+        toast.success('Daily reminder turned off')
+        return
+      }
+      const result = await enableDailyReminder(reminderTime)
+      if (result === 'ok') {
+        const { scheduled } = await reminderState()
+        setReminderOn(scheduled)
+        if (scheduled) toast.success(`Reminder set for ${formatReminderTime(reminderTime)} every day`)
+        else toast.error('Android accepted the reminder but did not keep it. Please report this.')
+      } else if (result === 'denied') {
+        toast.error('Android blocked notifications for ChoreStar. Turn them on in Android Settings > Apps > ChoreStar > Notifications.')
+      } else {
+        toast.error('Reminders are not available on this device')
+      }
+    } catch (error) {
+      toast.error(`Could not set the reminder: ${error instanceof Error ? error.message : 'unknown error'}`)
     }
   }
 
@@ -105,8 +114,12 @@ export function AppearanceTab() {
     setReminderTime(parsed)
     // Already on: move the existing reminder rather than waiting for a toggle.
     if (reminderOn) {
-      const result = await enableDailyReminder(parsed)
-      if (result === 'ok') toast.success(`Reminder moved to ${formatReminderTime(parsed)}`)
+      try {
+        const result = await enableDailyReminder(parsed)
+        if (result === 'ok') toast.success(`Reminder moved to ${formatReminderTime(parsed)}`)
+      } catch (error) {
+        toast.error(`Could not move the reminder: ${error instanceof Error ? error.message : 'unknown error'}`)
+      }
     }
   }
 
