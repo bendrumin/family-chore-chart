@@ -38,6 +38,13 @@ const config: CapacitorConfig = {
     appendUserAgent: 'ChoreStarAndroid',
   },
   plugins: {
+    LocalNotifications: {
+      // Android renders a notification's small icon as a silhouette. Without
+      // an explicit one the framework picks a generic system icon, so the
+      // daily reminder arrived unbranded.
+      smallIcon: 'ic_stat_chorestar',
+      iconColor: '#6366F1',
+    },
     SplashScreen: {
       launchShowDuration: 1200,
       backgroundColor: '#6366f1',
