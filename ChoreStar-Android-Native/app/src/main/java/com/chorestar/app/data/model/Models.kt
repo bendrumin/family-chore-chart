@@ -173,3 +173,43 @@ data class PendingApproval(
 
 @Serializable
 data class PendingResponse(val items: List<PendingApproval> = emptyList())
+
+@Serializable
+data class FamilyMemberRow(
+    val id: String,
+    @SerialName("user_id") val userId: String,
+    @SerialName("created_at") val createdAt: String? = null,
+)
+
+@Serializable
+data class FamilyCodeRow(@SerialName("user_id") val userId: String, val code: String)
+
+@Serializable
+data class RewardItem(
+    val id: String,
+    @SerialName("user_id") val userId: String,
+    val title: String,
+    val emoji: String? = null,
+    @SerialName("price_cents") val priceCents: Int,
+    @SerialName("is_active") val isActive: Boolean = true,
+    @SerialName("sort_order") val sortOrder: Int = 0,
+)
+
+@Serializable
+data class NewRewardItem(
+    @SerialName("user_id") val userId: String,
+    val title: String,
+    val emoji: String?,
+    @SerialName("price_cents") val priceCents: Int,
+    @SerialName("sort_order") val sortOrder: Int,
+)
+
+@Serializable
+data class RewardsUpsert(
+    @SerialName("user_id") val userId: String,
+    @SerialName("reward_mode") val rewardMode: String,
+    @SerialName("daily_reward_cents") val dailyRewardCents: Int,
+    @SerialName("weekly_bonus_cents") val weeklyBonusCents: Int,
+    @SerialName("currency_code") val currencyCode: String,
+    val timezone: String,
+)

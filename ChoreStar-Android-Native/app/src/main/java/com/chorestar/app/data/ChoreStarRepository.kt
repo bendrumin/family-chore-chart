@@ -6,7 +6,13 @@ import com.chorestar.app.data.model.ChildPinRef
 import com.chorestar.app.data.model.ChildPinRow
 import com.chorestar.app.data.model.Chore
 import com.chorestar.app.data.model.ChoreCompletion
+import com.chorestar.app.data.model.FamilyCodeRow
+import com.chorestar.app.data.model.FamilyMemberRow
 import com.chorestar.app.data.model.FamilyMembership
+import com.chorestar.app.data.model.NewRewardItem
+import com.chorestar.app.data.model.RewardItem
+import com.chorestar.app.data.model.RewardsUpsert
+import kotlinx.serialization.json.JsonObject
 import com.chorestar.app.data.model.FamilySettings
 import com.chorestar.app.data.model.NewChildRow
 import com.chorestar.app.data.model.NewChoreRow
@@ -337,6 +343,104 @@ class ChoreStarRepository(
         }.getOrNull()
     }
 
+    // ── Family settings ──────────────────────────────────────────────────────
+
+    /** These three are plain updates on iOS and silently no-op without a row; upserting is safer for a fresh family. */
+    suspend fun setRequireApproval(userId: String, on: Boolean) =
+        supabase.from("family_settings").update({ set("require_approval", on) }) { filter { eq("user_id", userId) } }
+
+    suspend fun setActivityPush(userId: String, on: Boolean) =
+        supabase.from("family_settings").update({ set("activity_push_enabled", on) }) { filter { eq("user_id", userId) } }
+
+    /** Read-merge-write: the web keeps other keys (whatsNewSeenVersion…) in the same JSON. */
+    suspend fun setCustomTheme(userId: String, merged: JsonObject) =
+        supabase.from("family_settings").update({ set("custom_theme", merged) }) { filter { eq("user_id", userId) } }
+
+    suspend fun updateRewards(row: RewardsUpsert) =
+        supabase.from("family_settings").upsert(row) { onConflict = "user_id" }
+
+    // ── Family sharing (family_codes + family_members, no invites table, no expiry) ──
+
+    suspend fun familyJoinCode(userId: String): String? =
+        supabase.from("family_codes").select { filter { eq("user_id", userId) }; limit(1) }.decodeList<FamilyCodeRow>().firstOrNull()?.code
+
+    suspend fun createJoinCode(userId: String): String {
+        familyJoinCode(userId)?.let { return it }
+        val alphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+        val code = (1..8).map { alphabet[SecureRandom().nextInt(alphabet.length)] }.joinToString("")
+        supabase.from("family_codes").insert(FamilyCodeRow(userId, code))
+        return code
+    }
+
+    /** Returns the owner's user id, or a message when the code is wrong or already used. */
+    suspend fun joinFamily(code: String): Result<String> {
+        val uid = currentUserId ?: return Result.failure(IllegalStateException("Not signed in"))
+        val normalized = code.trim().lowercase()
+        val owner = supabase.from("family_codes").select { filter { eq("code", normalized) }; limit(1) }.decodeList<FamilyCodeRow>().firstOrNull()?.userId
+            ?: return Result.failure(JoinError.NotFound)
+        if (owner == uid) return Result.failure(JoinError.OwnFamily)
+        return runCatching {
+            supabase.from("family_members").insert(FamilyMembership(uid, owner))
+            owner
+        }.recoverCatching { e -> if (e.message?.contains("23505") == true || e.message?.contains("duplicate", true) == true) throw JoinError.Already else throw e }
+    }
+
+    suspend fun familyMembers(ownerId: String): List<FamilyMemberRow> =
+        supabase.from("family_members").select { filter { eq("family_id", ownerId) } }.decodeList()
+
+    suspend fun removeFamilyMember(memberRowId: String) {
+        supabase.from("family_members").delete { filter { eq("id", memberRowId) } }
+    }
+
+    suspend fun leaveFamily() {
+        val uid = currentUserId ?: return
+        supabase.from("family_members").delete { filter { eq("user_id", uid) } }
+    }
+
+    /** iOS fetches or mints it through the web app so the 8-hex format stays server-owned. */
+    suspend fun materializeKidLoginCode(): String? {
+        val token = accessToken ?: return null
+        return runCatching {
+            val response = web.get("${BuildConfig.WEB_API_BASE}/api/kid-login-code") { header("Authorization", "Bearer $token") }
+            if (response.status.value != 200) null
+            else SupabaseModule.json.parseToJsonElement(response.bodyAsText()).jsonObject["code"]?.jsonPrimitive?.content
+        }.getOrNull()
+    }
+
+    // ── Account ──────────────────────────────────────────────────────────────
+
+    /** Same as iOS: the current password is asked for but GoTrue only needs the new one. */
+    suspend fun changePassword(newPassword: String) {
+        supabase.auth.updateUser { password = newPassword }
+    }
+
+    /** POST /api/account/delete with {confirm:"DELETE"}; the server cascades everything. */
+    suspend fun deleteAccount(): Result<Unit> {
+        val token = accessToken ?: return Result.failure(IllegalStateException("Your session expired. Please sign in again and retry."))
+        val response = web.post("${BuildConfig.WEB_API_BASE}/api/account/delete") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $token")
+            setBody(mapOf("confirm" to "DELETE"))
+        }
+        val text = response.bodyAsText()
+        return if (response.status.value in 200..299) Result.success(Unit)
+        else Result.failure(IllegalStateException(errorMessage(text) ?: if (response.status.value == 429) "Too many attempts. Please wait a few minutes and try again." else "We couldn't delete your account. Please try again."))
+    }
+
+    // ── Reward store ─────────────────────────────────────────────────────────
+
+    suspend fun rewardItems(userId: String): List<RewardItem> =
+        supabase.from("reward_items").select { filter { eq("user_id", userId); eq("is_active", true) }; order("sort_order", Order.ASCENDING) }.decodeList()
+
+    suspend fun addRewardItem(row: NewRewardItem): RewardItem =
+        supabase.from("reward_items").insert(row) { select() }.decodeSingle()
+
+    suspend fun updateRewardItemPrice(id: String, cents: Int) =
+        supabase.from("reward_items").update({ set("price_cents", cents); set("updated_at", Instant.now().toString()) }) { filter { eq("id", id) } }
+
+    suspend fun removeRewardItem(id: String) =
+        supabase.from("reward_items").update({ set("is_active", false) }) { filter { eq("id", id) } }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private fun errorMessage(body: String): String? = runCatching {
@@ -350,6 +454,12 @@ class ChoreStarRepository(
 
     @Serializable
     private data class ReviewBody(val completionId: String, val action: String)
+
+    sealed class JoinError(message: String) : Exception(message) {
+        data object NotFound : JoinError("not_found")
+        data object OwnFamily : JoinError("own_family")
+        data object Already : JoinError("already")
+    }
 
     @Serializable
     private data class VacationUpsert(

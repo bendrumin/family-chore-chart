@@ -262,4 +262,162 @@
     <string name="send_back">@string/send_back_0aa2a</string>
     <string name="send_back_to">@string/send_back_to_5749a</string>
     <string name="approve_for">@string/approve_for_04e7b</string>
+
+    <!-- Settings -->
+    <string name="appearance">@string/appearance_41def</string>
+    <string name="theme_mode">@string/theme_a797e</string>
+    <string name="mode_light">@string/light_a36ef</string>
+    <string name="mode_dark">@string/dark_ae1ef</string>
+    <string name="mode_system">System</string>
+    <string name="theme_section">@string/theme_a797e</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_classic">Classic</string>
+    <string name="theme_holidays">Holidays</string>
+    <string name="theme_seasons">Seasons</string>
+    <string name="theme_premium">@string/premium_6c2f2</string>
+    <string name="theme_footer_accent">Custom accent overrides the theme colours. Theme choice syncs with the web app.</string>
+    <string name="theme_footer_active">Active: %1$s. Synced with the web app.</string>
+    <string name="theme_footer_syncs">@string/theme_choice_syncs_with_the_web_app_6eb88</string>
+    <string name="accent_colour">@string/accent_colour_c9fa7</string>
+    <string name="custom_accent">@string/custom_accent_87b56</string>
+    <string name="reset_to_theme_colours">@string/reset_to_theme_colours_18950</string>
+    <string name="accent_footer">@string/synced_with_the_web_app_pick_a_colour_on_4f4b6</string>
+    <string name="audio">@string/audio_acdac</string>
+    <string name="sound_effects">@string/sound_effects_9c018</string>
+    <string name="subscription">@string/subscription_8fde4</string>
+    <string name="plan">@string/plan_ae2f9</string>
+    <string name="upgrade_to_premium">@string/upgrade_to_premium_59965</string>
+    <string name="upgrade_subtitle">@string/unlimited_children_chores_more_196a9</string>
+    <string name="children_label">@string/children_dcf75</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="change_password">@string/change_password_49289</string>
+    <string name="delete_account">@string/delete_account_ee1b9</string>
+    <string name="family_sharing_kid_login">@string/family_sharing_kid_login_b2958</string>
+    <string name="rewards_currency">@string/rewards_currency_c8041</string>
+    <string name="reward_store">@string/reward_store_2f69c</string>
+    <string name="vacation">@string/vacation_789ca</string>
+    <string name="vacation_mode">@string/vacation_mode_25c3d</string>
+    <string name="vacation_from">@string/from_3f660</string>
+    <string name="vacation_through">@string/through_55365</string>
+    <string name="vacation_footer">@string/no_chores_due_streaks_safe_alerts_quiet_a502f</string>
+    <string name="approve_chores_first">@string/approve_chores_first_d9ec0</string>
+    <string name="approve_chores_first_subtitle">@string/kids_ticks_wait_in_a_needs_your_ok_list_0a2b2</string>
+    <string name="notifications">@string/notifications_753a2</string>
+    <string name="activity_alerts">@string/activity_alerts_472bb</string>
+    <string name="daily_reminder">@string/daily_reminder_edca6</string>
+    <string name="reminder_time">@string/reminder_time_18e5b</string>
+    <string name="notifications_footer">@string/activity_alerts_buzz_when_a_kid_finishes_7585c</string>
+    <string name="reminder_title">ChoreStar ⭐</string>
+    <string name="reminder_body">Time to check today\'s chores. A little progress goes a long way!</string>
+    <string name="data">@string/data_e5e42</string>
+    <string name="refresh_data">@string/refresh_data_aed24</string>
+    <string name="about">@string/about_6b21f</string>
+    <string name="rate_chorestar">@string/rate_chorestar_b8b29</string>
+    <string name="share_chorestar">@string/share_chorestar_19ead</string>
+    <string name="share_message">We use ChoreStar for chores and routines with the kids. Free on Google Play. https://play.google.com/store/apps/details?id=com.chorestar.app</string>
+    <string name="chore_icons_by_openmoji">@string/chore_icons_by_openmoji_fd00f</string>
+    <string name="about_footer">Ratings and reviews are how other families find ChoreStar.</string>
+    <string name="current_password">@string/current_password_4d596</string>
+    <string name="new_password">@string/new_password_4894c</string>
+    <string name="confirm_new_password">@string/confirm_new_password_f8503</string>
+    <string name="at_least_8_chars">At least 8 characters</string>
+    <string name="passwords_match">@string/passwords_match_5e065</string>
+    <string name="change">@string/change_64fbd</string>
+    <string name="password_changed">Password changed.</string>
+
+    <!-- Rewards & Currency -->
+    <string name="reward_mode">@string/reward_mode_bf785</string>
+    <string name="daily_flat_rate">@string/daily_flat_rate_f4732</string>
+    <string name="reward_mode_per_chore_footer">@string/kids_earn_the_amount_on_each_chore_they_f33ad</string>
+    <string name="reward_mode_flat_footer">@string/kids_earn_the_daily_amount_when_they_fin_844d8</string>
+    <string name="amounts_cents">@string/amounts_cents_979f5</string>
+    <string name="daily_reward">@string/daily_reward_2f709</string>
+    <string name="default_chore">@string/default_chore_789bd</string>
+    <string name="weekly_bonus">@string/weekly_bonus_28325</string>
+    <string name="amounts_footer">Enter amounts in cents, e.g. 100 = %1$s. Synced with the web app.</string>
+    <string name="currency">@string/currency_e070d</string>
+    <string name="currency_footer">Allowance and chore rewards use this symbol on every device and the web.</string>
+    <string name="time_zone">@string/time_zone_eea79</string>
+    <string name="timezone_footer_default">Weekdays / Weekends on new chores will be Monday–Friday and Saturday–Sunday.</string>
+    <string name="timezone_footer_gulf">Weekdays / Weekends on new chores will be Sunday–Thursday and Friday–Saturday.</string>
+    <string name="save_rewards">@string/save_rewards_af38c</string>
+    <string name="saving">@string/saving_56a22</string>
+    <string name="rewards_saved">Saved. Synced with the web app.</string>
+    <string name="rewards_save_failed">Couldn\'t save rewards. Please try again.</string>
+
+    <!-- Family sharing -->
+    <string name="family_sharing">@string/family_sharing_160fd</string>
+    <string name="kid_code_pending">Your kid login code appears here once it\'s generated.</string>
+    <string name="kid_code_footer">Kids use this code plus their PIN to log in on any device.</string>
+    <string name="share_kid_code">Log in to ChoreStar with our family code: %1$s</string>
+    <string name="share">Share</string>
+    <string name="copy">@string/copy_af74f</string>
+    <string name="copied">@string/copied_8e3df</string>
+    <string name="invite_co_parent">@string/invite_a_co_parent_a4964</string>
+    <string name="create_invite_code">@string/create_invite_code_87460</string>
+    <string name="share_invite_code">Join our family on ChoreStar! Open the app, tap Settings → Family Sharing → Join a Family, and enter code: %1$s</string>
+    <string name="invite_footer">Share this code with a partner or grandparent so they can see and manage your family\'s chores from their own account. The same code works on iOS, Android and chorestar.app.</string>
+    <string name="sharing_premium_title">Family sharing is part of Premium</string>
+    <string name="sharing_premium_body">Invite a co-parent or guardian with their own login to the same family.</string>
+    <string name="see_premium">@string/see_premium_5b311</string>
+    <string name="family_members">@string/family_members_05074</string>
+    <string name="no_one_joined">@string/no_one_has_joined_yet_f22c7</string>
+    <string name="co_parent">@string/co_parent_49deb</string>
+    <string name="joined_on">@string/joined_5363b</string>
+    <string name="remove">@string/remove_e9639</string>
+    <string name="remove_co_parent_title">@string/remove_this_co_parent_fea0d</string>
+    <string name="remove_co_parent_body">@string/they_ll_lose_access_to_your_family_s_cho_fcc2d</string>
+    <string name="join_a_family">@string/join_a_family_a040f</string>
+    <string name="enter_invite_code">@string/enter_invite_code_a6423</string>
+    <string name="join_family">@string/join_family_9900d</string>
+    <string name="join_footer">Got a code from your partner? Enter it here to manage their family together. Your view switches to their family\'s chores.</string>
+    <string name="join_not_found">That code doesn\'t match any family. Double-check it and try again.</string>
+    <string name="join_own_family">That\'s your own family code.</string>
+    <string name="join_already">You\'ve already joined this family.</string>
+    <string name="family_membership">@string/family_membership_a0e29</string>
+    <string name="sharing_another_family">@string/you_re_sharing_another_family_s_chores_238a6</string>
+    <string name="leave_family">@string/leave_family_0b1af</string>
+    <string name="leave_family_title">@string/leave_this_family_e9984</string>
+    <string name="leave_footer">Leaving switches you back to your own family\'s data.</string>
+
+    <!-- Reward store -->
+    <string name="rewards_count">Rewards (%1$d)</string>
+    <string name="rewards_count_of">Rewards (%1$d of %2$d)</string>
+    <string name="no_rewards_yet">@string/no_rewards_yet_start_with_a_few_families_c574e</string>
+    <string name="add_starter_set">@string/add_the_starter_set_fdba8</string>
+    <string name="add_more_starter">Add more from the starter set</string>
+    <string name="store_footer">Kids ask from their dashboard; you say yes or no from Needs Your OK on Home, and the price comes off their balance.</string>
+    <string name="add_a_reward">@string/add_a_reward_39f10</string>
+    <string name="add_reward">@string/add_reward_562de</string>
+    <string name="reward_title_placeholder">@string/s_30_minutes_of_screen_time_ab5d3</string>
+    <string name="store_free_limit">The free plan lists 3 rewards. Premium removes the limit.</string>
+    <string name="store_price_required">Give the reward a price.</string>
+
+    <!-- Delete account -->
+    <string name="delete_permanent_title">@string/this_permanently_deletes_your_account_706a3</string>
+    <string name="delete_permanent_body">Your family\'s chore data is erased from our servers and can\'t be recovered. There\'s no way to undo this.</string>
+    <string name="what_gets_deleted">@string/what_gets_deleted_7b636</string>
+    <string name="del_login">Your login and profile</string>
+    <string name="del_children">Every child, including their avatars and PINs</string>
+    <string name="del_chores">All chores and your family\'s completion history</string>
+    <string name="del_routines">All routines and their step-by-step history</string>
+    <string name="del_allowance">Allowance and earnings totals</string>
+    <string name="del_badges">Achievement badges and streaks</string>
+    <string name="del_sharing">Family sharing and your kid login code</string>
+    <string name="delete_premium_play_notice">If your subscription is billed by Google Play, deleting your account does not cancel it. Cancel it in Play Store → Subscriptions to stop future charges.</string>
+    <string name="delete_sharing_owner_notice">Anyone sharing this family loses access to its children, chores, and routines.</string>
+    <string name="delete_sharing_member_notice">You\'ll be removed from the family you joined. The family\'s own data stays with its owner.</string>
+    <string name="type_delete_to_confirm">Type DELETE to confirm</string>
+    <string name="delete_my_account">@string/delete_my_account_26cc1</string>
+    <string name="keep_my_account">@string/keep_my_account_8a82a</string>
+
+    <!-- Paywall -->
+    <string name="premium">@string/premium_6c2f2</string>
+    <string name="paywall_title">ChoreStar Premium</string>
+    <string name="paywall_subtitle">@string/everything_your_family_needs_to_make_cho_d873c</string>
+    <string name="paywall_feat_unlimited">Unlimited children &amp; chores</string>
+    <string name="paywall_feat_store">Unlimited reward store items and goals</string>
+    <string name="paywall_feat_indie">Support an indie family app</string>
+    <string name="paywall_unavailable">Plans aren\'t available in the app yet.</string>
+    <string name="paywall_web_upgrade">Upgrade at chorestar.app</string>
 </resources>

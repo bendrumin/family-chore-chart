@@ -67,9 +67,9 @@ import com.chorestar.app.ui.DashboardState
 import com.chorestar.app.ui.DashboardViewModel
 import com.chorestar.app.ui.components.ChildAvatar
 import com.chorestar.app.ui.components.avatarColor
-import com.chorestar.app.ui.theme.Indigo500
+import com.chorestar.app.ui.components.ParticleOverlay
+import com.chorestar.app.ui.theme.LocalActiveTheme
 import com.chorestar.app.ui.theme.Success
-import com.chorestar.app.ui.theme.Violet500
 import com.chorestar.app.ui.theme.Warning
 import java.time.LocalDate
 import java.time.LocalTime
@@ -167,8 +167,11 @@ private fun HeroCard(vm: DashboardViewModel, state: DashboardState, done: Int, d
     val date = Dates.formatLong(LocalDate.now())
     val resume = state.vacationResumeDate
     val through = state.settings?.vacationEndsOn?.let { runCatching { LocalDate.parse(it).format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())) }.getOrNull() }
+    val active = LocalActiveTheme.current
     Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {
-        Column(Modifier.background(Brush.linearGradient(listOf(Indigo500, Violet500))).padding(20.dp)) {
+        Box(Modifier.background(Brush.linearGradient(active.gradient))) {
+        ParticleOverlay(active.glyph)
+        Column(Modifier.padding(20.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(if (onVacation) stringResource(R.string.on_vacation) else greeting, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyLarge)
                 Text(if (onVacation && through != null) stringResource(R.string.through_date, through) else date, color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodyMedium)
@@ -222,6 +225,7 @@ private fun HeroCard(vm: DashboardViewModel, state: DashboardState, done: Int, d
                     }
                 }
             }
+        }
         }
     }
 }

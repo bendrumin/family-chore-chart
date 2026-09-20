@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.chorestar.app.data.Prefs
 import com.chorestar.app.ui.AppRoot
 import com.chorestar.app.ui.theme.ChoreStarTheme
 
@@ -11,10 +15,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val repository = (application as ChoreStarApp).repository
+        val app = application as ChoreStarApp
         setContent {
-            ChoreStarTheme {
-                AppRoot(repository)
+            val darkMode by app.prefs.darkMode.collectAsStateWithLifecycle()
+            val theme by app.theme.collectAsStateWithLifecycle()
+            val dark = when (darkMode) { Prefs.DarkMode.Light -> false; Prefs.DarkMode.Dark -> true; Prefs.DarkMode.System -> isSystemInDarkTheme() }
+            ChoreStarTheme(darkTheme = dark, preference = theme) {
+                AppRoot(app.repository)
             }
         }
     }

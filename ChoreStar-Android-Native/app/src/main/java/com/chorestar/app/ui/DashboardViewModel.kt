@@ -19,6 +19,14 @@ import com.chorestar.app.data.model.NewCompletion
 import com.chorestar.app.data.model.PendingApproval
 import com.chorestar.app.data.model.Profile
 import com.chorestar.app.data.model.VacationPeriod
+import com.chorestar.app.data.ThemePreference
+import com.chorestar.app.data.jsonBool
+import com.chorestar.app.data.jsonString
+import com.chorestar.app.data.mergeCustomTheme
+import com.chorestar.app.data.model.FamilyMemberRow
+import com.chorestar.app.data.model.NewRewardItem
+import com.chorestar.app.data.model.RewardItem
+import com.chorestar.app.data.model.RewardsUpsert
 import com.chorestar.app.ui.components.LimitType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +37,7 @@ import java.time.LocalDate
 
 const val FREE_CHILD_LIMIT = 3
 const val FREE_CHORE_LIMIT = 20
+const val FREE_REWARD_ITEM_LIMIT = 3
 
 data class DashboardState(
     val loading: Boolean = true,
@@ -55,7 +64,12 @@ data class DashboardState(
     val suggestions: List<ChoreSuggestion> = emptyList(),
     val suggestionsPersonalized: Boolean = false,
     val isSharedMember: Boolean = false,
+    val joinCode: String? = null,
+    val members: List<FamilyMemberRow> = emptyList(),
+    val rewardItems: List<RewardItem> = emptyList(),
 ) {
+    val themePreference: ThemePreference get() = ThemePreference.from(settings?.customTheme)
+    val rewardItemLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_REWARD_ITEM_LIMIT
     fun child(id: String?) = children.firstOrNull { it.id == id }
     fun chore(id: String?) = chores.firstOrNull { it.id == id }
     fun choresFor(childId: String) = chores.filter { it.childId == childId }
@@ -109,7 +123,10 @@ data class BulkPlan(val childId: String, val fromDay: Int, val throughDay: Int, 
     val isEmpty: Boolean get() = toTick.isEmpty() && toApprove.isEmpty()
 }
 
-class DashboardViewModel(private val repository: ChoreStarRepository) : ViewModel() {
+class DashboardViewModel(
+    private val repository: ChoreStarRepository,
+    private val onTheme: (ThemePreference) -> Unit = {},
+) : ViewModel() {
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state
     private var suggestionJob: Job? = null
@@ -140,11 +157,135 @@ class DashboardViewModel(private val repository: ChoreStarRepository) : ViewMode
                         pinChildIds = pins, photoUrls = photos, vacationPeriods = periods, viewedCompletions = viewedCompletions,
                         isSharedMember = uid != repository.currentUserId)
                 }
+                onTheme(ThemePreference.from(settings?.customTheme))
                 refreshApprovals()
+                if (profile != null && profile.kidLoginCode == null && uid == repository.currentUserId) {
+                    repository.materializeKidLoginCode()?.let { code -> _state.update { it.copy(profile = it.profile?.copy(kidLoginCode = code)) } }
+                }
             }.onFailure { e ->
                 _state.update { it.copy(loading = false, error = e.message?.let(UiText::Raw) ?: uiText(R.string.error_load_family)) }
             }
         }
+    }
+
+    // ── Settings ─────────────────────────────────────────────────────────────
+
+    private fun settingsWrite(block: suspend (uid: String) -> Unit) {
+        viewModelScope.launch {
+            val uid = _state.value.effectiveUserId ?: return@launch
+            runCatching { block(uid) }.onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
+        }
+    }
+
+    fun setRequireApproval(on: Boolean) {
+        _state.update { it.copy(settings = it.settings?.copy(requireApproval = on)) }
+        settingsWrite { repository.setRequireApproval(it, on) }
+    }
+
+    fun setActivityPush(on: Boolean) {
+        _state.update { it.copy(settings = it.settings?.copy(activityPushEnabled = on)) }
+        settingsWrite { repository.setActivityPush(it, on) }
+    }
+
+    /** "auto", "none" or a web theme id, written the way iOS writes it. */
+    fun setThemeSelection(selection: String) {
+        val merged = mergeCustomTheme(
+            _state.value.settings?.customTheme,
+            "autoSeasonal" to jsonBool(selection == "auto"),
+            "seasonalTheme" to jsonString(selection.takeIf { it != "auto" && it != "none" }),
+        )
+        _state.update { it.copy(settings = it.settings?.copy(customTheme = merged)) }
+        onTheme(ThemePreference.from(merged))
+        settingsWrite { repository.setCustomTheme(it, merged) }
+    }
+
+    fun setAccent(hex: String?) {
+        val merged = mergeCustomTheme(_state.value.settings?.customTheme, "accentColor" to jsonString(ThemePreference.normalizeHex(hex)))
+        _state.update { it.copy(settings = it.settings?.copy(customTheme = merged)) }
+        onTheme(ThemePreference.from(merged))
+        settingsWrite { repository.setCustomTheme(it, merged) }
+    }
+
+    suspend fun saveRewards(rewardMode: String, dailyCents: Int, weeklyCents: Int, currency: String, timezone: String): Result<Unit> {
+        val uid = _state.value.effectiveUserId ?: return Result.failure(IllegalStateException("no family"))
+        return runCatching { repository.updateRewards(RewardsUpsert(uid, rewardMode, dailyCents, weeklyCents, currency, timezone)) }
+            .map { }.onSuccess { refresh() }
+    }
+
+    // ── Sharing ──────────────────────────────────────────────────────────────
+
+    fun loadSharing() {
+        viewModelScope.launch {
+            val uid = repository.currentUserId ?: return@launch
+            val code = runCatching { repository.familyJoinCode(uid) }.getOrNull()
+            val members = runCatching { repository.familyMembers(uid) }.getOrDefault(emptyList())
+            _state.update { it.copy(joinCode = code, members = members) }
+        }
+    }
+
+    suspend fun createJoinCode(): Result<String> {
+        val uid = repository.currentUserId ?: return Result.failure(IllegalStateException("Not signed in"))
+        return runCatching { repository.createJoinCode(uid) }.onSuccess { code -> _state.update { it.copy(joinCode = code) } }
+    }
+
+    suspend fun joinFamily(code: String): Result<String> = repository.joinFamily(code).onSuccess { refresh() }
+
+    fun removeMember(rowId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(members = it.members.filterNot { m -> m.id == rowId }) }
+            runCatching { repository.removeFamilyMember(rowId) }
+            loadSharing()
+        }
+    }
+
+    fun leaveFamily() { viewModelScope.launch { runCatching { repository.leaveFamily() }; refresh() } }
+
+    // ── Account ──────────────────────────────────────────────────────────────
+
+    suspend fun changePassword(newPassword: String): Result<Unit> = runCatching { repository.changePassword(newPassword) }
+    suspend fun deleteAccount(): Result<Unit> = repository.deleteAccount().onSuccess { runCatching { repository.signOut() } }
+
+    // ── Reward store ─────────────────────────────────────────────────────────
+
+    fun loadRewardItems() {
+        viewModelScope.launch {
+            val uid = _state.value.effectiveUserId ?: return@launch
+            runCatching { repository.rewardItems(uid) }.onSuccess { list -> _state.update { it.copy(rewardItems = list) } }
+        }
+    }
+
+    /** Returns false when the free plan's three items are used up. */
+    suspend fun addRewardItem(title: String, emoji: String?, cents: Int): Result<Unit> {
+        val s = _state.value
+        val uid = s.effectiveUserId ?: return Result.failure(IllegalStateException("no family"))
+        if (s.rewardItems.size >= s.rewardItemLimit) return Result.failure(LimitReached())
+        return runCatching { repository.addRewardItem(NewRewardItem(uid, title.trim(), emoji, cents, s.rewardItems.size)) }
+            .map { }.onSuccess { loadRewardItems() }
+    }
+
+    suspend fun addStarterRewards(): Result<Unit> {
+        val s = _state.value
+        val uid = s.effectiveUserId ?: return Result.failure(IllegalStateException("no family"))
+        val existing = s.rewardItems.map { it.title.lowercase() }.toSet()
+        var order = s.rewardItems.size
+        return runCatching {
+            for ((emoji, title, cents) in STARTER_REWARDS) {
+                if (title.lowercase() in existing) continue
+                if (order >= s.rewardItemLimit) throw LimitReached()
+                repository.addRewardItem(NewRewardItem(uid, title, emoji, cents, order++))
+            }
+        }.also { loadRewardItems() }
+    }
+
+    fun updateRewardPrice(id: String, cents: Int) {
+        _state.update { it.copy(rewardItems = it.rewardItems.map { r -> if (r.id == id) r.copy(priceCents = cents) else r }) }
+        viewModelScope.launch { runCatching { repository.updateRewardItemPrice(id, cents) } }
+    }
+
+    fun removeRewardItem(id: String) {
+        _state.update { it.copy(rewardItems = it.rewardItems.filterNot { r -> r.id == id }) }
+        viewModelScope.launch { runCatching { repository.removeRewardItem(id) }; loadRewardItems() }
     }
 
     fun refreshApprovals() {
@@ -383,3 +524,13 @@ sealed interface PinChange {
 }
 
 class LimitReached : Exception("limit")
+
+/** The starter reward set the web ships (lib/constants/rewards.ts). */
+val STARTER_REWARDS: List<Triple<String, String, Int>> = listOf(
+    Triple("📱", "30 minutes of screen time", 200),
+    Triple("🌙", "Stay up 30 minutes late", 300),
+    Triple("🎬", "Pick the family movie", 400),
+    Triple("🍕", "Pick Friday dinner", 500),
+    Triple("🍦", "Ice cream trip", 500),
+    Triple("🎲", "Family game night, your pick", 400),
+)

@@ -36,7 +36,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.chorestar.app.ChoreStarApp
 import com.chorestar.app.R
+import com.chorestar.app.ui.settings.DeleteAccountScreen
+import com.chorestar.app.ui.settings.FamilySharingScreen
+import com.chorestar.app.ui.settings.PaywallScreen
+import com.chorestar.app.ui.settings.RewardStoreScreen
+import com.chorestar.app.ui.settings.RewardsSettingsScreen
 import com.chorestar.app.data.ChoreStarRepository
 import com.chorestar.app.ui.DashboardViewModel
 import com.chorestar.app.ui.chores.ChoreEditorScreen
@@ -69,11 +75,17 @@ object Routes {
     fun childDetail(id: String) = "child/$id"
     fun choreNew(childId: String?) = "chore/new" + (childId?.let { "?childId=$it" } ?: "")
     fun choreEdit(id: String) = "chore/edit/$id"
+    const val SETTINGS_REWARDS = "settings/rewards"
+    const val SETTINGS_SHARING = "settings/sharing"
+    const val SETTINGS_STORE = "settings/store"
+    const val SETTINGS_DELETE = "settings/delete"
+    const val PAYWALL = "paywall"
 }
 
 @Composable
 fun MainTabs(repository: ChoreStarRepository) {
-    val vm: DashboardViewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository) } })
+    val app = LocalContext.current.applicationContext as ChoreStarApp
+    val vm: DashboardViewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository, onTheme = { app.theme.value = it }) } })
     val state by vm.state.collectAsStateWithLifecycle()
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
@@ -120,7 +132,14 @@ fun MainTabs(repository: ChoreStarRepository) {
                     ChoresScreen(vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) })
                 }
                 composable(Tab.Stats.route) { StatsScreen(state) }
-                composable(Tab.Settings.route) { SettingsScreen(state, email = repository.currentEmail, onSignOut = vm::signOut) }
+                composable(Tab.Settings.route) {
+                    SettingsScreen(vm, state, email = repository.currentEmail, onSignOut = vm::signOut, onNavigate = { nav.navigate(it) })
+                }
+                composable(Routes.SETTINGS_REWARDS) { RewardsSettingsScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.SETTINGS_SHARING) { FamilySharingScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.PAYWALL) }) }
+                composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.PAYWALL) { PaywallScreen(state, onBack = { nav.popBackStack() }) }
 
                 composable(Routes.CHILD_NEW) { ChildEditorScreen(vm, child = null, onDone = { nav.popBackStack() }) }
                 composable(Routes.CHILD_EDIT, arguments = listOf(navArgument("childId") { type = NavType.StringType })) { entry ->
@@ -153,7 +172,7 @@ fun MainTabs(repository: ChoreStarRepository) {
             type = type,
             currentCount = if (type == com.chorestar.app.ui.components.LimitType.Children) state.children.size else state.chores.size,
             limit = if (type == com.chorestar.app.ui.components.LimitType.Children) state.childLimit else state.choreLimit,
-            onSeePlans = { vm.dismissUpgradePrompt(); nav.navigate(Tab.Settings.route) },
+            onSeePlans = { vm.dismissUpgradePrompt(); nav.navigate(Routes.PAYWALL) },
             onDismiss = vm::dismissUpgradePrompt,
         )
     }
