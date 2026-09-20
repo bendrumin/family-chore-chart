@@ -555,7 +555,11 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                   onRefresh={handleRefresh}
                 />
               ) : (
-                filteredChores.map((chore) => (
+                /* The iOS Chores tab groups rows into one inset card with
+                   hairline rules between them, rather than a floating tile per
+                   chore. */
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden divide-y divide-gray-200 dark:divide-gray-700 shadow-sm">
+                {filteredChores.map((chore) => (
                   <ChoreCard
                     key={chore.id}
                     chore={chore}
@@ -567,7 +571,8 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
                     iconTint={iconTint}
                     vacationDays={vacationDays}
                   />
-                ))
+                ))}
+                </div>
               )}
             </div>
           )}

@@ -288,7 +288,7 @@ export const ChoreCard = memo(function ChoreCard({
     const due = isDueOn(chore, today, vacationDays)
     return (
       <>
-        <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 bg-black/[0.03] dark:bg-white/[0.04]">
+        <div className="flex items-center gap-2.5 px-3 py-1.5">
           <button
             onClick={() => toggleCompletion(today)}
             aria-pressed={done}
@@ -300,7 +300,9 @@ export const ChoreCard = memo(function ChoreCard({
             {awaiting ? (
               <Clock className="w-6 h-6 text-amber-500" aria-hidden />
             ) : done ? (
-              <CheckCircle2 className="w-6 h-6" style={{ color: 'var(--primary)' }} aria-hidden />
+              /* Green, like the iOS row: done reads as done whatever the
+                 family's accent happens to be. */
+              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-500 fill-green-600/15" aria-hidden />
             ) : (
               <Circle className={`w-6 h-6 text-gray-400 dark:text-gray-500 ${due ? '' : 'opacity-50'}`} aria-hidden />
             )}
@@ -323,20 +325,24 @@ export const ChoreCard = memo(function ChoreCard({
           </span>
 
           {rewardMode === 'per_chore' && (
-            <span className="shrink-0 text-sm font-semibold tabular-nums text-green-600 dark:text-green-400">
+            <span
+              className={`shrink-0 text-sm font-semibold tabular-nums ${
+                done ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
               ${((chore.reward_cents || 0) / 100).toFixed(2)}
             </span>
           )}
 
-          <Button
-            variant="ghost"
-            size="icon"
+          {/* A tinted circle, like the iOS row's pencil. */}
+          <button
             onClick={() => setIsEditModalOpen(true)}
-            className="shrink-0 min-h-[44px] min-w-[44px] rounded-lg"
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center touch-manipulation"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }}
             aria-label={`Edit ${chore.name}`}
           >
             <Edit className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          </Button>
+          </button>
         </div>
 
         <EditChoreModal
