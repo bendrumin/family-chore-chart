@@ -43,7 +43,10 @@ export function WeekNavigator({ weekStart, onWeekChange }: WeekNavigatorProps) {
       {/* One line at every width. Without the nowrap the "This Week" pill broke
           across two lines on a 384px phone and sat under the next-week arrow. */}
       <div className="flex items-center gap-2 min-w-0 shrink">
-        <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
+        {/* Decorative, and on a phone its 24px was the difference between
+            "Week of Sep 20" and "Week of Se...". The arrows already say what
+            this row is. */}
+        <Calendar className="hidden sm:block w-4 h-4 text-gray-500 shrink-0" />
         <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap truncate">
           {weekInfo.displayText}
         </span>
