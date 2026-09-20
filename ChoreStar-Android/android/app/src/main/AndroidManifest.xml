@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -69,4 +70,12 @@
     <!-- navigator.vibrate() inside a WebView needs the host app's permission;
          the web app gives chore and routine completions a short haptic tick. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- @capacitor/local-notifications declares this, but ChoreStar only
+         schedules an inexact daily reminder (the plugin falls back on its own
+         when exact alarms are unavailable). Dropping it keeps a sensitive
+         permission, and the Play declaration that comes with it, off the app. -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:node="remove" />
 </manifest>

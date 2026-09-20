@@ -16,6 +16,16 @@ import { toast } from 'sonner'
 import { SeasonalSuggestionsModal } from '@/components/chores/seasonal-suggestions-modal'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { notificationManager } from '@/lib/utils/notifications'
+import {
+  nativeRemindersAvailable,
+  reminderState,
+  enableDailyReminder,
+  disableDailyReminder,
+  formatReminderTime,
+  parseReminderTime,
+  DEFAULT_REMINDER_TIME,
+  type ReminderTime,
+} from '@/lib/utils/native-reminders'
 
 /**
  * Pickable themes, derived from the canonical tables so the picker can't drift
@@ -39,6 +49,11 @@ export function AppearanceTab() {
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [activityPushEnabled, setActivityPushEnabled] = useState(true)
+  // Android shell only: Android posts the daily reminder itself, because the
+  // Push API the browser path uses does not exist in a WebView.
+  const [nativeReminders, setNativeReminders] = useState(false)
+  const [reminderOn, setReminderOn] = useState(false)
+  const [reminderTime, setReminderTime] = useState<ReminderTime>(DEFAULT_REMINDER_TIME)
 
   useEffect(() => {
     if (settings) {
@@ -57,6 +72,44 @@ export function AppearanceTab() {
     }
   }, [settings])
   
+  useEffect(() => {
+    if (!nativeRemindersAvailable()) return
+    setNativeReminders(true)
+    void reminderState().then(({ scheduled, time }) => {
+      setReminderOn(scheduled)
+      setReminderTime(time)
+    })
+  }, [])
+
+  const handleReminderToggle = async () => {
+    if (reminderOn) {
+      await disableDailyReminder()
+      setReminderOn(false)
+      toast.success('Daily reminder turned off')
+      return
+    }
+    const result = await enableDailyReminder(reminderTime)
+    if (result === 'ok') {
+      setReminderOn(true)
+      toast.success(`Reminder set for ${formatReminderTime(reminderTime)} every day`)
+    } else if (result === 'denied') {
+      toast.error('Android blocked notifications for ChoreStar. Turn them on in Android Settings > Apps > ChoreStar > Notifications.')
+    } else {
+      toast.error('Reminders are not available on this device')
+    }
+  }
+
+  const handleReminderTimeChange = async (value: string) => {
+    const parsed = parseReminderTime(value)
+    if (!parsed) return
+    setReminderTime(parsed)
+    // Already on: move the existing reminder rather than waiting for a toggle.
+    if (reminderOn) {
+      const result = await enableDailyReminder(parsed)
+      if (result === 'ok') toast.success(`Reminder moved to ${formatReminderTime(parsed)}`)
+    }
+  }
+
   const handleNotificationToggle = async () => {
     if (notificationsEnabled) {
       // Can't revoke permission, but we can note it's disabled
@@ -416,27 +469,69 @@ export function AppearanceTab() {
             </Button>
           </div>
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Browser reminders for daily chores and weekly progress (this device only).
-            </p>
-            <Button
-              variant={notificationsEnabled ? 'outline' : 'gradient'}
-              size="lg"
-              onClick={handleNotificationToggle}
-              className="font-bold hover-glow w-full"
-            >
-              {notificationsEnabled ? (
-                <>
-                  <BellOff className="w-5 h-5 mr-2" />
-                  Disable Browser Notifications
-                </>
-              ) : (
-                <>
-                  <Bell className="w-5 h-5 mr-2" />
-                  Enable Browser Notifications
-                </>
-              )}
-            </Button>
+            {nativeReminders ? (
+              /* In the Android app the browser path is dead (a WebView has no
+                 Push API), so Android schedules the reminder itself. */
+              <>
+                <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+                  A daily nudge on this phone to check off chores. Stays on this device.
+                </p>
+                <div className="flex items-center gap-3 mb-3">
+                  <Label htmlFor="reminder-time" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    Remind me at
+                  </Label>
+                  <input
+                    id="reminder-time"
+                    type="time"
+                    value={formatReminderTime(reminderTime)}
+                    onChange={(e) => handleReminderTimeChange(e.target.value)}
+                    className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 min-h-[44px]"
+                  />
+                </div>
+                <Button
+                  variant={reminderOn ? 'outline' : 'gradient'}
+                  size="lg"
+                  onClick={handleReminderToggle}
+                  className="font-bold hover-glow w-full"
+                >
+                  {reminderOn ? (
+                    <>
+                      <BellOff className="w-5 h-5 mr-2" />
+                      Turn Off Daily Reminder
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="w-5 h-5 mr-2" />
+                      Turn On Daily Reminder
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+                  Browser reminders for daily chores and weekly progress (this device only).
+                </p>
+                <Button
+                  variant={notificationsEnabled ? 'outline' : 'gradient'}
+                  size="lg"
+                  onClick={handleNotificationToggle}
+                  className="font-bold hover-glow w-full"
+                >
+                  {notificationsEnabled ? (
+                    <>
+                      <BellOff className="w-5 h-5 mr-2" />
+                      Disable Browser Notifications
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="w-5 h-5 mr-2" />
+                      Enable Browser Notifications
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
