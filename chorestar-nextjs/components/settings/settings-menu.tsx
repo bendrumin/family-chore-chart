@@ -126,6 +126,7 @@ export function SettingsMenu({ buttonColor = 'black', onLogout, open, onOpenChan
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       aria-selected={activeTab === tab.id}
+                      data-autofocus={activeTab === tab.id ? '' : undefined}
                       role="tab"
                       id={`settings-tab-${tab.id}`}
                       aria-controls={`settings-panel-${tab.id}`}

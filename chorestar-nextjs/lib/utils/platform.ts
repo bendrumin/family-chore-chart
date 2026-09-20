@@ -54,6 +54,22 @@ export function detectDevicePlatform(): DevicePlatform {
  * render, the real platform right after mount (same pattern as
  * useAndroidShell, so SSR and the first paint always agree).
  */
+/**
+ * A short tap of haptic feedback on Android phones (the Play shell and
+ * Chrome alike). Every caller runs inside a user gesture, which the
+ * Vibration API requires, and the shell declares android.permission.VIBRATE
+ * for its WebView. iOS Safari has no Vibration API, so this is a no-op
+ * there and on desktop.
+ */
+export function hapticTap(pattern: number | number[] = 12): void {
+  if (typeof navigator === 'undefined' || detectDevicePlatform() !== 'android') return
+  try {
+    navigator.vibrate?.(pattern)
+  } catch {
+    // A browser that exposes vibrate but refuses it (no gesture) is not worth a log line.
+  }
+}
+
 export function useDevicePlatform(): DevicePlatform {
   const [platform, setPlatform] = useState<DevicePlatform>('other')
   useEffect(() => {

@@ -3,6 +3,8 @@
  * Provides audio feedback for user actions
  */
 
+import { hapticTap } from '@/lib/utils/platform'
+
 interface SoundSettings {
   enabled: boolean
   volume: number // 0-100
@@ -61,6 +63,10 @@ class SoundManager {
    * Play a sound effect
    */
   playSound(soundType: 'success' | 'error' | 'notification' | 'celebration' = 'success') {
+    // Completions get a haptic tick on Android regardless of the sound
+    // setting: a kid who muted the beeps still feels the check-off land.
+    if (soundType === 'success') hapticTap(12)
+    else if (soundType === 'celebration') hapticTap([18, 60, 30])
     if (!this.settings.enabled) return
 
     try {

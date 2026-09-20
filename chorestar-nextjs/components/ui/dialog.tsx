@@ -28,13 +28,17 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
 
     document.body.style.overflow = 'hidden'
 
-    // Focus the first focusable element inside the dialog after render
+    // Focus the element marked data-autofocus (Settings marks its active
+    // tab, so opening straight onto Billing lands focus there and not on the
+    // first tab), else the first focusable element, after render.
     const raf = requestAnimationFrame(() => {
       const container = dialogRef.current
       if (!container) return
-      const first = container.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )
+      const first =
+        container.querySelector<HTMLElement>('[data-autofocus]') ??
+        container.querySelector<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
       first?.focus()
     })
 

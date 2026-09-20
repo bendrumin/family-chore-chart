@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.chorestar.app",
+      "sha256_cert_fingerprints": [
+        "7D:B1:BD:C3:AE:32:A2:C5:5D:3B:22:40:41:E7:87:38:E9:73:BF:A9:DE:C1:26:A0:E3:46:E9:3F:32:20:9F:DE"
+      ]
+    }
+  }
+]

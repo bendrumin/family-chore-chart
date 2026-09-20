@@ -6,6 +6,7 @@ import { QueryProvider } from '@/components/providers/query-provider'
 import { GoogleAnalytics } from '@/components/analytics/google-analytics'
 import { AttributionCapture } from '@/components/analytics/attribution-capture'
 import { AndroidBackButton } from '@/components/analytics/android-back-button'
+import { AndroidAppLinks } from '@/components/analytics/android-app-links'
 import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keyboard-shortcuts-provider'
 import { ReducedMotionProvider } from '@/components/providers/reduced-motion-provider'
 import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
@@ -132,6 +133,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <AttributionCapture />
         <AndroidBackButton />
+        <AndroidAppLinks />
         <DarkModeProvider>
         <ReducedMotionProvider>
         <QueryProvider>

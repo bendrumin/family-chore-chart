@@ -7,6 +7,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProgressDots } from '@/components/routines/progress-dots';
 import { VisualTimer } from '@/components/routines/visual-timer';
+import { useScreenWakeLock } from '@/lib/hooks/use-wake-lock';
 import { CelebrationScreen } from '@/components/routines/celebration-screen';
 import { useRoutine, useCompleteRoutine } from '@/lib/hooks/useRoutines';
 import { useSound } from '@/lib/hooks/useSound';
@@ -31,6 +32,9 @@ export default function RoutinePlayerPage({
   const { data: routine, isLoading, error } = useRoutine(routineId);
   const completeMutation = useCompleteRoutine();
   const { playStepComplete, playRoutineComplete } = useSound();
+  // A bedtime routine with a two-minute teeth timer outlives most screen
+  // timeouts; hold the screen on until the celebration.
+  useScreenWakeLock(!showCelebration);
 
   // Safety check: Verify child from kid mode session (localStorage for persistence)
   useEffect(() => {
