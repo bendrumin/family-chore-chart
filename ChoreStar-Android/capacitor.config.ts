@@ -26,6 +26,10 @@ const config: CapacitorConfig = {
     // middleware, so returning users never see the login form either.
     url: 'https://chorestar.app/login',
     androidScheme: 'https',
+    // Shown from local assets (www/offline.html) when the remote app fails
+    // to load: no network, DNS down, or a 5xx. Without it the WebView shows
+    // Chrome's grey "site can't be reached" page inside the app.
+    errorPath: 'offline.html',
   },
   android: {
     backgroundColor: '#6366f1',

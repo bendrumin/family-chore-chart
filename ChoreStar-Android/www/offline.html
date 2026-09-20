@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ChoreStar</title>
+  <style>
+    :root { color-scheme: light dark; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+    .star { font-size: 4rem; line-height: 1; }
+    h1 { font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+    p { margin: 0; opacity: 0.85; font-size: 0.95rem; max-width: 28rem; line-height: 1.5; }
+    button {
+      margin-top: 0.75rem;
+      min-height: 48px;
+      padding: 0 1.75rem;
+      border: 0;
+      border-radius: 9999px;
+      background: #fff;
+      color: #4f46e5;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:active { transform: scale(0.97); }
+    .status { font-size: 0.85rem; opacity: 0.7; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <div class="star" aria-hidden="true">⭐</div>
+  <h1>You're offline</h1>
+  <p>ChoreStar needs an internet connection. Your chores and routines will be right where you left them once you're back online.</p>
+  <button type="button" id="retry">Try again</button>
+  <p class="status" id="status" aria-live="polite"></p>
+  <script>
+    // The remote app lives at chorestar.app; this page is served from the
+    // shell's local assets. Retry on tap, when the OS reports the network is
+    // back, and on a slow poll, so the app comes back without anyone tapping.
+    var APP = 'https://chorestar.app/login';
+    var status = document.getElementById('status');
+    var busy = false;
+    function go() { window.location.replace(APP); }
+    function probe(manual) {
+      if (busy) return; busy = true;
+      if (manual) status.textContent = 'Connecting\u2026';
+      fetch(APP, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
+        .then(function () { go(); })
+        .catch(function () { busy = false; if (manual) status.textContent = 'Still offline. Check Wi-Fi or mobile data and try again.'; });
+    }
+    document.getElementById('retry').addEventListener('click', function () { probe(true); });
+    window.addEventListener('online', function () { probe(false); });
+    setInterval(function () { if (navigator.onLine !== false) probe(false); }, 8000);
+  </script>
+</body>
+</html>

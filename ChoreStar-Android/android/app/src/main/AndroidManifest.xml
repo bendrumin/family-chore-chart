@@ -22,6 +22,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- App Links: chorestar.app links for the app's OWN routes open
+                 here instead of the browser (sign-in callback, password
+                 reset, family invites, kid login, the dashboard). Marketing
+                 pages are deliberately left out: they carry pricing copy the
+                 consumption-only shell must never show. Verified against
+                 https://chorestar.app/.well-known/assetlinks.json, which must
+                 list the certificate that signs the installed build (the
+                 upload key for sideloads, Play's app-signing key for Play
+                 installs). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="chorestar.app" />
+                <data android:pathPrefix="/auth/callback" />
+                <data android:pathPrefix="/reset-password" />
+                <data android:pathPrefix="/family/accept/" />
+                <data android:pathPrefix="/kid-login" />
+                <data android:pathPrefix="/kid/" />
+                <data android:pathPrefix="/dashboard" />
+                <data android:path="/login" />
+            </intent-filter>
+
         </activity>
 
         <provider
@@ -38,4 +61,7 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- navigator.vibrate() inside a WebView needs the host app's permission;
+         the web app gives chore and routine completions a short haptic tick. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

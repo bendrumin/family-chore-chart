@@ -30,6 +30,11 @@ premium gates state the limit with no upgrade button. That is the
 - [ ] Ads: none. In-app purchases: none in this version
 - [ ] Closed testing track first (required for new personal accounts;
       sensible for everyone), then production
+- [ ] After the first upload: copy the **App signing key certificate**
+      SHA-256 (Test and release > App integrity) into
+      `chorestar-nextjs/public/.well-known/assetlinks.json` next to the
+      upload-key line and redeploy the web app, or chorestar.app links will
+      keep opening in the browser for Play installs (see ANDROID-SHELL.md)
 
 ## Signing
 
