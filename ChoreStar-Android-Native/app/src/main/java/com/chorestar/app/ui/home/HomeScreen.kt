@@ -42,7 +42,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
-fun HomeScreen(state: DashboardState, onRefresh: () -> Unit, onOpenChores: () -> Unit) {
+fun HomeScreen(state: DashboardState, onRefresh: () -> Unit, onOpenChores: () -> Unit, onOpenChild: (com.chorestar.app.data.model.Child) -> Unit = {}) {
     PullToRefreshBox(isRefreshing = state.loading, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
         if (state.loading && state.children.isEmpty()) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -77,7 +77,7 @@ fun HomeScreen(state: DashboardState, onRefresh: () -> Unit, onOpenChores: () ->
             items(state.children, key = { it.id }) { child ->
                 val due = state.dueOn(child.id, today)
                 val done = state.doneOn(child.id, today)
-                Card(Modifier.fillMaxWidth().clickable(onClick = onOpenChores)) {
+                Card(Modifier.fillMaxWidth().clickable(onClick = { onOpenChild(child) })) {
                     Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                         ChildAvatar(child, 48.dp)
                         Spacer(Modifier.width(12.dp))

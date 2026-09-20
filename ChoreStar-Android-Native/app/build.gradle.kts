@@ -73,6 +73,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("androidx.activity:activity-compose:1.11.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
@@ -87,6 +88,10 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.5.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+
+    // Coil 3.3 predates the SDK-37 line; 3.6 drags in Compose 1.12 (see docs/ANDROID-NATIVE.md).
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
 
     // Image loading (photo avatars) returns with a Coil that targets Compose 1.10;
     // Coil 3.6 pulls Compose 1.12, which needs SDK 37.

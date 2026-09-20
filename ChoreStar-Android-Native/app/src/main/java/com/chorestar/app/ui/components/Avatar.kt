@@ -7,42 +7,64 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import com.chorestar.app.data.Palette
 import com.chorestar.app.data.model.Child
 
-/** The colour-plus-initials fallback every avatar path shares (photo avatars come later). */
+/** Signed URLs for children with an uploaded photo, keyed by child id; provided by the dashboard. */
+val LocalAvatarPhotoUrls = compositionLocalOf<Map<String, String>> { emptyMap() }
+
+/**
+ * The same resolution order iOS uses: uploaded photo → DiceBear PNG → emoji on a
+ * colour circle → initials on a colour circle.
+ */
 @Composable
-fun ChildAvatar(child: Child, size: Dp = 44.dp) {
-    Box(
-        Modifier.size(size).background(avatarColor(child.avatarColor), CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            child.name.trim().take(1).uppercase(),
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = (size.value * 0.42f).sp,
-            style = MaterialTheme.typography.titleMedium,
-        )
+fun ChildAvatar(child: Child, size: Dp = 44.dp, photoUrl: String? = LocalAvatarPhotoUrls.current[child.id]) {
+    AvatarCircle(
+        size = size,
+        color = avatarColor(child.avatarColor),
+        photoUrl = photoUrl?.takeIf { child.avatarPhotoPath != null },
+        imageUrl = child.avatarUrl?.takeIf { it.isNotBlank() }?.let { diceBearPng(it, size.value.toInt() * 3) },
+        emoji = child.avatarEmoji,
+        initials = child.initials.ifEmpty { "?" },
+    )
+}
+
+@Composable
+fun AvatarCircle(size: Dp, color: Color, photoUrl: String?, imageUrl: String?, emoji: String?, initials: String) {
+    val gradient = Brush.linearGradient(listOf(color, color.copy(alpha = 0.7f)))
+    Box(Modifier.size(size).clip(CircleShape).background(gradient), contentAlignment = Alignment.Center) {
+        when {
+            photoUrl != null -> AsyncImage(photoUrl, contentDescription = null, modifier = Modifier.size(size), contentScale = ContentScale.Crop)
+            imageUrl != null -> AsyncImage(imageUrl, contentDescription = null, modifier = Modifier.size(size), contentScale = ContentScale.Crop)
+            emoji != null -> Text(emoji, fontSize = (size.value * 0.5f).sp)
+            else -> Text(
+                initials,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = (size.value * 0.4f).sp,
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
     }
 }
 
-/** avatar_color holds either a hex string or one of the web's named swatches. */
-fun avatarColor(value: String?): Color {
-    val v = value?.trim()?.lowercase() ?: return Color(0xFF6366F1)
-    if (v.startsWith("#") && (v.length == 7 || v.length == 9)) {
-        return runCatching { Color(android.graphics.Color.parseColor(v)) }.getOrDefault(Color(0xFF6366F1))
-    }
-    return when (v) {
-        "red" -> Color(0xFFEF4444); "orange" -> Color(0xFFF97316); "amber", "yellow" -> Color(0xFFF59E0B)
-        "green" -> Color(0xFF22C55E); "teal" -> Color(0xFF14B8A6); "blue" -> Color(0xFF3B82F6)
-        "indigo" -> Color(0xFF6366F1); "purple", "violet" -> Color(0xFF8B5CF6); "pink" -> Color(0xFFEC4899)
-        else -> Color(0xFF6366F1)
-    }
+/** Legacy rows hold /svg? URLs; every platform rewrites them to PNG at a sane size. */
+fun diceBearPng(url: String, size: Int): String {
+    var u = url.replace("/svg?", "/png?")
+    if (!u.contains("size=")) u += (if (u.contains("?")) "&" else "?") + "size=$size"
+    return u
 }
+
+fun avatarColor(value: String?): Color = Color(Palette.hex(value))

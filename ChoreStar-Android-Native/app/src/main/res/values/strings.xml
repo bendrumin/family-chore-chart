@@ -90,4 +90,116 @@
     <string name="settings_currency">Currency: %1$s</string>
     <string name="settings_require_approval">Kid ticks wait for your OK</string>
     <string name="settings_sign_out">@string/sign_out_dc164</string>
+
+    <!-- Shared actions -->
+    <string name="cancel">@string/cancel_77dfd</string>
+    <string name="save">@string/save_efc00</string>
+    <string name="add">@string/add_61cc5</string>
+    <string name="delete">@string/delete_f6fdb</string>
+    <string name="select">@string/select_85982</string>
+    <string name="not_now">@string/not_now_b1e53</string>
+    <string name="delete_named">@string/delete_2e58f</string>
+    <string name="cannot_be_undone">@string/this_action_cannot_be_undone_951f4</string>
+    <string name="delete_failed_body">Couldn\'t delete %1$s. Please try again.</string>
+
+    <!-- Child editor -->
+    <string name="add_child">@string/add_child_cf2ba</string>
+    <string name="edit_child">@string/edit_child_b557a</string>
+    <string name="choose_avatar">@string/choose_avatar_98122</string>
+    <string name="child_information">@string/child_information_dff39</string>
+    <string name="name">@string/name_709a2</string>
+    <string name="enter_name">@string/enter_name_5df85</string>
+    <string name="years_old">@string/lld_years_old_dda71</string>
+    <string name="avatar_color">@string/avatar_color_e4327</string>
+    <string name="kid_login">@string/kid_login_6c49b</string>
+    <string name="enable_kid_login">@string/enable_kid_login_1a039</string>
+    <string name="pin_4_6_digits">@string/pin_4_6_digits_e9ccd</string>
+    <string name="enter_4_6_digit_pin">@string/enter_4_6_digit_pin_b0f2f</string>
+    <string name="enter_new_pin_to_change">Enter new PIN to change it</string>
+    <string name="pin_already_set">@string/a_pin_is_already_set_leave_blank_to_keep_ae95f</string>
+    <string name="pin_required_to_enable">Enter a 4-6 digit PIN to enable kid login</string>
+    <string name="delete_child_body">@string/this_will_also_delete_all_of_s_chores_th_ce865</string>
+    <string name="avatar_tab_photo">Photo</string>
+    <string name="avatar_tab_robots">Robots</string>
+    <string name="avatar_tab_people">People</string>
+    <string name="avatar_tab_emojis">Emojis</string>
+    <string name="take_a_photo">@string/take_a_photo_b9b73</string>
+    <string name="choose_from_library">@string/choose_from_library_e2ba5</string>
+    <string name="remove_current_photo">@string/remove_current_photo_f2ee6</string>
+    <string name="save_child_first_for_photo">@string/save_this_child_first_then_add_a_photo_f_10511</string>
+    <string name="photo_privacy_note">@string/stored_privately_only_your_family_can_se_be1be</string>
+    <string name="uploading">@string/uploading_d921a</string>
+    <string name="photo_unreadable">That image couldn\'t be read. Try another.</string>
+    <string name="photo_upload_failed">Couldn\'t upload that photo. Check your connection and try again.</string>
+    <string name="photo_remove_failed">Couldn\'t remove the photo. Please try again.</string>
+
+    <!-- Family list + child detail -->
+    <string name="family_subtitle">@string/manage_your_family_and_track_their_progr_ffb0d</string>
+    <string name="no_family_members">@string/no_family_members_yet_42658</string>
+    <string name="tap_plus_to_add_child">@string/tap_the_button_to_add_your_first_child_f4a1c</string>
+    <string name="tap_plus_to_add_chore">Tap the + button to create your first chore.</string>
+    <string name="stat_completed">@string/completed_1798b</string>
+    <string name="stat_pending">Pending</string>
+    <string name="stat_badges">Badges</string>
+    <string name="todays_progress">@string/today_s_progress_35c1d</string>
+    <string name="childs_chores">@string/s_chores_e13ac</string>
+    <string name="child_no_chores_yet">@string/has_no_chores_assigned_yet_ca94a</string>
+    <string name="to_do">@string/to_do_353a2</string>
+    <string name="other_days">@string/other_days_c64e6</string>
+
+    <!-- Chore editor -->
+    <string name="add_chore">@string/add_chore_b3011</string>
+    <string name="edit_chore">@string/edit_chore_85105</string>
+    <string name="suggestions">@string/suggestions_861ed</string>
+    <string name="suggestions_personalized">@string/suggestions_personalized_d2760</string>
+    <string name="chore_details">@string/chore_details_261ee</string>
+    <string name="chore_name_placeholder">@string/e_g_make_bed_d5554</string>
+    <string name="assigned_to">@string/assigned_to_d00c2</string>
+    <string name="reward">@string/reward_c7d76</string>
+    <string name="reward_current">@string/current_88a33</string>
+    <string name="flat_rate_notice">@string/your_family_is_on_the_flat_daily_rate_so_54474</string>
+    <string name="which_days">@string/which_days_ec7a3</string>
+    <string name="which_days_footer">@string/only_the_days_you_pick_count_toward_a_pe_5e4b6</string>
+    <string name="ask_for_photo">@string/ask_for_a_photo_ec928</string>
+    <string name="ask_for_photo_footer">@string/kids_snap_a_picture_when_they_check_this_c5f0e</string>
+    <string name="category">@string/category_a3c68</string>
+    <string name="icon">@string/icon_716f6</string>
+    <string name="color">@string/color_1d0c8</string>
+    <string name="notes_optional">@string/notes_optional_2fd57</string>
+    <string name="please_select_child">Please select a child</string>
+    <string name="every_day">Every day</string>
+    <string name="weekdays">Weekdays</string>
+    <string name="weekends">Weekends</string>
+    <string name="suggest_reason_season">Great for this time of year</string>
+    <string name="suggest_reason_challenge">%1$s is doing great, ready for a challenge!</string>
+    <string name="suggest_reason_age">Perfect for %1$s\'s age</string>
+    <string name="suggest_reason_habits">Age-appropriate and builds good habits</string>
+
+    <!-- Categories (Postgres enum activity_category) -->
+    <string name="category_household">Household Chores</string>
+    <string name="category_learning">Learning &amp; Education</string>
+    <string name="category_physical">Physical Activity</string>
+    <string name="category_creative">Creative Time</string>
+    <string name="category_games">Games &amp; Play</string>
+    <string name="category_reading">Reading</string>
+    <string name="category_family">Family Time</string>
+    <string name="category_custom">@string/custom_081ae</string>
+
+    <!-- Free plan limits -->
+    <string name="limit_child_title">Child Limit Reached</string>
+    <string name="limit_chore_title">Chore Limit Reached</string>
+    <string name="limit_reached_body">@string/you_ve_reached_the_free_plan_limit_of_ll_df118</string>
+    <string name="limit_current_body">@string/you_currently_have_lld_97f40</string>
+    <plurals name="limit_items_children">
+        <item quantity="one">child</item>
+        <item quantity="other">children</item>
+    </plurals>
+    <plurals name="limit_items_chores">
+        <item quantity="one">chore</item>
+        <item quantity="other">chores</item>
+    </plurals>
+    <string name="premium_bullet_unlimited">Unlimited children and chores</string>
+    <string name="premium_bullet_store">Unlimited reward store items</string>
+    <string name="premium_bullet_themes">Premium themes: Ocean, Sunset, Forest, and more</string>
+    <string name="see_premium_plans">@string/see_premium_plans_02fd8</string>
 </resources>

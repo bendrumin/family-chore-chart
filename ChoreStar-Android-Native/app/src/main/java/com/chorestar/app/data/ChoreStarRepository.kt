@@ -2,10 +2,14 @@ package com.chorestar.app.data
 
 import com.chorestar.app.BuildConfig
 import com.chorestar.app.data.model.Child
+import com.chorestar.app.data.model.ChildPinRef
+import com.chorestar.app.data.model.ChildPinRow
 import com.chorestar.app.data.model.Chore
 import com.chorestar.app.data.model.ChoreCompletion
 import com.chorestar.app.data.model.FamilyMembership
 import com.chorestar.app.data.model.FamilySettings
+import com.chorestar.app.data.model.NewChildRow
+import com.chorestar.app.data.model.NewChoreRow
 import com.chorestar.app.data.model.NewCompletion
 import com.chorestar.app.data.model.Profile
 import io.github.jan.supabase.SupabaseClient
@@ -14,7 +18,9 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -24,6 +30,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.time.Instant
+import java.util.UUID
+import kotlin.time.Duration.Companion.hours
 
 /** Everything the parent side reads and writes. One instance per app. */
 class ChoreStarRepository(
@@ -34,6 +45,7 @@ class ChoreStarRepository(
 
     val currentUserId: String? get() = supabase.auth.currentUserOrNull()?.id
     val currentEmail: String? get() = supabase.auth.currentUserOrNull()?.email
+    private val accessToken: String? get() = supabase.auth.currentAccessTokenOrNull()
 
     // ── Auth ────────────────────────────────────────────────────────────────
 
@@ -56,10 +68,7 @@ class ChoreStarRepository(
         }
         val text = response.bodyAsText()
         if (response.status.value in 200..299) return Result.success(Unit)
-        val message = runCatching {
-            SupabaseModule.json.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.content
-        }.getOrNull() ?: "Could not create the account (${response.status.value})"
-        return Result.failure(IllegalStateException(message))
+        return Result.failure(IllegalStateException(errorMessage(text) ?: "Could not create the account (${response.status.value})"))
     }
 
     suspend fun sendPasswordReset(email: String) = supabase.auth.resetPasswordForEmail(email.trim())
@@ -112,7 +121,17 @@ class ChoreStarRepository(
     suspend fun familySettings(userId: String): FamilySettings? =
         supabase.from("family_settings").select { filter { eq("user_id", userId) } }.decodeSingleOrNull()
 
-    // ── Writes ───────────────────────────────────────────────────────────────
+    /** Which children have a kid-login PIN. RLS only returns the family's rows. */
+    suspend fun childIdsWithPin(childIds: List<String>): Set<String> {
+        if (childIds.isEmpty()) return emptySet()
+        return supabase.from("child_pins")
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("child_id")) { filter { isIn("child_id", childIds) } }
+            .decodeList<ChildPinRef>()
+            .map { it.childId }
+            .toSet()
+    }
+
+    // ── Completions ──────────────────────────────────────────────────────────
 
     suspend fun addCompletion(choreId: String, dayOfWeek: Int, weekStart: String): ChoreCompletion =
         supabase.from("chore_completions")
@@ -123,6 +142,143 @@ class ChoreStarRepository(
         supabase.from("chore_completions").delete { filter { eq("id", id) } }
     }
 
+    // ── Children ─────────────────────────────────────────────────────────────
+
+    suspend fun createChild(userId: String, name: String, age: Int, color: String, avatarUrl: String?, avatarFile: String?): Child =
+        supabase.from("children")
+            .insert(NewChildRow(name, age, color, avatarUrl, avatarFile, userId)) { select() }
+            .decodeSingle()
+
+    /**
+     * Picking a DiceBear or emoji avatar retires an uploaded photo, as on iOS;
+     * the photo object is deleted after the row no longer points at it.
+     */
+    suspend fun updateChild(child: Child, name: String, age: Int, color: String, avatarUrl: String?, avatarFile: String?, retirePhoto: Boolean) {
+        supabase.from("children").update({
+            set("name", name)
+            set("age", age)
+            set("avatar_color", color)
+            set("avatar_url", avatarUrl)
+            set("avatar_file", avatarFile)
+            if (retirePhoto) set("avatar_photo_path", null as String?)
+            set("updated_at", Instant.now().toString())
+        }) { filter { eq("id", child.id) } }
+        if (retirePhoto) child.avatarPhotoPath?.let { runCatching { avatars.delete(listOf(it)) } }
+    }
+
+    /** No client-side cascade: chores and completions go with the row through the FK. */
+    suspend fun deleteChild(childId: String) {
+        supabase.from("children").delete { filter { eq("id", childId) } }
+    }
+
+    // ── Kid-login PIN (direct table upsert, the same hash iOS writes) ───────
+
+    suspend fun setChildPin(childId: String, pin: String) {
+        require(pin.length in 4..6 && pin.all { it.isDigit() }) { "PIN must be 4-6 digits" }
+        val salt = ByteArray(32).also { SecureRandom().nextBytes(it) }.toHex()
+        val hash = MessageDigest.getInstance("SHA-256").digest((pin + salt).toByteArray(Charsets.UTF_8)).toHex()
+        supabase.from("child_pins").upsert(ChildPinRow(childId, hash, salt)) { onConflict = "child_id" }
+    }
+
+    suspend fun removeChildPin(childId: String) {
+        supabase.from("child_pins").delete { filter { eq("child_id", childId) } }
+    }
+
+    // ── Avatar photos (private bucket, signed URLs) ──────────────────────────
+
+    private val avatars get() = supabase.storage.from("child-avatars")
+
+    /** {owner}/{child}/{uuid}.jpg, lowercased: the owner id is children.user_id or RLS rejects the write. */
+    suspend fun uploadChildAvatar(child: Child, jpeg: ByteArray): String {
+        val path = "${child.userId}/${child.id}/${UUID.randomUUID()}.jpg".lowercase()
+        avatars.upload(path, jpeg) { upsert = true; contentType = ContentType.Image.JPEG }
+        supabase.from("children").update({
+            set("avatar_photo_path", path)
+            set("avatar_url", null as String?)
+            set("updated_at", Instant.now().toString())
+        }) { filter { eq("id", child.id) } }
+        child.avatarPhotoPath?.let { runCatching { avatars.delete(listOf(it)) } }
+        return path
+    }
+
+    suspend fun removeChildAvatarPhoto(child: Child) {
+        val path = child.avatarPhotoPath ?: return
+        supabase.from("children").update({
+            set("avatar_photo_path", null as String?)
+            set("avatar_url", null as String?)
+            set("updated_at", Instant.now().toString())
+        }) { filter { eq("id", child.id) } }
+        runCatching { avatars.delete(listOf(path)) }
+    }
+
+    private val signedUrls = HashMap<String, Pair<String, Long>>()
+
+    /** One-hour signed URL, cached and refreshed a minute early. */
+    suspend fun signedAvatarUrl(path: String): String? {
+        val now = System.currentTimeMillis()
+        signedUrls[path]?.let { (url, expires) -> if (expires - 60_000 > now) return url }
+        return runCatching { avatars.createSignedUrl(path, 1.hours) }.getOrNull()?.also {
+            signedUrls[path] = it to now + 3_600_000
+        }
+    }
+
+    // ── Chores ───────────────────────────────────────────────────────────────
+
+    suspend fun createChore(row: NewChoreRow): Chore =
+        supabase.from("chores").insert(row) { select() }.decodeSingle()
+
+    suspend fun updateChore(choreId: String, row: NewChoreRow) {
+        supabase.from("chores").update({
+            set("name", row.name)
+            set("child_id", row.childId)
+            set("reward_cents", row.rewardCents)
+            set("category", row.category)
+            set("icon", row.icon)
+            set("color", row.color)
+            set("notes", row.notes)
+            set("days_of_week", row.daysOfWeek)
+            set("requires_photo", row.requiresPhoto)
+            set("updated_at", Instant.now().toString())
+        }) { filter { eq("id", choreId) } }
+    }
+
+    suspend fun deleteChore(choreId: String) {
+        supabase.from("chores").delete { filter { eq("id", choreId) } }
+    }
+
+    /** Claude-backed suggestions from the web app; null on any failure so the caller falls back to the local engine. */
+    suspend fun aiSuggestions(childName: String, childAge: Int?, existing: List<String>, completionRate: Double): List<ChoreSuggestion>? {
+        val token = accessToken ?: return null
+        return runCatching {
+            val response = web.post("${BuildConfig.WEB_API_BASE}/api/ai/suggest-chores") {
+                contentType(ContentType.Application.Json)
+                header("Authorization", "Bearer $token")
+                setBody(SuggestBody(childName, childAge, existing, completionRate.coerceIn(0.0, 100.0)))
+            }
+            if (response.status.value != 200) return null
+            SupabaseModule.json.decodeFromString(SuggestResponse.serializer(), response.bodyAsText())
+                .suggestions.map { ChoreSuggestion(it.name, it.category, it.icon, it.rewardCents, it.reason) }
+                .ifEmpty { null }
+        }.getOrNull()
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+
+    private fun errorMessage(body: String): String? = runCatching {
+        SupabaseModule.json.parseToJsonElement(body).jsonObject["error"]?.jsonPrimitive?.content
+    }.getOrNull()
+
+    private fun ByteArray.toHex() = joinToString("") { "%02x".format(it) }
+
     @Serializable
     private data class SignupBody(val email: String, val password: String, val familyName: String)
+
+    @Serializable
+    private data class SuggestBody(val childName: String, val childAge: Int?, val existingChoreNames: List<String>, val completionRate: Double)
+
+    @Serializable
+    private data class SuggestResponse(val suggestions: List<SuggestItem> = emptyList())
+
+    @Serializable
+    private data class SuggestItem(val name: String, val category: String = "", val icon: String = "📝", val rewardCents: Int = 0, val reason: String = "")
 }
