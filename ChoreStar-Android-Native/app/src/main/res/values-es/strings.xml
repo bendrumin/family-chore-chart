@@ -167,4 +167,62 @@
         <item quantity="one">tarea</item>
         <item quantity="other">tareas</item>
     </plurals>
+
+    <!-- Phase 2b: week board, approvals, home -->
+    <string name="segment_week">Semana</string>
+    <string name="childs_week">Semana de %1$s</string>
+    <string name="daily_list">Lista diaria</string>
+    <string name="week_view">Vista semanal</string>
+    <string name="this_week">Esta semana</string>
+    <string name="week_of">Semana del %1$s</string>
+    <string name="back_to_this_week">Volver a esta semana</string>
+    <string name="previous_week">Semana anterior</string>
+    <string name="next_week">Semana siguiente</string>
+    <string name="daily_bonus_line">Completa todas las tareas de un día para ganar %1$s</string>
+    <string name="today_pill">HOY</string>
+    <string name="nothing_scheduled">Nada programado</string>
+    <string name="n_of_m_completed">%1$d de %2$d completadas</string>
+    <string name="week_empty_hint">%1$s aún no tiene tareas asignadas. Agrega una tarea para llenar su semana.</string>
+    <string name="no_children_yet">Aún no hay niños</string>
+    <string name="week_no_children_hint">Agrega a tu primer niño en la pestaña Familia para ver su semana aquí.</string>
+    <string name="mark_today_done">Marcar hoy como hecho</string>
+    <string name="mark_week_so_far_done">Marcar la semana hasta hoy</string>
+    <string name="mark_done">Marcar hecho</string>
+    <string name="all_caught_up">Todo al día</string>
+    <string name="mark_chores_in_bulk">Marcar tareas en bloque</string>
+    <string name="chore_state_waiting_tap">Esperando tu visto bueno, toca para aprobar</string>
+    <string name="bulk_and_add_earnings">" y sumará %1$s a las ganancias de la semana."</string>
+    <string name="greeting_night">Buenas noches</string>
+    <string name="my_family">Mi familia</string>
+    <string name="shared">Compartida</string>
+    <string name="add_child_to_start">Agrega un niño para empezar a registrar tareas.</string>
+    <string name="no_chores_due_today">No hay tareas para hoy</string>
+    <string name="child_none_today">%1$s nada hoy</string>
+    <string name="on_vacation">🏖️ De vacaciones</string>
+    <string name="through_date">hasta el %1$s</string>
+    <string name="nothing_due_streaks_safe">Nada pendiente. Las rachas están a salvo.</string>
+    <string name="end_vacation_early">Terminar las vacaciones antes</string>
+    <string name="todays_chores">Tareas de hoy</string>
+    <string name="flat_rate_explainer">Cada niño gana %1$s por terminar todas sus tareas de hoy.</string>
+    <string name="nothing_due_today_long">No hay nada pendiente hoy. Las tareas de otros días aparecen en su día.</string>
+    <string name="vacation_mode_on_chores">El modo vacaciones está activo. Las tareas vuelven cuando termine.</string>
+    <string name="getting_started">Primeros pasos</string>
+    <string name="gs_add_child">Agrega a tu primer niño</string>
+    <string name="gs_add_child_hint">Pestaña Familia → botón +</string>
+    <string name="gs_create_chore">Crea una tarea</string>
+    <string name="gs_create_chore_hint">Pestaña Tareas → botón +</string>
+    <string name="gs_setup_routine">Configura una rutina</string>
+    <string name="gs_setup_routine_hint">Pestaña Tareas → Rutinas → Rutinas de inicio</string>
+    <string name="approve">Aprobar</string>
+    <string name="send_back">Devolver</string>
+    <string name="send_back_to">Devolver %1$s a %2$s</string>
+    <string name="approve_for">Aprobar %1$s para %2$s</string>
+    <plurals name="bulk_will_check_off">
+        <item quantity="one">Se marcará 1 tarea para %2$s</item>
+        <item quantity="other">Se marcarán %1$d tareas para %2$s</item>
+    </plurals>
+    <plurals name="bulk_pending_approved">
+        <item quantity="one">Se aprobará 1 tarea que espera tu visto bueno.</item>
+        <item quantity="other">Se aprobarán %1$d tareas que esperan tu visto bueno.</item>
+    </plurals>
 </resources>

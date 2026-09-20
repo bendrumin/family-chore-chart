@@ -175,4 +175,62 @@
         <item quantity="one">مهمة</item>
         <item quantity="other">مهام</item>
     </plurals>
+
+    <!-- Phase 2b: week board, approvals, home -->
+    <string name="segment_week">الأسبوع</string>
+    <string name="childs_week">أسبوع %1$s</string>
+    <string name="daily_list">قائمة يومية</string>
+    <string name="week_view">عرض الأسبوع</string>
+    <string name="this_week">هذا الأسبوع</string>
+    <string name="week_of">أسبوع %1$s</string>
+    <string name="back_to_this_week">العودة إلى هذا الأسبوع</string>
+    <string name="previous_week">الأسبوع السابق</string>
+    <string name="next_week">الأسبوع التالي</string>
+    <string name="daily_bonus_line">أكمل كل المهام في يوم واحد لتكسب %1$s</string>
+    <string name="today_pill">اليوم</string>
+    <string name="nothing_scheduled">لا شيء مجدول</string>
+    <string name="n_of_m_completed">اكتمل %1$d من %2$d</string>
+    <string name="week_empty_hint">لا توجد مهام معيّنة لـ %1$s بعد. أضف مهمة لملء الأسبوع.</string>
+    <string name="no_children_yet">لا يوجد أطفال بعد</string>
+    <string name="week_no_children_hint">أضف أول طفل من تبويب العائلة لرؤية أسبوعه هنا.</string>
+    <string name="mark_today_done">تعليم اليوم كمنجز</string>
+    <string name="mark_week_so_far_done">تعليم الأسبوع حتى الآن كمنجز</string>
+    <string name="mark_done">تعليم كمنجز</string>
+    <string name="all_caught_up">كل شيء منجز</string>
+    <string name="mark_chores_in_bulk">تعليم المهام دفعة واحدة</string>
+    <string name="chore_state_waiting_tap">بانتظار موافقتك، اضغط للموافقة</string>
+    <string name="bulk_and_add_earnings">" وسيضيف %1$s إلى أرباح الأسبوع."</string>
+    <string name="greeting_night">تصبح على خير</string>
+    <string name="my_family">عائلتي</string>
+    <string name="shared">مشتركة</string>
+    <string name="add_child_to_start">أضف طفلًا لبدء تتبع المهام.</string>
+    <string name="no_chores_due_today">لا مهام مستحقة اليوم</string>
+    <string name="child_none_today">%1$s لا شيء اليوم</string>
+    <string name="on_vacation">🏖️ في إجازة</string>
+    <string name="through_date">حتى %1$s</string>
+    <string name="nothing_due_streaks_safe">لا شيء مستحق. السلاسل في أمان.</string>
+    <string name="end_vacation_early">إنهاء الإجازة مبكرًا</string>
+    <string name="todays_chores">مهام اليوم</string>
+    <string name="flat_rate_explainer">يكسب كل طفل %1$s عند إنهاء جميع مهامه اليوم.</string>
+    <string name="nothing_due_today_long">لا شيء مستحق اليوم. تظهر مهام الأيام الأخرى في يومها.</string>
+    <string name="vacation_mode_on_chores">وضع الإجازة مفعّل. تعود المهام عند انتهائه.</string>
+    <string name="getting_started">البداية</string>
+    <string name="gs_add_child">أضف أول طفل</string>
+    <string name="gs_add_child_hint">تبويب العائلة ← زر +</string>
+    <string name="gs_create_chore">أنشئ مهمة</string>
+    <string name="gs_create_chore_hint">تبويب المهام ← زر +</string>
+    <string name="gs_setup_routine">أعدّ روتينًا</string>
+    <string name="gs_setup_routine_hint">تبويب المهام ← الروتينات ← روتينات جاهزة</string>
+    <string name="approve">موافقة</string>
+    <string name="send_back">إرجاع</string>
+    <string name="send_back_to">إرجاع %1$s إلى %2$s</string>
+    <string name="approve_for">الموافقة على %1$s لـ %2$s</string>
+    <plurals name="bulk_will_check_off">
+        <item quantity="one">سيُعلَّم مهمة واحدة لـ %2$s</item>
+        <item quantity="other">سيُعلَّم %1$d مهام لـ %2$s</item>
+    </plurals>
+    <plurals name="bulk_pending_approved">
+        <item quantity="one">ستتم الموافقة على مهمة واحدة بانتظار موافقتك.</item>
+        <item quantity="other">ستتم الموافقة على %1$d مهام بانتظار موافقتك.</item>
+    </plurals>
 </resources>

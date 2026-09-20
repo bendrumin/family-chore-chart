@@ -111,13 +111,13 @@ fun MainTabs(repository: ChoreStarRepository) {
         ) { padding ->
             NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
                 composable(Tab.Home.route) {
-                    HomeScreen(state, onRefresh = vm::refresh, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) })
+                    HomeScreen(vm, state, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onOpenFamily = { nav.navigate(Tab.Family.route) })
                 }
                 composable(Tab.Family.route) {
                     FamilyScreen(state, onAddChild = { nav.navigate(Routes.CHILD_NEW) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onEditChild = { nav.navigate(Routes.childEdit(it.id)) })
                 }
                 composable(Tab.Chores.route) {
-                    ChoresScreen(state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) })
+                    ChoresScreen(vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) })
                 }
                 composable(Tab.Stats.route) { StatsScreen(state) }
                 composable(Tab.Settings.route) { SettingsScreen(state, email = repository.currentEmail, onSignOut = vm::signOut) }

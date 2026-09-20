@@ -202,4 +202,64 @@
     <string name="premium_bullet_store">Unlimited reward store items</string>
     <string name="premium_bullet_themes">Premium themes: Ocean, Sunset, Forest, and more</string>
     <string name="see_premium_plans">@string/see_premium_plans_02fd8</string>
+
+    <!-- Week board -->
+    <string name="segment_week">Week</string>
+    <string name="childs_week">@string/s_week_9b3d2</string>
+    <string name="daily_list">@string/daily_list_8bc9c</string>
+    <string name="week_view">@string/week_view_6e5b7</string>
+    <string name="this_week">This week</string>
+    <string name="week_of">Week of %1$s</string>
+    <string name="back_to_this_week">@string/back_to_this_week_46c88</string>
+    <string name="previous_week">@string/previous_week_c4970</string>
+    <string name="next_week">@string/next_week_5a207</string>
+    <string name="daily_bonus_line">@string/complete_all_chores_in_a_day_to_earn_f6fc1</string>
+    <string name="today_pill">@string/today_7a468</string>
+    <string name="nothing_scheduled">@string/nothing_scheduled_18bef</string>
+    <string name="n_of_m_completed">@string/lld_of_lld_completed_04cf7</string>
+    <string name="week_empty_hint">%1$s doesn\'t have any chores assigned yet. Add a chore to fill in their week.</string>
+    <string name="no_children_yet">@string/no_children_yet_c73a6</string>
+    <string name="week_no_children_hint">@string/add_your_first_child_on_the_family_tab_t_8620b</string>
+    <string name="mark_today_done">@string/mark_today_done_296c6</string>
+    <string name="mark_week_so_far_done">@string/mark_week_so_far_done_60b78</string>
+    <string name="mark_done">@string/mark_done_2ae8b</string>
+    <string name="all_caught_up">@string/all_caught_up_47cba</string>
+    <string name="mark_chores_in_bulk">@string/mark_chores_done_in_bulk_8baf0</string>
+    <string name="chore_state_waiting_tap">@string/waiting_for_your_ok_tap_to_approve_be830</string>
+    <plurals name="bulk_will_check_off">
+        <item quantity="one">This will check off 1 chore for %2$s</item>
+        <item quantity="other">This will check off %1$d chores for %2$s</item>
+    </plurals>
+    <string name="bulk_and_add_earnings">" and add %1$s to the week\'s earnings."</string>
+    <plurals name="bulk_pending_approved">
+        <item quantity="one">1 chore waiting for your OK will be approved.</item>
+        <item quantity="other">%1$d chores waiting for your OK will be approved.</item>
+    </plurals>
+
+    <!-- Home -->
+    <string name="greeting_night">Good night</string>
+    <string name="my_family">My Family</string>
+    <string name="shared">@string/shared_50d0d</string>
+    <string name="add_child_to_start">@string/add_a_child_to_start_tracking_chores_1ecf0</string>
+    <string name="no_chores_due_today">@string/no_chores_due_today_4cd8b</string>
+    <string name="child_none_today">%1$s none today</string>
+    <string name="on_vacation">@string/on_vacation_1e0ea</string>
+    <string name="through_date">@string/through_dc951</string>
+    <string name="nothing_due_streaks_safe">@string/nothing_due_streaks_are_safe_f111f</string>
+    <string name="end_vacation_early">@string/end_vacation_early_22e4e</string>
+    <string name="todays_chores">Today\'s Chores</string>
+    <string name="flat_rate_explainer">@string/each_child_earns_for_finishing_all_of_th_48ac4</string>
+    <string name="nothing_due_today_long">@string/nothing_is_due_today_chores_scheduled_fo_088a6</string>
+    <string name="vacation_mode_on_chores">@string/vacation_mode_is_on_chores_come_back_whe_d4da6</string>
+    <string name="getting_started">@string/getting_started_010b8</string>
+    <string name="gs_add_child">Add your first child</string>
+    <string name="gs_add_child_hint">Family tab → the + button</string>
+    <string name="gs_create_chore">Create a chore</string>
+    <string name="gs_create_chore_hint">Chores tab → the + button</string>
+    <string name="gs_setup_routine">Set up a routine</string>
+    <string name="gs_setup_routine_hint">Chores tab → Routines → Starter Routines</string>
+    <string name="approve">@string/approve_7b2c7</string>
+    <string name="send_back">@string/send_back_0aa2a</string>
+    <string name="send_back_to">@string/send_back_to_5749a</string>
+    <string name="approve_for">@string/approve_for_04e7b</string>
 </resources>

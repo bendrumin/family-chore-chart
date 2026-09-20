@@ -11,7 +11,11 @@ import com.chorestar.app.data.model.FamilySettings
 import com.chorestar.app.data.model.NewChildRow
 import com.chorestar.app.data.model.NewChoreRow
 import com.chorestar.app.data.model.NewCompletion
+import com.chorestar.app.data.model.PendingApproval
+import com.chorestar.app.data.model.PendingResponse
 import com.chorestar.app.data.model.Profile
+import com.chorestar.app.data.model.VacationPeriod
+import io.ktor.client.request.get
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -27,6 +31,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -141,6 +146,76 @@ class ChoreStarRepository(
     suspend fun removeCompletion(id: String) {
         supabase.from("chore_completions").delete { filter { eq("id", id) } }
     }
+
+    /** Bulk catch-up: cells that already exist are left alone (unique on chore, day, week). */
+    suspend fun addCompletions(rows: List<NewCompletion>): List<ChoreCompletion> {
+        if (rows.isEmpty()) return emptyList()
+        return supabase.from("chore_completions")
+            .upsert(rows) { onConflict = "chore_id,day_of_week,week_start"; ignoreDuplicates = true; select() }
+            .decodeList()
+    }
+
+    // ── Approvals (the web app owns the rule, so both go through it) ─────────
+
+    suspend fun pendingApprovals(): List<PendingApproval> {
+        val token = accessToken ?: return emptyList()
+        val response = web.get("${BuildConfig.WEB_API_BASE}/api/chores/pending") { header("Authorization", "Bearer $token") }
+        if (response.status.value != 200) return emptyList()
+        return SupabaseModule.json.decodeFromString(PendingResponse.serializer(), response.bodyAsText()).items
+    }
+
+    /** approve → status approved (and the server pings the all-done push); reject → the row and its proof are deleted. */
+    suspend fun reviewCompletion(completionId: String, approve: Boolean) {
+        val token = accessToken ?: error("Not signed in")
+        val response = web.post("${BuildConfig.WEB_API_BASE}/api/chores/approve") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $token")
+            setBody(ReviewBody(completionId.lowercase(), if (approve) "approve" else "reject"))
+        }
+        if (response.status.value !in 200..299) error(errorMessage(response.bodyAsText()) ?: "Could not update (${response.status.value})")
+    }
+
+    // ── Vacation ─────────────────────────────────────────────────────────────
+
+    /** Upsert on user_id: an iOS- or Android-created family may have no settings row yet. */
+    suspend fun setVacation(userId: String, startsOn: String, endsOn: String, previous: Pair<String, String>?) {
+        supabase.from("family_settings").upsert(VacationUpsert(userId, startsOn, endsOn)) { onConflict = "user_id" }
+        runCatching {
+            if (previous != null) {
+                supabase.from("vacation_periods").update({ set("starts_on", startsOn); set("ends_on", endsOn) }) {
+                    filter { eq("user_id", userId); eq("starts_on", previous.first); eq("ends_on", previous.second) }
+                }
+            } else {
+                supabase.from("vacation_periods").insert(VacationPeriodInsert(userId, startsOn, endsOn))
+            }
+        }
+    }
+
+    /** Clears the live window; history is deleted if it never started, trimmed to yesterday if it is mid-way. */
+    suspend fun clearVacation(userId: String, window: Pair<String, String>?) {
+        supabase.from("family_settings").update({
+            set("vacation_starts_on", null as String?)
+            set("vacation_ends_on", null as String?)
+        }) { filter { eq("user_id", userId) } }
+        val (start, end) = window ?: return
+        val today = Dates.today()
+        runCatching {
+            val s = java.time.LocalDate.parse(start)
+            val e = java.time.LocalDate.parse(end)
+            when {
+                s.isAfter(today) -> supabase.from("vacation_periods").delete { filter { eq("user_id", userId); eq("starts_on", start); eq("ends_on", end) } }
+                !e.isBefore(today) -> supabase.from("vacation_periods").update({ set("ends_on", today.minusDays(1).toString()) }) {
+                    filter { eq("user_id", userId); eq("starts_on", start); eq("ends_on", end) }
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    /** Past and present windows; a missing table just means no history. */
+    suspend fun vacationPeriods(userId: String): List<VacationPeriod> = runCatching {
+        supabase.from("vacation_periods").select { filter { eq("user_id", userId) } }.decodeList<VacationPeriod>()
+    }.getOrDefault(emptyList())
 
     // ── Children ─────────────────────────────────────────────────────────────
 
@@ -272,6 +347,23 @@ class ChoreStarRepository(
 
     @Serializable
     private data class SignupBody(val email: String, val password: String, val familyName: String)
+
+    @Serializable
+    private data class ReviewBody(val completionId: String, val action: String)
+
+    @Serializable
+    private data class VacationUpsert(
+        @SerialName("user_id") val userId: String,
+        @SerialName("vacation_starts_on") val startsOn: String,
+        @SerialName("vacation_ends_on") val endsOn: String,
+    )
+
+    @Serializable
+    private data class VacationPeriodInsert(
+        @SerialName("user_id") val userId: String,
+        @SerialName("starts_on") val startsOn: String,
+        @SerialName("ends_on") val endsOn: String,
+    )
 
     @Serializable
     private data class SuggestBody(val childName: String, val childAge: Int?, val existingChoreNames: List<String>, val completionRate: Double)

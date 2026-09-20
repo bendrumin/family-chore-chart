@@ -25,7 +25,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,15 +44,27 @@ import com.chorestar.app.data.Dates
 import com.chorestar.app.data.Money
 import com.chorestar.app.data.model.Chore
 import com.chorestar.app.ui.DashboardState
+import com.chorestar.app.ui.DashboardViewModel
+import com.chorestar.app.ui.week.WeekScreen
 import com.chorestar.app.ui.theme.Success
 import com.chorestar.app.ui.theme.Warning
 
-/** The iOS Chores tab: one line per chore, grouped under each child, tap to tick today, long-press to edit. */
+private enum class ChoresSegment(val label: Int) { Chores(R.string.chores_title), Week(R.string.segment_week) }
+
+/** The iOS Chores tab: a Chores | Week switch; chores grouped under each child, tap to tick today, long-press to edit. */
 @Composable
-fun ChoresScreen(state: DashboardState, onToggleToday: (Chore) -> Unit, onAddChore: () -> Unit, onEditChore: (Chore) -> Unit) {
+fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (Chore) -> Unit, onAddChore: () -> Unit, onEditChore: (Chore) -> Unit) {
     val today = state.today
+    var segment by remember { mutableStateOf(ChoresSegment.Chores) }
     Box(Modifier.fillMaxSize()) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.fillMaxSize()) {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                ChoresSegment.entries.forEachIndexed { i, s ->
+                    SegmentedButton(selected = segment == s, onClick = { segment = s }, shape = SegmentedButtonDefaults.itemShape(i, ChoresSegment.entries.size)) { Text(stringResource(s.label)) }
+                }
+            }
+            if (segment == ChoresSegment.Week) { WeekScreen(vm, state); return@Column }
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Text(stringResource(R.string.chores_title), style = MaterialTheme.typography.headlineMedium)
                 Text(Dates.longDayName(today), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -86,7 +105,8 @@ fun ChoresScreen(state: DashboardState, onToggleToday: (Chore) -> Unit, onAddCho
                 }
             }
         }
-        FloatingActionButton(onClick = onAddChore, modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp)) {
+        }
+        if (segment == ChoresSegment.Chores) FloatingActionButton(onClick = onAddChore, modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp)) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_chore))
         }
     }

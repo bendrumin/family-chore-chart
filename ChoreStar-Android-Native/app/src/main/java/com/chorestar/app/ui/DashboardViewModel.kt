@@ -15,13 +15,17 @@ import com.chorestar.app.data.model.Chore
 import com.chorestar.app.data.model.ChoreCompletion
 import com.chorestar.app.data.model.FamilySettings
 import com.chorestar.app.data.model.NewChoreRow
+import com.chorestar.app.data.model.NewCompletion
+import com.chorestar.app.data.model.PendingApproval
 import com.chorestar.app.data.model.Profile
+import com.chorestar.app.data.model.VacationPeriod
 import com.chorestar.app.ui.components.LimitType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 const val FREE_CHILD_LIMIT = 3
 const val FREE_CHORE_LIMIT = 20
@@ -33,9 +37,15 @@ data class DashboardState(
     val profile: Profile? = null,
     val children: List<Child> = emptyList(),
     val chores: List<Chore> = emptyList(),
+    /** Completions for the CURRENT week. */
     val completions: List<ChoreCompletion> = emptyList(),
     val settings: FamilySettings? = null,
     val weekStart: String = Dates.weekStart(),
+    /** The week the board is looking at, and its completions when it is not the current week. */
+    val viewedWeekStart: String = Dates.weekStart(),
+    val viewedCompletions: List<ChoreCompletion> = emptyList(),
+    val vacationPeriods: List<VacationPeriod> = emptyList(),
+    val pendingApprovals: List<PendingApproval> = emptyList(),
     /** Cells a write is in flight for, so a double tap does not double-write. */
     val saving: Set<String> = emptySet(),
     val pinChildIds: Set<String> = emptySet(),
@@ -44,24 +54,47 @@ data class DashboardState(
     val upgradePrompt: LimitType? = null,
     val suggestions: List<ChoreSuggestion> = emptyList(),
     val suggestionsPersonalized: Boolean = false,
+    val isSharedMember: Boolean = false,
 ) {
     fun child(id: String?) = children.firstOrNull { it.id == id }
     fun chore(id: String?) = chores.firstOrNull { it.id == id }
     fun choresFor(childId: String) = chores.filter { it.childId == childId }
-    fun completion(choreId: String, day: Int) = completions.firstOrNull { it.choreId == choreId && it.dayOfWeek == day }
-    fun isDone(choreId: String, day: Int) = completion(choreId, day)?.counts == true
-    fun isPending(choreId: String, day: Int) = completion(choreId, day)?.isPending == true
-    fun dueOn(childId: String, day: Int) = choresFor(childId).filter { it.isDueOn(day) }
-    fun doneOn(childId: String, day: Int) = dueOn(childId, day).count { isDone(it.id, day) }
-    fun isPerfectDay(childId: String, day: Int): Boolean {
-        val due = dueOn(childId, day)
-        return due.isNotEmpty() && due.all { isDone(it.id, day) }
+
+    fun completionsFor(week: String): List<ChoreCompletion> = if (week == weekStart) completions else viewedCompletions
+    fun completion(choreId: String, day: Int, week: String = weekStart) = completionsFor(week).firstOrNull { it.choreId == choreId && it.dayOfWeek == day }
+    fun isDone(choreId: String, day: Int, week: String = weekStart) = completion(choreId, day, week)?.counts == true
+    fun isPending(choreId: String, day: Int, week: String = weekStart) = completion(choreId, day, week)?.isPending == true
+
+    // ── Vacation ─────────────────────────────────────────────────────────────
+    fun isOnVacation(date: LocalDate): Boolean {
+        val s = settings?.vacationStartsOn ?: return false
+        val e = settings.vacationEndsOn ?: return false
+        return runCatching { !date.isBefore(LocalDate.parse(s)) && !date.isAfter(LocalDate.parse(e)) }.getOrDefault(false)
     }
-    /** What a child earned on a day: the daily rate for a perfect day, or the sum of done chores per-chore. */
-    fun earnedCents(childId: String, day: Int): Int {
+    /** The live window or any recorded past window: days that never had chores due. */
+    fun isVacationDay(date: LocalDate): Boolean = isOnVacation(date) || vacationPeriods.any {
+        runCatching { !date.isBefore(LocalDate.parse(it.startsOn)) && !date.isAfter(LocalDate.parse(it.endsOn)) }.getOrDefault(false)
+    }
+    val isOnVacationToday: Boolean get() = isOnVacation(Dates.today())
+    val vacationResumeDate: LocalDate? get() = settings?.vacationEndsOn?.let { runCatching { LocalDate.parse(it).plusDays(1) }.getOrNull() }
+    fun dateOf(week: String, day: Int): LocalDate = LocalDate.parse(week).plusDays(day.toLong())
+
+    fun dueOn(childId: String, day: Int, week: String = weekStart): List<Chore> =
+        if (isVacationDay(dateOf(week, day))) emptyList() else choresFor(childId).filter { it.isDueOn(day) }
+    fun doneOn(childId: String, day: Int, week: String = weekStart) = dueOn(childId, day, week).count { isDone(it.id, day, week) }
+    fun isPerfectDay(childId: String, day: Int, week: String = weekStart): Boolean {
+        val due = dueOn(childId, day, week)
+        return due.isNotEmpty() && due.all { isDone(it.id, day, week) }
+    }
+    /**
+     * What a child earned on a day. Per-chore: every done chore counts, scheduled or
+     * not (a parent may credit work on another day). Flat: the daily rate on a perfect day.
+     */
+    fun earnedCents(childId: String, day: Int, week: String = weekStart): Int {
         val s = settings ?: return 0
-        return if (s.isPerChore) dueOn(childId, day).filter { isDone(it.id, day) }.sumOf { it.rewardCents }
-        else if (isPerfectDay(childId, day)) (s.dailyRewardCents ?: 0) else 0
+        if (isVacationDay(dateOf(week, day))) return 0
+        return if (s.isPerChore) choresFor(childId).filter { isDone(it.id, day, week) }.sumOf { it.rewardCents }
+        else if (isPerfectDay(childId, day, week)) (s.dailyRewardCents ?: 7) else 0
     }
     val pendingCompletions: List<ChoreCompletion> get() = completions.filter { it.isPending }
     val today: Int get() = Dates.dayOfWeek()
@@ -69,6 +102,11 @@ data class DashboardState(
     val isPremium: Boolean get() = profile?.isPremium == true
     val childLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_CHILD_LIMIT
     val choreLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_CHORE_LIMIT
+}
+
+/** What a bulk catch-up would do, shown before it runs. */
+data class BulkPlan(val childId: String, val fromDay: Int, val throughDay: Int, val toTick: List<Pair<Chore, Int>>, val toApprove: List<ChoreCompletion>, val earningsDeltaCents: Int) {
+    val isEmpty: Boolean get() = toTick.isEmpty() && toApprove.isEmpty()
 }
 
 class DashboardViewModel(private val repository: ChoreStarRepository) : ViewModel() {
@@ -93,14 +131,37 @@ class DashboardViewModel(private val repository: ChoreStarRepository) : ViewMode
                 val photos = children.mapNotNull { c ->
                     c.avatarPhotoPath?.let { p -> repository.signedAvatarUrl(p)?.let { c.id to it } }
                 }.toMap()
+                val periods = repository.vacationPeriods(uid)
+                val viewed = _state.value.viewedWeekStart
+                val viewedCompletions = if (viewed != weekStart) repository.completions(chores.map { it.id }, viewed) else emptyList()
                 _state.update {
                     it.copy(loading = false, effectiveUserId = uid, profile = profile, children = children,
                         chores = chores, completions = completions, settings = settings, weekStart = weekStart,
-                        pinChildIds = pins, photoUrls = photos)
+                        pinChildIds = pins, photoUrls = photos, vacationPeriods = periods, viewedCompletions = viewedCompletions,
+                        isSharedMember = uid != repository.currentUserId)
                 }
+                refreshApprovals()
             }.onFailure { e ->
                 _state.update { it.copy(loading = false, error = e.message?.let(UiText::Raw) ?: uiText(R.string.error_load_family)) }
             }
+        }
+    }
+
+    fun refreshApprovals() {
+        viewModelScope.launch {
+            runCatching { repository.pendingApprovals() }.onSuccess { list -> _state.update { it.copy(pendingApprovals = list) } }
+        }
+    }
+
+    // ── Week navigation ──────────────────────────────────────────────────────
+
+    fun viewWeek(weekStart: String) {
+        val capped = if (weekStart > _state.value.weekStart) _state.value.weekStart else weekStart
+        _state.update { it.copy(viewedWeekStart = capped, viewedCompletions = if (capped == it.weekStart) emptyList() else it.viewedCompletions) }
+        if (capped == _state.value.weekStart) return
+        viewModelScope.launch {
+            runCatching { repository.completions(_state.value.chores.map { it.id }, capped) }
+                .onSuccess { list -> _state.update { s -> if (s.viewedWeekStart == capped) s.copy(viewedCompletions = list) else s } }
         }
     }
 
@@ -109,31 +170,118 @@ class DashboardViewModel(private val repository: ChoreStarRepository) : ViewMode
     /** Parent tap on today's cell: mark or unmark. Optimistic, reverted on failure. */
     fun toggleToday(chore: Chore) = toggle(chore, Dates.dayOfWeek())
 
-    fun toggle(chore: Chore, day: Int) {
-        val key = "${chore.id}:$day"
+    /** Any cell, any week: past days, future days of this week, off-schedule days. A pending cell is approved. */
+    fun toggle(chore: Chore, day: Int, week: String = _state.value.weekStart) {
+        val key = "${chore.id}:$day:$week"
         val s = _state.value
         if (key in s.saving) return
-        val existing = s.completion(chore.id, day)
-        if (existing?.isPending == true) return // approvals come in a later build
+        val existing = s.completion(chore.id, day, week)
+        if (existing?.isPending == true) { approve(existing.id); return }
         viewModelScope.launch {
             _state.update { it.copy(saving = it.saving + key) }
             runCatching {
                 if (existing != null) {
-                    _state.update { it.copy(completions = it.completions - existing) }
+                    updateWeek(week) { it - existing }
                     repository.removeCompletion(existing.id)
                 } else {
-                    val placeholder = ChoreCompletion(id = "local:$key", choreId = chore.id, dayOfWeek = day, weekStart = s.weekStart)
-                    _state.update { it.copy(completions = it.completions + placeholder) }
-                    val saved = repository.addCompletion(chore.id, day, s.weekStart)
-                    _state.update { it.copy(completions = it.completions.map { c -> if (c.id == placeholder.id) saved else c }) }
+                    val placeholder = ChoreCompletion(id = "local:$key", choreId = chore.id, dayOfWeek = day, weekStart = week)
+                    updateWeek(week) { it + placeholder }
+                    val saved = repository.addCompletion(chore.id, day, week)
+                    updateWeek(week) { list -> list.map { c -> if (c.id == placeholder.id) saved else c } }
                 }
             }.onFailure { e ->
-                _state.update {
-                    val reverted = if (existing != null) it.completions + existing else it.completions.filterNot { c -> c.id == "local:$key" }
-                    it.copy(completions = reverted, error = uiText(R.string.error_could_not_save, e.message ?: ""))
-                }
+                updateWeek(week) { list -> if (existing != null) list + existing else list.filterNot { c -> c.id == "local:$key" } }
+                _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) }
             }
             _state.update { it.copy(saving = it.saving - key) }
+        }
+    }
+
+    private fun updateWeek(week: String, f: (List<ChoreCompletion>) -> List<ChoreCompletion>) {
+        _state.update { s ->
+            if (week == s.weekStart) s.copy(completions = f(s.completions)) else s.copy(viewedCompletions = f(s.viewedCompletions))
+        }
+    }
+
+    /** Everything due for the child from [fromDay] through [throughDay] this week that is not done yet. */
+    fun bulkPlan(childId: String, fromDay: Int, throughDay: Int): BulkPlan {
+        val s = _state.value
+        val week = s.weekStart
+        val toTick = mutableListOf<Pair<Chore, Int>>()
+        val toApprove = mutableListOf<ChoreCompletion>()
+        var delta = 0
+        for (day in fromDay..throughDay) {
+            val before = s.earnedCents(childId, day, week)
+            val due = s.dueOn(childId, day, week)
+            for (chore in due) {
+                val c = s.completion(chore.id, day, week)
+                if (c == null) toTick += chore to day else if (c.isPending) toApprove += c
+            }
+            // After: every due chore done.
+            val after = if (due.isEmpty()) 0 else if (s.settings?.isPerChore == true)
+                s.choresFor(childId).filter { ch -> due.any { it.id == ch.id } || s.isDone(ch.id, day, week) }.sumOf { it.rewardCents }
+            else (s.settings?.dailyRewardCents ?: 7)
+            delta += (after - before).coerceAtLeast(0)
+        }
+        return BulkPlan(childId, fromDay, throughDay, toTick, toApprove, delta)
+    }
+
+    fun runBulk(plan: BulkPlan, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            val week = _state.value.weekStart
+            runCatching {
+                val saved = repository.addCompletions(plan.toTick.map { (chore, day) -> NewCompletion(chore.id, day, week) })
+                updateWeek(week) { it + saved }
+                plan.toApprove.forEach { repository.reviewCompletion(it.id, approve = true) }
+            }.onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
+            onDone()
+        }
+    }
+
+    // ── Vacation ─────────────────────────────────────────────────────────────
+
+    fun setVacation(startsOn: String, endsOn: String) {
+        viewModelScope.launch {
+            val s = _state.value
+            val uid = s.effectiveUserId ?: return@launch
+            val prev = s.settings?.let { st -> st.vacationStartsOn?.let { a -> st.vacationEndsOn?.let { b -> a to b } } }
+            runCatching { repository.setVacation(uid, startsOn, endsOn, prev) }
+                .onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
+        }
+    }
+
+    fun clearVacation() {
+        viewModelScope.launch {
+            val s = _state.value
+            val uid = s.effectiveUserId ?: return@launch
+            val window = s.settings?.let { st -> st.vacationStartsOn?.let { a -> st.vacationEndsOn?.let { b -> a to b } } }
+            _state.update { it.copy(settings = it.settings?.copy(vacationStartsOn = null, vacationEndsOn = null)) }
+            runCatching { repository.clearVacation(uid, window) }
+                .onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
+        }
+    }
+
+    // ── Approvals ────────────────────────────────────────────────────────────
+
+    fun approve(completionId: String) = review(completionId, approve = true)
+    fun reject(completionId: String) = review(completionId, approve = false)
+
+    private fun review(completionId: String, approve: Boolean) {
+        viewModelScope.launch {
+            _state.update { s ->
+                s.copy(
+                    pendingApprovals = s.pendingApprovals.filterNot { it.id == completionId },
+                    completions = s.completions.mapNotNull { c ->
+                        if (c.id != completionId) c else if (approve) c.copy(status = "approved") else null
+                    },
+                )
+            }
+            runCatching { repository.reviewCompletion(completionId, approve) }
+                .onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refresh()
         }
     }
 
@@ -202,7 +350,7 @@ class DashboardViewModel(private val repository: ChoreStarRepository) : ViewMode
         viewModelScope.launch {
             _state.update { it.copy(chores = it.chores - chore) }
             runCatching { repository.deleteChore(chore.id) }
-                .onFailure { e -> _state.update { it.copy(chores = it.chores + chore, error = uiText(R.string.delete_failed_body, chore.name)) } }
+                .onFailure { _state.update { it.copy(chores = it.chores + chore, error = uiText(R.string.delete_failed_body, chore.name)) } }
         }
     }
 

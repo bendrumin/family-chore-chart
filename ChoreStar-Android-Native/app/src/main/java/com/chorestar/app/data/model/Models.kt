@@ -116,6 +116,9 @@ data class FamilySettings(
     @SerialName("weekly_bonus_label") val weeklyBonusLabel: String? = null,
     @SerialName("currency_code") val currencyCode: String? = null,
     val timezone: String? = null,
+    /** Live vacation window (migration 019); both null or both set. */
+    @SerialName("vacation_starts_on") val vacationStartsOn: String? = null,
+    @SerialName("vacation_ends_on") val vacationEndsOn: String? = null,
     @SerialName("require_approval") val requireApproval: Boolean = false,
     @SerialName("activity_push_enabled") val activityPushEnabled: Boolean = true,
     @SerialName("custom_theme") val customTheme: JsonElement? = null,
@@ -141,3 +144,32 @@ data class ChildPinRow(
     @SerialName("failed_attempts") val failedAttempts: Int = 0,
     @SerialName("locked_until") val lockedUntil: String? = null,
 )
+
+@Serializable
+data class VacationPeriod(
+    val id: String,
+    @SerialName("starts_on") val startsOn: String,
+    @SerialName("ends_on") val endsOn: String,
+)
+
+/** One kid tick waiting for a parent, as GET /api/chores/pending returns it (with a short-lived signed proof URL). */
+@Serializable
+data class PendingApproval(
+    val id: String,
+    val choreId: String,
+    val choreName: String = "",
+    val choreIcon: String? = null,
+    val rewardCents: Int = 0,
+    val childId: String? = null,
+    val childName: String = "",
+    val childColor: String? = null,
+    val dayOfWeek: Int,
+    val dayName: String = "",
+    val weekStart: String,
+    val completedAt: String? = null,
+    val hasPhoto: Boolean = false,
+    val photoUrl: String? = null,
+)
+
+@Serializable
+data class PendingResponse(val items: List<PendingApproval> = emptyList())
