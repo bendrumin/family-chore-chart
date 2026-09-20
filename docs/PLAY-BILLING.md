@@ -56,6 +56,15 @@ test once the app is on a testing track.
   plugin is present; without it they stay statement-only, so a build without
   the plugin remains consumption-only compliant.
 
+### Verified on hardware (2026-09-20, Galaxy S25 Ultra, Android 16)
+
+Sideloaded debug build: the plugin is injected into the remote page
+(`window.CdvPurchase` present, 13.18.0), `store.initialize` connects to
+Play services in about four seconds with no errors, and the product list is
+empty, which is the correct result until the subscriptions exist in the
+Console. The Billing tab renders the premium state correctly for a
+non-Google-billed account. What remains is the license-tester purchase.
+
 ### Ben's Console steps (in order)
 
 1. Monetize > Subscriptions: create `chorestar_premium_monthly` (base plan
