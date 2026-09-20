@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { WeekNavigator } from '@/components/ui/week-navigator'
 import { WeekSummaryStrip } from '@/components/chores/week-summary-strip'
+import { WeekBoard } from '@/components/chores/week-board'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { Plus, Filter, CheckCheck, CalendarCheck } from 'lucide-react'
@@ -542,19 +543,32 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredChores.map((chore) => (
-                <ChoreCard
-                  key={chore.id}
-                  chore={chore}
-                  compact={view === 'today'}
-                  completions={completionsByChoreId.get(chore.id) || []}
+              {view === 'week' ? (
+                <WeekBoard
+                  chores={filteredChores}
+                  completionsByChoreId={completionsByChoreId}
+                  completions={completions}
                   weekStart={weekStart}
                   rewardMode={rewardMode}
-                  onRefresh={handleRefresh}
-                  iconTint={iconTint}
                   vacationDays={vacationDays}
+                  settings={settings}
+                  onRefresh={handleRefresh}
                 />
-              ))}
+              ) : (
+                filteredChores.map((chore) => (
+                  <ChoreCard
+                    key={chore.id}
+                    chore={chore}
+                    compact
+                    completions={completionsByChoreId.get(chore.id) || []}
+                    weekStart={weekStart}
+                    rewardMode={rewardMode}
+                    onRefresh={handleRefresh}
+                    iconTint={iconTint}
+                    vacationDays={vacationDays}
+                  />
+                ))
+              )}
             </div>
           )}
         </CardContent>

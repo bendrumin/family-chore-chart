@@ -32,6 +32,10 @@ interface ChoreCardProps {
   vacationDays?: ReadonlySet<number>
   /** One line about today instead of the seven-day grid (the phone default). */
   compact?: boolean
+  /** A row inside the shared week board: no card, no repeated day labels. */
+  boardRow?: boolean
+  /** Alternating tint for board rows, matching the iOS week table. */
+  even?: boolean
 }
 
 export const ChoreCard = memo(function ChoreCard({
@@ -44,6 +48,8 @@ export const ChoreCard = memo(function ChoreCard({
   childName,
   vacationDays,
   compact = false,
+  boardRow = false,
+  even = false,
 }: ChoreCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   // Optimistic overrides so the grid responds instantly, before the DB round-trip
@@ -177,6 +183,100 @@ export const ChoreCard = memo(function ChoreCard({
   const choreCompletions = completions.filter(
     c => c.chore_id === chore.id && c.week_start === weekStart && (!c.status || c.status === 'approved')
   )
+
+  if (boardRow) {
+    // A row of the shared week table: the chore on its own line, then seven
+    // cells that line up with the header above. The day names live in that
+    // header, so they are not repeated once per chore the way the old
+    // per-chore cards did.
+    return (
+      <>
+        <div className={`px-3 py-3 ${even ? 'bg-black/[0.02] dark:bg-white/[0.03]' : ''}`}>
+          <div className="flex items-center gap-2 mb-2.5">
+            {chore.icon && (
+              <ChoreIcon emoji={chore.icon} className="w-6 h-6 shrink-0" tint={iconTint || undefined} />
+            )}
+            <span
+              className="min-w-0 truncate text-[0.95rem] font-semibold"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {chore.name}
+            </span>
+            {childName && (
+              <span className="shrink-0 text-xs font-medium" style={{ color: iconTint || 'var(--text-secondary)' }}>
+                {childName}
+              </span>
+            )}
+            {!isEveryDay(chore.days_of_week) && (
+              <span
+                className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                <CalendarDays className="w-3.5 h-3.5" aria-hidden />
+                {formatSchedule(chore.days_of_week)}
+              </span>
+            )}
+            <span className="flex-1" />
+            {rewardMode === 'per_chore' && (
+              <span className="shrink-0 text-xs font-semibold text-green-600 dark:text-green-400 tabular-nums">
+                ${((chore.reward_cents || 0) / 100).toFixed(2)}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditModalOpen(true)}
+              className="shrink-0 h-8 w-8 min-h-0 min-w-0 rounded-full"
+              aria-label={`Edit ${chore.name}`}
+            >
+              <Edit className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1.5">
+            {days.map(day => {
+              const awaiting = isAwaitingApproval(day.dayOfWeek)
+              const completed = !awaiting && (optimistic[day.dayOfWeek] ?? isCompleted(day.dayOfWeek))
+              const due = isDueOn(chore, day.dayOfWeek, vacationDays)
+              const idle = due
+                ? 'bg-black/[0.04] dark:bg-white/[0.07] border border-black/[0.06] dark:border-white/[0.1]'
+                : 'bg-transparent border border-dashed border-black/[0.12] dark:border-white/[0.16] opacity-60'
+              return (
+                <button
+                  key={day.dayOfWeek}
+                  onClick={() => toggleCompletion(day.dayOfWeek)}
+                  aria-pressed={completed}
+                  aria-label={`${chore.name} ${day.dayName}${due ? '' : ', not scheduled'}, ${
+                    awaiting ? 'waiting for your OK, click to approve' : completed ? 'completed, click to unmark' : 'not completed, click to mark'
+                  }`}
+                  className={`h-10 sm:h-12 rounded-lg flex items-center justify-center transition-colors duration-150 touch-manipulation ${
+                    awaiting
+                      ? 'border-2 border-dashed border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30'
+                      : completed
+                        ? 'accent-fill'
+                        : idle
+                  }`}
+                >
+                  {awaiting && <Clock className="w-4 h-4 text-amber-600 dark:text-amber-300" aria-hidden />}
+                  {completed && <Check className="w-4 h-4 stroke-[3]" aria-hidden />}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <EditChoreModal
+          chore={chore}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          onSuccess={() => {
+            setIsEditModalOpen(false)
+            onRefresh()
+          }}
+        />
+      </>
+    )
+  }
 
   if (compact) {
     // The shape the iOS app uses: one tappable line about today. Seven
