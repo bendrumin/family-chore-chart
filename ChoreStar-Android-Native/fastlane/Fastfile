@@ -1,0 +1,85 @@
+# ChoreStar for Android on Google Play, through fastlane supply.
+#
+#   fastlane android internal      # build the bundle and upload it as a draft
+#   fastlane android internal rollout:true
+#   fastlane android metadata      # listing text and graphics only
+#   fastlane android promote from:internal to:production
+#   fastlane android state         # what is on each track right now
+#
+# The key comes from SUPPLY_JSON_KEY or ~/.chorestar-android/play-key.json (see
+# the Appfile). Prices and subscription products are NOT supply's job: they live
+# in chorestar-nextjs/scripts/play-prices.mjs (docs/PLAY-PRICING.md).
+
+JDK21 = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+SDK = "/opt/homebrew/share/android-commandlinetools"
+AAB = "app/build/outputs/bundle/release/app-release.aab"
+
+# Metadata-only uploads have no binary to infer the release from, so supply
+# needs the version code it should attach changelogs to.
+def current_version_code
+  gradle = File.read(File.expand_path("../app/build.gradle.kts", __dir__))
+  gradle[/versionCode\s*=\s*(\d+)/, 1].to_i
+end
+
+platform :android do
+  desc "Build the signed release bundle. JDK 21: the default JDK breaks Gradle's Kotlin DSL."
+  lane :bundle do
+    # Shelling out rather than using gradle(): the wrapper needs JAVA_HOME
+    # pinned to JDK 21, which docs/ANDROID-NATIVE.md explains.
+    sh("cd .. && JAVA_HOME=#{JDK21} ANDROID_HOME=#{SDK} ./gradlew bundleRelease -q")
+    UI.success("built #{AAB}")
+  end
+
+  desc "Upload the bundle to a track. Draft unless rollout:true."
+  lane :internal do |options|
+    bundle unless options[:skip_build]
+    upload_to_play_store(
+      track: "internal",
+      aab: "../#{AAB}",
+      release_status: options[:rollout] ? "completed" : "draft",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false,
+    )
+  end
+
+  desc "Listing text and graphics, no binary."
+  lane :metadata do |options|
+    upload_to_play_store(
+      track: options[:track] || "internal",
+      version_code: current_version_code,
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Move a release from one track to another, e.g. from:internal to:production."
+  lane :promote do |options|
+    upload_to_play_store(
+      track: options[:from] || "internal",
+      track_promote_to: options[:to] || "production",
+      skip_upload_aab: true, skip_upload_apk: true,
+      skip_upload_metadata: true, skip_upload_images: true,
+      skip_upload_screenshots: true, skip_upload_changelogs: true,
+    )
+  end
+
+  desc "What is on each track (uses the node script, which prints more than supply does)."
+  lane :state do
+    web = File.expand_path("../../chorestar-nextjs", __dir__)
+    key = ENV["SUPPLY_JSON_KEY"] || File.expand_path("~/.chorestar-android/play-key.json")
+    sh("cd #{web} && GOOGLE_PLAY_SERVICE_ACCOUNT_FILE=#{key} node scripts/play-release.mjs tracks")
+  end
+
+  desc "Dry run: check the listing and key against Play without writing anything."
+  lane :validate do |options|
+    upload_to_play_store(
+      validate_only: true,
+      track: options[:track] || "internal",
+      version_code: current_version_code,
+      skip_upload_aab: true, skip_upload_apk: true, skip_upload_changelogs: true,
+    )
+  end
+end

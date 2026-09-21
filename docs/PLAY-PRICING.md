@@ -49,3 +49,33 @@ The same purchasing-power set as Apple and Stripe: MX, BR and IN, plus a tier-2
 batch of CL, CO, AR, TR, EG, ID, PH, VN, PK and NG. The table lives at the top
 of the script; keep it in step with `ChoreStar-iOS/scripts/apply-latam-prices.mjs`.
 Play's regions are ISO-2 codes where Apple's territories are ISO-3.
+
+## fastlane, for the parts it does well
+
+`ChoreStar-Android-Native/fastlane` holds an Appfile and Fastfile, so the
+Android side has the same shape as the iOS one:
+
+```
+cd ChoreStar-Android-Native
+fastlane android state                        # what is on each track
+fastlane android validate                     # dry run against Play, writes nothing
+fastlane android internal                     # build the bundle, upload as a draft
+fastlane android internal rollout:true        # and roll it out to testers
+fastlane android metadata                     # listing text and graphics only
+fastlane android promote from:internal to:production
+```
+
+The key comes from `SUPPLY_JSON_KEY`, defaulting to
+`~/.chorestar-android/play-key.json`, which is where the Play service-account
+JSON now lives. Keep it out of the repo.
+
+Two things supply cannot do, which is why the node scripts exist:
+subscription products and prices (`scripts/play-prices.mjs`) and the
+cross-store price audit (`scripts/compare-store-prices.mjs`). Supply also
+needs a `track` and a `version_code` for a metadata-only run, since with no
+binary it cannot tell which release a changelog belongs to; both lanes pass
+them already.
+
+Images live twice on purpose: `docs/assets/play` is the source, and
+`fastlane/metadata/android/en-US/images` is the copy supply reads. Update both
+or re-copy when the screenshots change.

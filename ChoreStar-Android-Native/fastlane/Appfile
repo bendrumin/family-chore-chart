@@ -1,0 +1,7 @@
+# The store identity is com.chorestar.family: com.chorestar.app belongs to an
+# unrelated live app on Google Play (docs/PLAY-LISTING.md).
+package_name "com.chorestar.family"
+
+# The Play service-account key. Keep it OUTSIDE the repo; the default below is
+# where the setup notes tell you to put it.
+json_key_file ENV["SUPPLY_JSON_KEY"] || File.expand_path("~/.chorestar-android/play-key.json")
