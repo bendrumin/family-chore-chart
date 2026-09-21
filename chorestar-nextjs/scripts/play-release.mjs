@@ -14,7 +14,7 @@
 // ChoreStar-Android-Native/fastlane/metadata/<lang>/release_notes.txt when
 // present, and are only sent for languages the listing already has.
 import crypto from 'node:crypto';
-import { readFileSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename } from 'node:path';
 
@@ -123,9 +123,12 @@ async function upload(track, aabPath, status) {
 /** Push the store listing text and contact details from the metadata files. */
 async function pushListing() {
   const edit = await api('POST', '/edits');
-  const listings = await api('GET', `/edits/${edit.id}/listings`);
-  for (const l of listings.listings ?? []) {
-    const lang = l.language;
+  const existing = await api('GET', `/edits/${edit.id}/listings`);
+  const byLang = Object.fromEntries((existing.listings ?? []).map((x) => [x.language, x]));
+  // Every language with metadata files, so a new locale is created rather than skipped.
+  const langs = readdirSync(META).filter((d) => { try { return statSync(new URL(`${d}/`, META)).isDirectory(); } catch { return false; } });
+  for (const lang of langs) {
+    const l = byLang[lang] ?? {};
     const title = read(`${lang}/title.txt`);
     const short = read(`${lang}/short_description.txt`);
     const full = read(`${lang}/full_description.txt`);
