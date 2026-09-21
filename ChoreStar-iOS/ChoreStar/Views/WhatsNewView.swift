@@ -22,6 +22,28 @@ enum Changelog {
 
     static let entries: [Entry] = [
         Entry(
+            version: "2.2.3",
+            date: "September 2026",
+            title: "Filters Up Front, Themes at a Glance",
+            features: [
+                Feature(
+                    icon: "🏷️",
+                    title: "Chore Filters in the List",
+                    description: "Pick a kid, or All, Pending and Completed, right above your chores. No more hunting in a menu."
+                ),
+                Feature(
+                    icon: "🎨",
+                    title: "Every Theme at Once",
+                    description: "The theme gallery is a grid now, with Light, Dark and System as one tap and ten preset accent colours beside the picker. Selected chips and pills wear your theme."
+                ),
+                Feature(
+                    icon: "🧒",
+                    title: "A Clear Way Out of Kid Mode",
+                    description: "The exit button says what it does."
+                ),
+            ]
+        ),
+        Entry(
             version: "2.2.2",
             date: "September 2026",
             title: "Get Rolling in Three Steps",

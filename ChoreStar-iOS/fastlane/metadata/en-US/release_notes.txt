@@ -1,7 +1,10 @@
-Version 2.2.2 helps new families get rolling.
+Version 2.2.3 puts the controls where you can see them.
 
-• A getting-started checklist on the dashboard: add a kid, give them chores, let them check one off. It walks you to the next step and shows your family code so your kid can sign in
-• The checklist gets out of the way for good once your chart is running, or whenever you hide it
+• Chore filters in the list: pick a kid, or All, Pending and Completed, right above your chores instead of behind a menu
+• The theme gallery is a grid, so every theme is on screen at once
+• Light, Dark and System as one tap, and ten preset accent colours beside the picker
+• Selected chips and pills wear your family's theme
+• The kid-mode exit button says what it does
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app

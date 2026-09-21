@@ -1,7 +1,10 @@
-A versão 2.2.2 ajuda famílias novas a começar.
+A versão 2.2.3 coloca os controles onde você os vê.
 
-• Uma lista de primeiros passos no painel: adicione uma criança, crie as tarefas e deixe que ela marque a primeira. Ela guia você ao próximo passo e mostra o código da família para o login das crianças
-• A lista some de vez quando o quadro já está funcionando, ou quando você a esconder
+• Filtros de tarefas na lista: escolha uma criança, ou Todas, Pendentes e Concluídas, logo acima das tarefas e não escondidos em um menu
+• A galeria de temas virou uma grade, com todos os temas na tela de uma vez
+• Claro, Escuro e Sistema com um toque, e dez cores de destaque ao lado do seletor
+• Chips e botões selecionados usam o tema da sua família
+• O botão de sair do modo criança diz o que faz
 • Pequenas correções e melhorias
 
 Fale com a gente em hi@chorestar.app
