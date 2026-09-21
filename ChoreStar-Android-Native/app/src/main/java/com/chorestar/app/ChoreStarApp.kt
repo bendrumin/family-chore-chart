@@ -2,6 +2,7 @@ package com.chorestar.app
 
 import android.app.Application
 import com.chorestar.app.data.ChoreStarRepository
+import com.chorestar.app.data.PlayBilling
 import com.chorestar.app.data.Prefs
 import com.chorestar.app.data.SupabaseModule
 import com.chorestar.app.data.ThemePreference
@@ -17,6 +18,13 @@ class ChoreStarApp : Application() {
 
     /** What family_settings.custom_theme last said; the dashboard updates it on every load. */
     val theme = MutableStateFlow(ThemePreference(false, null, null))
+
+    /** A chorestar.app path the app was opened with (App Link or launcher shortcut), consumed by AppRoot. */
+    val pendingLink = MutableStateFlow<String?>(null)
+
+    val billing: PlayBilling by lazy {
+        PlayBilling(this) { token, productId -> repository.verifyPlayPurchase(token, productId) }
+    }
 
     override fun onCreate() {
         super.onCreate()

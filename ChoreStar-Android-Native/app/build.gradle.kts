@@ -93,6 +93,9 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
     implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
 
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+
     // Image loading (photo avatars) returns with a Coil that targets Compose 1.10;
     // Coil 3.6 pulls Compose 1.12, which needs SDK 37.
 }

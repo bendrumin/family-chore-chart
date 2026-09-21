@@ -46,6 +46,11 @@ import com.chorestar.app.ui.routines.StarterRoutinesScreen
 import com.chorestar.app.ui.settings.DeleteAccountScreen
 import com.chorestar.app.ui.settings.FamilySharingScreen
 import com.chorestar.app.ui.settings.PaywallScreen
+import com.chorestar.app.ui.settings.WhatsNewScreen
+import com.chorestar.app.ui.settings.Changelog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import com.chorestar.app.ui.settings.RewardStoreScreen
 import com.chorestar.app.ui.settings.RewardsSettingsScreen
 import com.chorestar.app.data.ChoreStarRepository
@@ -90,6 +95,7 @@ object Routes {
     const val SETTINGS_DELETE = "settings/delete"
     const val PAYWALL = "paywall"
     const val KID_AUTH = "kid/auth"
+    const val WHATS_NEW = "whatsnew"
     const val ROUTINE_NEW = "routine/new?childId={childId}"
     const val ROUTINE_EDIT = "routine/edit/{routineId}"
     const val ROUTINES_STARTER = "routines/starter"
@@ -104,7 +110,14 @@ object Routes {
 @Composable
 fun MainTabs(repository: ChoreStarRepository) {
     val app = LocalContext.current.applicationContext as ChoreStarApp
-    val vm: DashboardViewModel = viewModel(factory = viewModelFactory { initializer { DashboardViewModel(repository, onTheme = { app.theme.value = it }) } })
+    val vm: DashboardViewModel = viewModel(factory = viewModelFactory { initializer {
+        DashboardViewModel(repository, onTheme = { app.theme.value = it }, onSnapshot = { snap ->
+            app.prefs.widgetSnapshotJson = com.chorestar.app.data.SupabaseModule.json.encodeToString(com.chorestar.app.widget.WidgetSnapshot.serializer(), snap)
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch { com.chorestar.app.widget.TodayWidget.refresh(app) }
+        })
+    } })
+    var showWhatsNew by remember { mutableStateOf(app.prefs.whatsNewSeen != null && app.prefs.whatsNewSeen != Changelog.LATEST) }
+    LaunchedEffect(Unit) { if (app.prefs.whatsNewSeen == null) app.prefs.whatsNewSeen = Changelog.LATEST }
     val state by vm.state.collectAsStateWithLifecycle()
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
@@ -176,7 +189,8 @@ fun MainTabs(repository: ChoreStarRepository) {
                 composable(Routes.SETTINGS_SHARING) { FamilySharingScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.PAYWALL) }) }
                 composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }) }
                 composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
-                composable(Routes.PAYWALL) { PaywallScreen(state, onBack = { nav.popBackStack() }) }
+                composable(Routes.PAYWALL) { PaywallScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.WHATS_NEW) { WhatsNewScreen(onBack = { nav.popBackStack() }) }
                 composable(Routes.KID_AUTH) {
                     ChildAuthScreen(state, repository.kid, onBack = { nav.popBackStack() }, onAuthenticated = { c -> nav.popBackStack(); vm.enterKidMode(c.id) })
                 }
@@ -226,6 +240,17 @@ fun MainTabs(repository: ChoreStarRepository) {
     }
 
     AchievementUnlockedDialog(state.unlocked, onDismiss = vm::clearUnlocked)
+
+    if (showWhatsNew) {
+        val latest = Changelog.entries.first()
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showWhatsNew = false; app.prefs.whatsNewSeen = Changelog.LATEST },
+            title = { Text("✨ " + latest.title) },
+            text = { androidx.compose.foundation.layout.Column { latest.features.forEach { f -> Text("${f.icon} ${f.title}", style = androidx.compose.material3.MaterialTheme.typography.titleSmall); Text(f.description, style = androidx.compose.material3.MaterialTheme.typography.bodySmall) } } },
+            confirmButton = { androidx.compose.material3.TextButton(onClick = { showWhatsNew = false; app.prefs.whatsNewSeen = Changelog.LATEST; nav.navigate(Routes.WHATS_NEW) }) { Text(stringResource(R.string.whats_new)) } },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = { showWhatsNew = false; app.prefs.whatsNewSeen = Changelog.LATEST }) { Text(stringResource(R.string.ok_label)) } },
+        )
+    }
 
     state.upgradePrompt?.let { type ->
         UpgradePrompt(

@@ -38,6 +38,14 @@ class Prefs(context: Context) {
         get() = sp.getString("lastFamilyCode", null)
         set(v) = sp.edit().putString("lastFamilyCode", v).apply()
 
+    var widgetSnapshotJson: String?
+        get() = sp.getString("widgetSnapshot", null)
+        set(v) = sp.edit().putString("widgetSnapshot", v).apply()
+
+    var whatsNewSeen: String?
+        get() = sp.getString("whatsNewSeen", null)
+        set(v) = sp.edit().putString("whatsNewSeen", v).apply()
+
     var kidSessionJson: String?
         get() = sp.getString("kidSession", null)
         set(v) = sp.edit().putString("kidSession", v).apply()

@@ -190,6 +190,11 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
                 ValueRow(stringResource(R.string.plan), (state.profile?.subscriptionType ?: "free").replaceFirstChar { it.uppercase() } + if (state.isPremium) " 👑" else "")
                 if (!state.isPremium) {
                     NavRow(stringResource(R.string.upgrade_to_premium), stringResource(R.string.upgrade_subtitle)) { onNavigate(Routes.PAYWALL) }
+                    NavRow(stringResource(R.string.restore_purchases), null) { app.billing.restore() }
+                } else {
+                    NavRow(stringResource(R.string.manage_subscription), stringResource(R.string.manage_subscription_subtitle)) {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/account/subscriptions?package=${BuildConfig.APPLICATION_ID}")))
+                    }
                 }
                 ValueRow(stringResource(R.string.children_label), "${state.children.size}/${if (state.isPremium) "∞" else state.childLimit}")
                 ValueRow(stringResource(R.string.chores_title), "${state.chores.size}/${if (state.isPremium) "∞" else state.choreLimit}")
@@ -263,6 +268,7 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
                     val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_SUBJECT, "ChoreStar"); putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_message)) }
                     context.startActivity(Intent.createChooser(send, null))
                 }
+                NavRow("✨ " + stringResource(R.string.whats_new), null) { onNavigate(Routes.WHATS_NEW) }
                 NavRow(stringResource(R.string.chore_icons_by_openmoji), "CC BY-SA 4.0") { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://openmoji.org"))) }
                 Text(stringResource(R.string.about_footer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

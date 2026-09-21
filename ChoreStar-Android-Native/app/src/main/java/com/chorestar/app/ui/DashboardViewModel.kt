@@ -156,6 +156,7 @@ data class BulkPlan(val childId: String, val fromDay: Int, val throughDay: Int, 
 class DashboardViewModel(
     private val repository: ChoreStarRepository,
     private val onTheme: (ThemePreference) -> Unit = {},
+    private val onSnapshot: (com.chorestar.app.widget.WidgetSnapshot) -> Unit = {},
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state
@@ -193,6 +194,13 @@ class DashboardViewModel(
                         routines = routines, completedRoutineIds = completedRoutines, achievements = achievements, allTime = allTime)
                 }
                 onTheme(ThemePreference.from(settings?.customTheme))
+                _state.value.let { st ->
+                    onSnapshot(com.chorestar.app.widget.WidgetSnapshot(
+                        familyName = profile?.familyName ?: "",
+                        rows = children.map { c -> com.chorestar.app.widget.WidgetSnapshot.Row(c.name, st.doneOn(c.id, st.today), st.dueOn(c.id, st.today).size, c.avatarColor) },
+                        updatedAt = System.currentTimeMillis(),
+                    ))
+                }
                 refreshApprovals()
                 if (profile != null && profile.kidLoginCode == null && uid == repository.currentUserId) {
                     repository.materializeKidLoginCode()?.let { code -> _state.update { it.copy(profile = it.profile?.copy(kidLoginCode = code)) } }

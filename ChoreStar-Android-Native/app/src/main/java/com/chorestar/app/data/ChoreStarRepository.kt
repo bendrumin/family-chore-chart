@@ -557,6 +557,25 @@ class ChoreStarRepository(
             .filter { it.status != "pending" }
     }
 
+    // ── Google Play ──────────────────────────────────────────────────────────
+
+    /** POST /api/google/verify with the parent token; returns the tier the server settled on. */
+    suspend fun verifyPlayPurchase(purchaseToken: String, productId: String?): Result<String> {
+        val token = accessToken ?: return Result.failure(IllegalStateException("Not signed in"))
+        return runCatching {
+            val body = buildMap<String, kotlinx.serialization.json.JsonElement> {
+                put("purchaseToken", kotlinx.serialization.json.JsonPrimitive(purchaseToken))
+                productId?.let { put("productId", kotlinx.serialization.json.JsonPrimitive(it)) }
+            }
+            val response = web.post("${BuildConfig.WEB_API_BASE}/api/google/verify") {
+                contentType(ContentType.Application.Json); header("Authorization", "Bearer $token"); setBody(kotlinx.serialization.json.JsonObject(body))
+            }
+            val text = response.bodyAsText()
+            if (response.status.value !in 200..299) error(errorMessage(text) ?: "Verification failed (${response.status.value})")
+            SupabaseModule.json.parseToJsonElement(text).jsonObject["tier"]?.jsonPrimitive?.content ?: "unchanged"
+        }
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private fun errorMessage(body: String): String? = runCatching {

@@ -589,4 +589,23 @@
     <string name="shortcut_kid_long">Open kid login</string>
     <string name="shortcut_today_short">Today</string>
     <string name="shortcut_today_long">Today\'s chores</string>
+
+    <!-- Play Billing, What's New, widget -->
+    <string name="already_premium">Your family is on Premium.</string>
+    <string name="plan_annual">Annual</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="best_value">BEST VALUE</string>
+    <string name="billed_yearly">Billed yearly</string>
+    <string name="billed_monthly">Billed monthly</string>
+    <string name="continue_label">Continue</string>
+    <string name="restore_purchases">@string/restore_purchases_2d557</string>
+    <string name="manage_subscription">@string/manage_subscription_04293</string>
+    <string name="manage_subscription_subtitle">Change plans or cancel. Billed by Google Play.</string>
+    <string name="paywall_legal">Subscriptions renew automatically through Google Play until cancelled. Manage or cancel any time in Play Store → Subscriptions.</string>
+    <string name="terms">Terms</string>
+    <string name="privacy">Privacy</string>
+    <string name="welcome_premium_title">Welcome to Premium</string>
+    <string name="welcome_premium_body">Your family now has unlimited children, chores, and premium themes.</string>
+    <string name="whats_new">@string/what_s_new_a2efe</string>
+    <string name="widget_description">Today\'s chores per kid</string>
 </resources>

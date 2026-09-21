@@ -41,6 +41,11 @@ fun AppRoot(repository: ChoreStarRepository) {
         mutableStateOf(app.prefs.kidSessionJson?.let { runCatching { SupabaseModule.json.decodeFromString(KidSession.serializer(), it) }.getOrNull() }?.takeIf { !it.isExpired })
     }
     var kidLogin by remember { mutableStateOf(false) }
+    val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(pendingLink) {
+        if (pendingLink?.startsWith("/kid-login") == true) { if (kidSession == null) kidLogin = true; app.pendingLink.value = null }
+        else if (pendingLink != null) app.pendingLink.value = null
+    }
 
     fun endKidSession() { kidSession = null; app.prefs.kidSessionJson = null; app.theme.value = ThemePreference(false, null, null) }
 

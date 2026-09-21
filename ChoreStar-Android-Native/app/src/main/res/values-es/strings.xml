@@ -469,4 +469,18 @@
     <string name="shortcut_kid_long">Abrir acceso para niños</string>
     <string name="shortcut_today_short">Hoy</string>
     <string name="shortcut_today_long">Tareas de hoy</string>
+    <string name="already_premium">Tu familia ya tiene Premium.</string>
+    <string name="plan_annual">Anual</string>
+    <string name="plan_monthly">Mensual</string>
+    <string name="best_value">MEJOR VALOR</string>
+    <string name="billed_yearly">Cobro anual</string>
+    <string name="billed_monthly">Cobro mensual</string>
+    <string name="continue_label">Continuar</string>
+    <string name="manage_subscription_subtitle">Cambia de plan o cancela. Cobrado por Google Play.</string>
+    <string name="paywall_legal">Las suscripciones se renuevan automáticamente por Google Play hasta que las canceles. Gestiónalas o cancélalas en Play Store → Suscripciones.</string>
+    <string name="terms">Términos</string>
+    <string name="privacy">Privacidad</string>
+    <string name="welcome_premium_title">Bienvenido a Premium</string>
+    <string name="welcome_premium_body">Tu familia ahora tiene niños, tareas y temas premium ilimitados.</string>
+    <string name="widget_description">Tareas de hoy por niño</string>
 </resources>

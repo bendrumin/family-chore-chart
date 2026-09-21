@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -414,10 +415,15 @@ fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, 
     val start = remember { System.currentTimeMillis() }
     var saved by remember { mutableStateOf(false) }
 
+    val notifyContext = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(index, celebrating) {
         remaining = steps.getOrNull(index)?.durationSeconds ?: 0
+        val step = steps.getOrNull(index)
+        if (!celebrating && step != null) com.chorestar.app.notify.RoutineNotification.show(notifyContext, routine.name, step.title, index, steps.size, step.durationSeconds)
+        else com.chorestar.app.notify.RoutineNotification.clear(notifyContext)
         while (remaining > 0 && !celebrating) { delay(1000); remaining-- }
     }
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { com.chorestar.app.notify.RoutineNotification.clear(notifyContext) } }
 
     if (celebrating) {
         val seconds = ((System.currentTimeMillis() - start) / 1000).toInt()
@@ -427,7 +433,7 @@ fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, 
     }
     val step = steps.getOrNull(index) ?: run { onClose(); return }
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(color.copy(alpha = 0.1f), MaterialTheme.colorScheme.background)))) {
-        Column(Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -480,7 +486,7 @@ private fun Celebration(routine: Routine, seconds: Int, currency: String?, onClo
     val scale by animateFloatAsState(1f, label = "star")
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(theme.primary.copy(alpha = 0.12f), theme.secondary.copy(alpha = 0.10f))))) {
         Confetti(trigger = routine.id, palette = listOf(theme.primary, theme.secondary, Color(0xFFF59E0B), Color.White))
-        Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Text("⭐", style = MaterialTheme.typography.displayLarge, modifier = Modifier.alpha(scale))
             Text(stringResource(R.string.routine_complete), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(stringResource(line), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp))

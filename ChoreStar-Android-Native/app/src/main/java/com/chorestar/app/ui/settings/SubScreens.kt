@@ -390,26 +390,3 @@ fun DeleteAccountScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
         }
     }
 }
-
-/** Play Billing comes once the Play Console products exist; until then this mirrors the iOS "unavailable" state. */
-@Composable
-fun PaywallScreen(state: DashboardState, onBack: () -> Unit) {
-    val context = LocalContext.current
-    SubScreen(stringResource(R.string.premium), onBack) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("👑", style = MaterialTheme.typography.displayMedium)
-            Text(stringResource(R.string.paywall_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
-            Text(stringResource(R.string.paywall_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(8.dp))
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.premium_bullet_themes, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.paywall_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-            Button(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chorestar.app/dashboard?tab=settings"))) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.paywall_web_upgrade)) }
-            Row { TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chorestar.app/terms"))) }) { Text("Terms") }; TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chorestar.app/privacy"))) }) { Text("Privacy") } }
-        }
-    }
-}

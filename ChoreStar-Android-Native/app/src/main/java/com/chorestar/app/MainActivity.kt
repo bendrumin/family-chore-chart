@@ -12,10 +12,16 @@ import com.chorestar.app.ui.AppRoot
 import com.chorestar.app.ui.theme.ChoreStarTheme
 
 class MainActivity : ComponentActivity() {
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        intent.data?.path?.let { (application as ChoreStarApp).pendingLink.value = it }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val app = application as ChoreStarApp
+        intent?.data?.path?.let { app.pendingLink.value = it }
         setContent {
             val darkMode by app.prefs.darkMode.collectAsStateWithLifecycle()
             val theme by app.theme.collectAsStateWithLifecycle()

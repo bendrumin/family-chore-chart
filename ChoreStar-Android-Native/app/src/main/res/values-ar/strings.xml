@@ -477,4 +477,18 @@
     <string name="shortcut_kid_long">فتح دخول الأطفال</string>
     <string name="shortcut_today_short">اليوم</string>
     <string name="shortcut_today_long">مهام اليوم</string>
+    <string name="already_premium">عائلتك مشتركة في Premium.</string>
+    <string name="plan_annual">سنوي</string>
+    <string name="plan_monthly">شهري</string>
+    <string name="best_value">أفضل قيمة</string>
+    <string name="billed_yearly">يُدفع سنويًا</string>
+    <string name="billed_monthly">يُدفع شهريًا</string>
+    <string name="continue_label">متابعة</string>
+    <string name="manage_subscription_subtitle">غيّر الخطة أو ألغِها. يُدفع عبر Google Play.</string>
+    <string name="paywall_legal">تتجدد الاشتراكات تلقائيًا عبر Google Play حتى إلغائها. أدرها أو ألغِها من متجر Play ← الاشتراكات.</string>
+    <string name="terms">الشروط</string>
+    <string name="privacy">الخصوصية</string>
+    <string name="welcome_premium_title">مرحبًا بك في Premium</string>
+    <string name="welcome_premium_body">صارت لعائلتك أطفال ومهام وسمات مميزة بلا حدود.</string>
+    <string name="widget_description">مهام اليوم لكل طفل</string>
 </resources>
