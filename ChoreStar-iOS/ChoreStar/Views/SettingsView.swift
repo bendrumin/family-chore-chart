@@ -683,7 +683,7 @@ struct ThemeGalleryView: View {
     private func themeRow(title: String?, items: [ThemeItem]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             if let title = title {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.choreStarTextSecondary)
@@ -753,7 +753,7 @@ struct ThemeGalleryView: View {
                     }
                 }
 
-                Text(item.name)
+                Text(LocalizedStringKey(item.name))
                     .font(.caption)
                     .fontWeight(isSelected ? .bold : .medium)
                     .foregroundColor(isSelected ? .choreStarTextPrimary : .choreStarTextSecondary)

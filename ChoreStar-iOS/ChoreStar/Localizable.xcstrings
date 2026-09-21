@@ -23,6 +23,72 @@
         }
       }
     },
+    "Auto" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تلقائي"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        }
+      }
+    },
+    "Classic" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كلاسيكي"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clásico"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clássico"
+          }
+        }
+      }
+    },
+    "Holidays" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الأعياد"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Festividades"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feriados"
+          }
+        }
+      }
+    },
     "Pending" : {
       "localizations" : {
         "ar" : {
@@ -41,6 +107,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pendentes"
+          }
+        }
+      }
+    },
+    "Seasons" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفصول"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estaciones"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estações"
           }
         }
       }
@@ -474,10 +562,28 @@
     },
     "%lld of %lld" : {
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld من %2$lld"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld"
           }
         }
       }
@@ -587,7 +693,26 @@
       }
     },
     "%lld sec" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ث"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s"
+          }
+        }
+      }
     },
     "%lld steps" : {
       "localizations" : {
@@ -1181,7 +1306,26 @@
 
     },
     "Add more from the starter set" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة المزيد من المجموعة الأولية"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar más del conjunto inicial"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar mais do conjunto inicial"
+          }
+        }
+      }
     },
     "Add reward" : {
       "localizations" : {
@@ -1494,7 +1638,26 @@
       }
     },
     "Anything your kid should know?" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هل هناك ما يجب أن يعرفه طفلك؟"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Algo que tu hijo deba saber?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo que seu filho deva saber?"
+          }
+        }
+      }
     },
     "Appearance" : {
       "localizations" : {
@@ -1960,7 +2123,26 @@
       }
     },
     "BEST VALUE" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أفضل قيمة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MEJOR VALOR"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MELHOR VALOR"
+          }
+        }
+      }
     },
     "Brush Hair" : {
       "extractionState" : "stale",
@@ -2398,7 +2580,26 @@
 
     },
     "ChoreStar Premium" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChoreStar Premium"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChoreStar Premium"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ChoreStar Premium"
+          }
+        }
+      }
     },
     "Close" : {
 
@@ -2854,7 +3055,26 @@
       }
     },
     "Continue" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متابعة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        }
+      }
     },
     "Copied" : {
       "comment" : "The accessibility label for the copy code button.",
@@ -3089,7 +3309,26 @@
       }
     },
     "Current Theme" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السمة الحالية"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema actual"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema atual"
+          }
+        }
+      }
     },
     "Current: %@" : {
       "localizations" : {
@@ -3158,7 +3397,26 @@
       }
     },
     "Custom accent overrides the theme colours. Theme choice syncs with the web app." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لون التمييز المخصص يتجاوز ألوان السمة. اختيار السمة يتزامن مع تطبيق الويب."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El color de acento personalizado reemplaza los colores del tema. La elección del tema se sincroniza con la web."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cor de destaque personalizada substitui as cores do tema. A escolha do tema sincroniza com a web."
+          }
+        }
+      }
     },
     "Daily flat rate" : {
       "localizations" : {
@@ -3529,7 +3787,26 @@
       }
     },
     "Each chore gets its own reward, so bigger jobs can be worth more. You set the amount when you add a chore." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لكل مهمة مكافأتها الخاصة، فالأعمال الأكبر تستحق أكثر. تحدد المبلغ عند إضافة المهمة."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada tarea tiene su propia recompensa, así los trabajos grandes valen más. Fijas el monto al agregar la tarea."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada tarefa tem sua própria recompensa, então trabalhos maiores valem mais. Você define o valor ao adicionar a tarefa."
+          }
+        }
+      }
     },
     "Earn %@" : {
       "localizations" : {
@@ -3808,7 +4085,27 @@
     },
     "Enter amounts in cents, e.g. 100 = %@. Synced with the web app." : {
       "comment" : "A description of the text fields for entering reward amounts.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل المبالغ بالسنت، مثلًا 100 = %@. متزامن مع الويب."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe los importes en centavos, p. ej. 100 = %@. Sincronizado con la web."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite os valores em centavos, ex.: 100 = %@. Sincronizado com a web."
+          }
+        }
+      }
     },
     "Enter an amount up to %@." : {
       "comment" : "A warning that the user must enter a valid amount to pay.",
@@ -3865,7 +4162,26 @@
 
     },
     "Enter new PIN to change it" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل رمز PIN جديدًا لتغييره"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe un PIN nuevo para cambiarlo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite um novo PIN para alterá-lo"
+          }
+        }
+      }
     },
     "Enter your email and we'll send you a link to reset your password." : {
 
@@ -3944,7 +4260,26 @@
       "isCommentAutoGenerated" : true
     },
     "Every household is different. Pick what fits yours." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كل بيت مختلف. اختر ما يناسبك."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada hogar es diferente. Elige lo que te funcione."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada casa é diferente. Escolha o que combina com a sua."
+          }
+        }
+      }
     },
     "Every single chore is done. Amazing!" : {
       "extractionState" : "stale",
@@ -4260,10 +4595,28 @@
     },
     "For %@ · %@" : {
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لـ %1$@ · %2$@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "For %1$@ · %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para %1$@ · %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para %1$@ · %2$@"
           }
         }
       }
@@ -4425,7 +4778,26 @@
       }
     },
     "Got a code from your partner? Enter it here to manage their family together. Your view switches to their family's chores." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لديك رمز من شريكك؟ أدخله هنا لإدارة عائلته معًا. سيتحول عرضك إلى مهام تلك العائلة."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Tienes un código de tu pareja? Ingrésalo aquí para gestionar su familia juntos. Tu vista cambiará a las tareas de esa familia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recebeu um código do seu parceiro? Digite aqui para gerenciar a família juntos. Sua visão muda para as tarefas dessa família."
+          }
+        }
+      }
     },
     "Have a Snack" : {
       "extractionState" : "stale",
@@ -4842,7 +5214,26 @@
 
     },
     "Kids earn a set amount for each day they finish all their chores." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يكسب الأطفال مبلغًا محددًا عن كل يوم يُنهون فيه جميع مهامهم."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los niños ganan un monto fijo por cada día que terminan todas sus tareas."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As crianças ganham um valor fixo por dia em que concluem todas as tarefas."
+          }
+        }
+      }
     },
     "Kids earn the amount on each chore they finish." : {
       "localizations" : {
@@ -4939,7 +5330,26 @@
 
     },
     "Kids use this code plus their PIN to log in on any device." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم الأطفال هذا الرمز مع رمز PIN للدخول من أي جهاز."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los niños usan este código y su PIN para entrar desde cualquier dispositivo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As crianças usam este código e o PIN para entrar em qualquer aparelho."
+          }
+        }
+      }
     },
     "Kids' ticks wait in a Needs Your OK list before they count." : {
       "localizations" : {
@@ -5008,7 +5418,26 @@
       }
     },
     "Leaving switches you back to your own family's data." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المغادرة تعيدك إلى بيانات عائلتك."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al salir vuelves a los datos de tu propia familia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sair volta para os dados da sua própria família."
+          }
+        }
+      }
     },
     "Legendary" : {
       "localizations" : {
@@ -5125,7 +5554,26 @@
 
     },
     "Log in to ChoreStar with our family code: %@" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجّل الدخول إلى ChoreStar برمز عائلتنا: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entra a ChoreStar con nuestro código familiar: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre no ChoreStar com o código da nossa família: %@"
+          }
+        }
+      }
     },
     "Maintain a 10-day streak" : {
       "localizations" : {
@@ -6250,7 +6698,26 @@
       }
     },
     "per day" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في اليوم"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "por día"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "por dia"
+          }
+        }
+      }
     },
     "Perfect Day!" : {
       "localizations" : {
@@ -6363,7 +6830,26 @@
       }
     },
     "Pick a color" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر لونًا"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un color"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha uma cor"
+          }
+        }
+      }
     },
     "Pick a goal" : {
       "localizations" : {
@@ -6410,7 +6896,26 @@
       }
     },
     "Pick an icon" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر أيقونة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un ícono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um ícone"
+          }
+        }
+      }
     },
     "Pick from suggestions or write your own. Two or three is plenty to start." : {
 
@@ -6754,7 +7259,26 @@
       "isCommentAutoGenerated" : true
     },
     "Ratings and reviews are how other families find ChoreStar." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التقييمات والمراجعات هي ما يساعد العائلات الأخرى على إيجاد ChoreStar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las calificaciones y reseñas ayudan a otras familias a encontrar ChoreStar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avaliações e comentários ajudam outras famílias a encontrar o ChoreStar."
+          }
+        }
+      }
     },
     "Read a Book" : {
       "extractionState" : "stale",
@@ -8224,7 +8748,26 @@
 
     },
     "The free plan lists 3 rewards. Premium removes the limit." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الخطة المجانية تتيح 3 مكافآت. Premium يزيل الحد."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El plan gratuito permite 3 recompensas. Premium quita el límite."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O plano gratuito lista 3 recompensas. O Premium remove o limite."
+          }
+        }
+      }
     },
     "The only day selected. A chore needs at least one day." : {
 
@@ -9043,7 +9586,27 @@
     },
     "Welcome to Premium" : {
       "comment" : "The title of an alert that appears after the user purchases the premium version of the app.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مرحبًا بك في Premium"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenido a Premium"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bem-vindo ao Premium"
+          }
+        }
+      }
     },
     "What are you saving for?" : {
       "localizations" : {
@@ -9244,7 +9807,26 @@
 
     },
     "You can change this anytime in Settings." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمكنك تغيير هذا في أي وقت من الإعدادات."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes cambiarlo cuando quieras en Ajustes."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você pode mudar isso a qualquer momento em Configurações."
+          }
+        }
+      }
     },
     "You currently have %lld %@." : {
       "localizations" : {
@@ -9594,10 +10176,48 @@
       }
     },
     "Your family now has unlimited children, chores, and premium themes." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "صارت لعائلتك أطفال ومهام وسمات مميزة بلا حدود."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu familia ahora tiene niños, tareas y temas premium ilimitados."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua família agora tem crianças, tarefas e temas premium ilimitados."
+          }
+        }
+      }
     },
     "Your family's chore data is erased from our servers and can't be recovered. There's no way to undo this." : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تُمحى بيانات مهام عائلتك من خوادمنا ولا يمكن استعادتها. لا يمكن التراجع عن ذلك."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los datos de tareas de tu familia se borran de nuestros servidores y no se pueden recuperar. No hay forma de deshacerlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os dados de tarefas da sua família são apagados dos nossos servidores e não podem ser recuperados. Não há como desfazer."
+          }
+        }
+      }
     },
     "Your kid login code appears here once it's generated on chorestar.app." : {
 
