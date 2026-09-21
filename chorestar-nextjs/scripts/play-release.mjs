@@ -14,7 +14,7 @@
 // ChoreStar-Android-Native/fastlane/metadata/<lang>/release_notes.txt when
 // present, and are only sent for languages the listing already has.
 import crypto from 'node:crypto';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { basename } from 'node:path';
 
@@ -23,9 +23,11 @@ const V3 = `https://androidpublisher.googleapis.com/androidpublisher/v3/applicat
 const UPLOAD = `https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/${PKG}`;
 
 function serviceAccount() {
-  const file = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_FILE;
+  // Where the setup notes put the Play key, so plain commands work with no env var.
+  const fallback = `${homedir()}/.chorestar-android/play-key.json`;
+  const file = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_FILE || (existsSync(fallback) ? fallback : null);
   const raw = file ? readFileSync(file.replace(/^~/, homedir()), 'utf8') : process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error('set GOOGLE_PLAY_SERVICE_ACCOUNT_FILE=<path to key.json> or GOOGLE_PLAY_SERVICE_ACCOUNT_JSON');
+  if (!raw) throw new Error(`no Play key: put it at ${fallback}, or set GOOGLE_PLAY_SERVICE_ACCOUNT_FILE / GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`);
   const sa = JSON.parse(raw.trim().startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8'));
   if (!sa.client_email || !sa.private_key) throw new Error('key file lacks client_email or private_key');
   return sa;
