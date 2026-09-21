@@ -72,6 +72,7 @@ class KidViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(KidState())
     val state: StateFlow<KidState> = _state
+    val onParentDevice: Boolean get() = backend is KidBackend.OnParentDevice
 
     private val auth: KidApi.Auth?
         get() = when (backend) {

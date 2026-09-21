@@ -161,7 +161,7 @@ fun KidLoginScreen(kidApi: KidApi, initialCode: String?, onBack: () -> Unit, onS
                 }
             } else {
                 Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         TextButton(onClick = { step = 0; pin = "" }) { Text("🏠 ${code.uppercase()} ✏️", fontFamily = FontFamily.Monospace) }
                         PinPad(pin = pin, verifying = verifying, onDigit = { if (pin.length < 6 && !verifying) pin += it }, onBackspace = { pin = pin.dropLast(1) }, onBack = { step = 0; pin = "" }, onGo = { verify() })
                         error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f), RoundedCornerShape(10.dp)).padding(10.dp)) }
@@ -226,6 +226,9 @@ fun ChildAuthScreen(state: DashboardState, kidApi: KidApi, onBack: () -> Unit, o
     BackHandler { if (selected != null) { selected = null; pin = "" } else onBack() }
 
     Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF16A34A).copy(alpha = 0.3f), Color(0xFF10B981).copy(alpha = 0.3f), Color(0xFF6366F1).copy(alpha = 0.3f))))) {
+        Row(Modifier.safeDrawingPadding().padding(8.dp).align(Alignment.TopStart), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { if (selected != null) { selected = null; pin = "" } else onBack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null); Spacer(Modifier.width(4.dp)); Text(stringResource(if (selected != null) R.string.back_label else R.string.cancel)) }
+        }
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             val child = selected
             if (child == null) {
@@ -247,7 +250,7 @@ fun ChildAuthScreen(state: DashboardState, kidApi: KidApi, onBack: () -> Unit, o
                 Text(child.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Text(stringResource(R.string.enter_your_pin), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Card(Modifier.fillMaxWidth().padding(top = 16.dp)) {
-                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         PinPad(pin, verifying, onDigit = { if (pin.length < 6 && !verifying) pin += it }, onBackspace = { pin = pin.dropLast(1) }, onBack = { selected = null; pin = "" }, onGo = { verify() })
                         error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
                     }
@@ -323,7 +326,10 @@ fun ChildMainScreen(vm: KidViewModel) {
                                     color = Color.White.copy(alpha = 0.9f),
                                 )
                             }
-                            IconButton(onClick = { vm.signOut() }, modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(10.dp))) { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = stringResource(R.string.settings_sign_out), tint = Color.White) }
+                            TextButton(onClick = { vm.signOut() }, modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)), colors = ButtonDefaults.textButtonColors(contentColor = Color.White)) {
+                                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
+                                Text(stringResource(if (vm.onParentDevice) R.string.exit_kid_mode else R.string.settings_sign_out), style = MaterialTheme.typography.labelLarge)
+                            }
                         }
                         Spacer(Modifier.height(14.dp))
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

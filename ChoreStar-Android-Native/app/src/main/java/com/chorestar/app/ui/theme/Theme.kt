@@ -44,6 +44,12 @@ private fun lightColors(primary: Color) = lightColorScheme(
     onSurfaceVariant = InkMuted,
     outline = Color(0xFFE2E8F0),
     error = Color(0xFFDC2626),
+    // Material's baseline surface containers are lavender-tinted; ours are the web's slate greys.
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFFF8FAFC),
+    surfaceContainerHigh = Color(0xFFF1F5F9),
+    surfaceContainerHighest = Color(0xFFE9EEF5),
 )
 
 private fun darkColors(primary: Color) = darkColorScheme(
@@ -62,6 +68,11 @@ private fun darkColors(primary: Color) = darkColorScheme(
     onSurfaceVariant = Color(0xFF94A3B8),
     outline = Color(0xFF374151),
     error = Color(0xFFF87171),
+    surfaceContainerLowest = Color(0xFF0B1220),
+    surfaceContainerLow = Color(0xFF1A2333),
+    surfaceContainer = Color(0xFF1F2937),
+    surfaceContainerHigh = Color(0xFF273449),
+    surfaceContainerHighest = Color(0xFF334155),
 )
 
 /** Brand colors on Material 3, tinted by the family's theme. Dynamic (wallpaper) color is deliberately off. */

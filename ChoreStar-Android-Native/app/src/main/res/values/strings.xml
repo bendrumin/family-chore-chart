@@ -576,4 +576,17 @@
     <string name="pay_amount">@string/pay_3140b</string>
     <string name="wants_this">@string/wants_this_981b7</string>
     <string name="yes_label">@string/yes_5397e</string>
+
+    <!-- Chores filters, kid-mode exits, shortcuts -->
+    <string name="search_chores">@string/search_chores_e918e</string>
+    <string name="all_done_title">All done</string>
+    <string name="all_done_body">All chores for today are done.</string>
+    <string name="no_completed_title">No completed chores</string>
+    <string name="no_completed_body">Chores show up here once they\'re checked off.</string>
+    <string name="back_label">@string/back_b52b3</string>
+    <string name="exit_kid_mode">Exit kid mode</string>
+    <string name="shortcut_kid_short">Kid mode</string>
+    <string name="shortcut_kid_long">Open kid login</string>
+    <string name="shortcut_today_short">Today</string>
+    <string name="shortcut_today_long">Today\'s chores</string>
 </resources>

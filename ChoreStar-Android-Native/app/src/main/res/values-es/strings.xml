@@ -460,4 +460,13 @@
         <item quantity="other">%1$d metas alcanzadas</item>
     </plurals>
     <string name="goal_reached">alcanzada</string>
+    <string name="all_done_title">Todo listo</string>
+    <string name="all_done_body">Todas las tareas de hoy están hechas.</string>
+    <string name="no_completed_title">Sin tareas completadas</string>
+    <string name="no_completed_body">Las tareas aparecen aquí cuando se marcan.</string>
+    <string name="exit_kid_mode">Salir del modo niños</string>
+    <string name="shortcut_kid_short">Modo niños</string>
+    <string name="shortcut_kid_long">Abrir acceso para niños</string>
+    <string name="shortcut_today_short">Hoy</string>
+    <string name="shortcut_today_long">Tareas de hoy</string>
 </resources>

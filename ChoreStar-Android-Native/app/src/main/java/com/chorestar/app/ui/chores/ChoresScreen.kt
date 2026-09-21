@@ -14,6 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedTextField
+import com.chorestar.app.ui.components.ChildAvatar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -52,11 +58,17 @@ import com.chorestar.app.ui.theme.Warning
 
 private enum class ChoresSegment(val label: Int) { Chores(R.string.chores_title), Routines(R.string.segment_routines), Week(R.string.segment_week) }
 
+/** iOS ChoresView filter menu: All = every chore; Pending = due today, not done; Completed = done today. */
+private enum class StatusFilter(val label: Int) { All(R.string.filter_all), Pending(R.string.stat_pending), Completed(R.string.stat_completed) }
+
 /** The iOS Chores tab: a Chores | Week switch; chores grouped under each child, tap to tick today, long-press to edit. */
 @Composable
 fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (Chore) -> Unit, onAddChore: () -> Unit, onEditChore: (Chore) -> Unit, onBuildRoutine: () -> Unit, onStarterRoutines: () -> Unit, onEditRoutine: (com.chorestar.app.data.model.Routine) -> Unit) {
     val today = state.today
     var segment by remember { mutableStateOf(ChoresSegment.Chores) }
+    var childFilter by remember { mutableStateOf<String?>(null) }
+    var status by remember { mutableStateOf(StatusFilter.All) }
+    var query by remember { mutableStateOf("") }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -66,17 +78,48 @@ fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (
             }
             if (segment == ChoresSegment.Week) { WeekScreen(vm, state); return@Column }
             if (segment == ChoresSegment.Routines) { RoutinesList(vm, state, onBuild = onBuildRoutine, onStarter = onStarterRoutines, onEdit = onEditRoutine); return@Column }
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Text(stringResource(R.string.chores_title), style = MaterialTheme.typography.headlineMedium)
                 Text(Dates.longDayName(today), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(8.dp))
             }
-            state.children.forEach { child ->
-                val chores = state.choresFor(child.id)
+            item {
+                OutlinedTextField(
+                    query, { query = it }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.search_chores)) }, leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                )
+            }
+            if (state.children.size > 1) item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item { FilterChip(selected = childFilter == null, onClick = { childFilter = null }, label = { Text(stringResource(R.string.filter_all)) }) }
+                    items(state.children, key = { it.id }) { c -> FilterChip(selected = childFilter == c.id, onClick = { childFilter = c.id }, label = { Text(c.name) }, leadingIcon = { ChildAvatar(c, 22.dp) }) }
+                }
+            }
+            item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(StatusFilter.entries) { f -> FilterChip(selected = status == f, onClick = { status = f }, label = { Text(stringResource(f.label)) }) }
+                }
+            }
+            var shown = 0
+            state.children.filter { childFilter == null || it.id == childFilter }.forEach { child ->
+                val chores = state.choresFor(child.id).filter { c ->
+                    (query.isBlank() || c.name.contains(query, ignoreCase = true)) && when (status) {
+                        StatusFilter.All -> true
+                        StatusFilter.Pending -> c.isDueOn(today) && !state.isDone(c.id, today)
+                        StatusFilter.Completed -> state.isDone(c.id, today)
+                    }
+                }
                 if (chores.isEmpty()) return@forEach
+                shown += chores.size
                 item(key = "h-${child.id}") {
-                    Text(child.name, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) {
+                        ChildAvatar(child, 28.dp); Spacer(Modifier.width(8.dp))
+                        Text(child.name, style = MaterialTheme.typography.titleMedium); Spacer(Modifier.width(8.dp))
+                        Text("${chores.size}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.weight(1f))
+                        val done = state.doneOn(child.id, today); val due = state.dueOn(child.id, today).size
+                        Text(if (due == 0) stringResource(R.string.home_nothing_due_today) else "$done/$due", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 item(key = "c-${child.id}") {
                     Card(Modifier.fillMaxWidth()) {
@@ -98,11 +141,15 @@ fun ChoresScreen(vm: DashboardViewModel, state: DashboardState, onToggleToday: (
                     }
                 }
             }
-            if (state.chores.isEmpty() && !state.loading) {
+            if (shown == 0 && !state.loading) {
                 item {
                     Column(Modifier.fillMaxWidth().padding(vertical = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(R.string.chores_none), style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.tap_plus_to_add_chore), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        when {
+                            state.chores.isEmpty() -> { Text(stringResource(R.string.chores_none), style = MaterialTheme.typography.titleMedium); Text(stringResource(R.string.tap_plus_to_add_chore), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            status == StatusFilter.Pending -> { Text(stringResource(R.string.all_done_title), style = MaterialTheme.typography.titleMedium); Text(stringResource(R.string.all_done_body), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            status == StatusFilter.Completed -> { Text(stringResource(R.string.no_completed_title), style = MaterialTheme.typography.titleMedium); Text(stringResource(R.string.no_completed_body), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            else -> Text(stringResource(R.string.chores_none), style = MaterialTheme.typography.titleMedium)
+                        }
                     }
                 }
             }

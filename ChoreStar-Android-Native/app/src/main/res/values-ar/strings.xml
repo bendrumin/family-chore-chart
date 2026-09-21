@@ -468,4 +468,13 @@
         <item quantity="other">تم بلوغ %1$d أهداف</item>
     </plurals>
     <string name="goal_reached">تم بلوغه</string>
+    <string name="all_done_title">اكتمل كل شيء</string>
+    <string name="all_done_body">اكتملت كل مهام اليوم.</string>
+    <string name="no_completed_title">لا مهام مكتملة</string>
+    <string name="no_completed_body">تظهر المهام هنا بعد تعليمها.</string>
+    <string name="exit_kid_mode">الخروج من وضع الأطفال</string>
+    <string name="shortcut_kid_short">وضع الأطفال</string>
+    <string name="shortcut_kid_long">فتح دخول الأطفال</string>
+    <string name="shortcut_today_short">اليوم</string>
+    <string name="shortcut_today_long">مهام اليوم</string>
 </resources>
