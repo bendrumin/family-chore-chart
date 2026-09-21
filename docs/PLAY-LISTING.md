@@ -27,7 +27,9 @@ premium gates state the limit with no upgrade button. That is the
       is FALSE for the parent dashboard (needs an account). Provide the
       demo login from fastlane/metadata/review_information plus kid code
       `demo2026`, Emma PIN `1234`
-- [ ] Ads: none. In-app purchases: none in this version
+- [ ] Ads: none. In-app purchases: **yes**, two subscriptions
+      (`chorestar_premium_monthly`, `chorestar_premium_yearly`) billed by
+      Google Play in the native app
 - [ ] Closed testing track first (required for new personal accounts;
       sensible for everyone), then production
 - [ ] After the first upload: copy the **App signing key certificate**
@@ -37,6 +39,11 @@ premium gates state the limit with no upgrade button. That is the
       keep opening in the browser for Play installs (see ANDROID-SHELL.md)
 
 ## Signing
+
+The native app (`ChoreStar-Android-Native/`) reads the shell's
+`ChoreStar-Android/android/keystore.properties` too, so both build with the
+same upload key; build the bundle with `./gradlew bundleRelease` there
+(JDK 21, see docs/ANDROID-NATIVE.md).
 
 Gradle reads `android/keystore.properties` (gitignored) with
 `storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Keep the keystore
@@ -109,10 +116,10 @@ transit (HTTPS to chorestar.app and Supabase). Users can request deletion:
 | Personal info > Email address | Yes (required) | Account management | Parent's login |
 | Personal info > Name | Yes | App functionality | Family name; children's first names entered by the parent |
 | Photos and videos > Photos | Yes (optional) | App functionality | Optional child avatars, optional chore photo proof; stored in a private bucket |
-| Financial info | No | | Allowance amounts are numbers the parent types; no payment data in the Android app |
+| Financial info > Purchase history | Yes | App functionality | Google Play subscription purchase tokens, sent to chorestar.app to unlock Premium; Google handles the payment itself. Allowance amounts are numbers the parent types |
 | App activity > App interactions | Yes | Analytics, app functionality | Chore completions, routine runs; Google Analytics on the web pages |
 | App info and performance > Crash logs | No | | (no crash SDK in the shell) |
-| Device or other IDs | No | | |
+| Device or other IDs | Yes | App functionality | A Firebase Cloud Messaging token per signed-in device, so activity alerts reach the parent; removed on sign-out |
 | Location, Contacts, Messages, Health, Calendar, Files, Audio, Web browsing | No | | |
 
 All data is processed by the developer (Supabase hosted database, US);
@@ -124,8 +131,8 @@ Category: **Utility, productivity, communication, or other**. Violence,
 sexual content, language, controlled substances, gambling: **No** to all.
 User interaction: users can communicate only within their own family
 (co-parent sharing, kid names); no public sharing; **no** user-generated
-content visible to others. Shares location: No. Digital purchases: **No**
-(none in the Android app). Expected rating: Everyone.
+content visible to others. Shares location: No. Digital purchases: **Yes** (Premium subscriptions
+through Google Play). Expected rating: Everyone.
 
 ## Graphics (ready in docs/assets/play/)
 

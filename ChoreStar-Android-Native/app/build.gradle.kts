@@ -35,9 +35,31 @@ fun supabaseValue(key: String): String {
     throw GradleException("$key missing: add it to supabase.properties (see supabase.properties.example)")
 }
 
+// Release signing: the same upload key the Capacitor shell registered with
+// Play App Signing, read from the shell's gitignored keystore.properties
+// (storeFile is relative to that directory). Without it, release builds fall
+// back to unsigned so a fresh checkout still builds. Never print these values.
+val shellAndroidDir = rootProject.file("../ChoreStar-Android/android")
+val keystoreProps = Properties().apply {
+    val f = File(shellAndroidDir, "keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val hasUploadKey = keystoreProps.getProperty("storeFile") != null
+
 android {
     namespace = "com.chorestar.app"
     compileSdk = 36
+
+    signingConfigs {
+        if (hasUploadKey) {
+            create("release") {
+                storeFile = File(keystoreProps.getProperty("storeFile")).let { if (it.isAbsolute) it else File(shellAndroidDir, it.path) }
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
 
     defaultConfig {
         // Same applicationId as the Capacitor shell, so this build replaces it
@@ -45,8 +67,9 @@ android {
         applicationId = "com.chorestar.app"
         minSdk = 26
         targetSdk = 36
+        // versionCode must keep rising across every upload to Play (the shell used 1).
         versionCode = 2
-        versionName = "2.0"
+        versionName = "2.2.3"
 
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseValue("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseValue("SUPABASE_ANON_KEY")}\"")
@@ -58,6 +81,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (hasUploadKey) signingConfig = signingConfigs.getByName("release")
         }
     }
     // JDK 21 builds it (the only JDK on the Mac); bytecode targets 17.

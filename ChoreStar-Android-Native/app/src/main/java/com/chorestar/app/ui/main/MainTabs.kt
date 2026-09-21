@@ -159,6 +159,9 @@ fun MainTabs(repository: ChoreStarRepository) {
         if (link.startsWith("/onboarding")) {
             app.pendingLink.value = null
             onboardingForced = true
+        } else if (link.startsWith("/paywall")) {
+            app.pendingLink.value = null
+            nav.navigate(Routes.PAYWALL)
         } else if (link.startsWith("/dashboard")) {
             app.pendingLink.value = null
             if (state.kidModeChildId == null) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }

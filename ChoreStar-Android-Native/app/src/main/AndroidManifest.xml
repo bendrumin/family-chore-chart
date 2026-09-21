@@ -42,6 +42,7 @@
                 <data android:pathPrefix="/dashboard" />
                 <!-- Not a web page: replays the first-run tour (used by tests and support) -->
                 <data android:pathPrefix="/onboarding" />
+                <data android:pathPrefix="/paywall" />
                 <data android:pathPrefix="/login" />
             </intent-filter>
         </activity>
