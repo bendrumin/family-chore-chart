@@ -61,6 +61,21 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 - **Public keys only.** The anon key is publishable; nothing service-role ever
   lands in this project.
 
+## Colour: one theme, the whole scheme
+
+`ui/theme/Theme.kt` derives every Material role from the active theme
+(custom accent > seasonal theme > brand) through `ui/theme/ColorRamp.kt`, a
+port of the web's `accent-scale.ts` and `contrast.ts`: the Tailwind-shaped
+50→900 ramp, WCAG contrast, and the "nudge the fill until its ink passes"
+rule from `docs/DESIGN.md` (brand `#6366f1` becomes `#5e61e5` under white
+text, exactly as on the web). Primary, secondary (the theme's `highlight`
+hue) and tertiary (its pale `tint`) roles come off the ramps; the slate
+surface tokens in `Color.kt` get a whisper of the accent (1–2% light, 5–9%
+dark) so cards and the canvas follow the theme without ever carrying text on
+a pale hue. Screens use Material roles or `LocalActiveTheme` (`fill` is the
+AA-safe accent for the hero), never hex. `data/Themes.kt` carries the same
+primary / highlight / tint values as the web catalogue; keep them in sync.
+
 ## Parity checklist (iOS → Android)
 
 Done and device-verified (2026-09-20, commits fce56e1 → phase 2e):

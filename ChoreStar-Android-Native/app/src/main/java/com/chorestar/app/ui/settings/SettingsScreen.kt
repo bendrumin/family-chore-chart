@@ -318,8 +318,8 @@ private fun ThemeGallery(theme: ThemePreference, isPremium: Boolean, onSelect: (
     val selection = theme.selection
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            item { ThemeCard(stringResource(R.string.theme_auto), "✨", listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)), selected = selection == "auto", locked = false) { onSelect("auto", false) } }
-            item { ThemeCard(stringResource(R.string.theme_classic), "⭐", listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)), selected = selection == "none", locked = false) { onSelect("none", false) } }
+            item { ThemeCard(stringResource(R.string.theme_auto), "✨", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "auto", locked = false) { onSelect("auto", false) } }
+            item { ThemeCard(stringResource(R.string.theme_classic), "⭐", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "none", locked = false) { onSelect("none", false) } }
         }
         GalleryRow(stringResource(R.string.theme_holidays), SeasonalThemes.holidays, selection, false, onSelect)
         GalleryRow(stringResource(R.string.theme_seasons), SeasonalThemes.seasons, selection, false, onSelect)

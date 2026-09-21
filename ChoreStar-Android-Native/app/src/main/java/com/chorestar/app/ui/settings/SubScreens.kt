@@ -380,7 +380,7 @@ fun DeleteAccountScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
                 Button(
                     onClick = { busy = true; error = null; scope.launch { vm.deleteAccount().onFailure { error = it.message; busy = false } } },
                     enabled = confirm.trim().equals("DELETE", ignoreCase = true) && !busy, modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626)),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
                 ) {
                     if (busy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White) else Text(stringResource(R.string.delete_my_account))
                 }

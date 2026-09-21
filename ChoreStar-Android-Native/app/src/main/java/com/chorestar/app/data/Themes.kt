@@ -20,17 +20,20 @@ data class SeasonalTheme(
     val name: String,
     val emoji: String,
     val primary: Long,
+    /** The web's `highlight`: a saturated second hue for badges, flames, gradients. */
     val secondary: Long,
     /** MM-DD inclusive; null for the premium themes, which never auto-activate. */
     val start: String?,
     val end: String?,
     val glyph: String,
     val premium: Boolean = false,
+    /** A pale SECOND hue for washes and backdrops only, never a fill under text (the four seasons). */
+    val tint: Long? = null,
 )
 
 object SeasonalThemes {
     val holidays = listOf(
-        SeasonalTheme("christmas", "Christmas", "🎄", 0xFFDC2626, 0xFF228033, "12-01", "12-31", "❄️"),
+        SeasonalTheme("christmas", "Christmas", "🎄", 0xFFDC2626, 0xFF218733, "12-01", "12-31", "❄️"),
         SeasonalTheme("thanksgiving", "Thanksgiving", "🦃", 0xFFEA8811, 0xFFC75A0D, "11-20", "11-30", "🍂"),
         SeasonalTheme("halloween", "Halloween", "🎃", 0xFFF79307, 0xFF8C24AB, "10-01", "10-31", "🎃"),
         SeasonalTheme("easter", "Easter", "🐰", 0xFFA855F7, 0xFFED789E, "04-01", "04-30", "🌸"),
@@ -39,17 +42,17 @@ object SeasonalThemes {
         SeasonalTheme("newYear", "New Year", "🎉", 0xFF6366F1, 0xFF8C5CF7, "01-01", "01-07", "🎊"),
     )
     val seasons = listOf(
-        SeasonalTheme("spring", "Spring", "🌸", 0xFFEE3C6B, 0xFFE7206B, "03-01", "05-31", "🌸"),
-        SeasonalTheme("summer", "Summer", "☀️", 0xFF3A9AA3, 0xFFED706F, "06-01", "08-31", "✨"),
-        SeasonalTheme("fall", "Fall", "🍂", 0xFFB31E11, 0xFFFA6A18, "09-01", "11-30", "🍂"),
-        SeasonalTheme("winter", "Winter", "❄️", 0xFF1A22B0, 0xFF2F7CC6, "12-01", "02-28", "❄️"),
+        SeasonalTheme("spring", "Spring", "🌸", 0xFFEE3C6B, 0xFFE7206B, "03-01", "05-31", "🌸", tint = 0xFFC5D8EB),
+        SeasonalTheme("summer", "Summer", "☀️", 0xFF3A9AA3, 0xFFED706F, "06-01", "08-31", "✨", tint = 0xFFF1C8C1),
+        SeasonalTheme("fall", "Fall", "🍂", 0xFFB31E11, 0xFFFA6A18, "09-01", "11-30", "🍂", tint = 0xFFEE9C15),
+        SeasonalTheme("winter", "Winter", "❄️", 0xFF1A22B0, 0xFF2F7CC6, "12-01", "02-28", "❄️", tint = 0xFFA9ADB1),
     )
     val premium = listOf(
         SeasonalTheme("ocean", "Ocean", "🌊", 0xFF0284C7, 0xFF0A5CA6, null, null, "🫧", premium = true),
-        SeasonalTheme("sunset", "Sunset", "🌅", 0xFFEA4C23, 0xFFF59E0B, null, null, "✨", premium = true),
+        SeasonalTheme("sunset", "Sunset", "🌅", 0xFFEA4C23, 0xFFF59E0A, null, null, "✨", premium = true),
         SeasonalTheme("forest", "Forest", "🌲", 0xFF158750, 0xFF0D6138, null, null, "🍃", premium = true),
-        SeasonalTheme("aurora", "Aurora", "🌌", 0xFF592EBA, 0xFF1EAB8C, null, null, "✦", premium = true),
-        SeasonalTheme("coral", "Coral", "🪸", 0xFFF56B5B, 0xFFF59E0B, null, null, "🫧", premium = true),
+        SeasonalTheme("aurora", "Aurora", "🌌", 0xFF592EBA, 0xFF1FAB8C, null, null, "✦", premium = true),
+        SeasonalTheme("coral", "Coral", "🪸", 0xFFF56B5B, 0xFFF59E0A, null, null, "🫧", premium = true),
         SeasonalTheme("lavender", "Lavender", "💜", 0xFF9466DD, 0xFF6640B3, null, null, "✿", premium = true),
     )
     val all = holidays + seasons + premium
