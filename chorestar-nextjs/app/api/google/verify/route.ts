@@ -1,20 +1,22 @@
 import { NextResponse } from 'next/server'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import { getParentUserId } from '@/lib/utils/parent-auth'
 import { getSubscriptionV2, acknowledgeSubscription } from '@/lib/google/play-api'
 import { tierForPlaySubscriptionState, PLAY_SUBSCRIPTION_PRODUCT_IDS } from '@/lib/google/play-billing'
 
 /**
  * POST /api/google/verify  { purchaseToken, productId }
  *
- * Called by the web app inside the Android shell right after Play reports a
- * purchase. Verifies the token with Google, links it to the signed-in
- * profile, flips the tier immediately (RTDN can lag by minutes), and
- * acknowledges the purchase so Play does not refund it after three days.
+ * Called right after Play reports a purchase, by the web app inside the
+ * Android shell (cookie session) or by the native Android app (Bearer access
+ * token, the same fallback /api/kid-login-code takes). Verifies the token with
+ * Google, links it to the signed-in profile, flips the tier immediately (RTDN
+ * can lag by minutes), and acknowledges the purchase so Play does not refund
+ * it after three days.
  */
 export async function POST(request: Request) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = await getParentUserId(request)
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let purchaseToken: string | undefined
   let productId: string | undefined
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
     }
     // A token stamped with another profile's id belongs to someone else.
     const externalId = purchase.externalAccountIdentifiers?.obfuscatedExternalAccountId
-    if (externalId && externalId !== user.id) {
+    if (externalId && externalId !== userId) {
       return NextResponse.json({ error: 'Purchase belongs to a different account' }, { status: 403 })
     }
 
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
     const admin = createServiceRoleClient()
     const update: Record<string, string> = { google_purchase_token: purchaseToken }
     if (tier === 'premium') update.subscription_type = 'premium'
-    const { error } = await (admin as any).from('profiles').update(update).eq('id', user.id)
+    const { error } = await (admin as any).from('profiles').update(update).eq('id', userId)
     if (error) throw error
 
     if (purchase.acknowledgementState === 'ACKNOWLEDGEMENT_STATE_PENDING') {
