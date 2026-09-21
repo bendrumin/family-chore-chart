@@ -244,11 +244,27 @@ function withOverrides(rows, key, log) {
   return { applied, skipped };
 }
 
+/** A base plan is created in DRAFT; nothing is purchasable until it is activated. */
+async function activateBasePlans(productId) {
+  const sub = await api('GET', `/subscriptions/${productId}`);
+  for (const bp of sub.basePlans ?? []) {
+    if (bp.state === 'ACTIVE') { console.log(`  base plan ${bp.basePlanId}: already active`); continue; }
+    await api('POST', `/subscriptions/${productId}/basePlans/${bp.basePlanId}:activate`, {
+      packageName: PKG, productId, basePlanId: bp.basePlanId,
+    });
+    console.log(`  activated base plan ${bp.basePlanId}`);
+  }
+}
+
 async function createProducts(write) {
   const existing = await api('GET', '/subscriptions', undefined, { pageSize: '50' });
   const have = new Set((existing.subscriptions ?? []).map((s) => s.productId));
   for (const [key, productId, period] of [['monthly', MONTHLY, 'P1M'], ['yearly', YEARLY, 'P1Y']]) {
-    if (have.has(productId)) { console.log(`${productId}: already exists, leaving it alone`); continue; }
+    if (have.has(productId)) {
+      console.log(`${productId}: already exists, leaving its prices alone`);
+      if (write) await activateBasePlans(productId);
+      continue;
+    }
     const rows = await regionPrices(USD[key]);
     const log = [];
     const { applied, skipped } = withOverrides(rows, key, log);
@@ -268,12 +284,27 @@ async function createProducts(write) {
         regionalConfigs: rows.map((r) => ({ regionCode: r.regionCode, newSubscriberAvailability: true, price: r.price })),
       }],
     };
-    await api('POST', '/subscriptions', body, { productId, 'regionsVersion.version': REGIONS_VERSION });
-    console.log(`  created ${productId}`);
-    await api('POST', `/subscriptions/${productId}/basePlans/${key}:activate`, { packageName: PKG, productId, basePlanId: key }, {
-      'regionsVersion.version': REGIONS_VERSION,
-    });
-    console.log(`  activated base plan ${key}`);
+    // Google's converter can hand back a currency the pinned regions version
+    // does not accept yet (Bulgaria mid-euro-switch returns EUR while 2022/02
+    // still expects BGN). Drop exactly the regions Play names and retry, so one
+    // country in transition cannot block the other 172.
+    const dropped = [];
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await api('POST', '/subscriptions', body, { productId, 'regionsVersion.version': REGIONS_VERSION });
+        break;
+      } catch (err) {
+        const codes = [...String(err.message).matchAll(/region code ([A-Z]{2})\b/gi)].map((m) => m[1].toUpperCase());
+        if (codes.length === 0 || attempt > 12) throw err;
+        for (const code of codes) {
+          body.basePlans[0].regionalConfigs = body.basePlans[0].regionalConfigs.filter((r) => r.regionCode !== code);
+          dropped.push(code);
+        }
+      }
+    }
+    if (dropped.length) console.log(`  dropped regions Play would not price: ${dropped.join(', ')}`);
+    console.log(`  created ${productId} in ${body.basePlans[0].regionalConfigs.length} regions`);
+    await activateBasePlans(productId);
   }
   if (!write) console.log('\ndry run: nothing created. Re-run with "create" to write.');
 }
