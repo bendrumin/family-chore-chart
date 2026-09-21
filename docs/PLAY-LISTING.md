@@ -190,7 +190,7 @@ The Console's App content checklist has 13 items. Only one has an API.
 | Item | API | Answer |
 |---|---|---|
 | Set privacy policy | no | `https://chorestar.app/privacy` |
-| Sign in details (app access) | no | Not all functionality is public. Demo login from `ChoreStar-iOS/fastlane/metadata/review_information`, plus kid code `demo2026` and Emma's PIN `1234` |
+| Sign in details (app access) | no | See "App access" below |
 | Ads | no | No ads, no ad SDKs |
 | Content rating | no | Category Utility/productivity. No to violence, sexual content, language, controlled substances, gambling. Users communicate only inside their own family, no public sharing, no user content visible to others. No location sharing. Digital purchases: **yes** |
 | Target audience | no | **18 and over**. Do NOT opt into Designed for Families: kids use the app under a parent's account |
@@ -217,3 +217,29 @@ EF:A0:9B:A6:29:07:10:08:D9:8B:45:89:3D:B8:FF:46:B2:A7:D6:F1:CC:19:93:D7:9B:38:E6
 
 and it is already in `chorestar-nextjs/public/.well-known/assetlinks.json`
 alongside the upload key, so App Links verify for Play installs.
+
+## App access (the "Sign in details" item)
+
+Choose **All or some functionality is restricted**, then add two instruction
+entries. The parent dashboard needs an account; kid mode does not.
+
+**Entry 1**
+
+| Field | Value |
+|---|---|
+| Name | `Parent account` |
+| Username | `appreview@chorestar.app` |
+| Password | the value in `ChoreStar-iOS/fastlane/metadata/review_information/demo_password.txt` |
+| Any other information | Sign in on the first screen to reach the parent dashboard: children, chores, routines, allowance, stats and settings. The account is on Premium so every gated feature is visible. Premium is sold as a Google Play subscription; nothing else is paywalled. |
+
+**Entry 2**
+
+| Field | Value |
+|---|---|
+| Name | `Kid mode (no account needed)` |
+| Username | leave empty |
+| Password | leave empty |
+| Any other information | Kid mode needs no account. On the sign-in screen tap "I'm a Kid!", enter family code `demo2026`, choose Emma, then PIN `1234`. This opens the child dashboard with chores, routines, goals and the reward store. The same screens are reachable from the parent side through Kid Mode on the Home tab. |
+
+Both entries describe the same demo family, which is the one the App Store
+review team uses, so the two stores stay in step.
