@@ -48,14 +48,10 @@ struct SettingsView: View {
                 Section("Appearance") {
                     Picker("Theme", selection: $darkModePreference) {
                         ForEach(DarkModePreference.allCases, id: \.self) { preference in
-                            HStack {
-                                Image(systemName: iconForPreference(preference))
-                                Text(preference.rawValue)
-                            }
-                            .tag(preference)
+                            Text(LocalizedStringKey(preference.rawValue)).tag(preference)
                         }
                     }
-                    .pickerStyle(.menu)
+                    .pickerStyle(.segmented)
                     
                     HStack {
                         Image(systemName: colorScheme == .dark ? "moon.fill" : "sun.max.fill")
@@ -91,6 +87,8 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    // The ten preset swatches Android and the web offer; the picker below is for anything else.
+                    accentSwatches
                     ColorPicker(selection: $customAccent, supportsOpacity: false) {
                         HStack {
                             Image(systemName: "paintpalette.fill")
@@ -521,6 +519,68 @@ struct SettingsView: View {
             }
         }
     }
+
+    /// Same ten colours as Android's accent row and the web's picker.
+
+    private static let accentPresets = ["#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f97316", "#f59e0b", "#10b981", "#14b8a6", "#0284c7", "#3b82f6"]
+
+
+    private var accentSwatches: some View {
+
+        let current = themeManager.customAccentHex?.lowercased()
+
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
+
+            ForEach(Self.accentPresets, id: \.self) { hex in
+
+                let color = Color(hexString: hex) ?? .choreStarPrimary
+
+                let isSelected = current == hex
+
+                Button {
+
+                    Haptics.light()
+
+                    customAccent = color
+
+                } label: {
+
+                    ZStack {
+
+                        Circle().fill(color)
+
+                        if isSelected {
+
+                            Image(systemName: "checkmark")
+
+                                .font(.caption.weight(.bold))
+
+                                .foregroundColor(.white)
+
+                        }
+
+                    }
+
+                    .frame(width: 40, height: 40)
+
+                    .overlay(Circle().strokeBorder(isSelected ? Color.choreStarTextPrimary : Color.clear, lineWidth: 2.5))
+
+                }
+
+                .buttonStyle(PlainButtonStyle())
+
+                .accessibilityLabel(hex)
+
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+
+            }
+
+        }
+
+        .padding(.vertical, 6)
+
+    }
+
 
     private func iconForPreference(_ preference: DarkModePreference) -> String {
         switch preference {

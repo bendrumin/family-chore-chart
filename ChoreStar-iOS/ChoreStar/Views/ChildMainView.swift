@@ -106,14 +106,18 @@ struct ChildMainView: View {
                             Button(action: {
                                 manager.signOutChild()
                             }) {
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                    .padding(12)
-                                    .background(Color.white.opacity(0.2))
-                                    .cornerRadius(12)
+                                HStack(spacing: 6) {
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    Text(manager.isStandaloneKidSession ? "Sign out" : "Exit kid mode")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(Color.white.opacity(0.2))
+                                .clipShape(Capsule())
                             }
-                            .accessibilityLabel("Sign out")
+                            .accessibilityLabel(manager.isStandaloneKidSession ? "Sign out" : "Exit kid mode")
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)

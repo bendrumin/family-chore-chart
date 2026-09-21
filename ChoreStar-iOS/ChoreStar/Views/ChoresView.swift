@@ -37,6 +37,10 @@ struct ChoresView: View {
     // child, so it self-heals if the selected child is deleted.
     @State private var selectedWeekChildId: UUID?
 
+    /// Chores segment: which child's chores are listed; nil is everyone.
+    @State private var selectedChildId: UUID?
+    @Environment(\.colorScheme) private var colorScheme
+
     enum ChoresTab: String, CaseIterable {
         case chores = "Chores"
         case routines = "Routines"
@@ -152,8 +156,9 @@ struct ChoresView: View {
             base = manager.chores.filter { manager.isChoreCompleted($0) }
         }
 
-        guard !searchText.isEmpty else { return base }
-        return base.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let mine = selectedChildId.map { id in base.filter { $0.childId == id } } ?? base
+        guard !searchText.isEmpty else { return mine }
+        return mine.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
     private var groupedChores: [String: [Chore]] {
@@ -195,21 +200,6 @@ struct ChoresView: View {
                     if horizontalSizeClass == .compact {
                         ToolbarItem(placement: .secondaryAction) {
                             EditButton()
-                        }
-                    }
-
-                    ToolbarItem(placement: .secondaryAction) {
-                        // Reminders-style filter menu
-                        Menu {
-                            Picker("Filter", selection: $selectedFilter) {
-                                ForEach(ChoreFilter.allCases, id: \.self) { filter in
-                                    Text(filter.rawValue).tag(filter)
-                                }
-                            }
-                        } label: {
-                            Label("Filter", systemImage: selectedFilter == .all
-                                  ? "line.3.horizontal.decrease.circle"
-                                  : "line.3.horizontal.decrease.circle.fill")
                         }
                     }
 
@@ -272,8 +262,47 @@ struct ChoresView: View {
         }
     }
 
+    /// The kid switcher and the All / Pending / Completed filter, in the list
+    /// where they can be seen, instead of a menu behind a toolbar icon.
+    private var filterChips: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if manager.children.count > 1 {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ThemeChip(title: "All", selected: selectedChildId == nil) { selectedChildId = nil }
+                        ForEach(manager.children) { child in
+                            ThemeChip(title: child.name, selected: selectedChildId == child.id, leadingColor: Color.fromString(child.avatarColor), leadingInitial: String(child.name.prefix(1))) {
+                                selectedChildId = selectedChildId == child.id ? nil : child.id
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(ChoreFilter.allCases, id: \.self) { filter in
+                        ThemeChip(title: filter.rawValue, selected: selectedFilter == filter) {
+                            withAnimation(.easeInOut(duration: 0.15)) { selectedFilter = filter }
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
+        .padding(.bottom, 6)
+    }
+
     @ViewBuilder
     private var choresContent: some View {
+        VStack(spacing: 0) {
+            filterChips
+            choresBody
+        }
+    }
+
+    @ViewBuilder
+    private var choresBody: some View {
         if filteredChores.isEmpty {
             if !searchText.isEmpty {
                 ContentUnavailableView.search(text: searchText)
@@ -709,4 +738,48 @@ struct EmptyChoresView: View {
 
 #Preview {
     ChoresView().environmentObject(SupabaseManager.shared)
+}
+
+/// A filter chip coloured from the family's theme: the accent's pale step as
+/// the selected fill in light mode, its deep step in dark, ink that clears AA.
+struct ThemeChip: View {
+    let title: String
+    let selected: Bool
+    var leadingColor: Color? = nil
+    var leadingInitial: String? = nil
+    let action: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var themeManager = ThemeManager.shared
+
+    var body: some View {
+        let pair = themeManager.accentColor.selectionPair(dark: colorScheme == .dark)
+        Button(action: { Haptics.light(); action() }) {
+            HStack(spacing: 6) {
+                if let leadingColor {
+                    ZStack {
+                        Circle().fill(leadingColor)
+                        Text(leadingInitial ?? "")
+                            .font(.caption2.weight(.bold))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 18, height: 18)
+                }
+                Text(LocalizedStringKey(title))
+                    .font(.subheadline.weight(selected ? .semibold : .medium))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .foregroundColor(selected ? pair.ink : .choreStarTextPrimary)
+            .background(
+                Capsule().fill(selected ? pair.fill : Color.choreStarCardBackground)
+            )
+            .overlay(
+                Capsule().strokeBorder(selected ? Color.clear : Color.choreStarTextSecondary.opacity(0.18), lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
 }

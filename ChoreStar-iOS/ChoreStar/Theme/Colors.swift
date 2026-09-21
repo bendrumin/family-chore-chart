@@ -185,3 +185,67 @@ extension Color {
         return String(format: "#%02x%02x%02x", clamp(r), clamp(g), clamp(b))
     }
 }
+
+// MARK: - Accent ramp (the web's accent-scale.ts / contrast.ts, also in Android's ColorRamp.kt)
+extension Color {
+    /// Mix ratio per Tailwind step: toward white below 500, toward black above.
+    private static let rampRatios: [Int: Double] = [
+        50: 0.935, 100: 0.881, 200: 0.758, 300: 0.573, 400: 0.314,
+        500: 0, 600: 0.189, 700: 0.312, 800: 0.433, 900: 0.506,
+    ]
+
+    private var srgbComponents: (r: Double, g: Double, b: Double) {
+        let ui = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard ui.getRed(&r, green: &g, blue: &b, alpha: &a) else { return (0, 0, 0) }
+        let c = { (x: CGFloat) in Double(min(max(x, 0), 1)) }
+        return (c(r), c(g), c(b))
+    }
+
+    /// Linear mix toward another colour, in sRGB, like the web's `mix`.
+    func mixed(toward other: Color, amount: Double) -> Color {
+        let a = srgbComponents, b = other.srgbComponents
+        return Color(red: a.r + (b.r - a.r) * amount, green: a.g + (b.g - a.g) * amount, blue: a.b + (b.b - a.b) * amount)
+    }
+
+    /// The 50→900 step of this colour's ramp (500 is the colour itself).
+    func rampStep(_ step: Int) -> Color {
+        let ratio = Color.rampRatios[step] ?? 0
+        if ratio == 0 { return self }
+        return mixed(toward: step < 500 ? .white : .black, amount: ratio)
+    }
+
+    var relativeLuminance: Double {
+        let c = srgbComponents
+        func lin(_ v: Double) -> Double { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b)
+    }
+
+    func contrastRatio(with other: Color) -> Double {
+        let la = relativeLuminance, lb = other.relativeLuminance
+        return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+    }
+
+    /// Moves this colour away from `background` in 5% steps until it reads at `target` (WCAG AA by default).
+    func ensuringReadable(on background: Color, target: Double = 4.5) -> Color {
+        if contrastRatio(with: background) >= target { return self }
+        let toward: Color = background.relativeLuminance > 0.5 ? .black : .white
+        var best = self
+        for step in 1...20 {
+            best = mixed(toward: toward, amount: Double(step) / 20)
+            if best.contrastRatio(with: background) >= target { return best }
+        }
+        return best
+    }
+
+    /// Selected-state pair for chips and pills: a pale wash of the accent with dark accent ink in light
+    /// mode, the deep step with pale ink in dark mode. Never puts text on a hue that cannot carry it.
+    func selectionPair(dark: Bool) -> (fill: Color, ink: Color) {
+        if dark {
+            let fill = rampStep(800)
+            return (fill, rampStep(100).ensuringReadable(on: fill))
+        }
+        let fill = rampStep(100)
+        return (fill, rampStep(800).ensuringReadable(on: fill))
+    }
+}
