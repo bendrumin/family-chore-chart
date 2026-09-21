@@ -1,0 +1,1 @@
+Play Billing updated to the current library, plus fixes and polish.

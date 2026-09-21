@@ -60,6 +60,9 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
             }
         }
         .enablePendingPurchases(com.android.billingclient.api.PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+        // Billing 8+ reconnects itself after Play kills the service, which used to
+        // mean a silent empty product list on the next query.
+        .enableAutoServiceReconnection()
         .build()
 
     private suspend fun connect(): Boolean = suspendCancellableCoroutine { cont ->

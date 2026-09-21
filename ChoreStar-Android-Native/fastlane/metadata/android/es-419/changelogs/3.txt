@@ -1,0 +1,1 @@
+Actualizamos la biblioteca de pagos de Google Play, además de correcciones y mejoras.
