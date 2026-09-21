@@ -38,10 +38,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.chorestar.app.R
 import com.chorestar.app.data.ChoreStarRepository
+import com.chorestar.app.ui.UiText
 import com.chorestar.app.ui.asString
 
 @Composable
-fun AuthScreen(repository: ChoreStarRepository, onKidLogin: () -> Unit = {}) {
+fun AuthScreen(repository: ChoreStarRepository, onKidLogin: () -> Unit = {}, notice: UiText? = null) {
     val vm: AuthViewModel = viewModel(factory = viewModelFactory { initializer { AuthViewModel(repository) } })
     val state by vm.state.collectAsStateWithLifecycle()
     var email by remember { mutableStateOf("") }
@@ -117,11 +118,11 @@ fun AuthScreen(repository: ChoreStarRepository, onKidLogin: () -> Unit = {}) {
             Text("🧒 " + stringResource(R.string.im_a_kid))
         }
 
-        state.message?.let {
+        (state.message ?: notice)?.let {
             Spacer(Modifier.height(8.dp))
             Text(
                 it.asString(),
-                color = if (state.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                color = if (state.message != null && state.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

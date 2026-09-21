@@ -12,20 +12,16 @@ import com.chorestar.app.ui.AppRoot
 import com.chorestar.app.ui.theme.ChoreStarTheme
 
 class MainActivity : ComponentActivity() {
-    /** Path plus query of a chorestar.app link the activity was opened with (App Link, shortcut, or a tapped alert). */
-    private fun linkOf(intent: android.content.Intent?): String? =
-        intent?.data?.let { u -> u.path?.let { p -> p + (u.query?.let { "?$it" } ?: "") } }
-
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
-        linkOf(intent)?.let { (application as ChoreStarApp).pendingLink.value = it }
+        (application as ChoreStarApp).handleLink(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val app = application as ChoreStarApp
-        linkOf(intent)?.let { app.pendingLink.value = it }
+        app.handleLink(intent)
         setContent {
             val darkMode by app.prefs.darkMode.collectAsStateWithLifecycle()
             val theme by app.theme.collectAsStateWithLifecycle()

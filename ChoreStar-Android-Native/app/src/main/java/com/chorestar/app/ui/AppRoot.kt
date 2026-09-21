@@ -20,7 +20,9 @@ import com.chorestar.app.data.ChoreStarRepository
 import com.chorestar.app.data.KidSession
 import com.chorestar.app.data.SupabaseModule
 import com.chorestar.app.data.ThemePreference
+import com.chorestar.app.R
 import com.chorestar.app.ui.auth.AuthScreen
+import com.chorestar.app.ui.auth.ResetPasswordScreen
 import com.chorestar.app.ui.kid.ChildMainScreen
 import com.chorestar.app.ui.kid.KidBackend
 import com.chorestar.app.ui.kid.KidLoginScreen
@@ -42,10 +44,24 @@ fun AppRoot(repository: ChoreStarRepository) {
     }
     var kidLogin by remember { mutableStateOf(false) }
     val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
+    val recovery by app.passwordRecovery.collectAsStateWithLifecycle()
+    var authNotice by remember { mutableStateOf<UiText?>(null) }
     androidx.compose.runtime.LaunchedEffect(pendingLink, status) {
-        if (pendingLink?.startsWith("/kid-login") == true) { if (kidSession == null) kidLogin = true; app.pendingLink.value = null }
-        // Signed in, MainTabs consumes the rest (a tapped alert opens /dashboard); otherwise nothing can.
-        else if (pendingLink != null && status !is SessionStatus.Authenticated && status !is SessionStatus.Initializing) app.pendingLink.value = null
+        val link = pendingLink ?: return@LaunchedEffect
+        val signedIn = status is SessionStatus.Authenticated
+        if (com.chorestar.app.BuildConfig.DEBUG) android.util.Log.d("Links", "AppRoot sees $link status=${status::class.simpleName}")
+        when {
+            link.startsWith("/kid-login") -> { if (kidSession == null) kidLogin = true; app.pendingLink.value = null }
+            status is SessionStatus.Initializing -> Unit
+            // Confirmation done at Supabase before the redirect; the link only needs a sign-in now.
+            link.startsWith("/auth/callback") -> { if (!signedIn) authNotice = uiText(R.string.email_confirmed); app.pendingLink.value = null }
+            // A reset link requested on the web carries a code only that browser can exchange.
+            link.startsWith("/reset-password") && !signedIn -> { authNotice = uiText(R.string.reset_link_web); app.pendingLink.value = null }
+            // Stays queued through sign-in; MainTabs shows the invite once there is an account.
+            link.startsWith("/family/accept/") && !signedIn -> authNotice = uiText(R.string.invite_sign_in_first)
+            signedIn -> Unit // MainTabs consumes what is left
+            else -> app.pendingLink.value = null
+        }
     }
 
     fun endKidSession() { kidSession = null; app.prefs.kidSessionJson = null; app.theme.value = ThemePreference(false, null, null) }
@@ -68,8 +84,10 @@ fun AppRoot(repository: ChoreStarRepository) {
         return
     }
     when (status) {
-        is SessionStatus.Authenticated -> MainTabs(repository)
+        is SessionStatus.Authenticated ->
+            if (recovery) ResetPasswordScreen(repository, onDone = { app.passwordRecovery.value = false })
+            else MainTabs(repository)
         is SessionStatus.Initializing -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        else -> AuthScreen(repository, onKidLogin = { kidLogin = true })
+        else -> AuthScreen(repository, onKidLogin = { kidLogin = true }, notice = authNotice)
     }
 }

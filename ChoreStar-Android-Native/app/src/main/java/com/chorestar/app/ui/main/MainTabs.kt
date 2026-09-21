@@ -145,13 +145,29 @@ fun MainTabs(repository: ChoreStarRepository) {
 
     // A tapped activity alert (or the /dashboard App Link) lands on Home, where the tray shows what needs a parent.
     val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
+    var inviteCode by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(pendingLink) {
         val link = pendingLink ?: return@LaunchedEffect
+        if (com.chorestar.app.BuildConfig.DEBUG) android.util.Log.d("Links", "MainTabs sees $link")
         if (link.startsWith("/dashboard")) {
             app.pendingLink.value = null
             if (state.kidModeChildId == null) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
             vm.refresh()
+        } else if (link.startsWith("/family/accept/")) {
+            inviteCode = link.removePrefix("/family/accept/").substringBefore('?').trim('/').takeIf { it.isNotBlank() }
+            app.pendingLink.value = null
+        } else if (link.startsWith("/reset-password")) {
+            // Signed in already: the web's reset link cannot be used here, but Settings can change the password.
+            app.pendingLink.value = null
+            snackbar.showSnackbar(context.getString(R.string.reset_link_signed_in))
         } else if (!link.startsWith("/kid-login")) app.pendingLink.value = null
+    }
+    inviteCode?.let { code ->
+        InviteDialog(code, repository, onClose = { inviteCode = null }, onJoined = { name ->
+            inviteCode = null
+            vm.refresh()
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch { snackbar.showSnackbar(context.getString(R.string.invite_joined, name)) }
+        })
     }
 
     // Kid mode on this phone replaces the whole parent UI until the kid signs out.
@@ -285,4 +301,54 @@ fun MainTabs(repository: ChoreStarRepository) {
             onDismiss = vm::dismissUpgradePrompt,
         )
     }
+}
+
+/** "Join the Smith family?" for an emailed co-parent invite link; accepts through the web API. */
+@Composable
+private fun InviteDialog(code: String, repository: ChoreStarRepository, onClose: () -> Unit, onJoined: (String) -> Unit) {
+    var info by remember(code) { mutableStateOf<ChoreStarRepository.InviteInfo?>(null) }
+    var loading by remember(code) { mutableStateOf(true) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    LaunchedEffect(code) {
+        info = repository.inviteInfo(code)
+        loading = false
+        error = when {
+            info == null -> context.getString(R.string.invite_invalid)
+            info!!.expired -> context.getString(R.string.invite_invalid)
+            info!!.status != "pending" -> context.getString(R.string.invite_used)
+            else -> null
+        }
+    }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text(if (loading || info == null) stringResource(R.string.invite_co_parent) else stringResource(R.string.invite_title, info!!.familyName)) },
+        text = {
+            if (loading) androidx.compose.material3.CircularProgressIndicator()
+            else Text(error ?: stringResource(R.string.invite_body))
+        },
+        confirmButton = {
+            if (!loading && error == null) androidx.compose.material3.TextButton(enabled = !busy, onClick = {
+                busy = true
+                scope.launch {
+                    repository.acceptInvite(code)
+                        .onSuccess { onJoined(info?.familyName ?: "") }
+                        .onFailure { e ->
+                            val m = e.message ?: ""
+                            error = when {
+                                m.contains("different email", true) -> context.getString(R.string.invite_wrong_email)
+                                m.contains("own family", true) -> context.getString(R.string.join_own_family)
+                                m.contains("expired", true) || m.contains("not found", true) -> context.getString(R.string.invite_invalid)
+                                m.contains("already", true) -> context.getString(R.string.invite_used)
+                                else -> m
+                            }
+                            busy = false
+                        }
+                }
+            }) { Text(stringResource(R.string.invite_join)) }
+        },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = onClose) { Text(stringResource(if (error == null) R.string.cancel else R.string.ok_label)) } },
+    )
 }

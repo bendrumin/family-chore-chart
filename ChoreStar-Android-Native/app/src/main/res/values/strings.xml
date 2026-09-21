@@ -608,4 +608,20 @@
     <string name="welcome_premium_body">Your family now has unlimited children, chores, and premium themes.</string>
     <string name="whats_new">@string/what_s_new_a2efe</string>
     <string name="widget_description">Today\'s chores per kid</string>
+    <!-- Links: password reset, email confirmation, co-parent invites -->
+    <string name="reset_password_title">Set a new password</string>
+    <string name="reset_password_body">You opened a password reset link. Choose a new password for %1$s.</string>
+    <string name="update_password">Update password</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="reset_link_web">This reset link was requested on chorestar.app. Open it in your browser, or request a new link from this app.</string>
+    <string name="reset_link_signed_in">You are already signed in. Change your password in Settings.</string>
+    <string name="email_confirmed">Email confirmed. Sign in to continue.</string>
+    <string name="invite_sign_in_first">Sign in or create an account to accept the family invite.</string>
+    <string name="invite_title">Join %1$s?</string>
+    <string name="invite_body">You have been invited to manage this family\'s chores together. Your view switches to their family.</string>
+    <string name="invite_join">Join</string>
+    <string name="invite_joined">You joined %1$s.</string>
+    <string name="invite_invalid">This invite link is invalid or has expired.</string>
+    <string name="invite_used">This invite has already been used.</string>
+    <string name="invite_wrong_email">This invite was sent to a different email address.</string>
 </resources>

@@ -30,6 +30,7 @@ import com.chorestar.app.data.model.VacationPeriod
 import io.ktor.client.request.get
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.handleDeeplinks
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
@@ -90,7 +91,13 @@ class ChoreStarRepository(
         return Result.failure(IllegalStateException(errorMessage(text) ?: "Could not create the account (${response.status.value})"))
     }
 
-    suspend fun sendPasswordReset(email: String) = supabase.auth.resetPasswordForEmail(email.trim())
+    /** The link lands on chorestar.app/reset-password, which App Links route back into this app. */
+    suspend fun sendPasswordReset(email: String) =
+        supabase.auth.resetPasswordForEmail(email.trim(), redirectUrl = "${BuildConfig.WEB_API_BASE}/reset-password")
+
+    /** Imports the session carried in a reset or confirmation link's fragment (implicit flow). */
+    fun handleAuthLink(intent: android.content.Intent, onSession: () -> Unit, onError: (Throwable) -> Unit) =
+        supabase.handleDeeplinks(intent, onSessionSuccess = { onSession() }, onError = onError)
 
     suspend fun signOut() = supabase.auth.signOut()
 
@@ -223,6 +230,33 @@ class ChoreStarRepository(
             setBody(ReviewBody(completionId.lowercase(), if (approve) "approve" else "reject"))
         }
         if (response.status.value !in 200..299) error(errorMessage(response.bodyAsText()) ?: "Could not update (${response.status.value})")
+    }
+
+    // ── Invite links (family_invites, the web's emailed co-parent invites) ──
+
+    data class InviteInfo(val familyName: String, val status: String, val expired: Boolean)
+
+    suspend fun inviteInfo(code: String): InviteInfo? = runCatching {
+        val response = web.get("${BuildConfig.WEB_API_BASE}/api/family/invite/${code}")
+        if (response.status.value !in 200..299) return null
+        val o = SupabaseModule.json.parseToJsonElement(response.bodyAsText()).jsonObject
+        InviteInfo(
+            familyName = o["familyName"]?.jsonPrimitive?.content ?: "",
+            status = o["status"]?.jsonPrimitive?.content ?: "",
+            expired = o["expired"]?.jsonPrimitive?.content == "true",
+        )
+    }.getOrNull()
+
+    /** Accepts through the web so the invite row, email check and membership stay in one place. */
+    suspend fun acceptInvite(code: String): Result<Unit> {
+        val token = accessToken ?: return Result.failure(IllegalStateException("Not signed in"))
+        val response = web.post("${BuildConfig.WEB_API_BASE}/api/family/accept") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $token")
+            setBody(InviteCodeBody(code))
+        }
+        if (response.status.value in 200..299) return Result.success(Unit)
+        return Result.failure(IllegalStateException(errorMessage(response.bodyAsText()) ?: "Could not join (${response.status.value})"))
     }
 
     // ── Push ─────────────────────────────────────────────────────────────────
@@ -629,6 +663,9 @@ class ChoreStarRepository(
 
     @Serializable
     private data class ChoresDoneBody(val childId: String, val weekStart: String, val dayOfWeek: Int)
+
+    @Serializable
+    private data class InviteCodeBody(val code: String)
 
     @Serializable
     private data class RedemptionBody(val redemptionId: String, val action: String)

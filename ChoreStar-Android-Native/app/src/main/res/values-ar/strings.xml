@@ -491,4 +491,20 @@
     <string name="welcome_premium_title">مرحبًا بك في Premium</string>
     <string name="welcome_premium_body">صارت لعائلتك أطفال ومهام وسمات مميزة بلا حدود.</string>
     <string name="widget_description">مهام اليوم لكل طفل</string>
+    <!-- Links: password reset, email confirmation, co-parent invites -->
+    <string name="reset_password_title">تعيين كلمة مرور جديدة</string>
+    <string name="reset_password_body">لقد فتحت رابط إعادة تعيين كلمة المرور. اختر كلمة مرور جديدة لـ %1$s.</string>
+    <string name="update_password">تحديث كلمة المرور</string>
+    <string name="skip_for_now">تخطٍ الآن</string>
+    <string name="reset_link_web">تم طلب هذا الرابط من chorestar.app. افتحه في المتصفح أو اطلب رابطًا جديدًا من هذا التطبيق.</string>
+    <string name="reset_link_signed_in">أنت مسجّل الدخول بالفعل. غيّر كلمة المرور من الإعدادات.</string>
+    <string name="email_confirmed">تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.</string>
+    <string name="invite_sign_in_first">سجّل الدخول أو أنشئ حسابًا لقبول دعوة العائلة.</string>
+    <string name="invite_title">الانضمام إلى %1$s؟</string>
+    <string name="invite_body">تمت دعوتك لإدارة مهام هذه العائلة معًا. سيتحول عرضك إلى عائلتهم.</string>
+    <string name="invite_join">انضمام</string>
+    <string name="invite_joined">لقد انضممت إلى %1$s.</string>
+    <string name="invite_invalid">رابط الدعوة هذا غير صالح أو منتهي الصلاحية.</string>
+    <string name="invite_used">تم استخدام هذه الدعوة بالفعل.</string>
+    <string name="invite_wrong_email">أُرسلت هذه الدعوة إلى عنوان بريد إلكتروني مختلف.</string>
 </resources>

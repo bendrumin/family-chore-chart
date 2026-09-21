@@ -3,6 +3,7 @@ package com.chorestar.app.data
 import com.chorestar.app.BuildConfig
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
@@ -17,7 +18,15 @@ object SupabaseModule {
         supabaseUrl = BuildConfig.SUPABASE_URL,
         supabaseKey = BuildConfig.SUPABASE_ANON_KEY,
     ) {
-        install(Auth)
+        install(Auth) {
+            // Password-reset and confirmation links land on chorestar.app and open
+            // the app (App Links); handleDeeplinks only parses links on this host.
+            // Implicit flow: a reset requested from this app comes back with the
+            // session in the URL fragment, which the app can import on its own.
+            scheme = "https"
+            host = "chorestar.app"
+            flowType = FlowType.IMPLICIT
+        }
         install(Postgrest)
         install(Storage)
     }

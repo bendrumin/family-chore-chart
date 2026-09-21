@@ -483,4 +483,20 @@
     <string name="welcome_premium_title">Bem-vindo ao Premium</string>
     <string name="welcome_premium_body">Sua família agora tem crianças, tarefas e temas premium ilimitados.</string>
     <string name="widget_description">Tarefas de hoje por criança</string>
+    <!-- Links: password reset, email confirmation, co-parent invites -->
+    <string name="reset_password_title">Definir nova senha</string>
+    <string name="reset_password_body">Você abriu um link de redefinição de senha. Escolha uma nova senha para %1$s.</string>
+    <string name="update_password">Atualizar senha</string>
+    <string name="skip_for_now">Pular por enquanto</string>
+    <string name="reset_link_web">Este link foi solicitado em chorestar.app. Abra-o no navegador ou peça um novo link neste app.</string>
+    <string name="reset_link_signed_in">Você já está conectado. Altere sua senha em Configurações.</string>
+    <string name="email_confirmed">E-mail confirmado. Entre para continuar.</string>
+    <string name="invite_sign_in_first">Entre ou crie uma conta para aceitar o convite da família.</string>
+    <string name="invite_title">Entrar em %1$s?</string>
+    <string name="invite_body">Você foi convidado para gerenciar as tarefas desta família em conjunto. Sua visualização passa para a família deles.</string>
+    <string name="invite_join">Entrar</string>
+    <string name="invite_joined">Você entrou em %1$s.</string>
+    <string name="invite_invalid">Este link de convite é inválido ou expirou.</string>
+    <string name="invite_used">Este convite já foi usado.</string>
+    <string name="invite_wrong_email">Este convite foi enviado para outro endereço de e-mail.</string>
 </resources>
