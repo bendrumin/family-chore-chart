@@ -154,8 +154,12 @@ Still to do:
 2. **Play Console products.** The paywall shows "Plans aren't available"
    until `chorestar_premium_monthly` / `chorestar_premium_yearly` exist and
    the app is in a testing track; purchases could not be exercised here.
-3. iOS backfill: the strings only Android translated live in
-   `res/values-es|pt-rBR|ar/strings.xml`.
+3. ~~iOS backfill~~ Done 2026-09-21 (f772a8e, dd7f783): 261 keys per
+   language copied into `Localizable.xcstrings` by alias and by English text.
+   The Android override files stay as the source for future strings; when a
+   string is translated here, mirror it into the iOS catalog the same way
+   (patch the xcstrings textually or with an order-preserving serializer, never
+   `json.dump`, and keep Xcode's `" : "` formatting).
 
 ## Verifying on a phone
 
