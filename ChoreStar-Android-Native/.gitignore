@@ -6,3 +6,4 @@ app/build/
 *.iml
 .idea/
 .kotlin/
+app/google-services.json

@@ -42,9 +42,10 @@ fun AppRoot(repository: ChoreStarRepository) {
     }
     var kidLogin by remember { mutableStateOf(false) }
     val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(pendingLink) {
+    androidx.compose.runtime.LaunchedEffect(pendingLink, status) {
         if (pendingLink?.startsWith("/kid-login") == true) { if (kidSession == null) kidLogin = true; app.pendingLink.value = null }
-        else if (pendingLink != null) app.pendingLink.value = null
+        // Signed in, MainTabs consumes the rest (a tapped alert opens /dashboard); otherwise nothing can.
+        else if (pendingLink != null && status !is SessionStatus.Authenticated && status !is SessionStatus.Initializing) app.pendingLink.value = null
     }
 
     fun endKidSession() { kidSession = null; app.prefs.kidSessionJson = null; app.theme.value = ThemePreference(false, null, null) }

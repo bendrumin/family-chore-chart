@@ -225,6 +225,34 @@ class ChoreStarRepository(
         if (response.status.value !in 200..299) error(errorMessage(response.bodyAsText()) ?: "Could not update (${response.status.value})")
     }
 
+    // ── Push ─────────────────────────────────────────────────────────────────
+
+    /** Same table and conflict rule as iOS: a token re-registering after a reinstall or user switch MOVES, never duplicates. */
+    suspend fun registerPushToken(token: String, environment: String) {
+        val uid = currentUserId ?: return
+        supabase.from("device_push_tokens").upsert(PushTokenRow(uid, token, "android", environment, Instant.now().toString())) { onConflict = "token" }
+    }
+
+    suspend fun removePushToken(token: String) {
+        supabase.from("device_push_tokens").delete { filter { eq("token", token) } }
+    }
+
+    /**
+     * Parent-mode ticks write straight to Supabase, so the server never sees
+     * them; this ping lets it fire the same "all chores done" alert kid mode
+     * gets. Silent on failure: the chore is already saved.
+     */
+    suspend fun notifyChoresDone(childId: String, weekStart: String, dayOfWeek: Int) {
+        val token = accessToken ?: return
+        runCatching {
+            web.post("${BuildConfig.WEB_API_BASE}/api/push/chores-done") {
+                contentType(ContentType.Application.Json)
+                header("Authorization", "Bearer $token")
+                setBody(ChoresDoneBody(childId, weekStart, dayOfWeek))
+            }
+        }
+    }
+
     // ── Vacation ─────────────────────────────────────────────────────────────
 
     /** Upsert on user_id: an iOS- or Android-created family may have no settings row yet. */
@@ -589,6 +617,18 @@ class ChoreStarRepository(
 
     @Serializable
     private data class ReviewBody(val completionId: String, val action: String)
+
+    @Serializable
+    private data class PushTokenRow(
+        @SerialName("user_id") val userId: String,
+        val token: String,
+        val platform: String,
+        val environment: String,
+        @SerialName("updated_at") val updatedAt: String,
+    )
+
+    @Serializable
+    private data class ChoresDoneBody(val childId: String, val weekStart: String, val dayOfWeek: Int)
 
     @Serializable
     private data class RedemptionBody(val redemptionId: String, val action: String)

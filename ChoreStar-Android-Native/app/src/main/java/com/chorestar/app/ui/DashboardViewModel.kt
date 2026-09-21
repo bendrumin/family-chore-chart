@@ -157,6 +157,8 @@ class DashboardViewModel(
     private val repository: ChoreStarRepository,
     private val onTheme: (ThemePreference) -> Unit = {},
     private val onSnapshot: (com.chorestar.app.widget.WidgetSnapshot) -> Unit = {},
+    /** Runs before the Supabase session is dropped (push token clean-up). */
+    private val onBeforeSignOut: suspend () -> Unit = {},
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardState())
     val state: StateFlow<DashboardState> = _state
@@ -374,6 +376,7 @@ class DashboardViewModel(
                     updateWeek(week) { list -> list.map { c -> if (c.id == placeholder.id) saved else c } }
                     _state.update { it.copy(allTime = it.allTime + CompletionRef(chore.id, week, day)) }
                     if (week == _state.value.weekStart && day == Dates.dayOfWeek()) checkAndAwardAchievements(chore.childId)
+                    launch { repository.notifyChoresDone(chore.childId, week, day) }
                 }
             }.onFailure { e ->
                 updateWeek(week) { list -> if (existing != null) list + existing else list.filterNot { c -> c.id == "local:$key" } }
@@ -651,7 +654,7 @@ class DashboardViewModel(
 
     fun dismissUpgradePrompt() = _state.update { it.copy(upgradePrompt = null) }
     fun clearError() = _state.update { it.copy(error = null) }
-    fun signOut() { viewModelScope.launch { runCatching { repository.signOut() } } }
+    fun signOut() { viewModelScope.launch { runCatching { onBeforeSignOut() }; runCatching { repository.signOut() } } }
 }
 
 sealed interface PinChange {

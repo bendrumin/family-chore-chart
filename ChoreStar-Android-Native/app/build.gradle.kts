@@ -7,6 +7,16 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+// Firebase Cloud Messaging (activity alerts). google-services.json is the
+// Firebase project's public Android config (gitignored, like
+// supabase.properties); without it the plugin is skipped, Firebase never
+// initialises, and the app builds and runs with push simply off.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.warn("app/google-services.json missing: building without Firebase Cloud Messaging")
+}
+
 // Public Supabase project config. supabase.properties is gitignored; the iOS
 // app ships the same two values in Info.plist, and that file is the fallback
 // so a fresh checkout builds without copying anything by hand.
@@ -95,6 +105,11 @@ dependencies {
 
     implementation("com.android.billingclient:billing-ktx:7.1.1")
     implementation("androidx.glance:glance-appwidget:1.1.1")
+
+    // Push (FCM). The BOM pins firebase-messaging; the app only touches
+    // FirebaseApp / FirebaseMessaging, so nothing else from Firebase is linked.
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-messaging")
 
     // Image loading (photo avatars) returns with a Coil that targets Compose 1.10;
     // Coil 3.6 pulls Compose 1.12, which needs SDK 37.

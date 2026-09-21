@@ -99,16 +99,37 @@ notification, the Glance home-screen widget (`widget/TodayWidget.kt`, fed by
 a snapshot the dashboard writes to prefs), launcher shortcuts and App Link
 routing of `/kid-login` into the kid door.
 
+Activity alerts (push) are built on both ends and wait only for a Firebase
+project:
+
+- Web: `lib/push/fcm.ts` sends a data-only FCM HTTP v1 message per Android
+  row in `device_push_tokens` (APNs keeps the iOS rows; `notify.ts` picks the
+  sender per row's `platform`). Env: `FIREBASE_SERVICE_ACCOUNT_JSON`, optional
+  `FIREBASE_PROJECT_ID`; unset means Android rows are skipped.
+- Android: `notify/Push.kt` registers the token after sign-in (upsert on
+  `token`, `platform = android`, `environment` from the build type), removes
+  it before sign-out, builds the notification from the message data, adds an
+  Approve action for a pending chore (`ApproveReceiver` calls
+  `/api/chores/approve`), and opens `/dashboard?push=…` on tap, which lands on
+  Home. Parent-mode ticks ping `/api/push/chores-done` like iOS. The app asks
+  for the notification permission once after sign-in.
+- The `google-services` plugin is applied only when `app/google-services.json`
+  exists (gitignored). Without it Firebase logs "initialization unsuccessful"
+  once and everything here is a no-op.
+
 Still to do:
 
-1. **Play Console products.** The paywall shows "Plans aren't available"
+1. **Firebase project.** `.mcp.json` lists the Firebase MCP server; it needs
+   `npx firebase-tools login` once. Then: create the project, add the
+   Android app `com.chorestar.app`, save its config as
+   `app/google-services.json`, and in the Firebase console generate a
+   service-account key (Project settings → Service accounts) for
+   `FIREBASE_SERVICE_ACCOUNT_JSON` in Vercel. A release build also needs the
+   Play app-signing SHA-256 registered on the Android app.
+2. **Play Console products.** The paywall shows "Plans aren't available"
    until `chorestar_premium_monthly` / `chorestar_premium_yearly` exist and
    the app is in a testing track; purchases could not be exercised here.
-2. **FCM push** for activity alerts (needs a Firebase project; the local
-   daily reminder already works).
-3. Kid-mode routines only post the ongoing notification once notifications
-   are granted; the daily-reminder toggle asks, kid mode does not yet.
-4. iOS backfill: the strings only Android translated live in
+3. iOS backfill: the strings only Android translated live in
    `res/values-es|pt-rBR|ar/strings.xml`.
 
 ## Verifying on a phone

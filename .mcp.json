@@ -2,10 +2,23 @@
   "mcpServers": {
     "appscreen": {
       "command": "npx",
-      "args": ["-y", "@appsolves/appscreen-mcp"],
+      "args": [
+        "-y",
+        "@appsolves/appscreen-mcp"
+      ],
       "env": {
         "APPSCREEN_URL": "https://appsolves.github.io/appscreen-mcp/"
       }
+    },
+    "firebase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firebase-tools@latest",
+        "mcp",
+        "--dir",
+        "/Users/bensiegel/family-chore-chart/ChoreStar-Android-Native"
+      ]
     }
   }
 }

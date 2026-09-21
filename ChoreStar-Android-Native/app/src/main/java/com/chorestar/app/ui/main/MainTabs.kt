@@ -36,7 +36,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.chorestar.app.ChoreStarApp
+import com.chorestar.app.notify.Push
 import com.chorestar.app.R
 import com.chorestar.app.ui.achievements.AchievementUnlockedDialog
 import com.chorestar.app.ui.achievements.AchievementsScreen
@@ -114,8 +120,15 @@ fun MainTabs(repository: ChoreStarRepository) {
         DashboardViewModel(repository, onTheme = { app.theme.value = it }, onSnapshot = { snap ->
             app.prefs.widgetSnapshotJson = com.chorestar.app.data.SupabaseModule.json.encodeToString(com.chorestar.app.widget.WidgetSnapshot.serializer(), snap)
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch { com.chorestar.app.widget.TodayWidget.refresh(app) }
-        })
+        }, onBeforeSignOut = { Push.unregister(app, repository) })
     } })
+    // Activity alerts: ask once for the notification permission, then register this phone's FCM token.
+    // (The same grant lets the kid-mode routine player post its ongoing notification.)
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 33 && app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        Push.register(app, repository)
+    }
     var showWhatsNew by remember { mutableStateOf(app.prefs.whatsNewSeen != null && app.prefs.whatsNewSeen != Changelog.LATEST) }
     LaunchedEffect(Unit) { if (app.prefs.whatsNewSeen == null) app.prefs.whatsNewSeen = Changelog.LATEST }
     val state by vm.state.collectAsStateWithLifecycle()
@@ -129,6 +142,17 @@ fun MainTabs(repository: ChoreStarRepository) {
     }
 
     val onTab = backStack?.destination?.route?.let { r -> Tab.entries.any { it.route == r } } ?: true
+
+    // A tapped activity alert (or the /dashboard App Link) lands on Home, where the tray shows what needs a parent.
+    val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingLink) {
+        val link = pendingLink ?: return@LaunchedEffect
+        if (link.startsWith("/dashboard")) {
+            app.pendingLink.value = null
+            if (state.kidModeChildId == null) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
+            vm.refresh()
+        } else if (!link.startsWith("/kid-login")) app.pendingLink.value = null
+    }
 
     // Kid mode on this phone replaces the whole parent UI until the kid signs out.
     state.kidModeChildId?.let { childId ->

@@ -7,6 +7,7 @@ import com.chorestar.app.data.Prefs
 import com.chorestar.app.data.SupabaseModule
 import com.chorestar.app.data.ThemePreference
 import com.chorestar.app.notify.DailyReminder
+import com.chorestar.app.notify.Push
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Owns the one Supabase client, the repository, local prefs and the live theme for the process. */
@@ -31,6 +32,7 @@ class ChoreStarApp : Application() {
         prefs = Prefs(this)
         repository = ChoreStarRepository(SupabaseModule.client(), SupabaseModule.webClient())
         DailyReminder.ensureChannel(this)
+        Push.ensureChannel(this)
         DailyReminder.sync(this)
     }
 }

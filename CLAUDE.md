@@ -139,6 +139,8 @@ npm run dev                         # http://localhost:3000
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Play Developer API service account key (JSON or base64) for verifying Android subscriptions |
 | `GOOGLE_PLAY_PACKAGE_NAME` | Android package, defaults to `com.chorestar.app` |
 | `GOOGLE_PUBSUB_PUSH_TOKEN` | Shared secret in the RTDN Pub/Sub push URL (`/api/google/notifications?token=`) |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase service-account key (JSON or base64) for sending FCM activity alerts to the native Android app; falls back to the Play key when that has the FCM role |
+| `FIREBASE_PROJECT_ID` | Optional; defaults to the key's own `project_id` |
 
 ### Testing
 

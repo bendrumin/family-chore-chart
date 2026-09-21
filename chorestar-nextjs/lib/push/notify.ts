@@ -1,6 +1,7 @@
 import 'server-only'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { apnsConfigured, sendApnsAlert, type ApnsCustomData } from '@/lib/push/apns'
+import { fcmConfigured, sendFcmMessage } from '@/lib/push/fcm'
 import { dueOn } from '@/lib/utils/schedule'
 import { formatMoney } from '@/lib/constants/currencies'
 
@@ -11,7 +12,14 @@ import { formatMoney } from '@/lib/constants/currencies'
  * promises. A push failure — misconfigured key, dead token, APNs outage —
  * must never surface in the API response that triggered it. A kid completing
  * a routine has completed the routine; the parent's phone buzzing is a bonus.
+ *
+ * Two senders: APNs for iOS rows in device_push_tokens, FCM for Android ones.
+ * Either may be unconfigured; a token for the unconfigured platform is skipped.
  */
+
+function pushConfigured(): boolean {
+  return apnsConfigured() || fcmConfigured()
+}
 
 async function isActivityPushEnabled(userId: string): Promise<boolean> {
   try {
@@ -35,7 +43,7 @@ export async function sendPushToUser(
   body: string,
   custom?: ApnsCustomData
 ): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!pushConfigured()) return
 
   try {
     if (!(await isActivityPushEnabled(userId))) {
@@ -49,8 +57,8 @@ export async function sendPushToUser(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: tokens } = (await (admin as any)
       .from('device_push_tokens')
-      .select('token, environment')
-      .eq('user_id', userId)) as { data: { token: string; environment: string }[] | null }
+      .select('token, platform, environment')
+      .eq('user_id', userId)) as { data: { token: string; platform: string | null; environment: string }[] | null }
 
     if (!tokens || tokens.length === 0) {
       console.log(`[push] no device tokens registered for user ${userId}`)
@@ -58,8 +66,15 @@ export async function sendPushToUser(
     }
 
     for (const t of tokens) {
-      const env = t.environment === 'development' ? 'development' : 'production'
-      const result = await sendApnsAlert(t.token, env, title, body, custom)
+      let result: { tokenGone: boolean }
+      if (t.platform === 'android') {
+        if (!fcmConfigured()) continue
+        result = await sendFcmMessage(t.token, title, body, custom)
+      } else {
+        if (!apnsConfigured()) continue
+        const env = t.environment === 'development' ? 'development' : 'production'
+        result = await sendApnsAlert(t.token, env, title, body, custom)
+      }
       if (result.tokenGone) {
         // Dead tokens accumulate forever otherwise — every future send would
         // retry them. APNs told us it's gone; believe it.
@@ -74,8 +89,8 @@ export async function sendPushToUser(
 
 /** "🎉 Bayla finished Morning Routine!" — the flagship trigger. */
 export async function notifyRoutineCompleted(childId: string, routineName: string): Promise<void> {
-  if (!apnsConfigured()) {
-    console.log('[push] APNs env not configured; skipping notify')
+  if (!pushConfigured()) {
+    console.log('[push] no push sender configured; skipping notify')
     return
   }
   try {
@@ -108,7 +123,7 @@ export async function notifyRedemptionRequested(
   currencyCode: string,
   redemptionId: string
 ): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!pushConfigured()) return
   try {
     const admin = createServiceRoleClient()
     const { data: child } = await admin.from('children').select('name, user_id').eq('id', childId).maybeSingle()
@@ -126,7 +141,7 @@ export async function notifyRedemptionRequested(
 
 /** "🎯 Maya reached her goal!" — the balance now covers the target. */
 export async function notifyGoalReached(childId: string, goalTitle: string): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!pushConfigured()) return
   try {
     const admin = createServiceRoleClient()
     const { data: child } = await admin.from('children').select('name, user_id').eq('id', childId).maybeSingle()
@@ -152,7 +167,7 @@ export async function notifyPendingApproval(
   completionId: string,
   hasPhoto: boolean
 ): Promise<void> {
-  if (!apnsConfigured()) return
+  if (!pushConfigured()) return
   try {
     const admin = createServiceRoleClient()
     const { data: child } = await admin
@@ -183,8 +198,8 @@ export async function notifyIfAllChoresDone(
   weekStart: string,
   dayOfWeek: number
 ): Promise<void> {
-  if (!apnsConfigured()) {
-    console.log('[push] APNs env not configured; skipping notify')
+  if (!pushConfigured()) {
+    console.log('[push] no push sender configured; skipping notify')
     return
   }
   try {
