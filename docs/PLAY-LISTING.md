@@ -144,3 +144,41 @@ through Google Play). Expected rating: Everyone.
   Android app is this exact UI in a shell. Suggested order: 03, 04, 01, 02.
 - App icon 512x512: export from the existing icon set (ChoreStar-Android
   already ships the adaptive icon).
+
+## BLOCKER found 2026-09-21: `com.chorestar.app` is taken on Google Play
+
+A live third-party app already owns that package name:
+
+- Title **ChoreStar: Family Chores**, developer **CMCAppDev**
+- Last updated **Sep 3, 2026**, carries ads and in-app purchases
+- Its own site, `chorestar.cloudmigrationconsulting.net`, and support address
+  `accounts@cloudmigrationconsulting.net`
+- `https://play.google.com/store/apps/details?id=com.chorestar.app` returns 200
+  while any made-up id returns 404, and a Play search for "chorestar" returns
+  that app and nothing of ours
+
+Package names on Google Play are globally unique and permanent, and the Console
+locks a package to an app entry at the **first bundle upload**. So our first
+upload of `com.chorestar.app` would be rejected, and there is no claim process
+for a package name (that is separate from any trademark question about the
+title, where we have no priority: see the name-competitor note).
+
+**The applicationId has to change before the first upload.** These are free as
+of the check: `com.chorestar.family`, `app.chorestar`, `app.chorestar.android`,
+`com.chorestar.parent`, `com.siegelcreates.chorestar`.
+
+What the rename touches:
+
+1. `ChoreStar-Android-Native/app/build.gradle.kts` `applicationId` (the Kotlin
+   package can stay `com.chorestar.app`; only the applicationId must move) and
+   the same in `ChoreStar-Android/android/app/build.gradle` +
+   `capacitor.config.ts` if the shell is ever uploaded
+2. `chorestar-nextjs/public/.well-known/assetlinks.json` `package_name`, plus
+   the Play app-signing SHA-256 after the first upload, then redeploy
+3. A new Firebase Android app for the new package, and a fresh
+   `app/google-services.json` (the current one is registered to
+   `com.chorestar.app`); re-register both signing certificates
+4. `GOOGLE_PLAY_PACKAGE_NAME` in Vercel, which `lib/google/play-api.ts` and
+   `scripts/play-prices.mjs` both read
+5. Launcher shortcut `targetPackage` attributes and the store-listing copy that
+   names the package
