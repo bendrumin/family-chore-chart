@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.chorestar.app.BuildConfig
 import com.chorestar.app.ChoreStarApp
@@ -41,6 +42,7 @@ import kotlin.coroutines.resumeWithException
  */
 object Push {
     const val CHANNEL = "activity"
+    private const val TAG = "Push"
     private const val TYPE_CHORE_APPROVAL = "chore_approval"
 
     fun available(context: Context): Boolean = FirebaseApp.getApps(context).isNotEmpty()
@@ -58,7 +60,8 @@ object Push {
         runCatching {
             val t = token ?: FirebaseMessaging.getInstance().token.await()
             repository.registerPushToken(t, if (BuildConfig.DEBUG) "development" else "production")
-        }
+            if (BuildConfig.DEBUG) Log.d(TAG, "token registered …${t.takeLast(6)}")
+        }.onFailure { if (BuildConfig.DEBUG) Log.w(TAG, "token registration failed", it) }
     }
 
     /** Before sign-out: drop the row and the token, so the next account on this phone starts clean. */

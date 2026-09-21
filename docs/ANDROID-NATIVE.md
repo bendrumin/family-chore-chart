@@ -119,13 +119,15 @@ project:
 
 Still to do:
 
-1. **Firebase project.** `.mcp.json` lists the Firebase MCP server; it needs
-   `npx firebase-tools login` once. Then: create the project, add the
-   Android app `com.chorestar.app`, save its config as
-   `app/google-services.json`, and in the Firebase console generate a
-   service-account key (Project settings → Service accounts) for
-   `FIREBASE_SERVICE_ACCOUNT_JSON` in Vercel. A release build also needs the
-   Play app-signing SHA-256 registered on the Android app.
+1. **Firebase service-account key.** The Firebase project is `chorestar-app`
+   (Android app `1:788183806625:android:0d0a4f24a67ceffb8076e0`, debug and
+   Play app-signing SHA-256 registered; `.firebaserc` pins it for the
+   Firebase MCP server in `.mcp.json`). `app/google-services.json` is in
+   place locally (gitignored; re-fetch with the MCP server's
+   `firebase_get_sdk_config` on a fresh checkout). The one thing left is a
+   service-account key from the console (Project settings → Service
+   accounts → Generate new private key) stored in Vercel as
+   `FIREBASE_SERVICE_ACCOUNT_JSON`; until then Android rows are skipped.
 2. **Play Console products.** The paywall shows "Plans aren't available"
    until `chorestar_premium_monthly` / `chorestar_premium_yearly` exist and
    the app is in a testing track; purchases could not be exercised here.
