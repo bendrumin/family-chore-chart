@@ -1,0 +1,30 @@
+# Kid mode on the parent's phone (Home > Kid Mode > pick a child > PIN), then
+# leaves through the labelled "Exit kid mode" button. Runs against a signed-in
+# simulator; the demo family's kids use PIN 1234.
+appId: com.chorestar.ChoreStar
+---
+- launchApp
+- tapOn: "Home"
+- extendedWaitUntil:
+    visible: ".*Kid Mode.*"
+    timeout: 15000
+- tapOn: ".*Kid Mode.*"
+- extendedWaitUntil:
+    visible: "Maya"
+    timeout: 10000
+- tapOn: "Maya"
+- extendedWaitUntil:
+    visible: "Enter Your PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "2"
+- tapOn: "3"
+- tapOn: "4"
+- tapOn: "Go!"
+- extendedWaitUntil:
+    visible: "Exit kid mode"
+    timeout: 20000
+- tapOn: "Exit kid mode"
+- extendedWaitUntil:
+    visible: "Home"
+    timeout: 15000
