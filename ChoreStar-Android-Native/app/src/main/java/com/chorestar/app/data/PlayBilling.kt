@@ -1,6 +1,7 @@
 package com.chorestar.app.data
 
 import android.app.Activity
+import com.chorestar.app.BuildConfig
 import android.content.Context
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
@@ -78,6 +79,10 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
             ).build()
             val result = runCatching { client.queryProductDetails(params) }.getOrNull()
             val details = result?.productDetailsList.orEmpty()
+            if (BuildConfig.DEBUG) android.util.Log.d(
+                "PlayBilling",
+                "queryProductDetails code=${result?.billingResult?.responseCode} msg=${result?.billingResult?.debugMessage} products=${details.size} ${details.map { it.productId }}",
+            )
             _plans.value = details.mapNotNull { d ->
                 val offer = d.subscriptionOfferDetails?.firstOrNull() ?: return@mapNotNull null
                 val phase = offer.pricingPhases.pricingPhaseList.lastOrNull() ?: return@mapNotNull null
