@@ -179,15 +179,36 @@ async function pushImages() {
   console.log(`committed edit ${done.id}`);
 }
 
+/** Flip an existing draft release on a track to rolled out, without re-uploading. */
+async function rollout(track, versionCode) {
+  const edit = await api('POST', '/edits');
+  const tracks = await api('GET', `/edits/${edit.id}/tracks`);
+  const t = (tracks.tracks ?? []).find((x) => x.track === track);
+  const release = (t?.releases ?? []).find((r) => !versionCode || (r.versionCodes ?? []).includes(String(versionCode)));
+  if (!release) {
+    await api('DELETE', `/edits/${edit.id}`).catch(() => {});
+    throw new Error(`no release on ${track}${versionCode ? ` for versionCode ${versionCode}` : ''}`);
+  }
+  if (release.status === 'completed') {
+    console.log(`${track}: versionCode ${release.versionCodes} is already rolled out`);
+    await api('DELETE', `/edits/${edit.id}`);
+    return;
+  }
+  await api('PUT', `/edits/${edit.id}/tracks/${track}`, { track, releases: [{ ...release, status: 'completed' }] });
+  const done = await api('POST', `/edits/${edit.id}:commit`);
+  console.log(`committed edit ${done.id}: versionCode ${release.versionCodes} rolled out on ${track}`);
+}
+
 const [arg1, arg2, ...rest] = process.argv.slice(2);
 const status = (rest.find((a) => a.startsWith('--status=')) ?? '--status=draft').split('=')[1];
 try {
   if (!arg1 || arg1 === 'tracks') await showTracks();
   else if (arg1 === 'listing') await pushListing();
   else if (arg1 === 'images') await pushImages();
+  else if (arg1 === 'rollout') await rollout(arg2 || 'internal', rest[0]);
   else if (arg2) await upload(arg1, arg2.replace(/^~/, homedir()), status);
   else {
-    console.log('usage: play-release.mjs [tracks | listing | images | <track> <aab> [--status=draft|completed]]');
+    console.log('usage: play-release.mjs [tracks | listing | images | rollout <track> [versionCode] | <track> <aab> [--status=draft|completed]]');
     process.exit(1);
   }
 } catch (err) {
