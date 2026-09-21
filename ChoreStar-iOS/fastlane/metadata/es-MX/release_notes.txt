@@ -5,6 +5,7 @@ La versión 2.2.3 pone los controles donde los ves.
 • Claro, Oscuro y Sistema con un toque, y diez colores de acento junto al selector
 • Los chips y botones seleccionados usan el tema de tu familia
 • El botón para salir del modo niño dice lo que hace
+• El español ahora cubre también las pantallas de los padres, no solo el modo niño
 • Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app

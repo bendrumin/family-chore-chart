@@ -5,6 +5,7 @@ Version 2.2.3 puts the controls where you can see them.
 • Light, Dark and System as one tap, and ten preset accent colours beside the picker
 • Selected chips and pills wear your family's theme
 • The kid-mode exit button says what it does
+• Spanish, Portuguese and Arabic now cover the parent screens too, not just kid mode
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app
