@@ -89,18 +89,25 @@ Done and device-verified (2026-09-20, commits fce56e1 → phase 2e):
 - Parent allowance section (`/api/allowance`, `/api/kid/wallet`) and store
   requests in the tray (`/api/rewards/redemptions`).
 
-Still to do, in rough order:
+Also done (later the same day): slate surface tokens (Material's baseline
+containers are lavender), Chores kid switcher / Pending–Completed filter /
+search, kid-mode Back and Exit, Play Billing paywall (`data/PlayBilling.kt`,
+verified through `/api/google/verify`, which now takes a Bearer token),
+Restore / Manage Subscription, What's New (`ui/settings/WhatsNewScreen.kt`,
+port the web changelog by hand when it grows), the routine player's ongoing
+notification, the Glance home-screen widget (`widget/TodayWidget.kt`, fed by
+a snapshot the dashboard writes to prefs), launcher shortcuts and App Link
+routing of `/kid-login` into the kid door.
 
-1. **Play Billing + paywall.** `/api/google/verify` reads a cookie session
-   only; add the same Bearer fallback `/api/kid-login-code` has, then wire
-   `com.android.billingclient:billing-ktx` with products
-   `chorestar_premium_monthly` / `chorestar_premium_yearly` and
-   `obfuscatedAccountId` = profile id. Blocked on the Play Console products.
+Still to do:
+
+1. **Play Console products.** The paywall shows "Plans aren't available"
+   until `chorestar_premium_monthly` / `chorestar_premium_yearly` exist and
+   the app is in a testing track; purchases could not be exercised here.
 2. **FCM push** for activity alerts (needs a Firebase project; the local
    daily reminder already works).
-3. What's New sheet; an ongoing notification during the routine player (the
-   iOS Live Activity); home-screen widget; App Links / shortcuts / themed icon
-   are still only in the Capacitor shell's manifest and need copying over.
+3. Kid-mode routines only post the ongoing notification once notifications
+   are granted; the daily-reminder toggle asks, kid mode does not yet.
 4. iOS backfill: the strings only Android translated live in
    `res/values-es|pt-rBR|ar/strings.xml`.
 
