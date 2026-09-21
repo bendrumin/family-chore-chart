@@ -119,15 +119,13 @@ project:
 
 Still to do:
 
-1. **Firebase service-account key.** The Firebase project is `chorestar-app`
-   (Android app `1:788183806625:android:0d0a4f24a67ceffb8076e0`, debug and
-   Play app-signing SHA-256 registered; `.firebaserc` pins it for the
-   Firebase MCP server in `.mcp.json`). `app/google-services.json` is in
-   place locally (gitignored; re-fetch with the MCP server's
-   `firebase_get_sdk_config` on a fresh checkout). The one thing left is a
-   service-account key from the console (Project settings → Service
-   accounts → Generate new private key) stored in Vercel as
-   `FIREBASE_SERVICE_ACCOUNT_JSON`; until then Android rows are skipped.
+1. ~~Firebase~~ Done 2026-09-20: project `chorestar-app` (Android app
+   `1:788183806625:android:0d0a4f24a67ceffb8076e0`, debug and Play
+   app-signing SHA-256 registered; `.firebaserc` pins it for the Firebase MCP
+   server in `.mcp.json`). `app/google-services.json` is gitignored; re-fetch
+   it with the MCP server's `firebase_get_sdk_config` on a fresh checkout.
+   `FIREBASE_SERVICE_ACCOUNT_JSON` is set in Vercel production and a real
+   "All chores done" alert was delivered to the S25.
 2. **Play Console products.** The paywall shows "Plans aren't available"
    until `chorestar_premium_monthly` / `chorestar_premium_yearly` exist and
    the app is in a testing track; purchases could not be exercised here.
