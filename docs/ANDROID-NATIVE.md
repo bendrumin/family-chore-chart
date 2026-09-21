@@ -132,6 +132,16 @@ project:
   exists (gitignored). Without it Firebase logs "initialization unsuccessful"
   once and everything here is a no-op.
 
+Also done 2026-09-21: App Link handling for `/reset-password` (a reset
+requested from the app carries the session in the fragment and opens
+`ui/auth/ResetPasswordScreen.kt`; a web-requested one explains itself),
+`/auth/callback` (sign-in notice) and `/family/accept/{code}` (queued through
+sign-in, then a Join dialog accepting through `/api/family/accept`, which now
+takes a Bearer token); the five-page first-run tour
+(`ui/onboarding/OnboardingScreen.kt`, once per account, `/onboarding` replays
+it); and the three-step New Chore wizard (`ui/chores/ChoreWizardScreen.kt`,
+the "+" entry points; editing keeps the full editor).
+
 Still to do:
 
 1. ~~Firebase~~ Done 2026-09-20: project `chorestar-app` (Android app

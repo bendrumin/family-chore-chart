@@ -46,6 +46,10 @@ class Prefs(context: Context) {
         get() = sp.getString("whatsNewSeen", null)
         set(v) = sp.edit().putString("whatsNewSeen", v).apply()
 
+    /** Per account, like iOS's hasSeenParentOnboarding.<uid>: the tour shows once per family, not once per phone. */
+    fun onboardingSeen(userId: String): Boolean = sp.getBoolean("onboardingSeen.$userId", false)
+    fun markOnboardingSeen(userId: String) = sp.edit().putBoolean("onboardingSeen.$userId", true).apply()
+
     var kidSessionJson: String?
         get() = sp.getString("kidSession", null)
         set(v) = sp.edit().putString("kidSession", v).apply()

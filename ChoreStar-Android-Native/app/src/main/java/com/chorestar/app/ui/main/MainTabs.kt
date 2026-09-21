@@ -62,6 +62,8 @@ import com.chorestar.app.ui.settings.RewardsSettingsScreen
 import com.chorestar.app.data.ChoreStarRepository
 import com.chorestar.app.ui.DashboardViewModel
 import com.chorestar.app.ui.chores.ChoreEditorScreen
+import com.chorestar.app.ui.chores.ChoreWizardScreen
+import com.chorestar.app.ui.onboarding.OnboardingScreen
 import com.chorestar.app.ui.chores.ChoresScreen
 import com.chorestar.app.ui.components.LocalAvatarPhotoUrls
 import com.chorestar.app.ui.components.UpgradePrompt
@@ -91,6 +93,8 @@ object Routes {
     const val CHILD_DETAIL = "child/{childId}"
     const val CHORE_NEW = "chore/new?childId={childId}"
     const val CHORE_EDIT = "chore/edit/{choreId}"
+    const val CHORE_WIZARD = "chore/wizard?childId={childId}"
+    fun choreWizard(childId: String?) = "chore/wizard" + (childId?.let { "?childId=$it" } ?: "")
     fun childEdit(id: String) = "child/edit/$id"
     fun childDetail(id: String) = "child/$id"
     fun choreNew(childId: String?) = "chore/new" + (childId?.let { "?childId=$it" } ?: "")
@@ -146,10 +150,16 @@ fun MainTabs(repository: ChoreStarRepository) {
     // A tapped activity alert (or the /dashboard App Link) lands on Home, where the tray shows what needs a parent.
     val pendingLink by app.pendingLink.collectAsStateWithLifecycle()
     var inviteCode by remember { mutableStateOf<String?>(null) }
+    var onboardingDismissed by remember { mutableStateOf(false) }
+    var onboardingForced by remember { mutableStateOf(false) }
+    var goToFamilyAfterTour by remember { mutableStateOf(false) }
     LaunchedEffect(pendingLink) {
         val link = pendingLink ?: return@LaunchedEffect
         if (com.chorestar.app.BuildConfig.DEBUG) android.util.Log.d("Links", "MainTabs sees $link")
-        if (link.startsWith("/dashboard")) {
+        if (link.startsWith("/onboarding")) {
+            app.pendingLink.value = null
+            onboardingForced = true
+        } else if (link.startsWith("/dashboard")) {
             app.pendingLink.value = null
             if (state.kidModeChildId == null) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
             vm.refresh()
@@ -168,6 +178,18 @@ fun MainTabs(repository: ChoreStarRepository) {
             vm.refresh()
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch { snackbar.showSnackbar(context.getString(R.string.invite_joined, name)) }
         })
+    }
+
+    // First run for a brand-new family (no children yet): the five-page tour, once per account. /onboarding replays it.
+    val uid = state.effectiveUserId
+    val showOnboarding = onboardingForced || (!onboardingDismissed && !state.loading && uid != null && state.children.isEmpty() && !state.isSharedMember && !app.prefs.onboardingSeen(uid))
+    if (showOnboarding) {
+        OnboardingScreen(vm, state, onFinish = { goFamily ->
+            uid?.let { app.prefs.markOnboardingSeen(it) }
+            onboardingDismissed = true; onboardingForced = false
+            goToFamilyAfterTour = goFamily
+        })
+        return
     }
 
     // Kid mode on this phone replaces the whole parent UI until the kid signs out.
@@ -207,6 +229,13 @@ fun MainTabs(repository: ChoreStarRepository) {
                 }
             },
         ) { padding ->
+            LaunchedEffect(goToFamilyAfterTour) {
+                if (goToFamilyAfterTour) {
+                    goToFamilyAfterTour = false
+                    nav.navigate(Tab.Family.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
+                    nav.navigate(Routes.CHILD_NEW)
+                }
+            }
             NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
                 composable(Tab.Home.route) {
                     HomeScreen(vm, state, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onOpenFamily = { nav.navigate(Tab.Family.route) },
@@ -217,7 +246,7 @@ fun MainTabs(repository: ChoreStarRepository) {
                 }
                 composable(Tab.Chores.route) {
                     ChoresScreen(
-                        vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreNew(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) },
+                        vm, state, onToggleToday = vm::toggleToday, onAddChore = { nav.navigate(Routes.choreWizard(null)) }, onEditChore = { nav.navigate(Routes.choreEdit(it.id)) },
                         onBuildRoutine = { nav.navigate(Routes.routineNew(null)) }, onStarterRoutines = { nav.navigate(Routes.ROUTINES_STARTER) }, onEditRoutine = { nav.navigate(Routes.routineEdit(it.id)) },
                     )
                 }
@@ -246,7 +275,7 @@ fun MainTabs(repository: ChoreStarRepository) {
                         vm, childId = id,
                         onBack = { nav.popBackStack() },
                         onEditChild = { nav.navigate(Routes.childEdit(id)) },
-                        onAddChore = { nav.navigate(Routes.choreNew(id)) },
+                        onAddChore = { nav.navigate(Routes.choreWizard(id)) },
                         onEditChore = { nav.navigate(Routes.choreEdit(it.id)) },
                         onAchievements = { nav.navigate(Routes.achievements(id)) },
                     )
@@ -267,6 +296,9 @@ fun MainTabs(repository: ChoreStarRepository) {
                 composable(Routes.ACHIEVEMENTS, arguments = listOf(navArgument("childId") { type = NavType.StringType })) { entry ->
                     val id = entry.arguments?.getString("childId") ?: return@composable
                     AchievementsScreen(childName = state.child(id)?.name ?: "", progress = state.achievementProgress(id), onBack = { nav.popBackStack() })
+                }
+                composable(Routes.CHORE_WIZARD, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true })) { entry ->
+                    ChoreWizardScreen(vm, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() })
                 }
                 composable(Routes.CHORE_NEW, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
                     ChoreEditorScreen(vm, chore = null, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() })

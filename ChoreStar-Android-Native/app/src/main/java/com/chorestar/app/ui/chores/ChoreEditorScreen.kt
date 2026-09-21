@@ -78,8 +78,8 @@ import com.chorestar.app.ui.family.Section
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 
-private val PRESET_CENTS = listOf(10, 25, 50, 100, 200, 500)
-private const val MAX_CENTS = 10_000
+internal val PRESET_CENTS = listOf(10, 25, 50, 100, 200, 500)
+internal const val MAX_CENTS = 10_000
 
 /** Add (chore == null) or edit a chore. Mirrors iOS AddEditChoreView. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
