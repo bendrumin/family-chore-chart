@@ -1,0 +1,3 @@
+First release on Google Play.
+
+ChoreStar is a chore chart your kids can run themselves: chores with rewards, step-by-step routines with timers, and a kid login that needs only a family code and a PIN.

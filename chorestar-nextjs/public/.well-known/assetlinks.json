@@ -1,11 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.chorestar.family",
       "sha256_cert_fingerprints": [
-        "7D:B1:BD:C3:AE:32:A2:C5:5D:3B:22:40:41:E7:87:38:E9:73:BF:A9:DE:C1:26:A0:E3:46:E9:3F:32:20:9F:DE"
+        "7D:B1:BD:C3:AE:32:A2:C5:5D:3B:22:40:41:E7:87:38:E9:73:BF:A9:DE:C1:26:A0:E3:46:E9:3F:32:20:9F:DE",
+        "EF:A0:9B:A6:29:07:10:08:D9:8B:45:89:3D:B8:FF:46:B2:A7:D6:F1:CC:19:93:D7:9B:38:E6:B1:4D:F7:00:C4"
       ]
     }
   }

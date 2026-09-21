@@ -182,3 +182,38 @@ What the rename touches:
    `scripts/play-prices.mjs` both read
 5. Launcher shortcut `targetPackage` attributes and the store-listing copy that
    names the package
+
+## App content: what the API can fill, and what it cannot
+
+The Console's App content checklist has 13 items. Only one has an API.
+
+| Item | API | Answer |
+|---|---|---|
+| Set privacy policy | no | `https://chorestar.app/privacy` |
+| Sign in details (app access) | no | Not all functionality is public. Demo login from `ChoreStar-iOS/fastlane/metadata/review_information`, plus kid code `demo2026` and Emma's PIN `1234` |
+| Ads | no | No ads, no ad SDKs |
+| Content rating | no | Category Utility/productivity. No to violence, sexual content, language, controlled substances, gambling. Users communicate only inside their own family, no public sharing, no user content visible to others. No location sharing. Digital purchases: **yes** |
+| Target audience | no | **18 and over**. Do NOT opt into Designed for Families: kids use the app under a parent's account |
+| Data safety | **yes**, `applications.dataSafety` | Takes the Console's own CSV. Export the template from Data safety, Export to CSV, and the answers below can be filled in and posted by API |
+| Government apps | no | No |
+| Financial features | no | None. ChoreStar never moves real money and issues no cards; allowance is a number the parent types |
+| Health | no | No |
+| News | no | No |
+| COVID-19 contact tracing | no | No |
+| Data collection (advertising ID) | no | Not used |
+| Store listing / graphics | yes, `edits.listings` and `edits.images` | Already pushed in en-US, es-419, pt-BR and ar |
+
+The Data safety answers to enter are in the table further up this document.
+
+## App signing certificate
+
+The Play app-signing SHA-256 does not need a Console visit: it comes back from
+`applications/{pkg}/generatedApks/{versionCode}` as `certificateSha256Hash`
+once a bundle has been uploaded. For `com.chorestar.family` it is
+
+```
+EF:A0:9B:A6:29:07:10:08:D9:8B:45:89:3D:B8:FF:46:B2:A7:D6:F1:CC:19:93:D7:9B:38:E6:B1:4D:F7:00:C4
+```
+
+and it is already in `chorestar-nextjs/public/.well-known/assetlinks.json`
+alongside the upload key, so App Links verify for Play installs.

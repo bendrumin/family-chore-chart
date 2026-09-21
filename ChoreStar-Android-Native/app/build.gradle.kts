@@ -71,8 +71,10 @@ android {
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).
-        versionCode = 3
-        versionName = "2.2.3"
+        versionCode = 4
+        // ChoreStar's FIRST Android release. 2.x is the iOS train's numbering and
+        // does not belong on Play; versionCode keeps rising independently.
+        versionName = "1.0"
 
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseValue("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseValue("SUPABASE_ANON_KEY")}\"")
