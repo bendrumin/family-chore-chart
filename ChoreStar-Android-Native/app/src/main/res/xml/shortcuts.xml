@@ -13,7 +13,7 @@
         android:shortcutLongLabel="@string/shortcut_kid_long">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.chorestar.app"
+            android:targetPackage="com.chorestar.family"
             android:targetClass="com.chorestar.app.MainActivity"
             android:data="https://chorestar.app/kid-login"/>
         <categories android:name="android.shortcut.conversation"/>
@@ -26,7 +26,7 @@
         android:shortcutLongLabel="@string/shortcut_today_long">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.chorestar.app"
+            android:targetPackage="com.chorestar.family"
             android:targetClass="com.chorestar.app.MainActivity"
             android:data="https://chorestar.app/dashboard"/>
         <categories android:name="android.shortcut.conversation"/>

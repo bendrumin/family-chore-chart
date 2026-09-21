@@ -23,6 +23,8 @@
 // subscribers: that is a separate basePlans.batchMigratePrices call, which
 // this script deliberately does not make.
 import crypto from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 
 const PKG = process.env.GOOGLE_PLAY_PACKAGE_NAME || 'com.chorestar.app';
 const BASE = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PKG}`;
@@ -32,8 +34,12 @@ const MONTHLY = 'chorestar_premium_monthly';
 const YEARLY = 'chorestar_premium_yearly';
 
 function serviceAccount() {
-  const raw = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error('GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not set (run with node --env-file=.env.local)');
+  // Either the env var Vercel holds, or a path to the key file Google hands you
+  // (GOOGLE_PLAY_SERVICE_ACCOUNT_FILE=~/Downloads/xxx.json), so the key never
+  // has to be pasted anywhere.
+  const file = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_FILE;
+  const raw = file ? readFileSync(file.replace(/^~/, homedir()), 'utf8') : process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
+  if (!raw) throw new Error('set GOOGLE_PLAY_SERVICE_ACCOUNT_FILE=<path to key.json>, or GOOGLE_PLAY_SERVICE_ACCOUNT_JSON (node --env-file=.env.local)');
   const text = raw.trim().startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8');
   const sa = JSON.parse(text);
   if (!sa.client_email || !sa.private_key) throw new Error('service account JSON lacks client_email or private_key');

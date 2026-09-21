@@ -62,9 +62,12 @@ android {
     }
 
     defaultConfig {
-        // Same applicationId as the Capacitor shell, so this build replaces it
-        // on a device and, later, on Google Play.
-        applicationId = "com.chorestar.app"
+        // com.chorestar.app is taken on Google Play by an unrelated live app
+        // (docs/PLAY-LISTING.md), so the store identity is com.chorestar.family.
+        // The Kotlin package stays com.chorestar.app; only this moves. Note the
+        // Capacitor shell still declares com.chorestar.app, so both can sit on
+        // one device side by side: uninstall the shell when testing.
+        applicationId = "com.chorestar.family"
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).

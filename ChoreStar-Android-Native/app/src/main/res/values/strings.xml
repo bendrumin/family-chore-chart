@@ -314,7 +314,7 @@
     <string name="about">@string/about_6b21f</string>
     <string name="rate_chorestar">@string/rate_chorestar_b8b29</string>
     <string name="share_chorestar">@string/share_chorestar_19ead</string>
-    <string name="share_message">We use ChoreStar for chores and routines with the kids. Free on Google Play. https://play.google.com/store/apps/details?id=com.chorestar.app</string>
+    <string name="share_message">We use ChoreStar for chores and routines with the kids. Free on Google Play. https://play.google.com/store/apps/details?id=com.chorestar.family</string>
     <string name="chore_icons_by_openmoji">@string/chore_icons_by_openmoji_fd00f</string>
     <string name="about_footer">Ratings and reviews are how other families find ChoreStar.</string>
     <string name="current_password">@string/current_password_4d596</string>
