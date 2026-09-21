@@ -630,15 +630,15 @@ struct ThemeGalleryView: View {
                     .padding(.horizontal, 20)
             }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(items) { item in
-                        themeCard(item)
-                    }
+            // A wrapping grid (two columns on iPhone, more on iPad): every theme
+            // is visible at once, and nothing scrolls sideways inside the list.
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 14) {
+                ForEach(items) { item in
+                    themeCard(item)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 4)
             }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 4)
         }
     }
 
@@ -785,7 +785,8 @@ private struct ThemePreviewCard: View {
                 .background(.thinMaterial, in: Circle())
                 .padding(8)
         }
-        .frame(width: 172, height: 126)
+        .frame(maxWidth: .infinity)
+        .aspectRatio(172.0 / 126.0, contentMode: .fit)
     }
 }
 

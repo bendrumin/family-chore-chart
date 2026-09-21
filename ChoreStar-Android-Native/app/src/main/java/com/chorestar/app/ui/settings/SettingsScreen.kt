@@ -316,10 +316,12 @@ private val ACCENT_SWATCHES = listOf("#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
 @Composable
 private fun ThemeGallery(theme: ThemePreference, isPremium: Boolean, onSelect: (String, Boolean) -> Unit) {
     val selection = theme.selection
+    // A wrapping grid, three to a row: every theme visible at once, nothing scrolls sideways inside the list.
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            item { ThemeCard(stringResource(R.string.theme_auto), "✨", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "auto", locked = false) { onSelect("auto", false) } }
-            item { ThemeCard(stringResource(R.string.theme_classic), "⭐", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "none", locked = false) { onSelect("none", false) } }
+        GalleryGrid(null) {
+            ThemeCard(stringResource(R.string.theme_auto), "✨", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "auto", locked = false, modifier = Modifier.weight(1f)) { onSelect("auto", false) }
+            ThemeCard(stringResource(R.string.theme_classic), "⭐", listOf(com.chorestar.app.ui.theme.Indigo500, com.chorestar.app.ui.theme.Violet500), selected = selection == "none", locked = false, modifier = Modifier.weight(1f)) { onSelect("none", false) }
+            Spacer(Modifier.weight(1f))
         }
         GalleryRow(stringResource(R.string.theme_holidays), SeasonalThemes.holidays, selection, false, onSelect)
         GalleryRow(stringResource(R.string.theme_seasons), SeasonalThemes.seasons, selection, false, onSelect)
@@ -327,21 +329,32 @@ private fun ThemeGallery(theme: ThemePreference, isPremium: Boolean, onSelect: (
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun GalleryGrid(title: String?, content: @Composable androidx.compose.foundation.layout.FlowRowScope.() -> Unit) {
+    title?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+    androidx.compose.foundation.layout.FlowRow(
+        Modifier.fillMaxWidth(), maxItemsInEachRow = 3,
+        horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content,
+    )
+}
+
 @Composable
 private fun GalleryRow(title: String, themes: List<SeasonalTheme>, selection: String, locked: Boolean, onSelect: (String, Boolean) -> Unit) {
-    Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(themes, key = { it.id }) { t ->
-            ThemeCard(t.name, t.emoji, listOf(Color(t.primary), Color(t.secondary)), selected = selection.equals(t.id, true), locked = locked) { onSelect(t.id, locked) }
+    GalleryGrid(title) {
+        themes.forEach { t ->
+            ThemeCard(t.name, t.emoji, listOf(Color(t.primary), Color(t.secondary)), selected = selection.equals(t.id, true), locked = locked, modifier = Modifier.weight(1f)) { onSelect(t.id, locked) }
         }
+        // Pad the last row so its cards keep the same width as the rows above.
+        repeat((3 - themes.size % 3) % 3) { Spacer(Modifier.weight(1f)) }
     }
 }
 
 @Composable
-private fun ThemeCard(name: String, emoji: String, colors: List<Color>, selected: Boolean, locked: Boolean, onTap: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(96.dp).clickable(onClick = onTap)) {
+private fun ThemeCard(name: String, emoji: String, colors: List<Color>, selected: Boolean, locked: Boolean, modifier: Modifier = Modifier, onTap: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.clickable(onClick = onTap)) {
         Box(
-            Modifier.size(width = 96.dp, height = 64.dp).clip(RoundedCornerShape(14.dp)).background(Brush.linearGradient(colors))
+            Modifier.fillMaxWidth().height(64.dp).clip(RoundedCornerShape(14.dp)).background(Brush.linearGradient(colors))
                 .border(3.dp, if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent, RoundedCornerShape(14.dp)),
         ) {
             Text(emoji, modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp))
