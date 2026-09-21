@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
+import { getParentUserId } from '@/lib/utils/parent-auth'
 
-// POST /api/family/accept — accept a family invite
+// POST /api/family/accept — accept a family invite.
+// Auth: the web's session cookie, or `Authorization: Bearer <access token>`
+// from the native apps (an invite link tapped on Android opens the app).
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
+    const userId = await getParentUserId(request)
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -45,12 +46,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invite has expired' }, { status: 410 })
     }
 
-    if (invite.family_id === user.id) {
+    if (invite.family_id === userId) {
       return NextResponse.json({ error: 'You cannot join your own family' }, { status: 400 })
     }
 
     // Verify the accepting user's email matches the invite
-    if (user.email?.toLowerCase() !== invite.invited_email?.toLowerCase()) {
+    const { data: authUser } = await admin.auth.admin.getUserById(userId)
+    const userEmail = authUser?.user?.email
+    if (userEmail?.toLowerCase() !== invite.invited_email?.toLowerCase()) {
       return NextResponse.json(
         { error: 'This invite was sent to a different email address' },
         { status: 403 }
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
     const { error: memberError } = await (admin as any)
       .from('family_members')
       .upsert(
-        { user_id: user.id, family_id: invite.family_id },
+        { user_id: userId, family_id: invite.family_id },
         { onConflict: 'user_id,family_id' }
       )
 
@@ -71,7 +74,7 @@ export async function POST(request: Request) {
 
     await (admin as any)
       .from('family_invites')
-      .update({ status: 'accepted', accepted_by: user.id })
+      .update({ status: 'accepted', accepted_by: userId })
       .eq('id', invite.id)
 
     return NextResponse.json({ success: true })
