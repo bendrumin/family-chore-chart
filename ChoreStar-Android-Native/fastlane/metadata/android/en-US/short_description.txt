@@ -1,0 +1,1 @@
+Chore chart and allowance tracker. Kids sign in with a family code and PIN.

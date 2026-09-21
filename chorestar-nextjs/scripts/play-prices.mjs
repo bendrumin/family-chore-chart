@@ -26,7 +26,7 @@ import crypto from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 
-const PKG = process.env.GOOGLE_PLAY_PACKAGE_NAME || 'com.chorestar.app';
+const PKG = process.env.GOOGLE_PLAY_PACKAGE_NAME || 'com.chorestar.family';
 const BASE = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${PKG}`;
 // The published region catalogue a regional write is validated against.
 const REGIONS_VERSION = process.env.PLAY_REGIONS_VERSION || '2022/02';
@@ -202,14 +202,92 @@ async function planOrApply(write, filter) {
   if (!write) console.log('\ndry run: nothing written. Re-run with "apply" to write.');
 }
 
+
+/**
+ * Create the two subscriptions the app queries, priced the way Apple is: start
+ * from Google's own conversion of the USD price for every region it offers,
+ * then override the regions where we sell at a purchasing-power price. An
+ * override is skipped when our currency disagrees with the region's own, so a
+ * PPP number can never land in the wrong currency.
+ */
+const USD = { monthly: 4.99, yearly: 49.99 };
+const LISTING = {
+  languageCode: 'en-US',
+  title: 'ChoreStar Premium',
+  benefits: ['Unlimited kids and chores', 'Reward store and goals', 'Premium themes', 'Support an indie family app'],
+};
+
+async function regionPrices(amount) {
+  const out = await api('POST', `${BASE}/pricing:convertRegionPrices`, { price: toMoney('USD', amount) });
+  const rows = [];
+  for (const [regionCode, v] of Object.entries(out.convertedRegionPrices ?? {})) {
+    if (v?.price) rows.push({ regionCode, price: v.price });
+  }
+  return rows;
+}
+
+function withOverrides(rows, key, log) {
+  let applied = 0, skipped = 0;
+  for (const row of rows) {
+    const ppp = PPP.find((p) => p.region === row.regionCode);
+    if (!ppp) continue;
+    const amount = ppp[key];
+    if (row.price.currencyCode !== ppp.currency) {
+      skipped += 1;
+      log.push(`  ${row.regionCode}: keeping Google's ${fmt(row.price)} (our PPP is ${amount} ${ppp.currency}, region bills ${row.price.currencyCode})`);
+      continue;
+    }
+    log.push(`  ${row.regionCode}: ${fmt(row.price)} -> ${amount} ${ppp.currency} (PPP)`);
+    row.price = toMoney(ppp.currency, amount);
+    applied += 1;
+  }
+  return { applied, skipped };
+}
+
+async function createProducts(write) {
+  const existing = await api('GET', '/subscriptions', undefined, { pageSize: '50' });
+  const have = new Set((existing.subscriptions ?? []).map((s) => s.productId));
+  for (const [key, productId, period] of [['monthly', MONTHLY, 'P1M'], ['yearly', YEARLY, 'P1Y']]) {
+    if (have.has(productId)) { console.log(`${productId}: already exists, leaving it alone`); continue; }
+    const rows = await regionPrices(USD[key]);
+    const log = [];
+    const { applied, skipped } = withOverrides(rows, key, log);
+    const us = rows.find((r) => r.regionCode === 'US');
+    console.log(`\n${productId}  ${period}  base ${USD[key].toFixed(2)} USD`);
+    console.log(`  regions from Google: ${rows.length}${us ? `, US ${fmt(us.price)}` : ''}`);
+    console.log(`  PPP overrides applied ${applied}, skipped on currency mismatch ${skipped}`);
+    for (const line of log) console.log(line);
+    if (!write) continue;
+    const body = {
+      packageName: PKG,
+      productId,
+      listings: [LISTING],
+      basePlans: [{
+        basePlanId: key,
+        autoRenewingBasePlanType: { billingPeriodDuration: period, gracePeriodDuration: 'P7D', resubscribeState: 'RESUBSCRIBE_STATE_ACTIVE' },
+        regionalConfigs: rows.map((r) => ({ regionCode: r.regionCode, newSubscriberAvailability: true, price: r.price })),
+      }],
+    };
+    await api('POST', '/subscriptions', body, { productId, 'regionsVersion.version': REGIONS_VERSION });
+    console.log(`  created ${productId}`);
+    await api('POST', `/subscriptions/${productId}/basePlans/${key}:activate`, { packageName: PKG, productId, basePlanId: key }, {
+      'regionsVersion.version': REGIONS_VERSION,
+    });
+    console.log(`  activated base plan ${key}`);
+  }
+  if (!write) console.log('\ndry run: nothing created. Re-run with "create" to write.');
+}
+
 const [cmd, arg] = process.argv.slice(2);
 try {
   if (cmd === 'show') await show();
+  else if (cmd === 'create') await createProducts(true);
+  else if (cmd === 'create-plan') await createProducts(false);
   else if (cmd === 'convert') await convert(arg ?? '4.99');
   else if (cmd === 'apply') await planOrApply(true, arg);
   else if (cmd === 'plan' || cmd === undefined) await planOrApply(false, arg);
   else {
-    console.log('usage: play-prices.mjs [show | convert <usd> | plan [filter] | apply [filter]]');
+    console.log('usage: play-prices.mjs [show | convert <usd> | create-plan | create | plan [filter] | apply [filter]]');
     process.exit(1);
   }
 } catch (err) {
