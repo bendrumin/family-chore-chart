@@ -200,7 +200,7 @@ The Console's App content checklist has 13 items. Only one has an API.
 | Health | no | No |
 | News | no | No |
 | COVID-19 contact tracing | no | No |
-| Data collection (advertising ID) | no | Not used |
+| Advertising ID | no | **No, the app does not use advertising ID.** Verified in the merged release manifest and inside the bundle: `com.google.android.gms.permission.AD_ID` appears nowhere, and no ad or analytics SDK is linked |
 | Store listing / graphics | yes, `edits.listings` and `edits.images` | Already pushed in en-US, es-419, pt-BR and ar |
 
 The Data safety answers to enter are in the table further up this document.
@@ -243,3 +243,22 @@ entries. The parent dashboard needs an account; kid mode does not.
 
 Both entries describe the same demo family, which is the one the App Store
 review team uses, so the two stores stay in step.
+
+## Permissions the release bundle declares
+
+Useful when a form or a reviewer asks. The merged manifest for
+`com.chorestar.family` requests exactly these, and nothing else:
+
+| Permission | Why |
+|---|---|
+| `android.permission.INTERNET` | Supabase and the chorestar.app API |
+| `android.permission.ACCESS_NETWORK_STATE` | Firebase Messaging checks connectivity |
+| `android.permission.POST_NOTIFICATIONS` | Activity alerts and the daily reminder |
+| `android.permission.RECEIVE_BOOT_COMPLETED` | Re-arms the daily reminder after a restart |
+| `android.permission.VIBRATE` | Haptics on a completed chore |
+| `android.permission.WAKE_LOCK` | Firebase Messaging, while handling a push |
+| `android.permission.FOREGROUND_SERVICE` | Firebase Messaging |
+| `com.google.android.c2dm.permission.RECEIVE` | Firebase Messaging |
+
+No advertising ID, no location, no contacts, no camera permission (photos come
+back through the system picker), no ad or analytics SDK.
