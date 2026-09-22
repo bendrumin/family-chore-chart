@@ -8,6 +8,13 @@ export const APP_STORE_REVIEW_URL = 'https://apps.apple.com/app/id6761279049?act
 /** Where someone asks for a spot in the Android test. */
 export const ANDROID_BETA_URL = '/android-beta'
 
+/**
+ * The Play listing. It 404s for the public until the app is published to
+ * production or open testing, so nothing links to it yet; swap it into
+ * AndroidBetaBadge on launch day.
+ */
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.chorestar.family'
+
 const BASE =
   'inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-sm font-semibold ' +
   'transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 ' +

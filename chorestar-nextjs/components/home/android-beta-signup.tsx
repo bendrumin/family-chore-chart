@@ -53,7 +53,26 @@ export function AndroidBetaSignup({ compact = false }: { compact?: boolean }) {
         <p className="font-bold text-gray-900 dark:text-white text-lg">
           {status === 'already' ? "You're already on the list" : "You're on the list"}
         </p>
-        {GROUP_URL ? (
+        {!GROUP_URL && OPT_IN_URL ? (
+          <div className="text-sm text-gray-600 dark:text-gray-300 max-w-sm space-y-3">
+            <p>
+              We&apos;ll add your address to the test and email you when it&apos;s ready, usually
+              within a day. Then open the tester page and tap Become a tester.
+            </p>
+            <a
+              href={OPT_IN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              Open the tester page
+            </a>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Until we&apos;ve added you, that page says the app isn&apos;t available. That&apos;s
+              Play checking the list, not a broken link.
+            </p>
+          </div>
+        ) : GROUP_URL ? (
           <div className="text-sm text-gray-600 dark:text-gray-300 max-w-sm space-y-3">
             <p>Two more steps and the app is yours:</p>
             <ol className="text-left space-y-2 list-decimal list-inside">
