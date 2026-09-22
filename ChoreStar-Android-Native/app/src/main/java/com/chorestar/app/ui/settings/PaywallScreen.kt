@@ -2,6 +2,7 @@ package com.chorestar.app.ui.settings
 
 import android.app.Activity
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -93,7 +94,19 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
                                 Column(Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(stringResource(if (yearly) R.string.plan_annual else R.string.plan_monthly), style = MaterialTheme.typography.titleMedium)
-                                        if (yearly) { Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.best_value), style = MaterialTheme.typography.labelSmall, color = Color.White, modifier = Modifier.padding(0.dp).then(Modifier).let { it }.padding(horizontal = 0.dp)) }
+                                        // White on its own was invisible against the light card; the badge carries its own fill.
+                                        if (yearly) {
+                                            Spacer(Modifier.width(8.dp))
+                                            Text(
+                                                stringResource(R.string.best_value),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier
+                                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                                                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                                            )
+                                        }
                                     }
                                     Text(stringResource(if (yearly) R.string.billed_yearly else R.string.billed_monthly), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }

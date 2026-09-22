@@ -262,3 +262,32 @@ Useful when a form or a reviewer asks. The merged manifest for
 
 No advertising ID, no location, no contacts, no camera permission (photos come
 back through the system picker), no ad or analytics SDK.
+
+## Real-time developer notifications (subscription lifecycle)
+
+Without this, Google never tells the server that a subscription renewed,
+lapsed or was cancelled, so an Android subscriber keeps Premium forever.
+`app/api/google/notifications/route.ts` is the receiver; it re-checks every
+message against `purchases.subscriptionsv2.get` rather than trusting the
+notification type.
+
+Built 2026-09-22 with the Play service account (it turned out to hold enough
+rights in GCP project `chorestar` to enable the API and create all of this):
+
+| Piece | Value |
+|---|---|
+| Topic | `projects/chorestar/topics/play-rtdn` |
+| Publisher granted | `google-play-developer-notifications@system.gserviceaccount.com` -> `roles/pubsub.publisher` |
+| Push subscription | `projects/chorestar/subscriptions/play-rtdn-push` |
+| Push endpoint | `https://chorestar.app/api/google/notifications?token=<GOOGLE_PUBSUB_PUSH_TOKEN>` |
+
+**Ben's one step (Console only, no API for it):** Play Console > Monetize >
+Monetization setup > Real-time developer notifications > paste the topic name
+above, save, then press **Send test notification**. A `TEST` row should land in
+`google_notifications` within seconds.
+
+Note the handler deliberately refuses to grant Premium for licence-test
+purchases in production unless `GOOGLE_PLAY_HONOR_TEST_PURCHASES=1`, so a test
+subscription's renewals are logged as `test-purchase-logged` and change no
+tiers. `/api/google/verify` has no such guard, so the first purchase of a
+licence test does flip the buyer to Premium.
