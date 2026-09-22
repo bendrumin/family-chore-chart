@@ -64,6 +64,12 @@ fun AppRoot(repository: ChoreStarRepository) {
         }
     }
 
+    // Play cancels a subscription the app never acknowledged, so every signed-in
+    // start re-verifies what Play is still holding for this account.
+    androidx.compose.runtime.LaunchedEffect(status) {
+        if (status is SessionStatus.Authenticated) app.billing.syncPurchases()
+    }
+
     fun endKidSession() { kidSession = null; app.prefs.kidSessionJson = null; app.theme.value = ThemePreference(false, null, null) }
 
     kidSession?.let { session ->

@@ -115,7 +115,23 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
         }
     }
 
-    private fun handle(purchase: Purchase) {
+    /**
+     * Reconciles quietly whenever a signed-in session starts. Play holds on to a
+     * purchase the app never acknowledged and cancels it (three days for a real
+     * subscription, minutes for a licence test), so a verify that failed at buy
+     * time - server down, no session yet, app killed mid-flow - gets another try
+     * here instead of silently expiring.
+     */
+    fun syncPurchases() {
+        scope.launch {
+            if (!connect()) return@launch
+            val result = runCatching { client.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()) }.getOrNull()
+            result?.purchasesList.orEmpty().forEach { handle(it, silent = true) }
+        }
+    }
+
+    /** [silent] keeps a background sync from surfacing its failures on whatever screen is open. */
+    private fun handle(purchase: Purchase, silent: Boolean = false) {
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
         scope.launch {
             verify(purchase.purchaseToken, purchase.products.firstOrNull())
@@ -124,9 +140,11 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
                     if (!purchase.isAcknowledged) runCatching {
                         client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()) { }
                     }
-                    _events.value = Event.Purchased(tier)
+                    // A steady-state sync of an already-acknowledged purchase has no news;
+                    // anything else means the entitlement just changed, so the UI should hear it.
+                    if (!silent || !purchase.isAcknowledged) _events.value = Event.Purchased(tier)
                 }
-                .onFailure { e -> _events.value = Event.Failed(e.message ?: "Verification failed") }
+                .onFailure { e -> if (!silent) _events.value = Event.Failed(e.message ?: "Verification failed") }
         }
     }
 }
