@@ -122,6 +122,41 @@ async function queries(days = '28', page) {
   }
 }
 
+/**
+ * Inspects every URL in the live sitemap and reports the ones Google has not
+ * indexed, which is the list worth spending manual "Request indexing" clicks
+ * on. Serial with a small pause: the inspection quota is 2000/day and 600/min,
+ * and a burst gets throttled rather than answered.
+ */
+async function audit() {
+  const xml = await (await fetch(`${BASE}/sitemap.xml`)).text();
+  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  console.log(`inspecting ${urls.length} urls from the sitemap\n`);
+  const bad = [];
+  for (const url of urls) {
+    let i = {};
+    try {
+      const { inspectionResult } = await call('POST', 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
+        inspectionUrl: url, siteUrl: SITE,
+      });
+      i = inspectionResult?.indexStatusResult ?? {};
+    } catch (err) {
+      console.log(`?? ${url}  (${err.message.split('\n')[0]})`);
+      continue;
+    }
+    const indexed = i.verdict === 'PASS';
+    const path = url.replace(BASE, '') || '/';
+    console.log(`${indexed ? 'ok  ' : 'MISS'} ${path.padEnd(42)} ${i.coverageState ?? '-'}`);
+    if (!indexed) bad.push({ path, coverage: i.coverageState ?? '-', crawled: i.lastCrawlTime });
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  console.log(`\n${urls.length - bad.length}/${urls.length} indexed`);
+  if (bad.length) {
+    console.log('\nrequest indexing for these:');
+    for (const b of bad) console.log(`  ${BASE}${b.path}   (${b.coverage}${b.crawled ? `, last crawl ${b.crawled.slice(0, 10)}` : ', never crawled'})`);
+  }
+}
+
 const [cmd = 'inspect', a, b] = process.argv.slice(2);
 try {
   if (cmd === 'sites') await sites();
@@ -129,6 +164,7 @@ try {
   else if (cmd === 'submit-sitemap') await submitSitemap();
   else if (cmd === 'inspect') await inspect(a);
   else if (cmd === 'queries') await queries(a, b);
+  else if (cmd === 'audit') await audit();
   else {
     console.log('usage: gsc.mjs [sites | sitemaps | submit-sitemap | inspect [url] | queries [days] [page]]');
     process.exit(1);
