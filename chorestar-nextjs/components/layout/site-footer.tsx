@@ -91,6 +91,15 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+
+                <Link href="/delete-account" className="text-sm hover:text-white transition-colors">
+
+                  Delete Account
+
+                </Link>
+
+              </li>
+              <li>
                 <Link href="/terms" className="text-sm hover:text-white transition-colors">
                   Terms of Use
                 </Link>
