@@ -4,7 +4,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { AppStoreBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
+import { AppStoreBadge, AndroidBetaBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { UpgradePriceLabel } from '@/components/payment/upgrade-price-label'
 import { HideOnAndroidShell } from '@/components/payment/hide-on-android-shell'
 import {
@@ -97,15 +97,16 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
           <div className="flex items-start gap-4">
             <div className="text-4xl shrink-0">🎉</div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">ChoreStar for iPhone &amp; iPad is live!</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Get ChoreStar on your phone</h2>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                The native app is on the App Store, including home screen widgets, kid mode with PIN
-                login, routine timers in the Dynamic Island, and seasonal themes. It syncs
-                instantly with everything you do here: set up chores on the web, kids check
-                them off on the iPad.
+                The native iPhone and iPad app is on the App Store, including home screen widgets,
+                kid mode with PIN login, routine timers in the Dynamic Island, and seasonal themes.
+                The Android app is in beta and you can ask for a spot. Both sync instantly with
+                everything you do here: set up chores on the web, kids check them off on the iPad.
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <AppStoreBadge />
+                <AndroidBetaBadge />
                 <Link
                   href="/blog/chorestar-iphone-ipad-app"
                   className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
