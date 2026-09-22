@@ -66,6 +66,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="text-sm hover:text-white transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link href="/support" className="text-sm hover:text-white transition-colors">
                   Help &amp; Support
                 </Link>
