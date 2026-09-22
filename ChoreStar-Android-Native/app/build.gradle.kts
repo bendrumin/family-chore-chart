@@ -71,7 +71,7 @@ android {
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).
-        versionCode = 5
+        versionCode = 6
         // ChoreStar's FIRST Android release. 2.x is the iOS train's numbering and
         // does not belong on Play; versionCode keeps rising independently.
         versionName = "1.0"

@@ -114,9 +114,18 @@ async function upload(track, aabPath, status) {
   const notes = releaseNotes(langs, bundle.versionCode);
   console.log(`release notes for: ${notes.map((n) => n.language).join(', ') || '(none; listing languages are ' + [...langs].join(', ') + ')'}`);
 
+  // The PUT replaces the whole track, so a draft upload has to carry the
+  // releases already there or it silently pulls them — including a build that
+  // is sitting in review. A completed release does replace the live one, which
+  // is what "completed" means, and Play allows only one of those per track.
+  const current = status === 'draft'
+    ? await api('GET', `/edits/${edit.id}/tracks/${track}`).catch(() => ({ releases: [] }))
+    : { releases: [] };
+  const kept = (current.releases ?? []).filter((r) => !(r.versionCodes ?? []).map(String).includes(String(bundle.versionCode)));
+  if (kept.length) console.log(`keeping on ${track}: ${kept.map((r) => `${r.status} [${(r.versionCodes ?? []).join(',')}]`).join(', ')}`);
   await api('PUT', `/edits/${edit.id}/tracks/${track}`, {
     track,
-    releases: [{ name: String(bundle.versionCode), versionCodes: [String(bundle.versionCode)], status, releaseNotes: notes }],
+    releases: [...kept, { name: String(bundle.versionCode), versionCodes: [String(bundle.versionCode)], status, releaseNotes: notes }],
   });
   const done = await api('POST', `/edits/${edit.id}:commit`);
   console.log(`committed edit ${done.id}: versionCode ${bundle.versionCode} is a ${status} release on ${track}`);

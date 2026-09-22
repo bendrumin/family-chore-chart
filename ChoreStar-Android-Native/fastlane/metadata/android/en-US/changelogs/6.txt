@@ -1,0 +1,3 @@
+Premium subscriptions now confirm themselves reliably, even if the app is closed part way through a purchase.
+
+The Best Value label on the plan picker is readable again in light mode.

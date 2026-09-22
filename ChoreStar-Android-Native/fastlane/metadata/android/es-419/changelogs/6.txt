@@ -1,0 +1,3 @@
+Las suscripciones Premium ahora se confirman de forma confiable, incluso si cierras la app a mitad de la compra.
+
+La etiqueta Mejor valor del selector de planes vuelve a leerse bien en modo claro.
