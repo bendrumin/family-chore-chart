@@ -1,9 +1,9 @@
 # ChoreStar
 
-> ChoreStar is a family chore chart app for the web, iPhone, and iPad. Parents
-> set up chores with reward amounts and step-by-step routines; kids sign in
-> with a family code and a 4-digit PIN (no email address needed) and check off
-> their own work. The app tracks allowance automatically, keeps streaks and
+> ChoreStar is a family chore chart app for the web, iPhone, iPad, and Android
+> (the Android app is in beta testing). Parents set up chores with reward
+> amounts and step-by-step routines; kids sign in with a family code and a
+> 4-digit PIN (no email address needed) and check off their own work. The app tracks allowance automatically, keeps streaks and
 > badges, and pays out in real money the parent hands over. It never moves
 > real money and never gives a child a debit card.
 
@@ -12,9 +12,10 @@ Key facts:
   achievement badges. Free forever, no card required.
 - Premium: $4.99/month or $49.99/year. Unlimited children and chores, family
   sharing with a co-parent, premium themes, export reports.
-- Platforms: web app at https://chorestar.app and a native iOS app for iPhone
-  and iPad (App Store: https://apps.apple.com/app/id6761279049). One account
-  syncs both.
+- Platforms: web app at https://chorestar.app, a native iOS app for iPhone and
+  iPad (App Store: https://apps.apple.com/app/id6761279049), and a native
+  Android app currently in beta testing (request a place at
+  https://chorestar.app/android-beta). One account syncs all of them.
 - Kid login uses a family code plus a per-child PIN. Children never provide an
   email address or personal information.
 - Kid mode is localized in English, Spanish, Portuguese, and Arabic.

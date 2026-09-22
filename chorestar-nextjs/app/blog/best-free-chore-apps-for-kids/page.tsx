@@ -196,7 +196,7 @@ export default function BestFreeChoreAppsPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Free Plans With Limits</h2>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              ChoreStar <span className="font-normal text-gray-500 dark:text-gray-400 text-base">(web, iPhone, iPad; ours)</span>
+              ChoreStar <span className="font-normal text-gray-500 dark:text-gray-400 text-base">(web, iPhone, iPad, Android in beta; ours)</span>
             </h3>
             <p className="text-gray-700 dark:text-gray-300">
               This is our app, so here is the same treatment. The free plan covers 3 kids

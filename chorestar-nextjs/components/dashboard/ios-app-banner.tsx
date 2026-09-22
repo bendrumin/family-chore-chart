@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { X, Smartphone } from 'lucide-react'
 import { APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
@@ -12,10 +13,10 @@ const DISMISS_KEY = 'chorestar-ios-banner-dismissed'
  * localStorage; renders nothing until mounted so SSR and client agree.
  *
  * Device-aware: iOS devices get a short "better mobile experience" pitch,
- * desktop keeps the full App Store copy, and Android sees nothing at all.
- * An iOS ad is worse than nothing on an Android phone, and absurd inside
- * the Android shell. When the Android app launches on the Play Store, a
- * Play Store banner slots in here for Android browsers.
+ * Android browsers get the beta invitation (an iOS ad was worse than nothing
+ * there, so they used to see nothing), and desktop keeps the full App Store
+ * copy. Inside the Android shell there is no banner at all, since the app is
+ * already the app.
  */
 export function IosAppBanner() {
   const [visible, setVisible] = useState(false)
@@ -26,12 +27,24 @@ export function IosAppBanner() {
     if (!localStorage.getItem(DISMISS_KEY)) setVisible(true)
   }, [])
 
-  if (!visible || androidShell || platform === 'android') return null
+  // Inside the Android app itself the banner is absurd; in an Android browser
+  // it is the best beta pitch we have, since these are already our families.
+  if (!visible || androidShell) return null
 
   return (
     <div className="mb-6 flex items-center gap-3 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white/85 dark:bg-gray-800/85 backdrop-blur px-4 py-3 shadow-sm">
       <Smartphone className="w-5 h-5 shrink-0 text-indigo-500 dark:text-indigo-400" />
-      {platform === 'ios' ? (
+      {platform === 'android' ? (
+        <p className="flex-1 min-w-0 text-sm text-gray-700 dark:text-gray-300">
+          <span className="font-semibold text-gray-900 dark:text-white">
+            The ChoreStar Android app is in beta
+          </span>{' '}
+          Same family, on your phone.{' '}
+          <Link href="/android-beta" className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap">
+            Ask for a spot →
+          </Link>
+        </p>
+      ) : platform === 'ios' ? (
         <p className="flex-1 min-w-0 text-sm text-gray-700 dark:text-gray-300">
           <span className="font-semibold text-gray-900 dark:text-white">
             Explore our iOS App for a better mobile experience
@@ -70,7 +83,7 @@ export function IosAppBanner() {
       )}
       <button
         type="button"
-        aria-label="Dismiss App Store banner"
+        aria-label="Dismiss app banner"
         onClick={() => {
           localStorage.setItem(DISMISS_KEY, '1')
           setVisible(false)
