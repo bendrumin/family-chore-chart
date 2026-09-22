@@ -211,6 +211,34 @@ async function rollout(track, versionCode) {
   console.log(`committed edit ${done.id}: versionCode ${release.versionCodes} rolled out on ${track}`);
 }
 
+/**
+ * Put a bundle that is already uploaded on another track. Play rejects a second
+ * upload of the same versionCode, so a build can only reach a second track this
+ * way. Same keep-what-is-there rule as upload(): a draft carries the track's
+ * existing releases forward, a completed release replaces the live one.
+ */
+async function promote(track, versionCode, status) {
+  if (!versionCode) throw new Error('usage: promote <track> <versionCode> [--status=completed]');
+  const edit = await api('POST', '/edits');
+  const listings = await api('GET', `/edits/${edit.id}/listings`);
+  const langs = new Set((listings.listings ?? []).map((l) => l.language));
+  const notes = releaseNotes(langs, versionCode);
+  console.log(`release notes for: ${notes.map((n) => n.language).join(', ') || '(none)'}`);
+
+  const current = status === 'draft'
+    ? await api('GET', `/edits/${edit.id}/tracks/${track}`).catch(() => ({ releases: [] }))
+    : { releases: [] };
+  const kept = (current.releases ?? []).filter((r) => !(r.versionCodes ?? []).map(String).includes(String(versionCode)));
+  if (kept.length) console.log(`keeping on ${track}: ${kept.map((r) => `${r.status} [${(r.versionCodes ?? []).join(',')}]`).join(', ')}`);
+
+  await api('PUT', `/edits/${edit.id}/tracks/${track}`, {
+    track,
+    releases: [...kept, { name: String(versionCode), versionCodes: [String(versionCode)], status, releaseNotes: notes }],
+  });
+  const done = await api('POST', `/edits/${edit.id}:commit`);
+  console.log(`committed edit ${done.id}: versionCode ${versionCode} is a ${status} release on ${track}`);
+}
+
 const [arg1, arg2, ...rest] = process.argv.slice(2);
 const status = (rest.find((a) => a.startsWith('--status=')) ?? '--status=draft').split('=')[1];
 try {
@@ -218,9 +246,10 @@ try {
   else if (arg1 === 'listing') await pushListing();
   else if (arg1 === 'images') await pushImages();
   else if (arg1 === 'rollout') await rollout(arg2 || 'internal', rest[0]);
+  else if (arg1 === 'promote') await promote(arg2, rest[0], status);
   else if (arg2) await upload(arg1, arg2.replace(/^~/, homedir()), status);
   else {
-    console.log('usage: play-release.mjs [tracks | listing | images | rollout <track> [versionCode] | <track> <aab> [--status=draft|completed]]');
+    console.log('usage: play-release.mjs [tracks | listing | images | rollout <track> [versionCode] | promote <track> <versionCode> [--status=draft|completed] | <track> <aab> [--status=draft|completed]]');
     process.exit(1);
   }
 } catch (err) {
