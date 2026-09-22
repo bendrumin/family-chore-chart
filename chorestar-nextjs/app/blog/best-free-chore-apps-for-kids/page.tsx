@@ -215,9 +215,12 @@ export default function BestFreeChoreAppsPage() {
               English, Spanish, Portuguese, and Arabic.
             </p>
             <p className="text-gray-700 dark:text-gray-300">
-              Where we lose: no native Android app yet (Android families use the web app
-              in a browser), no photo proof of completed chores, and we are newer with a
-              small fraction of Chorsee&apos;s review count. The{' '}
+              Where we lose: the native Android app is still in{' '}
+              <Link href="/android-beta" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                testing
+              </Link>{' '}
+              rather than on Google Play, no photo proof of completed chores, and we are
+              newer with a small fraction of Chorsee&apos;s review count. The{' '}
               <Link href="/compare" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                 compare pages
               </Link>{' '}

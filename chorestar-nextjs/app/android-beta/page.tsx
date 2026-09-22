@@ -10,9 +10,11 @@ import { AndroidBetaSignup } from '@/components/home/android-beta-signup'
  * page's job is to collect that address and set expectations about the wait.
  */
 export const metadata: Metadata = {
-  title: 'Join the ChoreStar Android Beta',
+  // Titled for the query people actually type ("chore app for android"), not
+  // just the brand, since nobody searches for a beta by name.
+  title: 'ChoreStar for Android: Join the Beta',
   description:
-    'Get early access to the native ChoreStar app for Android: chores, routines, kid login with a PIN, and allowance tracking, on your phone.',
+    'Early access to the native ChoreStar chore chart app for Android: chores with rewards, routines with timers, kid login with a PIN, and allowance tracking. Free while it is in testing.',
   openGraph: {
     title: 'Join the ChoreStar Android Beta | ChoreStar',
     description: 'Early access to the native ChoreStar Android app, free while it is in testing.',
@@ -29,9 +31,29 @@ const FEATURES = [
   ['🎨', 'Your colours', 'Every theme and accent from the web app, matched to Android light and dark mode.'],
 ]
 
+/**
+ * Search engines get the same answer the page gives: a free Android app for
+ * families, currently in testing. operatingSystem is what makes this show up
+ * for "android" rather than the generic web-app entry on the homepage.
+ */
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'ChoreStar for Android',
+  applicationCategory: 'LifestyleApplication',
+  operatingSystem: 'Android 8.0 or later',
+  description:
+    'Native Android app for family chore charts: chores with rewards, step-by-step routines with timers, kid login with a PIN, and allowance tracking. Currently in closed testing.',
+  url: 'https://chorestar.app/android-beta',
+  softwareVersion: 'Beta',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  publisher: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
+}
+
 export default function AndroidBetaPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteNav />
       <main className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
         <div className="text-center mb-10">
