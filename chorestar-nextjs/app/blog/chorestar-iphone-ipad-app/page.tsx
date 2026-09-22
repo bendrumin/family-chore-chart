@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
-import { AppStoreBadge, APP_STORE_URL } from '@/components/home/app-store-badge'
+import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL } from '@/components/home/app-store-badge'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -48,7 +48,7 @@ const articleJsonLd = {
     'ChoreStar is now on the App Store. PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
   url: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',
   datePublished: '2026-08-17',
-  dateModified: '2026-08-17',
+  dateModified: '2026-09-22',
   author: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
   publisher: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
 }
@@ -130,7 +130,12 @@ export default function ChoreStarIosAppPage() {
               chores from your laptop during lunch; the kids see them on the iPad immediately. A kid
               checks off &ldquo;feed the dog&rdquo; on the iPhone; your dashboard updates on the web.
               No export, no sync button, no &ldquo;premium sync&rdquo; upsell. It&apos;s just one
-              account everywhere, including any browser on a school Chromebook.
+              account everywhere, including any browser on a school Chromebook. Android now joins
+              the same account as well: the native Android app is{' '}
+              <Link href="/android-beta" className="text-indigo-600 dark:text-indigo-400 underline">
+                in beta testing
+              </Link>
+              , so a household with an iPhone parent and an Android kid runs one family, not two.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Built for iOS, Not Ported to It</h2>
@@ -166,6 +171,7 @@ export default function ChoreStarIosAppPage() {
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <AppStoreBadge />
+                <AndroidBetaBadge />
                 <Link
                   href="/signup"
                   className="inline-block px-6 py-3 rounded-xl font-bold border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
