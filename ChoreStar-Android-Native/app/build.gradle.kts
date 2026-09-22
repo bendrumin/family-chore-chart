@@ -71,7 +71,7 @@ android {
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).
-        versionCode = 4
+        versionCode = 5
         // ChoreStar's FIRST Android release. 2.x is the iOS train's numbering and
         // does not belong on Play; versionCode keeps rising independently.
         versionName = "1.0"
@@ -87,6 +87,9 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (hasUploadKey) signingConfig = signingConfigs.getByName("release")
+            // Play asks for native debug symbols: Compose and DataStore ship
+            // .so files, so a crash in them is unreadable without these.
+            ndk { debugSymbolLevel = "FULL" }
         }
     }
     // JDK 21 builds it (the only JDK on the Mac); bytecode targets 17.
