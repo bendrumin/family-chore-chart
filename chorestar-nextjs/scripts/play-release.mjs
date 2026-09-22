@@ -156,8 +156,9 @@ async function pushListing() {
 /** Upload the feature graphic and phone screenshots from docs/assets/play. */
 async function pushImages() {
   const assets = new URL('../../docs/assets/play/', import.meta.url);
-  const plan = [['featureGraphic', ['feature-graphic-1024x500.png']],
-    ['phoneScreenshots', ['phone-01.png', 'phone-02.png', 'phone-03.png', 'phone-04.png', 'phone-05.png', 'phone-06.png']]];
+  const plan = [['icon', ['icon-512.png']],
+    ['featureGraphic', ['feature-graphic-1024x500.png']],
+    ['phoneScreenshots', Array.from({ length: 8 }, (_, i) => `phone-0${i + 1}.png`)]];
   const edit = await api('POST', '/edits');
   for (const [type, files] of plan) {
     const present = files.filter((f) => { try { statSync(new URL(f, assets)); return true; } catch { return false; } });
