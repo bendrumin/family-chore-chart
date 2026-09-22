@@ -5,7 +5,7 @@ import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
-import { AppStoreBadge, APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
+import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 const SITE_URL = 'https://chorestar.app'
@@ -573,7 +573,10 @@ export default async function HomePage() {
                 web app, synced instantly: set up chores on your laptop, kids check them
                 off on the iPad.
               </p>
-              <AppStoreBadge />
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <AppStoreBadge />
+                <AndroidBetaBadge />
+              </div>
               <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
                 Already using the app? A quick rating helps other families find it.{' '}
                 <a
@@ -586,8 +589,12 @@ export default async function HomePage() {
                 </a>
               </p>
               <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                On Android? The Google Play app is in the works. Until it lands, ChoreStar runs
-                in Chrome on any Android phone with the same family account.
+                On Android? The native app is built and in testing.{' '}
+                <Link href="/android-beta" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                  Ask for a beta spot
+                </Link>{' '}
+                and we&apos;ll send you a Google Play link. ChoreStar also runs in Chrome on any
+                Android phone with the same family account.
               </p>
             </div>
           </div>

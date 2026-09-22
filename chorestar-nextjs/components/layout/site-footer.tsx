@@ -75,6 +75,11 @@ export function SiteFooter() {
                   iPhone &amp; iPad App
                 </Link>
               </li>
+              <li>
+                <Link href="/android-beta" className="text-sm hover:text-white transition-colors">
+                  Android Beta
+                </Link>
+              </li>
             </ul>
           </div>
 
