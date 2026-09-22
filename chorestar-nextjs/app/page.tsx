@@ -175,7 +175,7 @@ export default async function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             ✨ Kids check off chores, earn rewards, collect badges, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device, and the native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">now on the App Store</a>!<br/>
+            📱 Works on any device. The native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">on the App Store</a>, and the <Link href="/android-beta" className="font-semibold underline text-indigo-600 dark:text-indigo-400">Android beta</Link> is open.<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
