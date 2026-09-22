@@ -14,11 +14,18 @@ export function BlogPostExtras({ slug }: { slug: string }) {
   const current = BLOG_POSTS.find((p) => p.slug === slug)
   if (!current) return null
 
-  const others = BLOG_POSTS.filter((p) => p.slug !== slug)
-  const sameCategory = others.filter((p) => p.category === current.category)
+  // Related used to read "same category, then everything else in file order",
+  // which handed the first three posts in BLOG_POSTS every spare slot: they
+  // collected 5 to 10 inbound links while three posts got none at all, and
+  // Google left those unindexed. Walking a ring that starts just after this
+  // post spreads the links evenly (every post now receives 2 to 4), and taking
+  // one same-category pick first keeps the first card topical.
+  const index = BLOG_POSTS.indexOf(current)
+  const ring = [...BLOG_POSTS.slice(index + 1), ...BLOG_POSTS.slice(0, index)]
+  const sameCategory = ring.filter((p) => p.category === current.category).slice(0, 1)
   const related = [
     ...sameCategory,
-    ...others.filter((p) => p.category !== current.category),
+    ...ring.filter((p) => !sameCategory.includes(p)),
   ].slice(0, 3)
 
   const breadcrumbLd = {

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { OtherComparisons } from '@/components/compare/other-comparisons'
 
 export const metadata: Metadata = {
   title: 'The Best Free Chore App for Kids (2026)',
@@ -194,6 +195,8 @@ export default function BestFreeChoreAppPage() {
                 ))}
               </div>
             </section>
+
+            <OtherComparisons current="best-free-chore-app" />
 
             <section className="text-center bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-10 text-white">
               <h2 className="text-2xl md:text-3xl font-black mb-3">Start free, and stay free</h2>
