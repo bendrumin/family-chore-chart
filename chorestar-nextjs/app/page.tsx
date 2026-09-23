@@ -201,9 +201,24 @@ export default async function HomePage() {
               Sign In
             </Link>
           </div>
-          <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-center text-xs text-gray-500 dark:text-gray-400 mb-8">
             ✓ Free plan available • ✓ No credit card to start • ✓ Upgrade anytime
           </p>
+
+          {/* The apps, up here rather than only in the card two thirds down the page. */}
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
+            <p className="text-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+              Want it on your phone?
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <AppStoreBadge label="Download the iOS app" />
+              <AndroidBetaBadge label="Sign up to test our Android app" />
+            </div>
+            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-3">
+              The iPhone and iPad app is on the App Store. The Android app is in beta and we
+              have room for testers.
+            </p>
+          </div>
         </div>
 
         {/* How It Works */}
