@@ -13,6 +13,8 @@ import { DashboardHero } from '@/components/dashboard/dashboard-hero'
 import { IosAppBanner } from '@/components/dashboard/ios-app-banner'
 import { AmbientBackground } from '@/components/ui/ambient-background'
 import { useTodaySnapshot } from '@/lib/hooks/use-today-snapshot'
+import { useAppBadge } from '@/lib/hooks/use-app-badge'
+import { badgeCountForToday, clearAppBadge } from '@/lib/utils/app-badge'
 import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
@@ -134,6 +136,7 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
+    void clearAppBadge()
     clearStoredThemeMode()
     clearStoredThemeVars()
     applyThemeMode('auto')
@@ -213,6 +216,7 @@ function DashboardContent({
 }: any) {
   const { settings, updateSettings } = useSettings()
   const todaySnapshot = useTodaySnapshot(children, settings)
+  useAppBadge(badgeCountForToday(todaySnapshot))
   const [editingChild, setEditingChild] = useState<Child | null>(null)
 
   // Vacation mode (migration 019): the live window rides on family_settings
@@ -342,6 +346,22 @@ function DashboardContent({
     setActiveTab('routines')
     setOpenRoutineBuilderTrigger(true)
   }
+
+  // App shortcut (manifest.json): /dashboard?action=new-chore lands on a
+  // child's chores with Add Chore open. Waits for children so there is
+  // someone to add it for; with none, the getting-started card takes over.
+  const [addChoreRequest, setAddChoreRequest] = useState(0)
+  useEffect(() => {
+    if (isLoading) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('action') !== 'new-chore') return
+    window.history.replaceState(null, '', '/dashboard')
+    if (children.length === 0) return
+    if (!selectedChildId) setSelectedChildId(children[0].id)
+    setActiveTab('chores')
+    setAddChoreRequest(n => n + 1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading])
 
   useEffect(() => {
     setIsDarkHeader(detectDarkMode())
@@ -704,6 +724,7 @@ function DashboardContent({
                         userId={effectiveUserId}
                         iconTint={children.find((c: Child) => c.id === selectedChildId)?.avatar_color}
                         childName={children.find((c: Child) => c.id === selectedChildId)?.name}
+                        addChoreRequest={addChoreRequest}
                       />
                     </div>
                     <div

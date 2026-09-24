@@ -29,6 +29,7 @@ import {
 import {
   formatAmount,
   formatMoney,
+  formatMoneyForPdf,
   currencySymbol,
   findCurrency,
   sanitizeAmountInput,
@@ -201,6 +202,17 @@ t('Gulf currencies format with their own symbols', () => {
   assert.equal(formatMoney(100, 'SAR'), 'ر.س1.00')
   assert.equal(findCurrency('AED').symbol, 'د.إ')
   assert.equal(formatMoney(250, 'AED'), 'د.إ2.50')
+})
+
+t('PDF money falls back to the ISO code when the PDF font cannot draw the symbol', () => {
+  assert.equal(formatMoneyForPdf(100, 'USD'), '$1.00')
+  assert.equal(formatMoneyForPdf(150, 'EUR'), '€1.50')
+  assert.equal(formatMoneyForPdf(150, 'GBP'), '£1.50')
+  assert.equal(formatMoneyForPdf(12000, 'JPY'), '¥120')
+  assert.equal(formatMoneyForPdf(100, 'SAR'), 'SAR 1.00')
+  assert.equal(formatMoneyForPdf(100, 'INR'), 'INR 1.00')
+  assert.equal(formatMoneyForPdf(500000, 'KRW'), 'KRW 5000')
+  assert.equal(formatMoneyForPdf(100, 'PLN'), 'PLN 1.00')
 })
 
 t('an unknown or missing currency falls back to USD rather than throwing', () => {

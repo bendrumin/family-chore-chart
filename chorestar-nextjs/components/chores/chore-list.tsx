@@ -41,6 +41,8 @@ interface ChoreListProps {
   iconTint?: string | null
   /** For bulk-action copy ("Marked 12 chores done for Maya"). */
   childName?: string | null
+  /** Bumped by the parent to open Add Chore (the new-chore app shortcut). */
+  addChoreRequest?: number
 }
 
 /** One prepared bulk fill, held while the parent reads the confirm dialog. */
@@ -58,7 +60,7 @@ interface BulkPlan {
 type ChoreView = 'today' | 'week'
 const CHORE_VIEW_KEY = 'chorestar_chore_view'
 
-export function ChoreList({ childId, userId, iconTint, childName }: ChoreListProps) {
+export function ChoreList({ childId, userId, iconTint, childName, addChoreRequest = 0 }: ChoreListProps) {
   const { settings } = useSettings()
   const rewardMode = (settings?.reward_mode as 'flat' | 'per_chore') || 'flat'
   const [chores, setChores] = useState<Chore[]>([])
@@ -75,6 +77,9 @@ export function ChoreList({ childId, userId, iconTint, childName }: ChoreListPro
   }, [])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  useEffect(() => {
+    if (addChoreRequest > 0) setIsAddModalOpen(true)
+  }, [addChoreRequest])
   const [selectedCategory, setSelectedCategory] = useState<ChoreCategory | 'all'>('all')
   const [bulkPlan, setBulkPlan] = useState<BulkPlan | null>(null)
   const [bulkBusy, setBulkBusy] = useState(false)

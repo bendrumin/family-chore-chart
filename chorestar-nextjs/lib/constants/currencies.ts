@@ -83,6 +83,21 @@ export function formatMoney(cents: number, code?: string | null): string {
 }
 
 /**
+ * Money for jsPDF's built-in fonts, which only encode Windows-1252. A symbol
+ * outside it (ر.س, ₹, ₩, ₪, zł...) would print as garbage, so those
+ * currencies fall back to their ISO code: "SAR 1.00".
+ */
+export function formatMoneyForPdf(cents: number, code?: string | null): string {
+  const currency = findCurrency(code)
+  const encodable = [...currency.symbol].every(ch => {
+    const cp = ch.codePointAt(0) ?? 0
+    return cp <= 0xff || ch === '€'
+  })
+  const amount = formatAmount(cents, currency.code)
+  return encodable ? `${currency.symbol}${amount}` : `${currency.code} ${amount}`
+}
+
+/**
  * Clean a partially-typed money string, preserving in-progress decimals.
  *
  * Money fields must NOT be `<input type="number">`. For an intermediate value

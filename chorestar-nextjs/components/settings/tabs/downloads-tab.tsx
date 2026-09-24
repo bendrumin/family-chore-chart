@@ -19,16 +19,7 @@ export function DownloadsTab() {
   const [isExporting, setIsExporting] = useState(false)
   const { user } = useAuth()
   const { settings } = useSettings()
-  
-
-  const getCurrencySymbol = () => {
-    if (!settings?.currency_code) return '$'
-    const currencies: Record<string, string> = {
-      USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: '$', AUD: '$',
-      CHF: 'Fr', CNY: '¥', INR: '₹', MXN: '$', BRL: 'R$', KRW: '₩'
-    }
-    return currencies[settings.currency_code] || '$'
-  }
+  const currencyCode = settings?.currency_code ?? null
 
   const entitlements = useEntitlements()
   const exportAllowed = entitlements.loading || entitlements.can('export')
@@ -60,7 +51,7 @@ export function DownloadsTab() {
         chores: choresRes.data || [],
         completions: completionsRes.data || [],
         weekStart: getWeekStart(),
-        currencySymbol: getCurrencySymbol(),
+        currencyCode,
         dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
         weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
         rewardMode: familySettingsRes.data?.reward_mode ?? null,
@@ -102,7 +93,7 @@ export function DownloadsTab() {
         chores: choresRes.data || [],
         completions: completionsRes.data || [],
         weekStart: getWeekStart(),
-        currencySymbol: getCurrencySymbol(),
+        currencyCode,
         dailyRewardCents: familySettingsRes.data?.daily_reward_cents || 7,
         weeklyBonusCents: familySettingsRes.data?.weekly_bonus_cents || 0,
         rewardMode: familySettingsRes.data?.reward_mode ?? null,
@@ -185,7 +176,7 @@ export function DownloadsTab() {
                     chores: choresRes.data || [],
                     completions: [],
                     weekStart: getWeekStart(),
-                    currencySymbol: getCurrencySymbol(),
+                    currencyCode,
                   })
                   toast.success('Chore chart exported!')
                 } catch (e: any) {
@@ -232,7 +223,7 @@ export function DownloadsTab() {
                         chores: choresRes.data || [],
                         completions: [],
                         weekStart: getWeekStart(),
-                        currencySymbol: getCurrencySymbol(),
+                        currencyCode,
                         style: tmpl.style,
                       })
                       toast.success(`${tmpl.label} template exported!`)

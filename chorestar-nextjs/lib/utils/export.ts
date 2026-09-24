@@ -6,6 +6,8 @@
 import type { Database } from '@/lib/supabase/database.types'
 import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { isDueOn, isEveryDay, scheduleDays, weekDisplayOrder } from '@/lib/utils/schedule'
+import { parseLocalDate } from '@/lib/utils/date-helpers'
+import { formatMoney, formatMoneyForPdf } from '@/lib/constants/currencies'
 
 type Child = Database['public']['Tables']['children']['Row']
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -16,7 +18,8 @@ interface ExportOptions {
   chores: Chore[]
   completions: ChoreCompletion[]
   weekStart: string
-  currencySymbol?: string
+  /** family_settings.currency_code; drives symbol and decimals. */
+  currencyCode?: string | null
   childId?: string | 'all'
   startDate?: Date
   endDate?: Date
@@ -29,7 +32,7 @@ interface ExportOptions {
  * Export family report as CSV
  */
 export function exportFamilyReportCSV(options: ExportOptions) {
-  const { children, chores, completions: rawCompletions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0 } = options
+  const { children, chores, completions: rawCompletions, weekStart, currencyCode, childId = 'all', startDate, endDate } = options
   // Only approved ticks count (migration 016); pending ones are not done yet.
   const completions = rawCompletions.filter(c => !c.status || c.status === 'approved')
 
@@ -43,7 +46,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       // Skip completions with null day_of_week
       if (c.day_of_week == null) return false
       // Calculate date from week_start and day_of_week
-      const weekDate = new Date(c.week_start)
+      const weekDate = parseLocalDate(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
       const compDate = c.completed_at ? new Date(c.completed_at) : weekDate
       return compDate >= startDate && compDate <= endDate
@@ -72,7 +75,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       
       const chore = childChores.find(c => c.id === comp.chore_id)
       // Calculate date from week_start and day_of_week
-      const weekDate = new Date(comp.week_start)
+      const weekDate = parseLocalDate(comp.week_start)
       weekDate.setDate(weekDate.getDate() + comp.day_of_week)
       const compDate = comp.completed_at ? new Date(comp.completed_at) : weekDate
       const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -81,7 +84,7 @@ export function exportFamilyReportCSV(options: ExportOptions) {
         child.name,
         chore?.name || 'Unknown',
         compDate.toLocaleDateString(),
-        `${currencySymbol}${((chore?.reward_cents || 0) / 100).toFixed(2)}`,
+        formatMoney(chore?.reward_cents ?? 0, currencyCode),
         dayNames[comp.day_of_week] || ''
       ])
     }
@@ -113,8 +116,9 @@ export function exportFamilyReportCSV(options: ExportOptions) {
       }).join(',')
     ).join('\n')
 
-    // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    // Download. The BOM makes Excel read UTF-8; without it, riyal signs and
+    // Arabic or accented names open as mojibake.
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -137,8 +141,9 @@ export function exportFamilyReportCSV(options: ExportOptions) {
  * Note: Requires jsPDF library to be loaded
  */
 export async function exportFamilyReportPDF(options: ExportOptions) {
-  const { children, chores, completions: rawCompletions, weekStart, currencySymbol = '$', childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0, rewardMode = null } = options
+  const { children, chores, completions: rawCompletions, weekStart, currencyCode, childId = 'all', startDate, endDate, dailyRewardCents = 7, weeklyBonusCents = 0, rewardMode = null } = options
   const completions = rawCompletions.filter(c => !c.status || c.status === 'approved')
+  const money = (cents: number) => formatMoneyForPdf(cents, currencyCode)
 
   // Dynamically import jsPDF
   let jsPDF: any
@@ -167,7 +172,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
       // Skip completions with null day_of_week
       if (c.day_of_week == null) return false
       // Calculate date from week_start and day_of_week
-      const weekDate = new Date(c.week_start)
+      const weekDate = parseLocalDate(c.week_start)
       weekDate.setDate(weekDate.getDate() + c.day_of_week)
       const compDate = c.completed_at ? new Date(c.completed_at) : weekDate
       return compDate >= startDate && compDate <= endDate
@@ -188,7 +193,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
   if (startDate && endDate) {
     doc.text(`Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, 20, 50)
   } else {
-    doc.text(`Week of ${new Date(weekStart).toLocaleDateString()}`, 20, 50)
+    doc.text(`Week of ${parseLocalDate(weekStart).toLocaleDateString()}`, 20, 50)
   }
 
   let yPosition = 70
@@ -255,7 +260,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
     yPosition += 8
     doc.text(`Total Completions: ${childCompletions.length}`, 20, yPosition)
     yPosition += 8
-    doc.text(`Total Earnings: ${currencySymbol}${(totalEarnings / 100).toFixed(2)}`, 20, yPosition)
+    doc.text(`Total Earnings: ${money(totalEarnings)}`, 20, yPosition)
     yPosition += 15
 
     // Chore breakdown
@@ -265,7 +270,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
 
       for (const chore of childChores) {
         const choreCompletions = childCompletions.filter(c => c.chore_id === chore.id)
-        doc.text(`• ${chore.name}: ${choreCompletions.length} completions (${currencySymbol}${(chore.reward_cents / 100).toFixed(2)} each)`, 30, yPosition)
+        doc.text(`• ${chore.name}: ${choreCompletions.length} completions (${money(chore.reward_cents)} each)`, 30, yPosition)
         yPosition += 6
       }
     }
@@ -287,7 +292,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
  * Export printable chore chart - visual grid (child/chore × days)
  */
 export async function exportPrintableChoreChart(options: ExportOptions) {
-  const { children, chores, weekStart, currencySymbol = '$', childId = 'all' } = options;
+  const { children, chores, weekStart, childId = 'all' } = options;
 
   const filteredChildren = childId === 'all' ? children : children.filter((c) => c.id === childId);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -313,7 +318,7 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
   doc.setFontSize(16);
   doc.text('ChoreStar Weekly Chore Chart', margin, 20);
   doc.setFontSize(10);
-  doc.text(`Week of ${new Date(weekStart).toLocaleDateString()}`, margin, 28);
+  doc.text(`Week of ${parseLocalDate(weekStart).toLocaleDateString()}`, margin, 28);
 
   let y = 40;
   doc.setFontSize(9);
@@ -378,7 +383,8 @@ const TEMPLATE_COLORS: Record<WeeklyTemplateStyle, { primary: number[]; accent: 
  * reward summary, and motivational footer.
  */
 export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
-  const { children, chores, weekStart, currencySymbol = '$', childId = 'all', style } = options;
+  const { children, chores, weekStart, currencyCode, childId = 'all', style } = options;
+  const money = (cents: number) => formatMoneyForPdf(cents, currencyCode);
 
   const filteredChildren = childId === 'all' ? children : children.filter((c) => c.id === childId);
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -421,7 +427,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
-    const weekDate = new Date(weekStart);
+    const weekDate = parseLocalDate(weekStart);
     doc.text(`Week of ${weekDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, 35);
 
     // Reset text color
@@ -474,7 +480,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
       // Reward hint
       doc.setFontSize(6);
       doc.setTextColor(150, 150, 150);
-      doc.text(`${currencySymbol}${(chore.reward_cents / 100).toFixed(2)}`, margin + 2, y + 9);
+      doc.text(money(chore.reward_cents), margin + 2, y + 9);
       doc.setTextColor(0, 0, 0);
 
       // Checkboxes for each day
@@ -527,7 +533,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
     );
     doc.setFont(undefined, 'normal');
     doc.setFontSize(9);
-    doc.text(`Possible earnings: ${currencySymbol}${(totalReward / 100).toFixed(2)} per week`, margin + 5, summaryY + 18);
+    doc.text(`Possible earnings: ${money(totalReward)} per week`, margin + 5, summaryY + 18);
 
     // ── Footer ─────────────────────────────────────
     doc.setTextColor(150, 150, 150);

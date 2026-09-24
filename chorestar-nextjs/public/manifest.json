@@ -30,5 +30,28 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's chores for the whole family",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Add a Chore",
+      "short_name": "Add Chore",
+      "description": "Give one of your kids a new chore",
+      "url": "/dashboard?action=new-chore",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Kid Mode",
+      "short_name": "Kid Mode",
+      "description": "Hand the device to a kid to check off their chores",
+      "url": "/kid-login",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

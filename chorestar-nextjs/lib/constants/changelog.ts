@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.6'
+export const LATEST_CHANGELOG_VERSION = '2026.9.7'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.9.7': {
+    version: '2026.9.7',
+    date: 'September 2026',
+    title: 'Sharper Printables, Faster Shortcuts',
+    features: [
+      {
+        icon: '🖨️',
+        title: 'Reports in Your Currency',
+        description: 'PDF reports, charts, and CSV exports now use your family\'s currency, including riyals and dirhams, with the right number of decimals. Week dates no longer slip a day early, and CSV files open cleanly in Excel.',
+      },
+      {
+        icon: '👆',
+        title: 'App Shortcuts',
+        description: 'Installed ChoreStar on your phone or computer? Right-click or long-press the app icon to jump to Today, add a chore, or open Kid Mode.',
+      },
+      {
+        icon: '🔴',
+        title: 'Chores Left, Right on the Icon',
+        description: 'The installed ChoreStar app now shows a badge on its icon with how many chores are still left today.',
+      },
+    ],
+  },
   '2026.9.6': {
     version: '2026.9.6',
     date: 'September 2026',
