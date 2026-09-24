@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   // Safari's native Smart App Banner — links iOS visitors to the App Store listing.
   itunes: { appId: '6761279049' },
   title: {
-    default: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
+    default: 'ChoreStar: Chore Chart App & Allowance Tracker',
     template: '%s | ChoreStar',
   },
   description: 'The free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility on any device.',
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
-    title: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
+    title: 'ChoreStar: Chore Chart App & Allowance Tracker',
     description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device, no download needed. Join 600+ parents and kids.',
     images: [
       {
@@ -92,7 +92,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@chorestar',
     creator: '@chorestar',
-    title: 'ChoreStar: Chore Chart App & Allowance Tracker for Families',
+    title: 'ChoreStar: Chore Chart App & Allowance Tracker',
     description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 600+ parents and kids.',
     images: ['/og-image.png'],
   },

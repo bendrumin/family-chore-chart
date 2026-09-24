@@ -5,7 +5,7 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How to Give Kids Their Own Chore App: No Email Required',
+  title: 'Kids Chore App With No Email Required',
   description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN, no email, no password, no hassle.',
   keywords: [
     'kids chore app no email',
@@ -19,13 +19,13 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'How to Give Kids Their Own Chore App: No Email Required',
+    title: 'Kids Chore App With No Email Required',
     description: 'How ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
     url: 'https://chorestar.app/blog/kids-chore-app-no-email',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'How to Give Kids Their Own Chore App: No Email Required',
+    title: 'Kids Chore App With No Email Required',
     description: 'How ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
   },
   alternates: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'How to Give Kids Their Own Chore App: No Email Required',
+  headline: 'Kids Chore App With No Email Required',
   image: 'https://chorestar.app/og-image.png',
   description: 'Most apps require an email to sign up. Here\'s how ChoreStar lets kids log in with just a family code and a 4-digit PIN.',
   url: 'https://chorestar.app/blog/kids-chore-app-no-email',
@@ -69,7 +69,7 @@ export default function KidsChoreAppNoEmailPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">5 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              How to Give Kids Their Own Chore App: No Email Required
+              Kids Chore App With No Email Required
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Most chore apps make everyone create an account. That doesn&apos;t work when your users are 6 years old.

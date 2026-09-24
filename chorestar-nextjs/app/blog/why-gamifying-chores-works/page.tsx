@@ -5,7 +5,7 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
+  title: 'Why Gamifying Chores Actually Works',
   description: 'Achievements, streaks, confetti, and progress bars tap into the same psychology that makes kids want to level up. Here\'s the science and the system.',
   keywords: [
     'gamify chores for kids',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
+    title: 'Why Gamifying Chores Actually Works',
     description: 'Achievements, streaks, confetti, and progress bars tap into psychology that makes kids want to level up.',
     url: 'https://chorestar.app/blog/why-gamifying-chores-works',
   },
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Why Gamifying Chores Actually Works (And How ChoreStar Does It)',
+  headline: 'Why Gamifying Chores Actually Works',
   image: 'https://chorestar.app/og-image.png',
   description: 'Achievements, streaks, confetti, and progress bars tap into psychology that makes kids want to level up.',
   url: 'https://chorestar.app/blog/why-gamifying-chores-works',
@@ -69,7 +69,7 @@ export default function WhyGamifyingChoresWorksPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Why Gamifying Chores Actually Works (And How ChoreStar Does It)
+              Why Gamifying Chores Actually Works
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Your kid will spend 30 minutes trying to beat a video game level but won&apos;t spend 2 minutes making their bed. The difference is design.

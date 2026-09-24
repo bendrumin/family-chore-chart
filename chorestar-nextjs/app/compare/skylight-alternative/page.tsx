@@ -5,9 +5,9 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { OtherComparisons } from '@/components/compare/other-comparisons'
 
 export const metadata: Metadata = {
-  title: 'The Best Skylight Chore Chart Alternative (No Wall Device)',
+  title: 'Best Skylight Chore Chart Alternative',
   description:
-    'Want a Skylight-style chore chart without buying a $160+ touchscreen? ChoreStar runs on the phones and tablets you already own, free to start, with routines, timers, and PIN-based kid login.',
+    'A Skylight-style chore chart without the $160+ touchscreen. ChoreStar runs on the phones and tablets you already own, with routines and PIN kid login.',
   keywords: [
     'skylight alternative',
     'skylight calendar alternative',
@@ -64,7 +64,7 @@ const faqs = [
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'The Best Skylight Chore Chart Alternative (No Wall Device)',
+  headline: 'Best Skylight Chore Chart Alternative',
   description:
     'How ChoreStar compares to a Skylight chore chart. No hardware to buy, PIN-based kid login, and step-by-step routines with timers.',
   url: 'https://chorestar.app/compare/skylight-alternative',

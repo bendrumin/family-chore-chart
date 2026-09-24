@@ -5,9 +5,9 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { OtherComparisons } from '@/components/compare/other-comparisons'
 
 export const metadata: Metadata = {
-  title: 'A Kids Chore & Allowance App With No Debit Card or Bank Account',
+  title: 'Kids Chore & Allowance App, No Debit Card',
   description:
-    'Track chores and allowance without opening a bank account or giving your child a debit card. ChoreStar keeps you in control of real money, free to start, no KYC, no card.',
+    'Track chores and allowance with no bank account and no debit card for your child. You stay in control of the money. Free to start, no KYC, no card.',
   keywords: [
     'chore app without debit card',
     'allowance app no bank account',
@@ -65,7 +65,7 @@ const faqs = [
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'A Kids Chore & Allowance App With No Debit Card or Bank Account',
+  headline: 'Kids Chore & Allowance App, No Debit Card',
   description:
     'Track chores and allowance without a bank account or a debit card for your child. ChoreStar keeps you in control of real money.',
   url: 'https://chorestar.app/compare/chore-app-without-debit-card',

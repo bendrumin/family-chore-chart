@@ -7,7 +7,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
   description:
-    'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores, without overscheduling summer.',
+    'School is out and the schedule is gone. A practical guide to sleep, screens, daily rhythm, boredom and chores, without overscheduling summer.',
   keywords: [
     'schools out now what',
     'summer schedule for kids',

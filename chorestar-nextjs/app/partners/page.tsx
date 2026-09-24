@@ -6,8 +6,8 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 
 export const metadata: Metadata = {
-  title: 'ChoreStar Affiliate & Partner Program for Parenting Creators',
-  description: 'Partner with ChoreStar to promote a mobile-friendly chore chart app for families. Built for parenting bloggers, family newsletters, creators, agencies, and chore app roundups.',
+  title: 'Affiliate & Partner Program for Creators',
+  description: 'Partner with ChoreStar to promote a chore chart app families actually use. For parenting bloggers, newsletters, creators, and chore app roundups.',
   keywords: [
     'ChoreStar affiliate',
     'ChoreStar partner',

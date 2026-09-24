@@ -5,8 +5,8 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
-  description: 'A practical guide to matching chores with your child\'s age, from simple self-care at 3 to full household responsibilities at 15, with 85+ real chore ideas organized by category.',
+  title: 'Age-Appropriate Chores for Every Age',
+  description: 'Matching chores to your child\'s age, from self-care at 3 to real household work at 15, with 85+ chore ideas organised by category.',
   keywords: [
     'age appropriate chores',
     'chores for 5 year olds',
@@ -21,13 +21,13 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
+    title: 'Age-Appropriate Chores for Every Age',
     description: 'A practical guide to matching chores with your child\'s age, 85+ chore ideas organized by category.',
     url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
+    title: 'Age-Appropriate Chores for Every Age',
     description: '85+ chore ideas organized by age and category for kids 3-18.',
   },
   alternates: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Age-Appropriate Chores: What Kids Can Handle at Every Age',
+  headline: 'Age-Appropriate Chores for Every Age',
   image: 'https://chorestar.app/og-image.png',
   description: 'A practical guide to matching chores with your child\'s age, from simple self-care at 3 to full household responsibilities at 15.',
   url: 'https://chorestar.app/blog/age-appropriate-chores-by-age',
@@ -163,7 +163,7 @@ export default function AgeAppropriateChoresPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">8 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Age-Appropriate Chores: What Kids Can Handle at Every Age
+              Age-Appropriate Chores for Every Age
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Not sure what to assign your 5-year-old vs your 12-year-old? Here&apos;s a practical breakdown based on

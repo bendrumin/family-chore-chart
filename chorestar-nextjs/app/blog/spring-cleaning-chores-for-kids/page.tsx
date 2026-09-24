@@ -5,8 +5,8 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
-  description: 'A practical spring cleaning chore list for kids, including age-appropriate yard work, dog poop cleanup, litter pickup, gardening, and Earth Day family cleanup ideas.',
+  title: 'Spring Cleaning Chores for Kids, by Age',
+  description: 'A spring cleaning chore list for kids: age-appropriate yard work, litter pickup, gardening and Earth Day family cleanup ideas.',
   keywords: [
     'spring cleaning chores for kids',
     'yard work chores for kids',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-05-02',
     images: ['/og-image.png'],
-    title: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
+    title: 'Spring Cleaning Chores for Kids, by Age',
     description: 'Turn spring cleanup into kid-friendly chores with yard work, litter pickup, gardening, and Earth Day tasks families can actually keep up with.',
     url: 'https://chorestar.app/blog/spring-cleaning-chores-for-kids',
   },
@@ -38,9 +38,9 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks',
+  headline: 'Spring Cleaning Chores for Kids, by Age',
   image: 'https://chorestar.app/og-image.png',
-  description: 'A practical spring cleaning chore list for kids, including age-appropriate yard work, dog poop cleanup, litter pickup, gardening, and Earth Day family cleanup ideas.',
+  description: 'A spring cleaning chore list for kids: age-appropriate yard work, litter pickup, gardening and Earth Day family cleanup ideas.',
   url: 'https://chorestar.app/blog/spring-cleaning-chores-for-kids',
   datePublished: '2026-05-02',
   dateModified: '2026-05-02',
@@ -154,7 +154,7 @@ export default function SpringCleaningChoresPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Spring Cleaning Chores for Kids: Yard Work, Earth Day Ideas & Cleanup Tasks
+              Spring Cleaning Chores for Kids, by Age
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Spring is the easiest season to make chores feel useful. The yard needs help, the garage needs a reset,

@@ -5,7 +5,7 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Teaching Kids About Money With a Chore Reward System',
+  title: 'Teaching Kids Money With Chore Rewards',
   description: 'How to set up allowance tracking that teaches financial responsibility, from flat daily rates to per-chore rewards and weekly bonuses.',
   keywords: [
     'chore reward system',
@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'Teaching Kids About Money With a Chore Reward System',
+    title: 'Teaching Kids Money With Chore Rewards',
     description: 'How to set up allowance tracking that teaches financial responsibility.',
     url: 'https://chorestar.app/blog/chore-reward-system-kids-money',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Teaching Kids About Money With a Chore Reward System',
+    title: 'Teaching Kids Money With Chore Rewards',
     description: 'How to set up allowance tracking that teaches financial responsibility.',
   },
   alternates: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Teaching Kids About Money With a Chore Reward System',
+  headline: 'Teaching Kids Money With Chore Rewards',
   image: 'https://chorestar.app/og-image.png',
   description: 'How to set up allowance tracking that teaches financial responsibility.',
   url: 'https://chorestar.app/blog/chore-reward-system-kids-money',
@@ -70,7 +70,7 @@ export default function ChoreRewardSystemPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Teaching Kids About Money With a Chore Reward System
+              Teaching Kids Money With Chore Rewards
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Should kids earn allowance for chores? And if so, how do you set it up so it actually teaches them

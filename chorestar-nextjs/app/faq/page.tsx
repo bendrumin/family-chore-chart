@@ -5,7 +5,7 @@ import { FAQ_DATA } from '@/lib/constants/faq'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'ChoreStar FAQ: Setup, Kid Login, Rewards, and Billing',
+  title: 'FAQ: Setup, Kid Login, Rewards & Billing',
   description:
     'Plain answers about ChoreStar: adding kids, chore rewards, PIN-based kid login with no email, family sharing, vacation mode, and what the free plan includes.',
   keywords: [

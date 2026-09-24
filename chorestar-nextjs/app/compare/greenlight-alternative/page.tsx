@@ -5,9 +5,9 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { OtherComparisons } from '@/components/compare/other-comparisons'
 
 export const metadata: Metadata = {
-  title: 'The Best Greenlight Alternative for Chores & Allowance',
+  title: 'Best Greenlight Alternative for Chores',
   description:
-    'Want Greenlight-style chores and allowance without the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank, free to start.',
+    'Greenlight-style chores and allowance without the debit card, bank link, or monthly fee. ChoreStar tracks both with no card and no bank, free to start.',
   keywords: [
     'greenlight alternative',
     'greenlight alternative for chores',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     images: ['/og-image.png'],
-    title: 'The Best Greenlight Alternative for Chores & Allowance',
+    title: 'Best Greenlight Alternative for Chores',
     description:
       'Chores and allowance tracking without a debit card, bank account, or monthly fee. Free to start.',
     url: 'https://chorestar.app/compare/greenlight-alternative',
@@ -64,7 +64,7 @@ const faqs = [
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'The Best Greenlight Alternative for Chores & Allowance',
+  headline: 'Best Greenlight Alternative for Chores',
   description:
     'How ChoreStar compares to Greenlight for chores and allowance. No debit card, no bank account, no monthly fee required.',
   url: 'https://chorestar.app/compare/greenlight-alternative',

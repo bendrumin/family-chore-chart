@@ -6,9 +6,9 @@ import { AppStoreBadge } from '@/components/home/app-store-badge'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
+  title: 'Ready for iOS 27 and the New iPhones',
   description:
-    'iOS 27 shipped today with the iPhone 18 Pro, Pro Max, and iPhone Duo. ChoreStar already runs on all of it, and the holiday update will use what iOS 27 makes possible.',
+    'iOS 27 shipped with the iPhone 18 Pro, Pro Max and iPhone Duo. ChoreStar already runs on all of it, and the holiday update goes further.',
   keywords: [
     'chore app iOS 27',
     'iOS 27 family apps',
@@ -21,14 +21,14 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-09-14',
     images: ['/og-image.png'],
-    title: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
+    title: 'Ready for iOS 27 and the New iPhones',
     description:
       'iOS 27 shipped today. ChoreStar already runs on it, tested on the new screen sizes, with an iOS 27 update planned for the holidays.',
     url: 'https://chorestar.app/blog/chorestar-ios-27',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
+    title: 'Ready for iOS 27 and the New iPhones',
     description:
       'iOS 27 shipped today. ChoreStar already runs on it, tested on the new screen sizes, with an iOS 27 update planned for the holidays.',
   },
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'ChoreStar Is Ready for iOS 27 and the New iPhones',
+  headline: 'Ready for iOS 27 and the New iPhones',
   image: 'https://chorestar.app/og-image.png',
   description:
     'iOS 27 shipped today with the iPhone 18 Pro, Pro Max, and iPhone Duo. ChoreStar already runs on all of it.',
@@ -74,7 +74,7 @@ export default function ChoreStarIos27Page() {
               <span className="text-xs text-gray-500 dark:text-gray-400">3 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              ChoreStar Is Ready for iOS 27 and the New iPhones
+              Ready for iOS 27 and the New iPhones
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               iOS 27 shipped today, alongside the iPhone 18 Pro, the 18 Pro Max, and the

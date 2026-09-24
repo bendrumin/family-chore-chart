@@ -6,9 +6,9 @@ import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL } from '@/components/hom
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
+  title: 'Chore App for iPhone & iPad Kids Can Run',
   description:
-    'ChoreStar is now on the App Store, a family chore app with PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',
+    'A family chore app on the App Store with PIN-based kid login, routines with timers, home screen widgets, and instant sync with the web app.',
   keywords: [
     'chore app for iPhone',
     'chore app for iPad',
@@ -23,14 +23,14 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-08-17',
     images: ['/og-image.png'],
-    title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
+    title: 'Chore App for iPhone & iPad Kids Can Run',
     description:
       'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app, now on the App Store.',
     url: 'https://chorestar.app/blog/chorestar-iphone-ipad-app',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
+    title: 'Chore App for iPhone & iPad Kids Can Run',
     description:
       'PIN-based kid login, step-by-step routines with timers, widgets, and instant sync with the web app, now on the App Store.',
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'ChoreStar for iPhone & iPad: The Chore App Your Kid Can Run Themselves',
+  headline: 'Chore App for iPhone & iPad Kids Can Run',
   image: 'https://chorestar.app/og-image.png',
   description:
     'ChoreStar is now on the App Store. PIN-based kid login, step-by-step routines with timers, home screen widgets, and instant sync with the web app.',

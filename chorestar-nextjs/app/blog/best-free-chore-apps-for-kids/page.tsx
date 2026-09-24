@@ -6,9 +6,9 @@ import { AppStoreBadge } from '@/components/home/app-store-badge'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Best Free Chore Apps for Kids in 2026: We Checked the Pricing Pages',
+  title: 'Best Free Chore Apps for Kids in 2026',
   description:
-    'Twelve chore apps, every pricing page and App Store listing checked on September 15, 2026. Three are genuinely free, two rank for "free" with no free plan at all, and one looks parked. We make ChoreStar, and we say so up front.',
+    'Twelve chore apps, every pricing page checked. Three are genuinely free, two rank for "free" with no free plan at all. We make ChoreStar and say so.',
   keywords: [
     'best free chore apps for kids',
     'free chore app',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-09-15',
     images: ['/og-image.png'],
-    title: 'Best Free Chore Apps for Kids in 2026: We Checked the Pricing Pages',
+    title: 'Best Free Chore Apps for Kids in 2026',
     description:
       'Twelve chore apps, every pricing page checked. Three are genuinely free, two have no free plan at all, and one looks parked.',
     url: 'https://chorestar.app/blog/best-free-chore-apps-for-kids',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Best Free Chore Apps for Kids in 2026: We Checked the Pricing Pages',
+  headline: 'Best Free Chore Apps for Kids in 2026',
   image: 'https://chorestar.app/og-image.png',
   description:
     'Twelve chore apps compared, every pricing page and App Store listing checked on September 15, 2026, including which "free" apps have no free plan.',

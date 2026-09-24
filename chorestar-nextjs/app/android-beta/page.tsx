@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   // just the brand, since nobody searches for a beta by name.
   title: 'ChoreStar for Android: Join the Beta',
   description:
-    'Early access to the native ChoreStar chore chart app for Android: chores with rewards, routines with timers, kid login with a PIN, and allowance tracking. Free while it is in testing.',
+    'Early access to the native ChoreStar chore chart app for Android: chores with rewards, routines with timers, and kid login with a PIN. Free in testing.',
   openGraph: {
     title: 'Join the ChoreStar Android Beta | ChoreStar',
     description: 'Early access to the native ChoreStar Android app, free while it is in testing.',

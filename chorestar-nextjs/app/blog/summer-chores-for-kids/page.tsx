@@ -5,7 +5,7 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
+  title: 'Summer Chores for Kids: Outdoor Jobs by Age',
   description: 'A practical summer chore list for kids. Watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
   keywords: [
     'summer chores for kids',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-06-07',
     images: ['/og-image.png'],
-    title: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
+    title: 'Summer Chores for Kids: Outdoor Jobs by Age',
     description: 'Keep summer fun and productive with age-appropriate outdoor chores kids can actually finish.',
     url: 'https://chorestar.app/blog/summer-chores-for-kids',
   },
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps',
+  headline: 'Summer Chores for Kids: Outdoor Jobs by Age',
   image: 'https://chorestar.app/og-image.png',
   description: 'A practical summer chore list for kids. Watering plants, washing the car, BBQ prep, pool cleanup, and daily jobs that keep structure without killing summer fun.',
   url: 'https://chorestar.app/blog/summer-chores-for-kids',
@@ -153,7 +153,7 @@ export default function SummerChoresPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Summer Chores for Kids: Outdoor Jobs, Pool Prep & Screen-Time Swaps
+              Summer Chores for Kids: Outdoor Jobs by Age
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Summer break does not have to mean zero structure, or a daily nagging battle. The trick is picking
