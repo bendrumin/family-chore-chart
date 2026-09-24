@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 // MARK: - Timeline
 
@@ -18,10 +19,15 @@ struct TodayProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
-        let entry = TodayEntry(date: Date(), snapshot: WidgetSnapshot.load())
-        // The app reloads timelines on every change; this is just a fallback cadence.
-        let refresh = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
-        completion(Timeline(entries: [entry], policy: .after(refresh)))
+        let now = Date()
+        let entry = TodayEntry(date: now, snapshot: WidgetSnapshot.load())
+        // The app reloads timelines on every change; this is just a fallback
+        // cadence. Midnight is always a refresh point so yesterday's rows lose
+        // their tick buttons on time.
+        let calendar = Calendar.current
+        let halfHour = calendar.date(byAdding: .minute, value: 30, to: now) ?? now
+        let midnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? halfHour
+        completion(Timeline(entries: [entry], policy: .after(min(halfHour, midnight))))
     }
 }
 
@@ -31,10 +37,19 @@ extension WidgetSnapshot {
         totalToday: 8,
         earnedTodayFormatted: "$1.50",
         children: [
-            ChildProgress(id: UUID(), name: "Emma", colorName: "pink", done: 2, total: 4),
-            ChildProgress(id: UUID(), name: "Liam", colorName: "blue", done: 1, total: 4),
+            ChildProgress(id: UUID(), name: "Emma", colorName: "pink", done: 2, total: 4, remaining: [
+                ChoreItem(id: UUID(), name: "Feed the cat", emoji: "🐱"),
+                ChoreItem(id: UUID(), name: "Tidy room", isPending: true),
+            ]),
+            ChildProgress(id: UUID(), name: "Liam", colorName: "blue", done: 1, total: 4, remaining: [
+                ChoreItem(id: UUID(), name: "Make bed", emoji: "🛏️"),
+                ChoreItem(id: UUID(), name: "Homework"),
+                ChoreItem(id: UUID(), name: "Water plants", emoji: "🪴"),
+            ]),
         ],
-        generatedAt: Date()
+        generatedAt: Date(),
+        day: WidgetSnapshot.dayKey(for: Date()),
+        canTick: true
     )
 
     static let empty = WidgetSnapshot(
@@ -133,12 +148,16 @@ struct TodayRingWidgetView: View {
             accessoryRectangular
         case .systemMedium:
             medium
+        case .systemLarge:
+            large
         default:
             small
         }
     }
 
     private var snapshot: WidgetSnapshot { entry.snapshot ?? .empty }
+
+    private var tickable: Bool { snapshot.allowsTicks(at: entry.date) }
 
     /// The family's theme accent when the app has published one; otherwise the
     /// brand indigo, brighter in dark mode so the ring pops on a dark surface.
@@ -211,6 +230,7 @@ struct TodayRingWidgetView: View {
                     Text("\(Int(snapshot.progress * 100))%")
                         .font(.system(.headline, design: .rounded).weight(.bold))
                         .foregroundColor(accent)
+                        .invalidatableContent()
                 }
                 .frame(width: 72, height: 72)
             }
@@ -226,41 +246,7 @@ struct TodayRingWidgetView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(snapshot.children.prefix(3)) { child in
-                        Link(destination: chorestarURL(childId: child.id)) {
-                            VStack(spacing: 3) {
-                                HStack(spacing: 8) {
-                                    Circle()
-                                        .fill(widgetColor(child.colorName))
-                                        .frame(width: 8, height: 8)
-                                    Text(child.name)
-                                        .font(.caption)
-                                        .lineLimit(1)
-                                        .foregroundStyle(.primary)
-                                    Spacer()
-                                    if let emoji = child.goalEmoji, let pct = child.goalPercent {
-                                        Text("\(emoji) \(pct)%")
-                                            .font(.system(.caption2, design: .rounded).weight(.semibold))
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Text("\(child.done)/\(child.total)")
-                                        .font(.system(.caption, design: .rounded).weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                }
-                                // The goal bar: how close the kid is to the thing
-                                // they are saving for (2.0).
-                                if let pct = child.goalPercent {
-                                    GeometryReader { geo in
-                                        ZStack(alignment: .leading) {
-                                            Capsule().fill(accent.opacity(0.15))
-                                            Capsule()
-                                                .fill(pct >= 100 ? Color.orange : accent)
-                                                .frame(width: geo.size.width * CGFloat(min(max(pct, 0), 100)) / 100)
-                                        }
-                                    }
-                                    .frame(height: 4)
-                                }
-                            }
-                        }
+                        mediumChildRow(child)
                     }
                 }
             }
@@ -268,6 +254,158 @@ struct TodayRingWidgetView: View {
             Spacer(minLength: 0)
         }
         .containerBackground(for: .widget) { widgetBackground }
+    }
+
+    /// Name, next chore, and count open the child in the app; the trailing
+    /// circle ticks that next chore off.
+    private func mediumChildRow(_ child: WidgetSnapshot.ChildProgress) -> some View {
+        let next = tickable ? child.remaining?.first : nil
+        return HStack(spacing: 6) {
+            Link(destination: chorestarURL(childId: child.id)) {
+                VStack(spacing: 3) {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(widgetColor(child.colorName))
+                            .frame(width: 8, height: 8)
+                        Text(child.name)
+                            .font(.caption)
+                            .lineLimit(1)
+                            .foregroundStyle(.primary)
+                            .layoutPriority(1)
+                        if let next {
+                            Text(next.name)
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 2)
+                        Text("\(child.done)/\(child.total)")
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .fixedSize()
+                            .invalidatableContent()
+                    }
+                    // The goal bar: how close the kid is to the thing
+                    // they are saving for (2.0).
+                    if let pct = child.goalPercent {
+                        HStack(spacing: 6) {
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(accent.opacity(0.15))
+                                    Capsule()
+                                        .fill(pct >= 100 ? Color.orange : accent)
+                                        .frame(width: geo.size.width * CGFloat(min(max(pct, 0), 100)) / 100)
+                                }
+                            }
+                            .frame(height: 4)
+                            Text("\(child.goalEmoji ?? "🎯") \(pct)%")
+                                .font(.system(.caption2, design: .rounded).weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .fixedSize()
+                        }
+                    }
+                }
+            }
+            if let next {
+                Button(intent: CompleteChoreIntent(choreId: next.id)) {
+                    TickCircle(isPending: next.isPending == true, tint: accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Mark \(next.name) done"))
+            }
+        }
+    }
+
+    /// Every kid with today's remaining chores as tickable rows.
+    private var large: some View {
+        let kids = Array(snapshot.children.prefix(5))
+        let budget = widgetRowBudget(remainingCounts: kids.map { $0.remaining?.count ?? 0 }, lines: 11)
+        return VStack(alignment: .leading, spacing: 10) {
+            Link(destination: chorestarURL(today: true)) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        WidgetRing(progress: snapshot.progress, lineWidth: 6)
+                        Text("\(Int(snapshot.progress * 100))%")
+                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .foregroundColor(accent)
+                            .invalidatableContent()
+                    }
+                    .frame(width: 44, height: 44)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Today's Chores")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        Text(smallCaption)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    Text("\(snapshot.completedToday) of \(snapshot.totalToday) today")
+                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .invalidatableContent()
+                }
+            }
+
+            if kids.isEmpty {
+                Spacer(minLength: 0)
+                Text("Open ChoreStar to get started")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                Spacer(minLength: 0)
+            } else {
+                VStack(alignment: .leading, spacing: 5) {
+                    ForEach(Array(kids.enumerated()), id: \.element.id) { index, child in
+                        largeChildSection(child, rows: budget[index])
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .containerBackground(for: .widget) { widgetBackground }
+    }
+
+    private func largeChildSection(_ child: WidgetSnapshot.ChildProgress, rows: Int) -> some View {
+        let remaining = child.remaining ?? []
+        let hidden = remaining.count - rows
+        let tint = widgetColor(child.colorName)
+        return VStack(alignment: .leading, spacing: 3) {
+            Link(destination: chorestarURL(childId: child.id)) {
+                HStack(spacing: 8) {
+                    Circle().fill(tint).frame(width: 8, height: 8)
+                    Text(child.name)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Spacer(minLength: 4)
+                    if child.total > 0, remaining.isEmpty {
+                        Label("All done!", systemImage: "checkmark.circle.fill")
+                            .labelStyle(.titleAndIcon)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(accent)
+                    } else if hidden > 0 {
+                        Text("+\(hidden) more")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text("\(child.done)/\(child.total)")
+                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .invalidatableContent()
+                }
+            }
+            ForEach(remaining.prefix(rows)) { item in
+                ChoreTickRow(item: item, childId: child.id, tint: accent, tickable: tickable)
+                    .padding(.leading, 16)
+            }
+        }
     }
 
     private var accessoryCircular: some View {
@@ -322,8 +460,8 @@ struct TodayRingWidget: Widget {
             TodayRingWidgetView(entry: entry)
         }
         .configurationDisplayName("Today's Progress")
-        .description("Your family's chore ring for today.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
+        .description("Your family's chores for today. Tick them off right here.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
     }
 }
 
@@ -334,6 +472,12 @@ struct TodayRingWidget: Widget {
 }
 
 #Preview(as: .systemMedium) {
+    TodayRingWidget()
+} timeline: {
+    TodayEntry(date: .now, snapshot: .preview)
+}
+
+#Preview(as: .systemLarge) {
     TodayRingWidget()
 } timeline: {
     TodayEntry(date: .now, snapshot: .preview)

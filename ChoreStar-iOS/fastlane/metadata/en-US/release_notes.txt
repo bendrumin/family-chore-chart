@@ -1,11 +1,12 @@
-Version 2.2.3 puts the controls where you can see them.
+Version 2.3 puts chores on your Home Screen and the chart on paper.
 
-• Chore filters in the list: pick a kid, or All, Pending and Completed, right above your chores instead of behind a menu
-• The theme gallery is a grid, so every theme is on screen at once
-• Light, Dark and System as one tap, and ten preset accent colours beside the picker
-• Selected chips and pills wear your family's theme
-• The kid-mode exit button says what it does
-• Spanish, Portuguese and Arabic now cover the parent screens too, not just kid mode
+• Tap a chore on the ChoreStar widget to mark it done, or to approve a kid's tick, without opening the app
+• A new Large widget shows every kid's list for today
+• Export & Print in Settings: a chore chart for the fridge and weekly templates in three styles, free for every family
+• Premium adds the family report PDF and a spreadsheet of the week
+• Every currency and every language prints correctly, riyals and Arabic names included
+• Home Screen shortcuts: press and hold the icon to jump to Today, add a chore, or open Kid Mode
+• Ticks land in the same week as on the web when your iPhone starts the week on Monday or Saturday
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app

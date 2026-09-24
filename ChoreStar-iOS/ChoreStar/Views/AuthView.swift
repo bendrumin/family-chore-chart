@@ -10,6 +10,7 @@ struct AuthView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var deepLinks: DeepLinkRouter
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
@@ -57,8 +58,12 @@ struct AuthView: View {
         )) {
             KidLoginView()
         }
+        .onChange(of: deepLinks.wantKidMode) { _, want in
+            if want { openKidLoginFromQuickAction() }
+        }
         .onAppear {
             loadSavedEmail()
+            openKidLoginFromQuickAction()
             #if DEBUG
             // Screenshot tooling: `-chorestar-kidlogin` opens the kid login
             // sheet without tap simulation (same pattern as -chorestar-tab).
@@ -67,6 +72,13 @@ struct AuthView: View {
             }
             #endif
         }
+    }
+
+    /// Signed out, the Kid Mode quick action means kid login.
+    private func openKidLoginFromQuickAction() {
+        guard deepLinks.wantKidMode else { return }
+        deepLinks.wantKidMode = false
+        showingKidLogin = true
     }
 
     /// The sign-in screen at two densities. `compact` is for short viewports:
@@ -555,4 +567,5 @@ struct AuthView: View {
     AuthView()
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
+        .environmentObject(DeepLinkRouter.shared)
 }

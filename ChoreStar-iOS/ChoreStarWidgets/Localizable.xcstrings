@@ -259,24 +259,183 @@
         }
       }
     },
-    "Your family's chore ring for today." : {
+    "Mark Chore Done" : {
+      "comment" : "Title of the App Intent a Home Screen widget row runs to check off a chore.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "حلقة مهام عائلتك لهذا اليوم."
+            "value" : "تعليم المهمة كمنجزة"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El anillo de tareas de tu familia para hoy."
+            "value" : "Marcar tarea como hecha"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O anel de tarefas da sua família para hoje."
+            "value" : "Marcar tarefa como feita"
+          }
+        }
+      }
+    },
+    "Checks off one of today's chores from the widget." : {
+      "comment" : "Description of the widget's check-off App Intent.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يعلّم إحدى مهام اليوم كمنجزة من الأداة."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca como hecha una de las tareas de hoy desde el widget."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca como feita uma das tarefas de hoje pelo widget."
+          }
+        }
+      }
+    },
+    "All done!" : {
+      "comment" : "Large widget: this child has no chores left today.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أنجزت كل شيء!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Todo listo!"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo pronto!"
+          }
+        }
+      }
+    },
+    "Needs your OK" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بحاجة إلى موافقتك"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Necesita tu visto bueno"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precisa do seu OK"
+          }
+        }
+      }
+    },
+    "Mark %@ done" : {
+      "comment" : "Accessibility label of a widget tick button. The argument is the chore name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعليم كمنجز: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar hecho: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcar feito: %@"
+          }
+        }
+      }
+    },
+    "+%lld more" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld أخرى"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld más"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld mais"
+          }
+        }
+      }
+    },
+    "Chore" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المهمة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarea"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefa"
+          }
+        }
+      }
+    },
+    "Your family's chores for today. Tick them off right here." : {
+      "comment" : "Widget gallery description.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مهام عائلتك لهذا اليوم. علّمها كمنجزة من هنا مباشرةً."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las tareas de tu familia para hoy. Márcalas aquí mismo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As tarefas da sua família hoje. Marque-as aqui mesmo."
           }
         }
       }

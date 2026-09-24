@@ -286,6 +286,8 @@ struct MainTabs: View {
     @EnvironmentObject var deepLinks: DeepLinkRouter
     @State private var selectedTab: Int = MainTabs.initialTab()
     @State private var deepLinkChild: Child?
+    @State private var showingAddChore = false
+    @State private var showingKidMode = false
 
     // First-run wizard: shown once per ACCOUNT (keyed by user id, not per
     // device — a brand-new family on a phone that saw the wizard before must
@@ -314,6 +316,21 @@ struct MainTabs: View {
             if let child = manager.children.first(where: { $0.id == id }) {
                 selectedTab = 0
                 deepLinkChild = child
+            }
+        }
+        if deepLinks.wantKidMode {
+            deepLinks.wantKidMode = false
+            showingKidMode = true
+        }
+        // Waits for data: with no children yet, Add Chore has nobody to
+        // assign to, so the Family tab is the useful place to land.
+        if deepLinks.wantNewChore && manager.initialDataLoaded {
+            deepLinks.wantNewChore = false
+            if manager.children.isEmpty {
+                selectedTab = 1
+            } else {
+                selectedTab = 2
+                showingAddChore = true
             }
         }
     }
@@ -385,10 +402,22 @@ struct MainTabs: View {
         .onChange(of: deepLinks.pendingChildId) { _, id in
             if id != nil { applyDeepLinks() }
         }
+        .onChange(of: deepLinks.wantNewChore) { _, want in
+            if want { applyDeepLinks() }
+        }
+        .onChange(of: deepLinks.wantKidMode) { _, want in
+            if want { applyDeepLinks() }
+        }
         .sheet(item: $deepLinkChild) { child in
             NavigationStack {
                 ChildDetailView(child: child)
             }
+        }
+        .sheet(isPresented: $showingAddChore) {
+            AddChoreWizardView()
+        }
+        .sheet(isPresented: $showingKidMode) {
+            ChildAuthView()
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView { goToFamily in

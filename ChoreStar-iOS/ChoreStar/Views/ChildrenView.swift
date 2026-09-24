@@ -73,7 +73,7 @@ struct ChildrenView: View {
 struct ChildDetailCard: View {
     let child: Child
     let index: Int
-    let manager: SupabaseManager
+    @ObservedObject var manager: SupabaseManager
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     

@@ -58,6 +58,11 @@ final class DeepLinkRouter: ObservableObject {
     @Published var wantToday = false
     /// Present ChildDetailView for this id when the parent is signed in.
     @Published var pendingChildId: UUID?
+    /// Open Add Chore (Home Screen quick action, `chorestar://new-chore`).
+    @Published var wantNewChore = false
+    /// Open kid mode: the on-device kid picker when a parent is signed in,
+    /// kid login when not (`chorestar://kid-mode`).
+    @Published var wantKidMode = false
 
     private init() {}
 
@@ -69,6 +74,16 @@ final class DeepLinkRouter: ObservableObject {
         if host == "today" || (host.isEmpty && parts.first?.lowercased() == "today") {
             wantToday = true
             pendingChildId = nil
+            return
+        }
+
+        if host == "new-chore" {
+            wantNewChore = true
+            return
+        }
+
+        if host == "kid-mode" {
+            wantKidMode = true
             return
         }
 
@@ -101,6 +116,67 @@ final class DeepLinkRouter: ObservableObject {
         let id = pendingChildId
         pendingChildId = nil
         return id
+    }
+
+    // MARK: Home Screen quick actions
+
+    /// Same three as the web app's manifest shortcuts and the Android
+    /// launcher shortcuts. Each type is the deep link it opens.
+    static func installQuickActions() {
+        UIApplication.shared.shortcutItems = [
+            UIApplicationShortcutItem(
+                type: "chorestar://today",
+                localizedTitle: String(localized: "Today"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "house.fill")
+            ),
+            UIApplicationShortcutItem(
+                type: "chorestar://new-chore",
+                localizedTitle: String(localized: "Add a Chore"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "plus.circle.fill")
+            ),
+            UIApplicationShortcutItem(
+                type: "chorestar://kid-mode",
+                localizedTitle: String(localized: "Kid Mode"),
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "figure.child.circle.fill")
+            ),
+        ]
+    }
+
+    func handle(_ shortcut: UIApplicationShortcutItem) -> Bool {
+        guard let url = URL(string: shortcut.type), url.scheme == "chorestar" else { return false }
+        handle(url)
+        return true
+    }
+}
+
+/**
+ Receives Home Screen quick actions. A SwiftUI app only gets them through a
+ scene delegate: the item arrives in the connection options on a cold launch,
+ and through `performActionFor` when the app is already running.
+ */
+final class QuickActionSceneDelegate: NSObject, UIWindowSceneDelegate {
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard let shortcut = connectionOptions.shortcutItem else { return }
+        Task { @MainActor in
+            _ = DeepLinkRouter.shared.handle(shortcut)
+        }
+    }
+
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        Task { @MainActor in
+            completionHandler(DeepLinkRouter.shared.handle(shortcutItem))
+        }
     }
 }
 
@@ -145,7 +221,18 @@ final class PushDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCen
             options: []
         )
         UNUserNotificationCenter.current().setNotificationCategories([category])
+        Task { @MainActor in DeepLinkRouter.installQuickActions() }
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = QuickActionSceneDelegate.self
+        return configuration
     }
 
     static let choreApprovalCategory = "CHORE_APPROVAL"

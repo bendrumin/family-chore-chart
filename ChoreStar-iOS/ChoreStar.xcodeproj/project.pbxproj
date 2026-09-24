@@ -73,12 +73,17 @@
 		A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F4 /* NotificationsManager.swift */; };
 		A1234567890ABCDEF12345F7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF12345F6 /* Localizable.xcstrings */; };
 		C00255ACF3C010CD1279EE92 /* EntitlementsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */; };
+		D3C2FB2F769F531DF4DC3823 /* FamilyExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FC463482D3C8D0AEC5DFE1 /* FamilyExportTests.swift */; };
 		C0DEC0DE0000000000000002 /* ChoreCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000001 /* ChoreCategory.swift */; };
 		C0DEC0DE0000000000000004 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000003 /* OnboardingView.swift */; };
 		C0DEC0DE0000000000000006 /* AddChoreWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000005 /* AddChoreWizardView.swift */; };
 		C0DEC0DE000000000000000A /* StarterRoutinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */; };
 		DE4C06F4220C3DDAF16ACBE1 /* ReviewPrompter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE84969912EF41FC2706235 /* ReviewPrompter.swift */; };
 		E36B27BB0D14F23EB4E6E42A /* RewardMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01697ED45FA707F298E64E20 /* RewardMath.swift */; };
+		74F5858BAC8B86E9AF413ABC /* WidgetTicks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18A0789A34228F3951C5A4F6 /* WidgetTicks.swift */; };
+		8BD1B31B39AA6902E434C6B7 /* WidgetTickTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABEAE8C46336B8349B35CA4 /* WidgetTickTests.swift */; };
+		B50B0ADD699583BE5B33B1E7 /* FamilyExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C89DCA916CCA87272428C5A /* FamilyExport.swift */; };
+		492C5BEB93E5D2D3822FBD67 /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20D901E2C969A49CA5EDEAC /* ExportView.swift */; };
 		E9A3EA979E04544D53ACE8A0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A39725F7A81983AC08C2BD8A /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -122,12 +127,17 @@
 
 /* Begin PBXFileReference section */
 		01697ED45FA707F298E64E20 /* RewardMath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMath.swift; sourceTree = "<group>"; };
+		18A0789A34228F3951C5A4F6 /* WidgetTicks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTicks.swift; sourceTree = "<group>"; };
+		0ABEAE8C46336B8349B35CA4 /* WidgetTickTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTickTests.swift; sourceTree = "<group>"; };
+		3C89DCA916CCA87272428C5A /* FamilyExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyExport.swift; sourceTree = "<group>"; };
+		B20D901E2C969A49CA5EDEAC /* ExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportView.swift; sourceTree = "<group>"; };
 		0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedProgress.swift; sourceTree = "<group>"; };
 		21EC2D2F3192BE377244BB2B /* ChoreStarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChoreStarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AvatarPathTests.swift; sourceTree = "<group>"; };
 		26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMathTests.swift; sourceTree = "<group>"; };
 		40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedTests.swift; sourceTree = "<group>"; };
 		41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EntitlementsTests.swift; sourceTree = "<group>"; };
+		94FC463482D3C8D0AEC5DFE1 /* FamilyExportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FamilyExportTests.swift; sourceTree = "<group>"; };
 		558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-ExtraBold.ttf"; sourceTree = "<group>"; };
 		8969C68FE80311EA63473D4B /* Entitlements.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Entitlements.swift; sourceTree = "<group>"; };
 		98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremiumFeatureGate.swift; sourceTree = "<group>"; };
@@ -276,10 +286,12 @@
 			isa = PBXGroup;
 			children = (
 				26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */,
+				0ABEAE8C46336B8349B35CA4 /* WidgetTickTests.swift */,
 				264364C170D7B30CCCE7D4BC /* AvatarPathTests.swift */,
 				E2167E66D62CE6E13213A5D3 /* ReviewPrompterTests.swift */,
 				40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */,
 				41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */,
+				94FC463482D3C8D0AEC5DFE1 /* FamilyExportTests.swift */,
 			);
 			name = ChoreStarTests;
 			path = ChoreStarTests;
@@ -411,6 +423,7 @@
 				A1234567890ABCDEF12345BF /* UpgradePromptView.swift */,
 				A1234567890ABCDEF12345E0 /* KidLoginView.swift */,
 				A1234567890ABCDEF12345E2 /* PaywallView.swift */,
+				B20D901E2C969A49CA5EDEAC /* ExportView.swift */,
 				A1234567890ABCDEF12345E4 /* WhatsNewView.swift */,
 				A1234567890ABCDEF12345F2 /* FamilySharingView.swift */,
 				C0DEC0DE0000000000000003 /* OnboardingView.swift */,
@@ -449,8 +462,10 @@
 			isa = PBXGroup;
 			children = (
 				01697ED45FA707F298E64E20 /* RewardMath.swift */,
+				18A0789A34228F3951C5A4F6 /* WidgetTicks.swift */,
 				0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */,
 				8969C68FE80311EA63473D4B /* Entitlements.swift */,
+				3C89DCA916CCA87272428C5A /* FamilyExport.swift */,
 			);
 			name = Logic;
 			path = Logic;
@@ -634,10 +649,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */,
+				8BD1B31B39AA6902E434C6B7 /* WidgetTickTests.swift in Sources */,
 				4BC9CD1ED85EC9A0023D42E3 /* AvatarPathTests.swift in Sources */,
 				55244E7FD169632D5C1608C1 /* ReviewPrompterTests.swift in Sources */,
 				5465FC7C9A13DA94B7DA1566 /* GettingStartedTests.swift in Sources */,
 				C00255ACF3C010CD1279EE92 /* EntitlementsTests.swift in Sources */,
+				D3C2FB2F769F531DF4DC3823 /* FamilyExportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -695,6 +712,8 @@
 				A1234567890ABCDEF12345C0 /* UpgradePromptView.swift in Sources */,
 				A1234567890ABCDEF12345E1 /* KidLoginView.swift in Sources */,
 				A1234567890ABCDEF12345E3 /* PaywallView.swift in Sources */,
+				B50B0ADD699583BE5B33B1E7 /* FamilyExport.swift in Sources */,
+				492C5BEB93E5D2D3822FBD67 /* ExportView.swift in Sources */,
 				A1234567890ABCDEF12345E5 /* WhatsNewView.swift in Sources */,
 				A1234567890ABCDEF12345E7 /* Achievements.swift in Sources */,
 				A1234567890ABCDEF12345E9 /* ChoreSuggestions.swift in Sources */,
@@ -709,6 +728,7 @@
 				A1234567890ABCDEF12345F3 /* FamilySharingView.swift in Sources */,
 				A1234567890ABCDEF12345F5 /* NotificationsManager.swift in Sources */,
 				E36B27BB0D14F23EB4E6E42A /* RewardMath.swift in Sources */,
+				74F5858BAC8B86E9AF413ABC /* WidgetTicks.swift in Sources */,
 				DE4C06F4220C3DDAF16ACBE1 /* ReviewPrompter.swift in Sources */,
 				0F4524AC113D60FBDE4EC9EB /* GettingStartedProgress.swift in Sources */,
 				65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */,
@@ -777,7 +797,7 @@
 		9EA025DE301135A3008215CE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -811,7 +831,7 @@
 		9EA025DF301135A3008215CE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = ChoreStarWidgetsExtension.entitlements;
@@ -845,7 +865,7 @@
 		9EB025C0301135A2008215CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -864,7 +884,7 @@
 		9EB025C0301135A2008215CB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5ANRA6JZC2;
@@ -884,8 +904,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 35;
-				APP_VERSION = 2.2.3;
+				APP_BUILD = 36;
+				APP_VERSION = 2.3;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -953,8 +973,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				APP_BUILD = 35;
-				APP_VERSION = 2.2.3;
+				APP_BUILD = 36;
+				APP_VERSION = 2.3;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1014,7 +1034,7 @@
 		A1234567890ABCDEF1234589 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;
@@ -1050,7 +1070,7 @@
 		A1234567890ABCDEF123458A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				APP_BUILD = 35;
+				APP_BUILD = 36;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChoreStar/ChoreStar.entitlements;

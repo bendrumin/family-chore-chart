@@ -1,11 +1,12 @@
-La versión 2.2.3 pone los controles donde los ves.
+La versión 2.3 pone las tareas en tu pantalla de inicio y la tabla en papel.
 
-• Filtros de tareas en la lista: elige a un hijo, o Todas, Pendientes y Completadas, justo encima de las tareas y no detrás de un menú
-• La galería de temas ahora es una cuadrícula, con todos los temas a la vista
-• Claro, Oscuro y Sistema con un toque, y diez colores de acento junto al selector
-• Los chips y botones seleccionados usan el tema de tu familia
-• El botón para salir del modo niño dice lo que hace
-• El español ahora cubre también las pantallas de los padres, no solo el modo niño
+• Toca una tarea en el widget de ChoreStar para marcarla como hecha, o para aprobar la de un hijo, sin abrir la app
+• Un nuevo widget grande muestra la lista de hoy de cada hijo
+• Exportar e imprimir en Ajustes: una tabla de tareas para el refrigerador y plantillas semanales en tres estilos, gratis para todas las familias
+• Premium agrega el informe familiar en PDF y una hoja de cálculo de la semana
+• Todas las monedas y todos los idiomas se imprimen bien, incluidos los riyales y los nombres en árabe
+• Accesos rápidos: mantén presionado el ícono para ir a Hoy, agregar una tarea o abrir el modo niños
+• Las tareas marcadas caen en la misma semana que en la web cuando tu iPhone empieza la semana en lunes o sábado
 • Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app

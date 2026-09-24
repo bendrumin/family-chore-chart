@@ -266,6 +266,16 @@ struct SettingsView: View {
                             Text("Reward Store")
                         }
                     }
+
+                    NavigationLink {
+                        ExportView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "printer.fill")
+                                .foregroundColor(.choreStarSuccess)
+                            Text("Export & Print")
+                        }
+                    }
                 }
 
                 Section {

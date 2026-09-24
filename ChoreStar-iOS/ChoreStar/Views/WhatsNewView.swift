@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.2.2"
+    static let latestVersion = "2.3"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,33 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.3",
+            date: "September 2026",
+            title: "Print It, Share It, Jump Right In",
+            features: [
+                Feature(
+                    icon: "✅",
+                    title: "Tick Chores From Your Home Screen",
+                    description: "Tap a chore on the medium or large ChoreStar widget to mark it done, or to approve a kid's tick, without opening the app. The new Large widget shows every kid's list for today."
+                ),
+                Feature(
+                    icon: "🖨️",
+                    title: "Export & Print",
+                    description: "Settings > Family > Export & Print makes a chore chart for the fridge and weekly templates in three styles, free for every family. Premium adds the family report PDF and a spreadsheet of the week. Every currency and every language prints correctly."
+                ),
+                Feature(
+                    icon: "👆",
+                    title: "Home Screen Shortcuts",
+                    description: "Press and hold the ChoreStar icon to jump to Today, add a chore, or hand the phone over in Kid Mode."
+                ),
+                Feature(
+                    icon: "🗓️",
+                    title: "Weeks Match the Web",
+                    description: "If your iPhone starts the week on Monday or Saturday, ticks now land in the same week as they do on the web."
+                ),
+            ]
+        ),
         Entry(
             version: "2.2.3",
             date: "September 2026",
@@ -40,6 +67,11 @@ enum Changelog {
                     icon: "🧒",
                     title: "A Clear Way Out of Kid Mode",
                     description: "The exit button says what it does."
+                ),
+                Feature(
+                    icon: "🗣️",
+                    title: "Parent Screens in Your Language",
+                    description: "Spanish, Portuguese and Arabic now cover the parent screens too, not just kid mode. ChoreStar follows your iPhone's language."
                 ),
             ]
         ),

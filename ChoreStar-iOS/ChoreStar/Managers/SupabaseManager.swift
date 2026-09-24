@@ -101,6 +101,16 @@ class SupabaseManager: ObservableObject {
     @Published var kidStats: KidStats?
     var isStandaloneKidSession: Bool { kidModeSession != nil }
 
+    /// A kid is signed in on this device, standalone or kid mode on the
+    /// parent's phone. Read from disk as well as memory so it also holds in a
+    /// background launch that has not restored sessions. Widget ticks are
+    /// parent approvals, so they are refused while this is true.
+    var hasKidSessionOnDevice: Bool {
+        if kidModeSession != nil || isChildSession { return true }
+        if UserDefaults.standard.data(forKey: SupabaseManager.kidModeSessionKey) != nil { return true }
+        return UserDefaults.standard.string(forKey: "child_session_id") != nil
+    }
+
     // Routines already completed today (drives "Done!" badges and replay prevention)
     @Published var completedRoutineIds: Set<UUID> = []
 
@@ -2445,10 +2455,7 @@ class SupabaseManager: ObservableObject {
             let dayOfWeek = calendar.component(.weekday, from: now) - 1
             
             // Get week start (Sunday)
-            let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            let weekStartString = dateFormatter.string(from: weekStart)
+            let weekStartString = RewardMath.weekStartString(for: now)
             
             // Load ALL completions for the current week (all 7 days)
             let allWeekCompletions: [ChoreCompletionRow] = try await client
@@ -2624,10 +2631,8 @@ class SupabaseManager: ObservableObject {
         
         let calendar = Calendar.current
         let now = Date()
-        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let weekStartString = formatter.string(from: weekStart)
+        let weekStartString = RewardMath.weekStartString(for: now)
+        let weekStart = RewardMath.date(weekStart: weekStartString, dayIndex: 0) ?? calendar.startOfDay(for: now)
         
         if isCompleted {
             // Remove completion
@@ -2758,6 +2763,14 @@ class SupabaseManager: ObservableObject {
 
         await MainActor.run {
             publishWidgetSnapshot()
+        }
+
+        // The unpaid balance and goal bar come from the server wallet, which
+        // only moves once the write above has landed.
+        let childId = chore.childId
+        Task {
+            await loadWallet(for: childId)
+            await MainActor.run { publishWidgetSnapshot() }
         }
         #endif
 
@@ -2975,10 +2988,7 @@ class SupabaseManager: ObservableObject {
 
         let calendar = Calendar.current
         let now = Date()
-        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let weekStartString = formatter.string(from: weekStart)
+        let weekStartString = RewardMath.weekStartString(for: now, calendar: calendar)
         let completedAt = ISO8601DateFormatter().string(from: now)
 
         // Same shape as the single insert in toggleChoreCompletion. UUIDs
@@ -4354,18 +4364,21 @@ class SupabaseManager: ObservableObject {
     @MainActor
     func publishWidgetSnapshot() {
         // The widget shows today's list: only chores due today count.
+        let today = todayIndex
+        let pendingToday = Set(pendingCompletions.filter { $0.dayOfWeek == today }.map(\.choreId))
         let childProgress = children.map { child -> WidgetSnapshot.ChildProgress in
             let childChores = dueChores(for: child.id)
-            let done = childChores.filter { isChoreCompleted($0) }.count
+            let doneIds = Set(childChores.filter { isChoreCompleted($0) }.map(\.id))
             let goal = wallets[child.id]?.goal
             return WidgetSnapshot.ChildProgress(
                 id: child.id,
                 name: child.name,
                 colorName: child.avatarColor,
-                done: done,
+                done: doneIds.count,
                 total: childChores.count,
                 goalEmoji: goal?.emoji,
-                goalPercent: goal?.percent
+                goalPercent: goal?.percent,
+                remaining: WidgetTicks.remainingItems(due: childChores, done: doneIds, pending: pendingToday)
             )
         }
 
@@ -4381,7 +4394,9 @@ class SupabaseManager: ObservableObject {
             generatedAt: Date(),
             topStreak: topStreak,
             accentHex: ThemeManager.shared.accentHex,
-            secondaryHex: ThemeManager.shared.secondaryHex
+            secondaryHex: ThemeManager.shared.secondaryHex,
+            day: WidgetSnapshot.dayKey(for: Date()),
+            canTick: isAuthenticated && !hasKidSessionOnDevice
         ).publish()
     }
 
