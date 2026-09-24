@@ -69,7 +69,7 @@ const softwareApplicationLd = {
   '@type': 'SoftwareApplication',
   name: 'ChoreStar',
   applicationCategory: 'LifestyleApplication',
-  operatingSystem: 'Web, iOS',
+  operatingSystem: 'Web, iOS, Android',
   installUrl: APP_STORE_URL,
   url: SITE_URL,
   description: 'Free chore chart app that turns household chores into a game kids love. Track chores, manage allowances, and reward responsibility.',
@@ -159,7 +159,7 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-            ⭐ Join 200+ parents and kids already using ChoreStar
+            ⭐ Join 600+ parents and kids already using ChoreStar
           </p>
         </header>
 
@@ -679,7 +679,7 @@ export default async function HomePage() {
             Start Your Family on ChoreStar
           </h2>
           <p className="text-xl mb-8">
-            Join 200+ parents and kids who ended their chore battles
+            Join 600+ parents and kids who ended their chore battles
           </p>
           <Link
             href="/signup"
