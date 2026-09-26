@@ -6,7 +6,7 @@ import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Morning Routine for Kids That Actually Sticks',
+  title: 'Morning Routine for Kids That Sticks',
   description: 'A step-by-step guide to creating morning routines kids follow independently, with timers, progress tracking, and celebrations built in.',
   keywords: [
     'morning routine for kids',
@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-28',
     images: ['/og-image.png'],
-    title: 'Morning Routine for Kids That Actually Sticks',
+    title: 'Morning Routine for Kids That Sticks',
     description: 'A step-by-step guide to creating morning routines kids follow independently.',
     url: 'https://chorestar.app/blog/morning-routine-for-kids',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Morning Routine for Kids That Actually Sticks',
+    title: 'Morning Routine for Kids That Sticks',
     description: 'A step-by-step guide to creating morning routines kids follow independently.',
   },
   alternates: {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
-  headline: 'Morning Routine for Kids That Actually Sticks',
+  headline: 'Morning Routine for Kids That Sticks',
   image: 'https://chorestar.app/og-image.png',
   description: 'A step-by-step guide to creating morning routines kids follow independently, with timers, progress tracking, and celebrations built in.',
   url: 'https://chorestar.app/blog/morning-routine-for-kids',
@@ -70,7 +70,7 @@ export default function MorningRoutinePage() {
               <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              Morning Routine for Kids That Actually Sticks
+              Morning Routine for Kids That Sticks
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               If mornings in your house feel like herding cats, you&apos;re not alone. Here&apos;s how to build a routine your kids will actually follow, on their own.

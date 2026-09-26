@@ -5,7 +5,7 @@ import { BlogPostExtras } from '@/components/blog/blog-post-extras'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
+  title: "School's Out: A Simple Summer Plan",
   description:
     'School is out and the schedule is gone. A practical guide to sleep, screens, daily rhythm, boredom and chores, without overscheduling summer.',
   keywords: [
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-06-08',
     images: ['/og-image.png'],
-    title: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
+    title: "School's Out: A Simple Summer Plan",
     description:
       'Survive the first two weeks of summer break with a light daily rhythm, before you worry about chore charts.',
     url: 'https://chorestar.app/blog/schools-out-summer-plan',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: "School's Out: Now What? A Simple Summer Plan for the First Two Weeks",
+  headline: "School's Out: A Simple Summer Plan",
   image: 'https://chorestar.app/og-image.png',
   description:
     'The bell rang and suddenly there is no schedule. A practical guide for parents: sleep, screens, daily rhythm, boredom, and when to add chores.',
