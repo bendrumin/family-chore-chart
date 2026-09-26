@@ -14,7 +14,16 @@
 // Review demo). They are reported, never changed.
 import { createClient } from '@supabase/supabase-js'
 
-const COMPED = new Set(['bsiegel13@gmail.com', 'appreview@chorestar.app'])
+// Premium on purpose, so the audit reports them and never touches them:
+// the founder, the App Store review demo, and Abigail Greer (The Oslin
+// Family), who runs an ad agency and is comped as a partner. She is also the
+// single most active family in the product, so an audit that downgraded her
+// would look exactly like a bug.
+const COMPED = new Set([
+  'bsiegel13@gmail.com',
+  'appreview@chorestar.app',
+  'greer.abigail@gmail.com',
+])
 const apply = process.argv.includes('--apply')
 
 const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim()
