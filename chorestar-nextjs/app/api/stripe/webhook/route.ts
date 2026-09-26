@@ -90,9 +90,46 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   await updateSubscriptionTier(userId, tier)
 }
 
+/**
+ * Which profile a subscription belongs to.
+ *
+ * metadata.userId is set at checkout and is the normal answer, but
+ * subscriptions created before that block existed carry nothing, and a
+ * handler that gives up silently on those is how one family stayed premium
+ * for eleven months after cancelling. Falling back to the customer's email
+ * covers the old rows, and anything still unresolved is logged loudly rather
+ * than dropped.
+ */
+async function userIdForSubscription(subscription: Stripe.Subscription): Promise<string | null> {
+  const fromMetadata = subscription.metadata?.userId
+  if (fromMetadata) return fromMetadata
+
+  const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
+  if (!customerId) return null
+
+  try {
+    const customer = await stripe.customers.retrieve(customerId)
+    const email = !customer.deleted ? customer.email : null
+    if (!email) return null
+    const supabase = createServiceRoleClient()
+    const { data } = await (supabase as any)
+      .from('profiles')
+      .select('id')
+      .ilike('email', email)
+      .maybeSingle()
+    return data?.id ?? null
+  } catch (error) {
+    console.error(`Could not resolve a user for subscription ${subscription.id}:`, error)
+    return null
+  }
+}
+
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata?.userId
-  if (!userId) return
+  const userId = await userIdForSubscription(subscription)
+  if (!userId) {
+    console.error(`subscription.updated ${subscription.id}: no user found, tier unchanged`)
+    return
+  }
 
   if (subscription.status === 'active') {
     await updateSubscriptionTier(userId, 'premium')
@@ -102,8 +139,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata?.userId
-  if (!userId) return
+  const userId = await userIdForSubscription(subscription)
+  if (!userId) {
+    console.error(`subscription.deleted ${subscription.id}: no user found, SOMEONE IS STILL PREMIUM`)
+    return
+  }
 
   const supabase = createServiceRoleClient()
   const { data: profile } = await (supabase as any)
@@ -122,7 +162,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   if (!subscriptionId) return
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-  const userId = subscription.metadata?.userId
+  const userId = await userIdForSubscription(subscription)
 
   if (userId) {
     console.warn(`Payment failed for user ${userId}, subscription ${subscriptionId}`)
