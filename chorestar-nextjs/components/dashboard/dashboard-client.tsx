@@ -635,6 +635,13 @@ function DashboardContent({
                   setSettingsTab('family')
                   setIsSettingsOpen(true)
                 }}
+                onEditChild={setEditingChild}
+                onOpenRoutineBuilder={() => {
+                  // The builder lives inside a child's routine list, so pick one
+                  // first or the tab renders empty.
+                  if (!selectedChildId && children.length > 0) setSelectedChildId(children[0].id)
+                  handleAddRoutine()
+                }}
               />
             </div>
 

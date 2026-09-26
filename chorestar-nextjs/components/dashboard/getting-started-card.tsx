@@ -43,6 +43,8 @@ export function GettingStartedCard({
   todayDone,
   onSelectChild,
   onOpenFamilySettings,
+  onEditChild,
+  onOpenRoutineBuilder,
 }: {
   kids: Child[]
   familyCode: string | null
@@ -51,8 +53,12 @@ export function GettingStartedCard({
   todayDone: number
   onSelectChild: (childId: string) => void
   onOpenFamilySettings: () => void
+  onEditChild: (child: Child) => void
+  onOpenRoutineBuilder: () => void
 }) {
   const [choreCount, setChoreCount] = useState<number | null>(null)
+  const [pinCount, setPinCount] = useState<number | null>(null)
+  const [routineCount, setRoutineCount] = useState<number | null>(null)
   const [hasCompletion, setHasCompletion] = useState<boolean | null>(null)
   const [dismissed, setDismissed] = useState<boolean>(() => readDismissed())
 
@@ -63,6 +69,8 @@ export function GettingStartedCard({
     if (ids.length === 0) {
       setChoreCount(0)
       setHasCompletion(false)
+      setPinCount(0)
+      setRoutineCount(0)
       return
     }
     try {
@@ -87,11 +95,23 @@ export function GettingStartedCard({
           .limit(1),
       ])
       setHasCompletion((choreDone?.length ?? 0) > 0 || (routineDone?.length ?? 0) > 0)
+
+      // The two settings that separate families who stay from families who
+      // leave: a kid who can sign in themselves, and a routine. Both used to be
+      // buried, one in helper text and one nowhere at all.
+      const [{ count: pins }, { count: routines }] = await Promise.all([
+        supabase.from('child_pins').select('child_id', { count: 'exact', head: true }).in('child_id', ids),
+        supabase.from('routines').select('id', { count: 'exact', head: true }).in('child_id', ids).eq('is_active', true),
+      ])
+      setPinCount(pins ?? 0)
+      setRoutineCount(routines ?? 0)
     } catch {
       // Fail closed into "unknown": the card simply stays hidden rather than
       // showing wrong checkmarks.
       setChoreCount(null)
       setHasCompletion(null)
+      setPinCount(null)
+      setRoutineCount(null)
     }
   }, [childIds])
 
@@ -109,18 +129,25 @@ export function GettingStartedCard({
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chores' }, () => load())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chore_completions' }, () => load())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'routine_completions' }, () => load())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'child_pins' }, () => load())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'routines' }, () => load())
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
   }, [childIds, load])
 
-  const loaded = choreCount !== null && hasCompletion !== null
+  const loaded = choreCount !== null && hasCompletion !== null && pinCount !== null && routineCount !== null
   const hasKids = kids.length > 0
+  const hasPin = (pinCount ?? 0) > 0
+  const hasRoutine = (routineCount ?? 0) > 0
   // The live snapshot props catch changes between our queries and re-renders.
   const hasChores = (choreCount ?? 0) > 0 || todayTotal > 0
   const done = (hasCompletion ?? false) || todayDone > 0
-  const allDone = loaded && hasKids && hasChores && done
+  // Every step, not just the first three: the card used to retire itself the
+  // moment a parent ticked a box, which is exactly when the two steps that
+  // matter were still undone.
+  const allDone = loaded && hasKids && hasChores && hasPin && done && hasRoutine
 
   // Funnel complete: remember that so the card never flickers back.
   useEffect(() => {
@@ -139,10 +166,16 @@ export function GettingStartedCard({
     }
   }
 
+  // Ordered so the kid gets their own way in BEFORE the first tick, because a
+  // parent ticking the box is not the habit that keeps a family here. Families
+  // who set a PIN are ~3.6x more likely to still be active after a month, and
+  // families with a routine ~2.6x, yet only a fifth of them ever found either.
   const steps: { label: string; complete: boolean }[] = [
     { label: 'Add a kid', complete: hasKids },
     { label: 'Give them chores', complete: hasChores },
+    { label: 'Give them their own login', complete: hasPin },
     { label: 'Let them check one off', complete: done },
+    { label: 'Add a routine for the tricky part of the day', complete: hasRoutine },
   ]
 
   return (
@@ -150,7 +183,7 @@ export function GettingStartedCard({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-            Three steps and the chart runs itself
+            Set it up once and the chart runs itself
           </h2>
           <button
             type="button"
@@ -199,8 +232,28 @@ export function GettingStartedCard({
                   </div>
                 )}
 
-                {/* Step 3 action: the kid-login handoff, family code included */}
-                {i === 2 && !step.complete && hasChores && (
+                {/* Their own login: the single biggest retention lever, so it gets
+                    a button instead of the old "use the pencil icon" sentence. */}
+                {i === 2 && !step.complete && hasKids && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      A 4-digit PIN lets {kids[0].name} sign in on any device and run their
+                      own day. No email address, no password.
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="gradient"
+                      className="font-bold"
+                      onClick={() => onEditChild(kids[0])}
+                    >
+                      Set a PIN for {kids[0].name}
+                    </Button>
+                  </div>
+                )}
+
+                {/* The handoff itself, once they have a way in */}
+                {i === 3 && !step.complete && hasChores && (
                   <div className="mt-2 space-y-2">
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                       Kids sign in on any device with your family code and their PIN. No
@@ -230,6 +283,25 @@ export function GettingStartedCard({
                         Get your family code in Settings
                       </Button>
                     )}
+                  </div>
+                )}
+                {/* Routines: the morning and bedtime grind, which is what parents
+                    came for. Never previously mentioned on this card. */}
+                {i === 4 && !step.complete && hasChores && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Steps in order, one big button at a time: get dressed, brush teeth,
+                      pack the bag. Start from a template and edit it.
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="font-semibold"
+                      onClick={onOpenRoutineBuilder}
+                    >
+                      Build a morning or bedtime routine
+                    </Button>
                   </div>
                 )}
               </div>
