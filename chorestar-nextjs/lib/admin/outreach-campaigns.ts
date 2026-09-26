@@ -52,6 +52,12 @@ function excludeFounder(users: PowerUserStat[]) {
   return users.filter((u) => !FOUNDER_EXCLUDE.includes((u.email || '').toLowerCase()))
 }
 
+/** Whole days since the account was created; null signup sorts to the end. */
+function daysSinceSignup(user: PowerUserStat): number {
+  if (!user.signedUpAt) return Number.MAX_SAFE_INTEGER
+  return Math.floor((Date.now() - new Date(user.signedUpAt).getTime()) / 86400000)
+}
+
 export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
   week2: {
     id: 'week2',
@@ -258,6 +264,98 @@ Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so yo
 
 No reply needed. Just thought it might be useful.
 
+Ben
+chorestar.app`
+    },
+  },
+
+  'stalled-setup': {
+    id: 'stalled-setup',
+    label: 'Stalled setup nudge',
+    description: 'Added a kid in the last month but never got to chores or a PIN',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          const age = daysSinceSignup(u)
+          if (u.childCount < 1) return false
+          if (age < 3 || age > 30) return false
+          // Never ask a working family whether they are stuck. One premium
+          // family with 645 completions matched this on kidPinsSet alone.
+          const activity = (u.choreCompletions || 0) + (u.routineCompletions || 0)
+          if (activity >= 5) return false
+          // The two drop-offs worth an email: no chores at all, or chores that
+          // only the parent can reach.
+          return u.activeChoreCount === 0 || u.kidPinsSet === 0
+        })
+      )
+        .sort((a, b) => daysSinceSignup(a) - daysSinceSignup(b))
+        .slice(0, 25)
+    },
+    subject() {
+      return 'Stuck on ChoreStar setup?'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const kids = user.childCount || 0
+      const noChores = user.activeChoreCount === 0
+      const middle = noChores
+        ? `You added ${kids === 1 ? 'a kid' : `${kids} kids`} but no chores yet. Two or three is plenty to start: something they already do, so the first week feels like winning.`
+        : `You have chores set up, but nobody has a PIN yet. That is the bit most families tell me changes things, because the kid signs in themselves on any device with your family code and a 4-digit PIN, and it stops being your list to nag about.`
+      return `${hi}
+
+I'm Ben, I build ChoreStar. I saw the ${user.familyName} got part way through setup and I wanted to offer a hand rather than let it sit.
+
+${middle}
+
+It takes about two minutes: chorestar.app/dashboard
+
+If something got in the way, or it just was not what you expected, reply and tell me. I read every one of these myself and it is the most useful thing I get.
+
+Ben
+chorestar.app`
+    },
+  },
+
+  'never-started': {
+    id: 'never-started',
+    label: 'Never activated: what stopped you?',
+    description: 'Signed up 31+ days ago and never completed anything. One question, no pitch.',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          // 31+ days, so this never doubles up with stalled-setup, which owns
+          // the 3 to 30 day window.
+          if (daysSinceSignup(u) < 31) return false
+          // Paying families who never started are the most valuable conversation
+          // here, and the least suited to a batch: "I'm not writing to sell you
+          // anything" lands badly on someone already paying. Ben writes those by
+          // hand. The admin list flags them.
+          if (u.subscription !== 'free') return false
+          const did = (u.choreCompletions || 0) + (u.routineCompletions || 0) + (u.kidLogins || 0)
+          return did === 0
+        })
+      )
+        .sort((a, b) => daysSinceSignup(a) - daysSinceSignup(b))
+        .slice(0, 40)
+    },
+    subject() {
+      return 'What stopped you? (one question)'
+    },
+    text(user) {
+      const hi = greeting(user)
+      return `${hi}
+
+I'm Ben. I built ChoreStar on my own, and you signed up a while back and never really got going with it.
+
+I'm not writing to sell you anything. I just want to know one thing, and you are the only person who can tell me:
+
+What stopped you?
+
+Too fiddly to set up, not what you expected, your kids were not interested, you found something better, or you simply forgot. Any of those is a genuinely useful answer, and "I forgot" is the most common one people are shy about saying.
+
+Just hit reply. One line is plenty.
+
+Thank you,
 Ben
 chorestar.app`
     },
