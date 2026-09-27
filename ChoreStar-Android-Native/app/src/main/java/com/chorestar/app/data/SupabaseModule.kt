@@ -8,6 +8,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.HttpClient
+import io.ktor.client.request.header
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -35,5 +36,14 @@ object SupabaseModule {
     val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
     fun webClient(): HttpClient = HttpClient(Android) {
         install(ContentNegotiation) { json(json) }
+        // Ktor sends no User-Agent of its own, so /api/auth/signup read every
+        // Android signup as "web" and the platform split could not see this app
+        // at all. The server matches on "ChoreStarAndroid".
+        install(io.ktor.client.plugins.DefaultRequest) {
+            header(
+                io.ktor.http.HttpHeaders.UserAgent,
+                "ChoreStarAndroid/${com.chorestar.app.BuildConfig.VERSION_NAME} (Android)",
+            )
+        }
     }
 }

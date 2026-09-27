@@ -19,10 +19,12 @@ export async function POST(request: Request) {
     // Signup attribution (migration 021): sanitize the client-supplied
     // first-touch record (allowlisted keys, clipped strings) and tag the
     // platform from the User-Agent, which also classifies iOS-app signups
-    // (CFNetwork/Darwin, no Mozilla) with no app change.
+    // (CFNetwork/Darwin, no Mozilla) with no app change. The native Android
+    // app sends ChoreStarAndroid/<version> deliberately: Ktor sends no
+    // User-Agent by default, so those signups used to be counted as web.
     const ua = request.headers.get('user-agent') || ''
     const platform = ua.includes('ChoreStarAndroid')
-      ? 'android_shell'
+      ? 'android_app'
       : /CFNetwork|Darwin/.test(ua) && !ua.includes('Mozilla')
         ? 'ios_app'
         : 'web'
