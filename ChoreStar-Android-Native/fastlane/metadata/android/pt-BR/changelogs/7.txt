@@ -1,0 +1,1 @@
+Correção interna para sabermos quantas famílias chegam pelo Android. O app não muda.
