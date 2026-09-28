@@ -93,9 +93,9 @@ The AI suggestions feature needs `ANTHROPIC_API_KEY` (get one at [console.anthro
 A [`gitleaks`](https://github.com/gitleaks/gitleaks) pre-commit hook (in [`.githooks/`](.githooks)) blocks accidental secret commits. After cloning, enable it once: `brew install gitleaks && git config core.hooksPath .githooks`.
 
 iOS: open `ChoreStar-iOS/ChoreStar.xcodeproj` in Xcode (Supabase creds in `Info.plist`).
-Android: `cd ChoreStar-Android && npm install && npx cap open android` (needs Android Studio).
+Android: `ChoreStar-Android-Native/` is the live app (Kotlin, Jetpack Compose). Build it with JDK 21, not the newest JDK: `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./gradlew :app:compileDebugKotlin`. `ChoreStar-Android/` is the retired Capacitor shell.
 
-Secrets are never committed — see [`chorestar-nextjs/.env.local.example`](chorestar-nextjs/.env.local.example) for the required variable names. Deeper architecture notes live in [`CLAUDE.md`](CLAUDE.md).
+Secrets are never committed — see [`chorestar-nextjs/.env.local.example`](chorestar-nextjs/.env.local.example) for the required variable names. Setting up a fresh machine, including the files git cannot carry, is [`docs/NEW-MACHINE.md`](docs/NEW-MACHINE.md). Deeper architecture notes live in [`CLAUDE.md`](CLAUDE.md).
 
 ## Origins
 
