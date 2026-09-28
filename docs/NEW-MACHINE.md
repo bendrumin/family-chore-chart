@@ -6,6 +6,10 @@ fresh Mac, in the order that gets you to a running app fastest.
 
 No secret values appear here, only names and locations.
 
+**Shortcut:** `scripts/new-machine.sh` does most of this page. Run `export` on
+the old Mac (an encrypted `.dmg` of every file below), then `import <dmg>`,
+`install`, `check` and `verify` on the new one.
+
 ## 1. Copy these seven files across first
 
 None of these are in git, and the web app, the Android build and every release

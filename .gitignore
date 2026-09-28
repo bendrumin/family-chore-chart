@@ -89,3 +89,6 @@ ChoreStar-iOS/fastlane/metadata/review_information/first_name.txt
 ChoreStar-iOS/fastlane/metadata/review_information/last_name.txt
 ChoreStar-iOS/fastlane/metadata/review_information/phone_number.txt
 ChoreStar-iOS/fastlane/metadata/review_information/email_address.txt
+
+# supabase link state (project ref, pooler URL); per machine
+supabase/.temp/
