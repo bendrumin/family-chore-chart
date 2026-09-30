@@ -2,8 +2,7 @@ import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { checkRateLimit, recordAttempt, RATE_LIMITS, getClientIp, createRateLimitResponse } from '@/lib/utils/rate-limit'
 import { validatePassword } from '@/lib/utils/validation'
-import crypto from 'crypto'
-import type { PostgrestError } from '@supabase/supabase-js'
+import { buildSignupSource, ensureProfile, platformFromUserAgent, type ProfileWriter } from '@/lib/auth/signup-profile'
 
 export async function POST(request: Request) {
   try {
@@ -16,29 +15,13 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { email, password, familyName, honeypot } = body
 
-    // Signup attribution (migration 021): sanitize the client-supplied
-    // first-touch record (allowlisted keys, clipped strings) and tag the
-    // platform from the User-Agent, which also classifies iOS-app signups
-    // (CFNetwork/Darwin, no Mozilla) with no app change. The native Android
-    // app sends ChoreStarAndroid/<version> deliberately: Ktor sends no
-    // User-Agent by default, so those signups used to be counted as web.
-    const ua = request.headers.get('user-agent') || ''
-    const platform = ua.includes('ChoreStarAndroid')
-      ? 'android_app'
-      : /CFNetwork|Darwin/.test(ua) && !ua.includes('Mozilla')
-        ? 'ios_app'
-        : 'web'
-    const ALLOWED_SOURCE_KEYS = [
-      'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
-      'referrer', 'landing', 'captured_at',
-    ] as const
-    const signupSource: Record<string, string> = { platform }
-    if (body.signupSource && typeof body.signupSource === 'object') {
-      for (const k of ALLOWED_SOURCE_KEYS) {
-        const v = (body.signupSource as Record<string, unknown>)[k]
-        if (typeof v === 'string' && v.length > 0) signupSource[k] = v.slice(0, 200)
-      }
-    }
+    // Signup attribution (migration 021): the sanitized first-touch record
+    // plus the platform from the User-Agent. See lib/auth/signup-profile.ts.
+    const signupSource = buildSignupSource(
+      body.signupSource,
+      platformFromUserAgent(request.headers.get('user-agent')),
+      'email'
+    )
 
     if (honeypot) {
       return NextResponse.json({ error: 'Invalid submission.' }, { status: 400 })
@@ -94,38 +77,15 @@ export async function POST(request: Request) {
       // policy (error 42501) — which previously triggered the rollback below and
       // deleted the freshly created account.
       const admin = createServiceRoleClient()
-      // The kid login code is seeded at signup so kid mode works from the
-      // first minute. It used to be generated lazily by /api/kid-login-code,
-      // which only the web settings page called — a family created on iOS
-      // had no code at all, and every code typed at kid login read "invalid".
-      let profileError: PostgrestError | null = null
-      // Dropped automatically if migration 021 is not applied yet (PGRST204,
-      // "column not found") so attribution can never block account creation.
-      let includeSource = true
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const row: Record<string, unknown> = {
-          id: data.user.id,
-          email: data.user.email || normalizedEmail,
-          family_name: normalizedFamilyName,
-          kid_login_code: crypto.randomBytes(4).toString('hex'),
-        }
-        if (includeSource) row.signup_source = signupSource
-        const { error } = await (admin.from('profiles') as ReturnType<typeof admin.from>).insert(row as never)
-        profileError = error
-        if (error && includeSource && (error.code === 'PGRST204' || /signup_source/.test(error.message))) {
-          includeSource = false
-          continue
-        }
-        if (!error || error.code !== '23505') break
-        // 23505 is either "profile already exists" (keep original semantics,
-        // handled below) or a code collision — only the latter retries.
-        const { data: existing } = await admin
-          .from('profiles')
-          .select('id')
-          .eq('id', data.user.id)
-          .maybeSingle()
-        if (existing) break
-      }
+      // The kid login code is seeded here so kid mode works from the first
+      // minute; a family created on iOS once had no code at all, and every
+      // code typed at kid login read "invalid".
+      const { error: profileError } = await ensureProfile(admin as unknown as ProfileWriter, {
+        id: data.user.id,
+        email: data.user.email || normalizedEmail,
+        familyName: normalizedFamilyName,
+        signupSource,
+      })
 
       // Mark the address confirmed so the account works the moment it is
       // created. Supabase requires confirmation by default, which meant a brand
@@ -146,9 +106,10 @@ export async function POST(request: Request) {
         console.error('Failed to auto-confirm email after signup:', confirmError)
       }
 
-      // Ignore duplicate (already exists); otherwise roll back the auth user so
-      // this email isn't left in a broken half-created state.
-      if (profileError && profileError.code !== '23505') {
+      // A profile that already existed is not an error (ensureProfile returns
+      // null for it); anything else rolls back the auth user so this email
+      // isn't left in a broken half-created state.
+      if (profileError) {
         console.error('Profile creation failed after signup:', profileError)
         try {
           await admin.auth.admin.deleteUser(data.user.id)

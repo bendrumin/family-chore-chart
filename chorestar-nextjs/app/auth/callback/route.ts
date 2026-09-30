@@ -1,5 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import {
+  ATTRIBUTION_COOKIE, buildSignupSource, ensureProfile, platformFromUserAgent, resolveFamilyName,
+  type ProfileWriter,
+} from '@/lib/auth/signup-profile'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -22,27 +27,36 @@ export async function GET(request: Request) {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      const familyName =
-        user.user_metadata?.family_name ||
-        user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        user.email?.split('@')[0] ||
-        'Family'
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: user.id,
-            email: user.email || '',
-            family_name: familyName,
-          },
-          { onConflict: 'id', ignoreDuplicates: true }
-        )
-
+      // A no-op for email accounts (their profile was made at signup); for a
+      // first OAuth sign-in it creates the family with a kid login code and
+      // attribution. Service role, like the signup route: the profile insert
+      // must not depend on RLS timing.
+      const cookieStore = await cookies()
+      let attribution: unknown = null
+      try {
+        const raw = cookieStore.get(ATTRIBUTION_COOKIE)?.value
+        if (raw) attribution = JSON.parse(decodeURIComponent(raw))
+      } catch {
+        /* malformed cookie: attribution is best-effort */
+      }
+      const { name } = resolveFamilyName(null, user.user_metadata, user.email)
+      const { error: profileError } = await ensureProfile(
+        createServiceRoleClient() as unknown as ProfileWriter,
+        {
+          id: user.id,
+          email: user.email || '',
+          familyName: name,
+          signupSource: buildSignupSource(
+            attribution,
+            platformFromUserAgent(request.headers.get('user-agent')),
+            String(user.app_metadata?.provider || 'email')
+          ),
+        }
+      )
       if (profileError) {
         console.error('Error ensuring OAuth profile:', profileError)
       }
+      cookieStore.delete(ATTRIBUTION_COOKIE)
     }
 
     // Successful confirmation - redirect to dashboard or specified next URL
