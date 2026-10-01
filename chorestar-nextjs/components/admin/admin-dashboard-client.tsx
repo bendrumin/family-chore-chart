@@ -124,18 +124,11 @@ function ProductCard({ title, m, note }: { title: string; m: ProductMetrics | nu
 }
 
 function HubPanel({ hub, loading, onRefresh }: { hub: HubReport | null; loading: boolean; onRefresh: () => void }) {
-  const signups = hub
-    ? [
-        ...hub.chorestar.recentSignups.map((s) => ({ ...s, product: 'ChoreStar' })),
-        ...(hub.kidcanvas?.recentSignups ?? []).map((s) => ({ ...s, product: 'KidCanvas' })),
-      ]
-        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-        .slice(0, 12)
-    : []
+  const signups = hub?.chorestar.recentSignups ?? []
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Growth across products</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Growth</h2>
         <button
           type="button"
           onClick={onRefresh}
@@ -148,9 +141,8 @@ function HubPanel({ hub, loading, onRefresh }: { hub: HubReport | null; loading:
       {loading && !hub ? (
         <p className="text-sm text-gray-500">Loading…</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           <ProductCard title="ChoreStar" m={hub?.chorestar ?? null} />
-          <ProductCard title="KidCanvas" m={hub?.kidcanvas ?? null} note={hub?.kidcanvasError} />
           <Card className={adminCardClass}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base text-gray-900 dark:text-white">Recent signups</CardTitle>
@@ -161,10 +153,10 @@ function HubPanel({ hub, loading, onRefresh }: { hub: HubReport | null; loading:
               ) : (
                 <ul className="space-y-2 text-sm">
                   {signups.map((s) => (
-                    <li key={`${s.product}-${s.email}-${s.createdAt}`} className="flex items-center justify-between gap-2">
+                    <li key={`${s.email}-${s.createdAt}`} className="flex items-center justify-between gap-2">
                       <span className="truncate text-gray-900 dark:text-gray-100">{s.email}</span>
                       <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                        {s.product} · {timeAgo(s.createdAt)}
+                        {timeAgo(s.createdAt)}
                       </span>
                     </li>
                   ))}

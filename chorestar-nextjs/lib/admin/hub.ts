@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/database.types'
 
-/** One product's growth numbers, shaped the same for every product. */
+/** ChoreStar's growth numbers for the admin dashboard. */
 export interface ProductMetrics {
-  product: 'chorestar' | 'kidcanvas'
+  product: 'chorestar'
   generatedAt: string
   users: { total: number; new7: number; new30: number; active7: number }
   paid: { active: number }
@@ -15,8 +15,6 @@ export interface ProductMetrics {
 export interface HubReport {
   generatedAt: string
   chorestar: ProductMetrics
-  kidcanvas: ProductMetrics | null
-  kidcanvasError?: string
 }
 
 const DAY = 24 * 60 * 60 * 1000
@@ -74,37 +72,5 @@ export async function collectChoreStarMetrics(admin: SupabaseClient<Database>): 
       { label: 'Routines done, 7d', value: routinesDone7 },
     ],
     recentSignups,
-  }
-}
-
-/** Server-to-server read of KidCanvas's metrics feed, guarded by the shared token. */
-export async function fetchKidCanvasMetrics(): Promise<{ metrics: ProductMetrics | null; error?: string }> {
-  const token = process.env.HUB_METRICS_TOKEN
-  if (!token) return { metrics: null, error: 'HUB_METRICS_TOKEN is not set' }
-  try {
-    const res = await fetch('https://kidcanvas.app/api/admin/metrics', {
-      headers: { 'x-hub-token': token },
-      cache: 'no-store',
-      signal: AbortSignal.timeout(8000),
-    })
-    if (!res.ok) return { metrics: null, error: `KidCanvas responded ${res.status}` }
-    const k = await res.json()
-    return {
-      metrics: {
-        product: 'kidcanvas',
-        generatedAt: k.generatedAt,
-        users: k.users,
-        paid: k.paid,
-        extras: [
-          { label: 'Families', value: k.families?.total ?? 0 },
-          { label: 'New families, 7d', value: k.families?.new7 ?? 0 },
-          { label: 'Artworks', value: k.artworks?.total ?? 0 },
-          { label: 'Artworks, 7d', value: k.artworks?.new7 ?? 0 },
-        ],
-        recentSignups: k.recentSignups ?? [],
-      },
-    }
-  } catch (err) {
-    return { metrics: null, error: err instanceof Error ? err.message : 'KidCanvas unreachable' }
   }
 }

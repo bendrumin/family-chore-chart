@@ -1,23 +1,20 @@
 import { NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { requireAdminApi } from '@/lib/admin/require-admin'
-import { collectChoreStarMetrics, fetchKidCanvasMetrics, type HubReport } from '@/lib/admin/hub'
+import { collectChoreStarMetrics, type HubReport } from '@/lib/admin/hub'
 
 export const dynamic = 'force-dynamic'
 
-/** Cross-product growth numbers for the admin dashboard: ChoreStar plus KidCanvas. */
+/** ChoreStar growth numbers for the admin dashboard. */
 export async function GET() {
   const { error } = await requireAdminApi()
   if (error) return error
 
   try {
     const admin = createServiceRoleClient()
-    const [chorestar, kid] = await Promise.all([collectChoreStarMetrics(admin), fetchKidCanvasMetrics()])
     const report: HubReport = {
       generatedAt: new Date().toISOString(),
-      chorestar,
-      kidcanvas: kid.metrics,
-      kidcanvasError: kid.error,
+      chorestar: await collectChoreStarMetrics(admin),
     }
     return NextResponse.json(report)
   } catch (err) {
