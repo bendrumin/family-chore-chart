@@ -86,9 +86,31 @@ address `noreply@chorestar.app`. The domain must pass SPF, which it should
 already do for Resend. If Supabase sends its auth emails (password reset)
 from a different address, register that one too.
 
-## 6. Tell Claude it's done
+## 6. Let the server revoke tokens on account deletion
 
-Once steps 1–4 are in, the code side can go in: the iOS button (entitlement,
-nonce, `signInWithIdToken`, then `POST /api/auth/ensure-profile`), the web
-button, the name-your-family step, and revoking Apple tokens on account
-deletion, which App Review checks.
+App Review requires that deleting an account also revokes Sign in with Apple
+(guideline 5.1.1(v)). The server does it with the same key from step 3:
+
+1. Run `database-migrations/023_apple_sign_in_tokens.sql` in the Supabase SQL
+   Editor.
+2. Add two environment variables in Vercel (Production and Preview):
+   - `APPLE_SIGNIN_KEY_ID`: the key ID from step 3
+   - `APPLE_SIGNIN_PRIVATE_KEY`: the `.p8` contents. From the repo root:
+     `vercel env add APPLE_SIGNIN_PRIVATE_KEY production < ~/.appstoreconnect/private_keys/AuthKey_<KEYID>.p8`
+     (and again with `preview`)
+
+Without them, sign-in still works, but no token is kept and deletion can't
+revoke. The server logs `APPLE_SIGNIN_KEY_ID / APPLE_SIGNIN_PRIVATE_KEY not set`
+when that happens.
+
+## How the code fits together
+
+- **Web:** `components/auth/apple-sign-in-button.tsx` → Supabase OAuth →
+  `/auth/callback`, which creates the family and keeps Apple's refresh token
+  when Supabase passes one through.
+- **iOS:** `SignInWithAppleSection` in `AuthView.swift` → `signInWithIdToken` →
+  `POST /api/auth/ensure-profile` with the one-time authorization code, which
+  the server swaps for a refresh token (`lib/apple/sign-in.ts`).
+- **New families** with a guessed name get asked for a real one: the web
+  `NameFamilyDialog` and iOS `NameFamilySheet`.
+- **Deletion:** `/api/account/delete` revokes before the cascade.

@@ -141,6 +141,7 @@ npm run dev                         # http://localhost:3000
 | `GOOGLE_PUBSUB_PUSH_TOKEN` | Shared secret in the RTDN Pub/Sub push URL (`/api/google/notifications?token=`) |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase service-account key (JSON or base64) for sending FCM activity alerts to the native Android app; falls back to the Play key when that has the FCM role |
 | `FIREBASE_PROJECT_ID` | Optional; defaults to the key's own `project_id` |
+| `APPLE_SIGNIN_KEY_ID` / `APPLE_SIGNIN_PRIVATE_KEY` | Sign in with Apple key (the .p8, not the App Store Connect key): exchanges the iOS app's code for a refresh token and revokes it on account deletion |
 
 ### Testing
 
@@ -257,4 +258,5 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 - Apple-billed subscriptions are reconciled server-side by `app/api/apple/notifications/route.ts` (App Store Server Notifications V2, verified against pinned Apple root CAs in `lib/apple/`). The `apple_notifications` table and the `profiles.apple_original_transaction_id` column (migration 018) are **not** in the generated types — the route uses `as any` casts like the Stripe webhook does. iOS maps purchases to profiles via `appAccountToken` (the profile UUID) and records `originalTransactionID` during entitlement sync.
 - The `testflight_waitlist` table is **not** in the auto-generated Supabase types (`database.types.ts`). The signup route was removed after the iOS launch, but the table still exists and holds emails — the account-delete purge casts the client with `as any` to reach it. If you regenerate types, this table will still be absent unless you add it manually or run `npx supabase gen types` against the live database.
 - Kid-mode pages (`/kid/*`, `/kid-login/*`) intentionally use light-only `bg-white` buttons on gradient backgrounds — this is by design, not a dark mode gap.
+- Sign in with Apple: every sign-in path (email signup, `/auth/callback`, and `POST /api/auth/ensure-profile` for native apps) creates the family through `lib/auth/signup-profile.ts`, so each family gets a kid login code and a `signup_source`. Don't insert into `profiles` anywhere else. Apple refresh tokens live in `apple_sign_in_tokens` (migration 023, not in the generated types, service-role only) so `/api/account/delete` can revoke them, which App Review checks. The Supabase Apple provider's web secret expires every 6 months; regenerate with `scripts/apple-client-secret.mjs` (see `docs/SIGN-IN-WITH-APPLE.md`).
 - `@supabase/ssr` must stay compatible with `@supabase/supabase-js`. Version 0.9.0 pairs with 2.97.0. Mismatched versions cause cascading `never` type errors across every Supabase query.

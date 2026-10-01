@@ -1,6 +1,7 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
+import { revokeAppleTokensFor } from '@/lib/apple/sign-in'
 import {
   checkRateLimit,
   recordAttempt,
@@ -241,6 +242,10 @@ export async function POST(request: Request) {
     // the folder, and the objects would be orphaned with no way to attribute them.
     const storageResult = await deleteStorageObjects(admin, user.id)
 
+    // Sign in with Apple: revoke before the cascade deletes the stored token.
+    // App Review requires it (guideline 5.1.1(v)); never blocks deletion.
+    const appleResult = await revokeAppleTokensFor(admin, user.id)
+
     // NOTE: contact_submissions is deliberately left alone. Its user_id FK is
     // ON DELETE SET NULL, which detaches the ticket from the deleted account
     // while preserving support correspondence — including any thread that's
@@ -274,6 +279,8 @@ export async function POST(request: Request) {
       billingCleanupFailed: stripeResult.failed,
       filesRemoved: storageResult.removed,
       storageCleanupFailed: storageResult.failed,
+      appleTokenRevoked: appleResult.revoked,
+      appleRevokeFailed: appleResult.failed,
     })
   } catch (error) {
     console.error('[account/delete] Unexpected error:', error)

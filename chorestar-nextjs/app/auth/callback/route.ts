@@ -5,6 +5,7 @@ import {
   ATTRIBUTION_COOKIE, buildSignupSource, ensureProfile, platformFromUserAgent, resolveFamilyName,
   type ProfileWriter,
 } from '@/lib/auth/signup-profile'
+import { APPLE_WEB_CLIENT_ID, storeRefreshToken, usesApple } from '@/lib/apple/sign-in'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
 
     // Exchange the code for a session
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: exchanged, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
       console.error('Error exchanging code for session:', error)
@@ -56,6 +57,12 @@ export async function GET(request: Request) {
       )
       if (profileError) {
         console.error('Error ensuring OAuth profile:', profileError)
+      }
+      // Keep Apple's refresh token when Supabase passes it through, so account
+      // deletion can revoke it (see lib/apple/sign-in.ts).
+      const appleRefresh = exchanged.session?.provider_refresh_token
+      if (usesApple(user) && appleRefresh) {
+        await storeRefreshToken(createServiceRoleClient(), user.id, APPLE_WEB_CLIENT_ID, appleRefresh)
       }
       cookieStore.delete(ATTRIBUTION_COOKIE)
       // A brand-new family named after "Jane Doe" or a relay-email prefix gets

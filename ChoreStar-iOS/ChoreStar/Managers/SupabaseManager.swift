@@ -1290,8 +1290,10 @@ class SupabaseManager: ObservableObject {
     /// dropped: a signed-in parent with no profile row has no family to load.
     ///
     /// `rawNonce` is the unhashed nonce whose SHA-256 went on the Apple
-    /// request; Supabase checks the pair.
-    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async {
+    /// request; Supabase checks the pair. `authorizationCode` is handed to the
+    /// server, which swaps it for a refresh token so deleting the account can
+    /// revoke Sign in with Apple (App Review guideline 5.1.1(v)).
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?, authorizationCode: String?) async {
         #if canImport(Supabase)
         guard let client = client else {
             await MainActor.run { authErrorMessage = "Sign in isn't available right now. Please try again." }
@@ -1311,7 +1313,7 @@ class SupabaseManager: ObservableObject {
                 _ = try? await client.auth.update(user: UserAttributes(data: ["full_name": .string(formatted)]))
             }
 
-            let profile = try await ensureProfile(accessToken: session.accessToken)
+            let profile = try await ensureProfile(accessToken: session.accessToken, appleAuthorizationCode: authorizationCode)
             await MainActor.run {
                 self.debugUserId = session.user.id.uuidString
                 self.currentUserEmail = session.user.email
@@ -1336,7 +1338,7 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
-    private func ensureProfile(accessToken: String) async throws -> EnsureProfileResponse {
+    private func ensureProfile(accessToken: String, appleAuthorizationCode: String?) async throws -> EnsureProfileResponse {
         guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/auth/ensure-profile") else {
             throw NSError(domain: "SupabaseManager", code: -1)
         }
@@ -1344,7 +1346,9 @@ class SupabaseManager: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        request.httpBody = Data("{}".utf8)
+        var body: [String: String] = [:]
+        if let appleAuthorizationCode { body["appleAuthorizationCode"] = appleAuthorizationCode }
+        request.httpBody = try? JSONEncoder().encode(body)
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw NSError(domain: "SupabaseManager", code: (response as? HTTPURLResponse)?.statusCode ?? -1,
