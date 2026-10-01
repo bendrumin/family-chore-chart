@@ -654,7 +654,12 @@ struct SignInWithAppleSection: View {
             errorMessage = nil
             isLoading = true
             Task {
-                await manager.signInWithApple(idToken: idToken, rawNonce: nonce, fullName: credential.fullName)
+                await manager.signInWithApple(
+                    idToken: idToken,
+                    rawNonce: nonce,
+                    fullName: credential.fullName,
+                    authorizationCode: credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+                )
                 await MainActor.run {
                     if !manager.isAuthenticated {
                         errorMessage = manager.authErrorMessage ?? "Sign in with Apple didn't finish. Please try again."

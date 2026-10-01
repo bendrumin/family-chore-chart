@@ -4,15 +4,20 @@ import { getParentUserId } from '@/lib/utils/parent-auth'
 import {
   buildSignupSource, ensureProfile, platformFromUserAgent, resolveFamilyName, type ProfileWriter,
 } from '@/lib/auth/signup-profile'
+import { storeTokenFromAuthorizationCode, usesApple } from '@/lib/apple/sign-in'
 
 /**
- * POST /api/auth/ensure-profile  { familyName?, signupSource? }
+ * POST /api/auth/ensure-profile  { familyName?, signupSource?, appleAuthorizationCode? }
  *
  * Called by the iOS and Android apps right after a native Sign in with Apple or
  * Google (Bearer access token from signInWithIdToken). Those sign-ins go
  * straight to Supabase and never touch /api/auth/signup, so this is where the
  * family row, its kid login code and its attribution get made. Safe to call on
  * every sign-in: a returning user's profile is left exactly as it is.
+ *
+ * appleAuthorizationCode is the one-time code from the iOS credential. It is
+ * swapped for a refresh token and kept so account deletion can revoke it,
+ * which App Review checks. Best-effort: a failed exchange never blocks sign-in.
  *
  * Returns { created, needsFamilyName }. needsFamilyName is true when a new
  * family was named from the provider's display name or email prefix, so the
@@ -47,6 +52,11 @@ export async function POST(request: Request) {
       ),
     })
     if (error) throw error
+
+    const code = body.appleAuthorizationCode
+    if (typeof code === 'string' && code && usesApple(user)) {
+      await storeTokenFromAuthorizationCode(admin, user.id, code)
+    }
 
     return NextResponse.json({ created, needsFamilyName: created && defaulted })
   } catch (error) {
