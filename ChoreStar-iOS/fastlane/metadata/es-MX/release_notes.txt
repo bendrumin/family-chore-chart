@@ -1,12 +1,10 @@
-La versión 2.3 pone las tareas en tu pantalla de inicio y la tabla en papel.
+La versión 2.4 agrega Iniciar sesión con Apple.
 
-• Toca una tarea en el widget de ChoreStar para marcarla como hecha, o para aprobar la de un hijo, sin abrir la app
-• Un nuevo widget grande muestra la lista de hoy de cada hijo
-• Exportar e imprimir en Ajustes: una tabla de tareas para el refrigerador y plantillas semanales en tres estilos, gratis para todas las familias
-• Premium agrega el informe familiar en PDF y una hoja de cálculo de la semana
-• Todas las monedas y todos los idiomas se imprimen bien, incluidos los riyales y los nombres en árabe
-• Accesos rápidos: mantén presionado el ícono para ir a Hoy, agregar una tarea o abrir el modo niños
-• Las tareas marcadas caen en la misma semana que en la web cuando tu iPhone empieza la semana en lunes o sábado
+• Crea tu familia con un toque con Iniciar sesión con Apple, sin contraseña que recordar
+• Elige Ocultar mi correo y ChoreStar nunca verá tu dirección real
+• A las familias nuevas se les pregunta primero cómo llamarse, para que los niños vean el nombre de tu familia al entrar
+• ¿Ya te registraste con correo? Nada cambia: sigue entrando con tu correo y contraseña
+• Al eliminar tu cuenta, ChoreStar también desaparece de la lista de inicio de sesión de tu Apple ID
 • Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app

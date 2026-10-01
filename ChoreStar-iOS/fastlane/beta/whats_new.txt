@@ -1,4 +1,10 @@
-NEW IN THIS BUILD:
+NEW IN 2.4 (BUILD 37): SIGN IN WITH APPLE
 
-- See the App Store version notes for this release; TestFlight builds track the
-  same changes until a beta-specific note replaces this file.
+Please try:
+- Sign up with Sign in with Apple, with and without Hide My Email
+- You should be asked to name your family, then land on the dashboard
+- Kid login with the family code should work for the new family
+- Sign out and sign back in with Apple: same family, no new one
+- Existing email accounts: sign in exactly as before
+- Settings > Delete Account on an Apple test family; ChoreStar should then
+  disappear from Settings > Apple ID > Sign in with Apple on the device

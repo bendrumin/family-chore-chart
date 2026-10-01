@@ -3,6 +3,7 @@ O ChoreStar ajuda os pais a organizar as tarefas da casa, criar rotinas diárias
 Agora nativo no iPhone e no iPad, com widget na tela de início e timers de rotina na Dynamic Island.
 
 Para os pais
+• Cadastre-se com um toque usando Iniciar sessão com a Apple, ou com e-mail e senha
 • Adicione cada criança com um avatar colorido ou uma foto
 • Atribua tarefas com recompensas próprias, para todos os dias ou só nos dias que você escolher
 • Monte rotinas de manhã, de dormir e do pós-escola
@@ -36,7 +37,7 @@ Funciona com o chorestar.app
 Os dados da família sincronizam entre a web, o iPhone e o iPad, e todo mundo vê a mesma informação.
 
 Privacidade
-Os dados da sua família nunca são compartilhados nem vendidos. Como as crianças entram com PIN, nenhuma criança informa e-mail ou dados pessoais.
+Os dados da sua família nunca são compartilhados nem vendidos. Como as crianças entram com PIN, nenhuma criança informa e-mail ou dados pessoais. Iniciar sessão com a Apple também pode manter seu próprio e-mail privado.
 
 Grátis e Premium
 • Grátis: até 3 crianças, 20 tarefas, medalhas, rotinas, uma meta por criança e uma lojinha inicial
