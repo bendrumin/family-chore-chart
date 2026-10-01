@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.9.7'
+export const LATEST_CHANGELOG_VERSION = '2026.10.1'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.1': {
+    version: '2026.10.1',
+    date: 'October 2026',
+    title: 'Sign in with Apple',
+    features: [
+      {
+        icon: '🍎',
+        title: 'One Tap to Get Started',
+        description: 'New families can sign up with their Apple ID instead of a password, on the web and on iPhone and iPad. Choose Hide My Email and ChoreStar never sees your real address.',
+      },
+      {
+        icon: '🏡',
+        title: 'Name Your Family First',
+        description: 'Signing in with Apple asks what to call your family before anything else, so your kids see "The Garcias" at login instead of an email address.',
+      },
+      {
+        icon: '🔑',
+        title: 'Already Have a Password?',
+        description: 'Nothing changes for existing families. Keep signing in with your email and password, so you don\'t end up with a second, empty family.',
+      },
+    ],
+  },
   '2026.9.7': {
     version: '2026.9.7',
     date: 'September 2026',
