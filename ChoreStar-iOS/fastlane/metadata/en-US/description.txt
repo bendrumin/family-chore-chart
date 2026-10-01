@@ -3,6 +3,7 @@ ChoreStar helps parents organize household chores, build daily routines, and kee
 Now native on iPhone and iPad, with a home screen widget and routine timers in the Dynamic Island.
 
 For parents
+• Sign up in one tap with Sign in with Apple, or with an email and password
 • Add each child with a color avatar or a photo
 • Assign chores with their own reward amounts, due every day or only on the days you pick
 • Build morning, bedtime, and after-school routines
@@ -36,7 +37,7 @@ Works with chorestar.app
 Family data syncs between the web app, iPhone, and iPad, so everyone sees the same information.
 
 Privacy
-Family data is never shared or sold. Because children sign in with a PIN, no child provides an email address or any personal information.
+Family data is never shared or sold. Because children sign in with a PIN, no child provides an email address or any personal information. Sign in with Apple can keep your own email address private too.
 
 Free and Premium
 • Free: up to 3 children, 20 chores, badges, routines, a goal for each child, and a starter reward store
