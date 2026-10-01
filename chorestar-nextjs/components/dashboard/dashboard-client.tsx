@@ -32,6 +32,7 @@ const NewFeaturesModal = dynamic(() => import('@/components/help/new-features-mo
 const ContactModal = dynamic(() => import('@/components/help/contact-modal').then(m => ({ default: m.ContactModal })), { ssr: false })
 const SeasonalSuggestionsModal = dynamic(() => import('@/components/chores/seasonal-suggestions-modal').then(m => ({ default: m.SeasonalSuggestionsModal })), { ssr: false })
 const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboarding-wizard').then(m => ({ default: m.OnboardingWizard })), { ssr: false })
+const NameFamilyDialog = dynamic(() => import('@/components/onboarding/name-family-dialog').then(m => ({ default: m.NameFamilyDialog })), { ssr: false })
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
@@ -62,23 +63,36 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
   const [isContactOpen, setIsContactOpen] = useState(false)
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  // Set by /auth/callback after a first Apple/Google sign-in whose family name
+  // was only a guess. Read from the URL directly to avoid a Suspense boundary.
+  const [showNameFamily, setShowNameFamily] = useState(false)
 
   useEffect(() => {
     loadChildren()
+    if (new URLSearchParams(window.location.search).get('welcome') === 'name-family') {
+      setShowNameFamily(true)
+    }
   }, [])
 
   // After children load: show wizard only for brand-new users with no children
   useEffect(() => {
-    if (!isLoading && !isSharedMember) {
+    if (!isLoading && !isSharedMember && !showNameFamily) {
       checkOnboarding()
     }
-  }, [isLoading])
+  }, [isLoading, showNameFamily])
 
   const checkOnboarding = () => {
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
     if (!hasSeenOnboarding && children.length === 0) {
       setTimeout(() => setShowOnboarding(true), 800)
     }
+  }
+
+  // Naming comes first; the tour follows (via the effect above) once it closes.
+  const handleNameFamilyDone = (saved: boolean) => {
+    setShowNameFamily(false)
+    router.replace('/dashboard', { scroll: false })
+    if (saved) router.refresh()
   }
 
   const handleOnboardingComplete = () => {
@@ -179,6 +193,12 @@ export function DashboardClient({ initialUser, initialProfile, effectiveUserId, 
         loadChildren={loadChildren}
         handleOnboardingComplete={handleOnboardingComplete}
         isAdmin={isAdmin}
+      />
+      <NameFamilyDialog
+        open={showNameFamily}
+        userId={initialUser.id}
+        currentName={initialProfile?.family_name || ''}
+        onDone={handleNameFamilyDone}
       />
     </SettingsProvider>
   )

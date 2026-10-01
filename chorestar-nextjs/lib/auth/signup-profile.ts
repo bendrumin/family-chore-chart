@@ -15,12 +15,9 @@
 import crypto from 'crypto'
 import type { PostgrestError } from '@supabase/supabase-js'
 
-/**
- * Cookie the web sign-in buttons set just before an OAuth redirect, carrying
- * the localStorage first-touch record, which cannot ride the provider round
- * trip. /auth/callback reads it once and deletes it.
- */
-export const ATTRIBUTION_COOKIE = 'chorestar-signup-attribution'
+// Lives with the client-side attribution code so the sign-in buttons can
+// set it without bundling this server file.
+export { ATTRIBUTION_COOKIE } from '../utils/attribution'
 
 export type SignupPlatform = 'web' | 'ios_app' | 'android_app'
 

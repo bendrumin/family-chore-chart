@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { getEffectiveFamilyId } from '@/lib/utils/family'
 import { isAdminEmail } from '@/lib/admin/is-admin'
+import { buildSignupSource, ensureProfile, resolveFamilyName, type ProfileWriter } from '@/lib/auth/signup-profile'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -52,43 +53,32 @@ export default async function DashboardPage() {
       .eq('id', user.id)
       .single()
 
-    // If profile doesn't exist, create it
+    // No profile (an account that slipped past every signup path): make the
+    // full row, kid login code included, rather than a bare one.
     if (profileError && profileError.code === 'PGRST116') {
       console.warn('Profile not found, creating one for user:', user.id)
-      const familyName = user.user_metadata?.family_name || user.email?.split('@')[0] || 'Family'
-
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .insert({
-          id: user.id,
-          email: user.email!,
-          family_name: familyName,
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Failed to create profile:', createError)
-        return <DashboardClient
-          initialUser={user}
-          initialProfile={{
-            id: user.id,
-            email: user.email!,
-            family_name: familyName,
-            subscription_type: 'free',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            kid_login_code: null,
-          }}
-          effectiveUserId={user.id}
-          isSharedMember={false}
-          isAdmin={isAdminEmail(user.email)}
-        />
-      }
+      const { name } = resolveFamilyName(null, user.user_metadata, user.email)
+      const admin = createServiceRoleClient()
+      const { error: createError } = await ensureProfile(admin as unknown as ProfileWriter, {
+        id: user.id,
+        email: user.email || '',
+        familyName: name,
+        signupSource: buildSignupSource(null, 'web', String(user.app_metadata?.provider || 'email')),
+      })
+      if (createError) console.error('Failed to create profile:', createError)
+      const { data: newProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
       return <DashboardClient
         initialUser={user}
-        initialProfile={newProfile}
+        initialProfile={newProfile ?? {
+          id: user.id,
+          email: user.email!,
+          family_name: name,
+          subscription_type: 'free',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          kid_login_code: null,
+        }}
         effectiveUserId={user.id}
         isSharedMember={false}
         isAdmin={isAdminEmail(user.email)}

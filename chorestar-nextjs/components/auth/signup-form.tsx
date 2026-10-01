@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { AppleSignInButton, AuthDivider } from '@/components/auth/apple-sign-in-button'
 import { getAttribution } from '@/lib/utils/attribution'
 import { validatePassword } from '@/lib/utils/validation'
 
@@ -80,6 +81,11 @@ export function SignupForm({ next = '/dashboard' }: { next?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <AppleSignInButton label="Sign up with Apple" />
+      </div>
+      <AuthDivider />
+
       {/* Email */}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>

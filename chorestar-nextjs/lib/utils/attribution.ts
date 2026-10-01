@@ -24,6 +24,13 @@ export interface AttributionRecord {
 }
 
 const STORAGE_KEY = 'chorestar-attribution'
+
+/**
+ * Cookie the web sign-in buttons set just before an OAuth redirect, carrying
+ * the localStorage record, which cannot ride the provider round trip.
+ * /auth/callback reads it once and deletes it.
+ */
+export const ATTRIBUTION_COOKIE = 'chorestar-signup-attribution'
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 
 const clip = (s: string) => s.slice(0, 200)
