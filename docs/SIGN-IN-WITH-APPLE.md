@@ -58,14 +58,15 @@ Supabase dashboard → Authentication → **Sign In / Providers** → **Apple** 
 - **Client IDs:** `com.chorestar.web,com.chorestar.ChoreStar`. The web
   Services ID *and* the iOS bundle ID, comma-separated. Native sign-in tokens
   carry the bundle ID as their audience and are rejected if it isn't listed.
-- **Secret Key (for OAuth):** a JWT signed with the `.p8` from step 3, which
-  Supabase's Apple provider page can generate from the Team ID, Key ID,
-  Services ID and `.p8` contents. Only the web flow uses it; native iOS
-  sign-in works without it.
+- **Secret Key (for OAuth):** not the `.p8` itself but a short JWT signed
+  with it. Mint it locally, which puts it on the clipboard:
+  `node scripts/apple-client-secret.mjs ~/.appstoreconnect/private_keys/AuthKey_<KEYID>.p8`.
+  Only the web flow uses it; native iOS sign-in works without it.
 
 > **The secret expires after at most 6 months.** When it lapses, web
 > "Sign in with Apple" fails while iOS keeps working, so the break is easy to
-> miss. Put a reminder in the calendar the day you create it.
+> miss. The script prints the expiry date; rerun it before then and paste the
+> new value. Put a reminder in the calendar the day you create it.
 
 Then Authentication → **URL Configuration** → Redirect URLs, make sure these
 are allowed:
