@@ -13,10 +13,13 @@ import {
   RefreshCw,
   Send,
   Shield,
+  UserPlus,
   Users,
 } from 'lucide-react'
 import type { PowerUserReport, PowerUserStat } from '@/lib/admin/types'
 import type { HubReport, ProductMetrics } from '@/lib/admin/hub'
+import type { SignupsReport } from '@/lib/admin/signups'
+import { SignupsPanel } from '@/components/admin/signups-panel'
 
 interface CampaignMeta {
   id: string
@@ -60,7 +63,7 @@ interface SentRow {
   sent_at: string
 }
 
-type Tab = 'users' | 'outreach' | 'history'
+type Tab = 'users' | 'signups' | 'outreach' | 'history'
 
 const adminCardClass =
   'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm backdrop-blur-none'
@@ -181,6 +184,8 @@ export function AdminDashboardClient() {
   const [report, setReport] = useState<PowerUserReport | null>(null)
   const [hub, setHub] = useState<HubReport | null>(null)
   const [hubLoading, setHubLoading] = useState(true)
+  const [signups, setSignups] = useState<SignupsReport | null>(null)
+  const [signupsLoading, setSignupsLoading] = useState(true)
   const [campaigns, setCampaigns] = useState<CampaignMeta[]>([])
   const [presets, setPresets] = useState<PresetMeta[]>([])
   const [manualSendLogs, setManualSendLogs] = useState<ManualSendLogMeta[]>([])
@@ -223,6 +228,18 @@ export function AdminDashboardClient() {
     }
   }, [])
 
+  const loadSignups = useCallback(async () => {
+    setSignupsLoading(true)
+    try {
+      const res = await fetch('/api/admin/signups')
+      if (res.ok) setSignups(await res.json())
+    } catch {
+      // The panel shows its own "could not load" notice.
+    } finally {
+      setSignupsLoading(false)
+    }
+  }, [])
+
   const loadMeta = useCallback(async () => {
     const res = await fetch('/api/admin/outreach')
     if (res.ok) {
@@ -245,9 +262,10 @@ export function AdminDashboardClient() {
   useEffect(() => {
     loadReport()
     loadHub()
+    loadSignups()
     loadMeta()
     loadHistory()
-  }, [loadReport, loadHub, loadMeta, loadHistory])
+  }, [loadReport, loadHub, loadSignups, loadMeta, loadHistory])
 
   const loadPreview = async () => {
     setPreviewLoading(true)
@@ -386,6 +404,7 @@ export function AdminDashboardClient() {
         <div className="flex gap-2 mb-6">
           {([
             ['users', 'Power Users', Users],
+            ['signups', 'Signups', UserPlus],
             ['outreach', 'Outreach', Send],
             ['history', 'Send History', Mail],
           ] as const).map(([id, label, Icon]) => (
@@ -471,6 +490,8 @@ export function AdminDashboardClient() {
             </Card>
           </>
         )}
+
+        {tab === 'signups' && <SignupsPanel data={signups} loading={signupsLoading} onRefresh={loadSignups} />}
 
         {tab === 'outreach' && (
           <div className="space-y-6">
