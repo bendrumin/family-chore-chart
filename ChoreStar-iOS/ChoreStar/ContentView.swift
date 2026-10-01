@@ -27,6 +27,10 @@ struct ContentView: View {
                 ChildMainView()
             } else if supabaseManager.isAuthenticated {
                 MainTabs()
+                    // After a first Sign in with Apple whose family name is a guess.
+                    .sheet(isPresented: $supabaseManager.needsFamilyName) {
+                        NameFamilySheet()
+                    }
             } else {
                 AuthView()
             }

@@ -145,6 +145,10 @@ class SupabaseManager: ObservableObject {
     /// shown — App Review saw "❌ Auth error: Email not confirmed" and filed it
     /// as a bug under guideline 2.1(a).
     @Published var authErrorMessage: String?
+    /// True right after a first Sign in with Apple whose family name was only
+    /// a guess (a display name or relay-email prefix). ContentView asks the
+    /// parent to name their family, then clears it.
+    @Published var needsFamilyName = false
     
     private var client: SupabaseClient?
     
@@ -1270,6 +1274,104 @@ class SupabaseManager: ObservableObject {
         }
     }
     
+    // MARK: - Sign in with Apple
+
+    private struct EnsureProfileResponse: Decodable {
+        let created: Bool
+        let needsFamilyName: Bool
+    }
+
+    /// Signs in with the identity token from ASAuthorizationAppleIDCredential.
+    ///
+    /// The token goes straight to Supabase, so — like a web OAuth sign-in —
+    /// it never touches /api/auth/signup. POST /api/auth/ensure-profile then
+    /// makes the family row (kid login code, attribution) on a first sign-in
+    /// and does nothing for a returning one. If that call fails the session is
+    /// dropped: a signed-in parent with no profile row has no family to load.
+    ///
+    /// `rawNonce` is the unhashed nonce whose SHA-256 went on the Apple
+    /// request; Supabase checks the pair.
+    func signInWithApple(idToken: String, rawNonce: String, fullName: PersonNameComponents?) async {
+        #if canImport(Supabase)
+        guard let client = client else {
+            await MainActor.run { authErrorMessage = "Sign in isn't available right now. Please try again." }
+            return
+        }
+        do {
+            let session = try await client.auth.signInWithIdToken(
+                credentials: OpenIDConnectCredentials(provider: .apple, idToken: idToken, nonce: rawNonce)
+            )
+
+            // Apple sends the name only on the very first authorization and
+            // never puts it in the token. Keep it in user metadata so the
+            // server can offer it as a placeholder family name.
+            if let fullName,
+               case let formatted = PersonNameComponentsFormatter().string(from: fullName),
+               !formatted.isEmpty {
+                _ = try? await client.auth.update(user: UserAttributes(data: ["full_name": .string(formatted)]))
+            }
+
+            let profile = try await ensureProfile(accessToken: session.accessToken)
+            await MainActor.run {
+                self.debugUserId = session.user.id.uuidString
+                self.currentUserEmail = session.user.email
+                self.needsFamilyName = profile.needsFamilyName
+                self.authErrorMessage = nil
+                self.isAuthenticated = true
+            }
+            await loadRemoteData()
+        } catch {
+            try? await client.auth.signOut()
+            await MainActor.run {
+                debugLastError = "Apple sign-in failed: \(error.localizedDescription)"
+                let friendly = Self.friendlySignInMessage(for: error)
+                authErrorMessage = friendly == "Sign in failed. Please try again."
+                    ? "Sign in with Apple didn't finish. Please try again."
+                    : friendly
+                isAuthenticated = false
+            }
+        }
+        #else
+        await MainActor.run { authErrorMessage = "Sign in isn't available in this build." }
+        #endif
+    }
+
+    private func ensureProfile(accessToken: String) async throws -> EnsureProfileResponse {
+        guard let url = URL(string: "\(SupabaseManager.appBaseURL)/api/auth/ensure-profile") else {
+            throw NSError(domain: "SupabaseManager", code: -1)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = Data("{}".utf8)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw NSError(domain: "SupabaseManager", code: (response as? HTTPURLResponse)?.statusCode ?? -1,
+                          userInfo: [NSLocalizedDescriptionKey: "Couldn't set up your family. Check your connection."])
+        }
+        return try JSONDecoder().decode(EnsureProfileResponse.self, from: data)
+    }
+
+    /// Saves the name picked in the name-your-family sheet.
+    func saveFamilyName(_ name: String) async throws {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
+        guard !trimmed.isEmpty else { return }
+        let uid = try await client.auth.session.user.id.uuidString
+        try await client
+            .from("profiles")
+            .update(["family_name": trimmed])
+            .eq("id", value: uid)
+            .execute()
+        await MainActor.run {
+            familyName = trimmed
+            needsFamilyName = false
+        }
+        #endif
+    }
+
     func resetPassword(email: String) async throws {
         #if canImport(Supabase)
         guard let client = client else {
@@ -1298,6 +1400,7 @@ class SupabaseManager: ObservableObject {
                 currentUserEmail = nil
                 debugUserId = nil
                 initialDataLoaded = false
+                needsFamilyName = false
                 children = []
                 chores = []
                 choreCompletions = [:]

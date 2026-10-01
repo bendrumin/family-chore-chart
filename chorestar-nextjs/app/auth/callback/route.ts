@@ -25,6 +25,7 @@ export async function GET(request: Request) {
       )
     }
 
+    const destination = new URL(next, requestUrl.origin)
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       // A no-op for email accounts (their profile was made at signup); for a
@@ -39,8 +40,8 @@ export async function GET(request: Request) {
       } catch {
         /* malformed cookie: attribution is best-effort */
       }
-      const { name } = resolveFamilyName(null, user.user_metadata, user.email)
-      const { error: profileError } = await ensureProfile(
+      const { name, defaulted } = resolveFamilyName(null, user.user_metadata, user.email)
+      const { created, error: profileError } = await ensureProfile(
         createServiceRoleClient() as unknown as ProfileWriter,
         {
           id: user.id,
@@ -57,10 +58,15 @@ export async function GET(request: Request) {
         console.error('Error ensuring OAuth profile:', profileError)
       }
       cookieStore.delete(ATTRIBUTION_COOKIE)
+      // A brand-new family named after "Jane Doe" or a relay-email prefix gets
+      // asked for a real name on the dashboard (NameFamilyDialog).
+      if (created && defaulted && destination.pathname === '/dashboard') {
+        destination.searchParams.set('welcome', 'name-family')
+      }
     }
 
     // Successful confirmation - redirect to dashboard or specified next URL
-    return NextResponse.redirect(new URL(next, requestUrl.origin))
+    return NextResponse.redirect(destination)
   }
 
   // No code present, redirect to login

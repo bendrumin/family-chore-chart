@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { AppleSignInButton, AuthDivider } from '@/components/auth/apple-sign-in-button'
 
 export function LoginForm({ next = '/dashboard' }: { next?: string }) {
   const router = useRouter()
@@ -58,6 +59,15 @@ export function LoginForm({ next = '/dashboard' }: { next?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <AppleSignInButton label="Sign in with Apple" />
+        {/* Hide My Email gives a new relay address, which would make a second, empty family */}
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          Already set up ChoreStar with an email and password? Use those below.
+        </p>
+      </div>
+      <AuthDivider />
+
       {/* Email */}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>

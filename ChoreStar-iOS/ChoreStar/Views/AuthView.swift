@@ -1,4 +1,6 @@
 import SwiftUI
+import AuthenticationServices
+import CryptoKit
 
 enum AuthMode {
     case signIn
@@ -201,6 +203,12 @@ struct AuthView: View {
                 successMessage = nil
             }
             
+            SignInWithAppleSection(
+                isSignUp: authMode == .signUp,
+                isLoading: $isLoading,
+                errorMessage: $errorMessage
+            )
+
             VStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Email")
@@ -568,4 +576,164 @@ struct AuthView: View {
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
         .environmentObject(DeepLinkRouter.shared)
+}
+
+// MARK: - Sign in with Apple
+
+/// The Sign in with Apple button at the top of the auth card, plus the
+/// "or use email" rule under it.
+///
+/// Apple returns an identity token whose `nonce` claim is the SHA-256 of a
+/// value we generate here; SupabaseManager.signInWithApple sends the raw value
+/// so Supabase can check the pair. A fresh nonce per attempt stops a captured
+/// token from being replayed.
+struct SignInWithAppleSection: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.colorScheme) private var colorScheme
+    let isSignUp: Bool
+    @Binding var isLoading: Bool
+    @Binding var errorMessage: String?
+
+    @State private var currentNonce: String?
+
+    var body: some View {
+        VStack(spacing: 16) {
+            SignInWithAppleButton(isSignUp ? .signUp : .signIn) { request in
+                let nonce = Self.randomNonce()
+                currentNonce = nonce
+                request.requestedScopes = [.fullName, .email]
+                request.nonce = Self.sha256(nonce)
+            } onCompletion: { result in
+                handle(result)
+            }
+            // Apple's button picks its own colors; black on the light card,
+            // white on the dark one, per the Human Interface Guidelines.
+            .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+            .frame(height: 50)
+            .cornerRadius(12)
+            .disabled(isLoading)
+            .accessibilityIdentifier("auth.appleButton")
+
+            if !isSignUp {
+                // Hide My Email gives a fresh relay address, which would make a
+                // second, empty family for someone who signed up by email.
+                Text("Already use ChoreStar with an email and password? Sign in with those below.")
+                    .font(.caption)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            HStack(spacing: 12) {
+                Rectangle().fill(Color.choreStarTextSecondary.opacity(0.3)).frame(height: 1)
+                Text("or use email")
+                    .font(.caption)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .fixedSize()
+                Rectangle().fill(Color.choreStarTextSecondary.opacity(0.3)).frame(height: 1)
+            }
+            .accessibilityHidden(true)
+        }
+    }
+
+    private func handle(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .failure(let error):
+            // Closing the Apple sheet is a choice, not an error.
+            if (error as? ASAuthorizationError)?.code == .canceled { return }
+            errorMessage = "Sign in with Apple didn't finish. Please try again."
+        case .success(let authorization):
+            guard
+                let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                let tokenData = credential.identityToken,
+                let idToken = String(data: tokenData, encoding: .utf8),
+                let nonce = currentNonce
+            else {
+                errorMessage = "Sign in with Apple didn't finish. Please try again."
+                return
+            }
+            errorMessage = nil
+            isLoading = true
+            Task {
+                await manager.signInWithApple(idToken: idToken, rawNonce: nonce, fullName: credential.fullName)
+                await MainActor.run {
+                    if !manager.isAuthenticated {
+                        errorMessage = manager.authErrorMessage ?? "Sign in with Apple didn't finish. Please try again."
+                    }
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    static func randomNonce(length: Int = 32) -> String {
+        let charset = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._")
+        var generator = SystemRandomNumberGenerator()
+        return String((0..<length).map { _ in charset.randomElement(using: &generator)! })
+    }
+
+    static func sha256(_ input: String) -> String {
+        SHA256.hash(data: Data(input.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+/// Shown once after a first Sign in with Apple, when the family name on file
+/// is only a guess. Skipping keeps the guess; Settings can change it later.
+struct NameFamilySheet: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("e.g. The Smith Family", text: $name)
+                        .textContentType(.organizationName)
+                        .submitLabel(.done)
+                        .onSubmit(save)
+                        .accessibilityIdentifier("nameFamily.field")
+                } header: {
+                    Text("Family name")
+                } footer: {
+                    Text(errorMessage ?? "Your kids see this when they log in. You can change it any time in Settings.")
+                        .foregroundColor(errorMessage == nil ? .choreStarTextSecondary : .red)
+                }
+            }
+            .navigationTitle("Name your family")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Skip") { finish() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(isSaving ? "Saving…" : "Save", action: save)
+                        .disabled(isSaving || name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+        .interactiveDismissDisabled(isSaving)
+    }
+
+    private func save() {
+        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        isSaving = true
+        Task {
+            do {
+                try await manager.saveFamilyName(name)
+                await MainActor.run { dismiss() }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Couldn't save. Check your connection, or skip and set it in Settings."
+                    isSaving = false
+                }
+            }
+        }
+    }
+
+    private func finish() {
+        manager.needsFamilyName = false
+        dismiss()
+    }
 }
