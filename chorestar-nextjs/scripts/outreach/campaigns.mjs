@@ -74,12 +74,6 @@ export const PRESETS = {
       },
     ],
   },
-  week3: {
-    id: 'week3',
-    label: 'Week 3',
-    description: "School's out guide → recently active families",
-    steps: [{ campaign: 'schools-out-blog' }],
-  },
 }
 
 export const CAMPAIGNS = {
@@ -196,7 +190,6 @@ chorestar.app`
     text(user) {
       const hi = greeting(user)
       const kids = user.childCount || 0
-      const quietWeeks = Math.round((user.daysSinceLastActivity || 30) / 7)
       return `${hi}
 
 I'm Ben from ChoreStar. The ${user.familyName} logged ${user.choreCompletions} chore check-offs — that's serious usage, and I wanted to say thank you for giving it a real try.
@@ -204,10 +197,10 @@ I'm Ben from ChoreStar. The ${user.familyName} logged ${user.choreCompletions} c
 I noticed it's been quiet for a few weeks, and I wanted to check in personally:
 
 - Did something stop working?
-- Did summer schedules make it hard to keep up?
+- Did the schedule change and it got hard to keep up?
 - Or did life just get busy? (Totally fair.)
 
-If you want to pick it back up, we added summer chore suggestions and a sunny seasonal theme this month. Happy to help you tweak your chore list if you reply with what ages you're working with (${kids} kid${kids === 1 ? '' : 's'} in your account).
+If you want to pick it back up, reply with the ages you're working with (${kids} kid${kids === 1 ? '' : 's'} in your account) and I'll help you reset the list.
 
 And if ChoreStar wasn't the right fit, I'd genuinely appreciate knowing why.
 
@@ -218,61 +211,4 @@ chorestar.app`
     },
   },
 
-  'schools-out-blog': {
-    id: 'schools-out-blog',
-    label: "School's out guide",
-    description: "Recently active users — share school's out summer plan post",
-    selectRecipients(report) {
-      return excludeFounder(
-        (report.recentlyActive || []).filter((u) => (u.daysSinceLastActivity ?? 999) <= 14)
-      ).slice(0, 10)
-    },
-    subject() {
-      return "School's out — now what?"
-    },
-    text(user) {
-      const hi = greeting(user)
-      return `${hi}
-
-I'm Ben from ChoreStar — quick share now that summer break is here.
-
-We wrote a short guide for the first two weeks: sleep, screens, a light daily rhythm, and when to add chores (hint: not day one): https://chorestar.app/blog/schools-out-summer-plan
-
-Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so you're ahead of the game if you want to layer in routines when you're ready.
-
-No reply needed — just thought it might help.
-
-Ben
-chorestar.app`
-    },
-  },
-
-  'summer-blog': {
-    id: 'summer-blog',
-    label: 'Summer chore list',
-    description: 'Recently active users — share summer chores blog post',
-    selectRecipients(report) {
-      return excludeFounder(
-        (report.recentlyActive || []).filter((u) => (u.daysSinceLastActivity ?? 999) <= 14)
-      ).slice(0, 10)
-    },
-    subject() {
-      return 'Summer chores without the daily nagging'
-    },
-    text(user) {
-      const hi = greeting(user)
-      return `${hi}
-
-I'm Ben from ChoreStar — quick share that might help now that school's out.
-
-We published a summer chore list by age (outdoor jobs, screen-time swaps, simple morning routine): https://chorestar.app/blog/summer-chores-for-kids
-
-Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so you're ahead of the game. The summer suggestions in the app (Settings → add chores) might be a fun refresh if the kids need new tasks.
-
-No reply needed — just thought it might be useful.
-
-Ben
-chorestar.app`
-    },
-  },
 }

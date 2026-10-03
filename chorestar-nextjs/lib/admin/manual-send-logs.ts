@@ -32,12 +32,6 @@ export const MANUAL_SEND_LOG_BATCHES: ManualSendLogBatch[] = [
       { campaign: 'win-back', email: 'madtail.79@gmail.com', familyName: 'Chaos Clan' },
     ],
   },
-  {
-    id: 'week3',
-    label: "Week 3: School's out guide",
-    hint: 'Week 3 is usually sent from the preset above (auto-logs). Add entries here if you emailed outside admin.',
-    entries: [],
-  },
 ]
 
 export function getManualSendLogBatch(batchId: string): ManualSendLogBatch | undefined {

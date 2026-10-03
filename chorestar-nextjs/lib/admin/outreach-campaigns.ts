@@ -68,12 +68,6 @@ export const OUTREACH_PRESETS: Record<string, OutreachPreset> = {
       { campaign: 'win-back', emails: ['yeliufiorella@gmail.com', 'madtail.79@gmail.com'] },
     ],
   },
-  week3: {
-    id: 'week3',
-    label: 'Week 3',
-    description: "School's out guide → recently active families",
-    steps: [{ campaign: 'schools-out-blog' }],
-  },
 }
 
 export const OUTREACH_CAMPAIGNS: Record<string, OutreachCampaign> = {
@@ -143,7 +137,7 @@ chorestar.app`
       return excludeFounder((report.allUsers || []).filter((u) => u.usesRoutines && u.kidPinsSet > 0)).slice(0, 3)
     },
     subject() {
-      return "You're one of only 2 families using routines. Quick question?"
+      return "You're one of only 2 families using routines — from ChoreStar"
     },
     text(user) {
       const hi = greeting(user)
@@ -197,72 +191,14 @@ I'm Ben from ChoreStar. The ${user.familyName} logged ${user.choreCompletions} c
 I noticed it's been quiet for a few weeks, and I wanted to check in personally:
 
 - Did something stop working?
-- Did summer schedules make it hard to keep up?
+- Did the schedule change and it got hard to keep up?
 - Or did life just get busy? (Totally fair.)
 
-If you want to pick it back up, we added summer chore suggestions and a sunny seasonal theme this month. Happy to help you tweak your chore list if you reply with what ages you're working with (${kids} kid${kids === 1 ? '' : 's'} in your account).
+If you want to pick it back up, reply with the ages you're working with (${kids} kid${kids === 1 ? '' : 's'} in your account) and I'll help you reset the list.
 
 And if ChoreStar wasn't the right fit, I'd genuinely appreciate knowing why.
 
 Either way, thanks for being one of our early power users,
-
-Ben
-chorestar.app`
-    },
-  },
-
-  'schools-out-blog': {
-    id: 'schools-out-blog',
-    label: "School's out guide",
-    description: "Recently active users: share school's out summer plan post",
-    selectRecipients(report) {
-      return excludeFounder(
-        (report.recentlyActive || []).filter((u) => (u.daysSinceLastActivity ?? 999) <= 14)
-      ).slice(0, 10)
-    },
-    subject() {
-      return "School's out: now what?"
-    },
-    text(user) {
-      const hi = greeting(user)
-      return `${hi}
-
-I'm Ben from ChoreStar, with a quick share now that summer break is here.
-
-We wrote a short guide for the first two weeks: sleep, screens, a light daily rhythm, and when to add chores (hint: not day one): https://chorestar.app/blog/schools-out-summer-plan
-
-Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so you're ahead of the game if you want to layer in routines when you're ready.
-
-No reply needed. Just thought it might help.
-
-Ben
-chorestar.app`
-    },
-  },
-
-  'summer-blog': {
-    id: 'summer-blog',
-    label: 'Summer chore list',
-    description: 'Recently active users: share summer chores blog post',
-    selectRecipients(report) {
-      return excludeFounder(
-        (report.recentlyActive || []).filter((u) => (u.daysSinceLastActivity ?? 999) <= 14)
-      ).slice(0, 10)
-    },
-    subject() {
-      return 'Summer chores without the daily nagging'
-    },
-    text(user) {
-      const hi = greeting(user)
-      return `${hi}
-
-I'm Ben from ChoreStar, with a quick share that might help now that school's out.
-
-We published a summer chore list by age (outdoor jobs, screen-time swaps, simple morning routine): https://chorestar.app/blog/summer-chores-for-kids
-
-Your family already has ${user.choreCompletions}+ check-offs in ChoreStar, so you're ahead of the game. The summer suggestions in the app (Settings → add chores) might be a fun refresh if the kids need new tasks.
-
-No reply needed. Just thought it might be useful.
 
 Ben
 chorestar.app`
@@ -326,10 +262,8 @@ chorestar.app`
           // 31+ days, so this never doubles up with stalled-setup, which owns
           // the 3 to 30 day window.
           if (daysSinceSignup(u) < 31) return false
-          // Paying families who never started are the most valuable conversation
-          // here, and the least suited to a batch: "I'm not writing to sell you
-          // anything" lands badly on someone already paying. Ben writes those by
-          // hand. The admin list flags them.
+          // Paying families get paid-never-started. This copy says we are not
+          // selling them anything, which lands badly on someone already paying.
           if (u.subscription !== 'free') return false
           const did = (u.choreCompletions || 0) + (u.routineCompletions || 0) + (u.kidLogins || 0)
           return did === 0
@@ -339,7 +273,7 @@ chorestar.app`
         .slice(0, 40)
     },
     subject() {
-      return 'What stopped you? (one question)'
+      return 'What stopped you? (one question) — from ChoreStar'
     },
     text(user) {
       const hi = greeting(user)
@@ -356,6 +290,156 @@ Too fiddly to set up, not what you expected, your kids were not interested, you 
 Just hit reply. One line is plenty.
 
 Thank you,
+Ben
+chorestar.app`
+    },
+  },
+
+  'no-child': {
+    id: 'no-child',
+    label: 'No child yet',
+    description: 'Signed up 3–30 days ago and never added a kid',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          const age = daysSinceSignup(u)
+          return u.childCount < 1 && age >= 3 && age <= 30
+        })
+      )
+        .sort((a, b) => daysSinceSignup(a) - daysSinceSignup(b))
+        .slice(0, 25)
+    },
+    subject() {
+      return 'Stuck on the first step? — from ChoreStar'
+    },
+    text(user) {
+      const hi = greeting(user)
+      return `${hi}
+
+I'm Ben, I build ChoreStar. You created an account and haven't added a kid yet. That's the step most people pause on.
+
+From there it is about two minutes: one child, two or three chores they already do. chorestar.app/dashboard
+
+If something got in the way, reply and tell me. I read every one of these.
+
+Ben
+chorestar.app`
+    },
+  },
+
+  'kid-login': {
+    id: 'kid-login',
+    label: 'Kid login nudge',
+    description: 'Checking off chores in the last 3 weeks, and no kid has a PIN',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          if (u.kidPinsSet > 0) return false
+          if (u.activeChoreCount < 1) return false
+          if ((u.choreCompletions || 0) < 10) return false
+          return (u.daysSinceLastActivity ?? 999) <= 21
+        })
+      )
+        .sort((a, b) => b.choreCompletions - a.choreCompletions)
+        .slice(0, 15)
+    },
+    subject() {
+      return 'Your kids can check these off themselves — from ChoreStar'
+    },
+    text(user) {
+      const hi = greeting(user)
+      return `${hi}
+
+I'm Ben, I build ChoreStar. The ${user.familyName} has ${user.choreCompletions} chore check-offs, and right now those are coming from the parent side.
+
+The piece most families tell me changes things is kid login. Each kid gets a 4-digit PIN, signs in on any device with your family code, and checks off their own list. No email account for them.
+
+You set it from the child's edit screen. It takes a couple of minutes, and the list stops being yours to nag about.
+
+If you tried it and it didn't stick, tell me what got in the way.
+
+Ben
+chorestar.app`
+    },
+  },
+
+  faded: {
+    id: 'faded',
+    label: 'Started, then quiet',
+    description: '10–99 check-offs, quiet for 30+ days. Heavier families stay on the inactive check-in.',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          const n = u.choreCompletions || 0
+          if (n < 10 || n >= 100) return false
+          return (u.daysSinceLastActivity ?? 0) > 30
+        })
+      )
+        .sort((a, b) => b.choreCompletions - a.choreCompletions)
+        .slice(0, 20)
+    },
+    subject() {
+      return 'Did ChoreStar fall off the list?'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const kids = user.childCount || 0
+      return `${hi}
+
+I'm Ben from ChoreStar. The ${user.familyName} logged ${user.choreCompletions} chore check-offs, so you gave it a real try, and then it went quiet.
+
+I wanted to check in:
+
+- Did something stop working?
+- Did the schedule change?
+- Or did life just get busy? (Totally fair.)
+
+If you want to pick it back up, reply with the ages you're working with (${kids} kid${kids === 1 ? '' : 's'} in your account) and I'll help you reset the list. If it wasn't the right fit, I'd genuinely like to know why.
+
+Ben
+chorestar.app`
+    },
+  },
+
+  'paid-never-started': {
+    id: 'paid-never-started',
+    label: 'Paid, never started',
+    description: 'Premium or Lifetime, 31+ days, and nothing completed. Preview before you send.',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          if (u.subscription !== 'premium' && u.subscription !== 'lifetime') return false
+          if (daysSinceSignup(u) < 31) return false
+          const did = (u.choreCompletions || 0) + (u.routineCompletions || 0) + (u.kidLogins || 0)
+          return did === 0
+        })
+      )
+        .sort((a, b) => daysSinceSignup(a) - daysSinceSignup(b))
+        .slice(0, 15)
+    },
+    subject() {
+      return 'Can I help you get ChoreStar going?'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const plan = user.subscription === 'lifetime' ? 'Lifetime' : 'Premium'
+      const kids = user.childCount || 0
+      const middle =
+        kids < 1
+          ? `You haven't added a kid yet. One child and two or three chores they already do is enough to start: chorestar.app/dashboard`
+          : user.activeChoreCount === 0
+            ? `You added ${kids === 1 ? 'a kid' : `${kids} kids`} and no chores yet. Two or three they already do is plenty, so the first week feels like winning.`
+            : user.kidPinsSet === 0
+              ? `The chores are there, and nobody has a PIN yet. That is the part that lets each kid sign in on any device with your family code and check off their own list.`
+              : `The account is set up and nothing has been checked off. If something got in the way, I would rather hear it than guess.`
+      return `${hi}
+
+I'm Ben, I build ChoreStar. You're on ${plan}, and the ${user.familyName} hasn't had a chance to really use it yet. I wanted to offer a hand.
+
+${middle}
+
+Reply if you want me to walk you through it, or if it turned out not to be what you expected. I read these myself.
+
 Ben
 chorestar.app`
     },

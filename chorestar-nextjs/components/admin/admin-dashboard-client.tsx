@@ -181,7 +181,7 @@ export function AdminDashboardClient() {
   const [campaigns, setCampaigns] = useState<CampaignMeta[]>([])
   const [presets, setPresets] = useState<PresetMeta[]>([])
   const [manualSendLogs, setManualSendLogs] = useState<ManualSendLogMeta[]>([])
-  const [selected, setSelected] = useState('preset:week3')
+  const [selected, setSelected] = useState('campaign:no-child')
   const [loggingBatch, setLoggingBatch] = useState<string | null>(null)
   const [previews, setPreviews] = useState<OutreachPreview[]>([])
   const [sentRows, setSentRows] = useState<SentRow[]>([])
@@ -558,7 +558,7 @@ export function AdminDashboardClient() {
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Skips addresses already in send history. Week 3 auto-logs when you send from the preset above.
+                    Skips addresses already in send history.
                   </p>
                 </div>
               </CardContent>

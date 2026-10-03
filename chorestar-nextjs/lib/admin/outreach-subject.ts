@@ -10,6 +10,10 @@ const INTERNAL_SLUGS = [
   'champion',
   'week2',
   'week3',
+  'no-child',
+  'kid-login',
+  'faded',
+  'paid-never-started',
 ]
 
 /** Strip accidental internal prefixes/tags from a subject before send. */
