@@ -3,6 +3,7 @@ import SwiftUI
 struct RoutinePlayerView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.dismiss) var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     let routine: Routine
     let childId: UUID
@@ -45,23 +46,29 @@ struct RoutinePlayerView: View {
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 0) {
-                    headerSection
-                    
-                    Spacer()
-                    
-                    if let step = currentStep {
-                        stepContent(step)
+                GeometryReader { geo in
+                    if horizontalSizeClass == .regular && geo.size.width >= 700 {
+                        twoPages(seam: Self.seam(in: geo))
+                    } else {
+                        VStack(spacing: 0) {
+                            headerSection()
+
+                            Spacer()
+
+                            if let step = currentStep {
+                                stepContent(step)
+                            }
+
+                            Spacer()
+
+                            actionButton
+                        }
+                        // One readable column on iPads too narrow for two
+                        // pages; the gradient behind it runs edge to edge.
+                        .frame(maxWidth: 560)
+                        .frame(maxWidth: .infinity)
                     }
-                    
-                    Spacer()
-                    
-                    actionButton
                 }
-                // One readable column on wide screens (iPad, an open iPhone
-                // Duo); the gradient behind it still runs edge to edge.
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
             }
             .onAppear {
                 startTime = Date()
@@ -79,9 +86,103 @@ struct RoutinePlayerView: View {
         }
     }
     
+    // MARK: - Two pages (wide screens)
+
+    /// An open iPhone Duo or an iPad: the step on the left page, the
+    /// checklist and the Done button on the right. Propped up half-folded on
+    /// a counter, the seam is the fold itself, so nothing a kid has to read
+    /// or tap sits on the hinge.
+    private func twoPages(seam: (leading: CGFloat, trailing: CGFloat)) -> some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 0) {
+                headerSection(onCard: false)
+                Spacer()
+                if let step = currentStep {
+                    stepContent(step)
+                }
+                Spacer()
+            }
+            .frame(width: seam.leading)
+
+            Color.clear.frame(width: seam.trailing - seam.leading)
+
+            VStack(spacing: 16) {
+                stepChecklist
+                actionButton
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// Where the pages part. On iOS 27.1 an active, vertical division region
+    /// is the Duo's fold (half-open, like a book); otherwise split the middle.
+    /// Regions can be empty on the first geometry pass, which is fine: the
+    /// GeometryReader re-evaluates when they arrive.
+    private static func seam(in geo: GeometryProxy) -> (leading: CGFloat, trailing: CGFloat) {
+        #if canImport(SwiftUICore, _version: 8.0.85)
+        if #available(iOS 27.1, *) {
+            let fold = geo.reservedRegions(kind: .division)
+                .first { $0.isActive && $0.frame.height > $0.frame.width }
+            if let fold {
+                return (fold.frame.minX, fold.frame.maxX)
+            }
+        }
+        #endif
+        let mid = geo.size.width / 2
+        return (mid - 12, mid + 12)
+    }
+
+    /// Every step at a glance: done, now, and still to come.
+    private var stepChecklist: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Your steps")
+                .font(.headline)
+                .foregroundColor(.choreStarTextSecondary)
+
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(Array(routine.steps.enumerated()), id: \.element.id) { index, step in
+                        HStack(spacing: 12) {
+                            AdaptiveIcon(icon: step.icon, fallbackSymbol: "circle", tint: routineColor, iconSize: 22)
+                                .frame(width: 32, height: 32)
+                            Text(RoutineTemplate.localizedStepTitle(step.title))
+                                .font(.body.weight(index == currentStepIndex ? .bold : .regular))
+                                .foregroundColor(index < currentStepIndex ? .choreStarTextSecondary : .choreStarTextPrimary)
+                                .strikethrough(index < currentStepIndex)
+                                .lineLimit(2)
+                            Spacer(minLength: 8)
+                            if index < currentStepIndex {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.choreStarSuccess)
+                            } else if index == currentStepIndex {
+                                Text("Now")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Capsule().fill(routineColor))
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(index == currentStepIndex ? routineColor.opacity(0.12) : Color.choreStarCardBackground)
+                        )
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 24)
+    }
+
     // MARK: - Header
     
-    private var headerSection: some View {
+    /// `onCard` false in the two-page layout, where a white bar ending at
+    /// the seam read as cut off; there the header sits on the background.
+    private func headerSection(onCard: Bool = true) -> some View {
         VStack(spacing: 16) {
             HStack {
                 Button(action: { dismiss() }) {
@@ -137,8 +238,8 @@ struct RoutinePlayerView: View {
             .padding(.horizontal, 20)
         }
         .padding(.bottom, 20)
-        .background(Color.choreStarCardBackground)
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 2)
+        .background(onCard ? Color.choreStarCardBackground : Color.clear)
+        .shadow(color: .black.opacity(onCard ? 0.05 : 0), radius: 10, x: 0, y: 2)
     }
     
     // MARK: - Step Content
