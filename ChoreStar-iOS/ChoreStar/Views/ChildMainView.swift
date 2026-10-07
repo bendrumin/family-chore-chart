@@ -251,6 +251,20 @@ struct ChildMainView: View {
             .fullScreenCover(item: $activeRoutine) { routine in
                 RoutinePlayerView(routine: routine, childId: child.id)
             }
+            #if DEBUG
+            // Screenshot tooling: `-chorestar-kid <name> -chorestar-routine`
+            // opens the kid's first routine once routines have loaded.
+            .task {
+                guard ProcessInfo.processInfo.arguments.contains("-chorestar-routine") else { return }
+                for _ in 0..<60 {
+                    if let first = childRoutines.first {
+                        activeRoutine = first
+                        return
+                    }
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
+            }
+            #endif
             .onChange(of: pendingChores.count) { oldValue, newValue in
                 // The kid just finished their last chore of the day
                 if newValue == 0, oldValue == 1, !childChores.isEmpty {
