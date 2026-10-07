@@ -143,9 +143,11 @@ neither. Run the audit again after the font change and work the rest down.
 
 The Release Candidate (27A9275) replaces the beta: RC builds can be submitted
 to the App Store, so the Duo-optimized build no longer waits for 27.1 final.
-Builds made with Xcode 27.0 run in compatibility mode on an open Duo (iPhone
-size, centered); rebuilding on the 27.1 SDK is what lets the app fill the
-inner display. Apple's DTS answer (forums thread 847887): none of the new Duo
+Per Apple's Prepare page: apps built with the iOS 27 SDK already resize
+dynamically on iPhone Duo, and builds on the 27.1 SDK are "optimized for
+iPhone Duo" (vertical bars, ArrangementView, reserved regions). Only apps
+built with Xcode 26 or older run in compatibility mode (iPhone size,
+centered). Apple's DTS answer (forums thread 847887): none of the new Duo
 APIs (`ArrangementView`, `reservedRegions`, vertical-bar toolbars) are
 required for review; size-class adaptation is the baseline.
 
