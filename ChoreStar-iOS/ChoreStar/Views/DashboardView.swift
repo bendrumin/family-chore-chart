@@ -6,6 +6,8 @@ struct DashboardView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.requestReview) private var requestReview
     @State private var showConfetti = false
+    /// The iPhone Duo's fold in the Today grid's coordinates while half-open.
+    @State private var choresFold: CGRect?
     @State private var showAchievementAlert = false
     @State private var earnedAchievements: [Achievement] = []
     // What's New no longer auto-presents — it fought the onboarding cover
@@ -111,6 +113,26 @@ struct DashboardView: View {
     private var earnedTodayText: String {
         let total = manager.children.reduce(0.0) { $0 + manager.calculateTodayEarnings(for: $1.id) }
         return manager.formatMoney(total)
+    }
+
+    /// Today's chore cards, shared by the adaptive grid and the fold layout.
+    @ViewBuilder private var todayChoreCards: some View {
+        ForEach(choresToday, id: \.id) { chore in
+            ChoreCard(
+                chore: chore,
+                manager: manager,
+                onComplete: {
+                    showConfetti = true
+                },
+                earnedAchievements: $earnedAchievements,
+                showAchievementAlert: $showAchievementAlert
+            )
+            .scrollTransition { content, phase in
+                content
+                    .opacity(phase.isIdentity ? 1 : 0.5)
+                    .scaleEffect(phase.isIdentity ? 1 : 0.95)
+            }
+        }
     }
 
     var body: some View {
@@ -313,28 +335,21 @@ struct DashboardView: View {
                                     .padding(.vertical, 8)
                             }
 
-                            LazyVGrid(
-                                columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 12, alignment: .top)],
-                                alignment: .center,
-                                spacing: 8
-                            ) {
-                                ForEach(choresToday, id: \.id) { chore in
-                                    ChoreCard(
-                                        chore: chore,
-                                        manager: manager,
-                                        onComplete: {
-                                            showConfetti = true
-                                        },
-                                        earnedAchievements: $earnedAchievements,
-                                        showAchievementAlert: $showAchievementAlert
-                                    )
-                                    .scrollTransition { content, phase in
-                                        content
-                                            .opacity(phase.isIdentity ? 1 : 0.5)
-                                            .scaleEffect(phase.isIdentity ? 1 : 0.95)
-                                    }
+                            // Half-open on an iPhone Duo, two columns either side of
+                            // the fold so no checkbox lands on the hinge; otherwise
+                            // the adaptive grid.
+                            Group {
+                                if let fold = choresFold {
+                                    FoldColumnsLayout(foldMinX: fold.minX, foldMaxX: fold.maxX) { todayChoreCards }
+                                } else {
+                                    LazyVGrid(
+                                        columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 12, alignment: .top)],
+                                        alignment: .center,
+                                        spacing: 8
+                                    ) { todayChoreCards }
                                 }
                             }
+                            .readFold($choresFold)
                             .padding(.horizontal, 20)
                         }
                     }

@@ -20,6 +20,10 @@ struct ChoresView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedFilter: ChoreFilter = .all
+    /// The iPhone Duo's fold while half-open, in the switcher row's and the
+    /// card grid's own coordinates.
+    @State private var screenFold: CGRect?
+    @State private var gridFold: CGRect?
     @State private var showingAddChore = false
     // Chore being edited. Presented from the LIST, not from inside a row:
     // a row-owned sheet dies with its row when loadRemoteData() replaces
@@ -176,6 +180,11 @@ struct ChoresView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                // Half-open, the switcher stops short of the fold; across it,
+                // "Routines" sat right on the hinge.
+                .frame(maxWidth: screenFold.map { max(240, $0.minX - 12) } ?? .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .readFold($screenFold)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
                 
@@ -361,25 +370,35 @@ struct ChoresView: View {
         .scrollContentBackground(.hidden)
     }
     
+    private var choreGroupCards: some View {
+        ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
+            ChoreGroupCard(
+                childName: childName,
+                chores: groupedChores[childName] ?? [],
+                manager: manager,
+                onEditChore: { editingChore = $0 },
+                onDeleteChore: { choreToDelete = $0 }
+            )
+        }
+    }
+
     // iPad: adaptive grid of per-child cards
     private var choresList: some View {
         ScrollView {
             LazyVStack(spacing: 20) {
-                LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
-                    alignment: .center,
-                    spacing: 16
-                ) {
-                    ForEach(groupedChores.keys.sorted(), id: \.self) { childName in
-                        ChoreGroupCard(
-                            childName: childName,
-                            chores: groupedChores[childName] ?? [],
-                            manager: manager,
-                            onEditChore: { editingChore = $0 },
-                            onDeleteChore: { choreToDelete = $0 }
-                        )
+                // Half-open on an iPhone Duo, one card either side of the fold.
+                Group {
+                    if let fold = gridFold {
+                        FoldColumnsLayout(foldMinX: fold.minX, foldMaxX: fold.maxX, rowSpacing: 16) { choreGroupCards }
+                    } else {
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 330, maximum: 560), spacing: 16, alignment: .top)],
+                            alignment: .center,
+                            spacing: 16
+                        ) { choreGroupCards }
                     }
                 }
+                .readFold($gridFold)
                 .padding(.horizontal, 20)
 
                 Spacer(minLength: 100)
