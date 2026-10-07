@@ -155,3 +155,16 @@ regular/regular. `UIScreen.main.bounds` keeps reporting the outer display
 even on the inner one; use the window scene's screen (ChoreStar has no
 `UIScreen.main` uses).
 
+Building with 27.1 rewrites `ChoreStar/Localizable.xcstrings` (about 2,600
+lines reshuffled, some translated entries dropped as stale). It did not touch
+`project.pbxproj`. After any 27.1 build, `git checkout --
+ChoreStar-iOS/ChoreStar/Localizable.xcstrings` unless the string change is
+intended, and add new strings' translations deliberately.
+
+Driving the Duo simulator from the command line: `simctl` still has no pose
+verbs, so poses are set in Xcode's simulator window. Each display is its own
+screenshot target: `simctl io <id> enumerate` lists them; the outer display
+is the 1398x2034 one, the inner 2007x2853. Tabs open with
+`simctl launch <id> com.chorestar.ChoreStar -chorestar-tab home|family|chores|stats|settings`,
+kid mode with `-chorestar-kid <name>` (DEBUG builds).
+
