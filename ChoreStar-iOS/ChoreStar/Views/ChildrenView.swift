@@ -191,6 +191,10 @@ struct ChildDetailCard: View {
             }
         }
         .padding(20)
+        // Fill the grid cell: sized to content, a child with an "unpaid" pill
+        // made a wider card than a sibling without one, which showed on the
+        // single column of the iPhone Duo's closed display.
+        .frame(maxWidth: .infinity)
         .background(Color.choreStarCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .contextMenu {
