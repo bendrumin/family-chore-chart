@@ -1,7 +1,8 @@
 #!/bin/bash
 # ChoreStar 2.4 (build 38): build 37 plus "made for iPhone Duo", archived with
-# Xcode 27.1 so the app fills the Duo's inner display (27.0 builds run in
-# compatibility mode there) and ArrangementView / reservedRegions compile in.
+# Xcode 27.1, the SDK Apple calls "optimized for iPhone Duo": vertical bars,
+# and ArrangementView / reservedRegions compile in. (27.0 builds already
+# resize on the Duo; only Xcode 26 and older get compatibility mode.)
 # Stops at TestFlight like b37: review waits for the device test of Sign in
 # with Apple. When that passes:
 #   node scripts/asc.mjs phased 2.4 && node scripts/asc.mjs submit-version 2.4
