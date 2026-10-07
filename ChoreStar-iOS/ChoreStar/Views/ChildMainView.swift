@@ -93,6 +93,10 @@ struct ChildMainView: View {
                                     Text("Finish ALL your chores to earn \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) today! 🌟")
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.92))
+                                        // Wraps rather than truncating beside the exit button
+                                        // on narrow screens (the Duo's closed display).
+                                        .lineLimit(3)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 } else {
                                     Text("Let's get some chores done!")
                                         .font(.headline)
@@ -217,7 +221,10 @@ struct ChildMainView: View {
                                 ThemeParticleOverlay(glyph: glyph, particleCount: 14, opacity: 0.45)
                             }
                         }
-                        .ignoresSafeArea(edges: .top)
+                        // .horizontal too: on the iPhone Duo's closed display the
+                        // status column insets the trailing edge, and the hero
+                        // stopped short of it, leaving a pale strip by the clock.
+                        .ignoresSafeArea(edges: [.top, .horizontal])
                     )
                     .shadow(color: themeManager.accentColor.opacity(0.25), radius: 14, x: 0, y: 6)
                     
