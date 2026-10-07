@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build ChoreStar with the Xcode beta and run it on the iPhone Duo simulator.
+# Build ChoreStar with Xcode 27.1 (beta or RC) and run it on the iPhone Duo simulator.
 #
 #   scripts/duo-sim.sh            # build, install, launch, screenshot
 #   scripts/duo-sim.sh shot NAME  # just screenshot the running Duo sim
@@ -12,8 +12,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BETA="/Applications/Xcode Beta.app"
-[ -d "$BETA" ] || { echo "No Xcode beta at $BETA (see scripts/xcode-beta.sh)"; exit 1; }
+# Any Xcode 27.1+ works: the beta, or the RC wherever it was unpacked, e.g.
+#   DUO_XCODE=~/Downloads/Xcode.app scripts/duo-sim.sh
+BETA="${DUO_XCODE:-/Applications/Xcode Beta.app}"
+[ -d "$BETA" ] || { echo "No Xcode 27.1 at $BETA (set DUO_XCODE, or see scripts/xcode-beta.sh)"; exit 1; }
 export DEVELOPER_DIR="$BETA/Contents/Developer"
 
 DD=build/duo-dd

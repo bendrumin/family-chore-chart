@@ -58,6 +58,10 @@ struct RoutinePlayerView: View {
                     
                     actionButton
                 }
+                // One readable column on wide screens (iPad, an open iPhone
+                // Duo); the gradient behind it still runs edge to edge.
+                .frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
             }
             .onAppear {
                 startTime = Date()
