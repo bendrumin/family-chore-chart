@@ -157,7 +157,7 @@ struct AuthView: View {
                     if authMode == .forgotPassword {
                         forgotPasswordCard
                     } else {
-                        authCard
+                        authCard(compact: compact)
                     }
                 }
                 .padding(compact ? 18 : 24)
@@ -201,8 +201,10 @@ struct AuthView: View {
     
     // MARK: - Sign In / Sign Up Card
     
-    private var authCard: some View {
-        VStack(spacing: 20) {
+    /// `compact` tightens the gaps on short screens (the iPhone Duo's 678 pt
+    /// outer display) so "I'm a Kid!" stays on screen without scrolling.
+    private func authCard(compact: Bool) -> some View {
+        VStack(spacing: compact ? 14 : 20) {
             // Mode toggle
             Picker("", selection: $authMode) {
                 Text("Sign In").tag(AuthMode.signIn)
@@ -628,7 +630,7 @@ struct SignInWithAppleSection: View {
             if !isSignUp {
                 // Hide My Email gives a fresh relay address, which would make a
                 // second, empty family for someone who signed up by email.
-                Text("Already use ChoreStar with an email and password? Sign in with those below.")
+                Text("Have a ChoreStar password? Use it below.")
                     .font(.caption)
                     .foregroundColor(.choreStarTextSecondary)
                     .multilineTextAlignment(.center)
