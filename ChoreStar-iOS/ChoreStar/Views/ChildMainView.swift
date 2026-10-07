@@ -7,6 +7,7 @@ struct ChildMainView: View {
     /// parent picked. Observed directly rather than via the environment so a
     /// standalone kid launch cannot crash on a missing environment object.
     @ObservedObject private var themeManager = ThemeManager.shared
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var activeRoutine: Routine?
     @State private var showPerfectDay = false
     @State private var showBadges = false
@@ -126,6 +127,13 @@ struct ChildMainView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
 
+                        // Stats and badges stack on a phone; side by side on a wide
+                        // screen, where height is the scarce thing (an open iPhone
+                        // Duo is 669 pt tall) and stacking pushed the chores down.
+                        let statsLayout = horizontalSizeClass == .regular
+                            ? AnyLayout(HStackLayout(alignment: .center, spacing: 16))
+                            : AnyLayout(VStackLayout(spacing: 16))
+                        statsLayout {
                         // Big stats card
                         HStack(spacing: 16) {
                             StatBubble(
@@ -160,7 +168,6 @@ struct ChildMainView: View {
                                 onGradient: true
                             )
                         }
-                        .padding(.horizontal, 20)
 
                         // Badge cabinet. The data existed for the parent's
                         // Achievements screen; the kid never saw it.
@@ -197,7 +204,7 @@ struct ChildMainView: View {
                             )
                         }
                         .buttonStyle(.plain)
-                        .padding(.horizontal, 20)
+                        .frame(maxWidth: horizontalSizeClass == .regular ? 300 : .infinity)
                         .accessibilityLabel("\(earnedBadgeCount) of \(badgeProgress.count) badges earned. Open badges.")
                         .sheet(isPresented: $showBadges) {
                             NavigationStack {
@@ -210,6 +217,8 @@ struct ChildMainView: View {
                                     }
                             }
                         }
+                        }
+                        .padding(.horizontal, 20)
                     }
                     .padding(.bottom, 20)
                     .background(
@@ -228,110 +237,13 @@ struct ChildMainView: View {
                     )
                     .shadow(color: themeManager.accentColor.opacity(0.25), radius: 14, x: 0, y: 6)
                     
-                    // Chores & Routines list
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            // Vacation: nothing is due, the streak is parked,
-                            // and this card is the whole story. The reward
-                            // store below stays open for spending.
-                            if manager.isOnVacationToday {
-                                KidVacationCard(
-                                    streak: streak,
-                                    resumeDate: manager.vacationResumeDate
-                                )
-                                .padding(.horizontal, 20)
-                                .padding(.top, 20)
-                            }
-
-                            // What the money is FOR (2.0).
-                            KidGoalCardView(child: child)
-                                .padding(.top, 20)
-
-                            // Routines section
-                            if !childRoutines.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text("My Routines")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarTextPrimary)
-                                        .padding(.horizontal, 20)
-                                    
-                                    ForEach(childRoutines) { routine in
-                                        KidRoutineCard(routine: routine) {
-                                            activeRoutine = routine
-                                        }
-                                        .padding(.horizontal, 20)
-                                        .scrollTransition { content, phase in
-                                            content
-                                                .opacity(phase.isIdentity ? 1 : 0.5)
-                                                .scaleEffect(phase.isIdentity ? 1 : 0.94)
-                                        }
-                                    }
-                                }
-                                .padding(.top, 20)
-                            }
-                            
-                            // Pending chores
-                            if !pendingChores.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text("Your Chores")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarTextPrimary)
-                                        .padding(.horizontal, 20)
-                                    
-                                    ForEach(pendingChores) { chore in
-                                        BigChoreCard(chore: chore, child: child, manager: manager)
-                                            .padding(.horizontal, 20)
-                                            .scrollTransition { content, phase in
-                                                content
-                                                    .opacity(phase.isIdentity ? 1 : 0.5)
-                                                    .scaleEffect(phase.isIdentity ? 1 : 0.94)
-                                            }
-                                    }
-                                }
-                                .padding(.top, 20)
-                            }
-                            
-                            // Completed chores
-                            if !completedChores.isEmpty {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text("Completed! 🎉")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarSuccess)
-                                        .padding(.horizontal, 20)
-                                    
-                                    ForEach(completedChores) { chore in
-                                        BigChoreCard(chore: chore, child: child, manager: manager)
-                                            .padding(.horizontal, 20)
-                                    }
-                                }
-                                .padding(.top, 20)
-                            }
-                            
-                            // Things money cannot buy, priced by the family (2.0).
-                            KidStoreSection(child: child)
-
-                            if childChores.isEmpty && !manager.isOnVacationToday {
-                                VStack(spacing: 20) {
-                                    Image(systemName: "party.popper.fill")
-                                        .font(.system(size: 60))
-                                        .foregroundStyle(Color.choreStarGradient)
-
-                                    Text("No Chores Yet!")
-                                        .font(.title)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.choreStarTextPrimary)
-                                    
-                                    Text("Check back later")
-                                        .font(.headline)
-                                        .foregroundColor(.choreStarTextSecondary)
-                                }
-                                .padding(40)
-                            }
-                            
-                            Spacer(minLength: 40)
+                    // Chores & Routines: one column on a phone, two when there is
+                    // room (iPad, an open iPhone Duo). Width, not device, decides.
+                    GeometryReader { geo in
+                        if horizontalSizeClass == .regular && geo.size.width >= 700 {
+                            twoColumns(child)
+                        } else {
+                            singleColumn(child)
                         }
                     }
                 }
@@ -357,6 +269,202 @@ struct ChildMainView: View {
         } else {
             Text("No child selected")
                 .foregroundColor(.choreStarTextSecondary)
+        }
+    }
+
+    // MARK: - Sections
+    // Shared by the single-column layout (iPhone) and the two-column one
+    // (iPad, an open iPhone Duo), so the two can never drift apart.
+
+    @ViewBuilder private func vacationSection() -> some View {
+        // Vacation: nothing is due, the streak is parked,
+        // and this card is the whole story. The reward
+        // store below stays open for spending.
+        if manager.isOnVacationToday {
+            KidVacationCard(
+                streak: streak,
+                resumeDate: manager.vacationResumeDate
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+        }
+    }
+
+    @ViewBuilder private func goalSection(_ child: Child) -> some View {
+        // What the money is FOR (2.0).
+        KidGoalCardView(child: child)
+            .padding(.top, 20)
+    }
+
+    @ViewBuilder private func routinesSection() -> some View {
+        // Routines section
+        if !childRoutines.isEmpty {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("My Routines")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.choreStarTextPrimary)
+                    .padding(.horizontal, 20)
+
+                ForEach(childRoutines) { routine in
+                    KidRoutineCard(routine: routine) {
+                        activeRoutine = routine
+                    }
+                    .padding(.horizontal, 20)
+                    .scrollTransition { content, phase in
+                        content
+                            .opacity(phase.isIdentity ? 1 : 0.5)
+                            .scaleEffect(phase.isIdentity ? 1 : 0.94)
+                    }
+                }
+            }
+            .padding(.top, 20)
+        }
+    }
+
+    @ViewBuilder private func pendingSection(_ child: Child) -> some View {
+        // Pending chores
+        if !pendingChores.isEmpty {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Your Chores")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.choreStarTextPrimary)
+                    .padding(.horizontal, 20)
+
+                ForEach(pendingChores) { chore in
+                    BigChoreCard(chore: chore, child: child, manager: manager)
+                        .padding(.horizontal, 20)
+                        .scrollTransition { content, phase in
+                            content
+                                .opacity(phase.isIdentity ? 1 : 0.5)
+                                .scaleEffect(phase.isIdentity ? 1 : 0.94)
+                        }
+                }
+            }
+            .padding(.top, 20)
+        }
+    }
+
+    @ViewBuilder private func completedSection(_ child: Child) -> some View {
+        // Completed chores
+        if !completedChores.isEmpty {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Completed! 🎉")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.choreStarSuccess)
+                    .padding(.horizontal, 20)
+
+                ForEach(completedChores) { chore in
+                    BigChoreCard(chore: chore, child: child, manager: manager)
+                        .padding(.horizontal, 20)
+                }
+            }
+            .padding(.top, 20)
+        }
+    }
+
+    @ViewBuilder private func storeSection(_ child: Child) -> some View {
+        // Things money cannot buy, priced by the family (2.0).
+        KidStoreSection(child: child)
+    }
+
+    @ViewBuilder private func emptySection() -> some View {
+        if childChores.isEmpty && !manager.isOnVacationToday {
+            VStack(spacing: 20) {
+                Image(systemName: "party.popper.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(Color.choreStarGradient)
+
+                Text("No Chores Yet!")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.choreStarTextPrimary)
+
+                Text("Check back later")
+                    .font(.headline)
+                    .foregroundColor(.choreStarTextSecondary)
+            }
+            .padding(40)
+        }
+    }
+
+    // MARK: - Layouts
+
+    /// The kid's day in one scroll: goal and store sit between the to-dos,
+    /// which is the right order on a phone.
+    private func singleColumn(_ child: Child) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                vacationSection()
+                goalSection(child)
+                routinesSection()
+                pendingSection(child)
+                completedSection(child)
+                storeSection(child)
+                emptySection()
+                Spacer(minLength: 40)
+            }
+        }
+    }
+
+    /// Wide screens: what to do today on one side, what it is all for (goal,
+    /// store) on the other, each scrolling on its own. On an open iPhone Duo
+    /// the 669 pt height put the chores below the fold in one column.
+    private func todayColumn(_ child: Child) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                vacationSection()
+                routinesSection()
+                pendingSection(child)
+                completedSection(child)
+                emptySection()
+                Spacer(minLength: 40)
+            }
+        }
+    }
+
+    private func rewardsColumn(_ child: Child) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                goalSection(child)
+                storeSection(child)
+                Spacer(minLength: 40)
+            }
+        }
+    }
+
+    /// iOS 27.1's ArrangementView lets the system place the split, so on an
+    /// iPhone Duo held like a book the two columns fall either side of the
+    /// fold instead of a card straddling it. Earlier iOS gets a plain split.
+    ///
+    /// The canImport guard is on the SDK, not the OS: ArrangementView is not
+    /// in the iOS 27.0 SDK, so Xcode 27.0 compiles only the plain split.
+    /// SwiftUICore 8.0.85 is the iOS 27.1 SDK (27.0 ships 8.0.84).
+    @ViewBuilder private func twoColumns(_ child: Child) -> some View {
+        #if canImport(SwiftUICore, _version: 8.0.85)
+        if #available(iOS 27.1, *) {
+            ArrangementView {
+                todayColumn(child)
+            } secondary: {
+                rewardsColumn(child)
+            }
+            .arrangementViewStyle(.split)
+        } else {
+            plainSplit(child)
+        }
+        #else
+        plainSplit(child)
+        #endif
+    }
+
+    private func plainSplit(_ child: Child) -> some View {
+        HStack(spacing: 0) {
+            todayColumn(child)
+                .frame(maxWidth: .infinity)
+            rewardsColumn(child)
+                .frame(width: 380)
         }
     }
 }
