@@ -5,6 +5,7 @@ La versión 2.4 agrega Iniciar sesión con Apple.
 • A las familias nuevas se les pregunta primero cómo llamarse, para que los niños vean el nombre de tu familia al entrar
 • ¿Ya te registraste con correo? Nada cambia: sigue entrando con tu correo y contraseña
 • Al eliminar tu cuenta, ChoreStar también desaparece de la lista de inicio de sesión de tu Apple ID
+• Hecho para iPhone Duo: ábrelo y el modo niños se ve en dos columnas, y la rutina muestra todos los pasos junto al actual. Medio abierto, nada queda sobre el pliegue
 • Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app
