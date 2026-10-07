@@ -702,7 +702,10 @@ struct ThemeGalleryView: View {
 
             // A wrapping grid (two columns on iPhone, more on iPad): every theme
             // is visible at once, and nothing scrolls sideways inside the list.
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 14) {
+            // 170, not 150: the mini preview's fixed parts need ~170 pt, and at
+            // 150 a wide screen (an open iPhone Duo) fit five columns too narrow
+            // for them, so neighboring tiles overlapped.
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 12)], spacing: 14) {
                 ForEach(items) { item in
                     themeCard(item)
                 }
