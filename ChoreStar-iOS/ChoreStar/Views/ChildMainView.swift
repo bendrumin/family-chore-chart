@@ -259,13 +259,7 @@ struct ChildMainView: View {
                     }
                 }
             }
-            .background {
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear { foldFrame = activeVerticalFold(in: proxy) }
-                        .onChange(of: activeVerticalFold(in: proxy)) { _, fold in foldFrame = fold }
-                }
-            }
+            .readFold($foldFrame)
             .fullScreenCover(item: $activeRoutine) { routine in
                 RoutinePlayerView(routine: routine, childId: child.id)
             }
@@ -302,22 +296,6 @@ struct ChildMainView: View {
             Text("No child selected")
                 .foregroundColor(.choreStarTextSecondary)
         }
-    }
-
-    // MARK: - Fold
-
-    /// The Duo's fold while half-open: an active, vertical division region.
-    /// Empty on the first geometry pass on 27.1, so this is re-read on
-    /// every change rather than once. The 27.0 SDK has no regions at all.
-    private func activeVerticalFold(in proxy: GeometryProxy) -> CGRect? {
-        #if canImport(SwiftUICore, _version: 8.0.85)
-        if #available(iOS 27.1, *) {
-            return proxy.reservedRegions(kind: .division)
-                .first { $0.isActive && $0.frame.height > $0.frame.width }?
-                .frame
-        }
-        #endif
-        return nil
     }
 
     // MARK: - Sections
@@ -1217,41 +1195,6 @@ struct KidStoreSection: View {
                     secondaryButton: .cancel(Text("Not now"))
                 )
             }
-        }
-    }
-}
-
-/// Two subviews either side of a fold, in the layout's own coordinates:
-/// the first ends `gap` before the fold, the second starts `gap` after it.
-/// Used for kid mode's stats row on a half-open iPhone Duo.
-struct FoldSplitLayout: Layout {
-    var foldMinX: CGFloat
-    var foldMaxX: CGFloat
-    var gap: CGFloat = 12
-
-    private func widths(total: CGFloat) -> (left: CGFloat, rightX: CGFloat, right: CGFloat) {
-        let left = max(0, foldMinX - gap)
-        let rightX = foldMaxX + gap
-        return (left, rightX, max(0, total - rightX))
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let total = proposal.width ?? 0
-        let w = widths(total: total)
-        let heights = subviews.enumerated().map { index, view in
-            view.sizeThatFits(ProposedViewSize(width: index == 0 ? w.left : w.right, height: proposal.height)).height
-        }
-        return CGSize(width: total, height: heights.max() ?? 0)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let w = widths(total: bounds.width)
-        for (index, view) in subviews.enumerated() where index < 2 {
-            view.place(
-                at: CGPoint(x: bounds.minX + (index == 0 ? 0 : w.rightX), y: bounds.midY),
-                anchor: .leading,
-                proposal: ProposedViewSize(width: index == 0 ? w.left : w.right, height: bounds.height)
-            )
         }
     }
 }
