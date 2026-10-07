@@ -106,9 +106,11 @@ shipping the app. Rules that keep them apart:
 
 ### First Duo run (2026-09-18, Xcode 27.1 beta 27A9269, iOS 27.1 runtime 24A94401)
 
-- Build, install, launch: clean. The app renders correctly on the Duo's
-  inner display (1398x2034 points, one physical display plus the usual
-  720x480 external port). iOS puts the status bar in a vertical rail beside
+- Build, install, launch: clean. (Correction, 2026-10-07: 1398x2034 is the
+  OUTER display in pixels, i.e. 466x678 points at 3x. The inner display is
+  669x951 points, landscape-native, so 951 wide by 669 tall when open.) The
+  app rendered correctly on the display it got, plus the usual 720x480
+  external port. iOS puts the status bar in a vertical rail beside
   the camera cutout on the trailing edge and hands apps a trailing safe-area
   inset; ChoreStar's content centers inside the safe area and the gradient
   runs edge to edge underneath, which is the correct behavior.
@@ -136,3 +138,20 @@ truncated approval-tray titles ("Family mo..."), small hit targets in the
 tray, and a few decorative icons read as text. None of it is the premium
 gates or the checklist card; the audited family is grandfathered and sees
 neither. Run the audit again after the font change and work the rest down.
+
+### Xcode 27.1 RC (2026-10-07)
+
+The Release Candidate (27A9275) replaces the beta: RC builds can be submitted
+to the App Store, so the Duo-optimized build no longer waits for 27.1 final.
+Builds made with Xcode 27.0 run in compatibility mode on an open Duo (iPhone
+size, centered); rebuilding on the 27.1 SDK is what lets the app fill the
+inner display. Apple's DTS answer (forums thread 847887): none of the new Duo
+APIs (`ArrangementView`, `reservedRegions`, vertical-bar toolbars) are
+required for review; size-class adaptation is the baseline.
+
+Pose sizes: closed 466x678 pt (compact width, regular height; a trailing
+status column takes 84 pt), open 951x669 pt, book and rotated open both
+regular/regular. `UIScreen.main.bounds` keeps reporting the outer display
+even on the inner one; use the window scene's screen (ChoreStar has no
+`UIScreen.main` uses).
+

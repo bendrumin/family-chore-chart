@@ -22,6 +22,11 @@ struct AuthView: View {
     @State private var errorMessage: String?
     @State private var successMessage: String?
     @State private var showingKidLogin = false
+    /// Sheet or full-screen cover, decided once when kid login opens. Deciding
+    /// it live from the size class dismissed the PIN pad mid-entry whenever
+    /// the width class changed under it: unfolding an iPhone Duo, or resizing
+    /// an iPad split.
+    @State private var kidLoginAsCover = false
 
     /// Fixed-size fonts don't respond to Dynamic Type; scaling the hero title
     /// relative to .largeTitle keeps the lockup while honoring the user's size.
@@ -49,13 +54,13 @@ struct AuthView: View {
         // button fell below its bottom edge (a tap there dismissed the sheet
         // instead). Regular width gets a full-screen cover; iPhone keeps the sheet.
         .sheet(isPresented: Binding(
-            get: { showingKidLogin && horizontalSizeClass != .regular },
+            get: { showingKidLogin && !kidLoginAsCover },
             set: { if !$0 { showingKidLogin = false } }
         )) {
             KidLoginView()
         }
         .fullScreenCover(isPresented: Binding(
-            get: { showingKidLogin && horizontalSizeClass == .regular },
+            get: { showingKidLogin && kidLoginAsCover },
             set: { if !$0 { showingKidLogin = false } }
         )) {
             KidLoginView()
@@ -70,7 +75,7 @@ struct AuthView: View {
             // Screenshot tooling: `-chorestar-kidlogin` opens the kid login
             // sheet without tap simulation (same pattern as -chorestar-tab).
             if ProcessInfo.processInfo.arguments.contains("-chorestar-kidlogin") {
-                showingKidLogin = true
+                openKidLogin()
             }
             #endif
         }
@@ -80,6 +85,12 @@ struct AuthView: View {
     private func openKidLoginFromQuickAction() {
         guard deepLinks.wantKidMode else { return }
         deepLinks.wantKidMode = false
+        openKidLogin()
+    }
+
+    /// Picks sheet vs cover once, at open (see kidLoginAsCover).
+    private func openKidLogin() {
+        kidLoginAsCover = horizontalSizeClass == .regular
         showingKidLogin = true
     }
 
@@ -165,7 +176,7 @@ struct AuthView: View {
     }
 
     private var kidLoginButton: some View {
-        Button(action: { showingKidLogin = true }) {
+        Button(action: openKidLogin) {
             HStack(spacing: 8) {
                 Image(systemName: "figure.child.circle.fill")
                     .accessibilityHidden(true)
