@@ -31,7 +31,9 @@ struct ChildrenView: View {
                         EmptyChildrenView()
                     } else {
                         LazyVGrid(columns: [
-                            GridItem(.adaptive(minimum: 165, maximum: 260), spacing: 16)
+                            // Top-aligned: centered rows put a shorter card (no
+                            // "unpaid" pill) lower than its neighbor on wide screens.
+                            GridItem(.adaptive(minimum: 165, maximum: 260), spacing: 16, alignment: .top)
                         ], spacing: 16) {
                             ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
                                 ChildDetailCard(child: child, index: index, manager: manager)
