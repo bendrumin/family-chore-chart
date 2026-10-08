@@ -198,10 +198,30 @@ switch (cmd) {
         },
       },
     });
+    // Custom product pages are reviewed separately unless they ride along:
+    // add every page version still being prepared (e.g. "Made for iPhone Duo").
+    const pages = await api('GET', `/v1/apps/${APP_ID}/appCustomProductPages?limit=50`);
+    const ridingPages = [];
+    for (const page of pages.data) {
+      const versions = await api('GET', `/v1/appCustomProductPages/${page.id}/appCustomProductPageVersions`);
+      for (const pv of versions.data.filter((x) => x.attributes.state === 'PREPARE_FOR_SUBMISSION')) {
+        await api('POST', '/v1/reviewSubmissionItems', {
+          data: {
+            type: 'reviewSubmissionItems',
+            relationships: {
+              reviewSubmission: { data: { type: 'reviewSubmissions', id: sub.data.id } },
+              appCustomProductPageVersion: { data: { type: 'appCustomProductPageVersions', id: pv.id } },
+            },
+          },
+        });
+        ridingPages.push(page.attributes.name);
+      }
+    }
     await api('PATCH', `/v1/reviewSubmissions/${sub.data.id}`, {
       data: { type: 'reviewSubmissions', id: sub.data.id, attributes: { submitted: true } },
     });
     out(`SUBMITTED for review: version ${args[0]}, reviewSubmission ${sub.data.id}`);
+    if (ridingPages.length) out(`  with custom product page(s): ${ridingPages.join(', ')}`);
     break;
   }
   case 'set-whatsnew': {
