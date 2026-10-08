@@ -1,4 +1,4 @@
-NEW IN 2.4 (BUILD 38): SIGN IN WITH APPLE + MADE FOR IPHONE DUO
+NEW IN 2.4 (BUILD 39): SIGN IN WITH APPLE + MADE FOR IPHONE DUO
 
 Please try:
 - Sign up with Sign in with Apple, with and without Hide My Email
@@ -14,4 +14,6 @@ On iPhone Duo (or iPad):
 - Start a routine: the current step on one side, every step and Done on the other
 - Half-open like a book: nothing to read or tap should sit on the fold
 - Fold and unfold mid-PIN on kid login: the PIN pad should stay put
-
+- Open: Family shows the kids side by side across the screen
+- Half-open: Home's chores, the Chores tab and Family split around the fold
+- Closed: the "Needs your OK" tray on Home stays readable, buttons below
