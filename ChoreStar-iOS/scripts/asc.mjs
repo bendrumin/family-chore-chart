@@ -260,6 +260,36 @@ switch (cmd) {
     out(j);
     break;
   }
+  case 'tx': {
+    // What a subscriber actually paid: Apple's transaction history for an
+    // original transaction id (profiles.apple_original_transaction_id).
+    // price is in milliunits of `currency`; offerType 1 = introductory
+    // (free trial or intro price), 2 = promotional, 3 = offer code.
+    const decode = (jws) => JSON.parse(Buffer.from(jws.split('.')[1], 'base64url').toString());
+    const hist = await serverApi('GET', `/inApps/v2/history/${args[0]}?sort=DESCENDING`);
+    for (const t of hist.signedTransactions.map(decode)) {
+      out({
+        productId: t.productId,
+        purchaseDate: new Date(t.purchaseDate).toISOString(),
+        expiresDate: t.expiresDate && new Date(t.expiresDate).toISOString(),
+        price: t.price != null ? t.price / 1000 : null,
+        currency: t.currency,
+        storefront: t.storefront,
+        offerType: t.offerType ?? null,
+        offerDiscountType: t.offerDiscountType ?? null,
+        transactionReason: t.transactionReason,
+        environment: t.environment,
+      });
+    }
+    const status = await serverApi('GET', `/inApps/v1/subscriptions/${args[0]}`);
+    for (const group of status.data ?? []) {
+      for (const last of group.lastTransactions ?? []) {
+        const r = decode(last.signedRenewalInfo);
+        out({ status: last.status, autoRenew: r.autoRenewStatus === 1, renewsTo: r.autoRenewProductId, renewalPrice: r.renewalPrice != null ? r.renewalPrice / 1000 : null });
+      }
+    }
+    break;
+  }
   case 'test-notification-status': {
     const j = await serverApi('GET', `/inApps/v1/notifications/test/${args[0]}`);
     out({
