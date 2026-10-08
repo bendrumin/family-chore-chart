@@ -5,7 +5,7 @@ Version 2.4 adds Sign in with Apple.
 • New families are asked what to call themselves first, so kids see your family name when they log in
 • Already signed up with email? Nothing changes: keep signing in with your email and password
 • Deleting your account also removes ChoreStar from your Apple ID's sign-in list
-• Made for iPhone Duo: open it for a two-column kid mode and a routine player that shows every step beside the current one. Half-open, nothing sits on the fold
+• Made for iPhone Duo: open it and kid mode, Home, Chores and Family spread across the wide screen, with a routine player that shows every step beside the current one. Half-open, nothing sits on the fold. Closed, the outer screen gets layouts that fit
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app
