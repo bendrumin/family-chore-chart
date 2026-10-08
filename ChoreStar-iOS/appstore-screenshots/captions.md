@@ -45,3 +45,25 @@ gradient. Both device sets use the same recipe:
 Kid-login shots show the staged family code `star2026`
 (profiles.kid_login_code for The Star Family was reseeded from the
 auto-generated value before capture).
+
+## iPhone Duo set (2.4)
+
+RAW captures in `raw-duo/`: `open-*` (flat, 2853x2007, the store set),
+`folded-*` (closed, 1398x2034), `book-*` (half-open, extras for marketing:
+in a flat screenshot the hinge gutter just reads as an off-center gap).
+ASC's Duo slot (IPHONE_DUO_PROFILE) takes either size, portrait or landscape.
+
+Captured with `scripts/duo-sim.sh` on Xcode 27.1 + `simctl launch` args
+(`-chorestar-tab`, `-chorestar-kid Maya`), not fastlane: poses are set by hand
+in the Simulator window, and each pose has its own `--display` target.
+
+Gotchas:
+- Reseed first (`chorestar-nextjs/scripts/seed-demo-family.mjs`, dates are
+  relative to today). The reseed resets the demo password, which revokes the
+  sim's saved session: the next launch MUST pass `-chorestar-fresh
+  -chorestar-signin <email> <password>`, or DB reads still work but every
+  /api call 401s and the goal, store, approvals tray and unpaid pill vanish.
+- Don't combine `-chorestar-fresh` with `-chorestar-kid` (the sign-out lands
+  after kid mode turns on); sign in fresh once, then launch kid mode.
+- Pass `-FASTLANE_SNAPSHOT YES` so TipKit cards stay hidden.
+- Kid Login is a sheet on the Duo; left out of the set.

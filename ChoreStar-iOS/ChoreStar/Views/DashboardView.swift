@@ -587,6 +587,39 @@ struct ChoreCard: View {
 /// (approval mode, or a chore that asks for a photo). Approve makes it count;
 /// Send back removes it so the chore reappears on the kid's list. Mirrors the
 /// web dashboard's ApprovalTray.
+/// One row of the approval tray: icon and text, then its buttons. Side by
+/// side when they fit; on narrow screens (the iPhone Duo's closed display)
+/// the buttons drop to their own line instead of crushing the text.
+private struct TrayRow<Info: View, Actions: View>: View {
+    private let info: Info
+    private let actions: Actions
+
+    init(@ViewBuilder info: () -> Info, @ViewBuilder actions: () -> Actions) {
+        self.info = info()
+        self.actions = actions()
+    }
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                info
+                Spacer(minLength: 4)
+                actions
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    info
+                    Spacer(minLength: 0)
+                }
+                HStack(spacing: 12) {
+                    Spacer(minLength: 0)
+                    actions
+                }
+            }
+        }
+    }
+}
+
 struct ApprovalTrayView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var lightbox: SupabaseManager.PendingApproval?
@@ -616,7 +649,7 @@ struct ApprovalTrayView: View {
 
                     // Store requests (2.0): Yes spends the money, Not now declines.
                     ForEach(manager.pendingRedemptions) { r in
-                        HStack(spacing: 12) {
+                        TrayRow {
                             Text(r.itemEmoji ?? "🎁")
                                 .font(.system(size: 28))
                                 .frame(width: 52, height: 52)
@@ -636,9 +669,7 @@ struct ApprovalTrayView: View {
                                 }
                                 .font(.caption.weight(.medium))
                             }
-
-                            Spacer(minLength: 4)
-
+                        } actions: {
                             Button {
                                 Haptics.light()
                                 Task { await manager.reviewRedemption(id: r.id, action: "reject") }
@@ -682,7 +713,7 @@ struct ApprovalTrayView: View {
                     }
 
                     ForEach(manager.pendingApprovals) { item in
-                        HStack(spacing: 12) {
+                        TrayRow {
                             if item.hasPhoto, let urlString = item.photoUrl, let url = URL(string: urlString) {
                                 Button { lightbox = item } label: {
                                     AsyncImage(url: url) { phase in
@@ -721,9 +752,7 @@ struct ApprovalTrayView: View {
                                 }
                                 .font(.caption.weight(.medium))
                             }
-
-                            Spacer(minLength: 4)
-
+                        } actions: {
                             Button {
                                 Haptics.light()
                                 Task { await manager.rejectCompletion(id: item.id) }
