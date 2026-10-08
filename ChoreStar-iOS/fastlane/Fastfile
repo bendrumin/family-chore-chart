@@ -435,4 +435,121 @@ platform :ios do
     UI.success("Submitted #{version.version_string} (build #{build.version}) for App Review.")
   end
 
+  # --- One-command shipping. Replaces the per-build scripts/ship-bNN.sh: the
+  # --- archive/export commands are the same ones those scripts proved out;
+  # --- listing, attach and submit go through scripts/asc.mjs because the
+  # --- Asset Library and custom product pages are beyond deliver.
+
+  desc "Ship the next build of the current version to TestFlight and attach it."
+  desc "Bumps APP_BUILD and commits, archives with Xcode 27.1+, uploads, waits for"
+  desc "processing, pushes the listing text for every locale, attaches the build"
+  desc "to the version, and sets What to Test. Stops before review (see submit)."
+  desc "e.g. fastlane ios ship xcode:~/Downloads/Xcode.app   (dry_run:true to preview)"
+  lane :ship do |options|
+    require "shellwords"
+    root = File.expand_path("..", __dir__)
+    pbxproj = File.join(root, "ChoreStar.xcodeproj", "project.pbxproj")
+    project = File.read(pbxproj)
+
+    version = project[/APP_VERSION = ([\d.]+);/, 1]
+    builds = project.scan(/APP_BUILD = (\d+);/).flatten.uniq
+    UI.user_error!("APP_BUILD differs across configurations: #{builds.join(', ')}") unless builds.size == 1
+    build = builds.first.to_i + 1
+
+    # The Duo layouts need the 27.1 SDK ("optimized for iPhone Duo"); 27.0
+    # builds resize but lack reservedRegions, so refuse anything older.
+    xcode = File.expand_path(options[:xcode] || ENV["SHIP_XCODE"] || "/Applications/Xcode.app")
+    developer_dir = File.join(xcode, "Contents", "Developer")
+    sdks = `DEVELOPER_DIR=#{developer_dir.shellescape} xcodebuild -showsdks 2>/dev/null`
+    newest = sdks.scan(/iphoneos(\d+\.\d+)/).flatten.map { |s| Gem::Version.new(s) }.max
+    if newest.nil? || newest < Gem::Version.new("27.1")
+      UI.user_error!("#{xcode} has iOS SDK #{newest || 'none'}; ship needs 27.1+. Pass xcode:<path to Xcode 27.1>.")
+    end
+
+    # Only tracked changes matter; untracked local files never reach the archive.
+    dirty = `git -C #{root.shellescape} status --porcelain --untracked-files=no`.strip
+    unless dirty.empty?
+      message = "Commit or stash these first, the build bump commits on top:\n#{dirty}"
+      options[:dry_run] ? UI.important(message) : UI.user_error!(message)
+    end
+
+    locales = Dir.glob(File.join(root, "fastlane", "metadata", "*", "release_notes.txt"))
+                 .map { |f| File.basename(File.dirname(f)) }.sort
+    UI.important("Ship #{version} (#{build}) with iOS SDK #{newest} from #{xcode}")
+    UI.important("Listing locales: #{locales.join(', ')}")
+    if options[:dry_run]
+      UI.important("Dry run: nothing bumped, built or uploaded.")
+      next
+    end
+
+    File.write(pbxproj, project.gsub(/APP_BUILD = \d+;/, "APP_BUILD = #{build};"))
+    sh("git", "-C", root, "commit", "-q", "-m", "chore(ios): #{version} build #{build}",
+       "--", "ChoreStar.xcodeproj/project.pbxproj")
+
+    creds = asc_credentials
+    auth = ["-allowProvisioningUpdates",
+            "-authenticationKeyPath", creds[:key_path],
+            "-authenticationKeyID", creds[:key_id],
+            "-authenticationKeyIssuerID", creds[:issuer_id]]
+    # Every xcodebuild below (and nothing outside this run) uses the 27.1 Xcode.
+    ENV["DEVELOPER_DIR"] = developer_dir
+    archive = File.join(root, "build", "ChoreStar-#{version}-b#{build}.xcarchive")
+    asc = ->(*args) { sh("node", File.join(root, "scripts", "asc.mjs"), *args) }
+
+    Dir.chdir(root) do
+      FileUtils.rm_rf(archive)
+      sh("xcodebuild", "archive", "-quiet",
+         "-project", "ChoreStar.xcodeproj", "-scheme", "ChoreStar",
+         "-destination", "generic/platform=iOS", "-archivePath", archive, *auth)
+      # 27.1 rewrites the string catalog on every build (drops translations as stale).
+      sh("git", "checkout", "--", "ChoreStar/Localizable.xcstrings")
+
+      # ExportOptions.plist has destination=upload, so the export IS the upload.
+      sh("xcodebuild", "-exportArchive", "-archivePath", archive,
+         "-exportOptionsPlist", "scripts/ExportOptions.plist",
+         "-exportPath", "build/export-b#{build}", *auth)
+
+      asc.call("wait-build", version, build.to_s)
+      asc.call("ensure-version", version)
+      asc.call("push-locales", version, *locales)
+      asc.call("attach-build", version, build.to_s)
+    end
+
+    beta_test_info(feedback_email: "hi@chorestar.app")
+    UI.success("#{version} (#{build}) is in TestFlight and attached to #{version}. NOT submitted.")
+    UI.message("After the device test: fastlane ios submit confirm:true")
+  end
+
+  desc "Phased release on, then submit the editable version for App Review along"
+  desc "with any custom product page still being prepared. Dry run unless confirm:true."
+  lane :submit do |options|
+    root = File.expand_path("..", __dir__)
+    version = File.read(File.join(root, "ChoreStar.xcodeproj", "project.pbxproj"))[/APP_VERSION = ([\d.]+);/, 1]
+    unless options[:confirm]
+      UI.important("Dry run. This WOULD turn on phased release for #{version} and submit it,")
+      UI.important("plus any custom product page in Prepare for Submission. Run with confirm:true.")
+      next
+    end
+    Dir.chdir(root) do
+      sh("node", "scripts/asc.mjs", "phased", version)
+      sh("node", "scripts/asc.mjs", "submit-version", version)
+    end
+  end
+
+  desc "Upload images to the Asset Library and place them, in order, on a version"
+  desc "or custom product page: the slots deliver can't reach (iPhone Duo"
+  desc "screenshots, product page header, search results asset)."
+  desc "e.g. fastlane ios place_assets target:2.4 type:APP_SCREENSHOT group:IPHONE_DUO_PROFILE dir:appstore-screenshots/iphone-duo-2853x2007"
+  desc "     target:cpp:<localization id> for a custom product page; group defaults to DEFAULT_PROFILE."
+  lane :place_assets do |options|
+    root = File.expand_path("..", __dir__)
+    %i[target type dir].each { |k| UI.user_error!("Missing required option: #{k}") if options[k].to_s.empty? }
+    files = Dir.glob(File.join(File.expand_path(options[:dir], root), "*.png")).sort
+    UI.user_error!("No PNGs in #{options[:dir]}") if files.empty?
+    Dir.chdir(root) do
+      sh("node", "scripts/asc.mjs", "asset-place", options[:target].to_s, options[:type].to_s,
+         (options[:group] || "DEFAULT_PROFILE").to_s, *files)
+    end
+  end
+
 end
