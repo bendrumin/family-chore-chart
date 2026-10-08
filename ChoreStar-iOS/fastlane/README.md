@@ -141,6 +141,48 @@ e.g. fastlane ios release            # inspect
 
      fastlane ios release confirm:true
 
+### ios ship
+
+```sh
+[bundle exec] fastlane ios ship
+```
+
+Ship the next build of the current version to TestFlight and attach it.
+
+Bumps APP_BUILD and commits, archives with Xcode 27.1+, uploads, waits for
+
+processing, pushes the listing text for every locale, attaches the build
+
+to the version, and sets What to Test. Stops before review (see submit).
+
+e.g. fastlane ios ship xcode:~/Downloads/Xcode.app   (dry_run:true to preview)
+
+### ios submit
+
+```sh
+[bundle exec] fastlane ios submit
+```
+
+Phased release on, then submit the editable version for App Review along
+
+with any custom product page still being prepared. Dry run unless confirm:true.
+
+### ios place_assets
+
+```sh
+[bundle exec] fastlane ios place_assets
+```
+
+Upload images to the Asset Library and place them, in order, on a version
+
+or custom product page: the slots deliver can't reach (iPhone Duo
+
+screenshots, product page header, search results asset).
+
+e.g. fastlane ios place_assets target:2.4 type:APP_SCREENSHOT group:IPHONE_DUO_PROFILE dir:appstore-screenshots/iphone-duo-2853x2007
+
+     target:cpp:<localization id> for a custom product page; group defaults to DEFAULT_PROFILE.
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
