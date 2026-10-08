@@ -332,6 +332,68 @@ switch (cmd) {
     }
     break;
   }
+  case 'asset-place': {
+    // Upload images to the app's Asset Library and place them on a version's
+    // en-US page, in order. Placement types and groups come from
+    // GET /v1/appAssetLibraryRefData, e.g.
+    //   asset-place 2.4 APP_SCREENSHOT IPHONE_DUO_PROFILE a.png b.png
+    //   asset-place 2.4 PRODUCT_PAGE_HEADER_ASSET DEFAULT_PROFILE header.png
+    const [v, placementType, placementGroup, ...files] = args;
+    const ver = await findVersion(v);
+    if (!ver) throw new Error(`no version ${v}`);
+    const locs = await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreVersionLocalizations?filter[locale]=en-US`);
+    const locId = locs.data[0]?.id;
+    if (!locId) throw new Error('no en-US localization');
+    const category = ['APP_SCREENSHOT', 'APP_PREVIEW', 'IMESSAGE_APP_SCREENSHOT'].includes(placementType)
+      ? 'APP_SCREENSHOTS_AND_PREVIEWS'
+      : 'CREATIVE_ASSETS';
+    const { statSync } = await import('node:fs');
+    const { basename } = await import('node:path');
+    for (const file of files) {
+      const bytes = readFileSync(file);
+      const created = await api('POST', '/v1/appAssetLibraryImages', {
+        data: {
+          type: 'appAssetLibraryImages',
+          // Reference names are unique across the whole library.
+          attributes: { fileName: basename(file), fileSize: statSync(file).size, category, referenceName: `${v} ${placementGroup} ${basename(file)}` },
+          relationships: { assetLibrary: { data: { type: 'appAssetLibraries', id: APP_ID } } },
+        },
+      });
+      const img = created.data;
+      for (const op of img.attributes.uploadOperations ?? []) {
+        const res = await fetch(op.url, {
+          method: op.method,
+          headers: Object.fromEntries((op.requestHeaders ?? []).map((h) => [h.name, h.value])),
+          body: bytes.subarray(op.offset, op.offset + op.length),
+        });
+        if (!res.ok) throw new Error(`upload chunk ${op.offset} -> ${res.status}`);
+      }
+      await api('PATCH', `/v1/appAssetLibraryImages/${img.id}`, {
+        data: { type: 'appAssetLibraryImages', id: img.id, attributes: { uploaded: true } },
+      });
+      // Processing is async; a placement on an unprocessed image is refused.
+      let state = '';
+      for (let i = 0; i < 60; i++) {
+        const cur = await api('GET', `/v1/appAssetLibraryImages/${img.id}`);
+        state = cur.data.attributes.state;
+        if (!['AWAITING_UPLOAD', 'UPLOAD_COMPLETE'].includes(state)) break;
+        await sleep(3000);
+      }
+      if (state === 'FAILED') throw new Error(`${file}: processing failed`);
+      const placed = await api('POST', '/v1/appAssetLibraryPlacements', {
+        data: {
+          type: 'appAssetLibraryPlacements',
+          attributes: { placementType, placementGroup },
+          relationships: {
+            image: { data: { type: 'appAssetLibraryImages', id: img.id } },
+            appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: locId } },
+          },
+        },
+      });
+      out(`${basename(file)}: image ${img.id} (${state}) placed ${placementType}/${placementGroup} -> ${placed.data.id}`);
+    }
+    break;
+  }
   case 'raw': {
     out(await api('GET', args[0]));
     break;
