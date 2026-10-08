@@ -338,12 +338,19 @@ switch (cmd) {
     // GET /v1/appAssetLibraryRefData, e.g.
     //   asset-place 2.4 APP_SCREENSHOT IPHONE_DUO_PROFILE a.png b.png
     //   asset-place 2.4 PRODUCT_PAGE_HEADER_ASSET DEFAULT_PROFILE header.png
+    // A custom product page instead of a version: pass cpp:<localization id>.
     const [v, placementType, placementGroup, ...files] = args;
-    const ver = await findVersion(v);
-    if (!ver) throw new Error(`no version ${v}`);
-    const locs = await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreVersionLocalizations?filter[locale]=en-US`);
-    const locId = locs.data[0]?.id;
-    if (!locId) throw new Error('no en-US localization');
+    let target;
+    if (v.startsWith('cpp:')) {
+      target = { appCustomProductPageLocalization: { data: { type: 'appCustomProductPageLocalizations', id: v.slice(4) } } };
+    } else {
+      const ver = await findVersion(v);
+      if (!ver) throw new Error(`no version ${v}`);
+      const locs = await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreVersionLocalizations?filter[locale]=en-US`);
+      const locId = locs.data[0]?.id;
+      if (!locId) throw new Error('no en-US localization');
+      target = { appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: locId } } };
+    }
     const category = ['APP_SCREENSHOT', 'APP_PREVIEW', 'IMESSAGE_APP_SCREENSHOT'].includes(placementType)
       ? 'APP_SCREENSHOTS_AND_PREVIEWS'
       : 'CREATIVE_ASSETS';
@@ -386,7 +393,7 @@ switch (cmd) {
           attributes: { placementType, placementGroup },
           relationships: {
             image: { data: { type: 'appAssetLibraryImages', id: img.id } },
-            appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: locId } },
+            ...target,
           },
         },
       });

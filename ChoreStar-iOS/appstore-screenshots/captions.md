@@ -81,3 +81,11 @@ Uploaded with `scripts/asc.mjs asset-place <v> APP_SCREENSHOT IPHONE_DUO_PROFILE
 `product-page/header-5244x2950.png` (source `header.html`, rendered at 1x in
 headless Chromium) fills both PRODUCT_PAGE_HEADER_ASSET and
 APP_STORE_SEARCH_RESULTS_ASSET: both accept 5244x2950 PNG.
+
+## Custom product page: "Made for iPhone Duo" (2026-10-08)
+
+ppid 45786466-6537-4c29-abe5-c7e8cfd86356, templated from 2.4 (iPhone, iPad,
+header, search asset copied). Duo row: open kid dashboard, then the Book set
+(`iphone-duo-book-2853x2007/`: Nothing On The Fold · Kid Mode, Two Pages ·
+Every Kid At A Glance · The Whole Crew, Side By Side), then the open set.
+Book shots need build 39+ (half-open Home/Chores/Family landed after b38).

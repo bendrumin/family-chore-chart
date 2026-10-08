@@ -1,6 +1,6 @@
 ChoreStar helps parents organize household chores, build daily routines, and keep track of allowance for the whole family. You set each child up once, and from then on they can check off their own tasks while you keep an overview of what has been done and what has been earned.
 
-Now native on iPhone and iPad, with a home screen widget and routine timers in the Dynamic Island.
+Now native on iPhone, iPad and iPhone Duo, with a home screen widget and routine timers in the Dynamic Island. On iPhone Duo, ChoreStar uses the whole open screen and keeps everything off the fold when it's half-open.
 
 For parents
 • Sign up in one tap with Sign in with Apple, or with an email and password
