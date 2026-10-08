@@ -142,6 +142,7 @@ npm run dev                         # http://localhost:3000
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase service-account key (JSON or base64) for sending FCM activity alerts to the native Android app; falls back to the Play key when that has the FCM role |
 | `FIREBASE_PROJECT_ID` | Optional; defaults to the key's own `project_id` |
 | `APPLE_SIGNIN_KEY_ID` / `APPLE_SIGNIN_PRIVATE_KEY` | Sign in with Apple key (the .p8, not the App Store Connect key): exchanges the iOS app's code for a refresh token and revokes it on account deletion |
+| `APP_STORE_API_KEY_ID` / `APP_STORE_API_ISSUER_ID` / `APP_STORE_API_PRIVATE_KEY` | App Store Connect API key (the .p8 contents or its base64) for the founder hub's Revenue tab, which reads each Apple subscriber's transactions and renewal state from the App Store Server API |
 
 ### Testing
 

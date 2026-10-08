@@ -9,6 +9,7 @@ import { AmbientBackground } from '@/components/ui/ambient-background'
 import {
   ArrowLeft,
   BarChart3,
+  DollarSign,
   Mail,
   RefreshCw,
   Send,
@@ -20,6 +21,8 @@ import type { PowerUserReport, PowerUserStat } from '@/lib/admin/types'
 import type { HubReport, ProductMetrics } from '@/lib/admin/hub'
 import type { SignupsReport } from '@/lib/admin/signups'
 import { SignupsPanel } from '@/components/admin/signups-panel'
+import { RevenuePanel } from '@/components/admin/revenue-panel'
+import type { RevenueReport } from '@/lib/admin/revenue'
 
 interface CampaignMeta {
   id: string
@@ -63,7 +66,7 @@ interface SentRow {
   sent_at: string
 }
 
-type Tab = 'users' | 'signups' | 'outreach' | 'history'
+type Tab = 'users' | 'signups' | 'revenue' | 'outreach' | 'history'
 
 const adminCardClass =
   'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm backdrop-blur-none'
@@ -178,6 +181,8 @@ export function AdminDashboardClient() {
   const [hubLoading, setHubLoading] = useState(true)
   const [signups, setSignups] = useState<SignupsReport | null>(null)
   const [signupsLoading, setSignupsLoading] = useState(true)
+  const [revenue, setRevenue] = useState<RevenueReport | null>(null)
+  const [revenueLoading, setRevenueLoading] = useState(false)
   const [campaigns, setCampaigns] = useState<CampaignMeta[]>([])
   const [presets, setPresets] = useState<PresetMeta[]>([])
   const [manualSendLogs, setManualSendLogs] = useState<ManualSendLogMeta[]>([])
@@ -219,6 +224,24 @@ export function AdminDashboardClient() {
       setHubLoading(false)
     }
   }, [])
+
+  // Revenue asks Apple and Stripe live, so it loads when its tab opens rather
+  // than on every visit to the hub.
+  const loadRevenue = useCallback(async () => {
+    setRevenueLoading(true)
+    try {
+      const res = await fetch('/api/admin/revenue')
+      if (res.ok) setRevenue(await res.json())
+    } catch {
+      // The panel shows its own unavailable notice.
+    } finally {
+      setRevenueLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'revenue' && !revenue && !revenueLoading) loadRevenue()
+  }, [tab, revenue, revenueLoading, loadRevenue])
 
   const loadSignups = useCallback(async () => {
     setSignupsLoading(true)
@@ -393,10 +416,11 @@ export function AdminDashboardClient() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {([
             ['users', 'Power Users', Users],
             ['signups', 'Signups', UserPlus],
+            ['revenue', 'Revenue', DollarSign],
             ['outreach', 'Outreach', Send],
             ['history', 'Send History', Mail],
           ] as const).map(([id, label, Icon]) => (
@@ -484,6 +508,8 @@ export function AdminDashboardClient() {
         )}
 
         {tab === 'signups' && <SignupsPanel data={signups} loading={signupsLoading} onRefresh={loadSignups} />}
+
+        {tab === 'revenue' && <RevenuePanel data={revenue} loading={revenueLoading} onRefresh={loadRevenue} />}
 
         {tab === 'outreach' && (
           <div className="space-y-6">
