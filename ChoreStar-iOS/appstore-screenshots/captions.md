@@ -67,3 +67,17 @@ Gotchas:
   after kid mode turns on); sign in fresh once, then launch kid mode.
 - Pass `-FASTLANE_SNAPSHOT YES` so TipKit cards stay hidden.
 - Kid Login is a sheet on the Duo; left out of the set.
+
+Framed Duo set (`iphone-duo-2853x2007/`, same frame recipe, flattened: the
+Duo spec allows no alpha): 01 Make Chores Fun · 02 Kids Save For Goals ·
+03 Chores On Their Days / "Recycling on Tuesdays, plants Mon, Wed & Fri" ·
+04 One App, Whole Crew · 05 Watch Streaks Grow.
+
+Uploaded with `scripts/asc.mjs asset-place <v> APP_SCREENSHOT IPHONE_DUO_PROFILE …`
+(fastlane deliver has no Duo display type; the Asset Library API does).
+
+## Product page header + search results (2.4)
+
+`product-page/header-5244x2950.png` (source `header.html`, rendered at 1x in
+headless Chromium) fills both PRODUCT_PAGE_HEADER_ASSET and
+APP_STORE_SEARCH_RESULTS_ASSET: both accept 5244x2950 PNG.
