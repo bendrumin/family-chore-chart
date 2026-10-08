@@ -3,6 +3,25 @@ import SwiftUI
 struct ChildrenView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var showingAddChild = false
+    /// The grid's width, for picking a column count.
+    @State private var gridWidth: CGFloat = 0
+    /// The iPhone Duo's fold in the grid's coordinates while half-open.
+    @State private var gridFold: CGRect?
+
+    private static let cardMinWidth: CGFloat = 165
+
+    /// As many 165pt columns as fit, but never more than there are children,
+    /// so the cards stretch to fill the row.
+    private var columnCount: Int {
+        let fit = Int((gridWidth + 16) / (Self.cardMinWidth + 16))
+        return max(1, min(manager.children.count, fit))
+    }
+
+    @ViewBuilder private var childCards: some View {
+        ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
+            ChildDetailCard(child: child, index: index, manager: manager)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -30,15 +49,22 @@ struct ChildrenView: View {
                     if manager.children.isEmpty {
                         EmptyChildrenView()
                     } else {
-                        LazyVGrid(columns: [
-                            // Top-aligned: centered rows put a shorter card (no
-                            // "unpaid" pill) lower than its neighbor on wide screens.
-                            GridItem(.adaptive(minimum: 165, maximum: 260), spacing: 16, alignment: .top)
-                        ], spacing: 16) {
-                            ForEach(Array(manager.children.enumerated()), id: \.element.id) { index, child in
-                                ChildDetailCard(child: child, index: index, manager: manager)
+                        // Half-open on an iPhone Duo, two columns either side of
+                        // the fold; otherwise one column per child up to what
+                        // fits, so a small family shares one row on wide screens
+                        // instead of huddling in narrow cards on the left.
+                        Group {
+                            if let fold = gridFold {
+                                FoldColumnsLayout(foldMinX: fold.minX, foldMaxX: fold.maxX, rowSpacing: 16) { childCards }
+                            } else {
+                                LazyVGrid(columns: Array(
+                                    repeating: GridItem(.flexible(minimum: Self.cardMinWidth, maximum: 560), spacing: 16, alignment: .top),
+                                    count: columnCount
+                                ), spacing: 16) { childCards }
                             }
                         }
+                        .onGeometryChange(for: CGFloat.self, of: { $0.size.width }) { gridWidth = $0 }
+                        .readFold($gridFold)
                         .padding(.horizontal, 20)
                     }
 

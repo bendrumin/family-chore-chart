@@ -63,9 +63,20 @@ for (const [i, c] of CHORES.entries()) {
 }
 console.log('chores ready:', Object.keys(choreIds).length)
 
-// 6. Completions: four past weeks nearly perfect + this week through Sunday.
-//    Weeks are Sunday-keyed; today is Mon 2026-09-07, current week 2026-09-06.
-const weeks = ['2026-08-09', '2026-08-16', '2026-08-23', '2026-08-30']
+// 6. Completions: four past weeks nearly perfect + this week up to today.
+//    Weeks are Sunday-keyed, and every date is relative to today in the
+//    family's timezone, so a rerun before any capture session brings the
+//    streak, the grid and the stats chart back to "live".
+const TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+const addDays = (iso, n) => {
+  const d = new Date(`${iso}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+const TODAY_DOW = new Date(`${TODAY}T12:00:00Z`).getUTCDay()
+const THIS_WEEK = addDays(TODAY, -TODAY_DOW)
+const weeks = [-28, -21, -14, -7].map((n) => addDays(THIS_WEEK, n))
+console.log(`today ${TODAY} (dow ${TODAY_DOW}), current week ${THIS_WEEK}`)
 const rows = []
 for (const [wi, week] of weeks.entries()) {
   for (const c of CHORES) {
@@ -76,15 +87,17 @@ for (const [wi, week] of weeks.entries()) {
     }
   }
 }
-// This week: Sunday done, Monday (today) partially done so the grid looks live.
-for (const c of CHORES) {
-  if (c.days.includes(0)) rows.push({ chore_id: choreIds[c.name], week_start: '2026-09-06', day_of_week: 0, status: 'approved', completed_at: '2026-09-06T18:00:00Z' })
+// This week: every day before today done, today partially done so the grid looks live.
+for (let day = 0; day < TODAY_DOW; day++) {
+  for (const c of CHORES) {
+    if (c.days.includes(day)) rows.push({ chore_id: choreIds[c.name], week_start: THIS_WEEK, day_of_week: day, status: 'approved', completed_at: `${addDays(THIS_WEEK, day)}T18:00:00Z` })
+  }
 }
-rows.push({ chore_id: choreIds['Make your bed'], week_start: '2026-09-06', day_of_week: 1, status: 'approved', completed_at: '2026-09-07T13:00:00Z' })
+rows.push({ chore_id: choreIds['Make your bed'], week_start: THIS_WEEK, day_of_week: TODAY_DOW, status: 'approved', completed_at: `${TODAY}T13:00:00Z` })
 
-// Idempotency: wipe this family's completions for those weeks first (throwaway family).
-const allWeeks = [...weeks, '2026-09-06']
-await admin.from('chore_completions').delete().in('chore_id', Object.values(choreIds)).in('week_start', allWeeks)
+// Idempotency: wipe ALL of Maya's demo-chore completions first (throwaway
+// family), so earlier seeds can't pile up into the balance and overfill the goal.
+await admin.from('chore_completions').delete().in('chore_id', Object.values(choreIds))
 const { error: compErr } = await admin.from('chore_completions').insert(rows)
 if (compErr) { console.error('completions failed:', compErr.message); process.exit(1) }
 console.log('completions inserted:', rows.length)
@@ -133,10 +146,10 @@ if (leo) {
     if (error) { console.error('Leo chore failed:', error.message); process.exit(1) }
     putAwayId = data.id
   }
-  await admin.from('chore_completions').delete().eq('chore_id', putAwayId).eq('week_start', '2026-09-06')
+  await admin.from('chore_completions').delete().eq('chore_id', putAwayId)
   const { error: pendErr } = await admin.from('chore_completions').insert({
-    chore_id: putAwayId, week_start: '2026-09-06', day_of_week: 0,
-    status: 'pending', completed_at: '2026-09-06T19:30:00Z',
+    chore_id: putAwayId, week_start: THIS_WEEK, day_of_week: 0,
+    status: 'pending', completed_at: `${THIS_WEEK}T19:30:00Z`,
   })
   console.log('Leo pending tick:', pendErr ? `FAILED ${pendErr.message}` : 'ok')
 } else {

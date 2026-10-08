@@ -93,6 +93,8 @@ struct ChildMainView: View {
                                     Text("No chores today. Enjoy your break! 🌴")
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.92))
+                                        .lineLimit(3)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 } else if !manager.isPerChoreRewardMode, let settings = manager.familySettings {
                                     Text("Finish ALL your chores to earn \(manager.formatMoney(Double(settings.dailyRewardCents) / 100.0)) today! 🌟")
                                         .font(.headline)
@@ -105,6 +107,8 @@ struct ChildMainView: View {
                                     Text("Let's get some chores done!")
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.92))
+                                        .lineLimit(3)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
 
