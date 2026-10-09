@@ -39,6 +39,8 @@ export interface KidWallet {
   paidCents: number
   currencyCode: string
   goal: KidGoal | null
+  /** Every active goal, oldest first (Premium can hold several). */
+  goals?: KidGoal[]
   reachedGoals: KidGoal[]
   store: KidStoreItem[]
   pendingRedemptions: Array<{ id: string; itemId: string; priceCents: number; requestedAt: string }>

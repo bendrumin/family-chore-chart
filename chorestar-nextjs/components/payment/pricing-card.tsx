@@ -12,22 +12,24 @@ interface PricingCardProps {
   isLoading?: boolean
 }
 
+// Only what Premium actually unlocks (docs/PREMIUM.md). Custom colors and
+// seasonal themes are free, so they're not sold here.
 const PLAN_FEATURES = {
   monthly: [
-    'Unlimited children',
-    'Unlimited chores',
-    'Custom icons & colors',
+    'Unlimited children & chores',
+    'Unlimited store rewards & goals',
+    'Family sharing with a co-parent',
+    '6 premium themes',
     'Advanced analytics',
     'Export reports (PDF/CSV)',
-    'Seasonal themes',
     'Priority support',
   ],
   annual: [
     'Everything in Monthly',
-    'Save $10 per year',
-    'Unlimited children',
-    'Unlimited chores',
-    'Custom icons & colors',
+    'About 2 months free',
+    'Unlimited children & chores',
+    'Unlimited store rewards & goals',
+    'Family sharing with a co-parent',
     'Advanced analytics',
     'Export reports (PDF/CSV)',
   ],

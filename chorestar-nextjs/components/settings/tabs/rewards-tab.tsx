@@ -281,9 +281,18 @@ export function RewardsTab() {
             )}
           </div>
           {atLimit ? (
-            <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              <Lock className="w-4 h-4" /> The free plan lists {FREE_STORE_ITEM_LIMIT} rewards. Premium removes the limit.
-            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Lock className="w-4 h-4" /> The free plan lists {FREE_STORE_ITEM_LIMIT} rewards. Premium removes the limit.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 underline"
+              >
+                See Premium
+              </button>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-2 items-center">
               <select

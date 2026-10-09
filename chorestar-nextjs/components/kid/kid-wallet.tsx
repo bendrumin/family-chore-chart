@@ -32,26 +32,38 @@ const CELEBRATED_KEY = (goalId: string) => `chorestar-kid-goal-celebrated:${goal
 
 export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
   const t = useKidT()
-  const [sheet, setSheet] = useState<'new' | 'edit' | null>(null)
-  const goal = wallet.goal
+  const [sheet, setSheet] = useState<{ mode: 'new' } | { mode: 'edit'; goal: KidGoal } | null>(null)
+  // `goals` is every active goal (Premium can save for several things at
+  // once); older servers only sent `goal`.
+  const goals = wallet.goals ?? (wallet.goal ? [wallet.goal] : [])
   const money = (c: number) => formatMoney(c, wallet.currencyCode)
+  // Only offered when the plan allows another: the kid never meets a paywall.
+  const canAddAnother =
+    goals.length > 0 && (wallet.limits.goalLimit == null || goals.length < wallet.limits.goalLimit)
 
-  // The first time the balance covers the target, a proper celebration. Once
+  // The first time the balance covers a target, a proper celebration. Once
   // per goal per device, so reloading the page does not re-fire it.
+  const reachedKey = goals.map((g) => `${g.id}:${g.reached}:${g.status}`).join(',')
   useEffect(() => {
-    if (!goal?.reached || goal.status !== 'active') return
-    try {
-      const key = CELEBRATED_KEY(goal.id)
-      if (localStorage.getItem(key)) return
-      localStorage.setItem(key, '1')
-    } catch {
-      // Celebrate anyway.
+    const fresh = goals.filter((g) => g.reached && g.status === 'active')
+    let celebrate = false
+    for (const goal of fresh) {
+      try {
+        const key = CELEBRATED_KEY(goal.id)
+        if (localStorage.getItem(key)) continue
+        localStorage.setItem(key, '1')
+      } catch {
+        // Celebrate anyway.
+      }
+      celebrate = true
     }
+    if (!celebrate) return
     playSound('celebration')
     import('@/lib/utils/celebrations')
       .then(({ getCelebrationManager }) => getCelebrationManager().celebrateWithConfetti('epic'))
       .catch(() => {})
-  }, [goal?.id, goal?.reached, goal?.status])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reachedKey])
 
   return (
     <>
@@ -62,57 +74,72 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
         aria-labelledby="kid-goal-title"
         className="max-w-2xl mx-auto mb-6 rounded-3xl bg-white p-5 shadow-lg"
       >
-        {goal ? (
+        {goals.length > 0 ? (
           <>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="text-4xl leading-none" aria-hidden>{goal.emoji ?? '🎯'}</span>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold uppercase tracking-wide text-gray-500">{t('goal.savingFor')}</div>
-                  <h2 id="kid-goal-title" className="text-2xl font-black text-gray-900 leading-tight truncate">
-                    {goal.title}
-                  </h2>
+            {goals.map((goal, i) => (
+              <div key={goal.id} className={i > 0 ? 'mt-5 pt-5 border-t border-gray-100' : undefined}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-4xl leading-none" aria-hidden>{goal.emoji ?? '🎯'}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold uppercase tracking-wide text-gray-500">{t('goal.savingFor')}</div>
+                      <h2 id={i === 0 ? 'kid-goal-title' : undefined} className="text-2xl font-black text-gray-900 leading-tight truncate">
+                        {goal.title}
+                      </h2>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSheet({ mode: 'edit', goal })}
+                    className="shrink-0 min-w-[44px] min-h-[44px] grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100"
+                    aria-label={t('goal.changeAria')}
+                  >
+                    <Pencil className="w-5 h-5" />
+                  </button>
                 </div>
+
+                <div className="mt-4" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={goal.percent} aria-label={t('common.xOfY', { x: money(goal.progressCents), y: money(goal.targetCents) })}>
+                  <div className="h-5 rounded-full bg-gray-100 overflow-hidden">
+                    <motion.div
+                      className={`h-full rounded-full ${goal.reached ? 'bg-gradient-to-r from-yellow-400 to-amber-500' : 'accent-fill'}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.max(goal.percent > 0 ? 4 : 0, goal.percent)}%` }}
+                      transition={{ type: 'spring', duration: 0.9, bounce: 0.2 }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-baseline justify-between gap-3">
+                    <span className="text-xl font-black text-gray-900 tabular-nums">
+                      {money(goal.progressCents)} <span className="text-gray-400 font-bold">{t('goal.ofTarget', { target: money(goal.targetCents) })}</span>
+                    </span>
+                    <span className="text-sm font-bold text-gray-600 tabular-nums">
+                      {goal.reached ? t('goal.youDidIt') : t('goal.toGo', { money: money(goal.targetCents - goal.progressCents) })}
+                    </span>
+                  </div>
+                </div>
+
+                {goal.reached && (
+                  <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
+                    {t('goal.payItOut')}
+                  </p>
+                )}
               </div>
+            ))}
+
+            {canAddAnother && (
               <button
                 type="button"
-                onClick={() => setSheet('edit')}
-                className="shrink-0 min-w-[44px] min-h-[44px] grid place-items-center rounded-xl text-gray-500 hover:bg-gray-100"
-                aria-label={t('goal.changeAria')}
+                onClick={() => setSheet({ mode: 'new' })}
+                className="mt-5 w-full min-h-[44px] flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-200 text-sm font-black text-gray-600 hover:bg-gray-50"
               >
-                <Pencil className="w-5 h-5" />
+                <Target className="w-5 h-5" aria-hidden />
+                {t('goal.addAnother')}
               </button>
-            </div>
-
-            <div className="mt-4" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={goal.percent} aria-label={t('common.xOfY', { x: money(goal.progressCents), y: money(goal.targetCents) })}>
-              <div className="h-5 rounded-full bg-gray-100 overflow-hidden">
-                <motion.div
-                  className={`h-full rounded-full ${goal.reached ? 'bg-gradient-to-r from-yellow-400 to-amber-500' : 'accent-fill'}`}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(goal.percent > 0 ? 4 : 0, goal.percent)}%` }}
-                  transition={{ type: 'spring', duration: 0.9, bounce: 0.2 }}
-                />
-              </div>
-              <div className="mt-2 flex items-baseline justify-between gap-3">
-                <span className="text-xl font-black text-gray-900 tabular-nums">
-                  {money(goal.progressCents)} <span className="text-gray-400 font-bold">{t('goal.ofTarget', { target: money(goal.targetCents) })}</span>
-                </span>
-                <span className="text-sm font-bold text-gray-600 tabular-nums">
-                  {goal.reached ? t('goal.youDidIt') : t('goal.toGo', { money: money(goal.targetCents - goal.progressCents) })}
-                </span>
-              </div>
-            </div>
-
-            {goal.reached && (
-              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
-                {t('goal.payItOut')}
-              </p>
             )}
           </>
         ) : (
           <button
             type="button"
-            onClick={() => setSheet('new')}
+            onClick={() => setSheet({ mode: 'new' })}
             className="w-full flex items-center gap-4 text-start"
           >
             <span className="grid place-items-center w-14 h-14 rounded-2xl accent-fill shrink-0">
@@ -137,8 +164,8 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
 
       {sheet && (
         <GoalSheet
-          mode={sheet}
-          goal={sheet === 'edit' ? goal : null}
+          mode={sheet.mode}
+          goal={sheet.mode === 'edit' ? sheet.goal : null}
           currencyCode={wallet.currencyCode}
           kidToken={kidToken}
           childId={wallet.childId}

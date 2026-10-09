@@ -1,7 +1,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse, after } from 'next/server'
 import { resolveKidRequest } from '@/lib/utils/kid-or-parent-auth'
-import { computeBalance, activeGoal, goalView, walletLimits, type GoalRow } from '@/lib/utils/wallet'
+import { computeBalance, activeGoals, goalView, walletLimits, type GoalRow } from '@/lib/utils/wallet'
 import { notifyGoalReached } from '@/lib/push/notify'
 
 /**
@@ -26,9 +26,9 @@ export async function GET(request: Request) {
     const admin = createServiceRoleClient()
     const { child } = ctx
 
-    const [balance, goal, limits, settingsRes, itemsRes, reachedRes, pendingRes] = await Promise.all([
+    const [balance, goals, limits, settingsRes, itemsRes, reachedRes, pendingRes] = await Promise.all([
       computeBalance(child),
-      activeGoal(child.id),
+      activeGoals(child.id),
       walletLimits(child.user_id),
       admin.from('family_settings').select('currency_code').eq('user_id', child.user_id).maybeSingle(),
       admin
@@ -66,16 +66,15 @@ export async function GET(request: Request) {
       pendingRequestId: pendingByItem.get(item.id) ?? null,
     }))
 
-    const goalOut = goal ? goalView(goal, owed) : null
+    const goalsOut = goals.map(g => goalView(g, owed))
 
-    // First time the balance covers the target: tell the parent, once.
-    if (goal && goalOut?.reached && !goal.notified_at) {
-      const goalId = goal.id
-      const goalTitle = goal.title
+    // First time the balance covers a target: tell the parent, once per goal.
+    for (const goal of goals) {
+      if (owed < goal.target_cents || goal.notified_at) continue
       after(async () => {
         try {
-          await admin.from('goals').update({ notified_at: new Date().toISOString() }).eq('id', goalId)
-          await notifyGoalReached(child.id, goalTitle)
+          await admin.from('goals').update({ notified_at: new Date().toISOString() }).eq('id', goal.id)
+          await notifyGoalReached(child.id, goal.title)
         } catch {
           // Decoration only.
         }
@@ -90,7 +89,9 @@ export async function GET(request: Request) {
         earnedCents: balance.earnedCents,
         paidCents: balance.paidCents,
         currencyCode: settingsRes.data?.currency_code ?? 'USD',
-        goal: goalOut,
+        // `goal` (the oldest) stays for iOS builds up to 2.4, which read one goal.
+        goal: goalsOut[0] ?? null,
+        goals: goalsOut,
         reachedGoals: ((reachedRes.data ?? []) as GoalRow[]).map(g => goalView(g, owed)),
         store,
         pendingRedemptions: pending.map(p => ({

@@ -22,12 +22,15 @@ interface AddChildModalProps {
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
   currentChildCount?: number
+  /** The family owner's id. A co-parent's children belong to the owner's family,
+   *  and the cap is the owner's plan. Defaults to the signed-in user. */
+  familyId?: string | null
 }
 
 const AVATAR_SEEDS = ['Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Mason', 'Sophia', 'Lucas', 'Mia', 'Ethan']
 const AVATAR_COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444', '#14b8a6']
 
-export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount = 0 }: AddChildModalProps) {
+export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount = 0, familyId }: AddChildModalProps) {
   const androidShell = useAndroidShell()
   const [isLoading, setIsLoading] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -53,7 +56,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', familyId ?? user.id)
         .single()
 
       setProfile(data)
@@ -85,7 +88,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
       const dicebearUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${formData.avatarSeed}`
 
       const { error } = await supabase.from('children').insert({
-        user_id: user.id,
+        user_id: familyId ?? user.id,
         name: formData.name,
         age: formData.age ? parseInt(formData.age) : null,
         avatar_color: formData.avatarColor,

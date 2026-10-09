@@ -137,10 +137,10 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
               <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-90" />
               <h2 className="text-2xl font-bold mb-2">Upgrade to Premium</h2>
               <p className="mb-5 max-w-lg mx-auto">
-                Get unlimited children, unlimited chores, family sharing, export reports, and more.
+                Unlimited children, chores, store rewards and goals, plus family sharing, analytics and export reports.
               </p>
               <Link
-                href="/dashboard"
+                href="/dashboard?settings=billing"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg transition-colors shadow-lg text-indigo-600 dark:text-indigo-400"
               >
                 Upgrade from <UpgradePriceLabel />

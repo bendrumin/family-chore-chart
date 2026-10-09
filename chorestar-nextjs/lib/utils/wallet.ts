@@ -119,6 +119,18 @@ export async function activeGoal(childId: string): Promise<GoalRow | null> {
   return (data as GoalRow | null) ?? null
 }
 
+/** Every active goal, oldest first. Premium families can save for several things at once. */
+export async function activeGoals(childId: string): Promise<GoalRow[]> {
+  const admin = createServiceRoleClient()
+  const { data } = await admin
+    .from('goals')
+    .select('*')
+    .eq('child_id', childId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: true })
+  return (data as GoalRow[] | null) ?? []
+}
+
 export interface GoalView {
   id: string
   title: string

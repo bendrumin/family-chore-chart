@@ -315,6 +315,20 @@ function DashboardContent({
     return () => window.removeEventListener('chorestar:open-settings', onOpenSettings)
   }, [])
 
+  // ...and from a link: /dashboard?settings=billing (the logged-in home's
+  // upgrade button, emails). The param is dropped once honored so a refresh
+  // doesn't reopen the dialog.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const tab = url.searchParams.get('settings') as SettingsTab | null
+    const tabs: SettingsTab[] = ['family', 'chores', 'rewards', 'appearance', 'insights', 'downloads', 'billing', 'account']
+    if (!tab || !tabs.includes(tab)) return
+    setSettingsTab(tab)
+    setIsSettingsOpen(true)
+    url.searchParams.delete('settings')
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash)
+  }, [])
+
   // Which of the five shell tabs is lit. A settings tab wins while the dialog
   // is open, because that is what the person is looking at.
   const activeShellTab: ShellTab = isSettingsOpen
@@ -781,6 +795,7 @@ function DashboardContent({
 
       {/* Add Child Modal */}
       <AddChildModal
+        familyId={effectiveUserId ?? initialUser?.id}
         open={isAddChildModalOpen}
         onOpenChange={setIsAddChildModalOpen}
         onSuccess={() => {

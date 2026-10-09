@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { CreditCard, Crown, CheckCircle, ExternalLink } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { useSettings } from '@/lib/contexts/settings-context'
 import { PricingCard } from '@/components/payment/pricing-card'
 import { createCheckoutSession, createPortalSession, type PlanType } from '@/lib/utils/stripe'
 import { toast } from 'sonner'
@@ -14,20 +15,33 @@ import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import { PlayBillingPlans } from '@/components/settings/play-billing-plans'
 import type { Database } from '@/lib/supabase/database.types'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+// apple_original_transaction_id / google_purchase_token (migrations 018, 022)
+// aren't in the generated types; they say which store bills the family.
+type Profile = Database['public']['Tables']['profiles']['Row'] & {
+  apple_original_transaction_id?: string | null
+  google_purchase_token?: string | null
+}
+
+const APPLE_SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions'
+const PLAY_SUBSCRIPTIONS_URL = 'https://play.google.com/store/account/subscriptions'
 
 export function BillingTab() {
   const androidShell = useAndroidShell()
   const { user } = useAuth()
+  const { settings } = useSettings()
+  // The family's plan is the owner's: a co-parent sees it and isn't offered a
+  // second subscription that would only unlock their own account.
+  const familyId = settings?.user_id ?? user?.id ?? null
+  const isOwner = !!user && familyId === user.id
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [upgradingPlan, setUpgradingPlan] = useState<PlanType | null>(null)
 
   useEffect(() => {
-    if (user) {
+    if (user && familyId) {
       loadProfile()
     }
-  }, [user])
+  }, [user, familyId])
 
   const loadProfile = async () => {
     try {
@@ -35,7 +49,7 @@ export function BillingTab() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user!.id)
+        .eq('id', familyId!)
         .single()
 
       if (error) throw error
@@ -92,6 +106,11 @@ export function BillingTab() {
 
   const currentTier = profile?.subscription_type || 'free'
   const isPremium = checkPremium(currentTier)
+  const billedBy: 'apple' | 'google' | 'stripe' = profile?.apple_original_transaction_id
+    ? 'apple'
+    : profile?.google_purchase_token
+      ? 'google'
+      : 'stripe'
 
   return (
     <div className="space-y-8 min-h-[600px]">
@@ -119,13 +138,13 @@ export function BillingTab() {
 
             {currentTier === 'free' && (
               <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-                3 children • 20 chores • Basic features
+                3 children • 20 chores • 3 store rewards • 1 goal per child
               </p>
             )}
 
             {currentTier === 'premium' && (
               <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-                Active subscription • Unlimited children & chores
+                Active subscription • Unlimited children, chores, rewards & goals
               </p>
             )}
 
@@ -135,24 +154,27 @@ export function BillingTab() {
               </p>
             )}
 
+            {!isOwner && (
+              <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
+                Your family&apos;s plan is managed by the family owner{isPremium ? ', and you share all of it.' : '.'}
+              </p>
+            )}
+
             {isPremium && (
               <div className="flex flex-wrap gap-2 mt-4">
-                <div className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Unlimited children</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Unlimited chores</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Advanced analytics</span>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Export reports</span>
-                </div>
+                {[
+                  'Unlimited children & chores',
+                  'Unlimited rewards & goals',
+                  'Family sharing',
+                  'Premium themes',
+                  'Advanced analytics',
+                  'Export reports',
+                ].map((label) => (
+                  <div key={label} className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>{label}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -161,7 +183,7 @@ export function BillingTab() {
 
       {/* Inside the Android shell with Play Billing present, plans and
           management go through Google Play (prices from Play). */}
-      {androidShell && playBillingAvailable() && user && (
+      {isOwner && androidShell && playBillingAvailable() && user && (
         <PlayBillingPlans
           userId={user.id}
           tier={currentTier}
@@ -172,18 +194,18 @@ export function BillingTab() {
 
       {/* Upgrade Options (if free) — never inside the Android shell:
           Play policy forbids purchase CTAs that bypass Play Billing. */}
-      {currentTier === 'free' && !androidShell && (
+      {isOwner && currentTier === 'free' && !androidShell && (
         <>
           <div>
             <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
               Upgrade to Premium
             </h4>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Unlimited children and chores, family sharing, premium themes, and export reports
+              Unlimited children, chores, store rewards and goals, plus family sharing, premium themes, analytics and export reports
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <PricingCard
               planType="monthly"
               onUpgrade={() => handleUpgrade('monthly')}
@@ -199,25 +221,35 @@ export function BillingTab() {
         </>
       )}
 
-      {/* Manage Subscription (if premium monthly/annual) — the Stripe portal
-          is an external billing flow, so it also hides in the Android shell. */}
-      {currentTier === 'premium' && !androidShell && (
+      {/* Manage Subscription: wherever the family actually pays. Apple and
+          Google subscriptions can only be changed in those stores; the Stripe
+          portal is an external billing flow, so it hides in the Android shell. */}
+      {isOwner && currentTier === 'premium' && !(androidShell && billedBy === 'stripe') && (
         <div>
           <h4 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             Manage Subscription
           </h4>
           <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              View your billing history, update payment method, or cancel your subscription.
+              {billedBy === 'apple'
+                ? 'Your subscription is billed through the App Store. Change or cancel it in your Apple account, or on iPhone in Settings > your name > Subscriptions.'
+                : billedBy === 'google'
+                  ? 'Your subscription is billed through Google Play. Change or cancel it in your Play subscriptions.'
+                  : 'View your billing history, update payment method, or cancel your subscription.'}
             </p>
-            <Button
-              onClick={handleManageSubscription}
-              variant="outline"
-              className="font-semibold"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Manage Billing
-            </Button>
+            {billedBy === 'stripe' ? (
+              <Button onClick={handleManageSubscription} variant="outline" className="font-semibold">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Manage Billing
+              </Button>
+            ) : (
+              <Button asChild variant="outline" className="font-semibold">
+                <a href={billedBy === 'apple' ? APPLE_SUBSCRIPTIONS_URL : PLAY_SUBSCRIPTIONS_URL} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  {billedBy === 'apple' ? 'Manage in the App Store' : 'Manage in Google Play'}
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       )}
