@@ -59,3 +59,30 @@ Premium as advertised. Gates:
   Stats tab show `PremiumFeatureGate`, which opens the paywall.
 - Co-parents inherit the owner's entitlement (web resolves the owner's
   profile via `family_settings.user_id`).
+
+## Security: who can change a family's plan (2026-10-09)
+
+Found: the base `"Users can update own profile"` policy covers every column,
+so any signed-in user could PATCH their own `subscription_type` to premium or
+lifetime with just their access token (confirmed live with a same-value write
+on the throwaway Star Family). The free caps were app-side only.
+
+Fixed by `database-migrations/024_lock_billing_and_enforce_limits.sql`:
+- `subscription_type`, `apple_original_transaction_id` and
+  `google_purchase_token` change only from the server (service_role: Stripe,
+  Apple and Google webhooks, `/api/google/verify`, `/api/apple/verify`) or the
+  SQL editor. App sessions' attempts keep the old value silently, so iOS builds
+  up to 2.4 (which write 'premium' after a purchase) still show the upgrade
+  locally while Apple's notification sets the real value server-side.
+- 3 children / 20 active chores (family-wide) / 3 active store items are
+  enforced in the database for app sessions, counted exactly as the apps count.
+  Families already over a cap keep what they have and can't add more.
+- Tested in embedded Postgres (22 cases: app vs server vs SQL editor, caps,
+  archive/restore, premium lifting caps, re-running the migration).
+
+iOS (next build after 2.4) confirms purchases through `POST /api/apple/verify`
+with StoreKit 2's signed transaction instead of writing the profile. The server
+checks Apple's signature and that `appAccountToken` is this account, which also
+ends "one Apple ID upgrades every ChoreStar account signed in on the phone".
+Sandbox purchases unlock the session but are never saved
+(`lib/apple/entitlement.ts`, tested).

@@ -57,3 +57,24 @@ export async function verifyNotification(signedPayload: string): Promise<Verifie
 
   return { environment, payload, transaction }
 }
+
+export interface VerifiedTransaction {
+  environment: 'Production' | 'Sandbox'
+  transaction: JWSTransactionDecodedPayload
+}
+
+/**
+ * Verifies one signed transaction the app sends from StoreKit 2
+ * (VerificationResult.jwsRepresentation) against Apple's root CAs and this
+ * app's bundle id, Production first, then Sandbox (TestFlight, App Review).
+ */
+export async function verifyTransaction(signedTransaction: string): Promise<VerifiedTransaction> {
+  try {
+    const transaction = await makeVerifier(Environment.PRODUCTION).verifyAndDecodeTransaction(signedTransaction)
+    return { environment: 'Production', transaction }
+  } catch (err) {
+    if (!(err instanceof VerificationException)) throw err
+    const transaction = await makeVerifier(Environment.SANDBOX).verifyAndDecodeTransaction(signedTransaction)
+    return { environment: 'Sandbox', transaction }
+  }
+}

@@ -140,28 +140,29 @@ final class StoreKitManager: ObservableObject {
         return false
     }
 
-    /// Checks current entitlements and pushes an upgrade to the profile if needed.
+    /// Checks current entitlements and has the server confirm an upgrade.
     func syncEntitlement() async {
-        var entitled: Transaction?
+        var signed: String?
 
         for await entitlement in Transaction.currentEntitlements {
             guard case .verified(let transaction) = entitlement,
                   ProductID.all.contains(transaction.productID) else { continue }
-            entitled = transaction
+            signed = entitlement.jwsRepresentation
             break
         }
 
-        guard let entitled else { return }
+        guard let signed else { return }
 
         let manager = SupabaseManager.shared
-        // The Apple webhook maps notifications to profiles by this id — it is
-        // all a pre-2.0.1 purchase carries, so recording it here heals older
-        // subscribers on their next launch.
-        await manager.recordAppleOriginalTransactionId(String(entitled.originalID))
         // Upgrade-only: never downgrade. Cancellations are handled server-side:
         // /api/apple/notifications for Apple billing, Stripe's webhook for web.
-        if manager.subscriptionType == "free" {
-            await manager.updateSubscriptionType("premium")
+        // The server saves the upgrade (and the original transaction id the
+        // notifications map by); the app only mirrors the answer.
+        guard await manager.verifyAppleEntitlement(signedTransaction: signed) == true else { return }
+        await MainActor.run {
+            if manager.subscriptionType == "free" {
+                manager.subscriptionType = "premium"
+            }
         }
     }
 

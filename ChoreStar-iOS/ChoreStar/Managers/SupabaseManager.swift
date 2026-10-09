@@ -4507,69 +4507,36 @@ class SupabaseManager: ObservableObject {
         ).publish()
     }
 
-    /// Persists a subscription upgrade to the user's profile (called after a
-    /// verified App Store transaction — see StoreKitManager for the policy).
-    func updateSubscriptionType(_ type: String) async {
-        #if canImport(Supabase)
-        guard let client = client else { return }
-        let uid = await MainActor.run { debugUserId }
-        guard let uid = uid else { return }
+    /// Asks the server to confirm an App Store purchase and save the upgrade
+    /// (POST /api/apple/verify with StoreKit 2's signed transaction). The app
+    /// can't write subscription_type or the Apple transaction id itself: the
+    /// database keeps those for the server (migration 024). The server checks
+    /// Apple's signature and that the purchase belongs to this account, then
+    /// records the original transaction id so App Store notifications can
+    /// find this family. Returns whether this account is entitled; a sandbox
+    /// purchase (TestFlight, App Review) is entitled for the session without
+    /// being saved. Nil when the server couldn't be reached.
+    func verifyAppleEntitlement(signedTransaction: String) async -> Bool? {
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/apple/verify") else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["signedTransaction": signedTransaction])
 
-        struct ProfileUpdate: Encodable {
-            let subscription_type: String
+        struct VerifyResponse: Decodable {
+            let premium: Bool
+            let reason: String?
         }
-
-        do {
-            try await client
-                .from("profiles")
-                .update(ProfileUpdate(subscription_type: type))
-                .eq("id", value: uid)
-                .execute()
-
-            await MainActor.run {
-                self.subscriptionType = type
-                debugLastError = "Subscription updated: \(type)"
-            }
-        } catch {
-            await MainActor.run {
-                debugLastError = "Subscription update error: \(error.localizedDescription)"
-            }
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let status = (response as? HTTPURLResponse)?.statusCode,
+              status == 200 || status == 400,
+              let result = try? JSONDecoder().decode(VerifyResponse.self, from: data) else { return nil }
+        if !result.premium {
+            await MainActor.run { debugLastError = "Apple entitlement not granted: \(result.reason ?? "unknown")" }
         }
-        #endif
-    }
-
-    /// Records the Apple subscription's original transaction id on the profile
-    /// so App Store Server Notifications can map renewals and cancellations to
-    /// this family (a purchase made before appAccountToken existed carries
-    /// nothing else that identifies us). Deduped per user so it writes once,
-    /// not on every entitlement sync; a failed write retries next launch
-    /// because the dedupe key is only set on success.
-    func recordAppleOriginalTransactionId(_ transactionId: String) async {
-        #if canImport(Supabase)
-        guard let client = client else { return }
-        let uid = await MainActor.run { debugUserId }
-        guard let uid = uid else { return }
-
-        let dedupeKey = "apple.originalTransactionIdSynced.\(uid)"
-        if UserDefaults.standard.string(forKey: dedupeKey) == transactionId { return }
-
-        struct ProfileUpdate: Encodable {
-            let apple_original_transaction_id: String
-        }
-
-        do {
-            try await client
-                .from("profiles")
-                .update(ProfileUpdate(apple_original_transaction_id: transactionId))
-                .eq("id", value: uid)
-                .execute()
-            UserDefaults.standard.set(transactionId, forKey: dedupeKey)
-        } catch {
-            await MainActor.run {
-                debugLastError = "Apple txn id sync error: \(error.localizedDescription)"
-            }
-        }
-        #endif
+        return result.premium
     }
 
     // MARK: - Routines Management
