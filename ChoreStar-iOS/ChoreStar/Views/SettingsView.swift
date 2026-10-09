@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
+    @State private var restoreMessage: String?
     @State private var showingManageSubscriptions = false
     @State private var hasAppleSubscription = false
     @State private var showingWhatsNew = false
@@ -167,7 +168,10 @@ struct SettingsView: View {
                         }
 
                         Button(action: {
-                            Task { await StoreKitManager.shared.restorePurchases() }
+                            Task {
+                                let result = await StoreKitManager.shared.restorePurchases()
+                                restoreMessage = StoreKitManager.restoreMessage(result)
+                            }
                         }) {
                             Text("Restore Purchases")
                                 .font(.subheadline)
@@ -479,6 +483,14 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showingPaywall) {
                 PaywallView()
+            }
+            .alert(
+                "Restore Purchases",
+                isPresented: Binding(get: { restoreMessage != nil }, set: { if !$0 { restoreMessage = nil } })
+            ) {
+                Button("OK") { restoreMessage = nil }
+            } message: {
+                Text(restoreMessage ?? "")
             }
             .sheet(isPresented: $showingWhatsNew) {
                 WhatsNewView()
@@ -1340,6 +1352,7 @@ struct RewardStoreSettingsView: View {
     @State private var newPrice = "2.00"
     @State private var statusMessage: String?
     @State private var busy = false
+    @State private var showingPaywall = false
 
     private let emojis = ["🎁", "📱", "🌙", "🎬", "🍕", "🍦", "🎲", "🧸", "🎮", "🏊", "🚲", "📚", "⭐"]
 
@@ -1385,6 +1398,9 @@ struct RewardStoreSettingsView: View {
                     Label("The free plan lists 3 rewards. Premium removes the limit.", systemImage: "lock.fill")
                         .font(.subheadline)
                         .foregroundColor(.choreStarTextSecondary)
+                    // The cap was a dead end; it leads to the plans now.
+                    Button("See Premium Plans") { showingPaywall = true }
+                        .sheet(isPresented: $showingPaywall) { PaywallView() }
                 } else {
                     Picker("Picture", selection: $newEmoji) {
                         ForEach(emojis, id: \.self) { Text($0).tag($0) }

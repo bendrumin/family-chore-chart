@@ -115,13 +115,37 @@ final class StoreKitManager: ObservableObject {
         }
     }
 
-    func restorePurchases() async {
+    enum EntitlementSync {
+        /// This Apple ID has no active ChoreStar subscription.
+        case none
+        /// The server confirmed it; Premium is on.
+        case premium
+        /// The subscription was bought by a different ChoreStar account.
+        case otherAccount
+        /// Couldn't reach the server to confirm.
+        case unreachable
+    }
+
+    /// What to tell the parent after Restore Purchases.
+    static func restoreMessage(_ result: EntitlementSync) -> String {
+        switch result {
+        case .premium: return String(localized: "Purchases restored. Premium is on.")
+        case .none: return String(localized: "No ChoreStar subscription was found for this Apple ID.")
+        case .otherAccount: return String(localized: "This Apple ID's subscription couldn't be applied to this ChoreStar account.")
+        case .unreachable: return String(localized: "Couldn't restore right now. Check your connection and try again.")
+        }
+    }
+
+    /// Restore Purchases: re-syncs with the App Store, then confirms with the
+    /// server, so the button can say what happened instead of nothing.
+    func restorePurchases() async -> EntitlementSync {
         do {
             try await AppStore.sync()
-            await syncEntitlement()
         } catch {
             lastError = "Restore failed: \(error.localizedDescription)"
+            return .unreachable
         }
+        return await syncEntitlement()
     }
 
     /**
@@ -141,7 +165,8 @@ final class StoreKitManager: ObservableObject {
     }
 
     /// Checks current entitlements and has the server confirm an upgrade.
-    func syncEntitlement() async {
+    @discardableResult
+    func syncEntitlement() async -> EntitlementSync {
         var signed: String?
 
         for await entitlement in Transaction.currentEntitlements {
@@ -151,18 +176,23 @@ final class StoreKitManager: ObservableObject {
             break
         }
 
-        guard let signed else { return }
+        guard let signed else { return .none }
 
         let manager = SupabaseManager.shared
         // Upgrade-only: never downgrade. Cancellations are handled server-side:
         // /api/apple/notifications for Apple billing, Stripe's webhook for web.
         // The server saves the upgrade (and the original transaction id the
         // notifications map by); the app only mirrors the answer.
-        guard await manager.verifyAppleEntitlement(signedTransaction: signed) == true else { return }
-        await MainActor.run {
-            if manager.subscriptionType == "free" {
-                manager.subscriptionType = "premium"
+        switch await manager.verifyAppleEntitlement(signedTransaction: signed) {
+        case .none: return .unreachable
+        case .some(false): return .otherAccount
+        case .some(true):
+            await MainActor.run {
+                if manager.subscriptionType == "free" {
+                    manager.subscriptionType = "premium"
+                }
             }
+            return .premium
         }
     }
 

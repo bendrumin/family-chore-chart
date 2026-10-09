@@ -59,9 +59,10 @@ struct UpgradePromptView: View {
             
             VStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
-                    upgradeFeature(icon: "infinity", text: "Unlimited children and chores")
-                    upgradeFeature(icon: "gift.fill", text: "Unlimited reward store items")
-                    upgradeFeature(icon: "paintbrush.fill", text: "Premium themes: Ocean, Sunset, Forest, and more")
+                    upgradeFeature(icon: "infinity", text: "Unlimited children & chores")
+                    upgradeFeature(icon: "gift.fill", text: "Unlimited reward store items and goals")
+                    upgradeFeature(icon: "person.2.fill", text: "Family sharing with a co-parent")
+                    upgradeFeature(icon: "chart.bar.fill", text: "Full stats, plus PDF and CSV export")
                 }
                 .padding(20)
                 .background(Color.choreStarCardBackground)
@@ -103,7 +104,7 @@ struct UpgradePromptView: View {
         }
     }
     
-    private func upgradeFeature(icon: String, text: String) -> some View {
+    private func upgradeFeature(icon: String, text: LocalizedStringKey) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.body)

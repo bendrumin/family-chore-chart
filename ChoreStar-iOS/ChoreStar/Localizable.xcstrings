@@ -1,6 +1,248 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Purchases restored. Premium is on." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تمت استعادة المشتريات. Premium مفعّل."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compras restauradas. Premium está activo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compras restauradas. O Premium está ativo."
+          }
+        }
+      }
+    },
+    "No ChoreStar subscription was found for this Apple ID." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يتم العثور على اشتراك ChoreStar لمعرّف Apple هذا."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró una suscripción de ChoreStar para este Apple ID."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma assinatura do ChoreStar foi encontrada para este Apple ID."
+          }
+        }
+      }
+    },
+    "This Apple ID's subscription couldn't be applied to this ChoreStar account." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر تطبيق اشتراك معرّف Apple هذا على حساب ChoreStar هذا."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La suscripción de este Apple ID no se pudo aplicar a esta cuenta de ChoreStar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A assinatura deste Apple ID não pôde ser aplicada a esta conta do ChoreStar."
+          }
+        }
+      }
+    },
+    "Couldn't restore right now. Check your connection and try again." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّرت الاستعادة الآن. تحقّق من اتصالك وحاول مرة أخرى."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo restaurar ahora. Revisa tu conexión e inténtalo de nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível restaurar agora. Verifique sua conexão e tente novamente."
+          }
+        }
+      }
+    },
+    "Your family now has unlimited children, chores, rewards and goals, plus family sharing, full stats and premium themes." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أصبح لدى عائلتك الآن عدد غير محدود من الأطفال والمهام والمكافآت والأهداف، بالإضافة إلى مشاركة العائلة والإحصائيات الكاملة والسمات المميزة."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu familia ahora tiene hijos, tareas, recompensas y metas ilimitados, además de familia compartida, estadísticas completas y temas Premium."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua família agora tem filhos, tarefas, recompensas e metas ilimitados, além de família compartilhada, estatísticas completas e temas Premium."
+          }
+        }
+      }
+    },
+    "Save for something else too" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وفّر لشيء آخر أيضًا"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahorra para otra cosa también"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Junte para outra coisa também"
+          }
+        }
+      }
+    },
+    "Unlimited children & chores" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عدد غير محدود من الأطفال والمهام"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hijos y tareas ilimitados"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filhos e tarefas ilimitados"
+          }
+        }
+      }
+    },
+    "Unlimited reward store items and goals" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مكافآت وأهداف غير محدودة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recompensas y metas ilimitadas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recompensas e metas ilimitadas"
+          }
+        }
+      }
+    },
+    "Family sharing with a co-parent" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مشاركة العائلة مع الوالد الآخر"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Familia compartida con el otro padre o madre"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Família compartilhada com o outro responsável"
+          }
+        }
+      }
+    },
+    "Full stats, plus PDF and CSV export" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إحصائيات كاملة مع التصدير بصيغة PDF وCSV"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estadísticas completas y exportación a PDF y CSV"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estatísticas completas e exportação em PDF e CSV"
+          }
+        }
+      }
+    },
+    "Premium themes: Ocean, Sunset, Forest, and more" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سمات Premium: Ocean وSunset وForest والمزيد"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temas Premium: Ocean, Sunset, Forest y más"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temas Premium: Ocean, Sunset, Forest e mais"
+          }
+        }
+      }
+    },
     "Stars" : {
       "localizations" : {
         "ar" : {

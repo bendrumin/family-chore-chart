@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.3"
+    static let latestVersion = "2.5"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,38 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.5",
+            date: "October 2026",
+            title: "More Goals, One Tap Sign-In, iPhone Duo",
+            features: [
+                Feature(
+                    icon: "🎯",
+                    title: "Save for More Than One Thing",
+                    description: "Premium kids can save for several goals at once, each with its own bar. Tap Save for something else too under their goal."
+                ),
+                Feature(
+                    icon: "👥",
+                    title: "Co-Parents Share Premium",
+                    description: "A co-parent in a Premium family now gets all of Premium on their own iPhone, from unlimited chores to Stats and Export."
+                ),
+                Feature(
+                    icon: "🔐",
+                    title: "Sign in with Apple",
+                    description: "New families can sign up in one tap, with Hide My Email if you like. Email accounts sign in exactly as before."
+                ),
+                Feature(
+                    icon: "📱",
+                    title: "Made for iPhone Duo",
+                    description: "Open it for two-column kid mode and a routine player that shows every step beside the current one. Half-open, nothing sits on the fold."
+                ),
+                Feature(
+                    icon: "🔁",
+                    title: "Restore Purchases Says What Happened",
+                    description: "Restoring now tells you whether Premium is on, or why it couldn't be applied."
+                ),
+            ]
+        ),
         Entry(
             version: "2.3",
             date: "September 2026",

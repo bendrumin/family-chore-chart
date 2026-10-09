@@ -8,6 +8,7 @@ struct PaywallView: View {
 
     @State private var selectedProductID: String?
     @State private var showingSuccess = false
+    @State private var restoreResult: StoreKitManager.EntitlementSync?
 
     private var selectedProduct: Product? {
         store.products.first { $0.id == selectedProductID }
@@ -38,10 +39,13 @@ struct PaywallView: View {
 
                     // Features
                     VStack(alignment: .leading, spacing: 14) {
+                        // Exactly what Premium unlocks (docs/PREMIUM.md): every line here
+                        // is gated, and everything gated is here.
                         premiumFeature(icon: "infinity", text: "Unlimited children & chores")
                         premiumFeature(icon: "gift.fill", text: "Unlimited reward store items and goals")
+                        premiumFeature(icon: "person.2.fill", text: "Family sharing with a co-parent")
+                        premiumFeature(icon: "chart.bar.fill", text: "Full stats, plus PDF and CSV export")
                         premiumFeature(icon: "paintbrush.fill", text: "Premium themes: Ocean, Sunset, Forest, and more")
-                        premiumFeature(icon: "heart.fill", text: "Support an indie family app")
                     }
                     .padding(20)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -97,7 +101,7 @@ struct PaywallView: View {
                     }
 
                     Button("Restore Purchases") {
-                        Task { await store.restorePurchases() }
+                        Task { restoreResult = await store.restorePurchases() }
                     }
                     .font(.subheadline)
                     .foregroundColor(.choreStarLink)
@@ -138,7 +142,18 @@ struct PaywallView: View {
         .alert("Welcome to Premium", isPresented: $showingSuccess) {
             Button("Done") { dismiss() }
         } message: {
-            Text("Your family now has unlimited children, chores, and premium themes.")
+            Text("Your family now has unlimited children, chores, rewards and goals, plus family sharing, full stats and premium themes.")
+        }
+        .alert(
+            "Restore Purchases",
+            isPresented: Binding(get: { restoreResult != nil }, set: { if !$0 { restoreResult = nil } })
+        ) {
+            Button("OK") {
+                if restoreResult == .premium { dismiss() }
+                restoreResult = nil
+            }
+        } message: {
+            Text(restoreResult.map(StoreKitManager.restoreMessage) ?? "")
         }
     }
 
@@ -320,7 +335,7 @@ struct PaywallView: View {
         return "Subscription"
     }
 
-    private func premiumFeature(icon: String, text: String) -> some View {
+    private func premiumFeature(icon: String, text: LocalizedStringKey) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.subheadline)

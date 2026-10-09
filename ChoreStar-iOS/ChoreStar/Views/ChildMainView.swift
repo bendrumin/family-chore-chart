@@ -788,10 +788,23 @@ struct BigChoreCard: View {
 struct KidGoalCardView: View {
     let child: Child
     @EnvironmentObject var manager: SupabaseManager
-    @State private var editing = false
+    @State private var editingGoal: SupabaseManager.KidWallet.Goal?
+    @State private var addingGoal = false
 
     private var wallet: SupabaseManager.KidWallet? { manager.wallets[child.id] }
-    private var goal: SupabaseManager.KidWallet.Goal? { wallet?.goal }
+    /// Every active goal; older servers only sent the one.
+    private var goals: [SupabaseManager.KidWallet.Goal] {
+        wallet?.goals ?? (wallet?.goal.map { [$0] } ?? [])
+    }
+    /// Offered only when the plan allows another, so a kid never meets a paywall.
+    private var canAddAnother: Bool {
+        guard let wallet, !goals.isEmpty else { return false }
+        guard let limit = wallet.limits.goalLimit else { return true }
+        return goals.count < limit
+    }
+    private var reachedSignature: String {
+        goals.map { "\($0.id):\($0.reached):\($0.status)" }.joined(separator: ",")
+    }
 
     private func money(_ cents: Int) -> String { manager.formatMoney(Double(cents) / 100.0) }
 
@@ -799,68 +812,8 @@ struct KidGoalCardView: View {
         Group {
             if let wallet {
                 VStack(alignment: .leading, spacing: 14) {
-                    if let goal {
-                        HStack(alignment: .top, spacing: 12) {
-                            Text(goal.emoji ?? "🎯")
-                                .font(.system(size: 40))
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("SAVING FOR")
-                                    .font(.caption2.weight(.bold))
-                                    .foregroundColor(.choreStarTextSecondary)
-                                Text(goal.title)
-                                    .font(.title2.weight(.bold))
-                                    .foregroundColor(.choreStarTextPrimary)
-                                    .lineLimit(2)
-                            }
-                            Spacer()
-                            Button { editing = true } label: {
-                                Image(systemName: "pencil")
-                                    .font(.subheadline.weight(.semibold))
-                                    .frame(width: 40, height: 40)
-                                    .background(Color.choreStarTextSecondary.opacity(0.12))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Change goal")
-                        }
-
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule().fill(Color.choreStarBackground)
-                                Capsule()
-                                    .fill(goal.reached ? AnyShapeStyle(Color.choreStarWarningGradient) : AnyShapeStyle(ThemeManager.shared.gradient))
-                                    .frame(width: max(geo.size.width * CGFloat(min(goal.percent, 100)) / 100, goal.percent > 0 ? 14 : 0))
-                                    .animation(.spring(response: 0.7, dampingFraction: 0.8), value: goal.percent)
-                            }
-                        }
-                        .frame(height: 18)
-                        .accessibilityElement()
-                        .accessibilityLabel("\(money(goal.progressCents)) of \(money(goal.targetCents))")
-
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(money(goal.progressCents))
-                                .font(.title3.weight(.heavy))
-                                .foregroundColor(.choreStarTextPrimary)
-                            + Text(" of \(money(goal.targetCents))")
-                                .font(.subheadline.weight(.bold))
-                                .foregroundColor(.choreStarTextSecondary)
-                            Spacer()
-                            Text(goal.reached ? "You did it! 🎉" : "\(money(goal.targetCents - goal.progressCents)) to go")
-                                .font(.subheadline.weight(.bold))
-                                .foregroundColor(goal.reached ? .choreStarWarning : .choreStarTextSecondary)
-                        }
-
-                        if goal.reached {
-                            Text("Ask a grown-up to pay it out and pick your next goal!")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.choreStarWarning)
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.choreStarWarning.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                    } else {
-                        Button { editing = true } label: {
+                    if goals.isEmpty {
+                        Button { addingGoal = true } label: {
                             HStack(spacing: 14) {
                                 Image(systemName: "target")
                                     .font(.title2.weight(.bold))
@@ -882,6 +835,24 @@ struct KidGoalCardView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                    } else {
+                        ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
+                            if index > 0 { Divider().padding(.vertical, 4) }
+                            goalRow(goal)
+                        }
+                        if canAddAnother {
+                            Button { addingGoal = true } label: {
+                                Label("Save for something else too", systemImage: "target")
+                                    .font(.subheadline.weight(.bold))
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .strokeBorder(Color.choreStarTextSecondary.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, dash: [6]))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(.choreStarTextSecondary)
+                        }
                     }
 
                     if !wallet.reachedGoals.isEmpty {
@@ -895,17 +866,25 @@ struct KidGoalCardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
                 .padding(.horizontal, 20)
-                .sheet(isPresented: $editing) {
+                .sheet(item: $editingGoal) { goal in
                     GoalEditorSheet(child: child, goal: goal)
                         .environmentObject(manager)
                 }
-                .onChange(of: goal?.reached) { _, reached in
-                    // The first time the balance covers the target: a proper
+                .sheet(isPresented: $addingGoal) {
+                    GoalEditorSheet(child: child, goal: nil)
+                        .environmentObject(manager)
+                }
+                .onChange(of: reachedSignature) { _, _ in
+                    // The first time the balance covers a target: a proper
                     // celebration, once per goal per device.
-                    guard reached == true, let goal, goal.status == "active" else { return }
-                    let key = "goalCelebrated:\(goal.id.uuidString)"
-                    guard !UserDefaults.standard.bool(forKey: key) else { return }
-                    UserDefaults.standard.set(true, forKey: key)
+                    var celebrate = false
+                    for goal in goals where goal.reached && goal.status == "active" {
+                        let key = "goalCelebrated:\(goal.id.uuidString)"
+                        guard !UserDefaults.standard.bool(forKey: key) else { continue }
+                        UserDefaults.standard.set(true, forKey: key)
+                        celebrate = true
+                    }
+                    guard celebrate else { return }
                     SoundManager.shared.play(.success)
                     Haptics.success()
                 }
@@ -914,6 +893,70 @@ struct KidGoalCardView: View {
         .task(id: manager.weekCompletions.count) {
             // First load, and again whenever ticks land (money moves).
             await manager.loadWallet(for: child.id)
+        }
+    }
+
+    @ViewBuilder private func goalRow(_ goal: SupabaseManager.KidWallet.Goal) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                Text(goal.emoji ?? "🎯")
+                    .font(.system(size: 40))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("SAVING FOR")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.choreStarTextSecondary)
+                    Text(goal.title)
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.choreStarTextPrimary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                Button { editingGoal = goal } label: {
+                    Image(systemName: "pencil")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(width: 40, height: 40)
+                        .background(Color.choreStarTextSecondary.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Change goal")
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.choreStarBackground)
+                    Capsule()
+                        .fill(goal.reached ? AnyShapeStyle(Color.choreStarWarningGradient) : AnyShapeStyle(ThemeManager.shared.gradient))
+                        .frame(width: max(geo.size.width * CGFloat(min(goal.percent, 100)) / 100, goal.percent > 0 ? 14 : 0))
+                        .animation(.spring(response: 0.7, dampingFraction: 0.8), value: goal.percent)
+                }
+            }
+            .frame(height: 18)
+            .accessibilityElement()
+            .accessibilityLabel("\(money(goal.progressCents)) of \(money(goal.targetCents))")
+
+            HStack(alignment: .firstTextBaseline) {
+                Text(money(goal.progressCents))
+                    .font(.title3.weight(.heavy))
+                    .foregroundColor(.choreStarTextPrimary)
+                + Text(" of \(money(goal.targetCents))")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(.choreStarTextSecondary)
+                Spacer()
+                Text(goal.reached ? "You did it! 🎉" : "\(money(goal.targetCents - goal.progressCents)) to go")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(goal.reached ? .choreStarWarning : .choreStarTextSecondary)
+            }
+
+            if goal.reached {
+                Text("Ask a grown-up to pay it out and pick your next goal!")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarWarning)
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.choreStarWarning.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
         }
     }
 }

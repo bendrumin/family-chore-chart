@@ -691,6 +691,9 @@ class SupabaseManager: ObservableObject {
         let owedCents: Int
         let currencyCode: String?
         let goal: Goal?
+        /// Every active goal, oldest first (Premium can save for several).
+        /// Servers before 2026-10-09 send only `goal`.
+        let goals: [Goal]?
         let reachedGoals: [Goal]
         let store: [StoreItem]
         let limits: Limits
@@ -4229,11 +4232,26 @@ class SupabaseManager: ObservableObject {
             if let ownerId = await MainActor.run(body: { memberOfFamilyId }) {
                 let ownerProfiles: [ProfileRow] = (try? await client
                     .from("profiles")
-                    .select("id, subscription_type, kid_login_code, family_name")
+                    .select("id, subscription_type, kid_login_code, family_name, created_at")
                     .eq("id", value: ownerId.uuidString)
                     .limit(1)
                     .execute()
                     .value) ?? []
+
+                // The family's plan is the owner's: a co-parent of a paying
+                // family gets Premium, and the grandfathering date is the
+                // family's (docs/PREMIUM.md, matching the web). A co-parent who
+                // somehow pays on their own keeps it.
+                if let owner = ownerProfiles.first {
+                    await MainActor.run {
+                        if let ownerTier = owner.subscription_type, ownerTier != "free" {
+                            self.subscriptionType = ownerTier
+                        }
+                        if let ownerCreated = owner.created_at.flatMap(Entitlements.parseTimestamp) {
+                            self.profileCreatedAt = ownerCreated
+                        }
+                    }
+                }
 
                 if let ownerCode = ownerProfiles.first?.kid_login_code {
                     await MainActor.run {
