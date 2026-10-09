@@ -147,7 +147,7 @@ I'm Ben, the founder of ChoreStar. I'm writing because your family did something
 
 You set up routines for your kids, turned on kid login (PIN) for ${user.kidPinsSet} child${user.kidPinsSet === 1 ? '' : 'ren'}, and logged ${user.routineCompletions} routine completion${user.routineCompletions === 1 ? '' : 's'}.
 
-Out of 115+ families on ChoreStar, only two are actively using routines. You're one of them.
+You're one of the families really running routines on ChoreStar, not just building them.
 
 I'd love your honest feedback, and a reply here is perfect:
 

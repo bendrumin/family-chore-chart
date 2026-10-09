@@ -8,11 +8,11 @@ it, on both platforms. Keep this table true when either side changes.
 |---|---|---|---|
 | Unlimited children (free: 3) | add-child-modal, `getChildLimit` | `childLimit` | gated both |
 | Unlimited chores (free: 20, family-wide) | add-chore-modal, `getChoreLimit` | `choreLimit` | gated both (web since 2026-09-16) |
-| Unlimited reward store items (free: 3) | server `wallet.ts` limits | `rewardItemLimit` + server | gated both |
-| Unlimited goals (free: 1) | server `wallet.ts` limits | server | gated both |
+| Unlimited reward store items (free: 3) | rewards tab + DB trigger (024) | `rewardItemLimit` + DB trigger (024) | gated both, enforced in the database |
+| Unlimited goals (free: 1 active per child) | `/api/kid/goals` + kid card lists every goal | server + KidGoalCardView lists every goal | gated both; works since 2026-10-09 (before, only the oldest goal ever showed) |
 | Premium themes (Ocean, Sunset, Forest, Aurora, Coral, Lavender) | appearance tab, `isPremiumTheme` + `canUseFeature` | `SeasonalTheme.isPremium` + `canUse(.themes)` | gated both, grandfathered |
 | Family sharing / co-parent | family tab + `POST /api/family/invite` 403 | FamilySharingView owner section | gated both, grandfathered |
-| Export reports (PDF, CSV) | downloads tab | feature does not exist on iOS | gated web, grandfathered |
+| Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |
 | Priority email support | process, not code | | fine |
 
@@ -86,3 +86,29 @@ checks Apple's signature and that `appAccountToken` is this account, which also
 ends "one Apple ID upgrades every ChoreStar account signed in on the phone".
 Sandbox purchases unlock the session but are never saved
 (`lib/apple/entitlement.ts`, tested).
+
+## Promise fixes (2026-10-09)
+
+Second audit, after goals/store, Google Play billing and Sign in with Apple
+shipped. Fixed:
+- Goals: Premium's "unlimited goals" now shows every goal to the kid (web and
+  iOS); `/api/kid/wallet` returns `goals`, keeping `goal` for iOS <= 2.4.
+- Co-parents inherit the owner's plan on iOS (was ignored) and on the web
+  Billing tab and child cap; a co-parent's new child is saved to the family.
+- Manage Subscription goes to the App Store / Google Play for those payers.
+- Copy lists exactly the gated set everywhere (web pricing card, billing tab,
+  iOS paywall + upgrade prompt, now localized); the pricing card no longer
+  sells free features; the blog no longer mentions a lifetime plan.
+- Upgrade dead ends: store cap buttons (web, iOS), logged-in home upgrade
+  link opens Billing (`/dashboard?settings=billing`).
+- iOS Restore Purchases reports its result; What's New moves to 2.5.
+
+Still open:
+- Native Android: no grandfathering (pre-cutoff families lose themes and
+  sharing there); Play listing says Premium is managed at chorestar.app and
+  the paywall's no-plans state links out to the web (Play policy risk).
+- Cross-store downgrades: a cancellation on one rail (Stripe, Apple, Google)
+  can drop a family still paying on another.
+- Stripe portal picks the first customer for an email; checkout makes a new
+  customer each attempt. The web Stripe path has still never completed live.
+- Comps ("comp 3 months" in the routine-feedback email) have no expiry.
