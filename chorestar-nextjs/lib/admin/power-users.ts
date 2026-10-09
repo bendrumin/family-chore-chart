@@ -42,7 +42,8 @@ async function fetchAuthUsers(admin: SupabaseClient<Database>) {
 export async function analyzePowerUsers(admin: SupabaseClient<Database>): Promise<PowerUserReport> {
   const [profiles, children, chores, choreCompletions, routines, routineCompletions, badges, childPins, kidSessions, authUsers] =
     await Promise.all([
-      fetchAll<{ id: string; email: string; family_name: string; subscription_type: string; created_at: string; updated_at: string }>(admin, 'profiles', 'id, email, family_name, subscription_type, created_at, updated_at'),
+      // signup_source (021) and apple_original_transaction_id (018) are not in the generated types.
+      fetchAll<{ id: string; email: string; family_name: string; subscription_type: string; created_at: string; updated_at: string; signup_source: { platform?: string } | null; apple_original_transaction_id: string | null }>(admin, 'profiles', 'id, email, family_name, subscription_type, created_at, updated_at, signup_source, apple_original_transaction_id'),
       fetchAll<{ id: string; user_id: string; name: string; created_at: string }>(admin, 'children', 'id, user_id, name, created_at'),
       fetchAll<{ id: string; child_id: string; is_active: boolean }>(admin, 'chores', 'id, child_id, is_active'),
       fetchAll<{ id: string; chore_id: string; completed_at: string }>(admin, 'chore_completions', 'id, chore_id, completed_at'),
@@ -96,6 +97,7 @@ export async function analyzePowerUsers(admin: SupabaseClient<Database>): Promis
         engagementTier: 'dormant',
         usesKidLogin: false,
         usesRoutines: false,
+        onIOS: profile?.signup_source?.platform === 'ios_app' || !!profile?.apple_original_transaction_id,
       })
     }
     return statsByUser.get(userId)!

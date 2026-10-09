@@ -444,6 +444,48 @@ Ben
 chorestar.app`
     },
   },
+
+  'app-review': {
+    id: 'app-review',
+    label: 'App Store review ask',
+    description:
+      'Engaged families with the iPhone app (signed up in it or pay through Apple): 10+ check-offs, active in the last 14 days, 7+ days in. Asks for an honest App Store review.',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          if (!u.onIOS) return false
+          if ((u.tenureDays ?? 0) < 7) return false
+          if ((u.daysSinceLastActivity ?? 999) > 14) return false
+          return (u.choreCompletions || 0) + (u.routineCompletions || 0) >= 10
+        })
+      )
+        .sort((a, b) => b.activityScore - a.activityScore)
+        .slice(0, 15)
+    },
+    subject() {
+      return 'A small favor from the ChoreStar founder'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const done = (user.choreCompletions || 0) + (user.routineCompletions || 0)
+      // An honest review, never "5 stars" and never a reward: App Review
+      // guideline 5.6.3 forbids manipulating ratings.
+      return `${hi}
+
+I'm Ben, the parent who builds ChoreStar. Your family has checked off ${done} chores and routines so far, which is exactly what I hoped the app would do for families, so I wanted to ask a small favor.
+
+ChoreStar is still new on the App Store, and reviews are how other parents decide whether to give it a try. If it has been working for your family, a quick rating or a sentence about what has helped would mean a lot:
+
+https://apps.apple.com/app/id6761279049?action=write-review
+
+And if something isn't working, I would rather hear it from you first. Just reply to this email; I read every one myself.
+
+Thanks for being one of our early families,
+
+Ben
+chorestar.app`
+    },
+  },
 }
 
 export function resolveCampaignRecipients(
