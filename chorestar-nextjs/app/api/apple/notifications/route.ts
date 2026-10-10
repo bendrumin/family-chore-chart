@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import {
@@ -143,31 +144,26 @@ async function setTier(supabase: unknown, userId: string, tier: 'free' | 'premiu
 
 /**
  * Downgrades unless something else still entitles the family: a lifetime
- * plan, or an active Stripe subscription (Stripe stores our userId in the
- * subscription metadata, so search finds it).
+ * plan, or an active Stripe or Google Play subscription (lib/billing/keep-premium).
+ * A rail that can't be reached throws, so Apple retries rather than cutting
+ * off a paying family.
  */
 async function downgradeIfSafe(supabase: unknown, userId: string) {
   const { data: profile } = await (supabase as any)
     .from('profiles')
-    .select('subscription_type')
+    .select('id, subscription_type, apple_original_transaction_id, google_purchase_token')
     .eq('id', userId)
     .single()
 
   if (profile?.subscription_type === 'lifetime') return 'kept-lifetime'
   if (profile?.subscription_type !== 'premium') return 'already-free'
 
-  try {
-    const active = await stripe.subscriptions.search({
-      query: `metadata['userId']:'${userId}' AND status:'active'`,
-      limit: 1,
-    })
-    if (active.data.length > 0) return 'kept-stripe-active'
-  } catch (err) {
-    // If Stripe is unreachable, keep premium and let Apple's retry re-run the
-    // check — wrongly cutting off a paying family is worse than a late downgrade.
-    console.error('Stripe check failed during Apple downgrade, keeping premium for now:', err)
-    throw err
-  }
+  const kept = keepPremiumReason({
+    tier: profile.subscription_type,
+    ending: 'apple',
+    active: await otherRailsActive(profile, 'apple', stripe),
+  })
+  if (kept) return kept
 
   return setTier(supabase, userId, 'free')
 }

@@ -1,4 +1,4 @@
-import { createPrivateKey, createSign } from 'node:crypto'
+import { appleServerCredentials, appleServerGet, appleServerToken } from '@/lib/apple/server-api'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type Stripe from 'stripe'
 import type { Database } from '@/lib/supabase/database.types'
@@ -167,39 +167,6 @@ interface AppleTransaction {
 
 const decodeJws = <T>(jws: string): T => JSON.parse(Buffer.from(jws.split('.')[1], 'base64url').toString())
 
-function appleCredentials() {
-  const keyId = process.env.APP_STORE_API_KEY_ID
-  const issuer = process.env.APP_STORE_API_ISSUER_ID
-  // The .p8 contents with real or escaped newlines, or the file base64-encoded.
-  let key = process.env.APP_STORE_API_PRIVATE_KEY?.trim().replace(/\\n/g, '\n')
-  if (key && !key.includes('BEGIN')) key = Buffer.from(key, 'base64').toString('utf8')
-  return keyId && issuer && key ? { keyId, issuer, key } : null
-}
-
-function appleToken(creds: { keyId: string; issuer: string; key: string }): string {
-  const b64u = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url')
-  const now = Math.floor(Date.now() / 1000)
-  const input = `${b64u({ alg: 'ES256', kid: creds.keyId, typ: 'JWT' })}.${b64u({
-    iss: creds.issuer,
-    iat: now - 30,
-    exp: now + 900,
-    aud: 'appstoreconnect-v1',
-    bid: 'com.chorestar.ChoreStar',
-  })}`
-  // ieee-p1363 gives the raw r||s signature a JWT wants.
-  const sig = createSign('sha256').update(input).sign({ key: createPrivateKey(creds.key), dsaEncoding: 'ieee-p1363' })
-  return `${input}.${sig.toString('base64url')}`
-}
-
-async function appleGet(path: string, token: string) {
-  const res = await fetch(`https://api.storekit.itunes.apple.com${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  })
-  if (!res.ok) throw new Error(`App Store Server API ${res.status} for ${path.split('?')[0]}`)
-  return res.json()
-}
-
 async function appleFamily(
   family: { family: string; email: string },
   originalTransactionId: string,
@@ -209,7 +176,7 @@ async function appleFamily(
   let revision: string | undefined
   for (;;) {
     const q = `sort=DESCENDING${revision ? `&revision=${encodeURIComponent(revision)}` : ''}`
-    const page = await appleGet(`/inApps/v2/history/${originalTransactionId}?${q}`, token)
+    const page = await appleServerGet(`/inApps/v2/history/${originalTransactionId}?${q}`, token)
     txs.push(...(page.signedTransactions as string[]).map((j) => decodeJws<AppleTransaction>(j)))
     if (!page.hasMore) break
     revision = page.revision
@@ -232,7 +199,7 @@ async function appleFamily(
   })
 
   let subscriber: Subscriber | null = null
-  const status = await appleGet(`/inApps/v1/subscriptions/${originalTransactionId}`, token)
+  const status = await appleServerGet(`/inApps/v1/subscriptions/${originalTransactionId}`, token)
   const last = status.data?.[0]?.lastTransactions?.[0]
   if (last) {
     const tx = decodeJws<AppleTransaction>(last.signedTransactionInfo)
@@ -339,11 +306,11 @@ export async function collectRevenue(
   const subscribers: Subscriber[] = []
 
   const apple = rows.filter((r) => r.apple_original_transaction_id)
-  const creds = appleCredentials()
+  const creds = appleServerCredentials()
   if (!creds) {
     if (apple.length) notes.push(`${apple.length} Apple subscriber(s) not shown: set APP_STORE_API_KEY_ID, APP_STORE_API_ISSUER_ID and APP_STORE_API_PRIVATE_KEY.`)
   } else {
-    const token = appleToken(creds)
+    const token = appleServerToken(creds)
     const results = await Promise.allSettled(
       apple.map((r) =>
         appleFamily({ family: r.family_name, email: r.email }, r.apple_original_transaction_id!, token)

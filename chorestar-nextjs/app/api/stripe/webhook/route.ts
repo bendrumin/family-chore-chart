@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { stripe } from '@/lib/stripe'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import type Stripe from 'stripe'
@@ -148,11 +149,21 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const supabase = createServiceRoleClient()
   const { data: profile } = await (supabase as any)
     .from('profiles')
-    .select('subscription_type')
+    .select('id, subscription_type, apple_original_transaction_id, google_purchase_token')
     .eq('id', userId)
     .single()
 
-  if (profile?.subscription_type === 'lifetime') return
+  // A family paying on the App Store or Google Play too stays Premium. A rail
+  // that can't be reached throws, so Stripe retries the event.
+  const kept = keepPremiumReason({
+    tier: profile?.subscription_type,
+    ending: 'stripe',
+    active: profile ? await otherRailsActive(profile, 'stripe', stripe) : {},
+  })
+  if (kept) {
+    console.log(`subscription.deleted ${subscription.id}: ${kept} for user ${userId}`)
+    return
+  }
 
   await updateSubscriptionTier(userId, 'free')
 }

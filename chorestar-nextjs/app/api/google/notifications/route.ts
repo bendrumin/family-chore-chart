@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import {
@@ -111,13 +112,13 @@ async function setTier(supabase: unknown, userId: string, tier: 'free' | 'premiu
   return tier
 }
 
-/** Same guard as the Apple handler: lifetime and active Stripe keep premium. */
+/** Same guard as the Apple handler: lifetime, or an active Stripe or Apple subscription, keeps premium. */
 async function downgradeIfSafe(supabase: unknown, userId: string) {
-  const { data: profile } = await (supabase as any).from('profiles').select('subscription_type, apple_original_transaction_id').eq('id', userId).single()
+  const { data: profile } = await (supabase as any).from('profiles').select('id, subscription_type, apple_original_transaction_id, google_purchase_token').eq('id', userId).single()
   if (profile?.subscription_type === 'lifetime') return 'kept-lifetime'
   if (profile?.subscription_type !== 'premium') return 'already-free'
-  const active = await stripe.subscriptions.search({ query: `metadata['userId']:'${userId}' AND status:'active'`, limit: 1 })
-  if (active.data.length > 0) return 'kept-stripe-active'
+  const kept = keepPremiumReason({ tier: profile.subscription_type, ending: 'google', active: await otherRailsActive(profile, 'google', stripe) })
+  if (kept) return kept
   return setTier(supabase, userId, 'free')
 }
 
