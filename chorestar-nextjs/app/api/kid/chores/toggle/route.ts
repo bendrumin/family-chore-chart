@@ -97,6 +97,10 @@ export async function POST(request: Request) {
         .select('id, status')
         .maybeSingle()
 
+      // A sibling already finished this bonus chore today (migration 025).
+      if (error && (error.hint === 'bonus_already_claimed' || /bonus chore/i.test(error.message))) {
+        return NextResponse.json({ error: 'bonus_taken' }, { status: 409 })
+      }
       if (error && error.code !== '23505') {
         console.error('[kid/chores/toggle] insert failed:', error.message)
         return NextResponse.json({ error: 'Failed to save' }, { status: 500 })

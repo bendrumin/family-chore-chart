@@ -46,7 +46,7 @@ const articleJsonLd = {
     'iOS 27 shipped today with the iPhone 18 Pro, Pro Max, and iPhone Duo. ChoreStar already runs on all of it.',
   url: 'https://chorestar.app/blog/chorestar-ios-27',
   datePublished: '2026-09-14',
-  dateModified: '2026-09-14',
+  dateModified: '2026-10-10',
   author: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
   publisher: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
 }
@@ -107,6 +107,12 @@ export default function ChoreStarIos27Page() {
               layouts, and that is the same mechanism the Duo uses when it unfolds. The
               moment Apple ships the simulator, we test on it, and anything that needs
               polish gets polish.
+            </p>
+            <p className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-gray-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-gray-300">
+              <strong>Update, October 2026:</strong> the Duo simulator arrived, and ChoreStar
+              2.4 is made for iPhone Duo. Open it for two-column kid mode and a routine
+              player that shows every step beside the current one; half-open, nothing sits
+              on the fold.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What iOS 27 Makes Possible</h2>

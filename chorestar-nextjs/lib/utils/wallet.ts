@@ -36,11 +36,21 @@ export async function loadChild(childId: string): Promise<WalletChild | null> {
 export async function computeBalance(child: WalletChild): Promise<Balance> {
   const admin = createServiceRoleClient()
 
-  const { data: chores } = await admin
+  // Shared chores (migration 025) count whether or not it's this kid's turn
+  // this week, so last week's rotation money never disappears. Falls back to
+  // active chores only where the migration hasn't run yet.
+  const withShared = await admin
     .from('chores')
     .select('id, reward_cents, days_of_week')
     .eq('child_id', child.id)
-    .eq('is_active', true)
+    .or('is_active.eq.true,rotation_group_id.not.is.null')
+  const chores = withShared.error
+    ? (await admin
+        .from('chores')
+        .select('id, reward_cents, days_of_week')
+        .eq('child_id', child.id)
+        .eq('is_active', true)).data
+    : withShared.data
   const choreList = chores ?? []
 
   let earned = 0

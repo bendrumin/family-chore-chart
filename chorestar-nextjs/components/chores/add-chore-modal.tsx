@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera, Crown } from 'lucide-react'
+import { Sparkles, DollarSign, FileText, Palette, CalendarDays, Camera, Crown, Users } from 'lucide-react'
 import { isPremium, getChoreLimit } from '@/lib/utils/subscription'
 import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
@@ -37,6 +37,11 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
   // (SupabaseManager.choreLimit). null = still loading or the check failed;
   // the gate then stays open so a metadata hiccup can't block chore creation.
   const [capState, setCapState] = useState<{ count: number; limit: number } | null>(null)
+  // Shared chores (Premium): the family's kids, and how this chore is shared.
+  const [familyKids, setFamilyKids] = useState<{ id: string; name: string }[]>([])
+  const [familyPremium, setFamilyPremium] = useState(false)
+  const [shareMode, setShareMode] = useState<'none' | 'rotate' | 'grab'>('none')
+  const [shareWith, setShareWith] = useState<string[]>([])
   const [formData, setFormData] = useState({
     name: '',
     rewardCents: DEFAULT_CHORE_REWARD_CENTS,
@@ -67,19 +72,18 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
   useEffect(() => {
     if (!open) return
     setCapState(null)
+    setShareMode('none')
     const checkCap = async () => {
       try {
         const supabase = createClient()
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_type')
-          .eq('id', userId)
-          .single()
+        const [{ data: profile }, { data: kids }] = await Promise.all([
+          supabase.from('profiles').select('subscription_type').eq('id', userId).single(),
+          supabase.from('children').select('id, name').eq('user_id', userId).order('created_at'),
+        ])
+        setFamilyKids(kids ?? [])
+        setShareWith((kids ?? []).map((k) => k.id))
+        setFamilyPremium(isPremium(profile?.subscription_type))
         if (isPremium(profile?.subscription_type)) return
-        const { data: kids } = await supabase
-          .from('children')
-          .select('id')
-          .eq('user_id', userId)
         const ids = (kids ?? []).map((k) => k.id)
         if (ids.length === 0) return
         const { count } = await supabase
@@ -105,6 +109,40 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
     setIsLoading(true)
 
     try {
+      if (shareMode !== 'none') {
+        // This kid first: they take the first turn of a rotation.
+        const childIds = [childId, ...shareWith.filter((id) => id !== childId)]
+        if (childIds.length < 2) {
+          toast.error('Pick at least one more kid to share with.')
+          return
+        }
+        const res = await fetch('/api/chores/shared', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            icon: formData.icon,
+            rewardCents: formData.rewardCents,
+            daysOfWeek: formData.days,
+            category: formData.category,
+            requiresPhoto: formData.requiresPhoto,
+            mode: shareMode,
+            childIds,
+          }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.message || data.error || 'Failed to add chore')
+        playSound('success')
+        toast.success(
+          shareMode === 'rotate'
+            ? `${formData.name} rotates between ${childIds.length} kids, starting this week.`
+            : `${formData.name} is a bonus chore: first to finish earns it.`
+        )
+        setFormData({ name: '', rewardCents: defaultRewardCents, icon: '📝', category: 'household_chores', days: [...ALL_DAYS], requiresPhoto: false })
+        setShareMode('none')
+        onSuccess()
+        return
+      }
       const supabase = createClient()
       const { error } = await supabase.from('chores').insert({
         child_id: childId,
@@ -269,6 +307,83 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                   </span>
                 </span>
               </label>
+
+              {familyKids.length >= 2 && (
+                <fieldset className="mt-5 space-y-2">
+                  <legend className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" aria-hidden />
+                    Share with other kids
+                    {!familyPremium && (
+                      <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                        <Crown className="w-3 h-3" aria-hidden /> Premium
+                      </span>
+                    )}
+                  </legend>
+                  {([
+                    ['none', 'Just this kid', 'One chore, one kid, like always.'],
+                    ['rotate', 'Take turns weekly', 'One kid each week, switching every Sunday. Each kid keeps what they earn.'],
+                    ['grab', 'Bonus: first to finish earns it', 'Every kid sees it; whoever does it first that day gets the reward.'],
+                  ] as const).map(([value, title, hint]) => {
+                    const locked = value !== 'none' && !familyPremium
+                    return (
+                      <label
+                        key={value}
+                        className={`flex items-start gap-3 rounded-xl border p-3 ${
+                          shareMode === value
+                            ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-900/30'
+                            : 'border-gray-200 dark:border-gray-700'
+                        } ${locked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        <input
+                          type="radio"
+                          name="share-mode"
+                          value={value}
+                          checked={shareMode === value}
+                          disabled={locked}
+                          onChange={() => setShareMode(value)}
+                          className="mt-1"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</span>
+                          <span className="block text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{hint}</span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                  {shareMode !== 'none' && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {familyKids.map((kid) => {
+                        const on = shareWith.includes(kid.id)
+                        const isThisKid = kid.id === childId
+                        return (
+                          <button
+                            key={kid.id}
+                            type="button"
+                            disabled={isThisKid}
+                            onClick={() => setShareWith(on ? shareWith.filter((id) => id !== kid.id) : [...shareWith, kid.id])}
+                            className={`rounded-full px-3 py-1 text-sm font-semibold border ${
+                              on
+                                ? 'accent-fill border-transparent'
+                                : 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300'
+                            }`}
+                          >
+                            {kid.name}{isThisKid ? ' (first)' : ''}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {!familyPremium && (
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                      className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 underline"
+                    >
+                      See Premium
+                    </button>
+                  )}
+                </fieldset>
+              )}
             </div>
 
             {/* Appearance Section - Purple accent */}

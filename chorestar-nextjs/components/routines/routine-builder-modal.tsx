@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Sparkles, Plus, Trash2, GripVertical, Clock, DollarSign } from 'lucide-react';
+import { Sparkles, Plus, Trash2, GripVertical, Clock, DollarSign, Crown } from 'lucide-react';
+import { useEntitlements } from '@/lib/hooks/use-entitlements';
+import { isPremium } from '@/lib/utils/subscription';
 import { RoutineIconPicker } from './routine-icon-picker';
 import { ROUTINE_TEMPLATES, ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useCreateRoutine, useUpdateRoutine } from '@/lib/hooks/useRoutines';
@@ -147,6 +149,9 @@ export function RoutineBuilderModal({
   onSuccess,
   editRoutine,
 }: RoutineBuilderModalProps) {
+  // The family's plan (co-parents share the owner's): unlocks the template library.
+  const { tier } = useEntitlements();
+  const familyIsPremium = isPremium(tier);
   const [formData, setFormData] = useState({
     name: '',
     type: 'custom' as 'morning' | 'bedtime' | 'afterschool' | 'custom',
@@ -336,17 +341,31 @@ export function RoutineBuilderModal({
                   </h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {ROUTINE_TEMPLATES.map((template, index) => (
-                    <button
-                      key={template.name}
-                      type="button"
-                      onClick={() => loadTemplate(index)}
-                      className="p-3 text-left border-2 rounded-lg transition-colors bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-cyan-400"
-                    >
-                      <div className="font-bold text-sm">{template.name}</div>
-                      <div className="text-xs text-gray-500">{template.steps.length} steps</div>
-                    </button>
-                  ))}
+                  {ROUTINE_TEMPLATES.map((template, index) => {
+                    // The Premium library shows to everyone; picking one on the
+                    // free plan opens Billing.
+                    const locked = !!template.premium && !familyIsPremium
+                    return (
+                      <button
+                        key={template.name}
+                        type="button"
+                        onClick={() => {
+                          if (locked) {
+                            window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+                            return
+                          }
+                          loadTemplate(index)
+                        }}
+                        className={`p-3 text-left border-2 rounded-lg transition-colors bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-cyan-400 ${locked ? 'opacity-70' : ''}`}
+                      >
+                        <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-1">
+                          {template.name}
+                          {template.premium && <Crown className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" aria-label="Premium" />}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{template.steps.length} steps</div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}

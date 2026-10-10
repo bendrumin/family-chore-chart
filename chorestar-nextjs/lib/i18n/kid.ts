@@ -98,6 +98,8 @@ const en = {
   'chores.ariaNotDone': 'not done',
   'chores.waitingBadge': 'Waiting for a grown-up ⏳',
   'chores.takePhoto': 'Take a photo',
+  'chores.bonusBadge': 'Bonus: first to finish earns it',
+  'chores.bonusTaken': 'Someone beat you to it today!',
 
   // Stats strip + badge cabinet
   'stats.dayStreak': 'day streak',
@@ -247,6 +249,8 @@ const es: Record<KidKey, string> = {
   'chores.ariaNotDone': 'no hecha',
   'chores.waitingBadge': 'Esperando a un adulto ⏳',
   'chores.takePhoto': 'Toma una foto',
+  'chores.bonusBadge': 'Bono: el primero en terminar lo gana',
+  'chores.bonusTaken': '¡Alguien te ganó hoy!',
 
   'stats.dayStreak': 'días seguidos',
   'stats.best': 'récord: {count}',
@@ -389,6 +393,8 @@ const pt: Record<KidKey, string> = {
   'chores.ariaNotDone': 'não feita',
   'chores.waitingBadge': 'Esperando um adulto ⏳',
   'chores.takePhoto': 'Tire uma foto',
+  'chores.bonusBadge': 'Bônus: quem terminar primeiro ganha',
+  'chores.bonusTaken': 'Alguém chegou antes hoje!',
 
   'stats.dayStreak': 'dias seguidos',
   'stats.best': 'recorde: {count}',
@@ -531,6 +537,8 @@ const ar: Record<KidKey, string> = {
   'chores.ariaNotDone': 'غير منجزة',
   'chores.waitingBadge': 'في انتظار شخص كبير ⏳',
   'chores.takePhoto': 'التقط صورة',
+  'chores.bonusBadge': 'مكافأة: يفوز بها أول من ينجزها',
+  'chores.bonusTaken': 'سبقك أحدهم إليها اليوم!',
 
   'stats.dayStreak': 'أيام متتالية',
   'stats.best': 'الرقم القياسي: {count}',

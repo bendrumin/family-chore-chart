@@ -35,12 +35,27 @@ export async function GET(request: Request) {
   try {
     const admin = createServiceRoleClient()
 
-    const { data: chores, error: choresError } = await admin
-      .from('chores')
-      .select('id, name, icon, category, reward_cents, sort_order, days_of_week, requires_photo')
-      .eq('child_id', session.childId)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
+    // rotation_mode (migration 025) marks bonus chores; fall back without it
+    // where the migration hasn't run yet.
+    type KidChoreRow = {
+      id: string; name: string; icon: string | null; category: string | null; reward_cents: number
+      sort_order: number | null; days_of_week: number[]; requires_photo: boolean; rotation_mode?: string | null
+    }
+    const query = async (cols: string) =>
+      (await admin
+        .from('chores')
+        .select(cols)
+        .eq('child_id', session.childId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })) as unknown as { data: KidChoreRow[] | null; error: { message: string } | null }
+    let { data: chores, error: choresError } = await query(
+      'id, name, icon, category, reward_cents, sort_order, days_of_week, requires_photo, rotation_mode'
+    )
+    if (choresError) {
+      ;({ data: chores, error: choresError } = await query(
+        'id, name, icon, category, reward_cents, sort_order, days_of_week, requires_photo'
+      ))
+    }
 
     if (choresError) {
       console.error('[kid/chores] chores query failed:', choresError.message)

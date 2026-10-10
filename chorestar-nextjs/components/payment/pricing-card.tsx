@@ -17,6 +17,9 @@ interface PricingCardProps {
 const PLAN_FEATURES = {
   monthly: [
     'Unlimited children & chores',
+    'Chores that rotate between kids',
+    'Bonus chores: first to finish earns it',
+    '10 more routine templates',
     'Unlimited store rewards & goals',
     'Family sharing with a co-parent',
     '6 premium themes',
@@ -28,6 +31,8 @@ const PLAN_FEATURES = {
     'Everything in Monthly',
     'About 2 months free',
     'Unlimited children & chores',
+    'Rotating & bonus chores',
+    '10 more routine templates',
     'Unlimited store rewards & goals',
     'Family sharing with a co-parent',
     'Advanced analytics',
