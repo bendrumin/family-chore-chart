@@ -24,8 +24,13 @@ enum Changelog {
         Entry(
             version: "2.5",
             date: "October 2026",
-            title: "More Goals, One Tap Sign-In, iPhone Duo",
+            title: "Fair Shares, More Goals, iPhone Duo",
             features: [
+                Feature(
+                    icon: "🔄",
+                    title: "Chores That Take Turns",
+                    description: "Premium: set a chore to rotate between your kids each week, or post a bonus chore the first kid to finish earns, from Add Chore on chorestar.app. It shows up on iPhone for whoever's turn it is."
+                ),
                 Feature(
                     icon: "🎯",
                     title: "Save for More Than One Thing",

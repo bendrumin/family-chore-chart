@@ -11,9 +11,46 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.1'
+export const LATEST_CHANGELOG_VERSION = '2026.10.2'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.2': {
+    version: '2026.10.2',
+    date: 'October 2026',
+    title: 'Fair Shares: Rotating Chores, Bonus Chores, More Goals',
+    features: [
+      {
+        icon: '🔄',
+        title: 'Chores That Take Turns',
+        description: 'Premium: add a chore once and let it rotate between your kids every Sunday. Dishes are Maya\'s week, then Leo\'s, and nobody has to keep score. Each kid keeps what they earned on their turn. Pick "Take turns weekly" when you add a chore.',
+      },
+      {
+        icon: '⭐',
+        title: 'Bonus Chores: First to Finish Earns It',
+        description: 'Premium: post an extra job for every kid at once. Whoever does it first that day gets the reward, and the others see someone beat them to it. Great for a car wash or a garage sweep.',
+      },
+      {
+        icon: '🎯',
+        title: 'Save for More Than One Thing',
+        description: 'Premium kids can now save for several goals at once, each with its own progress bar. Lego and a scooter, side by side.',
+      },
+      {
+        icon: '📚',
+        title: '10 More Routine Templates',
+        description: 'Premium: School Morning Express, Homework Hour, Weekend Room Reset, Pet Care, Teen Morning, Calm-Down Bedtime and more, ready to start in one tap. The original four stay free.',
+      },
+      {
+        icon: '📬',
+        title: 'A Weekly Report in Your Inbox',
+        description: 'Premium: turn it on in Settings > Appearance and every Sunday you get each kid\'s week by email: chores done, money earned, streaks, and how close they are to their goals. One click stops it.',
+      },
+      {
+        icon: '👥',
+        title: 'Co-Parents Share Everything',
+        description: 'A co-parent in a Premium family gets all of Premium, and children they add land in the family where everyone can see them.',
+      },
+    ],
+  },
   '2026.10.1': {
     version: '2026.10.1',
     date: 'October 2026',

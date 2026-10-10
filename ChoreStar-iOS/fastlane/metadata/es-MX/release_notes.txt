@@ -1,11 +1,10 @@
-La versión 2.4 agrega Iniciar sesión con Apple.
+Versión 2.5: tareas justas y más metas.
 
-• Crea tu familia con un toque con Iniciar sesión con Apple, sin contraseña que recordar
-• Elige Ocultar mi correo y ChoreStar nunca verá tu dirección real
-• A las familias nuevas se les pregunta primero cómo llamarse, para que los niños vean el nombre de tu familia al entrar
-• ¿Ya te registraste con correo? Nada cambia: sigue entrando con tu correo y contraseña
-• Al eliminar tu cuenta, ChoreStar también desaparece de la lista de inicio de sesión de tu Apple ID
-• Hecho para iPhone Duo: ábrelo y el modo niños se ve en dos columnas, y la rutina muestra todos los pasos junto al actual. Medio abierto, nada queda sobre el pliegue
+• Ahorra para más de una cosa: con Premium, los niños pueden tener varias metas a la vez, cada una con su barra
+• Tareas por turnos: con Premium, una tarea puede rotar entre tus hijos cada semana, o ser una tarea de bono que gana el primero en terminarla. Créalas desde Agregar tarea en chorestar.app y aparecen aquí para quien le toque
+• El otro padre o madre en una familia Premium ahora tiene todo Premium en su propio iPhone
+• Restaurar compras te dice si Premium está activo, o por qué no se pudo aplicar
+• La pantalla de Premium muestra exactamente lo que incluye, ahora también en español
 • Pequeñas correcciones y mejoras
 
 Escríbenos a hi@chorestar.app

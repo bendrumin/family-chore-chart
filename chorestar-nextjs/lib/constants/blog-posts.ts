@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'split-chores-fairly-between-siblings',
+    title: 'How to Split Chores Fairly Between Siblings',
+    description:
+      'Rotate the jobs nobody wants, post bonus jobs for whoever is fastest, and let each kid save for their own thing. A practical guide to sibling chore fairness, and how ChoreStar now does it for you.',
+    date: 'October 10, 2026',
+    isoDate: '2026-10-10',
+    readTime: '6 min read',
+    emoji: '🔄',
+    category: 'Parenting',
+  },
+  {
     slug: 'best-free-chore-apps-for-kids',
     title: 'Best Free Chore Apps for Kids in 2026: We Checked the Pricing Pages',
     description:

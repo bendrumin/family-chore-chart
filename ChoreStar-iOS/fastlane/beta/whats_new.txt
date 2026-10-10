@@ -1,19 +1,10 @@
-NEW IN 2.4 (BUILD 39): SIGN IN WITH APPLE + MADE FOR IPHONE DUO
+NEW IN 2.5: MORE GOALS, CO-PARENT PREMIUM, SHARED CHORES
 
-Please try:
-- Sign up with Sign in with Apple, with and without Hide My Email
-- You should be asked to name your family, then land on the dashboard
-- Kid login with the family code should work for the new family
-- Sign out and sign back in with Apple: same family, no new one
-- Existing email accounts: sign in exactly as before
-- Settings > Delete Account on an Apple test family; ChoreStar should then
-  disappear from Settings > Apple ID > Sign in with Apple on the device
-
-On iPhone Duo (or iPad):
-- Open: kid mode shows routines and chores beside the goal and reward store
-- Start a routine: the current step on one side, every step and Done on the other
-- Half-open like a book: nothing to read or tap should sit on the fold
-- Fold and unfold mid-PIN on kid login: the PIN pad should stay put
-- Open: Family shows the kids side by side across the screen
-- Half-open: Home's chores, the Chores tab and Family split around the fold
-- Closed: the "Needs your OK" tray on Home stays readable, buttons below
+Please try (a Premium family is easiest):
+- Kid mode: give a kid two goals; both show with their own bars, and "Save for something else too" appears only on Premium
+- On chorestar.app, add a chore with "Take turns weekly" for two kids: on iPhone it shows only for the first kid this week
+- Add a "Bonus" chore for two kids: tick it as one kid, then try as the other the same day (it should be refused)
+- Sign in as a co-parent of a Premium family: Stats, Export, themes and unlimited chores should be open
+- Settings > Restore Purchases: you should see a message either way
+- Free plan: the reward store cap now has a See Premium Plans button
+- The paywall lists sharing, stats/export and goals, translated in es/pt/ar

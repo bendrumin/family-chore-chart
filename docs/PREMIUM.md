@@ -14,6 +14,9 @@ it, on both platforms. Keep this table true when either side changes.
 | Family sharing / co-parent | family tab + `POST /api/family/invite` 403 | FamilySharingView owner section | gated both, grandfathered |
 | Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |
+| Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock | shown to the right kid; created on the web only | gated server-side; not grandfathered (new) |
+| Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | not on iOS yet | gated web; the original 4 stay free |
+| Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | n/a (email) | gated server-side, opt-in |
 | Priority email support | process, not code | | fine |
 
 Copy that was false and is now fixed (2026-09-19): the homepage FAQ promised

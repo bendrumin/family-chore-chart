@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff, CircleOff } from 'lucide-react'
+import { Moon, Sun, Monitor, Sparkles, Calendar, Bell, BellOff, CircleOff, Mail, Crown } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { SEASONAL_THEMES_DATA, ACCENT_THEMES, getCurrentSeasonalTheme } from '@/lib/constants/seasonal-themes'
 import { Lock } from 'lucide-react'
 import { useEntitlements } from '@/lib/hooks/use-entitlements'
-import { isPremiumTheme } from '@/lib/utils/subscription'
+import { isPremium, isPremiumTheme } from '@/lib/utils/subscription'
 import { PremiumGate } from '@/components/settings/premium-gate'
 import { ChoreIcon } from '@/components/ui/chore-icon'
 import type { CustomTheme } from '@/lib/supabase/database.types'
@@ -49,6 +49,8 @@ export function AppearanceTab() {
   const [isSeasonalSuggestionsOpen, setIsSeasonalSuggestionsOpen] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [activityPushEnabled, setActivityPushEnabled] = useState(true)
+  // Weekly report email (Premium, opt-in; migration 026).
+  const [weeklyReport, setWeeklyReport] = useState(false)
   // Android shell only: Android posts the daily reminder itself, because the
   // Push API the browser path uses does not exist in a WebView.
   const [nativeReminders, setNativeReminders] = useState(false)
@@ -64,6 +66,7 @@ export function AppearanceTab() {
       setAccentColor(customTheme.accentColor || null)
       setDraftAccent(customTheme.accentColor || '#6366f1')
       setActivityPushEnabled(settings.activity_push_enabled !== false)
+      setWeeklyReport((settings as { weekly_report_email?: boolean }).weekly_report_email === true)
     }
     
     // Check notification permission
@@ -149,6 +152,20 @@ export function AppearanceTab() {
       console.error('Error updating activity push:', error)
       setActivityPushEnabled(!next)
       toast.error('Failed to update activity alerts')
+    }
+  }
+
+  const handleWeeklyReportToggle = async () => {
+    const next = !weeklyReport
+    setWeeklyReport(next)
+    try {
+      // weekly_report_email (migration 026) isn't in the generated types.
+      await updateSettings({ weekly_report_email: next } as Parameters<typeof updateSettings>[0])
+      toast.success(next ? 'Weekly report on: it arrives Sunday' : 'Weekly report off')
+    } catch (error) {
+      console.error('Error updating weekly report:', error)
+      setWeeklyReport(!next)
+      toast.error('Failed to update the weekly report')
     }
   }
 
@@ -480,6 +497,38 @@ export function AppearanceTab() {
                 </>
               )}
             </Button>
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p className="text-sm mb-3 flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+              <Mail className="w-4 h-4" aria-hidden />
+              A Sunday email with each kid&apos;s week: chores done, money earned, streaks and goals.
+              {!entitlements.loading && !isPremium(entitlements.tier) && (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                  <Crown className="w-3 h-3" aria-hidden /> Premium
+                </span>
+              )}
+            </p>
+            {!entitlements.loading && isPremium(entitlements.tier) ? (
+              <Button
+                variant={weeklyReport ? 'outline' : 'gradient'}
+                size="lg"
+                onClick={handleWeeklyReportToggle}
+                className="font-bold hover-glow w-full"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                {weeklyReport ? 'Turn Off Weekly Report' : 'Turn On Weekly Report'}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                className="font-bold w-full"
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                See Premium
+              </Button>
+            )}
           </div>
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             {nativeReminders ? (

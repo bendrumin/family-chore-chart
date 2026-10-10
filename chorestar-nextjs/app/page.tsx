@@ -86,7 +86,7 @@ const softwareApplicationLd = {
       price: '4.99',
       priceCurrency: 'USD',
       name: 'Premium',
-      description: 'Unlimited children and chores, family sharing, premium themes, export reports',
+      description: 'Unlimited children and chores, chores that rotate between kids, bonus chores, a routine template library, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '4.99',
@@ -471,10 +471,10 @@ export default async function HomePage() {
                   'Up to 3 children',
                   'Up to 20 total chores',
                   'Kid login with PIN',
-                  'Points & earnings tracking',
+                  'Step-by-step routines with timers',
+                  'Earnings, a savings goal & 3 store rewards',
                   'Achievement badges',
-                  'Weekly progress reports',
-                  'Basic themes',
+                  'Seasonal themes',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="text-green-500 text-xl">✓</span>
@@ -510,11 +510,13 @@ export default async function HomePage() {
               <ul className="space-y-3 mb-8">
                 {[
                   '<strong>Everything in Free</strong>',
-                  '<strong>Unlimited</strong> children',
-                  '<strong>Unlimited</strong> chores',
+                  '<strong>Unlimited</strong> children & chores',
+                  '<strong>New:</strong> chores that rotate between kids',
+                  '<strong>New:</strong> bonus chores, first to finish earns it',
+                  '<strong>New:</strong> 10 more routine templates',
+                  'Unlimited savings goals & store rewards',
                   'Family sharing (co-parents)',
-                  'Premium themes & seasonal looks',
-                  'Export reports (PDF/CSV)',
+                  'Premium themes, analytics & PDF/CSV export',
                   'Priority email support',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">

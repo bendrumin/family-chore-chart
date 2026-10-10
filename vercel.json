@@ -6,6 +6,16 @@
       "use": "@vercel/next"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/rotate-chores",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-report",
+      "schedule": "0 15 * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/app",

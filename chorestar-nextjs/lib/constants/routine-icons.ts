@@ -199,6 +199,8 @@ export interface RoutineTemplate {
   type: 'morning' | 'bedtime' | 'afterschool' | 'custom';
   icon: RoutineIconKey;
   color: string;
+  /** Part of the Premium template library; the first four stay free. */
+  premium?: boolean;
   steps: {
     title: string;
     icon: RoutineIconKey;
@@ -262,6 +264,149 @@ export const ROUTINE_TEMPLATES: RoutineTemplate[] = [
       { title: 'Brush Teeth', icon: 'brush-teeth', duration_seconds: 120 },
       { title: 'Wash Face', icon: 'wash-face', duration_seconds: 60 },
       { title: 'Brush Hair', icon: 'brush-hair', duration_seconds: 60 },
+    ],
+  },
+  // Premium template library
+  {
+    name: 'School Morning Express',
+    type: 'morning',
+    icon: 'rocket',
+    color: '#f97316',
+    premium: true,
+    steps: [
+      { title: 'Wake Up', icon: 'wake-up', duration_seconds: 60 },
+      { title: 'Use the Bathroom', icon: 'use-bathroom', duration_seconds: 120 },
+      { title: 'Get Dressed', icon: 'get-dressed', duration_seconds: 180 },
+      { title: 'Eat Breakfast', icon: 'eat-breakfast', duration_seconds: 600 },
+      { title: 'Brush Teeth', icon: 'brush-teeth', duration_seconds: 120 },
+      { title: 'Check Backpack', icon: 'check-backpack', duration_seconds: 60 },
+      { title: 'Shoes On', icon: 'put-on-shoes', duration_seconds: 60 },
+    ],
+  },
+  {
+    name: 'Homework Hour',
+    type: 'afterschool',
+    icon: 'do-homework',
+    color: '#3b82f6',
+    premium: true,
+    steps: [
+      { title: 'Have a Snack', icon: 'have-snack', duration_seconds: 300 },
+      { title: 'Drink Water', icon: 'drink-water', duration_seconds: 60 },
+      { title: 'Clear the Desk', icon: 'organize-desk', duration_seconds: 120 },
+      { title: 'Do Homework', icon: 'do-homework', duration_seconds: 1500 },
+      { title: 'Read for 15 Minutes', icon: 'practice-reading', duration_seconds: 900 },
+      { title: "Pack Tomorrow's Bag", icon: 'check-backpack', duration_seconds: 120 },
+    ],
+  },
+  {
+    name: 'Weekend Room Reset',
+    type: 'custom',
+    icon: 'clean-room',
+    color: '#8b5cf6',
+    premium: true,
+    steps: [
+      { title: 'Make Bed', icon: 'make-bed', duration_seconds: 120 },
+      { title: 'Put Away Toys', icon: 'put-away-toys', duration_seconds: 600 },
+      { title: 'Fold Laundry', icon: 'fold-laundry', duration_seconds: 600 },
+      { title: 'Dust', icon: 'dust', duration_seconds: 300 },
+      { title: 'Vacuum', icon: 'vacuum', duration_seconds: 600 },
+      { title: 'Take Out Trash', icon: 'take-out-trash', duration_seconds: 120 },
+    ],
+  },
+  {
+    name: 'Pet Care',
+    type: 'custom',
+    icon: 'feed-pet',
+    color: '#f59e0b',
+    premium: true,
+    steps: [
+      { title: 'Feed the Pet', icon: 'feed-pet', duration_seconds: 120 },
+      { title: 'Fresh Water Bowl', icon: 'drink-water', duration_seconds: 60 },
+      { title: 'Walk the Dog', icon: 'walk-dog', duration_seconds: 900 },
+      { title: 'Wash Hands', icon: 'wash-hands', duration_seconds: 60 },
+    ],
+  },
+  {
+    name: 'Teen Morning',
+    type: 'morning',
+    icon: 'shower',
+    color: '#0ea5e9',
+    premium: true,
+    steps: [
+      { title: 'Wake Up', icon: 'wake-up', duration_seconds: 60 },
+      { title: 'Shower', icon: 'shower', duration_seconds: 600 },
+      { title: 'Deodorant', icon: 'put-on-deodorant', duration_seconds: 60 },
+      { title: 'Get Dressed', icon: 'get-dressed', duration_seconds: 300 },
+      { title: 'Eat Breakfast', icon: 'eat-breakfast', duration_seconds: 600 },
+      { title: 'Check Backpack', icon: 'check-backpack', duration_seconds: 120 },
+    ],
+  },
+  {
+    name: 'Calm-Down Bedtime',
+    type: 'bedtime',
+    icon: 'calm-music',
+    color: '#a855f7',
+    premium: true,
+    steps: [
+      { title: 'Put On Pajamas', icon: 'put-on-pajamas', duration_seconds: 120 },
+      { title: 'Brush Teeth', icon: 'brush-teeth', duration_seconds: 120 },
+      { title: 'Floss', icon: 'floss-teeth', duration_seconds: 60 },
+      { title: 'Read a Book', icon: 'read-book', duration_seconds: 900 },
+      { title: 'Calm Music', icon: 'calm-music', duration_seconds: 300 },
+      { title: 'Lights Out', icon: 'lights-out', duration_seconds: 60 },
+    ],
+  },
+  {
+    name: 'Sports Practice Prep',
+    type: 'custom',
+    icon: 'sports',
+    color: '#22c55e',
+    premium: true,
+    steps: [
+      { title: 'Eat Some Fruit', icon: 'eat-fruit', duration_seconds: 300 },
+      { title: 'Fill Water Bottle', icon: 'drink-water', duration_seconds: 60 },
+      { title: 'Practice Clothes On', icon: 'get-dressed', duration_seconds: 300 },
+      { title: 'Pack the Gear Bag', icon: 'pack-backpack', duration_seconds: 300 },
+      { title: 'Shoes On', icon: 'put-on-shoes', duration_seconds: 120 },
+    ],
+  },
+  {
+    name: 'Kitchen Helper',
+    type: 'custom',
+    icon: 'help-cook',
+    color: '#ef4444',
+    premium: true,
+    steps: [
+      { title: 'Wash Hands', icon: 'wash-hands', duration_seconds: 60 },
+      { title: 'Set the Table', icon: 'set-table', duration_seconds: 300 },
+      { title: 'Help Cook', icon: 'help-cook', duration_seconds: 900 },
+      { title: 'Eat Dinner', icon: 'eat-dinner', duration_seconds: 1200 },
+      { title: 'Clear the Dishes', icon: 'clear-dishes', duration_seconds: 300 },
+    ],
+  },
+  {
+    name: 'Music Practice',
+    type: 'custom',
+    icon: 'play-instrument',
+    color: '#ec4899',
+    premium: true,
+    steps: [
+      { title: 'Warm Up', icon: 'play-instrument', duration_seconds: 300 },
+      { title: 'Practice Your Piece', icon: 'play-instrument', duration_seconds: 1200 },
+      { title: 'Listen to Something New', icon: 'listen-music', duration_seconds: 300 },
+    ],
+  },
+  {
+    name: 'Get Moving',
+    type: 'custom',
+    icon: 'exercise',
+    color: '#14b8a6',
+    premium: true,
+    steps: [
+      { title: 'Stretch', icon: 'stretch', duration_seconds: 120 },
+      { title: 'Exercise', icon: 'exercise', duration_seconds: 600 },
+      { title: 'Play Outside', icon: 'play-outside', duration_seconds: 1200 },
+      { title: 'Drink Water', icon: 'drink-water', duration_seconds: 60 },
     ],
   },
 ];

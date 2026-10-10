@@ -33,6 +33,8 @@ interface KidChore {
   reward_cents: number | null
   days_of_week?: number[] | null
   requires_photo?: boolean | null
+  /** 'grab' = a bonus chore the first kid to finish earns (migration 025). */
+  rotation_mode?: string | null
 }
 
 type TickState = 'approved' | 'pending'
@@ -78,6 +80,8 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
   const [ticks, setTicks] = useState<Map<string, TickState>>(new Map())
   const [pending, setPending] = useState<Set<string>>(new Set())
   const [photoFor, setPhotoFor] = useState<KidChore | null>(null)
+  // The bonus chore a sibling just beat this kid to, shown until the next tap.
+  const [bonusTaken, setBonusTaken] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const t = useKidT()
 
@@ -180,6 +184,14 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
           completed: !wasDone,
         }),
       })
+      if (res.status === 409) {
+        // A brother or sister finished this bonus chore first today.
+        setTick(chore.id, current)
+        setBonusTaken(chore.id)
+        playSound('error')
+        onChanged?.()
+        return
+      }
       if (!res.ok) throw new Error(String(res.status))
       const data = (await res.json()) as { status?: string | null }
       if (!wasDone) {
@@ -294,8 +306,12 @@ export function KidChores({ kidToken, iconTint, onChanged }: KidChoresProps) {
                 >
                   {chore.name}
                 </span>
-                {waiting ? (
+                {bonusTaken === chore.id ? (
+                  <span className="block text-sm font-bold text-gray-500">{t('chores.bonusTaken')}</span>
+                ) : waiting ? (
                   <span className="block text-sm font-bold text-amber-700">{t('chores.waitingBadge')}</span>
+                ) : !done && chore.rotation_mode === 'grab' ? (
+                  <span className="block text-sm font-bold text-amber-700">⭐ {t('chores.bonusBadge')}</span>
                 ) : (
                   !done && chore.requires_photo && (
                     <span className="inline-flex items-center gap-1 text-sm font-bold text-gray-500">
