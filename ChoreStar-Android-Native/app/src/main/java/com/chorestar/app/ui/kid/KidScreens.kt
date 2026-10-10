@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -285,7 +286,9 @@ fun ChildMainScreen(vm: KidViewModel) {
     val scope = rememberCoroutineScope()
     var route by remember { mutableStateOf(KidRoute.Home) }
     var playing by remember { mutableStateOf<Routine?>(null) }
-    var goalEditor by remember { mutableStateOf(false) }
+    // Which goal the editor is open for; addingGoal opens it for a new one.
+    var goalEditor by remember { mutableStateOf<KidApi.GoalView?>(null) }
+    var addingGoal by remember { mutableStateOf(false) }
     var storeConfirm by remember { mutableStateOf<KidApi.StoreItemView?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     var proofFor by remember { mutableStateOf<Chore?>(null) }
@@ -363,7 +366,7 @@ fun ChildMainScreen(vm: KidViewModel) {
                     }
                 }
             }
-            item { GoalCard(wallet, currency, onEdit = { goalEditor = true }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+            item { GoalCard(wallet, currency, onEdit = { goalEditor = it }, onAdd = { addingGoal = true }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             if (s.routines.isNotEmpty()) {
                 item { Text(stringResource(R.string.my_routines), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
                 items(s.routines.size) { i -> val r = s.routines[i]; Box(Modifier.padding(horizontal = 16.dp, vertical = 5.dp)) { KidRoutineCard(r, r.id in s.completedRoutineIds, currency, onPlay = { playing = r }) } }
@@ -395,9 +398,13 @@ fun ChildMainScreen(vm: KidViewModel) {
         if (s.perfectDay) PerfectDayOverlay(onDismiss = vm::dismissPerfectDay)
     }
 
-    if (goalEditor) GoalEditorSheet(wallet?.goal, currency, onDismiss = { goalEditor = false },
-        onSave = { title, cents, emoji -> scope.launch { vm.saveGoal(wallet?.goal, title, cents, emoji).onSuccess { Sounds.play(Sounds.Cue.Success, prefs) }; goalEditor = false } },
-        onRemove = { wallet?.goal?.let { g -> scope.launch { vm.archiveGoal(g.id); goalEditor = false } } })
+    if (goalEditor != null || addingGoal) {
+        val editing = goalEditor
+        val close = { goalEditor = null; addingGoal = false }
+        GoalEditorSheet(editing, currency, onDismiss = close,
+            onSave = { title, cents, emoji -> scope.launch { vm.saveGoal(editing, title, cents, emoji).onSuccess { Sounds.play(Sounds.Cue.Success, prefs) }; close() } },
+            onRemove = { editing?.let { g -> scope.launch { vm.archiveGoal(g.id); close() } } })
+    }
     storeConfirm?.let { item ->
         val asked = stringResource(R.string.asked_notice, item.title)
         AlertDialog(
@@ -446,25 +453,31 @@ private fun BigChoreCard(chore: Chore, done: Boolean, pending: Boolean, perChore
 }
 
 @Composable
-private fun GoalCard(wallet: KidApi.WalletView?, currency: String, onEdit: () -> Unit, modifier: Modifier) {
+private fun GoalCard(wallet: KidApi.WalletView?, currency: String, onEdit: (KidApi.GoalView?) -> Unit, onAdd: () -> Unit, modifier: Modifier) {
     val theme = LocalActiveTheme.current
-    val goal = wallet?.goal
+    val goals = wallet?.activeGoals.orEmpty()
     Card(modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            if (goal != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(goal.emoji ?: "🎯", style = MaterialTheme.typography.headlineMedium); Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) { Text(stringResource(R.string.saving_for), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(goal.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-                    IconButton(onClick = onEdit) { Icon(Icons.Filled.Edit, contentDescription = null) }
+            if (goals.isNotEmpty()) {
+                goals.forEachIndexed { index, goal ->
+                    if (index > 0) HorizontalDivider(Modifier.padding(vertical = 12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(goal.emoji ?: "🎯", style = MaterialTheme.typography.headlineMedium); Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) { Text(stringResource(R.string.saving_for), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(goal.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                        IconButton(onClick = { onEdit(goal) }) { Icon(Icons.Filled.Edit, contentDescription = null) }
+                    }
+                    LinearProgressIndicator(progress = { goal.percent / 100f }, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).height(14.dp).clip(CircleShape), color = if (goal.reached) Warning else theme.primary)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("${Money.format(goal.progressCents, currency)} / ${Money.format(goal.targetCents, currency)}", style = MaterialTheme.typography.bodySmall)
+                        Text(if (goal.reached) stringResource(R.string.you_did_it) else stringResource(R.string.to_go, Money.format(goal.targetCents - goal.progressCents, currency)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                    }
+                    if (goal.reached) Text(stringResource(R.string.ask_grown_up_payout), color = Warning, style = MaterialTheme.typography.bodySmall)
                 }
-                LinearProgressIndicator(progress = { goal.percent / 100f }, modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).height(14.dp).clip(CircleShape), color = if (goal.reached) Warning else theme.primary)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("${Money.format(goal.progressCents, currency)} / ${Money.format(goal.targetCents, currency)}", style = MaterialTheme.typography.bodySmall)
-                    Text(if (goal.reached) stringResource(R.string.you_did_it) else stringResource(R.string.to_go, Money.format(goal.targetCents - goal.progressCents, currency)), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                if (wallet?.canAddGoal == true) {
+                    OutlinedButton(onClick = onAdd, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) { Text("🎯 " + stringResource(R.string.add_another_goal)) }
                 }
-                if (goal.reached) Text(stringResource(R.string.ask_grown_up_payout), color = Warning, style = MaterialTheme.typography.bodySmall)
             } else {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(onClick = onEdit)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(onClick = onAdd)) {
                     Text("🎯", style = MaterialTheme.typography.headlineMedium); Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.what_saving_for), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)

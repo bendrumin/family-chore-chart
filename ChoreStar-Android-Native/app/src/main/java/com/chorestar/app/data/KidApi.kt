@@ -141,10 +141,20 @@ class KidApi(private val web: HttpClient) {
     data class StoreItemView(val id: String, val title: String, val emoji: String? = null, val priceCents: Int, val affordable: Boolean = false, val shortByCents: Int = 0, val pendingRequestId: String? = null)
 
     @Serializable
+    data class WalletLimits(val premium: Boolean = false, val goalLimit: Int? = null)
+
+    @Serializable
     data class WalletView(
         val childId: String = "", val owedCents: Int = 0, val earnedCents: Int = 0, val paidCents: Int = 0, val currencyCode: String = "USD",
         val goal: GoalView? = null, val reachedGoals: List<GoalView> = emptyList(), val store: List<StoreItemView> = emptyList(),
-    )
+        /** Every active goal, oldest first (Premium can save for several); older servers send only `goal`. */
+        val goals: List<GoalView>? = null,
+        val limits: WalletLimits? = null,
+    ) {
+        val activeGoals: List<GoalView> get() = goals ?: listOfNotNull(goal)
+        /** Offered only when the plan allows another, so a kid never meets a paywall. */
+        val canAddGoal: Boolean get() = activeGoals.isNotEmpty() && (limits?.goalLimit?.let { activeGoals.size < it } ?: (limits != null))
+    }
 
     suspend fun wallet(auth: Auth): WalletView =
         SupabaseModule.json.decodeFromString(WalletView.serializer(), get("$base/api/kid/wallet" + (auth.childId?.let { "?childId=${it.lowercase()}" } ?: ""), auth))

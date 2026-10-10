@@ -72,7 +72,7 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
             Text(stringResource(R.string.paywall_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.premium_bullet_themes, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
+                    listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.paywall_feat_sharing, R.string.premium_bullet_themes, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
                 }
             }
             when {
@@ -80,7 +80,9 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
                 plans == null -> CircularProgressIndicator()
                 plans!!.isEmpty() -> {
                     Text(stringResource(R.string.paywall_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Button(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chorestar.app/dashboard?tab=settings"))) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.paywall_web_upgrade)) }
+                    // Purchases happen through Google Play only (Play policy): retry
+                    // loading the plans rather than sending the parent to the web.
+                    Button(onClick = { billing.loadPlans() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.paywall_retry)) }
                 }
                 else -> {
                     plans!!.forEach { plan ->

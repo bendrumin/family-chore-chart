@@ -379,8 +379,9 @@
     <string name="paywall_feat_unlimited">أطفال ومهام بلا حدود</string>
     <string name="paywall_feat_store">عناصر وأهداف بلا حدود في متجر المكافآت</string>
     <string name="paywall_feat_indie">ادعم تطبيقًا عائليًا مستقلًا</string>
-    <string name="paywall_unavailable">الخطط غير متاحة في التطبيق بعد.</string>
-    <string name="paywall_web_upgrade">الترقية عبر chorestar.app</string>
+    <string name="paywall_feat_sharing">مشاركة العائلة مع الوالد الآخر</string>
+    <string name="paywall_retry">حاول مرة أخرى</string>
+    <string name="paywall_unavailable">تعذّر تحميل الخطط من Google Play.</string>
 
     <!-- Phase 2d: routines, achievements, stats -->
     <string name="segment_routines">الروتينات</string>
@@ -452,6 +453,8 @@
     <string name="next_badge">التالي: %1$s</string>
     <string name="streak_safe">سلسلتك التي تبلغ %1$d أيام في أمان وبانتظارك. 🔥</string>
     <string name="pick_goal_hint">لديك %1$s. اختر هدفًا وشاهد الشريط يمتلئ.</string>
+    <string name="what_saving_for">من أجل ماذا توفر نقودك؟</string>
+    <string name="add_another_goal">وفّر لشيء آخر أيضًا</string>
     <string name="pick_a_goal">اختر هدفًا</string>
     <string name="change_your_goal">غيّر هدفك</string>
     <string name="pick_a_picture">اختر صورة</string>

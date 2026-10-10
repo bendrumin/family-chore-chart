@@ -13,8 +13,29 @@ data class Profile(
     @SerialName("family_name") val familyName: String = "",
     @SerialName("subscription_type") val subscriptionType: String = "free",
     @SerialName("kid_login_code") val kidLoginCode: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
 ) {
     val isPremium: Boolean get() = subscriptionType == "premium" || subscriptionType == "lifetime"
+
+    /**
+     * Premium themes and co-parent sharing: Premium, or a family that existed
+     * before those were gated (2026-09-19). The same rule as the web
+     * (canUseFeature) and iOS (Entitlements.canUse), so a family gets one
+     * answer on every device. The count caps are not grandfathered.
+     */
+    val canUseGatedFeatures: Boolean get() = isPremium || isGrandfathered(createdAt)
+
+    companion object {
+        const val PREMIUM_GATE_CUTOFF = "2026-09-19T00:00:00Z"
+
+        fun isGrandfathered(createdAt: String?): Boolean {
+            if (createdAt.isNullOrBlank()) return false
+            val created = runCatching { java.time.OffsetDateTime.parse(createdAt).toInstant() }.getOrNull()
+                ?: runCatching { java.time.Instant.parse(createdAt) }.getOrNull()
+                ?: return false
+            return created.isBefore(java.time.Instant.parse(PREMIUM_GATE_CUTOFF))
+        }
+    }
 }
 
 @Serializable

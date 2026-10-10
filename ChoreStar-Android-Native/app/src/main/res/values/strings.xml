@@ -418,8 +418,9 @@
     <string name="paywall_feat_unlimited">Unlimited children &amp; chores</string>
     <string name="paywall_feat_store">Unlimited reward store items and goals</string>
     <string name="paywall_feat_indie">Support an indie family app</string>
-    <string name="paywall_unavailable">Plans aren\'t available in the app yet.</string>
-    <string name="paywall_web_upgrade">Upgrade at chorestar.app</string>
+    <string name="paywall_feat_sharing">Family sharing with a co-parent</string>
+    <string name="paywall_retry">Try again</string>
+    <string name="paywall_unavailable">Couldn\'t load plans from Google Play.</string>
 
     <!-- Routines -->
     <string name="segment_routines">Routines</string>
@@ -532,6 +533,7 @@
     <string name="to_go">@string/to_go_932db</string>
     <string name="ask_grown_up_payout">@string/ask_a_grown_up_to_pay_it_out_and_pick_yo_c2e88</string>
     <string name="what_saving_for">@string/what_are_you_saving_for_f5ecd</string>
+    <string name="add_another_goal">Save for something else too</string>
     <string name="pick_goal_hint">You have %1$s. Pick a goal and watch the bar fill up.</string>
     <plurals name="goals_reached">
         <item quantity="one">%1$d goal reached</item>

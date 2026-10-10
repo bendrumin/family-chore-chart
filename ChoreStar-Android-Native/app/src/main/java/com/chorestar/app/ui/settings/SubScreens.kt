@@ -203,7 +203,7 @@ fun FamilySharingScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
             if (!state.isSharedMember) {
                 item {
                     SettingsCard(stringResource(R.string.invite_co_parent)) {
-                        if (!state.isPremium) {
+                        if (!state.canUseGated) {
                             Text(stringResource(R.string.sharing_premium_title), style = MaterialTheme.typography.titleMedium)
                             Text(stringResource(R.string.sharing_premium_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Button(onClick = onPaywall) { Text("👑 " + stringResource(R.string.see_premium)) }

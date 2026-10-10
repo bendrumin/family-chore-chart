@@ -138,7 +138,7 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
         // Theme gallery
         item {
             SettingsCard(stringResource(R.string.theme_section)) {
-                ThemeGallery(theme, isPremium = state.isPremium, onSelect = { id, locked -> if (locked) onNavigate(Routes.PAYWALL) else vm.setThemeSelection(id) })
+                ThemeGallery(theme, isPremium = state.canUseGated, onSelect = { id, locked -> if (locked) onNavigate(Routes.PAYWALL) else vm.setThemeSelection(id) })
                 Spacer(Modifier.height(6.dp))
                 val footer = when {
                     theme.accentHex != null -> stringResource(R.string.theme_footer_accent)

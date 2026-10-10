@@ -371,8 +371,9 @@
     <string name="paywall_feat_unlimited">Niños y tareas ilimitados</string>
     <string name="paywall_feat_store">Artículos y metas ilimitados en la tienda de recompensas</string>
     <string name="paywall_feat_indie">Apoya una app familiar independiente</string>
-    <string name="paywall_unavailable">Los planes aún no están disponibles en la app.</string>
-    <string name="paywall_web_upgrade">Pasar a Premium en chorestar.app</string>
+    <string name="paywall_feat_sharing">Familia compartida con el otro padre o madre</string>
+    <string name="paywall_retry">Reintentar</string>
+    <string name="paywall_unavailable">No se pudieron cargar los planes de Google Play.</string>
 
     <!-- Phase 2d: routines, achievements, stats -->
     <string name="segment_routines">Rutinas</string>
@@ -444,6 +445,8 @@
     <string name="next_badge">Siguiente: %1$s</string>
     <string name="streak_safe">Tu racha de %1$d días está a salvo y te espera. 🔥</string>
     <string name="pick_goal_hint">Tienes %1$s. Elige una meta y mira cómo se llena la barra.</string>
+    <string name="what_saving_for">¿Para qué estás ahorrando?</string>
+    <string name="add_another_goal">Ahorra para otra cosa también</string>
     <string name="pick_a_goal">Elige una meta</string>
     <string name="change_your_goal">Cambia tu meta</string>
     <string name="pick_a_picture">Elige una imagen</string>

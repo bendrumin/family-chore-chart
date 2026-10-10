@@ -144,6 +144,8 @@ data class DashboardState(
     val today: Int get() = Dates.dayOfWeek()
     val currency: String? get() = settings?.currencyCode
     val isPremium: Boolean get() = profile?.isPremium == true
+    /** Premium themes and sharing (grandfathered); see Profile.canUseGatedFeatures. */
+    val canUseGated: Boolean get() = profile?.canUseGatedFeatures == true
     val childLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_CHILD_LIMIT
     val choreLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_CHORE_LIMIT
 }
