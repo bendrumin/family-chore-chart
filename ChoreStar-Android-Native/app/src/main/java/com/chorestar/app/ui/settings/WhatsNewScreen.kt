@@ -25,8 +25,14 @@ data class ChangelogFeature(val icon: String, val title: String, val description
 data class ChangelogEntry(val version: String, val date: String, val title: String, val features: List<ChangelogFeature>)
 
 object Changelog {
-    const val LATEST = "2026.9.6"
+    const val LATEST = "2026.10.2"
     val entries = listOf(
+        ChangelogEntry("2026.10.2", "October 2026", "Fair Shares and More Goals", listOf(
+            ChangelogFeature("🎯", "Save for More Than One Thing", "Premium kids can save for several goals at once, each with its own progress bar."),
+            ChangelogFeature("🔄", "Chores That Take Turns", "Premium: chores can rotate between your kids every week, or be a bonus chore the first kid to finish earns. Set them up from Add Chore on chorestar.app; they show up here for whoever's turn it is."),
+            ChangelogFeature("📬", "A Weekly Report in Your Inbox", "Premium: turn it on in Settings > Appearance on chorestar.app for a Sunday email with each kid's week."),
+            ChangelogFeature("🎨", "Your Themes Stay Yours", "Families who joined before Premium themes and sharing were gated keep them on Android too, like on the web and iPhone."),
+        )),
         ChangelogEntry("2026.9.6", "September 2026", "Vacation Mode", listOf(
             ChangelogFeature("🏖️", "Pause the Chart, Keep the Streaks", "Going away? Set a date range in Settings and nothing is due while you're gone: no misses, no broken streaks, no red grid to come home to. Kids see a friendly note that their streak is safe, the reward store stays open, and it all ends on its own."),
         )),
