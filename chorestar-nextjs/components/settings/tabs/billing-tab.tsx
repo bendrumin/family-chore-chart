@@ -166,6 +166,7 @@ export function BillingTab() {
                   'Unlimited children & chores',
                   'Rotating & bonus chores',
                   'Routine template library',
+                  'Weekly report email',
                   'Unlimited rewards & goals',
                   'Family sharing',
                   'Premium themes',

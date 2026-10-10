@@ -40,6 +40,11 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
         description: 'Premium: School Morning Express, Homework Hour, Weekend Room Reset, Pet Care, Teen Morning, Calm-Down Bedtime and more, ready to start in one tap. The original four stay free.',
       },
       {
+        icon: '📬',
+        title: 'A Weekly Report in Your Inbox',
+        description: 'Premium: turn it on in Settings > Appearance and every Sunday you get each kid\'s week by email: chores done, money earned, streaks, and how close they are to their goals. One click stops it.',
+      },
+      {
         icon: '👥',
         title: 'Co-Parents Share Everything',
         description: 'A co-parent in a Premium family gets all of Premium, and children they add land in the family where everyone can see them.',
