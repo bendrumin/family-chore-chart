@@ -1,11 +1,10 @@
-Version 2.4 adds Sign in with Apple.
+Version 2.5: fair shares and more goals.
 
-• Create your family in one tap with Sign in with Apple, with no password to remember
-• Choose Hide My Email and ChoreStar never sees your real address
-• New families are asked what to call themselves first, so kids see your family name when they log in
-• Already signed up with email? Nothing changes: keep signing in with your email and password
-• Deleting your account also removes ChoreStar from your Apple ID's sign-in list
-• Made for iPhone Duo: open it and kid mode, Home, Chores and Family spread across the wide screen, with a routine player that shows every step beside the current one. Half-open, nothing sits on the fold. Closed, the outer screen gets layouts that fit
+• Save for more than one thing: Premium kids can hold several savings goals at once, each with its own bar
+• Chores that take turns: Premium chores can rotate between your kids every week, or be a bonus chore the first kid to finish earns. Set them up from Add Chore on chorestar.app and they show up here for whoever's turn it is
+• Co-parents in a Premium family now get all of Premium on their own iPhone
+• Restore Purchases tells you whether Premium is on, or why it couldn't be applied
+• The paywall lists exactly what Premium includes, now in Spanish, Portuguese and Arabic too
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app
