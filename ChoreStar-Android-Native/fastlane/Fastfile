@@ -35,7 +35,8 @@ platform :android do
     bundle unless options[:skip_build]
     upload_to_play_store(
       track: "internal",
-      aab: "../#{AAB}",
+      # Absolute: fastlane resolves action paths from the project root, not fastlane/.
+      aab: File.expand_path("../#{AAB}", __dir__),
       release_status: options[:rollout] ? "completed" : "draft",
       skip_upload_metadata: true,
       skip_upload_images: true,
