@@ -90,7 +90,17 @@ export function SiteNav() {
 
   return (
     <>
-      <nav aria-label="Main navigation" className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      {/* Signed in, the header matches the dashboard's: the family's theme
+          fill with its readable ink in light mode, a neutral card in dark.
+          Logged-out visitors (no family theme) keep the brand header. */}
+      <nav
+        aria-label="Main navigation"
+        className={`w-full sticky top-0 z-50 border-b ${
+          isLoggedIn
+            ? 'border-white/15 dark:border-white/[0.08] bg-[var(--hero-fill,var(--primary-fill))] dark:bg-[var(--card-bg)] text-[var(--hero-foreground,var(--primary-foreground))] dark:text-[var(--text-primary)]'
+            : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-200 dark:border-gray-700'
+        }`}
+      >
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             {isLoggedIn && (
@@ -100,14 +110,20 @@ export function SiteNav() {
                 onClick={() => setIsNavOpen(prev => !prev)}
                 aria-label="Toggle navigation"
                 aria-expanded={isNavOpen}
-                className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50 active:bg-gray-200 dark:active:bg-gray-600 text-gray-700 dark:text-gray-200"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-lg transition-colors hover:bg-white/15 active:bg-white/25 dark:hover:bg-white/[0.08] dark:active:bg-white/[0.12]"
               >
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Link href="/" className="text-xl font-black flex items-center gap-1.5" style={GRADIENT_TEXT}>
-              <ChoreStarLogo size={28} /> ChoreStar
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/" className="text-xl font-black flex items-center gap-1.5">
+                <ChoreStarLogo size={28} variant="white" /> ChoreStar
+              </Link>
+            ) : (
+              <Link href="/" className="text-xl font-black flex items-center gap-1.5" style={GRADIENT_TEXT}>
+                <ChoreStarLogo size={28} /> ChoreStar
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             {isLoggedIn === false && (
@@ -129,7 +145,7 @@ export function SiteNav() {
             {isLoggedIn === true && (
               <Link
                 href="/dashboard"
-                className="accent-fill accent-fill-hover inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 dark:focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all bg-white/20 hover:bg-white/30 dark:bg-[var(--primary-fill)] dark:hover:bg-[var(--primary-fill-hover)] dark:text-[var(--primary-foreground)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/60 dark:focus-visible:ring-[var(--primary)]"
               >
                 Dashboard →
               </Link>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { GRADIENT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
+import { AmbientBackground } from '@/components/ui/ambient-background'
 import { Greeting } from '@/components/home/greeting'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { AppStoreBadge, AndroidBetaBadge, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
@@ -27,10 +28,13 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
   const isPremium = subscriptionTier === 'premium' || subscriptionTier === 'lifetime'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    // The dashboard's backdrop (theme-tinted page gradient + ambient glow), so
+    // signed-in families see their theme here too, not the brand lavender.
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-bg)' }}>
+      <AmbientBackground />
       <SiteNav />
 
-      <main id="main-content" className="container mx-auto px-4 py-10 max-w-5xl">
+      <main id="main-content" className="relative container mx-auto px-4 py-10 max-w-5xl">
         {/* Welcome */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2">
@@ -73,14 +77,14 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-indigo-600 dark:text-indigo-400" />
+            <Users className="w-6 h-6 mx-auto mb-2 text-[var(--primary)]" />
             <div className="text-2xl font-black text-gray-900 dark:text-white">{childCount}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {childCount === 1 ? 'Child' : 'Children'}
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 text-center">
-            <Crown className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+            <Crown className="w-6 h-6 mx-auto mb-2 text-[var(--primary)]" />
             <div className="text-2xl font-black text-gray-900 dark:text-white capitalize">{subscriptionTier}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Plan</div>
           </div>
@@ -93,7 +97,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
 
         {/* iOS App — live on the App Store (never promoted inside the Android shell) */}
         <HideOnAndroidShell>
-        <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 p-6 mb-10 shadow-lg">
+        <div id="ios-app" className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-[color-mix(in_srgb,var(--primary)_30%,transparent)] p-6 mb-10 shadow-lg">
           <div className="flex items-start gap-4">
             <div className="text-4xl shrink-0">🎉</div>
             <div className="flex-1 min-w-0">
@@ -109,7 +113,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                 <AndroidBetaBadge />
                 <Link
                   href="/blog/chorestar-iphone-ipad-app"
-                  className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="text-sm font-semibold text-[var(--primary)] hover:underline"
                 >
                   See everything it can do
                 </Link>
@@ -117,7 +121,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                   href={APP_STORE_REVIEW_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="text-sm font-semibold text-[var(--primary)] hover:underline"
                 >
                   Already using it? Rate it on the App Store
                 </a>
@@ -141,7 +145,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
               </p>
               <Link
                 href="/dashboard?settings=billing"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg transition-colors shadow-lg text-indigo-600 dark:text-indigo-400"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-lg transition-colors shadow-lg text-[var(--primary)]"
               >
                 Upgrade from <UpgradePriceLabel />
                 <ArrowRight className="w-5 h-5" />
@@ -179,12 +183,12 @@ function QuickAction({ href, icon, title, description, primary = false }: {
   const isExternal = href.startsWith('mailto:') || href.startsWith('http')
   const className = `group rounded-xl p-6 border-2 transition-colors ${
     primary
-      ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20'
+      ? 'border-[color-mix(in_srgb,var(--primary)_45%,transparent)] bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]'
       : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
   }`
   const content = (
     <>
-      <div className={`mb-3 ${primary ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>
+      <div className={`mb-3 ${primary ? 'text-[var(--primary)]' : 'text-gray-600 dark:text-gray-400'}`}>
         {icon}
       </div>
       <h3 className="font-bold text-gray-900 dark:text-white mb-1">{title}</h3>
@@ -208,7 +212,7 @@ function ResourceLink({ href, label, external = false }: { href: string; label: 
       className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
       {...extraProps}
     >
-      <ArrowRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+      <ArrowRight className="w-4 h-4 text-[var(--primary)] shrink-0" />
       {label}
     </Component>
   )
