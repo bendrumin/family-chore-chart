@@ -1,10 +1,9 @@
-NEW IN 2.5: MORE GOALS, CO-PARENT PREMIUM, SHARED CHORES
+NEW IN 2.5: SHARED CHORES, TEMPLATES, WEEKLY REPORT, MORE GOALS
 
 Please try (a Premium family is easiest):
-- Kid mode: give a kid two goals; both show with their own bars, and "Save for something else too" appears only on Premium
-- On chorestar.app, add a chore with "Take turns weekly" for two kids: on iPhone it shows only for the first kid this week
-- Add a "Bonus" chore for two kids: tick it as one kid, then try as the other the same day (it should be refused)
-- Sign in as a co-parent of a Premium family: Stats, Export, themes and unlimited chores should be open
-- Settings > Restore Purchases: you should see a message either way
-- Free plan: the reward store cap now has a See Premium Plans button
-- The paywall lists sharing, stats/export and goals, translated in es/pt/ar
+- Add Chore > last step > Share with other kids: Take turns (first kid this week) and Bonus (first to finish wins). On the free plan it opens the paywall
+- Routines > New: the crowned Premium templates (Homework Hour etc.) fill the routine; on free they open the paywall
+- Settings > Weekly Report Email: toggles on Premium, opens the paywall on free
+- Kid mode: bonus chores show a Bonus line; a second kid ticking it the same day sees "Someone beat you to it"
+- Two goals for one kid: both show; "Save for something else too" only on Premium
+- Paywall: each plan says 1 month/1 year and renews automatically; Restore Purchases reports a result

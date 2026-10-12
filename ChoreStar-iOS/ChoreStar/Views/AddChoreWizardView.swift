@@ -38,6 +38,10 @@ struct AddChoreWizardView: View {
     @State private var errorMessage: String?
     @State private var showingUpgradePrompt = false
     @State private var aiSuggestions: [ChoreSuggestion]?
+    /// Shared chores (Premium): "none", "rotate" (turns weekly) or "grab" (bonus).
+    @State private var shareMode = "none"
+    @State private var shareWith: Set<UUID> = []
+    @State private var showingPaywall = false
 
     init(preselectedChildId: UUID? = nil) {
         self.preselectedChildId = preselectedChildId
@@ -454,6 +458,10 @@ struct AddChoreWizardView: View {
             .background(Color(.secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
+            if manager.children.count >= 2 {
+                shareSection
+            }
+
             VStack(alignment: .leading, spacing: 10) {
                 Text("Notes (optional)")
                     .font(.headline)
@@ -463,6 +471,66 @@ struct AddChoreWizardView: View {
                     .background(Color(.secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+        }
+    }
+
+    /// Share this chore with other kids: weekly turns or a bonus race. Premium;
+    /// a free family picking it sees the paywall instead.
+    private var shareSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "person.2.fill")
+                    .foregroundColor(shareMode == "none" ? .choreStarTextSecondary : .choreStarAccent)
+                Text("Share with other kids")
+                    .font(.headline)
+                if !manager.isPremium {
+                    Image(systemName: "crown.fill")
+                        .font(.caption)
+                        .foregroundColor(.choreStarAccent)
+                        .accessibilityLabel("Premium")
+                }
+            }
+            Picker("Share with other kids", selection: $shareMode) {
+                Text("Just this kid").tag("none")
+                Text("Take turns").tag("rotate")
+                Text("Bonus").tag("grab")
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: shareMode) { _, mode in
+                guard mode != "none" else { return }
+                if !manager.isPremium {
+                    shareMode = "none"
+                    showingPaywall = true
+                } else if shareWith.isEmpty {
+                    shareWith = Set(manager.children.map(\.id))
+                }
+            }
+            Text(shareMode == "rotate"
+                 ? "One kid each week, switching every Sunday. Each kid keeps what they earn on their turn."
+                 : shareMode == "grab"
+                    ? "Every kid you pick sees it; the first to finish it that day earns the reward."
+                    : "Rotate a chore between kids, or post a bonus chore the fastest kid earns.")
+                .font(.caption)
+                .foregroundColor(.choreStarTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if shareMode != "none" {
+                ForEach(manager.children) { child in
+                    let isThisKid = child.id == selectedChild
+                    Toggle(isOn: Binding(
+                        get: { isThisKid || shareWith.contains(child.id) },
+                        set: { on in if on { shareWith.insert(child.id) } else { shareWith.remove(child.id) } }
+                    )) {
+                        Text(isThisKid ? "\(child.name) (first)" : child.name)
+                    }
+                    .disabled(isThisKid)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView(source: "shared_chores")
         }
     }
 
@@ -483,6 +551,38 @@ struct AddChoreWizardView: View {
 
     private func saveChore() {
         guard let childId = selectedChild else { return }
+
+        if shareMode != "none" {
+            // This kid first: they take the first turn of a rotation.
+            let others = manager.children.map(\.id).filter { $0 != childId && shareWith.contains($0) }
+            guard !others.isEmpty else {
+                errorMessage = String(localized: "Pick at least one more kid to share with.")
+                return
+            }
+            isSaving = true
+            errorMessage = nil
+            Task {
+                let err = await manager.createSharedChore(
+                    name: name.trimmingCharacters(in: .whitespaces),
+                    childIds: [childId] + others,
+                    mode: shareMode,
+                    rewardCents: rewardCents,
+                    category: category,
+                    icon: selectedIcon,
+                    daysOfWeek: daysOfWeek,
+                    requiresPhoto: requiresPhoto
+                )
+                await MainActor.run {
+                    if let err {
+                        errorMessage = err
+                        isSaving = false
+                    } else {
+                        dismiss()
+                    }
+                }
+            }
+            return
+        }
 
         if manager.chores.count >= manager.choreLimit {
             showingUpgradePrompt = true

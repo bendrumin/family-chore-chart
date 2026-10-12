@@ -63,7 +63,7 @@ export function PremiumGate({ feature, compact = false }: { feature: GatedFeatur
         variant="gradient"
         size={compact ? 'sm' : 'lg'}
         className={`${compact ? '' : 'w-full'} font-bold hover-glow`}
-        onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+        onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
       >
         <Crown className="w-4 h-4 mr-2" />
         Open Billing

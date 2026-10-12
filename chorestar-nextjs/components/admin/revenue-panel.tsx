@@ -210,6 +210,42 @@ export function RevenuePanel({
             </CardContent>
           </Card>
 
+          <Card className={cardClass}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base text-gray-900 dark:text-white">What opens the paywall (last 30 days)</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              {(data.paywallSources ?? []).length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Nothing recorded yet. Upgrade screens log their reason from today (web) and from iOS 2.5.
+                </p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className={th}>Reason</th>
+                      <th className={th}>Opens</th>
+                      <th className={th}>Parents</th>
+                      <th className={th}>Premium now</th>
+                      <th className={th}>Where</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.paywallSources.map((p) => (
+                      <tr key={p.source} className="border-b border-gray-100 dark:border-gray-700/60 last:border-0">
+                        <td className={td}>{p.source.replace(/_/g, ' ')}</td>
+                        <td className={td}>{p.opens}</td>
+                        <td className={td}>{p.parents}</td>
+                        <td className={td}>{p.nowPaying}</td>
+                        <td className={tdMuted}>{p.platforms.join(', ')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+
           {data.comped.length > 0 && (
             <Card className={cardClass}>
               <CardHeader className="pb-2">

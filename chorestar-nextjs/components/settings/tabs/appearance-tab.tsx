@@ -190,7 +190,7 @@ export function AppearanceTab() {
 
   const handleSeasonalThemeChange = async (themeId: string | null) => {
     if (themeId && themesLocked && isPremiumTheme(themeId)) {
-      window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+      window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'theme_locked' } }))
       return
     }
     try {
@@ -522,7 +522,7 @@ export function AppearanceTab() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'weekly_report' } }))}
                 className="font-bold w-full"
               >
                 <Crown className="w-5 h-5 mr-2" />

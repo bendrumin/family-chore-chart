@@ -47,7 +47,7 @@ struct ContentView: View {
             KidLoginView()
         }
         .sheet(isPresented: $debugShowPaywall) {
-            PaywallView()
+            PaywallView(source: "debug")
         }
     }
 

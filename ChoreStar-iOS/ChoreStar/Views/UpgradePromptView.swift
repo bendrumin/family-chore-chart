@@ -100,7 +100,7 @@ struct UpgradePromptView: View {
         }
         .background(Color.choreStarBackground)
         .sheet(isPresented: $showingPaywall) {
-            PaywallView()
+            PaywallView(source: limitType == .children ? "limit_children" : "limit_chores")
         }
     }
     

@@ -287,7 +287,7 @@ export function RewardsTab() {
               </p>
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'limit_store_items' } }))}
                 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 underline"
               >
                 See Premium

@@ -15,6 +15,7 @@ struct RoutineBuilderView: View {
     @State private var steps: [EditableStep] = []
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var showingTemplatePaywall = false
     
     struct EditableStep: Identifiable {
         let id: UUID
@@ -99,14 +100,26 @@ struct RoutineBuilderView: View {
     private var templatesSection: some View {
         Section("Quick Start Templates") {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 260), spacing: 12)], spacing: 12) {
-                ForEach(RoutineTemplate.all, id: \.name) { template in
+                ForEach(RoutineTemplate.library, id: \.name) { template in
+                    // The Premium library shows to everyone; a free family
+                    // tapping one sees the paywall instead.
+                    let locked = template.premium && !manager.isPremium
                     Button {
-                        applyTemplate(template)
+                        if locked { showingTemplatePaywall = true } else { applyTemplate(template) }
                     } label: {
                         VStack(spacing: 8) {
                             AdaptiveIcon(icon: template.icon, fallbackSymbol: "list.bullet", tint: Color.fromHex(template.type.defaultColor), iconSize: 26)
-                            
-                            Text(template.name)
+                                .overlay(alignment: .topTrailing) {
+                                    if template.premium {
+                                        Image(systemName: "crown.fill")
+                                            .font(.caption2)
+                                            .foregroundColor(.choreStarAccent)
+                                            .offset(x: 10, y: -6)
+                                            .accessibilityLabel("Premium")
+                                    }
+                                }
+
+                            Text(RoutineTemplate.localizedName(template.name))
                                 .font(.caption)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.choreStarTextPrimary)
@@ -122,8 +135,12 @@ struct RoutineBuilderView: View {
                         )
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .opacity(locked ? 0.75 : 1)
                 }
             }
+        }
+        .sheet(isPresented: $showingTemplatePaywall) {
+            PaywallView(source: "routine_templates")
         }
     }
     

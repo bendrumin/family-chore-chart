@@ -351,7 +351,7 @@ export function RoutineBuilderModal({
                         type="button"
                         onClick={() => {
                           if (locked) {
-                            window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+                            window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'routine_templates' } }))
                             return
                           }
                           loadTemplate(index)

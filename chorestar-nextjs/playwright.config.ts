@@ -39,6 +39,14 @@ export default defineConfig({
   projects: [
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
+      // Premium feature checks (e2e/features.spec.ts): signs in as the demo
+      // family itself, so no setup dependency.
+      name: 'features',
+      // Installed Google Chrome: no separate browser download to go stale.
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', video: 'off' },
+      testMatch: /features\.spec\.ts/,
+    },
+    {
       name: 'create-routine',
       use: { ...devices['Desktop Chrome'] },
       testMatch: /create-routine\.spec\.ts/,

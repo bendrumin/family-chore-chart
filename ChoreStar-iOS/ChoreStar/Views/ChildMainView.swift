@@ -684,6 +684,26 @@ struct BigChoreCard: View {
                     .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isCompleted)
                 }
 
+                if manager.bonusTakenChoreId == chore.id && !isCompleted {
+                    HStack(spacing: 6) {
+                        Image(systemName: "hare.fill")
+                        Text("Someone beat you to it today!")
+                            .fontWeight(.bold)
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else if !isCompleted && !isPending && chore.rotationMode == "grab" {
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill")
+                        Text("Bonus: first to finish earns it")
+                            .fontWeight(.bold)
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.choreStarWarning)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 if isPending {
                     HStack(spacing: 6) {
                         Image(systemName: "hourglass")

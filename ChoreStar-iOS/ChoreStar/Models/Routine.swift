@@ -237,6 +237,8 @@ struct RoutineTemplate {
     let type: RoutineType
     let icon: String
     let steps: [(title: String, icon: String, durationSeconds: Int?)]
+    /// Part of the Premium template library; the first four stay free.
+    var premium: Bool = false
 
     static let morning = RoutineTemplate(
         name: "Morning Routine",
@@ -289,6 +291,145 @@ struct RoutineTemplate {
 
     static let all: [RoutineTemplate] = [morning, bedtime, afterSchool, quickHygiene]
 
+    /// The Premium template library (same ten as the web's routine-icons.ts).
+    static let premiumLibrary: [RoutineTemplate] = [
+        RoutineTemplate(
+            name: "School Morning Express",
+            type: .morning,
+            icon: "🚀",
+            steps: [
+            ("Wake Up", "⏰", 60),
+            ("Use the Bathroom", "🚽", 120),
+            ("Get Dressed", "👕", 180),
+            ("Eat Breakfast", "🥣", 600),
+            ("Brush Teeth", "🪥", 120),
+            ("Check Backpack", "🎒", 60),
+            ("Shoes On", "👟", 60),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Homework Hour",
+            type: .afterschool,
+            icon: "📚",
+            steps: [
+            ("Have a Snack", "🍎", 300),
+            ("Drink Water", "💧", 60),
+            ("Clear the Desk", "🗂️", 120),
+            ("Do Homework", "✏️", 1500),
+            ("Read for 15 Minutes", "📖", 900),
+            ("Pack Tomorrow's Bag", "🎒", 120),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Weekend Room Reset",
+            type: .custom,
+            icon: "🧹",
+            steps: [
+            ("Make Bed", "🛏️", 120),
+            ("Put Away Toys", "🧸", 600),
+            ("Fold Laundry", "👚", 600),
+            ("Dust", "🪶", 300),
+            ("Vacuum", "🧹", 600),
+            ("Take Out Trash", "🗑️", 120),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Pet Care",
+            type: .custom,
+            icon: "🐶",
+            steps: [
+            ("Feed the Pet", "🦴", 120),
+            ("Fresh Water Bowl", "💧", 60),
+            ("Walk the Dog", "🐕", 900),
+            ("Wash Hands", "🧼", 60),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Teen Morning",
+            type: .morning,
+            icon: "🚿",
+            steps: [
+            ("Wake Up", "⏰", 60),
+            ("Shower", "🚿", 600),
+            ("Deodorant", "🧴", 60),
+            ("Get Dressed", "👕", 300),
+            ("Eat Breakfast", "🥣", 600),
+            ("Check Backpack", "🎒", 120),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Calm-Down Bedtime",
+            type: .bedtime,
+            icon: "🎶",
+            steps: [
+            ("Put On Pajamas", "🩳", 120),
+            ("Brush Teeth", "🪥", 120),
+            ("Floss", "🦷", 60),
+            ("Read a Book", "📖", 900),
+            ("Calm Music", "🎶", 300),
+            ("Lights Out", "🌙", 60),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Sports Practice Prep",
+            type: .custom,
+            icon: "⚽",
+            steps: [
+            ("Eat Some Fruit", "🍌", 300),
+            ("Fill Water Bottle", "💧", 60),
+            ("Practice Clothes On", "👕", 300),
+            ("Pack the Gear Bag", "🎒", 300),
+            ("Shoes On", "👟", 120),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Kitchen Helper",
+            type: .custom,
+            icon: "🍳",
+            steps: [
+            ("Wash Hands", "🧼", 60),
+            ("Set the Table", "🍽️", 300),
+            ("Help Cook", "🍳", 900),
+            ("Eat Dinner", "🍝", 1200),
+            ("Clear the Dishes", "🧽", 300),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Music Practice",
+            type: .custom,
+            icon: "🎹",
+            steps: [
+            ("Warm Up", "🎹", 300),
+            ("Practice Your Piece", "🎼", 1200),
+            ("Listen to Something New", "🎧", 300),
+            ],
+            premium: true
+        ),
+        RoutineTemplate(
+            name: "Get Moving",
+            type: .custom,
+            icon: "🏃",
+            steps: [
+            ("Stretch", "🧘", 120),
+            ("Exercise", "🏃", 600),
+            ("Play Outside", "🌳", 1200),
+            ("Drink Water", "💧", 60),
+            ],
+            premium: true
+        ),
+    ]
+
+    /// Everything the builder offers: the free four, then the Premium library.
+    static let library: [RoutineTemplate] = all + premiumLibrary
+
     /// Template-created routines store their ENGLISH name and step titles as
     /// data, so the string catalog never touches them and a Spanish kid saw
     /// "Morning Routine" under a Spanish UI. Known template strings localize
@@ -297,7 +438,7 @@ struct RoutineTemplate {
     /// Localizable.xcstrings with es/pt-BR/ar entries; runtime lookup via
     /// String.LocalizationValue falls back to the English key when a string
     /// is not in the catalog.
-    static let localizableNames: Set<String> = Set(all.map(\.name))
+    static let localizableNames: Set<String> = Set(library.map(\.name))
     /// The web app's starter templates use their own step titles, and a
     /// routine created there is viewed here, so the lookup covers the UNION
     /// of both platforms' template strings (kept in sync with
@@ -309,7 +450,7 @@ struct RoutineTemplate {
         "Brush Hair",
     ]
     static let localizableStepTitles: Set<String> =
-        Set(all.flatMap { $0.steps.map(\.title) }).union(webTemplateStepTitles)
+        Set(library.flatMap { $0.steps.map(\.title) }).union(webTemplateStepTitles)
 
     static func localizedName(_ name: String) -> String {
         localizableNames.contains(name) ? String(localized: String.LocalizationValue(name)) : name

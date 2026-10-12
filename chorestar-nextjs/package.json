@@ -28,7 +28,8 @@
     "test:tutorials:run-routine": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-run-routine",
     "test:tutorials:family-settings": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=tutorial-family-settings",
     "test:e2e:per-chore-rewards": "RUN_ID=$(date +%Y-%m-%d-%H-%M-%S) playwright test --project=per-chore-rewards",
-    "a11y": "node scripts/a11y-audit.mjs"
+    "a11y": "node scripts/a11y-audit.mjs",
+    "test:e2e:features": "playwright test --project=features"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",

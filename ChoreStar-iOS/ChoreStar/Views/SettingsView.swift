@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
+    @State private var paywallSource = "settings"
     @State private var restoreMessage: String?
     @State private var showingManageSubscriptions = false
     @State private var hasAppleSubscription = false
@@ -21,6 +22,7 @@ struct SettingsView: View {
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
     @State private var activityPushEnabled = true
+    @State private var weeklyReport = false
     @State private var requireApproval = false
     @State private var vacationOn = false
     @State private var vacationFrom = Calendar.current.startOfDay(for: Date())
@@ -68,7 +70,7 @@ struct SettingsView: View {
                     ThemeGalleryView(
                         selection: $seasonalThemeSetting,
                         isPremiumUser: manager.canUse(.themes),
-                        onPremiumLocked: { showingPaywall = true }
+                        onPremiumLocked: { paywallSource = "theme_locked"; showingPaywall = true }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                     .listRowBackground(Color.clear)
@@ -151,7 +153,7 @@ struct SettingsView: View {
                     }
                     
                     if !manager.isPremium {
-                        Button(action: { showingPaywall = true }) {
+                        Button(action: { paywallSource = "settings_upgrade"; showingPaywall = true }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Upgrade to Premium")
@@ -358,6 +360,37 @@ struct SettingsView: View {
                         Task { await manager.setActivityPushEnabled(enabled) }
                     }
 
+                    // Sunday family report email (Premium, opt-in).
+                    if manager.isPremium {
+                        Toggle(isOn: $weeklyReport) {
+                            HStack {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundColor(weeklyReport ? .choreStarPrimary : .choreStarTextSecondary)
+                                Text("Weekly Report Email")
+                            }
+                        }
+                        .onChange(of: weeklyReport) { _, enabled in
+                            guard enabled != (manager.familySettings?.weeklyReportEmail ?? false) else { return }
+                            Task { await manager.setWeeklyReportEmail(enabled) }
+                        }
+                    } else {
+                        Button {
+                            paywallSource = "weekly_report"
+                            showingPaywall = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundColor(.choreStarTextSecondary)
+                                Text("Weekly Report Email")
+                                    .foregroundColor(.choreStarTextPrimary)
+                                Spacer()
+                                Image(systemName: "crown.fill")
+                                    .foregroundColor(.choreStarAccent)
+                                    .accessibilityLabel("Premium")
+                            }
+                        }
+                    }
+
                     Toggle(isOn: $reminderEnabled) {
                         HStack {
                             Image(systemName: "bell.badge.fill")
@@ -399,7 +432,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Notifications")
                 } footer: {
-                    Text("Activity alerts buzz when a kid finishes all chores or a routine. The daily reminder is a local nudge on this device.")
+                    Text("Activity alerts buzz when a kid finishes all chores or a routine. The weekly report emails you each kid's week every Sunday. The daily reminder is a local nudge on this device.")
                 }
 
                 Section("Data") {
@@ -469,6 +502,7 @@ struct SettingsView: View {
                     customAccent = c
                 }
                 activityPushEnabled = manager.familySettings?.activityPushOn ?? true
+                weeklyReport = manager.familySettings?.weeklyReportEmail ?? false
                 requireApproval = manager.familySettings?.requireApproval ?? false
                 seedVacationState()
             }
@@ -482,7 +516,7 @@ struct SettingsView: View {
                 ChangePasswordView()
             }
             .sheet(isPresented: $showingPaywall) {
-                PaywallView()
+                PaywallView(source: paywallSource)
             }
             .alert(
                 "Restore Purchases",
@@ -1400,7 +1434,7 @@ struct RewardStoreSettingsView: View {
                         .foregroundColor(.choreStarTextSecondary)
                     // The cap was a dead end; it leads to the plans now.
                     Button("See Premium Plans") { showingPaywall = true }
-                        .sheet(isPresented: $showingPaywall) { PaywallView() }
+                        .sheet(isPresented: $showingPaywall) { PaywallView(source: "limit_store_items") }
                 } else {
                     Picker("Picture", selection: $newEmoji) {
                         ForEach(emojis, id: \.self) { Text($0).tag($0) }

@@ -2,6 +2,9 @@ import SwiftUI
 import StoreKit
 
 struct PaywallView: View {
+    /// What opened the paywall (a limit, a gated feature, a button); recorded
+    /// so the founder hub can show what actually sells Premium.
+    var source: String = "unknown"
     @EnvironmentObject var manager: SupabaseManager
     @StateObject private var store = StoreKitManager.shared
     @Environment(\.dismiss) var dismiss
@@ -42,6 +45,7 @@ struct PaywallView: View {
                         // Exactly what Premium unlocks (docs/PREMIUM.md): every line here
                         // is gated, and everything gated is here.
                         premiumFeature(icon: "infinity", text: "Unlimited children & chores")
+                        premiumFeature(icon: "arrow.triangle.2.circlepath", text: "Rotating & bonus chores, more routine templates")
                         premiumFeature(icon: "gift.fill", text: "Unlimited reward store items and goals")
                         premiumFeature(icon: "person.2.fill", text: "Family sharing with a co-parent")
                         premiumFeature(icon: "chart.bar.fill", text: "Full stats, plus PDF and CSV export")
@@ -139,6 +143,7 @@ struct PaywallView: View {
         .task {
             await store.loadProducts()
         }
+        .task { await manager.logPaywallOpen(source: source) }
         .alert("Welcome to Premium", isPresented: $showingSuccess) {
             Button("Done") { dismiss() }
         } message: {

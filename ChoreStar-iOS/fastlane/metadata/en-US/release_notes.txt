@@ -1,10 +1,11 @@
 Version 2.5: fair shares and more goals.
 
-• Save for more than one thing: Premium kids can hold several savings goals at once, each with its own bar
-• Chores that take turns: Premium chores can rotate between your kids every week, or be a bonus chore the first kid to finish earns. Set them up from Add Chore on chorestar.app and they show up here for whoever's turn it is
+• Chores that take turns: Premium chores can rotate between your kids every week, or be a bonus chore the first kid to finish earns. Set it up right in Add Chore
+• 10 more routine templates for Premium families, from School Morning Express to Weekend Room Reset
+• A weekly report by email: turn it on in Settings for each kid's week every Sunday (Premium)
+• Save for more than one thing: Premium kids can hold several savings goals at once
 • Co-parents in a Premium family now get all of Premium on their own iPhone
-• Restore Purchases tells you whether Premium is on, or why it couldn't be applied
-• The paywall lists exactly what Premium includes, now in Spanish, Portuguese and Arabic too
+• Each plan shows its length and renewal, and Restore Purchases tells you what happened
 • Small fixes and polish
 
 Questions or feedback are welcome at hi@chorestar.app

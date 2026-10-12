@@ -29,7 +29,17 @@ enum Changelog {
                 Feature(
                     icon: "🔄",
                     title: "Chores That Take Turns",
-                    description: "Premium: set a chore to rotate between your kids each week, or post a bonus chore the first kid to finish earns, from Add Chore on chorestar.app. It shows up on iPhone for whoever's turn it is."
+                    description: "Premium: in Add Chore, share a chore with your other kids. Take turns rotates it every Sunday; Bonus goes to whoever finishes first that day."
+                ),
+                Feature(
+                    icon: "📚",
+                    title: "10 More Routine Templates",
+                    description: "Premium: School Morning Express, Homework Hour, Weekend Room Reset, Pet Care and more, ready in one tap. The original four stay free."
+                ),
+                Feature(
+                    icon: "📬",
+                    title: "A Weekly Report by Email",
+                    description: "Premium: turn it on in Settings and every Sunday you get each kid's week: chores done, money earned, streaks and goals."
                 ),
                 Feature(
                     icon: "🎯",

@@ -38,6 +38,8 @@ class SupabaseManager: ObservableObject {
     @Published var currentChild: Child?
     @Published var routines: [Routine] = []
     @Published var subscriptionType: String = "free"
+    /// The bonus chore a sibling just beat this kid to (migration 025 refused the tick).
+    @Published var bonusTakenChoreId: UUID?
     /// Flips true when loadRemoteData finishes a full pass — gates decisions
     /// that must not run against a half-loaded account (e.g. first-run
     /// onboarding, which reads `children`). Reset on sign-out.
@@ -982,6 +984,10 @@ class SupabaseManager: ObservableObject {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                // 409: a sibling finished this bonus chore first today.
+                if (response as? HTTPURLResponse)?.statusCode == 409 {
+                    await MainActor.run { bonusTakenChoreId = chore.id }
+                }
                 throw URLError(.badServerResponse)
             }
             // Approval mode: the server may have parked the tick as pending.
@@ -2852,6 +2858,9 @@ class SupabaseManager: ObservableObject {
                 if error.code != "23505" {
                     // Remove from local state if save failed
                     await MainActor.run {
+                        if error.message.localizedCaseInsensitiveContains("bonus chore") {
+                            bonusTakenChoreId = chore.id
+                        }
                         weekCompletions.removeAll(where: { $0.choreId == chore.id && $0.dayOfWeek == dayOfWeek })
                         let currentDay = calendar.component(.weekday, from: now) - 1
                         if dayOfWeek == currentDay {
@@ -3587,6 +3596,27 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
+    /// Turn the Sunday family report email on or off (Premium; migration 026).
+    func setWeeklyReportEmail(_ enabled: Bool) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { effectiveUserId }
+        guard let uid = uid else { return }
+        do {
+            try await client
+                .from("family_settings")
+                .update(["weekly_report_email": enabled])
+                .eq("user_id", value: uid)
+                .execute()
+            await loadFamilySettings()
+        } catch {
+            await MainActor.run {
+                debugLastError = "Weekly report pref failed: \(error.localizedDescription)"
+            }
+        }
+        #endif
+    }
+
     /// Persist the family preference for APNs activity alerts.
     func setActivityPushEnabled(_ enabled: Bool) async {
         #if canImport(Supabase)
@@ -3849,6 +3879,63 @@ class SupabaseManager: ObservableObject {
     /// `daysOfWeek` nil leaves the column to its default (every day). Optionals
     /// are omitted from the encoded row, not sent as null, so a nil here never
     /// trips the NOT NULL constraint.
+    /// Records that the paywall opened and why (migration 027), so the founder
+    /// hub can see which limit or feature sells Premium. Best-effort: a failed
+    /// insert never affects the paywall.
+    func logPaywallOpen(source: String) async {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        // A paywall opened right at launch can beat sign-in by a moment.
+        var uid = await MainActor.run { debugUserId }
+        for _ in 0..<20 where uid == nil {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            uid = await MainActor.run { debugUserId }
+        }
+        guard let uid else { return }
+        struct Event: Encodable { let user_id: String; let source: String; let platform: String }
+        _ = try? await client.from("paywall_events")
+            .insert(Event(user_id: uid, source: source, platform: "ios"))
+            .execute()
+        #endif
+    }
+
+    /// One chore shared by several kids (Premium; migration 025), through
+    /// POST /api/chores/shared: "rotate" moves between the kids every Sunday,
+    /// "grab" is a bonus chore the first kid to finish earns. The first id
+    /// takes the first turn. Returns an error message, or nil on success.
+    func createSharedChore(name: String, childIds: [UUID], mode: String, rewardCents: Int, category: String?, icon: String?, daysOfWeek: [Int], requiresPhoto: Bool) async -> String? {
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/chores/shared") else {
+            return String(localized: "Something went wrong. Try again!")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        var body: [String: Any] = [
+            "name": name,
+            "rewardCents": rewardCents,
+            "daysOfWeek": daysOfWeek,
+            "requiresPhoto": requiresPhoto,
+            "mode": mode,
+            "childIds": childIds.map { $0.uuidString.lowercased() },
+        ]
+        if let category { body["category"] = category }
+        if let icon { body["icon"] = icon }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        guard let (data, response) = try? await URLSession.shared.data(for: request) else {
+            return String(localized: "Couldn't reach ChoreStar. Check your connection and try again.")
+        }
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard status == 200 else {
+            struct Failure: Decodable { let message: String?; let error: String? }
+            let failure = try? JSONDecoder().decode(Failure.self, from: data)
+            return failure?.message ?? failure?.error ?? String(localized: "Something went wrong. Try again!")
+        }
+        await MainActor.run { refreshData() }
+        return nil
+    }
+
     func createChore(name: String, childId: UUID, rewardCents: Int, category: String?, icon: String?, color: String?, notes: String?, daysOfWeek: [Int]? = nil, requiresPhoto: Bool? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {

@@ -66,6 +66,8 @@ export interface RevenueReport {
   purchases: Purchase[]
   /** Premium without any purchase behind it (founders, demo, comps). */
   comped: { family: string; email: string }[]
+  /** What opened the paywall in the last 30 days (migration 027), most first. */
+  paywallSources: { source: string; opens: number; parents: number; nowPaying: number; platforms: string[] }[]
   notes: string[]
 }
 
@@ -294,6 +296,7 @@ export async function collectRevenue(
   if (error) throw new Error(`profiles: ${error.message}`)
 
   type Row = {
+    id: string
     email: string
     family_name: string
     subscription_type: string
@@ -354,6 +357,41 @@ export async function collectRevenue(
     .filter((r) => !stripeEmails.has(r.email.toLowerCase()) && !paidEmails.has(r.email.toLowerCase()))
     .map((r) => ({ family: r.family_name, email: r.email }))
 
+  // What opens the paywall (migration 027): opens, distinct parents, and how
+  // many of those parents are Premium now.
+  const paywallSources: RevenueReport['paywallSources'] = []
+  {
+    const since = new Date(Date.now() - 30 * 86_400_000).toISOString()
+    const { data: events, error: evError } = await (admin as any)
+      .from('paywall_events')
+      .select('user_id, source, platform')
+      .gte('created_at', since)
+      .limit(5000)
+    if (evError) {
+      notes.push(`Paywall sources unavailable: ${evError.message}`)
+    } else {
+      const premiumIds = new Set(rows.filter((r) => r.subscription_type !== 'free').map((r) => r.id))
+      const by = new Map<string, { opens: number; parents: Set<string>; platforms: Set<string> }>()
+      for (const e of (events ?? []) as { user_id: string; source: string; platform: string }[]) {
+        const b = by.get(e.source) ?? { opens: 0, parents: new Set<string>(), platforms: new Set<string>() }
+        b.opens++
+        b.parents.add(e.user_id)
+        b.platforms.add(e.platform)
+        by.set(e.source, b)
+      }
+      for (const [source, b] of by) {
+        paywallSources.push({
+          source,
+          opens: b.opens,
+          parents: b.parents.size,
+          nowPaying: [...b.parents].filter((id) => premiumIds.has(id)).length,
+          platforms: [...b.platforms].sort(),
+        })
+      }
+      paywallSources.sort((a, b) => b.opens - a.opens)
+    }
+  }
+
   purchases.sort((a, b) => (a.date < b.date ? 1 : -1))
   subscribers.sort((a, b) => (a.since < b.since ? 1 : -1))
   return {
@@ -362,6 +400,7 @@ export async function collectRevenue(
     subscribers,
     purchases,
     comped,
+    paywallSources,
     notes,
   }
 }

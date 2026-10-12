@@ -1,5 +1,4 @@
 import { execSync } from 'child_process';
-import { globSync } from 'glob';
 import path from 'path';
 import fs from 'fs';
 
@@ -48,7 +47,13 @@ function projectFromFolder(folderName: string): string | null {
 }
 
 export default async function globalTeardown() {
-  const webmFiles = globSync('test-results/**/*.webm');
+  // Node's own recursive listing: the `glob` package was never a declared
+  // dependency, so a fresh install failed this teardown.
+  const webmFiles = fs.existsSync('test-results')
+    ? (fs.readdirSync('test-results', { recursive: true }) as string[])
+        .filter((f) => f.endsWith('.webm'))
+        .map((f) => path.join('test-results', f))
+    : [];
   if (webmFiles.length === 0) return;
 
   let converted = 0;

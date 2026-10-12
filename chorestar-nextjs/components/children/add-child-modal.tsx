@@ -160,7 +160,7 @@ export function AddChildModal({ open, onOpenChange, onSuccess, currentChildCount
                 onClick={() => {
                   onOpenChange(false)
                   // Land directly on Settings > Billing (dashboard listens)
-                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'limit_children' } }))
                 }}
               >
                 <Crown className="w-5 h-5 mr-2" />

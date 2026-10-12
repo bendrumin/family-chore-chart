@@ -53,6 +53,9 @@ struct Chore: Codable, Identifiable {
     /// Kids attach a photo when checking this off; the tick waits for review.
     /// Migration 016. Defaults false so older rows and callers keep working.
     var requiresPhoto: Bool = false
+    /// Shared chores (migration 025): "rotate" moves between kids weekly,
+    /// "grab" is a bonus chore the first kid to finish earns. nil otherwise.
+    var rotationMode: String? = nil
     let createdAt: Date
     let updatedAt: Date
 
@@ -69,6 +72,7 @@ struct Chore: Codable, Identifiable {
         case sortOrder = "sort_order"
         case daysOfWeek = "days_of_week"
         case requiresPhoto = "requires_photo"
+        case rotationMode = "rotation_mode"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -109,6 +113,7 @@ extension Chore {
         sortOrder = try c.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
         daysOfWeek = ChoreSchedule.normalized(try c.decodeIfPresent([Int].self, forKey: .daysOfWeek))
         requiresPhoto = try c.decodeIfPresent(Bool.self, forKey: .requiresPhoto) ?? false
+        rotationMode = try c.decodeIfPresent(String.self, forKey: .rotationMode)
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         updatedAt = try c.decode(Date.self, forKey: .updatedAt)
     }
@@ -381,6 +386,8 @@ struct FamilySettings: Codable {
     /// column simply omits the key).
     let vacationStartsOn: String?
     let vacationEndsOn: String?
+    /// Sunday family report email (Premium, opt-in; migration 026).
+    let weeklyReportEmail: Bool?
 
     var isPerChoreMode: Bool { rewardMode == "per_chore" }
     /// nil (pre-migration row) means enabled.
@@ -406,6 +413,7 @@ struct FamilySettings: Codable {
         case requireApproval = "require_approval"
         case vacationStartsOn = "vacation_starts_on"
         case vacationEndsOn = "vacation_ends_on"
+        case weeklyReportEmail = "weekly_report_email"
     }
 }
 

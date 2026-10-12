@@ -217,7 +217,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                 className="w-full font-bold hover-glow"
                 onClick={() => {
                   onOpenChange(false)
-                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))
+                  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'limit_chores' } }))
                 }}
               >
                 <Crown className="w-5 h-5 mr-2" />
@@ -376,7 +376,7 @@ export function AddChoreModal({ open, onOpenChange, childId, userId, onSuccess }
                   {!familyPremium && (
                     <button
                       type="button"
-                      onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing' } }))}
+                      onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'shared_chores' } }))}
                       className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 underline"
                     >
                       See Premium

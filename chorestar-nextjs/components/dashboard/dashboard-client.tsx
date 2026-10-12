@@ -34,6 +34,7 @@ const SeasonalSuggestionsModal = dynamic(() => import('@/components/chores/seaso
 const OnboardingWizard = dynamic(() => import('@/components/onboarding/onboarding-wizard').then(m => ({ default: m.OnboardingWizard })), { ssr: false })
 const NameFamilyDialog = dynamic(() => import('@/components/onboarding/name-family-dialog').then(m => ({ default: m.NameFamilyDialog })), { ssr: false })
 import { SettingsProvider, useSettings } from '@/lib/contexts/settings-context'
+import { logPaywallOpen } from '@/lib/utils/paywall-events'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import { Plus, HelpCircle, Mail, ListTodo, Repeat, BookOpen, Sparkles, Menu, X, LogOut, Home, Handshake, Shield } from 'lucide-react'
 import Link from 'next/link'
@@ -307,9 +308,13 @@ function DashboardContent({
   // add-chore modals use this to land upgraders directly on Billing).
   useEffect(() => {
     const onOpenSettings = (e: Event) => {
-      const tab = (e as CustomEvent).detail?.tab as SettingsTab | undefined
-      if (tab) setSettingsTab(tab)
+      const detail = (e as CustomEvent).detail as { tab?: SettingsTab; source?: string } | undefined
+      if (detail?.tab) setSettingsTab(detail.tab)
       setIsSettingsOpen(true)
+      // Every upgrade prompt opens Billing with its reason; remember which.
+      if (detail?.tab === 'billing' && detail.source) {
+        void logPaywallOpen(detail.source, isShell ? 'android' : 'web')
+      }
     }
     window.addEventListener('chorestar:open-settings', onOpenSettings)
     return () => window.removeEventListener('chorestar:open-settings', onOpenSettings)
@@ -325,6 +330,7 @@ function DashboardContent({
     if (!tab || !tabs.includes(tab)) return
     setSettingsTab(tab)
     setIsSettingsOpen(true)
+    if (tab === 'billing') void logPaywallOpen('home_upgrade', isShell ? 'android' : 'web')
     url.searchParams.delete('settings')
     window.history.replaceState(null, '', url.pathname + url.search + url.hash)
   }, [])

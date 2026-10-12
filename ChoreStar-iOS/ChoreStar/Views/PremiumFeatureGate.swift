@@ -62,6 +62,6 @@ struct PremiumFeatureGate: View {
         .background(Color.choreStarCardBackground)
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.choreStarPrimary.opacity(0.25), lineWidth: 1))
-        .sheet(isPresented: $showingPaywall) { PaywallView() }
+        .sheet(isPresented: $showingPaywall) { PaywallView(source: "gate_\(feature)") }
     }
 }
