@@ -17,7 +17,12 @@ are applied afterwards (AppScreens).
 | 5 | 05-routines.png | Mornings Run Themselves | Step-by-step routines with timers |
 | 6 | 06-family.png | One App, Whole Crew | Every kid gets an avatar and a PIN |
 | 7 | 07-stats.png | Watch Streaks Grow | Perfect days, badges & weekly stats |
-| 8 | 08-kid-login.png | Kids Sign In Solo | No email, just a family code and PIN |
+| 8 | 08-fair-shares.png | Fair Shares for Siblings | Chores take turns, or race for a bonus |
+
+2.5 swapped Kids Sign In Solo (08-kid-login) for Fair Shares: the kid-login
+shot repeated the kid-dashboard story. Capture with `-chorestar-sharechore`
+(DEBUG): it opens Add Chore scrolled to the sharing section; raw captures in
+`raw-shared/`.
 
 Alternates (true, swappable):
 - Approve Before It Counts / Optional OK step, photo proof included
@@ -42,7 +47,7 @@ gradient. Both device sets use the same recipe:
   `#51666a`
 - Output: iPhone 1320x2868 (6.9"), iPad 2064x2752 (13")
 
-Kid-login shots show the staged family code `star2026`
+Earlier kid-login shots showed the staged family code `star2026`
 (profiles.kid_login_code for The Star Family was reseeded from the
 auto-generated value before capture).
 
