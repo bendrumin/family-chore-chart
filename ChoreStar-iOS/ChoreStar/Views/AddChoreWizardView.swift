@@ -48,6 +48,24 @@ struct AddChoreWizardView: View {
         _selectedChild = State(initialValue: preselectedChildId)
     }
 
+    #if DEBUG
+    /// App Store screenshot tooling (`-chorestar-sharechore`): opens on the
+    /// last step with a weekly rotation set up for the first two kids.
+    private var debugSharePreview = false
+    init(debugSharePreview: Bool) {
+        self.init(preselectedChildId: nil)
+        self.debugSharePreview = debugSharePreview
+        if debugSharePreview {
+            _name = State(initialValue: "Unload the dishwasher")
+            _selectedIcon = State(initialValue: "🍽️")
+            _selectedColor = State(initialValue: "teal")
+            _rewardDollars = State(initialValue: 0.5)
+            _step = State(initialValue: .reward)
+            _shareMode = State(initialValue: "rotate")
+        }
+    }
+    #endif
+
     // One canonical catalog shared with the web picker — see ChoreIconCatalog.
     private let icons = ChoreIconCatalog.all
     private let colors = ["blue", "green", "orange", "purple", "pink", "red", "yellow", "teal", "indigo", "mint"]
@@ -92,16 +110,33 @@ struct AddChoreWizardView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 header
-
-                ScrollView {
-                    Group {
-                        switch step {
-                        case .whoAndWhat: whoAndWhatStep
-                        case .style: styleStep
-                        case .reward: rewardStep
-                        }
+                #if DEBUG
+                    .onAppear {
+                        guard debugSharePreview, selectedChild == nil, let first = manager.children.first else { return }
+                        selectedChild = first.id
+                        shareWith = Set(manager.children.map(\.id))
                     }
-                    .padding()
+                #endif
+
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        Group {
+                            switch step {
+                            case .whoAndWhat: whoAndWhatStep
+                            case .style: styleStep
+                            case .reward: rewardStep
+                            }
+                        }
+                        .padding()
+                    }
+                    #if DEBUG
+                    .task {
+                        // Screenshot preview: bring the sharing section into view.
+                        guard debugSharePreview else { return }
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        withAnimation { proxy.scrollTo("share", anchor: .center) }
+                    }
+                    #endif
                 }
 
                 footer
@@ -460,6 +495,7 @@ struct AddChoreWizardView: View {
 
             if manager.children.count >= 2 {
                 shareSection
+                    .id("share")
             }
 
             VStack(alignment: .leading, spacing: 10) {

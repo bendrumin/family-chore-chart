@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var isLoading = true
     @State private var debugShowKidLogin = false
     @State private var debugShowPaywall = false
+    @State private var debugShowShareChore = false
     
     private var preferredColorScheme: ColorScheme? {
         switch darkModePreference {
@@ -49,6 +50,11 @@ struct ContentView: View {
         .sheet(isPresented: $debugShowPaywall) {
             PaywallView(source: "debug")
         }
+        #if DEBUG
+        .sheet(isPresented: $debugShowShareChore) {
+            AddChoreWizardView(debugSharePreview: true)
+        }
+        #endif
     }
 
     #if DEBUG
@@ -137,6 +143,14 @@ struct ContentView: View {
         }
         if args.contains("-chorestar-paywall") {
             debugShowPaywall = true
+        } else if args.contains("-chorestar-sharechore") {
+            // Wait for the family's kids (they load after sign-in).
+            Task {
+                for _ in 0..<60 where supabaseManager.children.count < 2 {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
+                await MainActor.run { debugShowShareChore = true }
+            }
         } else if args.contains("-chorestar-kidlogin") {
             debugShowKidLogin = true
         } else if let idx = args.firstIndex(of: "-chorestar-kid") {
