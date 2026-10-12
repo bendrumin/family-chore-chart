@@ -316,23 +316,23 @@ struct PaywallView: View {
 
     private func planFallbackName(_ productID: String) -> String {
         switch productID {
-        case StoreKitManager.ProductID.monthly: return "Monthly"
-        case StoreKitManager.ProductID.annual: return "Annual"
+        case StoreKitManager.ProductID.monthly: return String(localized: "Monthly")
+        case StoreKitManager.ProductID.annual: return String(localized: "Annual")
         default: return "Premium"
         }
     }
 
+    /// The plan's length and that it renews, beside its price, in the user's
+    /// language (App Review guideline 3.1.2: length and price of each plan).
     private func planPeriodText(_ product: Product) -> String {
-        if let period = product.subscription?.subscriptionPeriod {
-            switch period.unit {
-            case .year: return "Billed yearly"
-            case .month: return "Billed monthly"
-            case .week: return "Billed weekly"
-            case .day: return "Billed daily"
-            @unknown default: return "Subscription"
-            }
+        guard let period = product.subscription?.subscriptionPeriod else { return String(localized: "Subscription") }
+        switch period.unit {
+        case .year: return String(localized: "1 year · renews automatically")
+        case .month: return String(localized: "1 month · renews automatically")
+        case .week: return String(localized: "1 week · renews automatically")
+        case .day: return String(localized: "1 day · renews automatically")
+        @unknown default: return String(localized: "Subscription")
         }
-        return "Subscription"
     }
 
     private func premiumFeature(icon: String, text: LocalizedStringKey) -> some View {
