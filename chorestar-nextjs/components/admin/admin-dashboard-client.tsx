@@ -479,6 +479,7 @@ export function AdminDashboardClient() {
                         <th className="pb-2 pr-4">Family</th>
                         <th className="pb-2 pr-4">Score</th>
                         <th className="pb-2 pr-4">Chores</th>
+                        <th className="pb-2 pr-4">Check-offs</th>
                         <th className="pb-2 pr-4">Last active</th>
                         <th className="pb-2">Tier</th>
                       </tr>
@@ -488,6 +489,15 @@ export function AdminDashboardClient() {
                         <tr key={u.userId} className="border-b border-gray-100 dark:border-gray-800">
                           <td className="py-2 pr-4 font-medium text-gray-900 dark:text-white">{u.familyName}</td>
                           <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">{Math.round(u.activityScore)}</td>
+                          <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">
+                            {u.activeChoreCount}
+                            {/* Free families at the 20-chore cap: the next chore they add opens the paywall. */}
+                            {u.subscription === 'free' && u.activeChoreCount >= 20 && (
+                              <span className="ml-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                at cap
+                              </span>
+                            )}
+                          </td>
                           <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">{u.choreCompletions}</td>
                           <td className="py-2 pr-4">
                             {u.daysSinceLastActivity != null ? `${u.daysSinceLastActivity}d ago` : '—'}
