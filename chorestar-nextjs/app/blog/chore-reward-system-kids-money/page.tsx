@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -49,7 +50,7 @@ const articleJsonLd = {
 
 export default function ChoreRewardSystemPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script
@@ -58,14 +59,14 @@ export default function ChoreRewardSystemPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Allowance</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Allowance</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">March 28, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
@@ -186,8 +187,8 @@ export default function ChoreRewardSystemPage() {
               young, then switch to per-chore when they&apos;re ready for a more nuanced system.
             </p>
 
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Start tracking allowance today</p>
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 themed-surface my-8">
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 themed-text mb-2">Start tracking allowance today</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 ChoreStar&apos;s free plan supports up to 3 kids and 20 chores with full reward tracking. Set up
                 your family&apos;s reward system in under two minutes, no credit card required.
@@ -206,6 +207,6 @@ export default function ChoreRewardSystemPage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }

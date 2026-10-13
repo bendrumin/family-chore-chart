@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -74,7 +75,7 @@ function ExternalLink({ href, children }: { href: string; children: React.ReactN
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-indigo-600 dark:text-indigo-400 hover:underline"
+      className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline"
     >
       {children}
     </a>
@@ -83,7 +84,7 @@ function ExternalLink({ href, children }: { href: string; children: React.ReactN
 
 export default function BestFreeChoreAppsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script
@@ -92,14 +93,14 @@ export default function BestFreeChoreAppsPage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Comparisons</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Comparisons</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">September 15, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">10 min read</span>
             </div>
@@ -115,7 +116,7 @@ export default function BestFreeChoreAppsPage() {
           </header>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
-            <div className="not-prose rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 p-5">
+            <div className="not-prose rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-800 p-5 themed-border">
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 <strong className="text-gray-900 dark:text-white">Before anything else:</strong>{' '}
                 we make ChoreStar. It is on this list, its limits are named the same way
@@ -216,12 +217,12 @@ export default function BestFreeChoreAppsPage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               Where we lose: the native Android app is still in{' '}
-              <Link href="/android-beta" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              <Link href="/android-beta" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">
                 testing
               </Link>{' '}
               rather than on Google Play, no photo proof of completed chores, and we are
               newer with a small fraction of Chorsee&apos;s review count. The{' '}
-              <Link href="/compare" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              <Link href="/compare" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">
                 compare pages
               </Link>{' '}
               go feature by feature if you want the long version.
@@ -347,7 +348,7 @@ export default function BestFreeChoreAppsPage() {
                     <td className="p-3 whitespace-nowrap">$2.99/mo · $29.99/yr</td>
                     <td className="p-3">Per-child (method unclear)</td>
                   </tr>
-                  <tr className="bg-indigo-50/50 dark:bg-indigo-950/30">
+                  <tr className="bg-indigo-50/50 dark:bg-indigo-950/30 themed-surface">
                     <td className="p-3 font-medium text-gray-900 dark:text-white">ChoreStar (ours)</td>
                     <td className="p-3">Web, iPhone, iPad</td>
                     <td className="p-3">3 kids, 20 chores</td>
@@ -460,6 +461,6 @@ export default function BestFreeChoreAppsPage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }

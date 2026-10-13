@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -81,21 +82,21 @@ const faqJsonLd = {
 
 export default function SplitChoresFairlyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Parenting</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Parenting</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">October 10, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
@@ -216,6 +217,6 @@ export default function SplitChoresFairlyPage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -53,7 +54,7 @@ const articleJsonLd = {
 
 export default function ChoreStarIos27Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script
@@ -62,14 +63,14 @@ export default function ChoreStarIos27Page() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Announcements</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Announcements</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">September 14, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">3 min read</span>
             </div>
@@ -108,7 +109,7 @@ export default function ChoreStarIos27Page() {
               moment Apple ships the simulator, we test on it, and anything that needs
               polish gets polish.
             </p>
-            <p className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-gray-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-gray-300">
+            <p className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-gray-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-gray-300 themed-surface">
               <strong>Update, October 2026:</strong> the Duo simulator arrived, and ChoreStar
               2.4 is made for iPhone Duo. Open it for two-column kid mode and a routine
               player that shows every step beside the current one; half-open, nothing sits
@@ -160,6 +161,6 @@ export default function ChoreStarIos27Page() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }

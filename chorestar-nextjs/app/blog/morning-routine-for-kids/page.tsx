@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -49,7 +50,7 @@ const articleJsonLd = {
 
 export default function MorningRoutinePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script
@@ -58,14 +59,14 @@ export default function MorningRoutinePage() {
       />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Routines</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Routines</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">March 28, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">6 min read</span>
             </div>
@@ -191,8 +192,8 @@ export default function MorningRoutinePage() {
               it&apos;s ready to go every morning without any parent intervention.
             </p>
 
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Set up your first routine</p>
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 themed-surface my-8">
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 themed-text mb-2">Set up your first routine</p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
                 ChoreStar is free to start, up to 3 kids and 20 chores on the free plan, no credit card required.
                 Set up your family&apos;s morning routine in under two minutes.
@@ -211,6 +212,6 @@ export default function MorningRoutinePage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }
