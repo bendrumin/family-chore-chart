@@ -4,7 +4,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { planOf, toUsd, summarize, type Purchase, type Subscriber } from './revenue'
+import { planOf, toUsd, summarize, isFreeTrial, appleStatus, type Purchase, type Subscriber } from './revenue'
 
 let passed = 0
 let failed = 0
@@ -68,6 +68,30 @@ t('a renewal is the same paying family', () => {
 t('per-currency totals keep the original currency', () => {
   const s = summarize([buy({ amount: 19.99, currency: 'SAR', usd: 5.33 }), buy({ amount: 19.99, currency: 'SAR', usd: 5.33, kind: 'renewal' })], [], NOW)
   assert.deepEqual(s.byCurrency, [{ currency: 'SAR', amount: 39.98 }])
+})
+
+group('free trials')
+t('a trial start earns nothing and is not a paying family', () => {
+  const s = summarize([buy({ kind: 'trial', amount: 0, usd: 0 })], [], NOW)
+  assert.equal(s.totals.grossUsd, 0)
+  assert.equal(s.totals.payingFamilies, 0)
+})
+t('trialing subscribers are counted, but not in MRR', () => {
+  const sub = summarize([], [{ family: 'F', email: 'f@x.com', channel: 'apple', plan: 'yearly', price: 0, currency: 'USD', usd: 0, country: 'USA', since: NOW.toISOString(), status: 'trial', periodEnds: null }], NOW)
+  assert.equal(sub.totals.trialing, 1)
+  assert.equal(sub.totals.mrrUsd, 0)
+})
+t('Apple free trial is an intro offer with FREE_TRIAL', () => {
+  assert.equal(isFreeTrial({ offerType: 1, offerDiscountType: 'FREE_TRIAL' }), true)
+  assert.equal(isFreeTrial({ offerType: 1, offerDiscountType: 'PAY_AS_YOU_GO' }), false)
+  assert.equal(isFreeTrial({}), false)
+})
+t('Apple status: trial, cancelled trial, paid', () => {
+  const trial = { productId: 'x', purchaseDate: 0, offerType: 1, offerDiscountType: 'FREE_TRIAL' }
+  assert.equal(appleStatus('active', 1, trial), 'trial')
+  assert.equal(appleStatus('active', 0, trial), 'auto-renew off')
+  assert.equal(appleStatus('active', 1, { productId: 'x', purchaseDate: 0 }), 'active')
+  assert.equal(appleStatus('expired', 1, trial), 'expired')
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

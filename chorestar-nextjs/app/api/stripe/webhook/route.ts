@@ -132,7 +132,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return
   }
 
-  if (subscription.status === 'active') {
+  // A yearly free trial is Premium from day one; Stripe moves it to active
+  // when the first payment lands, or deletes it if the family cancels.
+  if (subscription.status === 'active' || subscription.status === 'trialing') {
     await updateSubscriptionTier(userId, 'premium')
   } else if (subscription.status === 'past_due' || subscription.status === 'unpaid') {
     console.warn(`Subscription ${subscription.id} is ${subscription.status} for user ${userId}`)

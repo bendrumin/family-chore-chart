@@ -20,6 +20,7 @@ const day = (iso: string | null) =>
 const CHANNEL: Record<Channel, string> = { apple: 'Apple', stripe: 'Stripe (web)', google: 'Google Play' }
 
 const STATUS_CLASS: Record<SubStatus, string> = {
+  trial: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
   active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
   'auto-renew off': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   'billing retry': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -86,7 +87,7 @@ export function RevenuePanel({
             <Stat label="This month" value={`≈ ${usd(data.totals.thisMonthUsd)}`} />
             <Stat label="Recurring per month" value={`≈ ${usd(data.totals.mrrUsd)}`} sub="renewing subscriptions" />
             <Stat label="Your share, est." value={`≈ ${usd(data.totals.estProceedsUsd)}`} sub="Apple 85%, Stripe less fees" />
-            <Stat label="Paying families" value={data.totals.payingFamilies} sub={`${data.comped.length} comped`} />
+            <Stat label="Paying families" value={data.totals.payingFamilies} sub={`${data.totals.trialing ? `${data.totals.trialing} on trial · ` : ''}${data.comped.length} comped`} />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -195,7 +196,7 @@ export function RevenuePanel({
                         <td className={tdMuted}>{day(p.date)}</td>
                         <td className={td}>{p.family}</td>
                         <td className={td}>
-                          {p.plan} {p.kind === 'renewal' ? 'renewal' : p.kind === 'refunded' ? '(refunded)' : 'purchase'}
+                          {p.plan} {p.kind === 'renewal' ? 'renewal' : p.kind === 'refunded' ? '(refunded)' : p.kind === 'trial' ? 'free trial' : 'purchase'}
                         </td>
                         <td className={`${td} ${p.kind === 'refunded' ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}>
                           {money(p.amount, p.currency)}

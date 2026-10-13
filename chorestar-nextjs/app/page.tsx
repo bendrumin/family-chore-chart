@@ -39,7 +39,7 @@ const FAQS = [
   },
   {
     q: 'Can I try Premium before paying?',
-    a: 'There is no timed trial. The free plan is free forever, with 3 kids and 20 chores, so you can run your family on it for as long as you like. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
+    a: 'Yes. The yearly plan starts with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends (one trial per family). The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
   },
 ]
 
@@ -92,6 +92,19 @@ const softwareApplicationLd = {
         price: '4.99',
         priceCurrency: 'USD',
         billingDuration: 'P1M',
+      },
+    },
+    {
+      '@type': 'Offer',
+      price: '49.99',
+      priceCurrency: 'USD',
+      name: 'Premium Yearly',
+      description: 'Everything in Premium, billed yearly (about 2 months free), with a 7-day free trial for new subscribers',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '49.99',
+        priceCurrency: 'USD',
+        billingDuration: 'P1Y',
       },
     },
   ],
@@ -505,6 +518,7 @@ export default async function HomePage() {
                 <div className="text-4xl font-black mb-2" style={GRADIENT_TEXT}>$4.99</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">per month</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">or $49.99/year (save 17%)</p>
+                <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-2">Yearly starts with 7 days free</p>
               </div>
 
               <ul className="space-y-3 mb-8">

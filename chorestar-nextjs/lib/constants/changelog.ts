@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.2'
+export const LATEST_CHANGELOG_VERSION = '2026.10.3'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.3': {
+    version: '2026.10.3',
+    date: 'October 2026',
+    title: 'Try Premium Free for 7 Days',
+    features: [
+      {
+        icon: '🎁',
+        title: '7 Days Free on the Yearly Plan',
+        description: 'New to Premium? The yearly plan now starts with a free week on the web and iPhone. Cancel before it ends and you pay nothing. Yearly works out to about $4.17 a month, two months free compared with monthly.',
+      },
+      {
+        icon: '🎨',
+        title: 'Your Theme, Everywhere',
+        description: 'Signed in, the blog and how-to guides now wear your family\'s theme too, not just the dashboard.',
+      },
+    ],
+  },
   '2026.10.2': {
     version: '2026.10.2',
     date: 'October 2026',

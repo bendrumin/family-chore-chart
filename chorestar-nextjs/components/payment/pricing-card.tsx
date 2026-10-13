@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import { type PlanType } from '@/lib/utils/stripe'
 import { useDisplayPrices } from '@/lib/hooks/use-display-prices'
+import { TRIAL_DAYS } from '@/lib/billing/trial'
 
 interface PricingCardProps {
   planType: PlanType
@@ -54,6 +55,8 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
   )
   const title = PLAN_TITLES[planType]
   const price = planType === 'monthly' ? prices.monthly : prices.annual
+  // The yearly plan carries the free trial (lib/billing/trial.ts).
+  const hasTrial = planType === 'annual'
 
   return (
     <div
@@ -67,7 +70,7 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <span className="inline-block px-4 py-1 text-sm font-bold rounded-full accent-fill">
-            Most Popular
+            {hasTrial ? `Best Value · ${TRIAL_DAYS} Days Free` : 'Most Popular'}
           </span>
         </div>
       )}
@@ -81,6 +84,11 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
             {price}
           </span>
         </div>
+        {hasTrial && (
+          <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
+            Just {prices.annualPerMonth}, billed yearly
+          </p>
+        )}
         {savings && (
           <p className="text-sm font-semibold text-green-600 dark:text-green-400 mt-1">
             {savings}
@@ -106,8 +114,14 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
         variant={isPopular ? 'gradient' : 'default'}
         size="lg"
       >
-        {isLoading ? 'Processing...' : `Upgrade Now`}
+        {isLoading ? 'Processing...' : hasTrial ? `Try Free for ${TRIAL_DAYS} Days` : 'Upgrade Now'}
       </Button>
+      {hasTrial && (
+        <p className="text-xs text-center mt-3" style={{ color: 'var(--text-secondary)' }}>
+          Then {price}. Cancel before the trial ends and you won&apos;t be charged. One trial per
+          family; if you&apos;ve subscribed before, your plan starts today.
+        </p>
+      )}
     </div>
   )
 }

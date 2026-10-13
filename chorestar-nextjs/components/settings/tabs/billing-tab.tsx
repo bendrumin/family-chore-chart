@@ -209,16 +209,17 @@ export function BillingTab() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <PricingCard
-              planType="monthly"
-              onUpgrade={() => handleUpgrade('monthly')}
-              isLoading={upgradingPlan === 'monthly'}
-            />
+            {/* Yearly first: it carries the free trial and is the plan we lead with. */}
             <PricingCard
               planType="annual"
               isPopular
               onUpgrade={() => handleUpgrade('annual')}
               isLoading={upgradingPlan === 'annual'}
+            />
+            <PricingCard
+              planType="monthly"
+              onUpgrade={() => handleUpgrade('monthly')}
+              isLoading={upgradingPlan === 'monthly'}
             />
           </div>
         </>

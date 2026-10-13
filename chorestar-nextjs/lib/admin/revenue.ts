@@ -21,7 +21,7 @@ import type { Database } from '@/lib/supabase/database.types'
 
 export type Channel = 'apple' | 'stripe' | 'google'
 export type Plan = 'monthly' | 'yearly' | 'lifetime' | 'other'
-export type SubStatus = 'active' | 'auto-renew off' | 'billing retry' | 'grace period' | 'expired' | 'revoked'
+export type SubStatus = 'active' | 'trial' | 'auto-renew off' | 'billing retry' | 'grace period' | 'expired' | 'revoked'
 
 export interface Purchase {
   family: string
@@ -33,7 +33,8 @@ export interface Purchase {
   currency: string
   usd: number | null
   country: string | null
-  kind: 'purchase' | 'renewal' | 'refunded'
+  /** A free trial start is recorded but earns nothing until it converts. */
+  kind: 'purchase' | 'renewal' | 'refunded' | 'trial'
 }
 
 export interface Subscriber {
@@ -59,6 +60,8 @@ export interface RevenueReport {
     mrrUsd: number
     estProceedsUsd: number
     payingFamilies: number
+    /** On a free trial now (counted in neither revenue nor MRR). */
+    trialing: number
   }
   byCurrency: { currency: string; amount: number }[]
   byChannel: { channel: Channel; grossUsd: number; purchases: number }[]
@@ -113,7 +116,7 @@ export function summarize(
   subscribers: Subscriber[],
   now = new Date()
 ): Pick<RevenueReport, 'totals' | 'byCurrency' | 'byChannel'> {
-  const counted = purchases.filter((p) => p.kind !== 'refunded')
+  const counted = purchases.filter((p) => p.kind !== 'refunded' && p.kind !== 'trial')
   const month = now.toISOString().slice(0, 7)
   const usd = (ps: Purchase[]) => round(ps.reduce((s, p) => s + (p.usd ?? 0), 0))
 
@@ -133,6 +136,7 @@ export function summarize(
       mrrUsd: round(mrr),
       estProceedsUsd: round(counted.reduce((s, p) => s + proceeds(p), 0)),
       payingFamilies: new Set(counted.map((p) => `${p.channel}:${p.email || p.family}`)).size,
+      trialing: subscribers.filter((s) => s.status === 'trial').length,
     },
     byCurrency: [...currencies]
       .map(([currency, amount]) => ({ currency, amount: round(amount) }))
@@ -165,7 +169,13 @@ interface AppleTransaction {
   storefront?: string
   transactionReason?: 'PURCHASE' | 'RENEWAL'
   revocationDate?: number
+  /** 1 = introductory offer; with offerDiscountType FREE_TRIAL it costs nothing. */
+  offerType?: number
+  offerDiscountType?: string
 }
+
+export const isFreeTrial = (t: { offerType?: number; offerDiscountType?: string }) =>
+  t.offerType === 1 && t.offerDiscountType === 'FREE_TRIAL'
 
 const decodeJws = <T>(jws: string): T => JSON.parse(Buffer.from(jws.split('.')[1], 'base64url').toString())
 
@@ -196,7 +206,7 @@ async function appleFamily(
       currency,
       usd: toUsd(amount, currency),
       country: t.storefront ?? null,
-      kind: t.revocationDate ? 'refunded' : t.transactionReason === 'RENEWAL' ? 'renewal' : 'purchase',
+      kind: t.revocationDate ? 'refunded' : isFreeTrial(t) ? 'trial' : t.transactionReason === 'RENEWAL' ? 'renewal' : 'purchase',
     }
   })
 
@@ -219,11 +229,18 @@ async function appleFamily(
       usd: toUsd(amount, currency),
       country: tx.storefront ?? null,
       since: new Date((first ?? tx).purchaseDate).toISOString(),
-      status: base === 'active' && renewal.autoRenewStatus === 0 ? 'auto-renew off' : base,
+      status: appleStatus(base, renewal.autoRenewStatus, tx),
       periodEnds: tx.expiresDate ? new Date(tx.expiresDate).toISOString() : null,
     }
   }
   return { purchases, subscriber }
+}
+
+/** A trial that will not convert reads as auto-renew off, the thing to act on. */
+export function appleStatus(base: SubStatus, autoRenewStatus: number, tx: AppleTransaction): SubStatus {
+  if (base !== 'active') return base
+  if (autoRenewStatus === 0) return 'auto-renew off'
+  return isFreeTrial(tx) ? 'trial' : 'active'
 }
 
 // --- Stripe ---
@@ -274,7 +291,7 @@ async function stripeRevenue(
       usd: toUsd(amount, currency),
       country: customer.address?.country ?? null,
       since: new Date(s.created * 1000).toISOString(),
-      status: s.status === 'past_due' ? 'billing retry' : s.cancel_at_period_end ? 'auto-renew off' : 'active',
+      status: s.status === 'past_due' ? 'billing retry' : s.cancel_at_period_end ? 'auto-renew off' : s.status === 'trialing' ? 'trial' : 'active',
       periodEnds: null,
     })
   }
