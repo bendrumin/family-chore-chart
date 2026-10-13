@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { GRADIENT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
@@ -191,7 +192,7 @@ const tutorials: Tutorial[] = [
 
 export default function HowToPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
 
       <SiteNav />
 
@@ -208,14 +209,14 @@ export default function HowToPage() {
         </header>
 
         {/* Quick Nav */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 mb-10 border border-indigo-100 dark:border-indigo-900">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 mb-10 border border-indigo-100 dark:border-indigo-900 themed-border">
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Jump to a tutorial</p>
           <div className="flex flex-wrap gap-2">
             {tutorials.map((t) => (
               <a
                 key={t.slug}
                 href={`#${t.slug}`}
-                className="px-3 py-1.5 bg-indigo-50 dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium hover:bg-indigo-100 dark:hover:bg-gray-600 transition-colors"
+                className="px-3 py-1.5 bg-indigo-50 dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 rounded-full text-xs font-medium hover:bg-indigo-100 dark:hover:bg-gray-600 transition-colors themed-surface themed-surface-hover themed-text"
               >
                 {t.emoji} {t.title}
               </a>
@@ -295,7 +296,7 @@ export default function HowToPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-600 dark:text-indigo-400"
+              className="px-8 py-3 bg-white dark:bg-gray-800 rounded-xl font-bold text-base hover:scale-105 transition-all shadow-lg hover:shadow-xl text-indigo-600 dark:text-indigo-400 themed-text"
             >
               Start Free Today →
             </Link>
@@ -313,6 +314,6 @@ export default function HowToPage() {
 
         <SiteFooter />
       </div>
-    </div>
+    </PublicPageShell>
   )
 }

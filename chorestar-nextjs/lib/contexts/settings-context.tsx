@@ -137,7 +137,9 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
       return
     }
 
-    // Inert marker — no CSS matches it. Useful for inspecting the active theme.
+    // Marks that a family theme is active. The only CSS keyed on it is the
+    // public-page block at the end of globals.css (blog/how-to backdrop and
+    // accents via PublicPageShell + themed-* classes); nothing else matches it.
     root.setAttribute('data-seasonal-theme', active.id)
 
     // A full-reach theme also rewrites the Tailwind accent ramp, which is what

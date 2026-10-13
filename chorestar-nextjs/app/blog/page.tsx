@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
@@ -27,7 +28,7 @@ const blogJsonLd = {
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script
@@ -52,12 +53,12 @@ export default function BlogPage() {
               href={`/blog/${post.slug}`}
               className="block group"
             >
-              <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-xl hover:border-indigo-300 dark:hover:border-indigo-700">
+              <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-xl hover:border-indigo-300 dark:hover:border-indigo-700 themed-hover-border">
                 <div className="flex items-start gap-4">
                   <span className="text-3xl flex-shrink-0 mt-1">{post.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">
                         {post.category}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -67,7 +68,7 @@ export default function BlogPage() {
                         {post.readTime}
                       </span>
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 themed-group-hover-text transition-colors">
                       {post.title}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
@@ -82,6 +83,6 @@ export default function BlogPage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }

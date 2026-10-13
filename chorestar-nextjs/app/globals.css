@@ -879,3 +879,49 @@ html[data-theme="dark"] header.glass {
     background: #4a148c;
   }
 }
+
+/* Public content pages (blog, how-to) wear the family's theme when one is active.
+   <PublicPageShell> and the themed-* marker classes sit next to the existing brand
+   utilities, which stay untouched as the default: a logged-out visitor has no
+   stored theme, so none of the rules below match and the page renders exactly as
+   before (indigo wash, indigo accents). When a signed-in family has a theme,
+   THEME_INIT_SCRIPT sets html[data-seasonal-theme] before first paint (from the
+   vars the dashboard stored), and these swap in the dashboard's backdrop
+   (--gradient-bg + AmbientBackground) and the theme's --primary for accents, as
+   components/home/logged-in-home.tsx does. Sign-out clears the attribute.
+   Each override outranks the Tailwind utility it replaces, including the
+   `:is(.dark *)` dark variants, via the html[...] prefix. */
+.public-page-ambient {
+  display: none;
+}
+html[data-seasonal-theme] .public-page-ambient {
+  display: block;
+}
+html[data-seasonal-theme] .public-page {
+  background: var(--gradient-bg);
+}
+/* Lifts content above the fixed ambient glow (z-0). Themed only, so the
+   logged-out page gains no new containing block for absolute children. */
+html[data-seasonal-theme] .public-page-content {
+  position: relative;
+}
+html[data-seasonal-theme] .themed-text {
+  color: var(--primary);
+}
+html[data-seasonal-theme] .group:hover .themed-group-hover-text {
+  color: var(--primary);
+}
+html[data-seasonal-theme] .themed-border {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+html[data-seasonal-theme] .themed-hover-border:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+/* Tinted callouts and chips: a light wash of the accent, readable in both modes. */
+html[data-seasonal-theme] .themed-surface {
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+html[data-seasonal-theme] .themed-surface-hover:hover {
+  background-color: color-mix(in srgb, var(--primary) 14%, transparent);
+}

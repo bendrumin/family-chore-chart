@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
@@ -101,21 +102,21 @@ const boredomIdeas = [
 
 export default function SchoolsOutSummerPlanPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <PublicPageShell>
       <SiteNav />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
-        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-6 inline-block">
+        <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
           ← Back to Blog
         </Link>
 
         <article>
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">
                 Parenting
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">June 8, 2026</span>
@@ -179,7 +180,7 @@ export default function SchoolsOutSummerPlanPage() {
                   <ul className="space-y-2">
                     {items.map((item) => (
                       <li key={item} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                        <span className="text-indigo-600 dark:text-indigo-400 mt-0.5">→</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 themed-text mt-0.5">→</span>
                         {item}
                       </li>
                     ))}
@@ -211,11 +212,11 @@ export default function SchoolsOutSummerPlanPage() {
             </p>
             <p className="text-gray-700 dark:text-gray-300">
               Need chore ideas by age? We put together a{' '}
-              <Link href="/blog/summer-chores-for-kids" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              <Link href="/blog/summer-chores-for-kids" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">
                 summer chore list
               </Link>{' '}
               with outdoor jobs, screen-time swaps, and age-appropriate tasks. Or see our{' '}
-              <Link href="/blog/morning-routine-for-kids" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              <Link href="/blog/morning-routine-for-kids" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">
                 morning routine guide
               </Link>{' '}
               for building step-by-step habits that stick.
@@ -239,8 +240,8 @@ export default function SchoolsOutSummerPlanPage() {
               Free for up to 3 kids and 20 chores. Works in the browser on any phone or tablet, nothing to install.
             </p>
 
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 my-8">
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 themed-surface my-8">
+              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 themed-text mb-2">
                 Set up week two
               </p>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
@@ -257,7 +258,7 @@ export default function SchoolsOutSummerPlanPage() {
                 </Link>
                 <Link
                   href="/blog/summer-chores-for-kids"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-indigo-600 dark:text-indigo-400 themed-text border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors themed-border themed-surface-hover"
                 >
                   Summer chore list →
                 </Link>
@@ -269,6 +270,6 @@ export default function SchoolsOutSummerPlanPage() {
       </main>
 
       <SiteFooter />
-    </div>
+    </PublicPageShell>
   )
 }
