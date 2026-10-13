@@ -1,9 +1,1 @@
-NEW IN 2.5: SHARED CHORES, TEMPLATES, WEEKLY REPORT, MORE GOALS
-
-Please try (a Premium family is easiest):
-- Add Chore > last step > Share with other kids: Take turns (first kid this week) and Bonus (first to finish wins). On the free plan it opens the paywall
-- Routines > New: the crowned Premium templates (Homework Hour etc.) fill the routine; on free they open the paywall
-- Settings > Weekly Report Email: toggles on Premium, opens the paywall on free
-- Kid mode: bonus chores show a Bonus line; a second kid ticking it the same day sees "Someone beat you to it"
-- Two goals for one kid: both show; "Save for something else too" only on Premium
-- Paywall: each plan says 1 month/1 year and renews automatically; Restore Purchases reports a result
+2.5.1: the yearly plan offers a 7-day free trial (Apple introductory offer) to Apple IDs that haven't had one. Please check the paywall: yearly is listed first with its monthly price and "7 days free", the button reads "Start 7-Day Free Trial", and the terms line sits under it. In Sandbox, buy yearly and confirm the purchase sheet shows the free week.
