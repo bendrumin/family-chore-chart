@@ -11,6 +11,7 @@ import {
   BarChart3,
   DollarSign,
   Mail,
+  PenLine,
   RefreshCw,
   Send,
   Shield,
@@ -22,6 +23,7 @@ import type { HubReport, ProductMetrics } from '@/lib/admin/hub'
 import type { SignupsReport } from '@/lib/admin/signups'
 import { SignupsPanel } from '@/components/admin/signups-panel'
 import { RevenuePanel } from '@/components/admin/revenue-panel'
+import { ComposePanel } from '@/components/admin/compose-panel'
 import type { RevenueReport } from '@/lib/admin/revenue'
 
 interface CampaignMeta {
@@ -66,7 +68,7 @@ interface SentRow {
   sent_at: string
 }
 
-type Tab = 'users' | 'signups' | 'revenue' | 'outreach' | 'history'
+type Tab = 'users' | 'signups' | 'revenue' | 'compose' | 'outreach' | 'history'
 
 const adminCardClass =
   'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm backdrop-blur-none'
@@ -175,6 +177,8 @@ function HubPanel({ hub, loading, onRefresh }: { hub: HubReport | null; loading:
 
 export function AdminDashboardClient() {
   const [tab, setTab] = useState<Tab>('users')
+  // Family chosen with a row's Email button, handed to the Compose tab.
+  const [composeUserId, setComposeUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [report, setReport] = useState<PowerUserReport | null>(null)
   const [hub, setHub] = useState<HubReport | null>(null)
@@ -421,6 +425,7 @@ export function AdminDashboardClient() {
             ['users', 'Power Users', Users],
             ['signups', 'Signups', UserPlus],
             ['revenue', 'Revenue', DollarSign],
+            ['compose', 'Compose', PenLine],
             ['outreach', 'Outreach', Send],
             ['history', 'Send History', Mail],
           ] as const).map(([id, label, Icon]) => (
@@ -481,7 +486,8 @@ export function AdminDashboardClient() {
                         <th className="pb-2 pr-4">Chores</th>
                         <th className="pb-2 pr-4">Check-offs</th>
                         <th className="pb-2 pr-4">Last active</th>
-                        <th className="pb-2">Tier</th>
+                        <th className="pb-2 pr-4">Tier</th>
+                        <th className="pb-2"><span className="sr-only">Email</span></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -507,6 +513,20 @@ export function AdminDashboardClient() {
                               {u.engagementTier}
                             </span>
                           </td>
+                          <td className="py-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setComposeUserId(u.userId)
+                                setTab('compose')
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                              aria-label={`Email ${u.familyName}`}
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              Email
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -519,6 +539,7 @@ export function AdminDashboardClient() {
 
         {tab === 'signups' && <SignupsPanel data={signups} loading={signupsLoading} onRefresh={loadSignups} />}
 
+        {tab === 'compose' && <ComposePanel key={composeUserId ?? 'new'} initialUserId={composeUserId} />}
         {tab === 'revenue' && <RevenuePanel data={revenue} loading={revenueLoading} onRefresh={loadRevenue} />}
 
         {tab === 'outreach' && (

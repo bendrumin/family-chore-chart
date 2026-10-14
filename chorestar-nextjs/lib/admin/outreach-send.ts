@@ -10,8 +10,8 @@ import {
 import { getRecipientSubject } from '@/lib/admin/outreach-subject'
 import { getManualSendLogBatch } from '@/lib/admin/manual-send-logs'
 
-const FROM = 'Ben Siegel <hi@chorestar.app>'
-const REPLY_TO = 'hi@chorestar.app'
+export const FROM = 'Ben Siegel <hi@chorestar.app>'
+export const REPLY_TO = 'hi@chorestar.app'
 
 export interface OutreachPreviewItem {
   campaign: string
