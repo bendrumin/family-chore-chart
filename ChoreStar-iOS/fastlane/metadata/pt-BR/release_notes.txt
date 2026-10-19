@@ -5,5 +5,7 @@ Versão 2.5.3: potes de dinheiro, desafios em equipe e rotinas para os menores.
 • Rotinas lidas em voz alta, grátis para todos: um botão lê cada passo, e uma rotina pode ler todos os passos sozinha
 • Passos com foto, um cronômetro tranquilo para terminar, Criar com IA e a visão Acontecendo agora de quem está no meio de uma rotina (Premium)
 • Feed de calendário da família (Premium): adicione tarefas e rotinas ao Calendário da Apple, Google Agenda ou Outlook
+• A aparência ganhou uma tela própria: modo claro ou escuro, tema e cor de destaque, tudo em Ajustes > Aparência em vez de ocupar a tela inteira de Ajustes
+• Rotinas concluídas com recompensa agora somam esse dinheiro ao saldo da criança
 
 Fale com a gente em hi@chorestar.app

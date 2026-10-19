@@ -27,6 +27,16 @@ enum Changelog {
             title: "Money Jars, Team Challenges, Smarter Routines",
             features: [
                 Feature(
+                    icon: "🎨",
+                    title: "Appearance, All in One Place",
+                    description: "Light or dark, your theme and your accent colour now have their own screen: Settings > Appearance. Settings is much shorter."
+                ),
+                Feature(
+                    icon: "🌅",
+                    title: "Routine Rewards Count",
+                    description: "When a kid finishes every step of a routine with a reward, that money now goes into their balance."
+                ),
+                Feature(
                     icon: "🏦",
                     title: "Spend, Save, Give",
                     description: "Premium: split what each kid earns into three jars, pay a weekly allowance on your day, add interest on Save, take off fines with a reason, and give screen-time minutes. Settings > Money."

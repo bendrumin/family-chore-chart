@@ -5,5 +5,7 @@ Versión 2.5.3: frascos de dinero, retos en equipo y rutinas para los más peque
 • Rutinas leídas en voz alta, gratis para todos: un botón lee cada paso, y una rutina puede leer todos sus pasos sola
 • Pasos con foto, un temporizador tranquilo para terminar, Crear con IA y la vista Ahora mismo de quién está haciendo una rutina (Premium)
 • Calendario familiar (Premium): agrega tareas y rutinas a Calendario de Apple, Google Calendar u Outlook
+• La apariencia tiene su propia pantalla: modo claro u oscuro, tema y color de acento, todo en Ajustes > Apariencia en lugar de ocupar toda la pantalla de Ajustes
+• Las rutinas terminadas con recompensa ahora suman ese dinero al saldo de tu hijo
 
 Escríbenos a hi@chorestar.app

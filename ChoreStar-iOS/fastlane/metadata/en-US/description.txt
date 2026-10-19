@@ -31,7 +31,7 @@ Routines that run themselves
 Build a routine from named steps with icons and optional timers, ordered by drag and drop. Children can then work through it independently, and the timer for the current step appears on the Lock Screen and in the Dynamic Island.
 
 Make it your own
-A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, carry into kid mode, and a custom accent color follows you across devices.
+A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, carry into kid mode, and a custom accent color follows you across devices. Mode, themes and accent all live together in Settings > Appearance.
 
 Works with chorestar.app
 Family data syncs between the web app, iPhone, and iPad, so everyone sees the same information.

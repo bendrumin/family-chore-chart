@@ -5,5 +5,7 @@ Version 2.5.3: money jars, team challenges, and routines for younger kids.
 • Read-aloud routines, free for everyone: a speaker button reads each step out loud, and a routine can read every step by itself
 • Picture steps, a calm finish-by timer, Build with AI, and a Happening now view of who is mid-routine (Premium)
 • Family calendar feed (Premium): add chores and routines to Apple Calendar, Google Calendar or Outlook
+• Appearance has its own screen: light or dark, your theme and accent colour, all in Settings > Appearance instead of filling the whole Settings page
+• Finished routines with a reward now add that money to your kid's balance
 
 Questions or feedback are welcome at hi@chorestar.app

@@ -31,7 +31,7 @@ Rotinas que andam sozinhas
 Monte uma rotina com passos nomeados, ícones e timers opcionais, ordenados por arrastar e soltar. As crianças seguem sozinhas, e o timer do passo atual aparece na Tela Bloqueada e na Dynamic Island.
 
 Deixe com a sua cara
-Um widget mostra o progresso da família no dia. Temas sazonais e premium mudam o visual ao longo do ano, chegam até o modo criança, e sua cor de destaque acompanha você em todos os aparelhos.
+Um widget mostra o progresso da família no dia. Temas sazonais e premium mudam o visual ao longo do ano, chegam até o modo criança, e sua cor de destaque acompanha você em todos os aparelhos. Tudo fica em Ajustes > Aparência.
 
 Funciona com o chorestar.app
 Os dados da família sincronizam entre a web, o iPhone e o iPad, e todo mundo vê a mesma informação.

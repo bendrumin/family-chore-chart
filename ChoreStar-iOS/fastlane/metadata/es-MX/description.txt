@@ -31,7 +31,7 @@ Rutinas que se llevan solas
 Crea una rutina con pasos con nombre, íconos y temporizadores opcionales, ordenados arrastrando. Los niños la siguen de forma independiente, y el temporizador del paso actual aparece en la pantalla bloqueada y en la Dynamic Island.
 
 Hazla tuya
-Un widget muestra el avance de la familia en el día. Los temas de temporada y premium cambian la apariencia durante el año, llegan hasta el modo niños, y tu color de acento te sigue en todos tus dispositivos.
+Un widget muestra el avance de la familia en el día. Los temas de temporada y premium cambian la apariencia durante el año, llegan hasta el modo niños, y tu color de acento te sigue en todos tus dispositivos. Todo está en Ajustes > Apariencia.
 
 Funciona con chorestar.app
 Los datos de la familia se sincronizan entre la web, el iPhone y el iPad, así todos ven la misma información.
