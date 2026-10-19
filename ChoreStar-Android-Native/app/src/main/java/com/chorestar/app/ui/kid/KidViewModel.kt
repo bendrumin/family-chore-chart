@@ -51,7 +51,16 @@ data class KidState(
     val error: UiText? = null,
     val perfectDay: Boolean = false,
     val busy: Set<String> = emptySet(),
+    /** Family challenges this kid is in (GET /api/kid/challenges). */
+    val challenges: List<KidApi.KidChallenge> = emptyList(),
+    /** The family's plan, for the routine player's finish-by bar. */
+    val familyPremium: Boolean = false,
+    val familyLanguage: String? = null,
+    /** Kid mode on a parent's phone: signed step-picture URLs from the parent dashboard. */
+    val stepPhotoUrls: Map<String, String> = emptyMap(),
 ) {
+    fun stepPhotoUrl(step: com.chorestar.app.data.model.RoutineStep): String? = step.imageUrl ?: step.imagePath?.let { stepPhotoUrls[it] }
+
     val dueToday: List<Chore> get() = if (onVacation) emptyList() else chores.filter { it.isDueOn(Dates.dayOfWeek()) }
     val pending: List<Chore> get() = dueToday.filter { today[it.id] == null }
     val waiting: List<Chore> get() = dueToday.filter { today[it.id] == "pending" }
@@ -89,6 +98,7 @@ class KidViewModel(
                 is KidBackend.OnParentDevice -> loadFromParent(backend.childId)
             }
             loadWallet()
+            loadChallenges()
         }
     }
 
@@ -131,16 +141,41 @@ class KidViewModel(
                 allTime = p.allTime.filter { r -> p.choresFor(childId).any { c -> c.id == r.choreId } }, earnedBadges = p.achievements.filter { b -> b.childId == childId },
                 vacationEndsOn = p.settings?.vacationEndsOn, onVacation = p.isOnVacationToday,
                 perChore = p.settings?.isPerChore, dailyRewardCents = p.settings?.dailyRewardCents,
+                familyPremium = p.isPremium, familyLanguage = p.settings?.language, stepPhotoUrls = p.stepPhotoUrls,
             )
         }
     }
 
     /** The parent's dashboard changed underneath kid mode (a tick landed); mirror it. */
-    fun syncFromParent() { if (backend is KidBackend.OnParentDevice) loadFromParent(backend.childId) }
+    fun syncFromParent() { if (backend is KidBackend.OnParentDevice) { loadFromParent(backend.childId); viewModelScope.launch { loadChallenges() } } }
 
     private suspend fun loadWallet() {
         val a = auth ?: return
-        runCatching { kidApi.wallet(a) }.onSuccess { w -> _state.update { it.copy(wallet = w, currency = w.currencyCode) } }
+        runCatching { kidApi.wallet(a) }.onSuccess { w ->
+            _state.update { it.copy(wallet = w, currency = w.currencyCode, familyPremium = if (backend is KidBackend.Standalone) w.limits?.premium == true else it.familyPremium) }
+        }
+    }
+
+    private suspend fun loadChallenges() {
+        val a = auth ?: return
+        runCatching { kidApi.challenges(a) }.onSuccess { r -> _state.update { it.copy(challenges = r.challenges) } }
+    }
+
+    /** Standalone kid sessions ask the routine route for the family's plan and language before playing. */
+    suspend fun routineForPlayer(routine: Routine): Routine {
+        val b = backend as? KidBackend.Standalone ?: return routine
+        val detail = runCatching { kidApi.routineDetail(b.session.kidToken, routine.id) }.getOrNull() ?: return routine
+        detail.familyLanguage?.let { lang -> _state.update { it.copy(familyLanguage = lang) } }
+        detail.familyPremium?.let { prem -> _state.update { it.copy(familyPremium = prem) } }
+        // Keep the list's signed picture URLs if the detail has none.
+        return detail.copy(steps = detail.steps.ifEmpty { routine.steps }.map { st -> if (st.imageUrl == null) st.copy(imageUrl = routine.steps.firstOrNull { it.id == st.id }?.imageUrl) else st })
+    }
+
+    /** The player's step, for the parent's live view; null stepIndex clears it. */
+    fun reportRoutineProgress(routine: Routine, stepIndex: Int?, stepsTotal: Int, stepTitle: String?) {
+        val a = auth ?: return
+        val childId = when (backend) { is KidBackend.Standalone -> backend.session.childId; is KidBackend.OnParentDevice -> backend.childId }
+        viewModelScope.launch { kidApi.routineProgress(a.token, routine.id, childId, stepIndex, stepsTotal, stepTitle) }
     }
 
     // ── Chores ───────────────────────────────────────────────────────────────
@@ -163,6 +198,7 @@ class KidViewModel(
                         if (!wasDone && r.status == "pending") _state.update { it.copy(today = it.today + (chore.id to "pending")) }
                         checkPerfectDay(wasDone)
                         refreshStats()
+                        loadChallenges()
                     }
                     .onFailure { e ->
                         _state.update { it.copy(today = if (wasDone) it.today + (chore.id to current!!) else it.today - chore.id, error = UiText.Raw(e.message ?: "")) }
@@ -202,6 +238,7 @@ class KidViewModel(
                 runCatching { kidApi.completeRoutine(backend.session.kidToken, routine.id, backend.session.childId, stepsCompleted, routine.steps.size, durationSeconds) }
                     .onFailure { e -> _state.update { it.copy(error = UiText.Raw(e.message ?: "")) } }
                 loadWallet()
+                loadChallenges()
             }
         }
     }

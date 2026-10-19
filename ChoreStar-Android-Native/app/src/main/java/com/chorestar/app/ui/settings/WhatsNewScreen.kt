@@ -25,8 +25,19 @@ data class ChangelogFeature(val icon: String, val title: String, val description
 data class ChangelogEntry(val version: String, val date: String, val title: String, val features: List<ChangelogFeature>)
 
 object Changelog {
-    const val LATEST = "2026.10.2"
+    const val LATEST = "2026.10.5"
     val entries = listOf(
+        ChangelogEntry("2026.10.5", "October 2026", "Money Jars, Family Challenges, Smarter Routines", listOf(
+            ChangelogFeature("🫙", "Spend, Save & Give Jars", "Premium: pick a split like 70/20/10 and everything your kid earns lands in three jars. The store spends from Spend, goals fill from Save. Add a weekly allowance that pays itself, interest on savings, fines or a weekly payback, and screen-time minutes as a reward. Settings > Family > Money."),
+            ChangelogFeature("🍕", "Family Challenges", "Premium: siblings team up for a shared reward, like 50 chores this week for pizza night. One team bar on Home, everyone's part shown kindly, confetti in kid mode when they get there."),
+            ChangelogFeature("🖼️", "Routines for Little Kids and Busy Brains", "Read-aloud steps for everyone (free). Premium adds picture steps for pre-readers, a gentle finish-by timer, Build with AI, and a live view of the step your kid is on."),
+            ChangelogFeature("📅", "Family Calendar Feed", "Premium: see chores and routines in Google Calendar, Apple Calendar, Outlook or a wall calendar. Settings > Family > Calendar feed."),
+        )),
+        ChangelogEntry("2026.10.4", "October 2026", "Easier Shared Chores, Safer Family Sharing", listOf(
+            ChangelogFeature("🔄", "Manage Shared Chores in One Place", "On chorestar.app, chores that take turns or are up for grabs carry a \"Takes turns\" or \"Bonus\" badge. Edit one and every kid's copy updates; \"Stop sharing\" ends it for everyone."),
+            ChangelogFeature("🔒", "Safer Family Sharing", "Joining a family with a code is now checked on our servers, with limits on wrong guesses. If Premium ends, you can still see and remove co-parents and turn off your code."),
+            ChangelogFeature("🎯", "Clearer Limits", "When a kid reaches the free savings goal limit, a \"See Premium\" button shows how to add more."),
+        )),
         ChangelogEntry("2026.10.2", "October 2026", "Fair Shares and More Goals", listOf(
             ChangelogFeature("🎯", "Save for More Than One Thing", "Premium kids can save for several goals at once, each with its own progress bar."),
             ChangelogFeature("🔄", "Chores That Take Turns", "Premium: chores can rotate between your kids every week, or be a bonus chore the first kid to finish earns. Set them up from Add Chore on chorestar.app; they show up here for whoever's turn it is."),

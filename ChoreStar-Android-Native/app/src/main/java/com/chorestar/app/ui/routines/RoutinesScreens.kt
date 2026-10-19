@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -203,8 +204,9 @@ private fun RoutineCard(r: Routine, child: Child, currency: String?, onEdit: () 
 /** iOS RoutineBuilderView. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine: Routine?, preselectedChildId: String?, onDone: () -> Unit) {
+fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine: Routine?, preselectedChildId: String?, onDone: () -> Unit, onPaywall: (String) -> Unit = {}) {
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var name by remember { mutableStateOf(routine?.name ?: "") }
     var childId by remember { mutableStateOf(routine?.childId ?: preselectedChildId ?: state.children.singleOrNull()?.id) }
     var type by remember { mutableStateOf(routine?.routineType ?: RoutineType.Morning) }
@@ -213,25 +215,63 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
     var reward by remember { mutableIntStateOf(routine?.rewardCents ?: 7) }
     val initialSteps: List<EditableStep> = routine?.sortedSteps.orEmpty().map { st ->
         val secs = st.durationSeconds ?: 0
-        EditableStep(st.title, st.icon ?: "📝", if (secs > 0) secs / 60 else null)
+        EditableStep(st.title, st.icon ?: "📝", if (secs > 0) secs / 60 else null, st.imagePath, state.stepPhotoUrl(st))
     }
     var steps by remember { mutableStateOf<List<EditableStep>>(initialSteps) }
     var saving by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val stepMissing = stringResource(R.string.add_step_with_title)
+    // Migration 032: read-aloud is free; the finish-by timer, pictures and Build with AI are Premium (not grandfathered).
+    val premium = state.hasNewPremium
+    var autoRead by remember { mutableStateOf(routine?.autoReadAloud ?: false) }
+    var targetText by remember { mutableStateOf(routine?.targetDurationSeconds?.let { (it / 60).toString() } ?: "") }
+    var photoFor by remember { mutableStateOf<Int?>(null) }
+    var uploading by remember { mutableStateOf<Int?>(null) }
+    var aiOpen by remember { mutableStateOf(false) }
+    var aiTip by remember { mutableStateOf<String?>(null) }
+    val pickPhoto = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
+        val i = photoFor; photoFor = null
+        val cid = childId
+        if (uri == null || i == null || cid == null) return@rememberLauncherForActivityResult
+        uploading = i
+        scope.launch {
+            val jpeg = com.chorestar.app.data.Images.loadScaledJpeg(context, uri, 1280)
+            if (jpeg == null) { error = context.getString(R.string.photo_could_not_read); uploading = null; return@launch }
+            runCatching { vm.premiumApi.uploadStepPhoto(cid, jpeg) }
+                .onSuccess { p -> steps = steps.toMutableList().also { list -> if (i in list.indices) list[i] = list[i].copy(imagePath = p.path, previewUrl = p.url ?: vm.signStepPhoto(p.path)) } }
+                .onFailure { e -> if (e is com.chorestar.app.data.WebApiError && e.premiumRequired) onPaywall("gate_routine_photos") else error = e.message }
+            uploading = null
+        }
+    }
 
     fun save() {
         val cid = childId ?: return
         val kept = steps.filter { it.title.isNotBlank() }
         if (kept.isEmpty()) { error = stepMissing; return }
         saving = true; error = null
-        val rows = kept.mapIndexed { i, s -> NewStepRow("", s.title.trim(), s.icon, i, s.durationMinutes?.let { it * 60 }) }
+        val rows = kept.mapIndexed { i, s ->
+            // A picture only stays with the kid it was taken for (its folder is that child's).
+            val path = s.imagePath?.takeIf { "/${cid.lowercase()}/" in it }
+            NewStepRow("", s.title.trim(), s.icon, i, s.durationMinutes?.let { it * 60 }, path)
+        }
+        val targetSeconds = com.chorestar.app.data.RoutineTimer.minutesToSeconds(targetText)
+        // Premium sets it; anyone may clear it; a lapsed family that leaves it alone keeps it.
+        val sendTarget = premium || (targetSeconds == null && routine?.targetDurationSeconds != null)
+        val extras = com.chorestar.app.data.ChoreStarRepository.RoutineExtrasInput(autoRead, targetSeconds, sendTarget, hadAutoRead = routine?.autoReadAloud == true)
         scope.launch {
-            val r = if (routine == null) vm.createRoutine(cid, name.trim(), type.raw, icon, color, reward, rows)
-            else vm.updateRoutine(routine.id, cid, name.trim(), type.raw, icon, color, reward, rows)
+            val r = if (routine == null) vm.createRoutine(cid, name.trim(), type.raw, icon, color, reward, rows, extras)
+            else vm.updateRoutine(routine.id, cid, name.trim(), type.raw, icon, color, reward, rows, extras)
             saving = false
             r.onSuccess { onDone() }.onFailure { error = it.message }
         }
+    }
+
+    fun applyDraft(d: com.chorestar.app.data.RoutineDraft) {
+        name = d.name
+        val t = RoutineType.of(d.type)
+        type = t; icon = t.defaultIcon; color = t.defaultColor
+        steps = d.steps.map { s -> EditableStep(s.title, s.icon ?: "📝", s.durationSeconds?.takeIf { it >= 60 }?.let { it / 60 }) }
+        aiTip = d.tip
     }
 
     Scaffold(
@@ -251,6 +291,17 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
             if (routine == null) {
+                Card(Modifier.fillMaxWidth().clickable { if (premium) aiOpen = true else onPaywall("gate_ai_routine") }) {
+                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("✨", style = MaterialTheme.typography.headlineSmall); Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.build_with_ai), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.build_with_ai_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        if (!premium) com.chorestar.app.ui.components.PremiumTag()
+                    }
+                }
+                aiTip?.let { Text("💡 $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 SectionTitle(stringResource(R.string.quick_start_templates))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(RoutineTemplates.all) { t ->
@@ -301,6 +352,31 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
                 }
             }
 
+            SectionTitle(stringResource(R.string.routine_helpers))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("🔊 " + stringResource(R.string.auto_read_aloud), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.auto_read_aloud_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                androidx.compose.material3.Switch(checked = autoRead, onCheckedChange = { autoRead = it })
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    targetText, { targetText = it.filter { c -> c.isDigit() }.take(3) },
+                    label = { Text("⏳ " + stringResource(R.string.finish_by_minutes)) }, singleLine = true, enabled = premium || targetText.isNotEmpty(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f),
+                    supportingText = {
+                        val suggested = com.chorestar.app.data.RoutineTimer.suggestedSeconds(steps.map { s -> s.durationMinutes?.let { it * 60 } })
+                        Text(if (suggested != null) stringResource(R.string.finish_by_hint_suggest, suggested / 60) else stringResource(R.string.finish_by_hint))
+                    },
+                )
+                Spacer(Modifier.width(8.dp))
+                if (!premium) {
+                    if (targetText.isNotEmpty()) TextButton(onClick = { targetText = "" }) { Text(stringResource(R.string.clear)) }
+                    else com.chorestar.app.ui.components.PremiumTag(Modifier.clickable { onPaywall("gate_routine_timer") })
+                }
+            }
+
             SectionTitle(stringResource(R.string.steps_count, steps.size))
             if (steps.isEmpty()) Text("📋 " + stringResource(R.string.add_at_least_one_step), color = MaterialTheme.colorScheme.onSurfaceVariant)
             steps.forEachIndexed { i, s ->
@@ -311,7 +387,25 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
                             Spacer(Modifier.width(8.dp))
                             OutlinedTextField(s.title, { t -> steps = steps.toMutableList().also { it[i] = s.copy(title = t) } }, placeholder = { Text(stringResource(R.string.step_title)) }, singleLine = true, modifier = Modifier.weight(1f))
                             Spacer(Modifier.width(6.dp))
-                            Text(RoutineIcons.display(s.icon), style = MaterialTheme.typography.titleLarge)
+                            Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.surfaceVariant).clickable {
+                                when {
+                                    !premium -> onPaywall("gate_routine_photos")
+                                    childId == null -> error = context.getString(R.string.pick_kid_first)
+                                    else -> { photoFor = i; pickPhoto.launch("image/*") }
+                                }
+                            }, contentAlignment = Alignment.Center) {
+                                when {
+                                    uploading == i -> CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                                    s.previewUrl != null -> coil3.compose.AsyncImage(s.previewUrl, contentDescription = stringResource(R.string.step_picture), contentScale = androidx.compose.ui.layout.ContentScale.Crop, modifier = Modifier.size(48.dp))
+                                    else -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(RoutineIcons.display(s.icon), style = MaterialTheme.typography.titleMedium)
+                                        Text(if (premium) "📷" else "🔒", style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
+                            }
+                        }
+                        if (s.imagePath != null) TextButton(onClick = { steps = steps.toMutableList().also { it[i] = s.copy(imagePath = null, previewUrl = null) } }) {
+                            Text(stringResource(R.string.remove_picture), style = MaterialTheme.typography.labelSmall)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 6.dp)) {
                             Text(if ((s.durationMinutes ?: 0) > 0) stringResource(R.string.n_min, s.durationMinutes!!) else "—", modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -330,6 +424,44 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
             Spacer(Modifier.height(24.dp))
         }
     }
+    if (aiOpen) BuildWithAiDialog(vm, childId, type.raw, onDismiss = { aiOpen = false }, onDraft = { d -> applyDraft(d); aiOpen = false }, onPaywall = { aiOpen = false; onPaywall("gate_ai_routine") })
+}
+
+/** POST /api/ai/build-routine: describe it, get a draft to edit. Nothing is saved until the parent saves. */
+@Composable
+private fun BuildWithAiDialog(vm: DashboardViewModel, childId: String?, routineType: String?, onDismiss: () -> Unit, onDraft: (com.chorestar.app.data.RoutineDraft) -> Unit, onPaywall: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var goal by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        title = { Text("✨ " + stringResource(R.string.build_with_ai)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.build_with_ai_prompt), style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(goal, { goal = it.take(500) }, placeholder = { Text(stringResource(R.string.build_with_ai_placeholder)) }, minLines = 2, modifier = Modifier.fillMaxWidth())
+                if (busy) Row(verticalAlignment = Alignment.CenterVertically) { CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.build_with_ai_working), style = MaterialTheme.typography.bodySmall) }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !busy && goal.trim().length >= 3, onClick = {
+                busy = true; error = null
+                scope.launch {
+                    runCatching { vm.premiumApi.buildRoutine(goal, childId, routineType) }
+                        .onSuccess { r ->
+                            val draft = if (r.source == "templates") r.draft.copy(tip = listOfNotNull(context.getString(R.string.build_with_ai_fallback), r.draft.tip).joinToString(" ")) else r.draft
+                            onDraft(draft)
+                        }
+                        .onFailure { e -> if (e is com.chorestar.app.data.WebApiError && e.premiumRequired) onPaywall() else error = e.message }
+                    busy = false
+                }
+            }) { Text(stringResource(R.string.build_with_ai_go)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable
@@ -404,9 +536,24 @@ fun StarterRoutinesScreen(vm: DashboardViewModel, state: DashboardState, onDone:
     }
 }
 
-/** iOS RoutinePlayerView + RoutineCelebrationView. Closing mid-way saves nothing. */
+/**
+ * iOS RoutinePlayerView + RoutineCelebrationView. Closing mid-way saves nothing.
+ *
+ * 1.0.2 (migration 032): step pictures, read-aloud (free; automatic when the
+ * routine asks for it), the gentle finish-by bar for Premium families, and the
+ * live view: `onProgress` reports the step (throttled, latest wins) and
+ * `onProgressClear` runs on exit and on finish.
+ */
 @Composable
-fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, onComplete: (stepsCompleted: Int, durationSeconds: Int) -> Unit, onClose: () -> Unit) {
+fun RoutinePlayerScreen(
+    routine: Routine, childName: String, currency: String?,
+    onComplete: (stepsCompleted: Int, durationSeconds: Int) -> Unit, onClose: () -> Unit,
+    premium: Boolean = false,
+    photoUrl: (com.chorestar.app.data.model.RoutineStep) -> String? = { it.imageUrl },
+    familyLanguage: String? = null,
+    onProgress: ((stepIndex: Int, stepsTotal: Int, stepTitle: String?) -> Unit)? = null,
+    onProgressClear: (() -> Unit)? = null,
+) {
     val steps = routine.sortedSteps
     val color = routineColor(routine.color)
     var index by remember { mutableIntStateOf(0) }
@@ -414,30 +561,41 @@ fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, 
     var celebrating by remember { mutableStateOf(false) }
     val start = remember { System.currentTimeMillis() }
     var saved by remember { mutableStateOf(false) }
+    val target = routine.targetDurationSeconds?.takeIf { premium && it > 0 }
 
     val notifyContext = androidx.compose.ui.platform.LocalContext.current
+    val tts = rememberStepSpeaker()
+    val reporter = rememberProgressReporter(onProgress)
+    val closeAndClear = { reporter.cancel(); onProgressClear?.invoke(); tts.stop(); onClose() }
     LaunchedEffect(index, celebrating) {
         remaining = steps.getOrNull(index)?.durationSeconds ?: 0
         val step = steps.getOrNull(index)
         if (!celebrating && step != null) com.chorestar.app.notify.RoutineNotification.show(notifyContext, routine.name, step.title, index, steps.size, step.durationSeconds)
         else com.chorestar.app.notify.RoutineNotification.clear(notifyContext)
+        if (!celebrating && step != null) reporter.report(index, steps.size, step.title)
         while (remaining > 0 && !celebrating) { delay(1000); remaining-- }
     }
     androidx.compose.runtime.DisposableEffect(Unit) { onDispose { com.chorestar.app.notify.RoutineNotification.clear(notifyContext) } }
+    androidx.activity.compose.BackHandler { closeAndClear() }
 
     if (celebrating) {
         val seconds = ((System.currentTimeMillis() - start) / 1000).toInt()
-        LaunchedEffect(Unit) { if (!saved) { saved = true; onComplete(steps.size, seconds) } }
-        Celebration(routine, seconds, currency, onClose)
+        LaunchedEffect(Unit) { if (!saved) { saved = true; reporter.cancel(); onProgressClear?.invoke(); tts.stop(); onComplete(steps.size, seconds) } }
+        Celebration(routine, seconds, currency, onClose, earlyBy = com.chorestar.app.data.RoutineTimer.finishedEarlyBy(seconds, target))
         return
     }
     val step = steps.getOrNull(index) ?: run { onClose(); return }
+    val shownTitle = localizedRoutineText(step.title)
+    val localized = RoutineTemplates.localized.containsKey(step.title)
+    val speechTag = com.chorestar.app.data.Speech.languageFor(localized, java.util.Locale.getDefault().toLanguageTag(), familyLanguage)
+    val speechText = com.chorestar.app.data.Speech.textFor(shownTitle, step.description)
+    LaunchedEffect(index, tts.ready) { if (routine.autoReadAloud && tts.ready) tts.speak(speechText, speechTag) }
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(color.copy(alpha = 0.1f), MaterialTheme.colorScheme.background)))) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onClose) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cancel)) }
+                        IconButton(onClick = closeAndClear) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cancel)) }
                         Column(Modifier.weight(1f)) {
                             Text(localizedRoutineText(routine.name), style = MaterialTheme.typography.titleMedium)
                             Text(stringResource(R.string.step_n_of_m, index + 1, steps.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -447,15 +605,23 @@ fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, 
                         steps.indices.forEach { i -> Box(Modifier.size(if (i == index) 12.dp else 8.dp).clip(CircleShape).background(if (i <= index) color else color.copy(alpha = 0.25f))) }
                     }
                     LinearProgressIndicator(progress = { index.toFloat() / steps.size }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(6.dp), color = color)
+                    if (target != null) FinishByBar(start, target)
                 }
             }
             Spacer(Modifier.weight(1f))
-            Box(Modifier.size(120.dp).clip(CircleShape).background(color.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+            val picture = photoUrl(step)
+            if (picture != null) {
+                coil3.compose.AsyncImage(picture, contentDescription = shownTitle, contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth(0.85f).aspectRatio(4f / 3f).clip(RoundedCornerShape(24.dp)).border(3.dp, color.copy(alpha = 0.4f), RoundedCornerShape(24.dp)))
+            } else Box(Modifier.size(120.dp).clip(CircleShape).background(color.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
                 Text(RoutineIcons.display(step.icon, "✅"), style = MaterialTheme.typography.displayMedium)
             }
             Spacer(Modifier.height(16.dp))
-            Text(localizedRoutineText(step.title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Text(shownTitle, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             step.description?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center) }
+            if (tts.available) OutlinedButton(onClick = { tts.speak(speechText, speechTag) }, modifier = Modifier.padding(top = 8.dp)) {
+                Text("🔊 " + stringResource(R.string.read_it_to_me))
+            }
             if ((step.durationSeconds ?: 0) > 0) {
                 Spacer(Modifier.height(16.dp))
                 val total = step.durationSeconds!!
@@ -480,7 +646,7 @@ fun RoutinePlayerScreen(routine: Routine, childName: String, currency: String?, 
 private val ENCOURAGEMENTS = listOf(R.string.amazing_job_you_re_a_superstar_212d3, R.string.way_to_go_keep_up_the_great_work_e2ce5, R.string.fantastic_you_crushed_it_24cb3, R.string.incredible_you_re_on_fire_ed997, R.string.awesome_your_parents_will_be_so_proud_94b0c, R.string.you_did_it_high_five_ca002)
 
 @Composable
-private fun Celebration(routine: Routine, seconds: Int, currency: String?, onClose: () -> Unit) {
+private fun Celebration(routine: Routine, seconds: Int, currency: String?, onClose: () -> Unit, earlyBy: Int? = null) {
     val theme = LocalActiveTheme.current
     val line = remember { ENCOURAGEMENTS.random() }
     val scale by animateFloatAsState(1f, label = "star")
@@ -490,6 +656,8 @@ private fun Celebration(routine: Routine, seconds: Int, currency: String?, onClo
             Text("⭐", style = MaterialTheme.typography.displayLarge, modifier = Modifier.alpha(scale))
             Text(stringResource(R.string.routine_complete), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Text(stringResource(line), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp))
+            if (earlyBy != null) Text(stringResource(R.string.finished_early, com.chorestar.app.data.RoutineTimer.clock(earlyBy)), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
+                color = Success, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(24.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 StatCard(Modifier.weight(1f), "✅", "${routine.steps.size}/${routine.steps.size}", stringResource(R.string.steps_label))
@@ -502,11 +670,131 @@ private fun Celebration(routine: Routine, seconds: Int, currency: String?, onClo
     }
 }
 
+/** The whole-routine finish-by bar: shrinks in calm colors, then just says "keep going". No fail state. */
+@Composable
+private fun FinishByBar(startMillis: Long, targetSeconds: Int) {
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) { while (true) { delay(1000); now = System.currentTimeMillis() } }
+    val st = com.chorestar.app.data.RoutineTimer.status((now - startMillis) / 1000, targetSeconds)
+    val barColor = when (st.phase) {
+        com.chorestar.app.data.RoutineTimer.Phase.Plenty -> Color(0xFF14B8A6)
+        com.chorestar.app.data.RoutineTimer.Phase.Some -> Color(0xFF0EA5E9)
+        com.chorestar.app.data.RoutineTimer.Phase.Little -> Color(0xFF8B5CF6)
+        com.chorestar.app.data.RoutineTimer.Phase.Over -> Color(0xFF8B5CF6)
+    }
+    Column(Modifier.padding(top = 10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("⏳ " + stringResource(R.string.finish_by_timer), style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
+            Text(if (st.overTime) stringResource(R.string.keep_going) else stringResource(R.string.time_left, com.chorestar.app.data.RoutineTimer.clock(st.remainingSeconds)),
+                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = barColor)
+        }
+        LinearProgressIndicator(progress = { st.fractionLeft }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(8.dp).clip(CircleShape), color = barColor, trackColor = barColor.copy(alpha = 0.15f))
+    }
+}
+
+/** On-device TextToSpeech for read-aloud steps; nothing leaves the phone. */
+class StepSpeaker {
+    var engine: android.speech.tts.TextToSpeech? = null
+    var ready by mutableStateOf(false)
+    /** False only when the phone has no speech engine at all. */
+    var available by mutableStateOf(true)
+
+    fun speak(text: String, languageTag: String) {
+        val e = engine ?: return
+        if (!ready) return
+        val locale = java.util.Locale.forLanguageTag(languageTag)
+        val result = runCatching { e.setLanguage(locale) }.getOrDefault(android.speech.tts.TextToSpeech.LANG_NOT_SUPPORTED)
+        if (result == android.speech.tts.TextToSpeech.LANG_MISSING_DATA || result == android.speech.tts.TextToSpeech.LANG_NOT_SUPPORTED) runCatching { e.setLanguage(java.util.Locale.getDefault()) }
+        e.setSpeechRate(0.9f)
+        e.speak(text, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "routine-step")
+    }
+
+    fun stop() { runCatching { engine?.stop() } }
+}
+
+@Composable
+fun rememberStepSpeaker(): StepSpeaker {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val speaker = remember { StepSpeaker() }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        val engine = android.speech.tts.TextToSpeech(context.applicationContext) { status ->
+            if (status == android.speech.tts.TextToSpeech.SUCCESS) speaker.ready = true else speaker.available = false
+        }
+        speaker.engine = engine
+        onDispose { runCatching { engine.stop(); engine.shutdown() }; speaker.engine = null; speaker.ready = false }
+    }
+    return speaker
+}
+
+/** Throttled (about one post every 4 s), latest-wins progress reports for the parent's live view. */
+class ProgressReporter(private val scope: kotlinx.coroutines.CoroutineScope, private val send: ((Int, Int, String?) -> Unit)?) {
+    private data class Report(val index: Int, val total: Int, val title: String?)
+    private val gate = com.chorestar.app.data.LatestWinsThrottle<Report>()
+    private var job: kotlinx.coroutines.Job? = null
+
+    fun report(index: Int, total: Int, title: String?) {
+        val s = send ?: return
+        when (val d = gate.offer(Report(index, total, title), System.currentTimeMillis())) {
+            is com.chorestar.app.data.LatestWinsThrottle.Decision.SendNow -> s(d.value.index, d.value.total, d.value.title)
+            is com.chorestar.app.data.LatestWinsThrottle.Decision.WaitMs -> if (job?.isActive != true) job = scope.launch {
+                delay(d.ms)
+                gate.due(System.currentTimeMillis())?.let { r -> s(r.index, r.total, r.title) }
+            }
+        }
+    }
+
+    fun cancel() { job?.cancel(); gate.cancel() }
+}
+
+@Composable
+private fun rememberProgressReporter(send: ((Int, Int, String?) -> Unit)?): ProgressReporter {
+    val scope = rememberCoroutineScope()
+    return remember { ProgressReporter(scope, send) }
+}
+
 @Composable
 private fun StatCard(modifier: Modifier, icon: String, value: String, label: String) {
     Card(modifier) {
         Column(Modifier.padding(12.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(icon); Text(value, style = MaterialTheme.typography.titleMedium, maxLines = 1); Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * "Happening now" on Home (GET /api/routines/live): Premium shows which step
+ * each kid is on; a free family sees only that a routine is underway, with a
+ * crown that opens the paywall (gate_routine_live).
+ */
+@Composable
+fun HappeningNowCard(state: DashboardState, onPaywall: (String) -> Unit) {
+    val now = System.currentTimeMillis()
+    val items = state.live.filter { r -> r.updatedAt?.let { runCatching { java.time.OffsetDateTime.parse(it).toInstant().toEpochMilli() }.getOrNull() }?.let { com.chorestar.app.data.LiveProgress.isFresh(it, now) } ?: true }
+    if (items.isEmpty()) return
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("🟢 " + stringResource(R.string.happening_now), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            items.forEach { r ->
+                val child = state.child(r.childId)
+                val color = routineColor(r.routineColor)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (child != null) ChildAvatar(child, 36.dp) else Box(Modifier.size(36.dp).clip(CircleShape).background(color))
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        if (r.locked || r.stepIndex == null || r.stepsTotal == null) {
+                            Text(stringResource(R.string.live_doing, r.childName, localizedRoutineText(r.routineName)), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.live_locked_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            val step = com.chorestar.app.data.LiveProgress.stepNumber(r.stepIndex, r.stepsTotal)
+                            Text(localizedRoutineText(r.routineName), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.live_on_step, r.childName, step, r.stepsTotal) + (r.stepTitle?.takeIf { it.isNotBlank() }?.let { " · " + localizedRoutineText(it) } ?: ""),
+                                style = MaterialTheme.typography.bodyLarge)
+                            LinearProgressIndicator(progress = { com.chorestar.app.data.LiveProgress.percent(r.stepIndex, r.stepsTotal) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape), color = color)
+                        }
+                    }
+                    if (r.locked) com.chorestar.app.ui.components.PremiumTag(Modifier.clickable { onPaywall("gate_routine_live") })
+                }
+            }
         }
     }
 }

@@ -141,6 +141,9 @@ class KidApi(private val web: HttpClient) {
     data class StoreItemView(val id: String, val title: String, val emoji: String? = null, val priceCents: Int, val affordable: Boolean = false, val shortByCents: Int = 0, val pendingRequestId: String? = null)
 
     @Serializable
+    data class KidMinutes(val balance: Int = 0, val earned: Int = 0, val used: Int = 0)
+
+    @Serializable
     data class WalletLimits(val premium: Boolean = false, val goalLimit: Int? = null)
 
     @Serializable
@@ -150,7 +153,20 @@ class KidApi(private val web: HttpClient) {
         /** Every active goal, oldest first (Premium can save for several); older servers send only `goal`. */
         val goals: List<GoalView>? = null,
         val limits: WalletLimits? = null,
+        /** Signed; below zero the kid owes a parent. Older servers send only owedCents. */
+        val balanceCents: Int? = null,
+        /** What the store spends from: Spend with jars on, else the whole balance. */
+        val spendableCents: Int? = null,
+        /** Premium money (migration 030); absent or off for a free family. */
+        val jars: JarState? = null,
+        val minutes: KidMinutes? = null,
+        val moneyNews: List<LedgerItem> = emptyList(),
     ) {
+        val spendable: Int get() = spendableCents ?: owedCents
+        val jarsOn: Boolean get() = jars?.enabled == true
+        val owes: Int get() = MoneyRules.owesCents(balanceCents)
+        /** Worth a "My money" card: jars on, owing, minutes earned, or news to tell. */
+        val hasMoneyNews: Boolean get() = jarsOn || owes > 0 || (minutes != null && (minutes.earned > 0 || minutes.balance != 0)) || moneyNews.isNotEmpty()
         val activeGoals: List<GoalView> get() = goals ?: listOfNotNull(goal)
         /** Offered only when the plan allows another, so a kid never meets a paywall. */
         val canAddGoal: Boolean get() = activeGoals.isNotEmpty() && (limits?.goalLimit?.let { activeGoals.size < it } ?: (limits != null))
@@ -184,6 +200,49 @@ class KidApi(private val web: HttpClient) {
             },
         ) { header("Authorization", "Bearer ${auth.token}") }
         if (response.status.value !in 200..299) throw IllegalStateException(errorOf(response.bodyAsText()) ?: "Couldn't upload the photo")
+    }
+
+    // ── Family challenges (kid token, or parent token + childId) ─────────────
+
+    @Serializable
+    data class Teammate(
+        val childId: String, val name: String = "", val avatarColor: String? = null, val avatarEmoji: String? = null,
+        val count: Int = 0, val done: Boolean = false, val toGo: Int = 0, val isMe: Boolean = false,
+    )
+
+    @Serializable
+    data class KidChallenge(
+        val id: String, val title: String, val emoji: String? = null, val rewardText: String = "", val rewardCents: Int = 0,
+        val metric: String = "chores", val mode: String = "team", val target: Int = 1, val routineType: String? = null, val choreFilter: String? = "any",
+        val startsOn: String = "", val endsOn: String = "", val phase: String = "active", val daysLeft: Int = 0,
+        val current: Int = 0, val goal: Int = 1, val percent: Int = 0, val met: Boolean = false, val remaining: Int = 0,
+        val teammates: List<Teammate> = emptyList(),
+    )
+
+    @Serializable
+    data class KidChallengesResponse(val childId: String = "", val currencyCode: String = "USD", val challenges: List<KidChallenge> = emptyList())
+
+    suspend fun challenges(auth: Auth): KidChallengesResponse =
+        SupabaseModule.json.decodeFromString(KidChallengesResponse.serializer(), get("$base/api/kid/challenges" + (auth.childId?.let { "?childId=${it.lowercase()}" } ?: ""), auth))
+
+    // ── Routine player extras (migration 032) ────────────────────────────────
+
+    /**
+     * GET /api/routines/[id] with a kid token: the routine plus the family's
+     * plan (finish-by timer) and language (read-aloud). Kid tokens only; the
+     * route reads parents from a browser cookie.
+     */
+    suspend fun routineDetail(kidToken: String, routineId: String): Routine =
+        SupabaseModule.json.decodeFromString(Routine.serializer(), get("$base/api/routines/${routineId.lowercase()}", Auth(kidToken, null)))
+
+    /** Which step the kid is on, for the parent's live view; `stepIndex` null clears it. Best effort. */
+    suspend fun routineProgress(token: String, routineId: String, childId: String, stepIndex: Int?, stepsTotal: Int, stepTitle: String?) {
+        val body = if (stepIndex == null) JsonObject(mapOf("childId" to JsonPrimitive(childId.lowercase()), "clear" to JsonPrimitive(true)))
+        else JsonObject(buildMap {
+            put("childId", JsonPrimitive(childId.lowercase())); put("stepIndex", JsonPrimitive(stepIndex)); put("stepsTotal", JsonPrimitive(stepsTotal))
+            stepTitle?.takeIf { it.isNotBlank() }?.let { put("stepTitle", JsonPrimitive(it.take(200))) }
+        })
+        runCatching { web.post("$base/api/routines/${routineId.lowercase()}/progress") { contentType(ContentType.Application.Json); header("Authorization", "Bearer $token"); setBody(body) } }
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
