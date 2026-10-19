@@ -4,7 +4,7 @@ Audited 2026-09-19, the week the second paying subscriber arrived. Every
 surface that describes Premium was compared against the code that enforces
 it, on both platforms. Keep this table true when either side changes.
 
-Last updated 2026-10-19 (family challenges added).
+Last updated 2026-10-19 (iOS 2.5.3 ports money, challenges, routine upgrades and the calendar feed).
 
 | Promise | Web gate | iOS gate | Status |
 |---|---|---|---|
@@ -17,15 +17,15 @@ Last updated 2026-10-19 (family challenges added).
 | Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |
 | Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock; edit, archive and delete act on the whole group through `/api/chores/shared/[groupId]` (not gated, so a lapsed family can stop one) | created from the add-chore form via `POST /api/chores/shared` | gated server-side on create; not grandfathered (new) |
-| Family challenges: siblings team up for a shared reward (new 2026-10-19) | dashboard card shows a locked preview + See Premium (`gate_challenges`); `POST /api/challenges` 403; DB trigger 031 holds app-session inserts | not yet (kids see challenges only in web kid mode) | gated server-side on create; not grandfathered (new). Delivering, ending and kid views stay open after a lapse |
+| Family challenges: siblings team up for a shared reward (new 2026-10-19) | dashboard card shows a locked preview + See Premium (`gate_challenges`); `POST /api/challenges` 403; DB trigger 031 holds app-session inserts | iOS 2.5.3: Home card (RLS rows, progress from Logic/ChallengeProgress.swift), create via `POST /api/challenges` (free: locked sample, `gate_challenges`), deliver route, end early; kid card from `/api/kid/challenges` | gated server-side on create; not grandfathered (new). Delivering, ending and kid views stay open after a lapse |
 | Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | RoutineBuilderView: premium templates locked, open the paywall | gated both; the original 4 stay free |
 | Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | Settings toggle (same `weekly_report_email` column) | gated server-side, opt-in; a Resend error counts as a failed send, not sent |
-| Family calendar feed for Apple, Google and Outlook calendars (new 2026-10-19) | Settings > Family "Calendar feed" (`CalendarFeedSection`, `PremiumGate` source `gate_calendar`); `POST /api/calendar/feeds` 403 `premium_required`; `GET /api/calendar/<token>.ics` serves a lapsed family an empty calendar with one "needs Premium" note; migration 033 insert/update policies also require Premium | not yet | gated server-side; not grandfathered (new). Turning a feed off is never gated |
-| Picture steps in routines (new 2026-10-19, migration 032) | builder step camera; `POST /api/routines/step-photo` 403 `premium_required`; routine save keeps a lapsed family's existing pictures but takes no new ones; crown opens Billing (`gate_routine_photos`) | not yet (shows the icon) | gated server-side on upload; not grandfathered (new) |
-| Finish-by timer for a whole routine (new 2026-10-19, 032) | builder field + crown (`gate_routine_timer`); routine POST/PATCH only set it on Premium (anyone may clear it); the player shows the bar only when `family_premium` | not yet (ignored) | gated server-side and in the player |
-| Build routines with AI (new 2026-10-19) | builder "Build with AI" + crown (`gate_ai_routine`); `POST /api/ai/build-routine` 403 `premium_required`, 20/hour per user | not yet | gated server-side; template fallback when the AI is down |
-| Live routine view on the dashboard (new 2026-10-19, 032) | "Happening now" card; `GET /api/routines/live` returns step detail only for Premium families, `locked: true` otherwise, crown (`gate_routine_live`) | not yet | gated server-side; free families see that a routine is underway, not the step |
-| Kid money management (new 2026-10-19): Spend/Save/Give jars, automatic weekly allowance, interest on Save, fines and weekly paybacks, screen-time minutes | Settings > Rewards > Money: free families see a preview, each tool opens Billing with `gate_jars` / `gate_allowance` / `gate_interest` / `gate_fines` / `gate_minutes`. `POST /api/money` answers 403 `premium_required` for switching anything on; switching off is never gated. `/api/cron/allowance` skips non-Premium families. Kid wallet sends jars/minutes/news only to Premium. DB: 030 tables are server-write-only; `enforce_premium_reward_minutes` trigger | not yet (iOS reads `/api/kid/wallet` and `/api/allowance`, which stay compatible: `owedCents` is still the total) | gated server-side; not grandfathered (new). Needs migration 030 |
+| Family calendar feed for Apple, Google and Outlook calendars (new 2026-10-19) | Settings > Family "Calendar feed" (`CalendarFeedSection`, `PremiumGate` source `gate_calendar`); `POST /api/calendar/feeds` 403 `premium_required`; `GET /api/calendar/<token>.ics` serves a lapsed family an empty calendar with one "needs Premium" note; migration 033 insert/update policies also require Premium | iOS 2.5.3: Settings > Calendar Feed through `/api/calendar/feeds` (copy, Add to Apple Calendar via webcal://, new link); free shows `gate_calendar` | gated server-side; not grandfathered (new). Turning a feed off is never gated |
+| Picture steps in routines (new 2026-10-19, migration 032) | builder step camera; `POST /api/routines/step-photo` 403 `premium_required`; routine save keeps a lapsed family's existing pictures but takes no new ones; crown opens Billing (`gate_routine_photos`) | iOS 2.5.3: builder uploads through the same route (crown opens `gate_routine_photos`); iOS saves routines under RLS and keeps only existing pictures off Premium; player signs pictures in the family folder | gated server-side on upload; not grandfathered (new) |
+| Finish-by timer for a whole routine (new 2026-10-19, 032) | builder field + crown (`gate_routine_timer`); routine POST/PATCH only set it on Premium (anyone may clear it); the player shows the bar only when `family_premium` | iOS 2.5.3: builder sets it only on Premium (anyone may clear), `gate_routine_timer`; player bar only for Premium | gated server-side and in the player |
+| Build routines with AI (new 2026-10-19) | builder "Build with AI" + crown (`gate_ai_routine`); `POST /api/ai/build-routine` 403 `premium_required`, 20/hour per user | iOS 2.5.3: builder "Build with AI" calls the same route, `gate_ai_routine` | gated server-side; template fallback when the AI is down |
+| Live routine view on the dashboard (new 2026-10-19, 032) | "Happening now" card; `GET /api/routines/live` returns step detail only for Premium families, `locked: true` otherwise, crown (`gate_routine_live`) | iOS 2.5.3: Home "Happening now" polls `/api/routines/live`; player posts `/progress` (throttled 4 s) and clears on exit/complete | gated server-side; free families see that a routine is underway, not the step |
+| Kid money management (new 2026-10-19): Spend/Save/Give jars, automatic weekly allowance, interest on Save, fines and weekly paybacks, screen-time minutes | Settings > Rewards > Money: free families see a preview, each tool opens Billing with `gate_jars` / `gate_allowance` / `gate_interest` / `gate_fines` / `gate_minutes`. `POST /api/money` answers 403 `premium_required` for switching anything on; switching off is never gated. `/api/cron/allowance` skips non-Premium families. Kid wallet sends jars/minutes/news only to Premium. DB: 030 tables are server-write-only; `enforce_premium_reward_minutes` trigger | iOS 2.5.3: Settings > Money and the kid page through `/api/money` (free: preview, one `gate_*` source per tool); kid screen shows jars, You owe, minutes and money news from `/api/kid/wallet`; the store reads `spendableCents` | gated server-side; not grandfathered (new). Needs migration 030 |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
 
@@ -51,8 +51,8 @@ from Settings > Family. Owners and co-parents manage it through
   defaults to UTC and has no editor, and 7:00 UTC would be 3am in New York).
 - Lapsed: an empty calendar with one "needs Premium" note today, so the
   subscription explains itself and recovers on renewal.
-- Not on iOS or native Android yet; a feed made on the web works for
-  everyone in the family regardless of device.
+- iOS since 2.5.3 (Settings > Calendar Feed). Not on native Android yet; a
+  feed made anywhere works for everyone in the family regardless of device.
 
 Native Android (ChoreStar-Android-Native, Google Play Billing): children,
 chores and store-item caps, every goal with the plan's limit, premium themes
@@ -189,10 +189,10 @@ kid.
   `premium_required_challenges`). Free families see a locked sample with
   their kids' names and a See Premium button, paywall source
   `gate_challenges`. One-kid families don't see the card.
-- iOS / native Android: not built. Their kid wallets already include challenge
-  money (balance comes from the server). To add: list via RLS
-  (`family_challenges`), create through `POST /api/challenges`, deliver through
-  the deliver route, kid card from `GET /api/kid/challenges`.
+- iOS since 2.5.3, built exactly that way: list via RLS (`family_challenges`)
+  with progress ported to Swift, create through `POST /api/challenges`,
+  deliver through the deliver route, kid card from `GET /api/kid/challenges`.
+  Native Android: not built.
 
 ## Routine upgrades (2026-10-19)
 
@@ -239,8 +239,8 @@ Premium, web first. Migration `database-migrations/030_money_jars_allowance.sql`
   `routine_completions.minutes_earned` (captured at completion),
   `screen_minutes_ledger` for "used". No device enforcement.
 
-Not on iOS or native Android yet: the Money settings, the kid jars card and
-minutes. Their balances stay correct (server-derived); a store request from an
+iOS since 2.5.3: the Money settings, the kid jars card and minutes. Not on
+native Android yet. Their balances stay correct (server-derived); a store request from an
 older app is checked against Spend on the server.
 
 Native Android grandfathering, the Play listing and the no-plans link-out
