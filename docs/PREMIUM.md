@@ -51,8 +51,9 @@ from Settings > Family. Owners and co-parents manage it through
   defaults to UTC and has no editor, and 7:00 UTC would be 3am in New York).
 - Lapsed: an empty calendar with one "needs Premium" note today, so the
   subscription explains itself and recovers on renewal.
-- Not on iOS or native Android yet; a feed made on the web works for
-  everyone in the family regardless of device.
+- Not on iOS yet; a feed made on the web works for everyone in the family
+  regardless of device. Native Android 1.0.2 manages feeds through the same
+  routes (Settings > Family > Calendar feed, `gate_calendar`).
 
 Native Android (ChoreStar-Android-Native, Google Play Billing): children,
 chores and store-item caps, every goal with the plan's limit, premium themes
@@ -60,7 +61,12 @@ and co-parent sharing with the same grandfathering rule, Play-only purchases
 (no link out to the web). Not on native Android yet: creating shared chores,
 the routine template library, the weekly report toggle, export and the
 insights gate. Premium bought elsewhere still unlocks there. The Android web
-shell logs paywall opens as `android`.
+shell logs paywall opens as `android`. Since 1.0.2 (versionCode 10) native
+Android also has the 2026-10-19 set, all through the web routes with the
+same paywall sources: Money (jars, allowance, interest, fines, paybacks,
+donations, minutes), kid jars/owe/minutes/money news, family challenges
+(parent card + create/deliver/end, kid card), routine pictures, read-aloud,
+finish-by timer, Build with AI, the live view and the calendar feed.
 
 Copy that was false and is now fixed (2026-09-19): the homepage FAQ promised
 a Premium trial (none exists: no Stripe `trial_period_days`, no Apple
@@ -189,7 +195,9 @@ kid.
   `premium_required_challenges`). Free families see a locked sample with
   their kids' names and a See Premium button, paywall source
   `gate_challenges`. One-kid families don't see the card.
-- iOS / native Android: not built. Their kid wallets already include challenge
+- Native Android 1.0.2: built as below (progress ported to
+  `data/Challenges.kt`, tested against the same cases).
+- iOS: not built. Its kid wallet already includes challenge
   money (balance comes from the server). To add: list via RLS
   (`family_challenges`), create through `POST /api/challenges`, deliver through
   the deliver route, kid card from `GET /api/kid/challenges`.
@@ -239,8 +247,9 @@ Premium, web first. Migration `database-migrations/030_money_jars_allowance.sql`
   `routine_completions.minutes_earned` (captured at completion),
   `screen_minutes_ledger` for "used". No device enforcement.
 
-Not on iOS or native Android yet: the Money settings, the kid jars card and
-minutes. Their balances stay correct (server-derived); a store request from an
+Native Android 1.0.2 has the Money settings (Settings > Family > Money), the
+kid jars card and minutes. Not on iOS yet: the Money settings, the kid jars
+card and minutes. Their balances stay correct (server-derived); a store request from an
 older app is checked against Spend on the server.
 
 Native Android grandfathering, the Play listing and the no-plans link-out
