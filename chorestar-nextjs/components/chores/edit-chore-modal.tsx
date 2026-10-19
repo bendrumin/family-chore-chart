@@ -17,6 +17,8 @@ import { DayOfWeekPicker } from '@/components/chores/day-of-week-picker'
 import { scheduleDays } from '@/lib/utils/schedule'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { getCategoryList, type ChoreCategory } from '@/lib/constants/categories'
+import { sharedGroupOf, type SharedChoreFields, type StopSharingAction } from '@/lib/utils/shared-chores'
+import { SharedChoreBadge } from '@/components/chores/shared-chore-badge'
 import type { Database } from '@/lib/supabase/database.types'
 
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -43,6 +45,9 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
   })
 
   const categories = getCategoryList()
+  // A shared chore (rotating or bonus) is one row per kid: edits and
+  // deletes go to the whole group through the server.
+  const shared = sharedGroupOf(chore as Chore & SharedChoreFields)
 
   // Update form data when chore changes
   useEffect(() => {
@@ -61,6 +66,28 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     setIsLoading(true)
 
     try {
+      if (shared) {
+        const res = await fetch(`/api/chores/shared/${shared.groupId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            rewardCents: formData.rewardCents,
+            icon: formData.icon,
+            category: formData.category,
+            daysOfWeek: formData.days.length ? formData.days : [0, 1, 2, 3, 4, 5, 6],
+            requiresPhoto: formData.requiresPhoto,
+          }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          throw new Error(data?.error || 'Failed to update chore')
+        }
+        toast.success(`${formData.name} updated for every kid sharing it`)
+        onSuccess()
+        return
+      }
+
       const supabase = createClient()
       const { error } = await supabase
         .from('chores')
@@ -86,7 +113,32 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     }
   }
 
+  const handleStopSharing = async (action: StopSharingAction) => {
+    if (!shared) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/chores/shared/${shared.groupId}?action=${action}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Could not stop sharing that chore')
+      }
+      toast.success(
+        action === 'archive'
+          ? `Stopped sharing ${chore.name}. It's archived for every kid.`
+          : `Stopped sharing ${chore.name}. It's deleted for every kid.`
+      )
+      setShowDeleteConfirm(false)
+      onSuccess()
+    } catch (error: any) {
+      console.error('Error stopping shared chore:', error)
+      toast.error(error.message || 'Could not stop sharing that chore')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const handleDelete = async () => {
+    if (shared) return handleStopSharing('delete')
     setIsDeleting(true)
 
     try {
@@ -121,6 +173,17 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
               Edit Chore
             </DialogTitle>
           </DialogHeader>
+
+          {shared && (
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-900 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-100">
+              <SharedChoreBadge chore={chore as Chore & SharedChoreFields} />
+              <span>
+                {shared.mode === 'rotate'
+                  ? 'Your kids take turns with this chore. Changes here apply to every kid sharing it.'
+                  : 'The first kid to finish this each day earns it. Changes here apply to every kid sharing it.'}
+              </span>
+            </div>
+          )}
 
           <div className="space-y-6 mt-6 mb-6">
             {/* Basic Info Section - Blue accent */}
@@ -283,7 +346,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
               size="lg"
               className="flex-1 font-bold"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? (shared ? 'Stopping...' : 'Deleting...') : shared ? 'Stop sharing' : 'Delete'}
             </Button>
             <Button
               type="button"
@@ -308,6 +371,15 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         </form>
       </DialogContent>
 
+      {shared ? (
+        <StopSharingDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+          choreName={chore.name}
+          isLoading={isDeleting}
+          onChoose={handleStopSharing}
+        />
+      ) : (
       <ConfirmationDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
@@ -318,6 +390,53 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         variant="danger"
         isLoading={isDeleting}
       />
+      )}
+    </Dialog>
+  )
+}
+
+/**
+ * Stopping a shared chore: archive (keeps history and what each kid earned)
+ * or delete, both for every copy. Removing just one kid's copy would let the
+ * daily rotation hand the chore to another kid, so that isn't offered.
+ */
+function StopSharingDialog({
+  open,
+  onOpenChange,
+  choreName,
+  isLoading,
+  onChoose,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  choreName: string
+  isLoading: boolean
+  onChoose: (action: StopSharingAction) => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent onClose={() => onOpenChange(false)} className="max-w-md dialog-content-bg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>
+            Stop sharing &ldquo;{choreName}&rdquo;?
+          </DialogTitle>
+        </DialogHeader>
+        <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+          This chore is shared between your kids, so it stops for all of them. Archive keeps its history and what each kid
+          already earned; delete removes it and its history for good.
+        </p>
+        <DialogFooter className="mt-6 gap-3 flex-col sm:flex-row">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="flex-1 font-bold">
+            Cancel
+          </Button>
+          <Button type="button" variant="outline" onClick={() => onChoose('archive')} disabled={isLoading} className="flex-1 font-bold">
+            Stop sharing &amp; archive
+          </Button>
+          <Button type="button" variant="destructive" onClick={() => onChoose('delete')} disabled={isLoading} className="flex-1 font-bold">
+            Stop sharing &amp; delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   )
 }

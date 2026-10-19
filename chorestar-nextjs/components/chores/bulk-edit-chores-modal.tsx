@@ -13,9 +13,11 @@ import { ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
 import { RewardAmountInput, DEFAULT_CHORE_REWARD_CENTS } from '@/components/chores/reward-amount-input'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { isPerChoreMode, dailyRewardCents } from '@/lib/utils/earnings'
+import { splitShared, type SharedChoreFields } from '@/lib/utils/shared-chores'
+import { SharedChoreBadge } from '@/components/chores/shared-chore-badge'
 import type { Database } from '@/lib/supabase/database.types'
 
-type Chore = Database['public']['Tables']['chores']['Row']
+type Chore = Database['public']['Tables']['chores']['Row'] & SharedChoreFields
 type Child = Database['public']['Tables']['children']['Row']
 
 interface BulkEditChoresModalProps {
@@ -113,32 +115,59 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
     try {
       const supabase = createClient()
       const choreIds = Array.from(selectedChoreIds)
+      // Shared chores (rotating/bonus) are one row per kid: change or stop
+      // every copy through the server, or the rotation brings one back.
+      const { plainIds, groupIds } = splitShared(chores.filter(c => selectedChoreIds.has(c.id)))
+      const forGroups = async (init: (groupId: string) => [string, RequestInit]) => {
+        for (const groupId of groupIds) {
+          const [url, opts] = init(groupId)
+          const res = await fetch(url, opts)
+          if (!res.ok) {
+            const data = await res.json().catch(() => null)
+            throw new Error(data?.error || 'Could not update a shared chore')
+          }
+        }
+      }
+      const patchGroups = (body: Record<string, unknown>) =>
+        forGroups(groupId => [
+          `/api/chores/shared/${groupId}`,
+          { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+        ])
 
       if (bulkAction === 'category') {
-        const { error } = await supabase
-          .from('chores')
-          .update({ category: newCategory })
-          .in('id', choreIds)
+        const { error } = plainIds.length
+          ? await supabase
+              .from('chores')
+              .update({ category: newCategory })
+              .in('id', plainIds)
+          : { error: null }
 
         if (error) throw error
+        await patchGroups({ category: newCategory })
         playSound('success')
         toast.success(`Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} category`)
       } else if (bulkAction === 'reward') {
-        const { error } = await supabase
-          .from('chores')
-          .update({ reward_cents: newRewardCents })
-          .in('id', choreIds)
+        const { error } = plainIds.length
+          ? await supabase
+              .from('chores')
+              .update({ reward_cents: newRewardCents })
+              .in('id', plainIds)
+          : { error: null }
 
         if (error) throw error
+        await patchGroups({ rewardCents: newRewardCents })
         playSound('success')
         toast.success(`Updated ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''} reward`)
       } else if (bulkAction === 'delete') {
-        const { error } = await supabase
-          .from('chores')
-          .update({ is_active: false })
-          .in('id', choreIds)
+        const { error } = plainIds.length
+          ? await supabase
+              .from('chores')
+              .update({ is_active: false })
+              .in('id', plainIds)
+          : { error: null }
 
         if (error) throw error
+        await forGroups(groupId => [`/api/chores/shared/${groupId}?action=archive`, { method: 'DELETE' }])
         playSound('notification')
         toast.success(`Deleted ${choreIds.length} chore${choreIds.length > 1 ? 's' : ''}`)
       }
@@ -239,8 +268,9 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
                       />
                     </span>
                     <div className="flex-1">
-                      <div className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                      <div className="flex items-center gap-2 font-bold" style={{ color: 'var(--text-primary)' }}>
                         {chore.name}
+                        <SharedChoreBadge chore={chore} />
                       </div>
                       <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {getChildName(chore.child_id)} • {chore.category?.replace('_', ' ')} • ${(chore.reward_cents || 0) / 100}
@@ -351,10 +381,15 @@ export function BulkEditChoresModal({ open, onOpenChange, onSuccess, userId }: B
               )}
 
               {bulkAction === 'delete' && (
-                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
-                  <p className="text-sm font-bold text-red-900">
+                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl dark:bg-red-900/20 dark:border-red-800">
+                  <p className="text-sm font-bold text-red-900 dark:text-red-100">
                     This will delete {selectedChoreIds.size} chore{selectedChoreIds.size !== 1 ? 's' : ''}. This action cannot be undone.
                   </p>
+                  {splitShared(chores.filter(c => selectedChoreIds.has(c.id))).groupIds.length > 0 && (
+                    <p className="mt-2 text-sm text-red-800 dark:text-red-200">
+                      Shared chores stop sharing: they come off every kid who shares them.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
