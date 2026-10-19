@@ -11,6 +11,7 @@ import { KidChores } from '@/components/kid/kid-chores';
 import { KidStats } from '@/components/kid/kid-stats';
 import { KidVacationCard } from '@/components/kid/kid-vacation-card';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
+import { KidChallenges } from '@/components/kid/kid-challenges';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
@@ -209,6 +210,10 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       {kidToken && wallet && (
         <KidGoalCard kidToken={kidToken} wallet={wallet} onChanged={refreshWallet} />
       )}
+
+      {/* Family challenges (Premium): the team goal shared with siblings.
+          Renders nothing when there is none. Refetches after every tick. */}
+      {kidToken && <KidChallenges kidToken={kidToken} refreshKey={statsVersion} />}
 
       {/* The kid's own numbers: streak, this week's money, badges. The parent
           dashboard has always had these; the kid never saw them. */}

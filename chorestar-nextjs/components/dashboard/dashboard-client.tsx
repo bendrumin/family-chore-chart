@@ -19,6 +19,7 @@ import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
+import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
 import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import { ShellTabBar, type ShellTab } from '@/components/dashboard/shell-tab-bar'
@@ -705,7 +706,17 @@ function DashboardContent({
             {/* Main — family overview OR selected-child tabs */}
             <div className="order-4 md:order-5">
                 {!selectedChildId ? (
-                  <FamilyTodayChores children={children} />
+                  <div className="space-y-7">
+                    <FamilyTodayChores children={children} />
+                    {/* Family challenges (Premium): team goals for a shared
+                        reward. Free families see a locked preview. */}
+                    <FamilyChallengesCard
+                      familyId={effectiveUserId}
+                      kids={children}
+                      timeZone={settings?.timezone}
+                      currencyCode={settings?.currency_code}
+                    />
+                  </div>
                 ) : (
                   <div className="space-y-6">
                     {/* Professional Tab Switcher + Add Routine */}

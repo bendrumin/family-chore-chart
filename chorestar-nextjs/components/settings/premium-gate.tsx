@@ -6,7 +6,10 @@ import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
 
-const COPY: Record<GatedFeature, { title: string; body: string }> = {
+/** Gated features plus Premium-only features that are not grandfathered. */
+export type PremiumGateFeature = GatedFeature | 'challenges'
+
+const COPY: Record<PremiumGateFeature, { title: string; body: string }> = {
   themes: {
     title: 'Premium themes',
     body: 'Ocean, Sunset, Forest, Aurora, Coral, and Lavender come with Premium. The seasonal themes stay free.',
@@ -23,6 +26,10 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
     title: 'Advanced analytics come with Premium',
     body: 'Completion trends, per-child comparisons, and streak history. The weekly stats on your dashboard stay free.',
   },
+  challenges: {
+    title: 'Family challenges come with Premium',
+    body: 'Siblings team up for a shared reward: 50 chores this week for pizza night, bedtime routines for movie night. Everyone sees the team bar fill up.',
+  },
 }
 
 /**
@@ -30,7 +37,15 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
  * shell it states the limit with no purchase CTA (Play policy), the same
  * split the child and chore caps use.
  */
-export function PremiumGate({ feature, compact = false }: { feature: GatedFeature; compact?: boolean }) {
+export function PremiumGate({
+  feature,
+  compact = false,
+  ctaLabel = 'Open Billing',
+}: {
+  feature: PremiumGateFeature
+  compact?: boolean
+  ctaLabel?: string
+}) {
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 
@@ -66,7 +81,7 @@ export function PremiumGate({ feature, compact = false }: { feature: GatedFeatur
         onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
       >
         <Crown className="w-4 h-4 mr-2" />
-        Open Billing
+        {ctaLabel}
       </Button>
     </div>
   )

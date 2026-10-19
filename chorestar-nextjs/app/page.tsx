@@ -86,7 +86,7 @@ const softwareApplicationLd = {
       price: '4.99',
       priceCurrency: 'USD',
       name: 'Premium',
-      description: 'Unlimited children and chores, chores that rotate between kids, bonus chores, a routine template library, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
+      description: 'Unlimited children and chores, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, a routine template library, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '4.99',
@@ -527,6 +527,7 @@ export default async function HomePage() {
                   '<strong>Unlimited</strong> children & chores',
                   '<strong>New:</strong> chores that rotate between kids',
                   '<strong>New:</strong> bonus chores, first to finish earns it',
+                  '<strong>New:</strong> family challenges, siblings team up for a shared reward',
                   '<strong>New:</strong> 10 more routine templates',
                   'Unlimited savings goals & store rewards',
                   'Family sharing (co-parents)',

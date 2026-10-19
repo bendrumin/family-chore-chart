@@ -4,7 +4,7 @@ Audited 2026-09-19, the week the second paying subscriber arrived. Every
 surface that describes Premium was compared against the code that enforces
 it, on both platforms. Keep this table true when either side changes.
 
-Last updated 2026-10-19.
+Last updated 2026-10-19 (family challenges added).
 
 | Promise | Web gate | iOS gate | Status |
 |---|---|---|---|
@@ -17,6 +17,7 @@ Last updated 2026-10-19.
 | Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |
 | Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock; edit, archive and delete act on the whole group through `/api/chores/shared/[groupId]` (not gated, so a lapsed family can stop one) | created from the add-chore form via `POST /api/chores/shared` | gated server-side on create; not grandfathered (new) |
+| Family challenges: siblings team up for a shared reward (new 2026-10-19) | dashboard card shows a locked preview + See Premium (`gate_challenges`); `POST /api/challenges` 403; DB trigger 031 holds app-session inserts | not yet (kids see challenges only in web kid mode) | gated server-side on create; not grandfathered (new). Delivering, ending and kid views stay open after a lapse |
 | Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | RoutineBuilderView: premium templates locked, open the paywall | gated both; the original 4 stay free |
 | Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | Settings toggle (same `weekly_report_email` column) | gated server-side, opt-in; a Resend error counts as a failed send, not sent |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
@@ -134,6 +135,33 @@ shipped. Fixed:
 - Trial copy: one trial per family on the web; Apple's is per Apple ID.
   The free-plan comparison page no longer claims weekly reports are free
   (the in-app weekly stats are; the email is Premium).
+
+## Family challenges (2026-10-19, migration 031)
+
+Cooperative sibling goals: "50 chores together this week -> pizza night",
+"bedtime routine 5 nights each -> movie night". A parent picks 2+ kids, a
+target (chore check-offs, optionally bonus chores only; or routine
+completions, optionally one routine type), team or each-kid mode, a window
+(this week by default, family timezone) and a reward, plus optional money per
+kid.
+
+- Progress is never stored. `lib/challenges/progress.ts` (tested) derives it
+  from approved chore ticks (dated `week_start + day_of_week`) and routine
+  completions (dated by `completed_at` in the family timezone) inside the
+  window. Parent dashboard (RLS), `/api/kid/challenges` (kid token, service
+  role) and the deliver route all use it.
+- `POST /api/challenges/[id]/deliver` re-derives progress, requires the target
+  met, writes one `family_challenge_rewards` row per kid when money is
+  attached, and marks it delivered. `computeBalance` adds those rows to
+  earnings, so the money shows in every wallet, goal and payout.
+- Gate: create only (API 403 + 031 trigger hint
+  `premium_required_challenges`). Free families see a locked sample with
+  their kids' names and a See Premium button, paywall source
+  `gate_challenges`. One-kid families don't see the card.
+- iOS / native Android: not built. Their kid wallets already include challenge
+  money (balance comes from the server). To add: list via RLS
+  (`family_challenges`), create through `POST /api/challenges`, deliver through
+  the deliver route, kid card from `GET /api/kid/challenges`.
 
 Native Android grandfathering, the Play listing and the no-plans link-out
 were fixed 2026-10-10 (ChoreStar-Android-Native 1d4bdb8).
