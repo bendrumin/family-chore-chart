@@ -296,6 +296,9 @@ export function RoutineBuilderModal({
     })
   );
 
+  // Set once the parent edits the reward, so a late default never overwrites it.
+  const rewardTouched = useRef(false);
+
   // Load edit data
   useEffect(() => {
     if (editRoutine) {
@@ -324,7 +327,19 @@ export function RoutineBuilderModal({
     }
     setAiGoal('');
     setAiNote(null);
-  }, [editRoutine, defaultRewardCents, open]);
+    rewardTouched.current = false;
+    // Reset only when the modal opens or the routine being edited changes.
+    // defaultRewardCents can arrive late (family settings load after the
+    // dashboard) and must not wipe what the parent has typed; it is applied
+    // by the effect below instead.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRoutine, open]);
+
+  // A late family default only fills the reward of a new, untouched routine.
+  useEffect(() => {
+    if (editRoutine || rewardTouched.current) return;
+    setFormData((f) => ({ ...f, reward_cents: defaultRewardCents }));
+  }, [defaultRewardCents, editRoutine]);
 
   const pickPhotoFor = (stepId: string) => {
     setPhotoForStep(stepId);
@@ -720,7 +735,10 @@ export function RoutineBuilderModal({
                     id="reward"
                     type="number"
                     value={formData.reward_cents}
-                    onChange={(e) => setFormData({ ...formData, reward_cents: parseInt(e.target.value) || 0 })}
+                    onChange={(e) => {
+                      rewardTouched.current = true;
+                      setFormData({ ...formData, reward_cents: parseInt(e.target.value) || 0 });
+                    }}
                     min="0"
                     className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-blue-200 transition-all input-bg-glass"
                   />

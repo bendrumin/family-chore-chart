@@ -729,13 +729,6 @@ test.describe('Lapsed owner and co-parents', () => {
   test.afterAll(async () => cleanupTempUsers())
 
   test('free owner sees who is sharing and Remove works', async ({ page }) => {
-    // KNOWN APP BUG (found by this test, 2026-10-19): GET /api/family/members
-    // selects family_members.created_at, which doesn't exist (the column is
-    // joined_at), so the query errors and every family gets `members: []`.
-    // Settings > Family never lists a co-parent, for free or Premium owners.
-    // Fix: app/api/family/members/route.ts:23 select 'user_id, joined_at, ...'.
-    // Remove this test.fail line once that ships; Playwright flags it then.
-    test.fail(true, 'GET /api/family/members selects a column that does not exist; no member is ever listed')
     await signIn(page)
     const settings = await openSettings(page, 'family')
     await expect(settings.getByText(/sharing your family now/i)).toBeVisible({ timeout: 15_000 })

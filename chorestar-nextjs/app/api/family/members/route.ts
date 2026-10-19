@@ -20,7 +20,8 @@ export async function GET() {
 
     const { data: members, error: membersError } = await (admin as any)
       .from('family_members')
-      .select('user_id, created_at, profiles:user_id(email, family_name)')
+      // The column is joined_at; aliased so the response keeps its created_at field.
+      .select('user_id, created_at:joined_at, profiles:user_id(email, family_name)')
       .eq('family_id', user.id)
 
     if (membersError) {
