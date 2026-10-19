@@ -79,14 +79,14 @@ const softwareApplicationLd = {
       price: '0',
       priceCurrency: 'USD',
       name: 'Free Plan',
-      description: 'Up to 3 children, 20 chores, kid login with PIN, achievement badges',
+      description: 'Up to 3 children, 20 chores, kid login with PIN, achievement badges, a starter Star Pet',
     },
     {
       '@type': 'Offer',
       price: '4.99',
       priceCurrency: 'USD',
       name: 'Premium',
-      description: 'Unlimited children and chores, Spend/Save/Give money jars, automatic weekly allowance with interest on savings, fines and paybacks, screen-time minutes as a reward, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
+      description: 'Unlimited children and chores, Spend/Save/Give money jars, automatic weekly allowance with interest on savings, fines and paybacks, screen-time minutes as a reward, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, Star Pets that grow from chores and routines with all six pets, every stage, outfits and a new item to collect every month, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '4.99',
@@ -99,7 +99,7 @@ const softwareApplicationLd = {
       price: '49.99',
       priceCurrency: 'USD',
       name: 'Premium Yearly',
-      description: 'Everything in Premium, billed yearly (about 2 months free), with a 7-day free trial for new subscribers',
+      description: 'Everything in Premium, billed yearly (about 2 months free), with a 7-day free trial for new subscribers. A full year of Star Pets: all 12 monthly pet drops to collect as your kid\'s pet grows up',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '49.99',
@@ -488,6 +488,7 @@ export default async function HomePage() {
                   'Routine steps read aloud',
                   'Earnings, a savings goal & 3 store rewards',
                   'Achievement badges',
+                  'A starter Star Pet that grows to the kid stage',
                   'Seasonal themes',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
@@ -532,6 +533,7 @@ export default async function HomePage() {
                   '<strong>New:</strong> chores that rotate between kids',
                   '<strong>New:</strong> bonus chores, first to finish earns it',
                   '<strong>New:</strong> family challenges, siblings team up for a shared reward',
+                  '<strong>New:</strong> Star Pets that grow up with your kid, with outfits & a new item every month',
                   '<strong>New:</strong> family calendar feed for Apple, Google & Outlook calendars',
                   '<strong>New:</strong> picture routine steps for pre-readers',
                   '<strong>New:</strong> build routines with AI',

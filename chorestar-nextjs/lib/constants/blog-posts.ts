@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'keep-kids-motivated-chores-after-novelty',
+    title: 'Why Kids Quit Their Chore Chart After a Month, and How to Keep Them Going',
+    description:
+      'Most chore charts work for four to eight weeks, then quietly die. Here is why the novelty wears off, five things that keep kids going past it, and the growing pet ChoreStar added for exactly that.',
+    date: 'October 19, 2026',
+    isoDate: '2026-10-19',
+    readTime: '5 min read',
+    emoji: '🐾',
+    category: 'Parenting',
+  },
+  {
     slug: 'spend-save-give-jars-allowance-for-kids',
     title: 'Spend, Save, Give: Teaching Kids Money with Jars and a Weekly Allowance',
     description:

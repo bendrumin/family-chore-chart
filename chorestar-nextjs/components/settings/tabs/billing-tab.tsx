@@ -168,6 +168,7 @@ export function BillingTab() {
                   'Interest, fines & paybacks',
                   'Screen-time minutes',
                   'Rotating & bonus chores',
+                  'Star Pets: every pet, stage & monthly drop',
                   'Routine template library',
                   'Picture steps & finish-by timer',
                   'AI routine builder',
@@ -211,7 +212,7 @@ export function BillingTab() {
               Upgrade to Premium
             </h4>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Unlimited children and chores, Spend/Save/Give money jars with a weekly allowance, interest, fines and screen-time minutes, chores that rotate between kids, bonus chores, more routine templates, picture routine steps, a finish-by timer, routines built with AI, a live routine view, a family calendar feed, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
+              Unlimited children and chores, Star Pets that grow all the way up with outfits and a new item to collect every month, Spend/Save/Give money jars with a weekly allowance, interest, fines and screen-time minutes, chores that rotate between kids, bonus chores, more routine templates, picture routine steps, a finish-by timer, routines built with AI, a live routine view, a family calendar feed, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
             </p>
           </div>
 
