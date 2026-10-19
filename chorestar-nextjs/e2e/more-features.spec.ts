@@ -728,18 +728,28 @@ test.describe('Lapsed owner and co-parents', () => {
   })
   test.afterAll(async () => cleanupTempUsers())
 
-  test('free owner sees who is sharing and Remove works', async ({ page }) => {
+  test('the owner sees who is sharing and Remove works', async ({ page }) => {
+    // The demo account predates the 2026-09-19 cutoff, so it keeps sharing on
+    // the free plan and gets Manage Sharing; a lapsed owner without it gets
+    // the inline list. Either way the co-parent must be listed (this caught
+    // /api/family/members selecting a column that doesn't exist) and removable.
     await signIn(page)
     const settings = await openSettings(page, 'family')
-    await expect(settings.getByText(/sharing your family now/i)).toBeVisible({ timeout: 15_000 })
-    await expect(settings.getByText(tempEmail)).toBeVisible()
-    await expect(settings.getByRole('button', { name: /^manage sharing$/i })).toHaveCount(0)
-    await settings.getByRole('button', { name: `Remove ${tempEmail}` }).click()
-    await expect(page.getByText('Member removed')).toBeVisible({ timeout: 10_000 })
-    await expect(settings.getByText(tempEmail)).toHaveCount(0)
+    const manage = settings.getByRole('button', { name: /^manage sharing$/i })
+    if (await manage.isVisible().catch(() => false)) {
+      await manage.click()
+      await expect(page.getByText(tempEmail).first()).toBeVisible({ timeout: 15_000 })
+      await page.getByRole('button', { name: `Remove ${tempEmail} from family` }).click()
+    } else {
+      await expect(settings.getByText(/sharing your family now/i)).toBeVisible({ timeout: 15_000 })
+      await expect(settings.getByText(tempEmail)).toBeVisible()
+      await settings.getByRole('button', { name: `Remove ${tempEmail}` }).click()
+    }
     await expect
       .poll(async () => (await (admin as any).from('family_members').select('*', { count: 'exact', head: true }).eq('user_id', tempId)).count)
       .toBe(0)
+    // Put the member back for the API test that follows.
+    await (admin as any).from('family_members').insert({ user_id: tempId, family_id: familyId })
   })
 
   test('a free owner is not blocked from removing a co-parent', async ({ page }) => {
