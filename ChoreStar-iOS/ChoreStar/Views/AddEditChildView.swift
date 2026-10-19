@@ -220,12 +220,10 @@ struct AddEditChildView: View {
                     avatarFile = nil
                 })
             }
+            // Fallback: Add Child opens the paywall before this form at the
+            // cap, but the count can change while the form is open.
             .sheet(isPresented: $showingUpgradePrompt) {
-                UpgradePromptView(
-                    limitType: .children,
-                    currentCount: manager.children.count,
-                    limit: manager.childLimit
-                )
+                PaywallView.childLimit(manager.childLimit)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

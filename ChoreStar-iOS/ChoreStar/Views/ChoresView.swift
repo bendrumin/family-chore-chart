@@ -25,6 +25,7 @@ struct ChoresView: View {
     @State private var screenFold: CGRect?
     @State private var gridFold: CGRect?
     @State private var showingAddChore = false
+    @State private var showingChoreLimitPaywall = false
     // Chore being edited. Presented from the LIST, not from inside a row:
     // a row-owned sheet dies with its row when loadRemoteData() replaces
     // the chores array after saving, which intermittently crashed mid-
@@ -214,7 +215,11 @@ struct ChoresView: View {
 
                     ToolbarItem(placement: .primaryAction) {
                         Button(action: {
-                            showingAddChore = true
+                            if manager.isAtChoreLimit {
+                                showingChoreLimitPaywall = true
+                            } else {
+                                showingAddChore = true
+                            }
                         }) {
                             Label("New Chore", systemImage: "plus")
                         }
@@ -223,6 +228,9 @@ struct ChoresView: View {
             }
             .sheet(isPresented: $showingAddChore) {
                 AddChoreWizardView()
+            }
+            .sheet(isPresented: $showingChoreLimitPaywall) {
+                PaywallView.choreLimit(manager.choreLimit)
             }
             .sheet(item: $editingChore) { chore in
                 AddEditChoreView(chore: chore)

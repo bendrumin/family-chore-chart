@@ -1,6 +1,446 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Code not found" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الرمز غير موجود"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código no encontrado"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código não encontrado"
+          }
+        }
+      }
+    },
+    "That's your own family code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا رمز عائلتك أنت"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese es el código de tu propia familia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esse é o código da sua própria família"
+          }
+        }
+      }
+    },
+    "That family needs Premium to share. Ask the owner to upgrade." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحتاج هذه العائلة إلى Premium للمشاركة. اطلب من صاحبها الترقية."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esa familia necesita Premium para compartir. Pídele al dueño que se pase a Premium."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essa família precisa do Premium para compartilhar. Peça ao dono para fazer o upgrade."
+          }
+        }
+      }
+    },
+    "Too many tries. Wait an hour and try again." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "محاولات كثيرة جدًا. انتظر ساعة ثم حاول مرة أخرى."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demasiados intentos. Espera una hora y vuelve a intentarlo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muitas tentativas. Espere uma hora e tente de novo."
+          }
+        }
+      }
+    },
+    "Not signed in." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم تسجّل الدخول."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No has iniciado sesión."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você não entrou na conta."
+          }
+        }
+      }
+    },
+    "Something went wrong." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدث خطأ ما."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo salió mal."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo deu errado."
+          }
+        }
+      }
+    },
+    "You've already joined this family." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لقد انضممت إلى هذه العائلة بالفعل."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya te uniste a esta familia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você já entrou nesta família."
+          }
+        }
+      }
+    },
+    "Couldn't join: %@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر الانضمام: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo unir: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível entrar: %@"
+          }
+        }
+      }
+    },
+    "Weekly family report email" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بريد إلكتروني أسبوعي بتقرير العائلة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correo semanal con el reporte de la familia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-mail semanal com o relatório da família"
+          }
+        }
+      }
+    },
+    "Premium is bought by the family owner. Ask them to upgrade, and your iPhone gets it too." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يشتري صاحب العائلة Premium. اطلب منه الترقية، وسيحصل عليه جهاز iPhone الخاص بك أيضًا."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium lo compra el dueño de la familia. Pídele que se pase a Premium y tu iPhone también lo tendrá."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium é comprado pelo dono da família. Peça para ele fazer o upgrade, e seu iPhone também recebe."
+          }
+        }
+      }
+    },
+    "You've used all %lld free chores" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لقد استخدمت كل المهام المجانية وعددها %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya usaste las %lld tareas gratis"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você já usou as %lld tarefas grátis"
+          }
+        }
+      }
+    },
+    "You've added %lld kids, the free limit" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لقد أضفت %lld أطفال، وهذا هو الحد المجاني"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya agregaste %lld niños, el límite gratis"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você já adicionou %lld crianças, o limite grátis"
+          }
+        }
+      }
+    },
+    "New Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز جديد"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo código"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo código"
+          }
+        }
+      }
+    },
+    "Turn Off Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إيقاف الرمز"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar código"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativar código"
+          }
+        }
+      }
+    },
+    "Your Invite Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز الدعوة الخاص بك"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu código de invitación"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu código de convite"
+          }
+        }
+      }
+    },
+    "New co-parents can't join on the free plan. Get a new code or turn this one off so an old code can't be reused." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يمكن لوالد مشارك جديد الانضمام على الخطة المجانية. أنشئ رمزًا جديدًا أو أوقف هذا الرمز حتى لا يُعاد استخدام رمز قديم."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con el plan gratis no pueden unirse nuevos adultos. Crea un código nuevo o desactiva este para que no se pueda volver a usar uno viejo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No plano grátis, novos responsáveis não podem entrar. Crie um código novo ou desative este para que um código antigo não seja reutilizado."
+          }
+        }
+      }
+    },
+    "Turn off this invite code?" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هل تريد إيقاف رمز الدعوة هذا؟"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Desactivar este código de invitación?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativar este código de convite?"
+          }
+        }
+      }
+    },
+    "No one can join with it. Co-parents who already joined keep access until you remove them." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لن يتمكن أحد من الانضمام به. يحتفظ الآباء المشاركون الذين انضموا بالفعل بالوصول حتى تزيلهم."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadie podrá unirse con él. Los adultos que ya se unieron conservan el acceso hasta que los quites."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguém poderá entrar com ele. Os responsáveis que já entraram mantêm o acesso até você removê-los."
+          }
+        }
+      }
+    },
+    "Couldn't create a code: %@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر إنشاء رمز: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo crear un código: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível criar um código: %@"
+          }
+        }
+      }
+    },
+    "Couldn't turn off the code: %@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر إيقاف الرمز: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo desactivar el código: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível desativar o código: %@"
+          }
+        }
+      }
+    },
     "Rotating & bonus chores, more routine templates" : {
       "localizations" : {
         "ar" : {

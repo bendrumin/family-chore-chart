@@ -171,12 +171,10 @@ struct AddChoreWizardView: View {
                     completionRate: rate
                 )
             }
+            // Fallback: entry points open the paywall before this form at the
+            // cap, but the count can change while the form is open.
             .sheet(isPresented: $showingUpgradePrompt) {
-                UpgradePromptView(
-                    limitType: .chores,
-                    currentCount: manager.chores.count,
-                    limit: manager.choreLimit
-                )
+                PaywallView.choreLimit(manager.choreLimit)
             }
         }
     }

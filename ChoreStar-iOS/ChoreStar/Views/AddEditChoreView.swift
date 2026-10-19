@@ -338,11 +338,7 @@ struct AddEditChoreView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingUpgradePrompt) {
-                UpgradePromptView(
-                    limitType: .chores,
-                    currentCount: manager.chores.count,
-                    limit: manager.choreLimit
-                )
+                PaywallView.choreLimit(manager.choreLimit)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

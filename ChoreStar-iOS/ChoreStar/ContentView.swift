@@ -305,6 +305,7 @@ struct MainTabs: View {
     @State private var selectedTab: Int = MainTabs.initialTab()
     @State private var deepLinkChild: Child?
     @State private var showingAddChore = false
+    @State private var showingChoreLimitPaywall = false
     @State private var showingKidMode = false
 
     // First-run wizard: shown once per ACCOUNT (keyed by user id, not per
@@ -348,7 +349,11 @@ struct MainTabs: View {
                 selectedTab = 1
             } else {
                 selectedTab = 2
-                showingAddChore = true
+                if manager.isAtChoreLimit {
+                    showingChoreLimitPaywall = true
+                } else {
+                    showingAddChore = true
+                }
             }
         }
     }
@@ -433,6 +438,9 @@ struct MainTabs: View {
         }
         .sheet(isPresented: $showingAddChore) {
             AddChoreWizardView()
+        }
+        .sheet(isPresented: $showingChoreLimitPaywall) {
+            PaywallView.choreLimit(manager.choreLimit)
         }
         .sheet(isPresented: $showingKidMode) {
             ChildAuthView()

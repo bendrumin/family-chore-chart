@@ -1,7 +1,9 @@
-Version 2.5.1: try Premium free.
+Version 2.5.2: clearer upgrades, safer sharing.
 
-• The yearly plan now starts with 7 days free for new subscribers. Cancel at least 24 hours before the trial ends and you won't be charged
-• Yearly leads the plans and shows what it costs a month, about two months free compared with monthly
-• Small fixes and polish
+• Reached the free limit of 3 kids or 20 chores? Tapping add now shows Premium straight away, before you fill in the form
+• Co-parents can see that the family owner buys Premium, and their iPhone gets it too
+• Family sharing is safer: joining with a code is now checked on our server
+• Owners on the free plan can still remove a co-parent and replace or turn off their invite code
+• The Premium list now includes the weekly family report email
 
 Questions or feedback are welcome at hi@chorestar.app
