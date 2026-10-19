@@ -123,7 +123,13 @@ test.describe('free family', () => {
   test('the store cap has a See Premium button that opens Billing and logs why', async ({ page }) => {
     await signIn(page)
     await openSettings(page, 'rewards')
-    await page.getByRole('button', { name: /see premium/i }).first().click()
+    // Scoped to the store: the dashboard behind Settings has its own See
+    // Premium buttons now (family challenges), and so does the Money section.
+    const settings = page.getByRole('dialog', { name: /^settings$/i })
+    await settings
+      .getByRole('heading', { name: /^reward store$/i })
+      .locator('xpath=following::button[contains(normalize-space(.), "See Premium")][1]')
+      .click()
     await expect(page.getByText(/upgrade to premium/i).first()).toBeVisible({ timeout: 10_000 })
     await expect
       .poll(async () => {
