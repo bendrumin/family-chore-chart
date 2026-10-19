@@ -22,6 +22,8 @@ interface CelebrationScreenProps {
   pointsEarned: number;
   totalSteps: number;
   duration?: number; // in seconds
+  /** Beat the finish-by timer by this much (Premium). Only ever celebrated, never the reverse. */
+  earlyBySeconds?: number | null;
   onContinue: () => void;
   color?: string;
 }
@@ -31,6 +33,7 @@ export function CelebrationScreen({
   pointsEarned,
   totalSteps,
   duration,
+  earlyBySeconds,
   onContinue,
   color = '#6366f1',
 }: CelebrationScreenProps) {
@@ -131,6 +134,19 @@ export function CelebrationScreen({
         >
           {t('celebrate.complete', { name: routineName })}
         </motion.p>
+
+        {/* Beat the finish-by timer */}
+        {earlyBySeconds ? (
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={showContent ? { scale: 1, opacity: 1 } : {}}
+            transition={{ delay: 0.45, type: 'spring', bounce: 0.6 }}
+            className="inline-block mb-8 px-6 py-3 rounded-full bg-white shadow-2xl text-2xl font-black"
+            style={{ color }}
+          >
+            {t('celebrate.early', { time: formatDuration(earlyBySeconds) ?? '' })}
+          </motion.div>
+        ) : null}
 
         {/* Stats Cards */}
         <motion.div

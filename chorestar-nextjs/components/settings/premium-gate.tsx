@@ -9,11 +9,18 @@ import type { GatedFeature } from '@/lib/utils/subscription'
 /**
  * Gated features plus Premium-only features added after the 2026-09-19
  * cutoff, which are not grandfathered (so they are not GatedFeature, whose
- * canUseFeature passes pre-cutoff accounts). The Billing source is
+ * canUseFeature passes pre-cutoff accounts): the calendar feed, family
+ * challenges and the routine upgrades (migration 032). The Billing source is
  * `gate_<key>` either way.
  */
-export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges'
+export type RoutineGateFeature = 'routine_photos' | 'routine_timer' | 'ai_routine' | 'routine_live'
+export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges' | RoutineGateFeature
 export type PremiumGateFeature = PremiumGateKey
+
+/** Open Billing from a crowned button, logging why (paywall_events source). */
+export function openPremiumBilling(feature: PremiumGateFeature): void {
+  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))
+}
 
 const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
   themes: {
@@ -39,6 +46,22 @@ const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
   challenges: {
     title: 'Family challenges come with Premium',
     body: 'Siblings team up for a shared reward: 50 chores this week for pizza night, bedtime routines for movie night. Everyone sees the team bar fill up.',
+  },
+  routine_photos: {
+    title: 'Picture steps come with Premium',
+    body: 'Add a photo to any step (their own toothbrush, their shoes by the door) so pre-readers can follow along. Icons and read-aloud stay free.',
+  },
+  routine_timer: {
+    title: 'Finish-by timers come with Premium',
+    body: 'Set a gentle total time for the whole routine. Kids see a calm countdown and get cheered for finishing early. No fail state, ever.',
+  },
+  ai_routine: {
+    title: 'Build routines with AI on Premium',
+    body: 'Describe what you need ("school mornings, 7, forgets to brush teeth") and get age-appropriate steps with icons and timers to edit.',
+  },
+  routine_live: {
+    title: 'See routines live with Premium',
+    body: 'Watch which step your kid is on from your own phone ("Maya is on step 3 of 6: Brush teeth") without hovering.',
   },
 }
 
@@ -88,7 +111,7 @@ export function PremiumGate({
         variant="gradient"
         size={compact ? 'sm' : 'lg'}
         className={`${compact ? '' : 'w-full'} font-bold hover-glow`}
-        onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
+        onClick={() => openPremiumBilling(feature)}
       >
         <Crown className="w-4 h-4 mr-2" />
         {ctaLabel}

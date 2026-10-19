@@ -551,6 +551,10 @@ export interface Database {
           color: string
           reward_cents: number
           is_active: boolean
+          /** Speak each step title as it appears. Migration 032. */
+          auto_read_aloud: boolean
+          /** Optional finish-by total for the whole routine (Premium). Migration 032. */
+          target_duration_seconds: number | null
           created_at: string
           updated_at: string
         }
@@ -563,6 +567,8 @@ export interface Database {
           color?: string
           reward_cents?: number
           is_active?: boolean
+          auto_read_aloud?: boolean
+          target_duration_seconds?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -575,6 +581,8 @@ export interface Database {
           color?: string
           reward_cents?: number
           is_active?: boolean
+          auto_read_aloud?: boolean
+          target_duration_seconds?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -597,6 +605,8 @@ export interface Database {
           icon: string
           order_index: number
           duration_seconds: number | null
+          /** Picture in the routine-step-photos bucket (Premium). Migration 032. */
+          image_path: string | null
           created_at: string
         }
         Insert: {
@@ -607,6 +617,7 @@ export interface Database {
           icon?: string
           order_index: number
           duration_seconds?: number | null
+          image_path?: string | null
           created_at?: string
         }
         Update: {
@@ -617,6 +628,7 @@ export interface Database {
           icon?: string
           order_index?: number
           duration_seconds?: number | null
+          image_path?: string | null
           created_at?: string
         }
         Relationships: [
@@ -625,6 +637,52 @@ export interface Database {
             columns: ['routine_id']
             isOneToOne: false
             referencedRelation: 'routines'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      routine_progress: {
+        /** Who is mid-routine right now (live parent view). Migration 032; server-written only. */
+        Row: {
+          routine_id: string
+          child_id: string
+          current_step_index: number
+          steps_total: number
+          current_step_title: string | null
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          routine_id: string
+          child_id: string
+          current_step_index?: number
+          steps_total: number
+          current_step_title?: string | null
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          routine_id?: string
+          child_id?: string
+          current_step_index?: number
+          steps_total?: number
+          current_step_title?: string | null
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'routine_progress_routine_id_fkey'
+            columns: ['routine_id']
+            isOneToOne: true
+            referencedRelation: 'routines'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'routine_progress_child_id_fkey'
+            columns: ['child_id']
+            isOneToOne: false
+            referencedRelation: 'children'
             referencedColumns: ['id']
           }
         ]

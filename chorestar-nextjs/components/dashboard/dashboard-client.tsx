@@ -20,6 +20,7 @@ import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
+import { RoutineLiveCard } from '@/components/dashboard/routine-live-card'
 import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import { ShellTabBar, type ShellTab } from '@/components/dashboard/shell-tab-bar'
@@ -702,6 +703,10 @@ function DashboardContent({
             {/* Ticks waiting for a parent's OK (approval mode / photo chores).
                 Renders nothing when there is nothing to review. */}
             <ApprovalTray currencyCode={settings?.currency_code} className="order-3 md:order-4" />
+
+            {/* A kid mid-routine: "Maya is on step 3 of 6 — Brush teeth".
+                Renders nothing when no one is. */}
+            <RoutineLiveCard className="order-3 md:order-4" />
 
             {/* Main — family overview OR selected-child tabs */}
             <div className="order-4 md:order-5">

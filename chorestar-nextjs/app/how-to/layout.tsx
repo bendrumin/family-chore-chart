@@ -30,7 +30,7 @@ const howToJsonLd = {
   name: 'ChoreStar How-To Guides',
   description: 'Step-by-step guides for setting up and using ChoreStar with your family.',
   url: 'https://chorestar.app/how-to',
-  numberOfItems: 5,
+  numberOfItems: 6,
   itemListElement: [
     {
       '@type': 'HowTo',
@@ -100,6 +100,20 @@ const howToJsonLd = {
         { '@type': 'HowToStep', position: 3, text: 'Tap Copy to grab the link anytime you need to re-share it.' },
         { '@type': 'HowToStep', position: 4, text: "Tap Open Editor to manage children's profiles and set or update their PINs." },
         { '@type': 'HowToStep', position: 5, text: 'Update a PIN anytime if your child forgets it.' },
+      ],
+    },
+    {
+      '@type': 'HowTo',
+      position: 6,
+      name: 'Picture Routines for Pre-Readers & ADHD-Friendly Routines',
+      description: 'Set up routines with photo steps, read-aloud, a calm finish-by timer and AI-built steps for young kids and kids with ADHD.',
+      url: 'https://chorestar.app/how-to#picture-routines',
+      step: [
+        { '@type': 'HowToStep', position: 1, text: 'Open a routine in the builder and tap the camera on any step to use a photo instead of the icon.' },
+        { '@type': 'HowToStep', position: 2, text: 'Under Kid-Friendly Helpers, turn on Read each step aloud.' },
+        { '@type': 'HowToStep', position: 3, text: 'Set a Finish-by timer. Kids see a calm countdown with no fail state, and finishing early gets a cheer.' },
+        { '@type': 'HowToStep', position: 4, text: 'Or tap Build with AI, describe the routine and your child, and edit the draft before saving.' },
+        { '@type': 'HowToStep', position: 5, text: 'While they run it, your dashboard shows which step they are on.' },
       ],
     },
   ],

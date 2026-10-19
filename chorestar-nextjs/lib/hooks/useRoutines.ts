@@ -4,8 +4,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 
+/** A step as the API returns it: plus a short-lived signed URL for its picture. */
+export type RoutineStepWithImage = Database['public']['Tables']['routine_steps']['Row'] & {
+  image_url?: string | null;
+};
+
 export type Routine = Database['public']['Tables']['routines']['Row'] & {
-  routine_steps?: Database['public']['Tables']['routine_steps']['Row'][];
+  routine_steps?: RoutineStepWithImage[];
+  /** Single-routine GET only: the family's plan (finish-by timer, live view). */
+  family_premium?: boolean;
+  /** Single-routine GET only: Settings > Family language, for read-aloud. */
+  family_language?: string | null;
   children?: {
     id: string;
     name: string;

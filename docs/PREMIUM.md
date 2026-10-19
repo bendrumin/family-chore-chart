@@ -21,6 +21,10 @@ Last updated 2026-10-19 (family challenges added).
 | Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | RoutineBuilderView: premium templates locked, open the paywall | gated both; the original 4 stay free |
 | Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | Settings toggle (same `weekly_report_email` column) | gated server-side, opt-in; a Resend error counts as a failed send, not sent |
 | Family calendar feed for Apple, Google and Outlook calendars (new 2026-10-19) | Settings > Family "Calendar feed" (`CalendarFeedSection`, `PremiumGate` source `gate_calendar`); `POST /api/calendar/feeds` 403 `premium_required`; `GET /api/calendar/<token>.ics` serves a lapsed family an empty calendar with one "needs Premium" note; migration 033 insert/update policies also require Premium | not yet | gated server-side; not grandfathered (new). Turning a feed off is never gated |
+| Picture steps in routines (new 2026-10-19, migration 032) | builder step camera; `POST /api/routines/step-photo` 403 `premium_required`; routine save keeps a lapsed family's existing pictures but takes no new ones; crown opens Billing (`gate_routine_photos`) | not yet (shows the icon) | gated server-side on upload; not grandfathered (new) |
+| Finish-by timer for a whole routine (new 2026-10-19, 032) | builder field + crown (`gate_routine_timer`); routine POST/PATCH only set it on Premium (anyone may clear it); the player shows the bar only when `family_premium` | not yet (ignored) | gated server-side and in the player |
+| Build routines with AI (new 2026-10-19) | builder "Build with AI" + crown (`gate_ai_routine`); `POST /api/ai/build-routine` 403 `premium_required`, 20/hour per user | not yet | gated server-side; template fallback when the AI is down |
+| Live routine view on the dashboard (new 2026-10-19, 032) | "Happening now" card; `GET /api/routines/live` returns step detail only for Premium families, `locked: true` otherwise, crown (`gate_routine_live`) | not yet | gated server-side; free families see that a routine is underway, not the step |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
 
@@ -188,6 +192,21 @@ kid.
   money (balance comes from the server). To add: list via RLS
   (`family_challenges`), create through `POST /api/challenges`, deliver through
   the deliver route, kid card from `GET /api/kid/challenges`.
+
+## Routine upgrades (2026-10-19)
+
+For younger kids and kids with ADHD. Free: **read-aloud steps** (speaker
+button in the player, optional per-routine auto-read; browser
+SpeechSynthesis, on device, no network; speaks localized template titles in
+the kid's language and parent-typed titles in the family's language).
+Premium (not grandfathered, like the template library): **picture steps**,
+**finish-by timer** (gentle, no fail state, early finishes celebrated),
+**Build with AI** (Claude Haiku 4.5, structured output with the app's icon
+keys; falls back to a template-based draft), **live routine view**.
+Paywall sources: `gate_routine_photos`, `gate_routine_timer`,
+`gate_ai_routine`, `gate_routine_live` (PremiumGate `openPremiumBilling`).
+Migration 032 must run before these work; until then the web degrades to
+today's routines (pictures absent, live card hidden, saves unaffected).
 
 Native Android grandfathering, the Play listing and the no-plans link-out
 were fixed 2026-10-10 (ChoreStar-Android-Native 1d4bdb8).

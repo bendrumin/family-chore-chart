@@ -1,20 +1,36 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FloatingSparkles } from '@/components/kid/floating-sparkles';
-import { ArrowLeft, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProgressDots } from '@/components/routines/progress-dots';
 import { VisualTimer } from '@/components/routines/visual-timer';
+import { RoutineTimeBar } from '@/components/routines/routine-time-bar';
+import { ReadAloudButton } from '@/components/routines/read-aloud-button';
 import { useScreenWakeLock } from '@/lib/hooks/use-wake-lock';
 import { CelebrationScreen } from '@/components/routines/celebration-screen';
 import { useRoutine, useCompleteRoutine } from '@/lib/hooks/useRoutines';
 import { useSound } from '@/lib/hooks/useSound';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
-import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
+import { useKidT, useKidTemplateString, detectKidLocale } from '@/lib/i18n/kid';
+import { speak, stopSpeaking, speechLangFor, speechTextFor } from '@/lib/routines/speech';
+import { finishedEarlyBy } from '@/lib/routines/routine-timer';
+import { createThrottledReporter } from '@/lib/routines/live-progress';
+import { sendRoutineProgress, type ProgressReport } from '@/lib/routines/client';
 import { toast } from 'sonner';
+
+function readKidToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('kidMode');
+    return raw ? JSON.parse(raw)?.kidToken ?? null : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function RoutinePlayerPage({
   params,
@@ -26,9 +42,11 @@ export default function RoutinePlayerPage({
   const t = useKidT()
   const tpl = useKidTemplateString();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [startTime] = useState<number>(() => Date.now());
   const [showCelebration, setShowCelebration] = useState(false);
   const [completionData, setCompletionData] = useState<any>(null);
+  const [kidLocale, setKidLocale] = useState<string>('en');
+  const finishedRef = useRef(false);
 
   const { data: routine, isLoading, error } = useRoutine(routineId);
   const completeMutation = useCompleteRoutine();
@@ -36,6 +54,8 @@ export default function RoutinePlayerPage({
   // A bedtime routine with a two-minute teeth timer outlives most screen
   // timeouts; hold the screen on until the celebration.
   useScreenWakeLock(!showCelebration);
+
+  useEffect(() => setKidLocale(detectKidLocale()), []);
 
   // Safety check: Verify child from kid mode session (localStorage for persistence)
   useEffect(() => {
@@ -63,6 +83,56 @@ export default function RoutinePlayerPage({
       router.push('/kid-login');
     }
   }, [childId, router]);
+
+  const steps = routine?.routine_steps || [];
+  const currentStep = steps[currentStepIndex];
+
+  // --- Live parent view: report the step (throttled, fire and forget) ------
+  const reporterRef = useRef<ReturnType<typeof createThrottledReporter<ProgressReport>> | null>(null);
+  if (!reporterRef.current) {
+    reporterRef.current = createThrottledReporter<ProgressReport>((report) =>
+      sendRoutineProgress(routineId, childId, report, readKidToken())
+    );
+  }
+  useEffect(() => {
+    if (!routine || !currentStep || showCelebration) return;
+    reporterRef.current?.report({
+      stepIndex: currentStepIndex,
+      stepsTotal: steps.length,
+      stepTitle: currentStep.title,
+    });
+  }, [routine, currentStep, currentStepIndex, steps.length, showCelebration]);
+  // Leaving mid-routine (back button, closing kid mode) clears the live row.
+  useEffect(() => {
+    const reporter = reporterRef.current;
+    return () => {
+      stopSpeaking();
+      if (!finishedRef.current) {
+        reporter?.cancel();
+        sendRoutineProgress(routineId, childId, { clear: true }, readKidToken());
+      }
+    };
+  }, [routineId, childId]);
+
+  // --- Read aloud (free) ----------------------------------------------------
+  const speakStep = useCallback(() => {
+    if (!currentStep) return;
+    const shown = tpl(currentStep.title);
+    const lang = speechLangFor({
+      familyLanguage: routine?.family_language ?? null,
+      kidLocale,
+      localized: shown !== currentStep.title,
+      deviceLanguage: typeof navigator !== 'undefined' ? navigator.language : null,
+    });
+    speak(speechTextFor(shown, currentStep.description), lang);
+  }, [currentStep, tpl, routine?.family_language, kidLocale]);
+
+  useEffect(() => {
+    if (!routine?.auto_read_aloud || !currentStep || showCelebration) return;
+    // Let the step animate in before speaking.
+    const id = setTimeout(speakStep, 400);
+    return () => clearTimeout(id);
+  }, [routine?.auto_read_aloud, currentStep, showCelebration, speakStep]);
 
   if (isLoading) {
     return (
@@ -92,17 +162,18 @@ export default function RoutinePlayerPage({
     );
   }
 
-  const steps = routine.routine_steps || [];
-  const currentStep = steps[currentStepIndex];
-
   if (!currentStep && !showCelebration) {
     // No steps, go back
     router.push(`/kid/${childId}`);
     return null;
   }
 
+  // Finish-by is Premium; a value left on a lapsed family's routine is ignored.
+  const targetSeconds = routine.family_premium ? routine.target_duration_seconds ?? null : null;
+
   const handleStepComplete = () => {
     playStepComplete();
+    stopSpeaking();
 
     if (currentStepIndex < steps.length - 1) {
       // Move to next step
@@ -115,8 +186,6 @@ export default function RoutinePlayerPage({
       playRoutineComplete();
 
       // Mark routine as complete (include kidToken for auth when parent not logged in)
-      const kidModeRaw = typeof window !== 'undefined' ? localStorage.getItem('kidMode') : null;
-      const kidMode = kidModeRaw ? (() => { try { return JSON.parse(kidModeRaw); } catch { return null; } })() : null;
       completeMutation.mutate(
         {
           routineId,
@@ -124,13 +193,17 @@ export default function RoutinePlayerPage({
           stepsCompleted: steps.length,
           stepsTotal: steps.length,
           durationSeconds,
-          kidToken: kidMode?.kidToken,
+          kidToken: readKidToken() ?? undefined,
         },
         {
           onSuccess: (data) => {
+            // /complete clears the live row server-side.
+            finishedRef.current = true;
+            reporterRef.current?.cancel();
             setCompletionData({
               pointsEarned: data.pointsEarned || routine.reward_cents,
               duration: durationSeconds,
+              earlyBySeconds: finishedEarlyBy(durationSeconds, targetSeconds),
             });
             setShowCelebration(true);
           },
@@ -159,6 +232,7 @@ export default function RoutinePlayerPage({
         pointsEarned={completionData.pointsEarned}
         totalSteps={steps.length}
         duration={completionData.duration}
+        earlyBySeconds={completionData.earlyBySeconds}
         onContinue={() => router.push(`/kid/${childId}`)}
         color={routine.color}
       />
@@ -166,6 +240,7 @@ export default function RoutinePlayerPage({
   }
 
   const IconComponent = ROUTINE_ICONS[currentStep.icon as RoutineIconKey]?.icon;
+  const pictureUrl = currentStep.image_url ?? null;
 
   return (
     <div className="min-h-screen flex flex-col kid-mode-bg">
@@ -175,6 +250,7 @@ export default function RoutinePlayerPage({
           variant="ghost"
           size="sm"
           onClick={handleExit}
+          aria-label={t('player.goBack')}
           className="text-white hover:bg-white/20 rounded-xl"
         >
           <X className="w-6 h-6" />
@@ -184,6 +260,9 @@ export default function RoutinePlayerPage({
 
         <div className="w-10" /> {/* Spacer for centering */}
       </div>
+
+      {/* Whole-routine finish-by bar (Premium) */}
+      {targetSeconds ? <RoutineTimeBar startTime={startTime} targetSeconds={targetSeconds} /> : null}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -196,7 +275,7 @@ export default function RoutinePlayerPage({
             transition={{ type: 'spring', duration: 0.6, bounce: 0.4 }}
             className="w-full max-w-2xl text-center"
           >
-            {/* Step Icon */}
+            {/* Step picture (Premium) or icon */}
             <motion.div
               animate={{
                 scale: [1, 1.05, 1],
@@ -208,21 +287,42 @@ export default function RoutinePlayerPage({
               }}
               className="mb-8"
             >
-              <div
-                className="w-48 h-48 mx-auto rounded-full flex items-center justify-center shadow-2xl"
-                style={{
-                  backgroundColor: `${routine.color}20`,
-                  border: `8px solid ${routine.color}40`,
-                }}
-              >
-                {IconComponent && (
-                  <IconComponent className="w-28 h-28" style={{ color: routine.color, strokeWidth: 2.5 }} />
-                )}
-              </div>
+              {pictureUrl ? (
+                <div className="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto">
+                  {/* Signed storage URL, shown big so pre-readers can follow along. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={pictureUrl}
+                    alt={tpl(currentStep.title)}
+                    className="w-full h-full rounded-[2.5rem] object-cover shadow-2xl bg-white"
+                    style={{ border: `8px solid ${routine.color}` }}
+                  />
+                  {IconComponent && (
+                    <div className="absolute -bottom-3 -right-3 w-16 h-16 rounded-full bg-white shadow-xl flex items-center justify-center">
+                      <IconComponent className="w-9 h-9" style={{ color: routine.color, strokeWidth: 2.5 }} />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className="w-48 h-48 mx-auto rounded-full flex items-center justify-center shadow-2xl"
+                  style={{
+                    backgroundColor: `${routine.color}20`,
+                    border: `8px solid ${routine.color}40`,
+                  }}
+                >
+                  {IconComponent && (
+                    <IconComponent className="w-28 h-28" style={{ color: routine.color, strokeWidth: 2.5 }} />
+                  )}
+                </div>
+              )}
             </motion.div>
 
-            {/* Step Title */}
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 px-4">{tpl(currentStep.title)}</h1>
+            {/* Step Title + read aloud (free) */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-4 px-4">
+              <h1 className="text-5xl md:text-6xl font-black text-white">{tpl(currentStep.title)}</h1>
+              <ReadAloudButton onSpeak={speakStep} label={t('player.readAloud')} color={routine.color} />
+            </div>
 
             {/* Step Description */}
             {currentStep.description && (

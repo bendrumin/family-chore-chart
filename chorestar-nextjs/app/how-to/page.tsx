@@ -10,6 +10,7 @@ import {
   PlusCircle, Key, Link2, Smartphone, Play, CheckCircle2,
   PartyPopper, Settings, Copy, Edit3,
   Wallet, Banknote, HandCoins, Target, Gift, Camera, CalendarDays,
+  Volume2, Timer, Wand2, Radio,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -107,6 +108,22 @@ const tutorials: Tutorial[] = [
       { text: 'After the last step, confetti! A celebration screen rewards the effort.', icon: <PartyPopper className="w-4 h-4" /> },
     ],
     tip: 'That little burst of positive reinforcement goes a long way toward building habits that actually stick.',
+  },
+  {
+    emoji: '🖼️',
+    title: 'Picture Routines for Pre-Readers & ADHD-Friendly Routines',
+    slug: 'picture-routines',
+    accent: '#d946ef',
+    intro:
+      "Kids who can't read yet, or who lose the thread halfway through, do better with one clear picture, a voice, and a calm clock. Here is how to set a routine up that way.",
+    steps: [
+      { text: 'Open a routine in the builder and tap the camera on any step to use a photo instead of the icon, like their own toothbrush or the shoes by the door. (Premium)', icon: <Camera className="w-4 h-4" /> },
+      { text: 'Under Kid-Friendly Helpers, turn on Read each step aloud. Every step is spoken as it appears, and kids can tap the big speaker to hear it again. (Free)', icon: <Volume2 className="w-4 h-4" /> },
+      { text: 'Set a Finish-by timer, say 20 minutes. Kids see a calm bar shrink; there is no red and no fail state, and finishing early gets a cheer. (Premium)', icon: <Timer className="w-4 h-4" /> },
+      { text: 'Starting from scratch? Tap Build with AI and describe it: "school mornings, 7 year old, needs reminders to brush teeth". Edit the draft, then save. (Premium)', icon: <Wand2 className="w-4 h-4" /> },
+      { text: 'While they run it, your dashboard shows Happening now: which step they are on, so you can check in without hovering. (Premium)', icon: <Radio className="w-4 h-4" /> },
+    ],
+    tip: 'Keep steps to one action each ("Shoes on", not "Shoes and coat") and about six steps for little ones. Short wins build momentum.',
   },
   {
     emoji: '⚙️',

@@ -68,6 +68,11 @@ const en = {
   'player.finish': '🎉 Finish!',
   'player.done': '✓ Done!',
   'player.stepOf': 'Step {current} of {total}',
+  'player.readAloud': 'Read it to me',
+  'player.timeLeft': '{time} left',
+  'player.finishBy': 'Finish-by timer',
+  'player.keepGoing': "Keep going, you've got this! 💪",
+  'celebrate.early': 'Finished {time} early! 🚀',
 
   // Celebration screen
   'celebrate.youDidIt': 'You Did It!',
@@ -250,6 +255,11 @@ const es: Record<KidKey, string> = {
   'player.finish': '🎉 ¡Terminar!',
   'player.done': '✓ ¡Listo!',
   'player.stepOf': 'Paso {current} de {total}',
+  'player.readAloud': 'Léemelo',
+  'player.timeLeft': 'Quedan {time}',
+  'player.finishBy': 'Tiempo para terminar',
+  'player.keepGoing': '¡Sigue así, tú puedes! 💪',
+  'celebrate.early': '¡Terminaste {time} antes! 🚀',
 
   'celebrate.youDidIt': '¡Lo lograste!',
   'celebrate.complete': '¡Terminaste {name}!',
@@ -421,6 +431,11 @@ const pt: Record<KidKey, string> = {
   'player.finish': '🎉 Terminar!',
   'player.done': '✓ Pronto!',
   'player.stepOf': 'Passo {current} de {total}',
+  'player.readAloud': 'Leia para mim',
+  'player.timeLeft': 'Faltam {time}',
+  'player.finishBy': 'Tempo para terminar',
+  'player.keepGoing': 'Continue, você consegue! 💪',
+  'celebrate.early': 'Terminou {time} antes! 🚀',
 
   'celebrate.youDidIt': 'Você conseguiu!',
   'celebrate.complete': 'Você terminou {name}!',
@@ -592,6 +607,11 @@ const ar: Record<KidKey, string> = {
   'player.finish': '🎉 إنهاء!',
   'player.done': '✓ تم!',
   'player.stepOf': 'الخطوة {current} من {total}',
+  'player.readAloud': 'اقرأها لي',
+  'player.timeLeft': 'باقي {time}',
+  'player.finishBy': 'وقت الإنهاء',
+  'player.keepGoing': 'استمر، أنت تستطيع! 💪',
+  'celebrate.early': 'أنهيت قبل الوقت بـ {time}! 🚀',
 
   'celebrate.youDidIt': 'لقد نجحت!',
   'celebrate.complete': 'أكملت {name}!',
