@@ -11,11 +11,11 @@ import type { MoneyFeature } from '@/lib/utils/money'
  * Gated features plus Premium-only features added after the 2026-09-19
  * cutoff, which are not grandfathered (so they are not GatedFeature, whose
  * canUseFeature passes pre-cutoff accounts): the calendar feed, family
- * challenges, the routine upgrades (migration 032) and the money tools
- * (migration 030). The Billing source is `gate_<key>` either way.
+ * challenges, the routine upgrades (migration 032), the money tools
+ * (migration 030) and Star Pets (migration 034). The Billing source is `gate_<key>` either way.
  */
 export type RoutineGateFeature = 'routine_photos' | 'routine_timer' | 'ai_routine' | 'routine_live'
-export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges' | RoutineGateFeature | MoneyFeature
+export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges' | 'pet' | RoutineGateFeature | MoneyFeature
 export type PremiumGateFeature = PremiumGateKey
 
 /** Open Billing from a crowned button, logging why (paywall_events source). */
@@ -70,6 +70,10 @@ const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
   challenges: {
     title: 'Family challenges come with Premium',
     body: 'Siblings team up for a shared reward: 50 chores this week for pizza night, bedtime routines for movie night. Everyone sees the team bar fill up.',
+  },
+  pet: {
+    title: 'Star Pets grow all the way up with Premium',
+    body: 'All six pets, the teen, grown-up and rare star stages, hats, extras and habitats unlocked by level, and a new seasonal item to collect every month.',
   },
   routine_photos: {
     title: 'Picture steps come with Premium',

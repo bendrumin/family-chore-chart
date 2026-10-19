@@ -21,6 +21,7 @@ import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
 import { RoutineLiveCard } from '@/components/dashboard/routine-live-card'
+import { FamilyPetsCard } from '@/components/pets/family-pets-card'
 import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import { ShellTabBar, type ShellTab } from '@/components/dashboard/shell-tab-bar'
@@ -721,6 +722,9 @@ function DashboardContent({
                       timeZone={settings?.timezone}
                       currencyCode={settings?.currency_code}
                     />
+                    {/* Star Pets (migration 034): each kid's pet, level and
+                        mood. Free families also see the gate_pet upsell. */}
+                    <FamilyPetsCard refreshKey={children.length} />
                   </div>
                 ) : (
                   <div className="space-y-6">

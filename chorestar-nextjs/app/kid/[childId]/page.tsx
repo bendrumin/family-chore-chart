@@ -13,6 +13,7 @@ import { KidVacationCard } from '@/components/kid/kid-vacation-card';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
 import { KidChallenges } from '@/components/kid/kid-challenges';
 import { KidMoney } from '@/components/kid/kid-money';
+import { KidPet } from '@/components/kid/kid-pet';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
@@ -206,6 +207,11 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       {kidToken && onVacationToday && vacation && (
         <KidVacationCard kidToken={kidToken} endsOn={vacation.ends_on} />
       )}
+
+      {/* Star Pets (migration 034): the pet that grows from what the kid
+          does. Free families get the basic pet; renders nothing when a
+          parent switched pets off. Refetches after every tick. */}
+      {kidToken && <KidPet kidToken={kidToken} refreshKey={statsVersion} />}
 
       {/* Spend / Save / Give jars, screen-time minutes and money news
           (Premium). Renders nothing for a free family. */}
