@@ -9,10 +9,22 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Gift, Plus, Trash2, Target, Sparkles, Check, Archive, Lock } from 'lucide-react'
 import { formatMoney, currencySymbol, amountToCents, sanitizeAmountInput } from '@/lib/constants/currencies'
-import { STARTER_REWARD_ITEMS, FREE_STORE_ITEM_LIMIT, GOAL_EMOJIS, GOAL_MAX_CENTS } from '@/lib/constants/rewards'
+import { STARTER_REWARD_ITEMS, FREE_STORE_ITEM_LIMIT, FREE_GOAL_LIMIT, GOAL_EMOJIS, GOAL_MAX_CENTS } from '@/lib/constants/rewards'
+import { isFreeGoalLimitError } from '@/lib/utils/shared-chores'
 import { isPremium } from '@/lib/utils/subscription'
 import type { Database } from '@/lib/supabase/database.types'
 import type { Child } from '@/lib/types'
+
+/** Open Settings › Billing for the goal cap (the dashboard logs the paywall source). */
+function openGoalPaywall() {
+  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'limit_goals' } }))
+}
+
+function goalLimitToast() {
+  toast.error('One active goal per child on the free plan. Archive the current one first, or go Premium for more.', {
+    action: { label: 'See Premium', onClick: openGoalPaywall },
+  })
+}
 
 type RewardItem = Database['public']['Tables']['reward_items']['Row']
 type Goal = Database['public']['Tables']['goals']['Row']
@@ -192,8 +204,8 @@ export function RewardsTab() {
   const setGoalForChild = async (child: Child, title: string, emoji: string, cents: number) => {
     const supabase = createClient()
     const active = (goalsByChild.get(child.id) ?? []).filter(g => g.status === 'active')
-    if (active.length >= 1 && !premium) {
-      toast.error('One active goal per child on the free plan. Archive the current one first.')
+    if (active.length >= FREE_GOAL_LIMIT && !premium) {
+      goalLimitToast()
       return
     }
     const { error } = await supabase.from('goals').insert({
@@ -203,7 +215,10 @@ export function RewardsTab() {
       target_cents: cents,
       created_by: 'parent',
     })
-    if (error) toast.error('Could not save the goal')
+    // The database holds the cap too (migration 029), e.g. when Premium
+    // lapsed since this tab loaded.
+    if (error && isFreeGoalLimitError(error)) goalLimitToast()
+    else if (error) toast.error('Could not save the goal')
     else {
       toast.success(`${child.name} is now saving for ${emoji} ${title}`)
       await load()
@@ -456,6 +471,20 @@ function ChildGoalRow({
         <Button size="sm" variant="ghost" onClick={() => setAdding(true)} className="font-semibold">
           <Plus className="w-4 h-4 mr-1" /> Another goal
         </Button>
+      )}
+      {active.length >= FREE_GOAL_LIMIT && !premium && !adding && (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <Lock className="w-4 h-4" /> One active goal per child on the free plan.
+          </p>
+          <button
+            type="button"
+            onClick={openGoalPaywall}
+            className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 underline"
+          >
+            See Premium
+          </button>
+        </div>
       )}
 
       {adding && (
