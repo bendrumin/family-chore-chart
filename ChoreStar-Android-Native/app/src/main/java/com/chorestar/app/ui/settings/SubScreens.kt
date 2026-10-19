@@ -242,7 +242,14 @@ fun FamilySharingScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
                             busy = true; joinError = null
                             scope.launch {
                                 vm.joinFamily(joinCode).onSuccess { onBack() }.onFailure { e ->
-                                    joinError = when (e) { is ChoreStarRepository.JoinError.NotFound -> R.string.join_not_found; is ChoreStarRepository.JoinError.OwnFamily -> R.string.join_own_family; is ChoreStarRepository.JoinError.Already -> R.string.join_already; else -> R.string.error_generic }
+                                    joinError = when (e) {
+                                        is ChoreStarRepository.JoinError.NotFound -> R.string.join_not_found
+                                        is ChoreStarRepository.JoinError.OwnFamily -> R.string.join_own_family
+                                        is ChoreStarRepository.JoinError.Already -> R.string.join_already
+                                        is ChoreStarRepository.JoinError.NotPremium -> R.string.join_not_premium
+                                        is ChoreStarRepository.JoinError.TooManyAttempts -> R.string.join_too_many_attempts
+                                        else -> R.string.error_generic
+                                    }
                                 }
                                 busy = false
                             }
@@ -294,7 +301,7 @@ private val REWARD_EMOJI = listOf("🎁", "📱", "🌙", "🎬", "🍕", "🍦"
 /** iOS RewardStoreSettingsView: the things kids can ask for with their balance. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RewardStoreScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> Unit) {
+fun RewardStoreScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> Unit, onPaywall: () -> Unit) {
     val scope = rememberCoroutineScope()
     var title by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("🎁") }
@@ -332,8 +339,10 @@ fun RewardStoreScreen(vm: DashboardViewModel, state: DashboardState, onBack: () 
             }
             item {
                 SettingsCard(stringResource(R.string.add_a_reward)) {
-                    if (atLimit) Text("🔒 " + stringResource(R.string.store_free_limit), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    else {
+                    if (atLimit) {
+                        Text("🔒 " + stringResource(R.string.store_free_limit), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (!state.isPremium) Button(onClick = onPaywall) { Text("👑 " + stringResource(R.string.see_premium)) }
+                    } else {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             REWARD_EMOJI.forEach { e -> FilterChip(selected = e == emoji, onClick = { emoji = e }, label = { Text(e) }) }
                         }

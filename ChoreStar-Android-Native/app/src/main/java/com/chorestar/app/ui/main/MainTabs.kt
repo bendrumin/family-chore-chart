@@ -103,7 +103,9 @@ object Routes {
     const val SETTINGS_SHARING = "settings/sharing"
     const val SETTINGS_STORE = "settings/store"
     const val SETTINGS_DELETE = "settings/delete"
-    const val PAYWALL = "paywall"
+    const val PAYWALL = "paywall?source={source}"
+    /** source says what opened it, for paywall_events: limit_*, gate_*, settings_upgrade, link. */
+    fun paywall(source: String) = "paywall?source=" + android.net.Uri.encode(source)
     const val KID_AUTH = "kid/auth"
     const val WHATS_NEW = "whatsnew"
     const val ROUTINE_NEW = "routine/new?childId={childId}"
@@ -161,7 +163,7 @@ fun MainTabs(repository: ChoreStarRepository) {
             onboardingForced = true
         } else if (link.startsWith("/paywall")) {
             app.pendingLink.value = null
-            nav.navigate(Routes.PAYWALL)
+            nav.navigate(Routes.paywall(android.net.Uri.parse("https://chorestar.app" + link).getQueryParameter("source")?.takeIf { it.isNotBlank() } ?: "link"))
         } else if (link.startsWith("/dashboard")) {
             app.pendingLink.value = null
             if (state.kidModeChildId == null) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
@@ -258,10 +260,12 @@ fun MainTabs(repository: ChoreStarRepository) {
                     SettingsScreen(vm, state, email = repository.currentEmail, onSignOut = vm::signOut, onNavigate = { nav.navigate(it) })
                 }
                 composable(Routes.SETTINGS_REWARDS) { RewardsSettingsScreen(vm, state, onBack = { nav.popBackStack() }) }
-                composable(Routes.SETTINGS_SHARING) { FamilySharingScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.PAYWALL) }) }
-                composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.SETTINGS_SHARING) { FamilySharingScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall("gate_sharing")) }) }
+                composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall("limit_store_items")) }) }
                 composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
-                composable(Routes.PAYWALL) { PaywallScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.PAYWALL, arguments = listOf(navArgument("source") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
+                    PaywallScreen(vm, state, source = entry.arguments?.getString("source") ?: "unknown", onBack = { nav.popBackStack() })
+                }
                 composable(Routes.WHATS_NEW) { WhatsNewScreen(onBack = { nav.popBackStack() }) }
                 composable(Routes.KID_AUTH) {
                     ChildAuthScreen(state, repository.kid, onBack = { nav.popBackStack() }, onAuthenticated = { c -> nav.popBackStack(); vm.enterKidMode(c.id) })
@@ -332,7 +336,7 @@ fun MainTabs(repository: ChoreStarRepository) {
             type = type,
             currentCount = if (type == com.chorestar.app.ui.components.LimitType.Children) state.children.size else state.chores.size,
             limit = if (type == com.chorestar.app.ui.components.LimitType.Children) state.childLimit else state.choreLimit,
-            onSeePlans = { vm.dismissUpgradePrompt(); nav.navigate(Routes.PAYWALL) },
+            onSeePlans = { vm.dismissUpgradePrompt(); nav.navigate(Routes.paywall(if (type == com.chorestar.app.ui.components.LimitType.Children) "limit_children" else "limit_chores")) },
             onDismiss = vm::dismissUpgradePrompt,
         )
     }

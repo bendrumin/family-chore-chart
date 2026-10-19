@@ -71,10 +71,10 @@ android {
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).
-        versionCode = 8
+        versionCode = 9
         // ChoreStar's FIRST Android release. 2.x is the iOS train's numbering and
         // does not belong on Play; versionCode keeps rising independently.
-        versionName = "1.0"
+        versionName = "1.0.1"
 
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseValue("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseValue("SUPABASE_ANON_KEY")}\"")
@@ -145,4 +145,6 @@ dependencies {
 
     // Image loading (photo avatars) returns with a Coil that targets Compose 1.10;
     // Coil 3.6 pulls Compose 1.12, which needs SDK 37.
+
+    testImplementation("junit:junit:4.13.2")
 }

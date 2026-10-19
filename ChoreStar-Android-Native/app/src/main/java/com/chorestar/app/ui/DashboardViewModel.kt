@@ -278,6 +278,11 @@ class DashboardViewModel(
 
     suspend fun joinFamily(code: String): Result<String> = repository.joinFamily(code).onSuccess { refresh() }
 
+    /** Fire-and-forget: records what opened the paywall; never blocks or surfaces an error. */
+    fun logPaywallOpen(source: String) {
+        viewModelScope.launch { runCatching { repository.logPaywallOpen(source) } }
+    }
+
     fun removeMember(rowId: String) {
         viewModelScope.launch {
             _state.update { it.copy(members = it.members.filterNot { m -> m.id == rowId }) }

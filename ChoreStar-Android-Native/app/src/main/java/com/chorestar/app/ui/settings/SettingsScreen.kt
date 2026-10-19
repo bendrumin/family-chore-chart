@@ -138,7 +138,7 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
         // Theme gallery
         item {
             SettingsCard(stringResource(R.string.theme_section)) {
-                ThemeGallery(theme, isPremium = state.canUseGated, onSelect = { id, locked -> if (locked) onNavigate(Routes.PAYWALL) else vm.setThemeSelection(id) })
+                ThemeGallery(theme, isPremium = state.canUseGated, onSelect = { id, locked -> if (locked) onNavigate(Routes.paywall("gate_themes")) else vm.setThemeSelection(id) })
                 Spacer(Modifier.height(6.dp))
                 val footer = when {
                     theme.accentHex != null -> stringResource(R.string.theme_footer_accent)
@@ -189,7 +189,7 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
             SettingsCard(stringResource(R.string.subscription)) {
                 ValueRow(stringResource(R.string.plan), (state.profile?.subscriptionType ?: "free").replaceFirstChar { it.uppercase() } + if (state.isPremium) " 👑" else "")
                 if (!state.isPremium) {
-                    NavRow(stringResource(R.string.upgrade_to_premium), stringResource(R.string.upgrade_subtitle)) { onNavigate(Routes.PAYWALL) }
+                    NavRow(stringResource(R.string.upgrade_to_premium), stringResource(R.string.upgrade_subtitle)) { onNavigate(Routes.paywall("settings_upgrade")) }
                     NavRow(stringResource(R.string.restore_purchases), null) { app.billing.restore() }
                 } else {
                     NavRow(stringResource(R.string.manage_subscription), stringResource(R.string.manage_subscription_subtitle)) {

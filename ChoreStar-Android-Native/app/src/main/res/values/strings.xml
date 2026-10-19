@@ -371,9 +371,12 @@
     <string name="enter_invite_code">@string/enter_invite_code_a6423</string>
     <string name="join_family">@string/join_family_9900d</string>
     <string name="join_footer">Got a code from your partner? Enter it here to manage their family together. Your view switches to their family\'s chores.</string>
-    <string name="join_not_found">That code doesn\'t match any family. Double-check it and try again.</string>
+    <string name="join_not_found">Code not found. Double-check it and try again.</string>
     <string name="join_own_family">That\'s your own family code.</string>
     <string name="join_already">You\'ve already joined this family.</string>
+    <string name="join_not_premium">That family needs Premium to share. Ask the owner to upgrade.</string>
+    <string name="join_too_many_attempts">Too many tries. Wait an hour and try again.</string>
+    <string name="paywall_owner_buys">Premium is bought by the family owner. Ask them to upgrade, and your phone gets it too.</string>
     <string name="family_membership">@string/family_membership_a0e29</string>
     <string name="sharing_another_family">@string/you_re_sharing_another_family_s_chores_238a6</string>
     <string name="leave_family">@string/leave_family_0b1af</string>
