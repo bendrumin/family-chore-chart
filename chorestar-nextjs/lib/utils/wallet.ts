@@ -3,6 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { childTotalEarningsCents, owedCents, type DatedCompletion } from '@/lib/utils/earnings'
 import { isPremium } from '@/lib/utils/subscription'
 import { FREE_GOAL_LIMIT, FREE_STORE_ITEM_LIMIT } from '@/lib/constants/rewards'
+import { challengeRewardCents } from '@/lib/challenges/server'
 
 /**
  * The kid's wallet, server-side (migration 011 + 017).
@@ -68,6 +69,10 @@ export async function computeBalance(child: WalletChild): Promise<Balance> {
     ])
     earned = childTotalEarningsCents(choreList, (completions ?? []) as DatedCompletion[], settings)
   }
+
+  // Delivered family challenges with money attached (migration 031) credit
+  // each kid through a ledger, the mirror image of allowance_payouts.
+  earned += await challengeRewardCents(child.id)
 
   const { data: payouts } = await admin.from('allowance_payouts').select('amount_cents').eq('child_id', child.id)
   const paid = (payouts ?? []).reduce((sum, p) => sum + (p.amount_cents ?? 0), 0)

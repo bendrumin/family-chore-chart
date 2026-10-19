@@ -12,7 +12,8 @@ import type { GatedFeature } from '@/lib/utils/subscription'
  * canUseFeature passes pre-cutoff accounts). The Billing source is
  * `gate_<key>` either way.
  */
-export type PremiumGateKey = GatedFeature | 'calendar'
+export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges'
+export type PremiumGateFeature = PremiumGateKey
 
 const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
   themes: {
@@ -35,6 +36,10 @@ const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
     title: 'The family calendar feed comes with Premium',
     body: 'Kids\' chores and routines in Apple Calendar, Google Calendar, Outlook or a wall calendar, updated automatically.',
   },
+  challenges: {
+    title: 'Family challenges come with Premium',
+    body: 'Siblings team up for a shared reward: 50 chores this week for pizza night, bedtime routines for movie night. Everyone sees the team bar fill up.',
+  },
 }
 
 /**
@@ -42,7 +47,15 @@ const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
  * shell it states the limit with no purchase CTA (Play policy), the same
  * split the child and chore caps use.
  */
-export function PremiumGate({ feature, compact = false }: { feature: PremiumGateKey; compact?: boolean }) {
+export function PremiumGate({
+  feature,
+  compact = false,
+  ctaLabel = 'Open Billing',
+}: {
+  feature: PremiumGateKey
+  compact?: boolean
+  ctaLabel?: string
+}) {
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 
@@ -78,7 +91,7 @@ export function PremiumGate({ feature, compact = false }: { feature: PremiumGate
         onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
       >
         <Crown className="w-4 h-4 mr-2" />
-        Open Billing
+        {ctaLabel}
       </Button>
     </div>
   )
