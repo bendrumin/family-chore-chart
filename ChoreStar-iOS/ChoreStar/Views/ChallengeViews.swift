@@ -480,7 +480,9 @@ struct KidChallengesCard: View {
     @State private var celebrate = false
 
     var body: some View {
-        Group {
+        // A VStack, not a Group: the .task must stay on one stable view, or
+        // it restarts (and cuts the celebration short) when the card appears.
+        VStack(spacing: 0) {
             if let response, !response.challenges.isEmpty {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Team challenge")
@@ -519,8 +521,10 @@ struct KidChallengesCard: View {
             celebrate = true
             SoundManager.shared.play(.cheer)
             Haptics.success()
-            try? await Task.sleep(nanoseconds: 4_000_000_000)
-            celebrate = false
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 4_000_000_000)
+                celebrate = false
+            }
         }
     }
 

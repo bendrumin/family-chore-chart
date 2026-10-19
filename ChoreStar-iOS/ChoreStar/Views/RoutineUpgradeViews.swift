@@ -12,7 +12,8 @@ struct LiveRoutinesCard: View {
     @State private var showingPaywall = false
 
     var body: some View {
-        Group {
+        // A VStack, not a Group, so the polling task stays on one view.
+        VStack(spacing: 0) {
             if !items.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {

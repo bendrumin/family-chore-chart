@@ -43,16 +43,15 @@ struct MoneySettingsView: View {
                             .pickerStyle(.segmented)
                         }
                     }
-                    if let index = response.kids.firstIndex(where: { $0.childId == selected }),
-                       response.kids[index].isDetailed {
+                    if let kid = response.kids.first(where: { $0.childId == selected }), kid.isDetailed {
                         KidMoneyPanel(
                             kid: Binding(
-                                get: { self.response?.kids[index] ?? response.kids[index] },
+                                get: { self.response?.kids.first { $0.childId == kid.childId } ?? kid },
                                 set: { replaceKid($0) }
                             ),
                             currencyCode: response.currencyCode
                         )
-                        .id(response.kids[index].childId)
+                        .id(kid.childId)
                     }
                 }
             } else {
@@ -215,16 +214,11 @@ struct KidMoneyPanel: View {
     private var balance: Int { kid.balance?.balanceCents ?? 0 }
 
     var body: some View {
-        Group {
-            balanceSection
-            jarsSection
-            scheduleSection
-            finesSection
-            minutesSection
-            activitySection
-        }
-        .onAppear(perform: syncFromKid)
-        .alert(isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
+        // Presentation modifiers go on ONE section: on a Group they would be
+        // copied onto every section and present more than once.
+        balanceSection
+            .onAppear(perform: syncFromKid)
+            .alert(isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
             Alert(title: Text(notice ?? ""))
         }
         .sheet(isPresented: Binding(get: { paywallSource != nil }, set: { if !$0 { paywallSource = nil } })) {
@@ -238,6 +232,13 @@ struct KidMoneyPanel: View {
             Button("Turn off jars", role: .destructive) {
                 Task { await post("jars", ["enabled": false, "spend": 100, "save": 0, "give": 0], .jars, success: String(localized: "Jars off. Everything is one balance again.")) }
             }
+        }
+        Group {
+            jarsSection
+            scheduleSection
+            finesSection
+            minutesSection
+            activitySection
         }
         .disabled(busy)
     }
