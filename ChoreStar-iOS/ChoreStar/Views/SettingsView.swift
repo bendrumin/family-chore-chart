@@ -7,7 +7,6 @@ struct SettingsView: View {
     @ObservedObject var soundManager = SoundManager.shared
     @Environment(\.colorScheme) var colorScheme
     @AppStorage("darkModePreference") private var darkModePreference: DarkModePreference = .system
-    @AppStorage("seasonalTheme") private var seasonalThemeSetting: String = "auto"
     @State private var buttonPressCount = 0
     @State private var showingChangePassword = false
     @State private var showingPaywall = false
@@ -17,8 +16,6 @@ struct SettingsView: View {
     @State private var hasAppleSubscription = false
     @State private var showingWhatsNew = false
     @State private var showingDeleteAccount = false
-    @State private var customAccent: Color = .choreStarPrimary
-    @State private var accentSaveTask: Task<Void, Never>?
     @AppStorage("dailyReminderEnabled") private var reminderEnabled = false
     @AppStorage("dailyReminderTime") private var reminderTimeStorage: Double = NotificationsManager.defaultReminderTimeInterval
     @State private var activityPushEnabled = true
@@ -48,81 +45,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Appearance") {
-                    Picker("Theme", selection: $darkModePreference) {
-                        ForEach(DarkModePreference.allCases, id: \.self) { preference in
-                            Text(LocalizedStringKey(preference.rawValue)).tag(preference)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    
-                    HStack {
-                        Image(systemName: colorScheme == .dark ? "moon.fill" : "sun.max.fill")
-                            .foregroundColor(colorScheme == .dark ? .purple : .orange)
-                        Text("Current Theme")
-                        Spacer()
-                        Text(colorScheme == .dark ? "Dark" : "Light")
-                            .foregroundColor(.choreStarTextSecondary)
-                    }
-                }
-                
                 Section {
-                    ThemeGalleryView(
-                        selection: $seasonalThemeSetting,
-                        isPremiumUser: manager.canUse(.themes),
-                        onPremiumLocked: { paywallSource = "theme_locked"; showingPaywall = true }
-                    )
-                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                    .listRowBackground(Color.clear)
-                    .onChange(of: seasonalThemeSetting) { _, newValue in
-                        Task { await manager.setSeasonalThemePreference(newValue) }
-                    }
-                } header: {
-                    Text("Theme")
-                } footer: {
-                    if themeManager.customAccentHex != nil {
-                        Text("Custom accent overrides the theme colours. Theme choice syncs with the web app.")
-                    } else if let activeTheme = themeManager.activeTheme {
-                        Text("Active: \(activeTheme.emoji) \(activeTheme.displayName). Synced with the web app.")
-                    } else {
-                        Text("Theme choice syncs with the web app.")
+                    // Mode, the theme gallery and the accent colour live on their
+                    // own screen; the gallery alone used to fill Settings.
+                    NavigationLink {
+                        AppearanceSettingsView()
+                    } label: {
+                        AppearanceSummaryRow(mode: darkModePreference)
                     }
                 }
 
-                Section {
-                    // The ten preset swatches Android and the web offer; the picker below is for anything else.
-                    accentSwatches
-                    ColorPicker(selection: $customAccent, supportsOpacity: false) {
-                        HStack {
-                            Image(systemName: "paintpalette.fill")
-                                .foregroundColor(themeManager.accentColor)
-                            Text("Custom Accent")
-                        }
-                    }
-                    .onChange(of: customAccent) { _, newValue in
-                        // ColorPicker fires continuously while dragging; debounce
-                        // so we save the colour they settle on, not 60 writes/sec.
-                        accentSaveTask?.cancel()
-                        guard let hex = newValue.hexRGBString else { return }
-                        accentSaveTask = Task {
-                            try? await Task.sleep(nanoseconds: 700_000_000)
-                            guard !Task.isCancelled else { return }
-                            _ = await manager.setCustomAccentColor(hex)
-                        }
-                    }
-
-                    if themeManager.customAccentHex != nil {
-                        Button("Reset to Theme Colours") {
-                            accentSaveTask?.cancel()
-                            Task { _ = await manager.setCustomAccentColor(nil) }
-                        }
-                    }
-                } header: {
-                    Text("Accent Colour")
-                } footer: {
-                    Text("Synced with the web app. Pick a colour once and every device follows.")
-                }
-                
                 Section("Audio") {
                     Toggle(isOn: $soundManager.isSoundEnabled) {
                         HStack {
@@ -530,9 +462,6 @@ struct SettingsView: View {
                 }
             }
             .onAppear {
-                if let hex = themeManager.customAccentHex, let c = Color(hexString: hex) {
-                    customAccent = c
-                }
                 activityPushEnabled = manager.familySettings?.activityPushOn ?? true
                 weeklyReport = manager.familySettings?.weeklyReportEmail ?? false
                 requireApproval = manager.familySettings?.requireApproval ?? false
@@ -607,68 +536,6 @@ struct SettingsView: View {
             }
         }
     }
-
-    /// Same ten colours as Android's accent row and the web's picker.
-
-    private static let accentPresets = ["#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f97316", "#f59e0b", "#10b981", "#14b8a6", "#0284c7", "#3b82f6"]
-
-
-    private var accentSwatches: some View {
-
-        let current = themeManager.customAccentHex?.lowercased()
-
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
-
-            ForEach(Self.accentPresets, id: \.self) { hex in
-
-                let color = Color(hexString: hex) ?? .choreStarPrimary
-
-                let isSelected = current == hex
-
-                Button {
-
-                    Haptics.light()
-
-                    customAccent = color
-
-                } label: {
-
-                    ZStack {
-
-                        Circle().fill(color)
-
-                        if isSelected {
-
-                            Image(systemName: "checkmark")
-
-                                .font(.caption.weight(.bold))
-
-                                .foregroundColor(.white)
-
-                        }
-
-                    }
-
-                    .frame(width: 40, height: 40)
-
-                    .overlay(Circle().strokeBorder(isSelected ? Color.choreStarTextPrimary : Color.clear, lineWidth: 2.5))
-
-                }
-
-                .buttonStyle(PlainButtonStyle())
-
-                .accessibilityLabel(hex)
-
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-
-            }
-
-        }
-
-        .padding(.vertical, 6)
-
-    }
-
 
     private func iconForPreference(_ preference: DarkModePreference) -> String {
         switch preference {

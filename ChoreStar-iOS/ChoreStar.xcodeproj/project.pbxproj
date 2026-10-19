@@ -17,6 +17,7 @@
 		C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000010 /* ChallengeViews.swift */; };
 		C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */; };
 		C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000014 /* CalendarFeedView.swift */; };
+		C0FFEE2550000000000000A2 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */; };
 		C0FFEE253000000000000017 /* MoneyLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000016 /* MoneyLogicTests.swift */; };
 		C0FFEE253000000000000019 /* ChallengeProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000018 /* ChallengeProgressTests.swift */; };
 		C0FFEE25300000000000001B /* RoutineUpgradesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000001A /* RoutineUpgradesTests.swift */; };
@@ -151,6 +152,7 @@
 		C0FFEE253000000000000010 /* ChallengeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeViews.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgradeViews.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000014 /* CalendarFeedView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeedView.swift; sourceTree = "<group>"; };
+		C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000016 /* MoneyLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoneyLogicTests.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000018 /* ChallengeProgressTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeProgressTests.swift; sourceTree = "<group>"; };
 		C0FFEE25300000000000001A /* RoutineUpgradesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgradesTests.swift; sourceTree = "<group>"; };
@@ -468,6 +470,7 @@
 				AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */,
 				98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */,
 				C0FFEE253000000000000014 /* CalendarFeedView.swift */,
+				C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */,
 				C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */,
 				C0FFEE253000000000000010 /* ChallengeViews.swift */,
 				C0FFEE25300000000000000E /* MoneyViews.swift */,
@@ -784,6 +787,7 @@
 				8D89B23C2B6AC8EB8C9B54BF /* Entitlements.swift in Sources */,
 				F00D2A5C0000000000000001 /* FamilyJoin.swift in Sources */,
 				C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */,
+				C0FFEE2550000000000000A2 /* AppearanceSettingsView.swift in Sources */,
 				C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */,
 				C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */,
 				C0FFEE25300000000000000F /* MoneyViews.swift in Sources */,
