@@ -305,6 +305,13 @@ struct DashboardView: View {
                         // Ticks waiting for the parent's OK (approval mode / photo
                         // chores). Renders nothing when there is nothing to review.
                         ApprovalTrayView()
+
+                        // A kid mid-routine right now (2.5.3). Hidden when none.
+                        LiveRoutinesCard()
+
+                        // Siblings working toward a shared reward (2.5.3).
+                        // Hidden for one-kid families.
+                        FamilyChallengesCard()
                     }
                     .padding(.horizontal, 20)
 

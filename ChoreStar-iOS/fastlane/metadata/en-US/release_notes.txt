@@ -1,9 +1,9 @@
-Version 2.5.2: clearer upgrades, safer sharing.
+Version 2.5.3: money jars, team challenges, and routines for younger kids.
 
-• Reached the free limit of 3 kids or 20 chores? Tapping add now shows Premium straight away, before you fill in the form
-• Co-parents can see that the family owner buys Premium, and their iPhone gets it too
-• Family sharing is safer: joining with a code is now checked on our server
-• Owners on the free plan can still remove a co-parent and replace or turn off their invite code
-• The Premium list now includes the weekly family report email
+• Spend, Save, Give (Premium): split what each kid earns into three jars, pay a weekly allowance on your day, add interest on Save, take off a fine with a reason, set up a weekly payback, and reward screen-time minutes. Kids see their jars and money news on their own screen
+• Family challenges (Premium): siblings team up for a shared reward, like 50 chores this week for pizza night, with a team progress bar and confetti when they get there
+• Read-aloud routines, free for everyone: a speaker button reads each step out loud, and a routine can read every step by itself
+• Picture steps, a calm finish-by timer, Build with AI, and a Happening now view of who is mid-routine (Premium)
+• Family calendar feed (Premium): add chores and routines to Apple Calendar, Google Calendar or Outlook
 
 Questions or feedback are welcome at hi@chorestar.app

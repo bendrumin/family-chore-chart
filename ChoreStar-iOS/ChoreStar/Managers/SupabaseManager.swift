@@ -138,7 +138,7 @@ class SupabaseManager: ObservableObject {
 
     private static let kidModeSessionKey = "kid_mode_session"
     
-    private static let appBaseURL = "https://chorestar.app"
+    static let appBaseURL = "https://chorestar.app"
     
     // Debug properties
     @Published var debugSupabaseURL: String?
@@ -155,7 +155,7 @@ class SupabaseManager: ObservableObject {
     /// parent to name their family, then clears it.
     @Published var needsFamilyName = false
     
-    private var client: SupabaseClient?
+    private(set) var client: SupabaseClient?
     
     private init() {
         setupSupabase()
@@ -611,16 +611,19 @@ class SupabaseManager: ObservableObject {
         }
     }
 
-    private struct KidRoutineStepRow: Codable {
+    struct KidRoutineStepRow: Codable {
         let id: UUID
         let title: String
         let description: String?
         let icon: String?
         let order_index: Int?
         let duration_seconds: Int?
+        // Migration 032: the picture's path and a signed URL from the server.
+        let image_path: String?
+        let image_url: String?
     }
 
-    private struct KidRoutineRow: Codable {
+    struct KidRoutineRow: Codable {
         let id: UUID
         let child_id: UUID
         let name: String
@@ -633,6 +636,38 @@ class SupabaseManager: ObservableObject {
         let updated_at: String?
         let routine_steps: [KidRoutineStepRow]?
         let completedToday: Bool?
+        let auto_read_aloud: Bool?
+        let target_duration_seconds: Int?
+        let reward_minutes: Int?
+        // Only GET /api/routines/[id] sends these (the player's plan and language).
+        let family_premium: Bool?
+        let family_language: String?
+
+        /// The app's Routine for this API row.
+        func toRoutine() -> Routine {
+            let iso = ISO8601DateFormatter()
+            let steps = (routine_steps ?? [])
+                .sorted { ($0.order_index ?? 0) < ($1.order_index ?? 0) }
+                .map { s in
+                    RoutineStep(
+                        id: s.id, routineId: id, title: s.title, description: s.description,
+                        icon: s.icon ?? "circle", orderIndex: s.order_index ?? 0,
+                        durationSeconds: s.duration_seconds, createdAt: Date(),
+                        imagePath: s.image_path, imageURL: s.image_url.flatMap(URL.init(string:))
+                    )
+                }
+            return Routine(
+                id: id, childId: child_id, name: name, type: type,
+                icon: icon ?? "list.bullet", color: color ?? "#6366f1",
+                rewardCents: reward_cents ?? 7, isActive: is_active ?? true,
+                createdAt: iso.date(from: created_at ?? "") ?? Date(),
+                updatedAt: iso.date(from: updated_at ?? "") ?? Date(),
+                steps: steps,
+                autoReadAloud: auto_read_aloud ?? false,
+                targetDurationSeconds: target_duration_seconds,
+                rewardMinutes: reward_minutes ?? 0
+            )
+        }
     }
 
     /// Loads the kid's active routines through the web API (Bearer kid token bypasses RLS server-side).
@@ -702,6 +737,18 @@ class SupabaseManager: ObservableObject {
         let reachedGoals: [Goal]
         let store: [StoreItem]
         let limits: Limits
+        // Premium money (migration 030). Absent on older servers; jars,
+        // minutes and news are null/empty for a free family.
+        /// Signed: below zero means the kid owes a parent.
+        let balanceCents: Int?
+        /// What the store can use: Spend with jars on, else the balance.
+        let spendableCents: Int?
+        let jars: MoneyLogic.Jars?
+        let minutes: MoneyLogic.Minutes?
+        let moneyNews: [MoneyLogic.LedgerItem]?
+
+        /// The store's "to spend": Spend when the server says, else the balance.
+        var spendable: Int { spendableCents ?? owedCents }
     }
 
     /// A reward_items row (the family's store). Written through RLS as a parent.
@@ -1051,35 +1098,7 @@ class SupabaseManager: ObservableObject {
             }
 
             let rows = try JSONDecoder().decode([KidRoutineRow].self, from: data)
-            let isoFormatter = ISO8601DateFormatter()
-
-            let mapped = rows.map { row in
-                let steps = (row.routine_steps ?? []).map { stepRow in
-                    RoutineStep(
-                        id: stepRow.id,
-                        routineId: row.id,
-                        title: stepRow.title,
-                        description: stepRow.description,
-                        icon: stepRow.icon ?? "circle",
-                        orderIndex: stepRow.order_index ?? 0,
-                        durationSeconds: stepRow.duration_seconds,
-                        createdAt: Date()
-                    )
-                }
-                return Routine(
-                    id: row.id,
-                    childId: row.child_id,
-                    name: row.name,
-                    type: row.type,
-                    icon: row.icon ?? "list.bullet",
-                    color: row.color ?? "#6366f1",
-                    rewardCents: row.reward_cents ?? 7,
-                    isActive: row.is_active ?? true,
-                    createdAt: isoFormatter.date(from: row.created_at ?? "") ?? Date(),
-                    updatedAt: isoFormatter.date(from: row.updated_at ?? "") ?? Date(),
-                    steps: steps
-                )
-            }
+            let mapped = rows.map { $0.toRoutine() }
 
             let doneIds = Set(rows.filter { $0.completedToday == true }.map(\.id))
 
@@ -1529,7 +1548,7 @@ class SupabaseManager: ObservableObject {
     // MARK: - Approval mode (migration 016)
 
     /// Bearer token for the web API: the parent's Supabase access token.
-    private func parentBearerToken() async -> String? {
+    func parentBearerToken() async -> String? {
         #if canImport(Supabase)
         guard let client = client else { return nil }
         return try? await client.auth.session.accessToken
@@ -1711,7 +1730,7 @@ class SupabaseManager: ObservableObject {
     /// A kid-facing API call with whichever credential this device holds: the
     /// kid session token on a kid's device, or the parent's JWT (plus the child
     /// id) in kid mode on a parent's device. Returns (data, status).
-    private func kidAPI(
+    func kidAPI(
         path: String,
         method: String,
         childId: UUID,
@@ -4693,7 +4712,18 @@ class SupabaseManager: ObservableObject {
             
             let stepsByRoutine = Dictionary(grouping: stepRows, by: { $0.routine_id })
             let isoFormatter = ISO8601DateFormatter()
-            
+
+            // Picture steps (032): sign every in-family path in one call.
+            let ownerByChild = Dictionary(currentChildren.map { ($0.id, $0.userId.uuidString.lowercased()) }, uniquingKeysWith: { a, _ in a })
+            let photoPaths = stepRows.compactMap { step -> String? in
+                guard let path = step.image_path,
+                      let routine = routineRows.first(where: { $0.id == step.routine_id }),
+                      let owner = ownerByChild[routine.child_id],
+                      RoutineUpgrades.isStepPhotoPath(path, ownerId: owner) else { return nil }
+                return path
+            }
+            let photoURLs = await signStepPhotos(photoPaths)
+
             let mapped = routineRows.map { row in
                 let steps = (stepsByRoutine[row.id] ?? []).map { stepRow in
                     RoutineStep(
@@ -4704,7 +4734,9 @@ class SupabaseManager: ObservableObject {
                         icon: stepRow.icon ?? "circle",
                         orderIndex: stepRow.order_index ?? 0,
                         durationSeconds: stepRow.duration_seconds,
-                        createdAt: isoFormatter.date(from: stepRow.created_at) ?? Date()
+                        createdAt: isoFormatter.date(from: stepRow.created_at) ?? Date(),
+                        imagePath: stepRow.image_path,
+                        imageURL: stepRow.image_path.flatMap { photoURLs[$0] }
                     )
                 }
                 return Routine(
@@ -4718,10 +4750,13 @@ class SupabaseManager: ObservableObject {
                     isActive: row.is_active ?? true,
                     createdAt: isoFormatter.date(from: row.created_at) ?? Date(),
                     updatedAt: isoFormatter.date(from: row.updated_at) ?? Date(),
-                    steps: steps
+                    steps: steps,
+                    autoReadAloud: row.auto_read_aloud ?? false,
+                    targetDurationSeconds: row.target_duration_seconds,
+                    rewardMinutes: row.reward_minutes ?? 0
                 )
             }
-            
+
             // Today's completions drive "Done!" badges and replay prevention
             struct CompletionIdRow: Codable {
                 let routine_id: UUID
@@ -4757,13 +4792,67 @@ class SupabaseManager: ObservableObject {
         #endif
     }
     
+    /// One step as the builder saves it. `imagePath` is a picture from
+    /// POST /api/routines/step-photo (Premium), or one already on the routine.
+    struct RoutineStepInput {
+        let title: String
+        let icon: String
+        let durationSeconds: Int?
+        var imagePath: String? = nil
+    }
+
+    /// Routines are written straight to Supabase under RLS (the web's routine
+    /// API takes cookie sessions only). The 032 columns are only sent when they
+    /// carry something, so a database without the migration still saves plain
+    /// routines, and the Premium rules are applied here the way the web route
+    /// applies them: finish-by is set only on Premium (anyone may clear it),
+    /// and new pictures only on Premium (a lapsed family keeps existing ones).
+    private struct RoutineStepInsert: Encodable {
+        let routine_id: String
+        let title: String
+        let icon: String
+        let order_index: Int
+        let duration_seconds: Int?
+        let image_path: String?
+    }
+
+    private func stepInserts(routineId: UUID, steps: [RoutineStepInput], ownerId: String, childId: UUID, existing: Set<String>) -> [RoutineStepInsert] {
+        let premium = isPremium
+        return steps.enumerated().map { index, step in
+            RoutineStepInsert(
+                routine_id: routineId.uuidString,
+                title: step.title,
+                icon: step.icon,
+                order_index: index,
+                duration_seconds: step.durationSeconds,
+                image_path: RoutineUpgrades.allowedImagePath(
+                    step.imagePath, ownerId: ownerId, childId: childId.uuidString,
+                    premium: premium, existing: existing)
+            )
+        }
+    }
+
+    private func ownerId(ofChild childId: UUID) async -> String {
+        let child = await MainActor.run { children.first { $0.id == childId } }
+        return (child?.userId.uuidString ?? effectiveUserId ?? "").lowercased()
+    }
+
     func createRoutine(name: String, childId: UUID, type: String, icon: String, color: String,
                        rewardCents: Int, steps: [(title: String, icon: String, durationSeconds: Int?)]) async throws {
+        try await createRoutine(
+            name: name, childId: childId, type: type, icon: icon, color: color, rewardCents: rewardCents,
+            stepInputs: steps.map { RoutineStepInput(title: $0.title, icon: $0.icon, durationSeconds: $0.durationSeconds) }
+        )
+    }
+
+    func createRoutine(name: String, childId: UUID, type: String, icon: String, color: String,
+                       rewardCents: Int, stepInputs steps: [RoutineStepInput],
+                       autoReadAloud: Bool = false, targetDurationSeconds: Int? = nil) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+
         struct NewRoutineRow: Encodable {
             let id: String
             let child_id: String
@@ -4773,8 +4862,12 @@ class SupabaseManager: ObservableObject {
             let color: String
             let reward_cents: Int
             let is_active: Bool
+            // Omitted when nil (synthesized encodeIfPresent).
+            let auto_read_aloud: Bool?
+            let target_duration_seconds: Int?
         }
-        
+
+        let premium = await MainActor.run { isPremium }
         let routineId = UUID()
         let newRoutine = NewRoutineRow(
             id: routineId.uuidString,
@@ -4784,55 +4877,54 @@ class SupabaseManager: ObservableObject {
             icon: icon,
             color: color,
             reward_cents: rewardCents,
-            is_active: true
+            is_active: true,
+            auto_read_aloud: autoReadAloud ? true : nil,
+            target_duration_seconds: premium ? targetDurationSeconds : nil
         )
-        
+
         try await client
             .from("routines")
             .insert(newRoutine)
             .execute()
-        
-        struct NewStepRow: Encodable {
-            let routine_id: String
-            let title: String
-            let icon: String
-            let order_index: Int
-            let duration_seconds: Int?
-        }
-        
+
         if !steps.isEmpty {
-            let stepRows = steps.enumerated().map { index, step in
-                NewStepRow(
-                    routine_id: routineId.uuidString,
-                    title: step.title,
-                    icon: step.icon,
-                    order_index: index,
-                    duration_seconds: step.durationSeconds
-                )
+            let owner = await ownerId(ofChild: childId)
+            let stepRows = await MainActor.run {
+                stepInserts(routineId: routineId, steps: steps, ownerId: owner, childId: childId, existing: [])
             }
-            
             try await client
                 .from("routine_steps")
                 .insert(stepRows)
                 .execute()
         }
-        
+
         await MainActor.run {
             debugLastError = "Routine created: \(name)"
         }
-        
+
         await loadRoutines()
         #endif
     }
-    
+
     func updateRoutine(routineId: UUID, name: String, childId: UUID, type: String, icon: String,
                        color: String, rewardCents: Int,
                        steps: [(title: String, icon: String, durationSeconds: Int?)]) async throws {
+        try await updateRoutine(
+            routineId: routineId, name: name, childId: childId, type: type, icon: icon, color: color,
+            rewardCents: rewardCents,
+            stepInputs: steps.map { RoutineStepInput(title: $0.title, icon: $0.icon, durationSeconds: $0.durationSeconds) }
+        )
+    }
+
+    func updateRoutine(routineId: UUID, name: String, childId: UUID, type: String, icon: String,
+                       color: String, rewardCents: Int, stepInputs steps: [RoutineStepInput],
+                       autoReadAloud: Bool? = nil,
+                       finishBy: RoutineUpgrades.FinishByChange = .unchanged) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+
         struct RoutineUpdate: Encodable {
             let name: String
             let child_id: String
@@ -4841,8 +4933,37 @@ class SupabaseManager: ObservableObject {
             let color: String
             let reward_cents: Int
             let updated_at: String
+            let auto_read_aloud: Bool?
+            /// .unchanged: key left out; .clear: explicit null; .set: the value.
+            let finishBy: RoutineUpgrades.FinishByChange
+
+            enum CodingKeys: String, CodingKey {
+                case name, child_id, type, icon, color, reward_cents, updated_at, auto_read_aloud, target_duration_seconds
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                try c.encode(name, forKey: .name)
+                try c.encode(child_id, forKey: .child_id)
+                try c.encode(type, forKey: .type)
+                try c.encode(icon, forKey: .icon)
+                try c.encode(color, forKey: .color)
+                try c.encode(reward_cents, forKey: .reward_cents)
+                try c.encode(updated_at, forKey: .updated_at)
+                try c.encodeIfPresent(auto_read_aloud, forKey: .auto_read_aloud)
+                switch finishBy {
+                case .unchanged: break
+                case .clear: try c.encodeNil(forKey: .target_duration_seconds)
+                case .set(let seconds): try c.encode(seconds, forKey: .target_duration_seconds)
+                }
+            }
         }
-        
+
+        let (premium, before) = await MainActor.run { (isPremium, routines.first { $0.id == routineId }) }
+        // Finish-by is Premium to set; anyone may clear it.
+        var effectiveFinishBy = finishBy
+        if case .set = finishBy, !premium { effectiveFinishBy = .unchanged }
+
         let update = RoutineUpdate(
             name: name,
             child_id: childId.uuidString,
@@ -4850,61 +4971,66 @@ class SupabaseManager: ObservableObject {
             icon: icon,
             color: color,
             reward_cents: rewardCents,
-            updated_at: ISO8601DateFormatter().string(from: Date())
+            updated_at: ISO8601DateFormatter().string(from: Date()),
+            auto_read_aloud: autoReadAloud,
+            finishBy: effectiveFinishBy
         )
-        
+
         try await client
             .from("routines")
             .update(update)
             .eq("id", value: routineId.uuidString)
             .execute()
-        
+
+        // Pictures already on the routine survive a save even off Premium.
+        let existingPaths = Set((before?.steps ?? []).compactMap(\.imagePath))
+
         // Replace steps: delete existing, insert new
         try await client
             .from("routine_steps")
             .delete()
             .eq("routine_id", value: routineId.uuidString)
             .execute()
-        
-        struct NewStepRow: Encodable {
-            let routine_id: String
-            let title: String
-            let icon: String
-            let order_index: Int
-            let duration_seconds: Int?
-        }
-        
+
+        var newPaths: [String?] = []
         if !steps.isEmpty {
-            let stepRows = steps.enumerated().map { index, step in
-                NewStepRow(
-                    routine_id: routineId.uuidString,
-                    title: step.title,
-                    icon: step.icon,
-                    order_index: index,
-                    duration_seconds: step.durationSeconds
-                )
+            let owner = await ownerId(ofChild: childId)
+            let stepRows = await MainActor.run {
+                stepInserts(routineId: routineId, steps: steps, ownerId: owner, childId: childId, existing: existingPaths)
             }
-            
+            newPaths = stepRows.map(\.image_path)
             try await client
                 .from("routine_steps")
                 .insert(stepRows)
                 .execute()
         }
-        
+
+        // Best-effort: pictures no step points at any more.
+        let orphans = RoutineUpgrades.orphanedPhotos(before: Array(existingPaths), after: newPaths)
+        if !orphans.isEmpty {
+            _ = try? await client.storage.from(RoutineUpgrades.photoBucket).remove(paths: orphans)
+        }
+
         await MainActor.run {
             debugLastError = "Routine updated: \(name)"
         }
-        
+
         await loadRoutines()
         #endif
     }
-    
+
     func deleteRoutine(routineId: UUID) async throws {
         #if canImport(Supabase)
         guard let client = client else {
             throw NSError(domain: "SupabaseManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No Supabase client"])
         }
-        
+        let photoPaths = await MainActor.run {
+            (routines.first { $0.id == routineId }?.steps ?? []).compactMap(\.imagePath)
+        }
+        if !photoPaths.isEmpty {
+            _ = try? await client.storage.from(RoutineUpgrades.photoBucket).remove(paths: photoPaths)
+        }
+
         try await client
             .from("routine_steps")
             .delete()
@@ -4960,8 +5086,12 @@ class SupabaseManager: ObservableObject {
             let steps_total: Int
             let points_earned: Int
             let date: String
+            /// Screen-time minutes (030), captured at completion. Left out
+            /// when there are none, so an older database still records the run.
+            let minutes_earned: Int?
         }
-        
+
+        let minutes = routine?.rewardMinutes ?? 0
         let row = NewCompletionRow(
             routine_id: routineId.uuidString,
             child_id: childId.uuidString,
@@ -4969,8 +5099,13 @@ class SupabaseManager: ObservableObject {
             steps_completed: stepsCompleted,
             steps_total: stepsTotal,
             points_earned: pointsEarned,
-            date: formatter.string(from: Date())
+            date: formatter.string(from: Date()),
+            minutes_earned: stepsCompleted == stepsTotal && minutes > 0 ? min(minutes, 600) : nil
         )
+
+        // The run is over: drop the live-view row (the API does this itself
+        // for kid sessions in /complete).
+        Task { await reportRoutineProgress(routineId: routineId, childId: childId, clear: true) }
         
         do {
             try await client

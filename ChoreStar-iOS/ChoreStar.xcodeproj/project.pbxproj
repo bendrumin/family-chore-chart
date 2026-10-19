@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C0FFEE253000000000000003 /* MoneyLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000002 /* MoneyLogic.swift */; };
+		C0FFEE253000000000000005 /* ChallengeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000004 /* ChallengeProgress.swift */; };
+		C0FFEE253000000000000007 /* RoutineUpgrades.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000006 /* RoutineUpgrades.swift */; };
+		C0FFEE253000000000000009 /* CalendarFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000008 /* CalendarFeed.swift */; };
+		C0FFEE25300000000000000B /* PremiumAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000A /* PremiumAPI.swift */; };
+		C0FFEE25300000000000000D /* RoutineSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000C /* RoutineSpeaker.swift */; };
+		C0FFEE25300000000000000F /* MoneyViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000E /* MoneyViews.swift */; };
+		C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000010 /* ChallengeViews.swift */; };
+		C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */; };
+		C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000014 /* CalendarFeedView.swift */; };
+		C0FFEE253000000000000017 /* MoneyLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000016 /* MoneyLogicTests.swift */; };
+		C0FFEE253000000000000019 /* ChallengeProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000018 /* ChallengeProgressTests.swift */; };
+		C0FFEE25300000000000001B /* RoutineUpgradesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000001A /* RoutineUpgradesTests.swift */; };
+		C0FFEE25300000000000001D /* CalendarFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000001C /* CalendarFeedTests.swift */; };
 		075FA47F80C43135491BF7D0 /* BricolageGrotesque-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */; };
 		0F4524AC113D60FBDE4EC9EB /* GettingStartedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */; };
 		2D276E9A649E4E3A8A467B86 /* RewardMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CECC72C8806FCBDD52EC8E /* RewardMathTests.swift */; };
@@ -127,6 +141,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0FFEE253000000000000002 /* MoneyLogic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoneyLogic.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000004 /* ChallengeProgress.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeProgress.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000006 /* RoutineUpgrades.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgrades.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000008 /* CalendarFeed.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeed.swift; sourceTree = "<group>"; };
+		C0FFEE25300000000000000A /* PremiumAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremiumAPI.swift; sourceTree = "<group>"; };
+		C0FFEE25300000000000000C /* RoutineSpeaker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineSpeaker.swift; sourceTree = "<group>"; };
+		C0FFEE25300000000000000E /* MoneyViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoneyViews.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000010 /* ChallengeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeViews.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgradeViews.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000014 /* CalendarFeedView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeedView.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000016 /* MoneyLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoneyLogicTests.swift; sourceTree = "<group>"; };
+		C0FFEE253000000000000018 /* ChallengeProgressTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeProgressTests.swift; sourceTree = "<group>"; };
+		C0FFEE25300000000000001A /* RoutineUpgradesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgradesTests.swift; sourceTree = "<group>"; };
+		C0FFEE25300000000000001C /* CalendarFeedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeedTests.swift; sourceTree = "<group>"; };
 		01697ED45FA707F298E64E20 /* RewardMath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RewardMath.swift; sourceTree = "<group>"; };
 		18A0789A34228F3951C5A4F6 /* WidgetTicks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTicks.swift; sourceTree = "<group>"; };
 		0ABEAE8C46336B8349B35CA4 /* WidgetTickTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetTickTests.swift; sourceTree = "<group>"; };
@@ -294,6 +322,10 @@
 				40866BF8F6A2CDA72E8DF4EA /* GettingStartedTests.swift */,
 				41B1B8F22E8F148F374C621E /* EntitlementsTests.swift */,
 				F00D2A5C0000000000000004 /* FamilyJoinTests.swift */,
+				C0FFEE25300000000000001C /* CalendarFeedTests.swift */,
+				C0FFEE25300000000000001A /* RoutineUpgradesTests.swift */,
+				C0FFEE253000000000000018 /* ChallengeProgressTests.swift */,
+				C0FFEE253000000000000016 /* MoneyLogicTests.swift */,
 				94FC463482D3C8D0AEC5DFE1 /* FamilyExportTests.swift */,
 			);
 			name = ChoreStarTests;
@@ -389,6 +421,8 @@
 			children = (
 				A1234567890ABCDEF1234570 /* SupabaseManager.swift */,
 				A1234567890ABCDEF12345AA /* SoundManager.swift */,
+				C0FFEE25300000000000000C /* RoutineSpeaker.swift */,
+				C0FFEE25300000000000000A /* PremiumAPI.swift */,
 				A1234567890ABCDEF12345D2 /* ThemeManager.swift */,
 				A1234567890ABCDEF12345EA /* StoreKitManager.swift */,
 				A1234567890ABCDEF12345F0 /* RoutineActivityController.swift */,
@@ -433,6 +467,10 @@
 				C0DEC0DE0000000000000009 /* StarterRoutinesView.swift */,
 				AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */,
 				98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */,
+				C0FFEE253000000000000014 /* CalendarFeedView.swift */,
+				C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */,
+				C0FFEE253000000000000010 /* ChallengeViews.swift */,
+				C0FFEE25300000000000000E /* MoneyViews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -468,6 +506,10 @@
 				0B640092ABAE08A3F8B6683E /* GettingStartedProgress.swift */,
 				8969C68FE80311EA63473D4B /* Entitlements.swift */,
 				F00D2A5C0000000000000002 /* FamilyJoin.swift */,
+				C0FFEE253000000000000008 /* CalendarFeed.swift */,
+				C0FFEE253000000000000006 /* RoutineUpgrades.swift */,
+				C0FFEE253000000000000004 /* ChallengeProgress.swift */,
+				C0FFEE253000000000000002 /* MoneyLogic.swift */,
 				3C89DCA916CCA87272428C5A /* FamilyExport.swift */,
 			);
 			name = Logic;
@@ -658,6 +700,10 @@
 				5465FC7C9A13DA94B7DA1566 /* GettingStartedTests.swift in Sources */,
 				C00255ACF3C010CD1279EE92 /* EntitlementsTests.swift in Sources */,
 				F00D2A5C0000000000000003 /* FamilyJoinTests.swift in Sources */,
+				C0FFEE25300000000000001D /* CalendarFeedTests.swift in Sources */,
+				C0FFEE25300000000000001B /* RoutineUpgradesTests.swift in Sources */,
+				C0FFEE253000000000000019 /* ChallengeProgressTests.swift in Sources */,
+				C0FFEE253000000000000017 /* MoneyLogicTests.swift in Sources */,
 				D3C2FB2F769F531DF4DC3823 /* FamilyExportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -737,6 +783,16 @@
 				65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */,
 				8D89B23C2B6AC8EB8C9B54BF /* Entitlements.swift in Sources */,
 				F00D2A5C0000000000000001 /* FamilyJoin.swift in Sources */,
+				C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */,
+				C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */,
+				C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */,
+				C0FFEE25300000000000000F /* MoneyViews.swift in Sources */,
+				C0FFEE25300000000000000D /* RoutineSpeaker.swift in Sources */,
+				C0FFEE25300000000000000B /* PremiumAPI.swift in Sources */,
+				C0FFEE253000000000000009 /* CalendarFeed.swift in Sources */,
+				C0FFEE253000000000000007 /* RoutineUpgrades.swift in Sources */,
+				C0FFEE253000000000000005 /* ChallengeProgress.swift in Sources */,
+				C0FFEE253000000000000003 /* MoneyLogic.swift in Sources */,
 				67AF48BABDEFFA9AA793BB73 /* PremiumFeatureGate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -909,7 +965,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_BUILD = 44;
-				APP_VERSION = 2.5.2;
+				APP_VERSION = 2.5.3;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -978,7 +1034,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				APP_BUILD = 44;
-				APP_VERSION = 2.5.2;
+				APP_VERSION = 2.5.3;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;

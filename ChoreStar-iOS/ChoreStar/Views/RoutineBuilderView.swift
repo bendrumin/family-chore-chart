@@ -16,12 +16,22 @@ struct RoutineBuilderView: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var showingTemplatePaywall = false
+    // Routine upgrades (032)
+    @State private var autoReadAloud = false
+    @State private var finishByMinutes = 0
+    @State private var originalTargetSeconds: Int?
+    @State private var showingAI = false
+    @State private var upgradePaywallSource: String?
+    @State private var aiNote: String?
     
     struct EditableStep: Identifiable {
         let id: UUID
         var title: String
         var icon: String
         var durationMinutes: Int?
+        /// A picture for the step (Premium): its storage path and a preview URL.
+        var imagePath: String? = nil
+        var imageURL: URL? = nil
     }
     
     private var isEditing: Bool { existingRoutine != nil }
@@ -49,6 +59,7 @@ struct RoutineBuilderView: View {
                 
                 detailsSection
                 stepsSection
+                extrasSection
                 
                 if let errorMessage = errorMessage {
                     Section {
@@ -80,12 +91,17 @@ struct RoutineBuilderView: View {
                     selectedIcon = routine.icon
                     selectedColor = routine.color
                     rewardCents = routine.rewardCents
+                    autoReadAloud = routine.autoReadAloud
+                    originalTargetSeconds = routine.targetDurationSeconds
+                    finishByMinutes = (routine.targetDurationSeconds ?? 0) / 60
                     steps = routine.steps.map { step in
                         EditableStep(
                             id: step.id,
                             title: step.title,
                             icon: step.icon,
-                            durationMinutes: step.durationSeconds.map { $0 / 60 }
+                            durationMinutes: step.durationSeconds.map { $0 / 60 },
+                            imagePath: step.imagePath,
+                            imageURL: step.imageURL
                         )
                     }
                 } else if selectedChildId == nil {
@@ -99,6 +115,26 @@ struct RoutineBuilderView: View {
     
     private var templatesSection: some View {
         Section("Quick Start Templates") {
+            Button {
+                if manager.isPremium { showingAI = true } else { upgradePaywallSource = RoutineUpgrades.paywallAI }
+            } label: {
+                HStack {
+                    Label("Build with AI", systemImage: "sparkles")
+                        .fontWeight(.semibold)
+                    Spacer()
+                    if !manager.isPremium {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(.choreStarAccent)
+                            .accessibilityLabel("Premium")
+                    }
+                }
+            }
+            if let aiNote {
+                Text(aiNote)
+                    .font(.caption)
+                    .foregroundColor(.choreStarTextSecondary)
+            }
+
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 260), spacing: 12)], spacing: 12) {
                 ForEach(RoutineTemplate.library, id: \.name) { template in
                     // The Premium library shows to everyone; a free family
@@ -142,6 +178,77 @@ struct RoutineBuilderView: View {
         .sheet(isPresented: $showingTemplatePaywall) {
             PaywallView(source: "routine_templates")
         }
+        .sheet(isPresented: $showingAI) {
+            BuildWithAISheet(childId: selectedChildId, routineType: selectedType.rawValue, onDraft: applyDraft)
+                .environmentObject(manager)
+        }
+    }
+
+    // MARK: - Extras (032)
+
+    private var extrasSection: some View {
+        Section {
+            Toggle(isOn: $autoReadAloud) {
+                Label("Read each step aloud", systemImage: "speaker.wave.2.fill")
+            }
+            if manager.isPremium {
+                Stepper(value: $finishByMinutes, in: 0...120) {
+                    HStack {
+                        Label("Finish by", systemImage: "hourglass")
+                        Spacer()
+                        Text(finishByMinutes > 0 ? String(localized: "\(finishByMinutes) min") : String(localized: "Off"))
+                            .foregroundColor(.choreStarTextSecondary)
+                            .monospacedDigit()
+                    }
+                }
+                if finishByMinutes == 0,
+                   let suggested = RoutineUpgrades.suggestedTargetSeconds(stepDurations: steps.map { $0.durationMinutes.map { $0 * 60 } }) {
+                    Button("Use \(suggested / 60) min (the step timers plus a little)") { finishByMinutes = suggested / 60 }
+                        .font(.caption)
+                }
+            } else {
+                PremiumUpsellCard(
+                    title: "Finish-by timer",
+                    message: "A calm bar for the whole routine. No fail state; finishing early is celebrated.",
+                    source: RoutineUpgrades.paywallTimer,
+                    icon: "hourglass"
+                )
+                if originalTargetSeconds != nil {
+                    Button("Remove the finish-by time", role: .destructive) {
+                        finishByMinutes = 0
+                        originalTargetSeconds = nil
+                    }
+                }
+            }
+        } header: {
+            Text("For younger kids")
+        } footer: {
+            Text("Read-aloud uses the device's voice. Pictures on steps help kids who don't read yet.")
+        }
+        .sheet(isPresented: Binding(get: { upgradePaywallSource != nil }, set: { if !$0 { upgradePaywallSource = nil } })) {
+            PaywallView(source: upgradePaywallSource ?? RoutineUpgrades.paywallAI)
+        }
+    }
+
+    private func applyDraft(_ response: RoutineUpgrades.DraftResponse) {
+        let draft = response.draft
+        name = draft.name
+        if let type = RoutineType(rawValue: draft.type) {
+            selectedType = type
+            selectedIcon = type.systemImage
+        }
+        if draft.color.hasPrefix("#") { selectedColor = draft.color }
+        steps = draft.steps.map { step in
+            EditableStep(
+                id: UUID(),
+                title: step.title,
+                icon: RoutineUpgrades.builderIcon(forDraftIcon: step.icon),
+                durationMinutes: step.duration_seconds.flatMap { $0 > 0 ? max(1, Int((Double($0) / 60).rounded())) : nil }
+            )
+        }
+        aiNote = response.source == "templates"
+            ? String(localized: "The AI is busy, so this draft comes from our templates. Change anything you like.")
+            : draft.tip
     }
     
     // MARK: - Details
@@ -273,6 +380,22 @@ struct RoutineBuilderView: View {
                     }
                     
                     Spacer()
+
+                    StepPhotoButton(
+                        childId: selectedChildId,
+                        imageURL: steps[index].imageURL,
+                        hasImage: steps[index].imagePath != nil,
+                        onUploaded: { path, url in
+                            guard steps.indices.contains(index) else { return }
+                            steps[index].imagePath = path
+                            steps[index].imageURL = url
+                        },
+                        onRemove: {
+                            guard steps.indices.contains(index) else { return }
+                            steps[index].imagePath = nil
+                            steps[index].imageURL = nil
+                        }
+                    )
                     
                     Stepper("", value: Binding(
                         get: { steps[index].durationMinutes ?? 0 },
@@ -328,8 +451,14 @@ struct RoutineBuilderView: View {
         errorMessage = nil
         
         let stepData = validSteps.map { step in
-            (title: step.title, icon: step.icon, durationSeconds: step.durationMinutes.map { $0 * 60 } as Int?)
+            SupabaseManager.RoutineStepInput(
+                title: step.title,
+                icon: step.icon,
+                durationSeconds: step.durationMinutes.map { $0 * 60 },
+                imagePath: step.imagePath
+            )
         }
+        let target = RoutineUpgrades.targetSeconds(fromMinutes: finishByMinutes)
         
         Task {
             do {
@@ -342,7 +471,9 @@ struct RoutineBuilderView: View {
                         icon: selectedIcon,
                         color: selectedColor,
                         rewardCents: rewardCents,
-                        steps: stepData
+                        stepInputs: stepData,
+                        autoReadAloud: autoReadAloud == existing.autoReadAloud ? nil : autoReadAloud,
+                        finishBy: RoutineUpgrades.FinishByChange.from(before: existing.targetDurationSeconds, after: target)
                     )
                 } else {
                     try await manager.createRoutine(
@@ -352,7 +483,9 @@ struct RoutineBuilderView: View {
                         icon: selectedIcon,
                         color: selectedColor,
                         rewardCents: rewardCents,
-                        steps: stepData
+                        stepInputs: stepData,
+                        autoReadAloud: autoReadAloud,
+                        targetDurationSeconds: target
                     )
                 }
                 

@@ -1,9 +1,9 @@
-Versión 2.5.2: mejoras más claras y acceso compartido más seguro.
+Versión 2.5.3: frascos de dinero, retos en equipo y rutinas para los más pequeños.
 
-• ¿Llegaste al límite gratis de 3 niños o 20 tareas? Al tocar agregar, ahora ves Premium de inmediato, antes de llenar el formulario
-• Quien comparte una familia ve que Premium lo compra el dueño de la familia, y su iPhone también lo recibe
-• El acceso compartido es más seguro: unirse con un código ahora se verifica en nuestro servidor
-• Con el plan gratis, el dueño de la familia aún puede quitar a otro adulto y cambiar o desactivar su código de invitación
-• La lista de Premium ahora incluye el correo semanal con el reporte de la familia
+• Gastar, Ahorrar, Dar (Premium): reparte lo que gana cada niño en tres frascos, paga una mesada semanal el día que elijas, agrega interés por ahorrar, descuenta una multa con su motivo, programa un pago semanal y premia con minutos de pantalla. Los niños ven sus frascos y las noticias de su dinero en su propia pantalla
+• Retos en familia (Premium): los hermanos se unen por un premio compartido, como 50 tareas esta semana para una noche de pizza, con una barra de progreso del equipo y confeti al lograrlo
+• Rutinas leídas en voz alta, gratis para todos: un botón lee cada paso, y una rutina puede leer todos sus pasos sola
+• Pasos con foto, un temporizador tranquilo para terminar, Crear con IA y la vista Ahora mismo de quién está haciendo una rutina (Premium)
+• Calendario familiar (Premium): agrega tareas y rutinas a Calendario de Apple, Google Calendar u Outlook
 
 Escríbenos a hi@chorestar.app

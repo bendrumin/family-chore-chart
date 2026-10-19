@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.5.2"
+    static let latestVersion = "2.5.3"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,38 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.5.3",
+            date: "October 2026",
+            title: "Money Jars, Team Challenges, Smarter Routines",
+            features: [
+                Feature(
+                    icon: "🏦",
+                    title: "Spend, Save, Give",
+                    description: "Premium: split what each kid earns into three jars, pay a weekly allowance on your day, add interest on Save, take off fines with a reason, and give screen-time minutes. Settings > Money."
+                ),
+                Feature(
+                    icon: "🏆",
+                    title: "Family Challenges",
+                    description: "Premium: siblings team up, like 50 chores this week for pizza night. Everyone sees the team bar, and confetti flies when they get there."
+                ),
+                Feature(
+                    icon: "🔊",
+                    title: "Routines Read Aloud",
+                    description: "Free for everyone: a speaker button reads each step out loud, and a routine can read every step by itself."
+                ),
+                Feature(
+                    icon: "📸",
+                    title: "Picture Steps and a Finish-By Timer",
+                    description: "Premium: add a photo to any step for kids who don't read yet, set a calm finish-by time, build a routine with AI, and see who is mid-routine on Home."
+                ),
+                Feature(
+                    icon: "📅",
+                    title: "Family Calendar Feed",
+                    description: "Premium: add chores and routines to Apple Calendar, Google Calendar or Outlook from Settings > Calendar Feed."
+                ),
+            ]
+        ),
         Entry(
             version: "2.5.2",
             date: "October 2026",
