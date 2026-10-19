@@ -89,6 +89,12 @@ data class DashboardState(
     val unlocked: List<BadgeDef> = emptyList(),
     /** Kid mode on this phone: the child whose dashboard is showing, or null. */
     val kidModeChildId: String? = null,
+    /** Signed URLs for routine step pictures, by object path (migration 032). */
+    val stepPhotoUrls: Map<String, String> = emptyMap(),
+    /** Routines a kid is in the middle of right now (GET /api/routines/live). */
+    val live: List<com.chorestar.app.data.LiveRoutine> = emptyList(),
+    /** Family challenges with derived progress; null until loaded or when migration 031 isn't there. */
+    val challenges: List<com.chorestar.app.data.ChallengeView>? = null,
 ) {
     fun routinesFor(childId: String) = routines.filter { it.childId == childId }
     fun achievementProgress(childId: String): List<BadgeProgress> =
@@ -144,6 +150,9 @@ data class DashboardState(
     val today: Int get() = Dates.dayOfWeek()
     val currency: String? get() = settings?.currencyCode
     val isPremium: Boolean get() = profile?.isPremium == true
+    /** The 1.0.2 features (money, challenges, routine extras, calendar) are new: Premium only, never grandfathered. */
+    val hasNewPremium: Boolean get() = isPremium
+    fun stepPhotoUrl(step: com.chorestar.app.data.model.RoutineStep): String? = step.imageUrl ?: step.imagePath?.let { stepPhotoUrls[it] }
     /** Premium themes and sharing (grandfathered); see Profile.canUseGatedFeatures. */
     val canUseGated: Boolean get() = profile?.canUseGatedFeatures == true
     val childLimit: Int get() = if (isPremium) Int.MAX_VALUE else FREE_CHILD_LIMIT
@@ -198,6 +207,8 @@ class DashboardViewModel(
                         routines = routines, completedRoutineIds = completedRoutines, achievements = achievements, allTime = allTime)
                 }
                 onTheme(ThemePreference.from(settings?.customTheme))
+                loadStepPhotos(routines)
+                loadChallenges()
                 _state.value.let { st ->
                     onSnapshot(com.chorestar.app.widget.WidgetSnapshot(
                         familyName = profile?.familyName ?: "",
@@ -213,6 +224,56 @@ class DashboardViewModel(
                 _state.update { it.copy(loading = false, error = e.message?.let(UiText::Raw) ?: uiText(R.string.error_load_family)) }
             }
         }
+    }
+
+    // ── Premium extras (1.0.2) ───────────────────────────────────────────────
+
+    /** The web routes behind money, challenges, live routines, AI drafts and the calendar feed. */
+    val premiumApi: com.chorestar.app.data.PremiumApi get() = repository.premium
+
+    private suspend fun loadStepPhotos(routines: List<Routine>) {
+        val paths = routines.flatMap { r -> r.steps.mapNotNull { it.imagePath } }.distinct()
+        if (paths.isEmpty()) return
+        val urls = paths.mapNotNull { p -> repository.signedStepPhotoUrl(p)?.let { p to it } }.toMap()
+        _state.update { it.copy(stepPhotoUrls = it.stepPhotoUrls + urls) }
+    }
+
+    suspend fun signStepPhoto(path: String): String? = repository.signedStepPhotoUrl(path)?.also { url -> _state.update { it.copy(stepPhotoUrls = it.stepPhotoUrls + (path to url)) } }
+
+    fun loadChallenges() {
+        viewModelScope.launch {
+            val uid = _state.value.effectiveUserId ?: return@launch
+            val rows = repository.familyChallenges(uid) ?: run { _state.update { it.copy(challenges = null) }; return@launch }
+            val tz = _state.value.settings?.timezone
+            val today = com.chorestar.app.data.Challenges.todayIn(tz)
+            val live = rows.filter { it.status != "cancelled" }
+            val views = runCatching {
+                val inputs = repository.challengeInputs(live, tz)
+                com.chorestar.app.data.Challenges.withProgress(live, inputs)
+            }.getOrElse { return@launch }
+            _state.update { it.copy(challenges = com.chorestar.app.data.Challenges.sort(views.filter { v -> com.chorestar.app.data.Challenges.worthShowing(v, today) })) }
+        }
+    }
+
+    suspend fun createChallenge(body: kotlinx.serialization.json.JsonObject): Result<Unit> =
+        runCatching { repository.premium.createChallenge(body) }.onSuccess { loadChallenges() }
+
+    suspend fun deliverChallenge(id: String): Result<Unit> =
+        runCatching { repository.premium.deliverChallenge(id) }.onSuccess { loadChallenges(); _state.value.children.forEach { c -> if (_state.value.wallets.containsKey(c.id)) loadWallet(c.id) } }
+
+    suspend fun cancelChallenge(id: String): Result<Unit> =
+        runCatching { repository.cancelChallenge(id) }.onSuccess { loadChallenges() }
+
+    fun loadLive() {
+        viewModelScope.launch {
+            runCatching { repository.premium.liveRoutines() }.onSuccess { items -> _state.update { it.copy(live = items) } }
+        }
+    }
+
+    /** Which step a kid is on, for the live view; null stepIndex clears it. Best effort, parent token. */
+    fun reportRoutineProgress(routine: Routine, childId: String, stepIndex: Int?, stepsTotal: Int, stepTitle: String?) {
+        val token = repository.accessTokenOrNull() ?: return
+        viewModelScope.launch { repository.kid.routineProgress(token, routine.id, childId, stepIndex, stepsTotal, stepTitle) }
     }
 
     // ── Settings ─────────────────────────────────────────────────────────────
@@ -437,11 +498,13 @@ class DashboardViewModel(
 
     // ── Routines ─────────────────────────────────────────────────────────────
 
-    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): Result<Unit> =
-        runCatching { repository.createRoutine(childId, name, type, icon, color, rewardCents, steps); Unit }.onSuccess { refresh() }
+    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>,
+                              extras: ChoreStarRepository.RoutineExtrasInput = ChoreStarRepository.RoutineExtrasInput()): Result<Unit> =
+        runCatching { repository.createRoutine(childId, name, type, icon, color, rewardCents, steps, extras); Unit }.onSuccess { refresh() }
 
-    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): Result<Unit> =
-        runCatching { repository.updateRoutine(id, childId, name, type, icon, color, rewardCents, steps) }.onSuccess { refresh() }
+    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>,
+                              extras: ChoreStarRepository.RoutineExtrasInput = ChoreStarRepository.RoutineExtrasInput()): Result<Unit> =
+        runCatching { repository.updateRoutine(id, childId, name, type, icon, color, rewardCents, steps, extras) }.onSuccess { refresh() }
 
     fun deleteRoutine(routine: Routine) {
         viewModelScope.launch {

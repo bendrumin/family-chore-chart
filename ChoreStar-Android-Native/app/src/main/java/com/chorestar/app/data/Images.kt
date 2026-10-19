@@ -30,6 +30,27 @@ object Images {
         }.getOrNull()
     }
 
+    /** Routine step pictures: upright, longest side at most `maxSide`, JPEG at 0.82 (the web builder sends 1280px). */
+    suspend fun loadScaledJpeg(context: Context, uri: Uri, maxSide: Int): ByteArray? = withContext(Dispatchers.IO) {
+        runCatching {
+            val bitmap = if (Build.VERSION.SDK_INT >= 28) {
+                ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, info, _ ->
+                    val (w, h) = info.size.width to info.size.height
+                    val scale = minOf(1.0, maxSide.toDouble() / maxOf(w, h))
+                    if (scale < 1.0) decoder.setTargetSize((w * scale).toInt().coerceAtLeast(1), (h * scale).toInt().coerceAtLeast(1))
+                    decoder.isMutableRequired = true
+                }
+            } else {
+                context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }?.let { upright(it, context, uri) }
+            } ?: return@runCatching null
+            val scale = minOf(1.0, maxSide.toDouble() / maxOf(bitmap.width, bitmap.height))
+            val sized = if (scale < 1.0) Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt().coerceAtLeast(1), (bitmap.height * scale).toInt().coerceAtLeast(1), true) else bitmap
+            val out = ByteArrayOutputStream()
+            sized.compress(Bitmap.CompressFormat.JPEG, 82, out)
+            out.toByteArray()
+        }.getOrNull()
+    }
+
     fun squareJpeg(source: Bitmap): ByteArray {
         val side = minOf(source.width, source.height)
         val x = (source.width - side) / 2

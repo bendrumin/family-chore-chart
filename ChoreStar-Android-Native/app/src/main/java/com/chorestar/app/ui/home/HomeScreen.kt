@@ -78,7 +78,9 @@ import java.util.Locale
 
 /** iOS DashboardView: hero, getting started, needs-your-OK tray, today's chores. */
 @Composable
-fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -> Unit, onOpenChild: (Child) -> Unit, onOpenFamily: () -> Unit, onKidMode: () -> Unit = {}) {
+fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -> Unit, onOpenChild: (Child) -> Unit, onOpenFamily: () -> Unit, onKidMode: () -> Unit = {}, onNavigate: (String) -> Unit = {}) {
+    // "Happening now": poll the live routine view while Home is on screen.
+    androidx.compose.runtime.LaunchedEffect(Unit) { while (true) { vm.loadLive(); kotlinx.coroutines.delay(20_000) } }
     PullToRefreshBox(isRefreshing = state.loading, onRefresh = vm::refresh, modifier = Modifier.fillMaxSize()) {
         if (state.loading && state.children.isEmpty()) {
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { CircularProgressIndicator() }
@@ -99,6 +101,12 @@ fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -
             if (state.children.isEmpty() || state.chores.isEmpty()) item { GettingStartedCard(state, onOpenFamily, onOpenChores) }
 
             if (state.pendingApprovals.isNotEmpty() || state.pendingRedemptions.isNotEmpty()) item { ApprovalTray(vm, state) }
+
+            if (state.live.isNotEmpty()) item { com.chorestar.app.ui.routines.HappeningNowCard(state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) }) }
+
+            if (state.children.size >= 2) item {
+                com.chorestar.app.ui.challenges.FamilyChallengesCard(vm, state, onNew = { onNavigate(com.chorestar.app.ui.main.Routes.CHALLENGE_NEW) }, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) })
+            }
 
             if (state.chores.isNotEmpty()) {
                 item {

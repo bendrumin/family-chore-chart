@@ -40,6 +40,7 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
@@ -71,6 +72,8 @@ class ChoreStarRepository(
     private val accessToken: String? get() = supabase.auth.currentAccessTokenOrNull()
     fun accessTokenOrNull(): String? = accessToken
     val kid: KidApi by lazy { KidApi(web) }
+    /** The web routes behind the 1.0.2 Premium features (money, challenges, routines, calendar). */
+    val premium: PremiumApi by lazy { PremiumApi(web) { accessToken } }
 
     // ── Auth ────────────────────────────────────────────────────────────────
 
@@ -590,21 +593,99 @@ class ChoreStarRepository(
             .decodeList<RoutineCompletionRef>().map { it.routineId }.toSet()
     }
 
-    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>): String {
+    /** Migration 032 extras for a save. `sendTarget` false leaves the finish-by timer as it is (a lapsed family keeps it). */
+    data class RoutineExtrasInput(val autoReadAloud: Boolean = false, val targetSeconds: Int? = null, val sendTarget: Boolean = false, val hadAutoRead: Boolean = false)
+
+    suspend fun createRoutine(childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>, extras: RoutineExtrasInput = RoutineExtrasInput()): String {
         val id = UUID.randomUUID().toString()
-        supabase.from("routines").insert(NewRoutineRow(id, childId, name, type, icon, color, rewardCents))
-        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(steps.map { it.copy(routineId = id) })
+        // Keys for migration 032 go in only when set, so a database without it still saves plain routines.
+        val row = buildJsonObject {
+            put("id", id); put("child_id", childId); put("name", name); put("type", type); put("icon", icon); put("color", color)
+            put("reward_cents", rewardCents); put("is_active", true)
+            if (extras.autoReadAloud) put("auto_read_aloud", true)
+            if (extras.sendTarget && extras.targetSeconds != null) put("target_duration_seconds", extras.targetSeconds)
+        }
+        supabase.from("routines").insert(row)
+        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(stepRows(id, steps))
         return id
     }
 
     /** Steps are deleted and re-inserted, as on iOS; their ids are not stable across edits. */
-    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>) {
+    suspend fun updateRoutine(id: String, childId: String, name: String, type: String, icon: String, color: String, rewardCents: Int, steps: List<NewStepRow>, extras: RoutineExtrasInput = RoutineExtrasInput()) {
         supabase.from("routines").update({
             set("name", name); set("child_id", childId); set("type", type); set("icon", icon); set("color", color)
             set("reward_cents", rewardCents); set("updated_at", Instant.now().toString())
+            if (extras.autoReadAloud || extras.hadAutoRead) set("auto_read_aloud", extras.autoReadAloud)
+            if (extras.sendTarget) set("target_duration_seconds", extras.targetSeconds)
         }) { filter { eq("id", id) } }
         supabase.from("routine_steps").delete { filter { eq("routine_id", id) } }
-        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(steps.map { it.copy(routineId = id) })
+        if (steps.isNotEmpty()) supabase.from("routine_steps").insert(stepRows(id, steps))
+    }
+
+    private fun stepRows(routineId: String, steps: List<NewStepRow>): List<JsonObject> = steps.map { s ->
+        buildJsonObject {
+            put("routine_id", routineId); put("title", s.title); put("icon", s.icon); put("order_index", s.orderIndex)
+            put("duration_seconds", s.durationSeconds)
+            s.imagePath?.let { put("image_path", it) }
+        }
+    }
+
+    /** One-hour signed URL for a step picture (the family can read its own folder in routine-step-photos). */
+    suspend fun signedStepPhotoUrl(path: String): String? {
+        val key = "step:$path"
+        val now = System.currentTimeMillis()
+        signedUrls[key]?.let { (url, expires) -> if (expires - 60_000 > now) return url }
+        return runCatching { supabase.storage.from("routine-step-photos").createSignedUrl(path, 1.hours) }.getOrNull()?.also {
+            signedUrls[key] = it to now + 3_600_000
+        }
+    }
+
+    // ── Family challenges (migration 031; read and cancel through RLS) ───────
+
+    /** Null when the table isn't there yet (031 not applied). */
+    suspend fun familyChallenges(ownerId: String): List<ChallengeRow>? = runCatching {
+        supabase.from("family_challenges").select {
+            filter { eq("user_id", ownerId) }
+            order("ends_on", Order.DESCENDING)
+            limit(30)
+        }.decodeList<ChallengeRow>()
+    }.getOrNull()
+
+    /** What progress is derived from, in four queries (lib/challenges/data.ts loadChallengeInputs). */
+    suspend fun challengeInputs(list: List<ChallengeRow>, timeZone: String?): ChallengeInputs {
+        val range = Challenges.fetchRange(list) ?: return ChallengeInputs(timeZone = timeZone)
+        val choreKids = list.filter { it.metric == "chores" }.flatMap { it.childIds }.toSet().toList()
+        val routineKids = list.filter { it.metric != "chores" }.flatMap { it.childIds }.toSet().toList()
+        var chores = emptyList<ChallengeChore>()
+        var ticks = emptyList<ChallengeTick>()
+        var routines = emptyList<ChallengeRoutine>()
+        var done = emptyList<ChallengeRoutineDone>()
+        if (choreKids.isNotEmpty()) {
+            // Archived chores too: a tick on a rotation copy that isn't this kid's turn any more still happened.
+            chores = runCatching {
+                supabase.from("chores").select(columns = Columns.list("id", "child_id", "rotation_mode")) { filter { isIn("child_id", choreKids) } }.decodeList<ChallengeChore>()
+            }.getOrElse {
+                supabase.from("chores").select(columns = Columns.list("id", "child_id")) { filter { isIn("child_id", choreKids) } }.decodeList()
+            }
+            if (chores.isNotEmpty()) ticks = supabase.from("chore_completions")
+                .select(columns = Columns.list("chore_id", "week_start", "day_of_week", "status")) {
+                    filter { isIn("chore_id", chores.map { it.id }); gte("week_start", range.weekFrom); lte("week_start", range.weekTo) }
+                    limit(10000)
+                }.decodeList()
+        }
+        if (routineKids.isNotEmpty()) {
+            routines = supabase.from("routines").select(columns = Columns.list("id", "child_id", "type")) { filter { isIn("child_id", routineKids) } }.decodeList()
+            done = supabase.from("routine_completions").select(columns = Columns.list("routine_id", "child_id", "date", "completed_at")) {
+                filter { isIn("child_id", routineKids); gte("date", range.dateFrom); lte("date", range.dateTo) }
+                limit(10000)
+            }.decodeList()
+        }
+        return ChallengeInputs(chores, ticks, routines, done, timeZone)
+    }
+
+    /** "End early": a cancelled challenge quietly disappears from kid mode. */
+    suspend fun cancelChallenge(id: String) {
+        supabase.from("family_challenges").update({ set("status", "cancelled"); set("updated_at", Instant.now().toString()) }) { filter { eq("id", id) } }
     }
 
     suspend fun deleteRoutine(id: String) {

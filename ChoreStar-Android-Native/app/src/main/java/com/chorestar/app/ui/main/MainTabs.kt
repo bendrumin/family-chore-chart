@@ -103,6 +103,10 @@ object Routes {
     const val SETTINGS_SHARING = "settings/sharing"
     const val SETTINGS_STORE = "settings/store"
     const val SETTINGS_DELETE = "settings/delete"
+    const val SETTINGS_MONEY = "settings/money?childId={childId}"
+    fun money(childId: String?) = "settings/money" + (childId?.let { "?childId=$it" } ?: "")
+    const val SETTINGS_CALENDAR = "settings/calendar"
+    const val CHALLENGE_NEW = "challenge/new"
     const val PAYWALL = "paywall?source={source}"
     /** source says what opened it, for paywall_events: limit_*, gate_*, settings_upgrade, link. */
     fun paywall(source: String) = "paywall?source=" + android.net.Uri.encode(source)
@@ -244,7 +248,7 @@ fun MainTabs(repository: ChoreStarRepository) {
             NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
                 composable(Tab.Home.route) {
                     HomeScreen(vm, state, onOpenChores = { nav.navigate(Tab.Chores.route) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onOpenFamily = { nav.navigate(Tab.Family.route) },
-                        onKidMode = { nav.navigate(Routes.KID_AUTH) })
+                        onKidMode = { nav.navigate(Routes.KID_AUTH) }, onNavigate = { nav.navigate(it) })
                 }
                 composable(Tab.Family.route) {
                     FamilyScreen(state, onAddChild = { nav.navigate(Routes.CHILD_NEW) }, onOpenChild = { nav.navigate(Routes.childDetail(it.id)) }, onEditChild = { nav.navigate(Routes.childEdit(it.id)) })
@@ -263,6 +267,11 @@ fun MainTabs(repository: ChoreStarRepository) {
                 composable(Routes.SETTINGS_SHARING) { FamilySharingScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall("gate_sharing")) }) }
                 composable(Routes.SETTINGS_STORE) { RewardStoreScreen(vm, state, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall("limit_store_items")) }) }
                 composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
+                composable(Routes.SETTINGS_MONEY, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
+                    com.chorestar.app.ui.money.MoneyScreen(vm, state, initialChildId = entry.arguments?.getString("childId"), onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) })
+                }
+                composable(Routes.SETTINGS_CALENDAR) { com.chorestar.app.ui.settings.CalendarFeedScreen(vm, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) }) }
+                composable(Routes.CHALLENGE_NEW) { com.chorestar.app.ui.challenges.ChallengeBuilderScreen(vm, state, onDone = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) }) }
                 composable(Routes.PAYWALL, arguments = listOf(navArgument("source") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
                     PaywallScreen(vm, state, source = entry.arguments?.getString("source") ?: "unknown", onBack = { nav.popBackStack() })
                 }
@@ -288,17 +297,19 @@ fun MainTabs(repository: ChoreStarRepository) {
                     )
                 }
                 composable(Routes.ROUTINE_NEW, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
-                    RoutineBuilderScreen(vm, state, routine = null, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() })
+                    RoutineBuilderScreen(vm, state, routine = null, preselectedChildId = entry.arguments?.getString("childId"), onDone = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) })
                 }
                 composable(Routes.ROUTINE_EDIT, arguments = listOf(navArgument("routineId") { type = NavType.StringType })) { entry ->
                     val r = state.routines.firstOrNull { it.id == entry.arguments?.getString("routineId") }
-                    RoutineBuilderScreen(vm, state, routine = r, preselectedChildId = null, onDone = { nav.popBackStack() })
+                    RoutineBuilderScreen(vm, state, routine = r, preselectedChildId = null, onDone = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) })
                 }
                 composable(Routes.ROUTINES_STARTER) { StarterRoutinesScreen(vm, state, onDone = { nav.popBackStack() }) }
                 composable(Routes.ROUTINE_PLAY, arguments = listOf(navArgument("routineId") { type = NavType.StringType })) { entry ->
                     val r = state.routines.firstOrNull { it.id == entry.arguments?.getString("routineId") } ?: return@composable
                     RoutinePlayerScreen(r, childName = state.child(r.childId)?.name ?: "", currency = state.currency,
-                        onComplete = { done, secs -> vm.completeRoutine(r, r.childId, done, secs) }, onClose = { nav.popBackStack() })
+                        onComplete = { done, secs -> vm.completeRoutine(r, r.childId, done, secs) }, onClose = { nav.popBackStack() },
+                        premium = state.hasNewPremium, photoUrl = { st -> state.stepPhotoUrl(st) }, familyLanguage = state.settings?.language,
+                        onProgress = { i, total, title -> vm.reportRoutineProgress(r, r.childId, i, total, title) }, onProgressClear = { vm.reportRoutineProgress(r, r.childId, null, r.steps.size, null) })
                 }
                 composable(Routes.ACHIEVEMENTS, arguments = listOf(navArgument("childId") { type = NavType.StringType })) { entry ->
                     val id = entry.arguments?.getString("childId") ?: return@composable

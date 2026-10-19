@@ -27,6 +27,10 @@ data class RoutineStep(
     val icon: String? = "circle",
     @SerialName("order_index") val orderIndex: Int = 0,
     @SerialName("duration_seconds") val durationSeconds: Int? = null,
+    /** Picture step (Premium, migration 032): object path in the private routine-step-photos bucket. */
+    @SerialName("image_path") val imagePath: String? = null,
+    /** A signed URL for imagePath; only the web's GET /api/routines sends it (kid mode). */
+    @SerialName("image_url") val imageUrl: String? = null,
 )
 
 @Serializable
@@ -42,6 +46,13 @@ data class Routine(
     @SerialName("routine_steps") val steps: List<RoutineStep> = emptyList(),
     /** Only present on the kid API's GET /api/routines. */
     val completedToday: Boolean = false,
+    /** Migration 032: read each step aloud as it appears (free). */
+    @SerialName("auto_read_aloud") val autoReadAloud: Boolean = false,
+    /** Migration 032: gentle "finish by" total for the whole routine (Premium). */
+    @SerialName("target_duration_seconds") val targetDurationSeconds: Int? = null,
+    /** Only on GET /api/routines/[id]: the family's plan and language, for the player. */
+    @SerialName("family_premium") val familyPremium: Boolean? = null,
+    @SerialName("family_language") val familyLanguage: String? = null,
 ) {
     val routineType: RoutineType get() = RoutineType.of(type)
     val sortedSteps: List<RoutineStep> get() = steps.sortedBy { it.orderIndex }
@@ -66,6 +77,8 @@ data class NewStepRow(
     val icon: String,
     @SerialName("order_index") val orderIndex: Int,
     @SerialName("duration_seconds") val durationSeconds: Int?,
+    /** Sent only when set (see ChoreStarRepository.stepRows), so an unmigrated database still saves. */
+    @kotlinx.serialization.Transient val imagePath: String? = null,
 )
 
 @Serializable
@@ -83,7 +96,7 @@ data class NewRoutineCompletion(
 )
 
 /** A step as the builder edits it. */
-data class EditableStep(val title: String, val icon: String, val durationMinutes: Int?)
+data class EditableStep(val title: String, val icon: String, val durationMinutes: Int?, val imagePath: String? = null, val previewUrl: String? = null)
 
 /** The four starter routines (Models/Routine.swift RoutineTemplate.all). Titles are stored in English, localised at display. */
 data class RoutineTemplate(val name: String, val type: RoutineType, val icon: String, val steps: List<Triple<String, String, Int?>>)
@@ -129,12 +142,29 @@ object RoutineIcons {
     )
     private val map = choices.toMap()
 
+    /** The web builder (and Build with AI) stores lucide icon keys; show the nearest emoji. */
+    val webKeys: Map<String, String> = mapOf(
+        "wake-up" to "☀️", "make-bed" to "🛏️", "brush-teeth" to "🪥", "wash-face" to "💧", "get-dressed" to "👕", "brush-hair" to "💇",
+        "eat-breakfast" to "🥣", "pack-backpack" to "🎒", "put-on-shoes" to "👟", "get-ready" to "😊", "morning-stretch" to "🤸",
+        "take-bath" to "🛁", "take-shower" to "🚿", "put-on-pajamas" to "🌙", "read-book" to "📖", "hugs-kisses" to "🤗", "lights-out" to "💡",
+        "bedtime-story" to "📚", "set-alarm" to "⏰", "calm-music" to "🎵", "shower" to "🚿", "wash-hands" to "🧼", "floss-teeth" to "🦷",
+        "use-bathroom" to "🚽", "put-on-deodorant" to "✨", "clip-nails" to "✂️", "eat-lunch" to "🥪", "eat-dinner" to "🍽️", "have-snack" to "🍎",
+        "drink-water" to "🥛", "drink-milk" to "🥛", "eat-fruit" to "🍎", "eat-veggies" to "🥦", "set-table" to "🍴", "clear-dishes" to "🍽️",
+        "do-homework" to "✏️", "study" to "📘", "practice-reading" to "📖", "practice-math" to "🧮", "check-backpack" to "🎒", "organize-desk" to "🗂️",
+        "school-supplies" to "🏫", "feed-pet" to "🐶", "walk-dog" to "🐕", "water-plants" to "🪴", "take-out-trash" to "🗑️", "clean-room" to "🧹",
+        "put-away-toys" to "🧸", "help-cook" to "🧑‍🍳", "fold-laundry" to "🧺", "vacuum" to "🧹", "dust" to "✨", "play-outside" to "🌳",
+        "ride-bike" to "🚲", "play-game" to "🎮", "do-puzzle" to "🧩", "draw-paint" to "🎨", "listen-music" to "🎧", "dance" to "💃",
+        "build-blocks" to "🧱", "play-instrument" to "🎸", "exercise" to "🏃", "stretch" to "🤸", "sports" to "⚽", "yoga" to "🧘",
+        "check" to "✅", "checkmark" to "✅", "timer" to "⏱️", "star" to "⭐", "trophy" to "🏆", "rocket" to "🚀", "bell" to "🔔",
+        "heart" to "❤️", "smile" to "😊", "sparkles" to "✨", "home" to "🏠",
+    )
+
     /** Emoji stays emoji; a symbol name becomes its emoji; anything else falls back. */
     fun display(icon: String?, fallback: String = "📝"): String {
         val s = icon?.trim().orEmpty()
         if (s.isEmpty()) return fallback
         if (!s.first().isLetterOrDigit() && s.first() != '.') return s
-        return map[s] ?: fallback
+        return map[s] ?: webKeys[s] ?: fallback
     }
 
     val colors = listOf("#f59e0b", "#8b5cf6", "#10b981", "#6366f1", "#ef4444", "#ec4899", "#14b8a6", "#f97316")

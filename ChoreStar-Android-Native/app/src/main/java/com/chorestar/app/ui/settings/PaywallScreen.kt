@@ -78,7 +78,7 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, source: String,
             Text(stringResource(R.string.paywall_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.paywall_feat_sharing, R.string.premium_bullet_themes, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
+                    listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.paywall_feat_sharing, R.string.premium_bullet_themes, R.string.paywall_feat_money, R.string.paywall_feat_routines, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
                 }
             }
             when {

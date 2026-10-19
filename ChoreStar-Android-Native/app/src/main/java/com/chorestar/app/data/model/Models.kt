@@ -138,6 +138,8 @@ data class FamilySettings(
     @SerialName("weekly_bonus_label") val weeklyBonusLabel: String? = null,
     @SerialName("currency_code") val currencyCode: String? = null,
     val timezone: String? = null,
+    /** 'en', 'es'...: the family's language, used to read parent-typed routine steps aloud. */
+    val language: String? = null,
     /** Live vacation window (migration 019); both null or both set. */
     @SerialName("vacation_starts_on") val vacationStartsOn: String? = null,
     @SerialName("vacation_ends_on") val vacationEndsOn: String? = null,

@@ -50,6 +50,13 @@ class Prefs(context: Context) {
     fun onboardingSeen(userId: String): Boolean = sp.getBoolean("onboardingSeen.$userId", false)
     fun markOnboardingSeen(userId: String) = sp.edit().putBoolean("onboardingSeen.$userId", true).apply()
 
+    /** Family challenges whose "you did it together" confetti already played on this device. */
+    fun challengeCelebrated(id: String): Boolean = sp.getStringSet("challengesCelebrated", emptySet())?.contains(id) == true
+    fun markChallengeCelebrated(id: String) {
+        val set = (sp.getStringSet("challengesCelebrated", emptySet()) ?: emptySet()).toMutableSet().apply { add(id) }
+        sp.edit().putStringSet("challengesCelebrated", set.toList().takeLast(50).toSet()).apply()
+    }
+
     var kidSessionJson: String?
         get() = sp.getString("kidSession", null)
         set(v) = sp.edit().putString("kidSession", v).apply()

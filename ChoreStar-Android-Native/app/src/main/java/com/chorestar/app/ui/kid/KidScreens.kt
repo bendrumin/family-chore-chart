@@ -299,8 +299,14 @@ fun ChildMainScreen(vm: KidViewModel) {
     LaunchedEffect(notice) { if (notice != null) { delay(3000); notice = null } }
     LaunchedEffect(s.perfectDay) { if (s.perfectDay) Sounds.play(Sounds.Cue.Cheer, prefs) }
 
+    val toCelebrate = com.chorestar.app.ui.challenges.rememberChallengeToCelebrate(s.challenges)
     playing?.let { r ->
-        RoutinePlayerScreen(r, child.name, s.currency, onComplete = { done, secs -> vm.completeRoutine(r, done, secs); Sounds.play(Sounds.Cue.Cheer, prefs) }, onClose = { playing = null })
+        // Standalone sessions fetch the family's plan and language for the finish-by bar and read-aloud.
+        var detailed by remember(r.id) { mutableStateOf(r) }
+        LaunchedEffect(r.id) { detailed = vm.routineForPlayer(r) }
+        RoutinePlayerScreen(detailed, child.name, s.currency, onComplete = { done, secs -> vm.completeRoutine(r, done, secs); Sounds.play(Sounds.Cue.Cheer, prefs) }, onClose = { playing = null },
+            premium = s.familyPremium, photoUrl = { st -> s.stepPhotoUrl(st) }, familyLanguage = s.familyLanguage,
+            onProgress = { i, total, title -> vm.reportRoutineProgress(r, i, total, title) }, onProgressClear = { vm.reportRoutineProgress(r, null, r.steps.size, null) })
         return
     }
     if (route == KidRoute.Badges) {
@@ -367,6 +373,8 @@ fun ChildMainScreen(vm: KidViewModel) {
                 }
             }
             item { GoalCard(wallet, currency, onEdit = { goalEditor = it }, onAdd = { addingGoal = true }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+            if (wallet != null && wallet.hasMoneyNews) item { KidMoneyCard(wallet, currency, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+            if (s.challenges.isNotEmpty()) item { com.chorestar.app.ui.challenges.KidChallengesSection(s.challenges, currency, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             if (s.routines.isNotEmpty()) {
                 item { Text(stringResource(R.string.my_routines), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
                 items(s.routines.size) { i -> val r = s.routines[i]; Box(Modifier.padding(horizontal = 16.dp, vertical = 5.dp)) { KidRoutineCard(r, r.id in s.completedRoutineIds, currency, onPlay = { playing = r }) } }
@@ -396,6 +404,7 @@ fun ChildMainScreen(vm: KidViewModel) {
         }
         notice?.let { Text(it, modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp).background(MaterialTheme.colorScheme.inverseSurface, RoundedCornerShape(12.dp)).padding(12.dp), color = MaterialTheme.colorScheme.inverseOnSurface) }
         if (s.perfectDay) PerfectDayOverlay(onDismiss = vm::dismissPerfectDay)
+        toCelebrate.value?.let { c -> com.chorestar.app.ui.challenges.ChallengeCelebration(c, onDismiss = { toCelebrate.value = null }) }
     }
 
     if (goalEditor != null || addingGoal) {
@@ -410,7 +419,7 @@ fun ChildMainScreen(vm: KidViewModel) {
         AlertDialog(
             onDismissRequest = { storeConfirm = null },
             title = { Text("${item.emoji ?: "🎁"} ${item.title}") },
-            text = { Text(stringResource(R.string.spend_confirm, Money.format(item.priceCents, currency), Money.format(wallet?.owedCents ?: 0, currency))) },
+            text = { Text(stringResource(R.string.spend_confirm, Money.format(item.priceCents, currency), Money.format(wallet?.spendable ?: 0, currency))) },
             confirmButton = { TextButton(onClick = { storeConfirm = null; scope.launch { vm.redeem(item.id).onSuccess { Sounds.play(Sounds.Cue.Success, prefs); notice = asked } } }) { Text(stringResource(R.string.yes_please)) } },
             dismissButton = { TextButton(onClick = { storeConfirm = null }) { Text(stringResource(R.string.not_now)) } },
         )
@@ -525,7 +534,7 @@ private fun StoreSection(wallet: KidApi.WalletView, currency: String, onAsk: (Ki
     Column(Modifier.padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("🛍️ " + stringResource(R.string.reward_store), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.to_spend, Money.format(wallet.owedCents, currency)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.to_spend, Money.format(wallet.spendable, currency)), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(8.dp))
         wallet.store.chunked(2).forEach { pair ->
@@ -546,6 +555,41 @@ private fun StoreSection(wallet: KidApi.WalletView, currency: String, onAsk: (Ki
                     }
                 }
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/**
+ * The kid's money at a glance (Premium, migration 030): three jars when the
+ * parent turned them on, what they owe after a fine went below zero, banked
+ * screen-time minutes, and the latest money news with the parent's reason for
+ * every deduction. A free family's wallet carries none of it, so a kid never
+ * meets a paywall.
+ */
+@Composable
+private fun KidMoneyCard(wallet: KidApi.WalletView, currency: String, modifier: Modifier) {
+    Card(modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("💰 " + stringResource(R.string.my_money), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            val jars = wallet.jars
+            if (jars != null && jars.enabled) com.chorestar.app.ui.money.JarRow(jars.spendCents, jars.saveCents, jars.giveCents, currency)
+            if (wallet.owes > 0) Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f)).padding(12.dp)) {
+                Text("⚠️ " + stringResource(R.string.you_owe, Money.format(wallet.owes, currency)), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.you_owe_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            wallet.minutes?.takeIf { it.earned > 0 || it.balance != 0 }?.let { m ->
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF8B5CF6).copy(alpha = 0.12f)).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("⏱️", style = MaterialTheme.typography.headlineSmall); Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(stringResource(R.string.screen_time), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.minutes_banked, maxOf(0, m.balance)), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            if (wallet.moneyNews.isNotEmpty()) {
+                Text(stringResource(R.string.money_news), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                wallet.moneyNews.take(4).forEach { com.chorestar.app.ui.money.MoneyNewsRow(it, currency) }
             }
         }
     }
