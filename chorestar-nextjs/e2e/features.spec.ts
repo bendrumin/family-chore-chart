@@ -214,6 +214,10 @@ test.describe('Premium family', () => {
     await page.getByRole('tab', { name: /^routines$/i }).click()
     await page.getByRole('button', { name: /add routine|new routine/i }).first().click()
     await expect(page.getByRole('heading', { name: /create new routine/i })).toBeVisible({ timeout: 10_000 })
+    // Wait for the plan to load: until it does, the builder treats the family
+    // as free and a Premium template opens Billing instead. The AI prompt box
+    // only renders once the plan is known to be Premium.
+    await expect(page.getByLabel(/what should this routine do/i)).toBeVisible({ timeout: 10_000 })
     await page.getByRole('button', { name: /homework hour/i }).click()
     await expect(page.getByText(/loaded homework hour template/i)).toBeVisible({ timeout: 5000 })
   })
