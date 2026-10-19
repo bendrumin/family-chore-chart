@@ -58,10 +58,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, status: 'rejected' })
     }
 
+    // The store spends from the Spend jar when jars are on (a payout with no
+    // jar is Spend), and from the whole balance when they're off.
     const balance = await computeBalance(child)
-    if (balance.owedCents < redemption.price_cents) {
+    if (balance.spendableCents < redemption.price_cents) {
       return NextResponse.json(
-        { error: 'not_enough', owedCents: balance.owedCents, priceCents: redemption.price_cents },
+        { error: 'not_enough', owedCents: balance.spendableCents, priceCents: redemption.price_cents },
         { status: 409 }
       )
     }
@@ -100,7 +102,7 @@ export async function POST(request: Request) {
       ok: true,
       status: 'approved',
       paidCents: redemption.price_cents,
-      owedCents: balance.owedCents - redemption.price_cents,
+      owedCents: Math.max(0, balance.owedCents - redemption.price_cents),
     })
   } catch (error) {
     console.error('[rewards/redemptions]', error)

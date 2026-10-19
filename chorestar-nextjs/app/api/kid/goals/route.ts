@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     }
 
     const balance = await computeBalance(ctx.child)
-    return NextResponse.json({ goal: goalView(data, balance.owedCents) })
+    return NextResponse.json({ goal: goalView(data, balance.goalBaseCents) })
   } catch (error) {
     console.error('[kid/goals] POST', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
@@ -123,7 +123,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Could not save the goal' }, { status: 500 })
     }
     const balance = await computeBalance(ctx.child)
-    return NextResponse.json({ goal: goalView(data, balance.owedCents) })
+    return NextResponse.json({ goal: goalView(data, balance.goalBaseCents) })
   } catch (error) {
     console.error('[kid/goals] PATCH', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })

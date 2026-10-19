@@ -1,7 +1,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse, after } from 'next/server'
 import { resolveKidRequest } from '@/lib/utils/kid-or-parent-auth'
-import { computeBalance, activeGoals, goalView, walletLimits, type GoalRow } from '@/lib/utils/wallet'
+import { computeBalance, computeMinutes, recentLedger, activeGoals, goalView, walletLimits, type GoalRow } from '@/lib/utils/wallet'
 import { notifyGoalReached } from '@/lib/push/notify'
 
 /**
@@ -11,6 +11,10 @@ import { notifyGoalReached } from '@/lib/push/notify'
  * goals, the family's reward store with what is affordable right now and any
  * requests still waiting, and the plan limits the UI needs to show "1 goal on
  * the free plan". Kid token, or a parent's session naming the child.
+ *
+ * Premium money (migration 030): the Spend / Save / Give jars, screen-time
+ * minutes, and the latest money news (allowance paid, interest, fines). With
+ * jars on, the store spends from Spend and goals fill from Save.
  *
  * Also the one place the "reached your goal" alert fires: the kid dashboard
  * fetches this constantly, and the goal row remembers it was sent.
@@ -26,10 +30,10 @@ export async function GET(request: Request) {
     const admin = createServiceRoleClient()
     const { child } = ctx
 
-    const [balance, goals, limits, settingsRes, itemsRes, reachedRes, pendingRes] = await Promise.all([
-      computeBalance(child),
+    const limits = await walletLimits(child.user_id)
+    const [balance, goals, settingsRes, itemsRes, reachedRes, pendingRes, minutes, ledger] = await Promise.all([
+      computeBalance(child, { premium: limits.premium }),
       activeGoals(child.id),
-      walletLimits(child.user_id),
       admin.from('family_settings').select('currency_code').eq('user_id', child.user_id).maybeSingle(),
       admin
         .from('reward_items')
@@ -50,9 +54,15 @@ export async function GET(request: Request) {
         .select('id, reward_item_id, price_cents, requested_at, status')
         .eq('child_id', child.id)
         .eq('status', 'pending'),
+      // Money features are Premium; a free family's kid sees none of them.
+      limits.premium ? computeMinutes(child.id) : Promise.resolve(null),
+      limits.premium ? recentLedger(child.id, 8) : Promise.resolve([]),
     ])
 
     const owed = balance.owedCents
+    // The store spends from Spend when jars are on; goals fill from Save.
+    const spendable = balance.spendableCents
+    const goalBase = balance.goalBaseCents
     const pending = pendingRes.data ?? []
     const pendingByItem = new Map(pending.map(p => [p.reward_item_id, p.id]))
 
@@ -61,16 +71,16 @@ export async function GET(request: Request) {
       title: item.title,
       emoji: item.emoji,
       priceCents: item.price_cents,
-      affordable: owed >= item.price_cents,
-      shortByCents: Math.max(0, item.price_cents - owed),
+      affordable: spendable >= item.price_cents,
+      shortByCents: Math.max(0, item.price_cents - spendable),
       pendingRequestId: pendingByItem.get(item.id) ?? null,
     }))
 
-    const goalsOut = goals.map(g => goalView(g, owed))
+    const goalsOut = goals.map(g => goalView(g, goalBase))
 
     // First time the balance covers a target: tell the parent, once per goal.
     for (const goal of goals) {
-      if (owed < goal.target_cents || goal.notified_at) continue
+      if (goalBase < goal.target_cents || goal.notified_at) continue
       after(async () => {
         try {
           await admin.from('goals').update({ notified_at: new Date().toISOString() }).eq('id', goal.id)
@@ -88,11 +98,18 @@ export async function GET(request: Request) {
         owedCents: owed,
         earnedCents: balance.earnedCents,
         paidCents: balance.paidCents,
+        // Signed: below zero means the kid owes a parent (a fine the parent
+        // allowed to go negative).
+        balanceCents: balance.balanceCents,
+        spendableCents: spendable,
+        jars: balance.jars,
+        minutes: minutes ? { balance: minutes.balanceMinutes, earned: minutes.earnedMinutes, used: minutes.usedMinutes } : null,
+        moneyNews: ledger,
         currencyCode: settingsRes.data?.currency_code ?? 'USD',
         // `goal` (the oldest) stays for iOS builds up to 2.4, which read one goal.
         goal: goalsOut[0] ?? null,
         goals: goalsOut,
-        reachedGoals: ((reachedRes.data ?? []) as GoalRow[]).map(g => goalView(g, owed)),
+        reachedGoals: ((reachedRes.data ?? []) as GoalRow[]).map(g => goalView(g, goalBase)),
         store,
         pendingRedemptions: pending.map(p => ({
           id: p.id,
