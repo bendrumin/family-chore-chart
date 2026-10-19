@@ -14,6 +14,7 @@ import { isFreeGoalLimitError } from '@/lib/utils/shared-chores'
 import { isPremium } from '@/lib/utils/subscription'
 import type { Database } from '@/lib/supabase/database.types'
 import type { Child } from '@/lib/types'
+import { MoneySection } from '@/components/settings/money/money-section'
 
 /** Open Settings › Billing for the goal cap (the dashboard logs the paywall source). */
 function openGoalPaywall() {
@@ -46,6 +47,7 @@ export function RewardsTab() {
   const [children, setChildren] = useState<Child[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
   const [balances, setBalances] = useState<Record<string, number>>({})
+  const [jarKids, setJarKids] = useState<Record<string, boolean>>({})
   const [premium, setPremium] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -70,13 +72,16 @@ export function RewardsTab() {
       setPremium(isPremium(profile?.subscription_type))
 
       const owed: Record<string, number> = {}
+      const saving: Record<string, boolean> = {}
       await Promise.all(
         (kids ?? []).map(async k => {
           try {
             const res = await fetch(`/api/allowance?childId=${k.id}`)
             if (res.ok) {
               const data = await res.json()
-              owed[k.id] = data.owedCents ?? 0
+              // Goals fill from the Save jar when jars are on (migration 030).
+              owed[k.id] = data.goalBaseCents ?? data.owedCents ?? 0
+              if (data.jars?.enabled) saving[k.id] = true
             }
           } catch {
             // leave unknown
@@ -84,6 +89,7 @@ export function RewardsTab() {
         })
       )
       setBalances(owed)
+      setJarKids(saving)
     } catch (error) {
       console.error('Rewards tab load failed:', error)
     } finally {
@@ -229,6 +235,9 @@ export function RewardsTab() {
 
   return (
     <div className="space-y-8">
+      {/* Money (Premium): jars, weekly allowance, interest, fines, minutes */}
+      <MoneySection onChanged={() => void load()} />
+
       {/* Store */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
@@ -366,6 +375,7 @@ export function RewardsTab() {
                 child={child}
                 goals={goalsByChild.get(child.id) ?? []}
                 owedCents={balances[child.id]}
+                fromSave={jarKids[child.id] ?? false}
                 currency={currency}
                 premium={premium}
                 onPayOut={goal => payOutGoal(child, goal)}
@@ -384,6 +394,7 @@ function ChildGoalRow({
   child,
   goals,
   owedCents,
+  fromSave,
   currency,
   premium,
   onPayOut,
@@ -393,6 +404,8 @@ function ChildGoalRow({
   child: Child
   goals: Goal[]
   owedCents: number | undefined
+  /** Jars are on: goals fill from the Save jar. */
+  fromSave: boolean
   currency: string
   premium: boolean
   onPayOut: (goal: Goal) => Promise<void>
@@ -430,7 +443,7 @@ function ChildGoalRow({
       <div className="flex items-center justify-between gap-3">
         <div className="font-bold" style={{ color: child.avatar_color || 'var(--text-primary)' }}>{child.name}</div>
         <div className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>
-          {owedCents === undefined ? '' : `${formatMoney(owed, currency)} unspent`}
+          {owedCents === undefined ? '' : `${formatMoney(owed, currency)} ${fromSave ? 'in Save' : 'unspent'}`}
         </div>
       </div>
 

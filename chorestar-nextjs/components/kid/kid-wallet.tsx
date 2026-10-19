@@ -148,7 +148,7 @@ export function KidGoalCard({ kidToken, wallet, onChanged }: CommonProps) {
             <span className="min-w-0 flex-1">
               <span className="block text-2xl font-black text-gray-900 leading-tight">{t('goal.whatSaving')}</span>
               <span className="block text-sm font-bold text-gray-500 mt-0.5">
-                {t('goal.pickWatch', { money: money(wallet.owedCents) })}
+                {t('goal.pickWatch', { money: money(wallet.jars?.enabled ? Math.max(0, wallet.jars.saveCents) : wallet.owedCents) })}
               </span>
             </span>
           </button>
@@ -447,7 +447,7 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
         <h2 id="kid-store-title" className="text-2xl font-black text-white drop-shadow-sm flex items-center gap-2">
           <ShoppingBag className="w-6 h-6" aria-hidden /> {t('store.title')}
         </h2>
-        <span className="text-white/90 font-bold tabular-nums">{t('store.toSpend', { money: money(wallet.owedCents) })}</span>
+        <span className="text-white/90 font-bold tabular-nums">{t('store.toSpend', { money: money(wallet.spendableCents ?? wallet.owedCents) })}</span>
       </div>
 
       {notice && (
@@ -525,7 +525,7 @@ export function KidStore({ kidToken, wallet, onChanged }: CommonProps) {
             <div className="text-6xl mb-2" aria-hidden>{confirm.emoji ?? '🎁'}</div>
             <h3 id="redeem-title" className="text-2xl font-black text-gray-900">{confirm.title}</h3>
             <p className="mt-1 text-gray-600 font-bold">
-              {t('store.spendConfirm', { price: money(confirm.priceCents), balance: money(wallet.owedCents) })}
+              {t('store.spendConfirm', { price: money(confirm.priceCents), balance: money(wallet.spendableCents ?? wallet.owedCents) })}
             </p>
             <p className="mt-1 text-sm text-gray-500 font-semibold">{t('store.grownUpDecides')}</p>
             <div className="mt-5 flex gap-3">

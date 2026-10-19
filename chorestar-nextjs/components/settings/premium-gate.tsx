@@ -5,8 +5,37 @@ import { Button } from '@/components/ui/button'
 import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
+import type { MoneyFeature } from '@/lib/utils/money'
 
-const COPY: Record<GatedFeature, { title: string; body: string }> = {
+/** Anything with an upgrade panel. The source logged is `gate_${feature}`. */
+export type PremiumGateFeature = GatedFeature | MoneyFeature
+
+/** Open Settings > Billing for a feature; the dashboard logs `gate_${feature}`. */
+export function openPremiumGate(feature: PremiumGateFeature) {
+  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))
+}
+
+const COPY: Record<PremiumGateFeature, { title: string; body: string }> = {
+  jars: {
+    title: 'Spend, Save and Give jars come with Premium',
+    body: 'Pick a split like 70/20/10. Every cent your kid earns from then on lands in three jars, and the store spends from Spend.',
+  },
+  allowance: {
+    title: 'Automatic weekly allowance comes with Premium',
+    body: 'A fixed amount on the day you choose, optionally only when most of the week\'s chores got done.',
+  },
+  interest: {
+    title: 'Interest on savings comes with Premium',
+    body: 'Pay a small weekly percentage on what sits in the Save jar, so waiting visibly pays.',
+  },
+  fines: {
+    title: 'Fines and paybacks come with Premium',
+    body: 'Take money off with a reason, or set a weekly repayment like a phone bill. Never below zero unless you say so.',
+  },
+  minutes: {
+    title: 'Screen-time minutes come with Premium',
+    body: 'Chores and routines can earn minutes as well as money. Kids bank them; you mark them used.',
+  },
   themes: {
     title: 'Premium themes',
     body: 'Ocean, Sunset, Forest, Aurora, Coral, and Lavender come with Premium. The seasonal themes stay free.',
@@ -30,7 +59,7 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
  * shell it states the limit with no purchase CTA (Play policy), the same
  * split the child and chore caps use.
  */
-export function PremiumGate({ feature, compact = false }: { feature: GatedFeature; compact?: boolean }) {
+export function PremiumGate({ feature, compact = false }: { feature: PremiumGateFeature; compact?: boolean }) {
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 
@@ -63,7 +92,7 @@ export function PremiumGate({ feature, compact = false }: { feature: GatedFeatur
         variant="gradient"
         size={compact ? 'sm' : 'lg'}
         className={`${compact ? '' : 'w-full'} font-bold hover-glow`}
-        onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
+        onClick={() => openPremiumGate(feature)}
       >
         <Crown className="w-4 h-4 mr-2" />
         Open Billing

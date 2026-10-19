@@ -176,6 +176,26 @@ const en = {
   'store.grownUpDecides': 'A grown-up will say yes or no.',
   'store.notNow': 'Not now',
   'store.yesPlease': 'Yes, please!',
+
+  // Money jars, minutes and money news (Premium, migration 030)
+  'money.title': 'My money',
+  'money.spend': 'Spend',
+  'money.save': 'Save',
+  'money.give': 'Give',
+  'money.spendHint': 'For the store',
+  'money.saveHint': 'For your goals',
+  'money.giveHint': 'To help others',
+  'money.owe': 'You owe {money}',
+  'money.oweHint': 'It gets paid back from what you earn next.',
+  'money.minutes': 'Screen time',
+  'money.minutesBanked': '{minutes} min saved up',
+  'money.news': 'Money news',
+  'money.kind.allowance': 'Allowance',
+  'money.kind.allowanceSkipped': 'No allowance this week',
+  'money.kind.interest': 'Interest on Save',
+  'money.kind.fine': 'Taken off',
+  'money.kind.repayment': 'Paid back',
+  'money.kind.donation': 'Given away',
 }
 
 export type KidKey = keyof typeof en
@@ -322,6 +342,25 @@ const es: Record<KidKey, string> = {
   'store.grownUpDecides': 'Un adulto dirá sí o no.',
   'store.notNow': 'Ahora no',
   'store.yesPlease': '¡Sí, por favor!',
+
+  'money.title': 'Mi dinero',
+  'money.spend': 'Gastar',
+  'money.save': 'Ahorrar',
+  'money.give': 'Dar',
+  'money.spendHint': 'Para la tienda',
+  'money.saveHint': 'Para tus metas',
+  'money.giveHint': 'Para ayudar a otros',
+  'money.owe': 'Debes {money}',
+  'money.oweHint': 'Se paga con lo próximo que ganes.',
+  'money.minutes': 'Tiempo de pantalla',
+  'money.minutesBanked': '{minutes} min guardados',
+  'money.news': 'Noticias de tu dinero',
+  'money.kind.allowance': 'Mesada',
+  'money.kind.allowanceSkipped': 'Sin mesada esta semana',
+  'money.kind.interest': 'Interés por ahorrar',
+  'money.kind.fine': 'Descontado',
+  'money.kind.repayment': 'Devuelto',
+  'money.kind.donation': 'Donado',
 }
 
 const pt: Record<KidKey, string> = {
@@ -466,6 +505,25 @@ const pt: Record<KidKey, string> = {
   'store.grownUpDecides': 'Um adulto vai dizer sim ou não.',
   'store.notNow': 'Agora não',
   'store.yesPlease': 'Sim, por favor!',
+
+  'money.title': 'Meu dinheiro',
+  'money.spend': 'Gastar',
+  'money.save': 'Poupar',
+  'money.give': 'Doar',
+  'money.spendHint': 'Para a loja',
+  'money.saveHint': 'Para suas metas',
+  'money.giveHint': 'Para ajudar os outros',
+  'money.owe': 'Você deve {money}',
+  'money.oweHint': 'Vai ser pago com o que você ganhar depois.',
+  'money.minutes': 'Tempo de tela',
+  'money.minutesBanked': '{minutes} min guardados',
+  'money.news': 'Novidades do seu dinheiro',
+  'money.kind.allowance': 'Mesada',
+  'money.kind.allowanceSkipped': 'Sem mesada esta semana',
+  'money.kind.interest': 'Juros da poupança',
+  'money.kind.fine': 'Descontado',
+  'money.kind.repayment': 'Devolvido',
+  'money.kind.donation': 'Doado',
 }
 
 const ar: Record<KidKey, string> = {
@@ -610,6 +668,25 @@ const ar: Record<KidKey, string> = {
   'store.grownUpDecides': 'شخص كبير سيقول نعم أو لا.',
   'store.notNow': 'ليس الآن',
   'store.yesPlease': 'نعم، من فضلك!',
+
+  'money.title': 'أموالي',
+  'money.spend': 'للصرف',
+  'money.save': 'للادخار',
+  'money.give': 'للعطاء',
+  'money.spendHint': 'للمتجر',
+  'money.saveHint': 'لأهدافك',
+  'money.giveHint': 'لمساعدة الآخرين',
+  'money.owe': 'عليك {money}',
+  'money.oweHint': 'ستسدده مما تكسبه لاحقًا.',
+  'money.minutes': 'وقت الشاشة',
+  'money.minutesBanked': '{minutes} دقيقة مدخرة',
+  'money.news': 'أخبار أموالك',
+  'money.kind.allowance': 'المصروف',
+  'money.kind.allowanceSkipped': 'لا مصروف هذا الأسبوع',
+  'money.kind.interest': 'فائدة الادخار',
+  'money.kind.fine': 'خصم',
+  'money.kind.repayment': 'سداد',
+  'money.kind.donation': 'تبرع',
 }
 
 const DICTIONARIES: Record<KidLocale, Record<KidKey, string>> = { en, es, pt, ar }
