@@ -56,6 +56,9 @@ export function RoutineList({
       icon: routine.icon,
       color: routine.color,
       reward_cents: routine.reward_cents,
+      auto_read_aloud: !!routine.auto_read_aloud,
+      target_duration_seconds: routine.target_duration_seconds ?? null,
+      // Steps carry image_path + a signed image_url (migration 032).
       steps: routine.routine_steps || [],
     });
     setShowBuilder(true);

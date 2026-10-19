@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Sparkles, Plus, Trash2, GripVertical, Clock, DollarSign, Crown } from 'lucide-react';
+import { Sparkles, Plus, Trash2, GripVertical, Clock, DollarSign, Crown, Camera, X, Loader2, Volume2, Timer, Wand2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { openPremiumBilling } from '@/components/settings/premium-gate';
+import { uploadStepPhoto, requestRoutineDraft } from '@/lib/routines/client';
+import { targetMinutesToSeconds, suggestedTargetSeconds } from '@/lib/routines/routine-timer';
 import { useEntitlements } from '@/lib/hooks/use-entitlements';
 import { isPremium } from '@/lib/utils/subscription';
 import { RoutineIconPicker } from './routine-icon-picker';
@@ -38,6 +42,10 @@ interface RoutineStep {
   icon: RoutineIconKey;
   order_index: number;
   duration_seconds?: number;
+  /** Picture step (Premium): storage path saved with the step. */
+  image_path?: string | null;
+  /** Signed preview URL for image_path (not saved). */
+  image_url?: string | null;
 }
 
 interface RoutineBuilderModalProps {
@@ -53,8 +61,88 @@ interface RoutineBuilderModalProps {
     icon: string;
     color: string;
     reward_cents: number;
+    auto_read_aloud?: boolean;
+    target_duration_seconds?: number | null;
     steps: RoutineStep[];
   };
+}
+
+/** Photo control on a step row: thumbnail + remove, a camera, or a crowned lock. */
+function StepPhotoControl({
+  step,
+  index,
+  canAddPhoto,
+  showLocked,
+  uploading,
+  onPick,
+  onRemove,
+}: {
+  step: RoutineStep;
+  index: number;
+  canAddPhoto: boolean;
+  showLocked: boolean;
+  uploading: boolean;
+  onPick: () => void;
+  onRemove: () => void;
+}) {
+  if (uploading) {
+    return (
+      <div className="flex-shrink-0 w-10 h-10 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center" aria-live="polite">
+        <Loader2 className="w-4 h-4 animate-spin text-gray-500 dark:text-gray-400" aria-label="Uploading photo" />
+      </div>
+    );
+  }
+  if (step.image_path) {
+    return (
+      <div className="relative flex-shrink-0 w-10 h-10">
+        {step.image_url ? (
+          // Signed storage URL; next/image would need the bucket host allow-listed.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={step.image_url} alt={`Picture for step ${index + 1}`} className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+        ) : (
+          <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <Camera className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove picture from step ${index + 1}`}
+          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900 flex items-center justify-center shadow"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+    );
+  }
+  if (canAddPhoto) {
+    return (
+      <button
+        type="button"
+        onClick={onPick}
+        aria-label={`Add a picture to step ${index + 1}`}
+        title="Add a picture (great for pre-readers)"
+        className="flex-shrink-0 w-10 h-10 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-600 dark:hover:border-purple-500 dark:hover:text-purple-300 flex items-center justify-center transition-colors"
+      >
+        <Camera className="w-4 h-4" />
+      </button>
+    );
+  }
+  if (showLocked) {
+    return (
+      <button
+        type="button"
+        onClick={() => openPremiumBilling('routine_photos')}
+        aria-label="Picture steps are a Premium feature. Open Billing"
+        title="Picture steps come with Premium"
+        className="relative flex-shrink-0 w-10 h-10 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center opacity-80 hover:opacity-100"
+      >
+        <Camera className="w-4 h-4" />
+        <Crown className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 text-amber-500 dark:text-amber-400" aria-hidden="true" />
+      </button>
+    );
+  }
+  return null;
 }
 
 // Sortable Step Component
@@ -63,11 +151,18 @@ function SortableStep({
   index,
   onUpdate,
   onDelete,
+  photo,
 }: {
   step: RoutineStep;
   index: number;
   onUpdate: (updates: Partial<RoutineStep>) => void;
   onDelete: () => void;
+  photo: {
+    canAddPhoto: boolean;
+    showLocked: boolean;
+    uploading: boolean;
+    onPick: () => void;
+  };
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: step.id,
@@ -85,13 +180,13 @@ function SortableStep({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
+      className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg"
     >
       {/* Drag Handle */}
       <button
         type="button"
         aria-label={`Reorder step ${index + 1}: ${step.title || 'untitled'}`}
-        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
         {...attributes}
         {...listeners}
       >
@@ -103,10 +198,21 @@ function SortableStep({
         {index + 1}
       </div>
 
-      {/* Step Icon */}
-      <div className="flex-shrink-0">
-        {IconComponent && <IconComponent className="w-6 h-6 text-blue-600" />}
+      {/* Step Icon (a picture replaces it in the player when there is one) */}
+      <div className="hidden sm:block flex-shrink-0">
+        {IconComponent && <IconComponent className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
       </div>
+
+      {/* Picture (Premium) */}
+      <StepPhotoControl
+        step={step}
+        index={index}
+        canAddPhoto={photo.canAddPhoto}
+        showLocked={photo.showLocked}
+        uploading={photo.uploading}
+        onPick={photo.onPick}
+        onRemove={() => onUpdate({ image_path: null, image_url: null })}
+      />
 
       {/* Step Title Input */}
       <Input
@@ -114,12 +220,12 @@ function SortableStep({
         onChange={(e) => onUpdate({ title: e.target.value })}
         placeholder="Step name..."
         aria-label={`Step ${index + 1} name`}
-        className="flex-1"
+        className="flex-1 min-w-0"
       />
 
       {/* Duration (optional) */}
       <div className="flex items-center gap-1">
-        <Clock className="w-4 h-4 text-gray-400" aria-hidden="true" />
+        <Clock className="hidden sm:block w-4 h-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
         <Input
           type="number"
           value={step.duration_seconds ? Math.floor(step.duration_seconds / 60) : ''}
@@ -134,7 +240,7 @@ function SortableStep({
       </div>
 
       {/* Delete Button */}
-      <Button type="button" variant="ghost" size="sm" onClick={onDelete} aria-label={`Delete step ${index + 1}`} className="text-red-500 hover:text-red-700">
+      <Button type="button" variant="ghost" size="sm" onClick={onDelete} aria-label={`Delete step ${index + 1}`} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
         <Trash2 className="w-4 h-4" />
       </Button>
     </div>
@@ -150,8 +256,10 @@ export function RoutineBuilderModal({
   editRoutine,
 }: RoutineBuilderModalProps) {
   // The family's plan (co-parents share the owner's): unlocks the template library.
-  const { tier } = useEntitlements();
+  const { tier, loading: planLoading } = useEntitlements();
   const familyIsPremium = isPremium(tier);
+  // Locks only once the plan is known, never a crown that flickers away.
+  const showLocks = !planLoading && !familyIsPremium;
   const [formData, setFormData] = useState({
     name: '',
     type: 'custom' as 'morning' | 'bedtime' | 'afterschool' | 'custom',
@@ -162,6 +270,20 @@ export function RoutineBuilderModal({
 
   const [steps, setSteps] = useState<RoutineStep[]>([]);
   const [showIconPicker, setShowIconPicker] = useState(false);
+
+  // Kid-friendly helpers (migration 032)
+  const [autoReadAloud, setAutoReadAloud] = useState(false);
+  const [targetMinutes, setTargetMinutes] = useState('');
+
+  // Picture steps: one hidden file input, pointed at a step by id.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoForStep, setPhotoForStep] = useState<string | null>(null);
+  const [uploadingStep, setUploadingStep] = useState<string | null>(null);
+
+  // Build with AI
+  const [aiGoal, setAiGoal] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiNote, setAiNote] = useState<string | null>(null);
 
   const createMutation = useCreateRoutine();
   const updateMutation = useUpdateRoutine();
@@ -185,6 +307,8 @@ export function RoutineBuilderModal({
         reward_cents: editRoutine.reward_cents,
       });
       setSteps(editRoutine.steps);
+      setAutoReadAloud(!!editRoutine.auto_read_aloud);
+      setTargetMinutes(editRoutine.target_duration_seconds ? String(Math.round(editRoutine.target_duration_seconds / 60)) : '');
     } else {
       // Reset form when modal opens for new routine
       setFormData({
@@ -195,8 +319,71 @@ export function RoutineBuilderModal({
         reward_cents: defaultRewardCents,
       });
       setSteps([]);
+      setAutoReadAloud(false);
+      setTargetMinutes('');
     }
+    setAiGoal('');
+    setAiNote(null);
   }, [editRoutine, defaultRewardCents, open]);
+
+  const pickPhotoFor = (stepId: string) => {
+    setPhotoForStep(stepId);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChosen = async (file: File | undefined) => {
+    const stepId = photoForStep;
+    setPhotoForStep(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (!file || !stepId) return;
+    setUploadingStep(stepId);
+    const result = await uploadStepPhoto(file, childId);
+    setUploadingStep(null);
+    if (!result.ok) {
+      if (result.premiumRequired) openPremiumBilling('routine_photos');
+      else toast.error(result.error);
+      return;
+    }
+    setSteps((prev) => prev.map((s) => (s.id === stepId ? { ...s, image_path: result.path, image_url: result.url } : s)));
+  };
+
+  const buildWithAI = async () => {
+    if (!familyIsPremium) {
+      openPremiumBilling('ai_routine');
+      return;
+    }
+    const goal = aiGoal.trim();
+    if (goal.length < 3) {
+      toast.error('Describe the routine in a few words first');
+      return;
+    }
+    setAiBusy(true);
+    const result = await requestRoutineDraft({ goal, childId, routineType: formData.type });
+    setAiBusy(false);
+    if (!result.ok) {
+      if (result.premiumRequired) openPremiumBilling('ai_routine');
+      else toast.error(result.error);
+      return;
+    }
+    const { draft, source } = result;
+    setFormData((prev) => ({ ...prev, name: draft.name, type: draft.type, icon: draft.icon, color: draft.color }));
+    setSteps(
+      draft.steps.map((step, index) => ({
+        id: `temp-${Date.now()}-${index}`,
+        title: step.title,
+        icon: step.icon,
+        order_index: index,
+        duration_seconds: step.duration_seconds,
+      }))
+    );
+    setAiNote(
+      source === 'ai'
+        ? draft.tip ?? 'Draft ready. Edit anything before saving.'
+        : `The AI is resting, so we started you from a template. ${draft.tip ?? ''}`.trim()
+    );
+    playSound('success');
+    toast.success(source === 'ai' ? 'Draft ready. Edit anything, then save.' : 'Started from a template. Edit anything, then save.');
+  };
 
   // Load template
   const loadTemplate = (templateIndex: number) => {
@@ -275,12 +462,21 @@ export function RoutineBuilderModal({
         icon: step.icon,
         order_index: index,
         duration_seconds: step.duration_seconds || null,
+        // Only sent when set, so a database without migration 032 still saves.
+        ...(step.image_path ? { image_path: step.image_path } : {}),
       }));
+
+      // Same rule for the routine-level helpers: send when set, or when
+      // clearing a value the routine had.
+      const targetSeconds = familyIsPremium || editRoutine?.target_duration_seconds ? targetMinutesToSeconds(targetMinutes) : null;
+      const extras: { auto_read_aloud?: boolean; target_duration_seconds?: number | null } = {};
+      if (autoReadAloud || editRoutine?.auto_read_aloud) extras.auto_read_aloud = autoReadAloud;
+      if (targetSeconds || editRoutine?.target_duration_seconds) extras.target_duration_seconds = targetSeconds;
 
       if (editRoutine) {
         await updateMutation.mutateAsync({
           routineId: editRoutine.id,
-          routine: formData,
+          routine: { ...formData, ...extras },
           steps: orderedSteps,
         });
         playSound('success');
@@ -289,6 +485,7 @@ export function RoutineBuilderModal({
         await createMutation.mutateAsync({
           routine: {
             ...formData,
+            ...extras,
             child_id: childId,
           },
           steps: orderedSteps,
@@ -331,6 +528,54 @@ export function RoutineBuilderModal({
           </DialogHeader>
 
           <div className="space-y-6 mt-6 mb-6">
+            {/* Build with AI - Premium (crowned lock for free families) */}
+            {!editRoutine && !planLoading && (
+              <div className="p-4 sm:p-5 rounded-2xl border-2 border-fuchsia-200 bg-fuchsia-50/30 dark:border-fuchsia-800 dark:bg-fuchsia-900/20 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Wand2 className="w-5 h-5 text-fuchsia-600 dark:text-fuchsia-400" aria-hidden="true" />
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Build with AI
+                  </h3>
+                  {showLocks && <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" aria-label="Premium" />}
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Describe the routine and who it&apos;s for. You get short, age-appropriate steps with icons and timers to edit before saving.
+                </p>
+                {familyIsPremium ? (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Label htmlFor="ai-goal" className="sr-only">What should this routine do?</Label>
+                    <textarea
+                      id="ai-goal"
+                      value={aiGoal}
+                      onChange={(e) => setAiGoal(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          void buildWithAI();
+                        }
+                      }}
+                      maxLength={500}
+                      rows={2}
+                      placeholder="e.g. get ready for school, 7 year old, needs reminders to brush teeth"
+                      className="flex-1 min-w-0 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300 dark:focus:ring-fuchsia-700"
+                    />
+                    <Button type="button" variant="gradient" onClick={() => void buildWithAI()} disabled={aiBusy} className="gap-2 font-bold sm:self-stretch">
+                      {aiBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                      {aiBusy ? 'Building...' : 'Build'}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button type="button" variant="outline" onClick={() => openPremiumBilling('ai_routine')} className="gap-2 font-semibold">
+                    <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                    Build with AI (Premium)
+                  </Button>
+                )}
+                {aiNote && (
+                  <p className="mt-3 text-sm text-fuchsia-800 dark:text-fuchsia-200" role="status">{aiNote}</p>
+                )}
+              </div>
+            )}
+
             {/* Quick Templates Section - Cyan accent */}
             {!editRoutine && (
               <div className="p-4 sm:p-5 rounded-2xl border-2 border-cyan-200 bg-cyan-50/30 dark:border-cyan-800 dark:bg-cyan-900/20 shadow-sm hover:shadow-md transition-shadow">
@@ -475,7 +720,82 @@ export function RoutineBuilderModal({
                     min="0"
                     className="h-14 text-base font-semibold border-2 rounded-xl focus:ring-2 focus:ring-blue-200 transition-all input-bg-glass"
                   />
-                  <p className="text-xs text-gray-500">Points earned when routine is completed</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Points earned when routine is completed</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Kid-friendly helpers - Amber accent */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-900/20 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Kid-Friendly Helpers
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Great for pre-readers and kids who need a little extra structure.
+              </p>
+
+              <div className="space-y-4">
+                {/* Read aloud (free) */}
+                <div className="flex items-start gap-3">
+                  <Checkbox checked={autoReadAloud} onCheckedChange={setAutoReadAloud} className="mt-0.5 flex-shrink-0" />
+                  <button type="button" className="text-left" onClick={() => setAutoReadAloud(!autoReadAloud)}>
+                    <span className="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-gray-100">
+                      <Volume2 className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                      Read each step aloud
+                    </span>
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                      The player speaks every step as it appears. Kids can always tap the speaker to hear it again.
+                    </span>
+                  </button>
+                </div>
+
+                {/* Finish-by timer (Premium) */}
+                <div>
+                  <Label htmlFor="target-minutes" className="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-gray-100">
+                    <Timer className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                    Finish-by timer
+                    {showLocks && <Crown className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" aria-label="Premium" />}
+                  </Label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    A calm countdown for the whole routine. No fail state; finishing early gets a cheer.
+                  </p>
+                  {familyIsPremium ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Input
+                        id="target-minutes"
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={targetMinutes}
+                        onChange={(e) => setTargetMinutes(e.target.value)}
+                        placeholder="Off"
+                        className="w-24"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">minutes</span>
+                      {(() => {
+                        const suggested = suggestedTargetSeconds(steps);
+                        if (!suggested || targetMinutesToSeconds(targetMinutes) === suggested) return null;
+                        return (
+                          <Button type="button" size="sm" variant="ghost" onClick={() => setTargetMinutes(String(suggested / 60))} className="text-amber-700 dark:text-amber-300">
+                            Use step total ({suggested / 60} min)
+                          </Button>
+                        );
+                      })()}
+                      {targetMinutes && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setTargetMinutes('')} className="text-gray-600 dark:text-gray-400">
+                          Turn off
+                        </Button>
+                      )}
+                    </div>
+                  ) : showLocks ? (
+                    <Button type="button" size="sm" variant="outline" onClick={() => openPremiumBilling('routine_timer')} className="gap-2">
+                      <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                      Add a finish-by timer (Premium)
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -495,9 +815,25 @@ export function RoutineBuilderModal({
                 </Button>
               </div>
 
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
+                onChange={(e) => void handlePhotoChosen(e.target.files?.[0])}
+              />
+              {steps.length > 0 && (familyIsPremium || showLocks) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                  Tap the camera on a step to show a photo instead of the icon, like their own toothbrush.
+                  {showLocks && <Crown className="w-3.5 h-3.5 flex-shrink-0 text-amber-500 dark:text-amber-400" aria-label="Premium" />}
+                </p>
+              )}
               {steps.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                  <p className="text-gray-500">No steps added yet</p>
+                  <p className="text-gray-500 dark:text-gray-400">No steps added yet</p>
                   <Button type="button" onClick={addStep} variant="outline" className="mt-4">
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Step
@@ -514,6 +850,12 @@ export function RoutineBuilderModal({
                           index={index}
                           onUpdate={(updates) => updateStep(index, updates)}
                           onDelete={() => deleteStep(index)}
+                          photo={{
+                            canAddPhoto: familyIsPremium,
+                            showLocked: showLocks,
+                            uploading: uploadingStep === step.id,
+                            onPick: () => pickPhotoFor(step.id),
+                          }}
                         />
                       ))}
                     </div>

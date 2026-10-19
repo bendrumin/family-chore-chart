@@ -4,7 +4,7 @@ import { useState, memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Play, CheckCircle2, Circle } from 'lucide-react';
+import { Edit, Trash2, Play, CheckCircle2, Circle, Volume2, Timer } from 'lucide-react';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useDeleteRoutine } from '@/lib/hooks/useRoutines';
 import { toast } from 'sonner';
@@ -20,11 +20,14 @@ interface RoutineCardProps {
     color: string;
     reward_cents: number;
     is_active: boolean;
+    auto_read_aloud?: boolean;
+    target_duration_seconds?: number | null;
     routine_steps?: Array<{
       id: string;
       title: string;
       icon: string;
       order_index: number;
+      image_url?: string | null;
     }>;
   };
   completedToday?: boolean;
@@ -137,7 +140,10 @@ export const RoutineCard = memo(function RoutineCard({
                     style={{ borderLeftWidth: '3px', borderLeftColor: routine.color }}
                     title={step.title}
                   >
-                    {StepIcon ? (
+                    {step.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={step.image_url} alt="" className="w-full h-full rounded-md object-cover" />
+                    ) : StepIcon ? (
                       <StepIcon className="w-4 h-4" style={{ color: routine.color }} />
                     ) : (
                       <Circle className="w-3.5 h-3.5" style={{ color: routine.color }} />
@@ -154,6 +160,22 @@ export const RoutineCard = memo(function RoutineCard({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Kid-friendly helpers (migration 032) */}
+        {(routine.auto_read_aloud || !!routine.target_duration_seconds) && (
+          <div className="flex items-center gap-2 flex-wrap mb-4 text-xs font-medium text-gray-600 dark:text-gray-400">
+            {routine.auto_read_aloud && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                <Volume2 className="w-3.5 h-3.5" aria-hidden="true" /> Reads aloud
+              </span>
+            )}
+            {!!routine.target_duration_seconds && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                <Timer className="w-3.5 h-3.5" aria-hidden="true" /> Finish in {Math.round(routine.target_duration_seconds / 60)} min
+              </span>
+            )}
           </div>
         )}
 

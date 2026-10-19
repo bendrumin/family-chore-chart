@@ -6,7 +6,20 @@ import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
 
-const COPY: Record<GatedFeature, { title: string; body: string }> = {
+/**
+ * Routine upgrades (migration 032) are plain Premium, not grandfathered like
+ * the four GatedFeature gates, so they live outside canUseFeature. Their
+ * billing source is `gate_<feature>` like every other gate.
+ */
+export type RoutineGateFeature = 'routine_photos' | 'routine_timer' | 'ai_routine' | 'routine_live'
+export type PremiumGateFeature = GatedFeature | RoutineGateFeature
+
+/** Open Billing from a crowned button, logging why (paywall_events source). */
+export function openPremiumBilling(feature: PremiumGateFeature): void {
+  window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))
+}
+
+const COPY: Record<PremiumGateFeature, { title: string; body: string }> = {
   themes: {
     title: 'Premium themes',
     body: 'Ocean, Sunset, Forest, Aurora, Coral, and Lavender come with Premium. The seasonal themes stay free.',
@@ -23,6 +36,22 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
     title: 'Advanced analytics come with Premium',
     body: 'Completion trends, per-child comparisons, and streak history. The weekly stats on your dashboard stay free.',
   },
+  routine_photos: {
+    title: 'Picture steps come with Premium',
+    body: 'Add a photo to any step (their own toothbrush, their shoes by the door) so pre-readers can follow along. Icons and read-aloud stay free.',
+  },
+  routine_timer: {
+    title: 'Finish-by timers come with Premium',
+    body: 'Set a gentle total time for the whole routine. Kids see a calm countdown and get cheered for finishing early. No fail state, ever.',
+  },
+  ai_routine: {
+    title: 'Build routines with AI on Premium',
+    body: 'Describe what you need ("school mornings, 7, forgets to brush teeth") and get age-appropriate steps with icons and timers to edit.',
+  },
+  routine_live: {
+    title: 'See routines live with Premium',
+    body: 'Watch which step your kid is on from your own phone ("Maya is on step 3 of 6: Brush teeth") without hovering.',
+  },
 }
 
 /**
@@ -30,7 +59,7 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
  * shell it states the limit with no purchase CTA (Play policy), the same
  * split the child and chore caps use.
  */
-export function PremiumGate({ feature, compact = false }: { feature: GatedFeature; compact?: boolean }) {
+export function PremiumGate({ feature, compact = false }: { feature: PremiumGateFeature; compact?: boolean }) {
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 
@@ -63,7 +92,7 @@ export function PremiumGate({ feature, compact = false }: { feature: GatedFeatur
         variant="gradient"
         size={compact ? 'sm' : 'lg'}
         className={`${compact ? '' : 'w-full'} font-bold hover-glow`}
-        onClick={() => window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))}
+        onClick={() => openPremiumBilling(feature)}
       >
         <Crown className="w-4 h-4 mr-2" />
         Open Billing
