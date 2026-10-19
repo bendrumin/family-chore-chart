@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/button'
 import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
+import type { MoneyFeature } from '@/lib/utils/money'
 
 /**
  * Gated features plus Premium-only features added after the 2026-09-19
  * cutoff, which are not grandfathered (so they are not GatedFeature, whose
  * canUseFeature passes pre-cutoff accounts): the calendar feed, family
- * challenges and the routine upgrades (migration 032). The Billing source is
- * `gate_<key>` either way.
+ * challenges, the routine upgrades (migration 032) and the money tools
+ * (migration 030). The Billing source is `gate_<key>` either way.
  */
 export type RoutineGateFeature = 'routine_photos' | 'routine_timer' | 'ai_routine' | 'routine_live'
-export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges' | RoutineGateFeature
+export type PremiumGateKey = GatedFeature | 'calendar' | 'challenges' | RoutineGateFeature | MoneyFeature
 export type PremiumGateFeature = PremiumGateKey
 
 /** Open Billing from a crowned button, logging why (paywall_events source). */
@@ -22,7 +23,30 @@ export function openPremiumBilling(feature: PremiumGateFeature): void {
   window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: `gate_${feature}` } }))
 }
 
+/** Same as openPremiumBilling (the money tools' name for it). */
+export const openPremiumGate = openPremiumBilling
+
 const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
+  jars: {
+    title: 'Spend, Save and Give jars come with Premium',
+    body: 'Pick a split like 70/20/10. Every cent your kid earns from then on lands in three jars, and the store spends from Spend.',
+  },
+  allowance: {
+    title: 'Automatic weekly allowance comes with Premium',
+    body: 'A fixed amount on the day you choose, optionally only when most of the week\'s chores got done.',
+  },
+  interest: {
+    title: 'Interest on savings comes with Premium',
+    body: 'Pay a small weekly percentage on what sits in the Save jar, so waiting visibly pays.',
+  },
+  fines: {
+    title: 'Fines and paybacks come with Premium',
+    body: 'Take money off with a reason, or set a weekly repayment like a phone bill. Never below zero unless you say so.',
+  },
+  minutes: {
+    title: 'Screen-time minutes come with Premium',
+    body: 'Chores and routines can earn minutes as well as money. Kids bank them; you mark them used.',
+  },
   themes: {
     title: 'Premium themes',
     body: 'Ocean, Sunset, Forest, Aurora, Coral, and Lavender come with Premium. The seasonal themes stay free.',

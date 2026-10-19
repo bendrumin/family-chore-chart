@@ -205,3 +205,58 @@ export function childWeekEarningsCents(
 
   return { earnedCents, perfectDays, dueDays }
 }
+
+/** One day's earnings, dated: what the Spend / Save / Give split applies to. */
+export interface DatedEarning {
+  /** YYYY-MM-DD, the day the work was for (week_start + day_of_week). */
+  date: string
+  cents: number
+}
+
+function addDaysIso(ymd: string, days: number): string {
+  const d = new Date(`${ymd}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+/**
+ * The same money as childTotalEarningsCents, broken out by the day it was
+ * earned, so jars (lib/utils/money.ts) can split each day by the split in force
+ * then. The perfect-week bonus is dated to the week's Saturday. Days that earn
+ * nothing are left out. Sums to exactly childTotalEarningsCents.
+ */
+export function childDatedEarnings(
+  chores: ChoreReward[],
+  completions: DatedCompletion[],
+  settings?: EarningsSettings | null
+): DatedEarning[] {
+  if (chores.length === 0) return []
+
+  const byWeek = new Map<string, DayCompletion[]>()
+  for (const c of completions) {
+    if (!c.week_start) continue
+    const list = byWeek.get(c.week_start) ?? []
+    list.push(c)
+    byWeek.set(c.week_start, list)
+  }
+
+  const out: DatedEarning[] = []
+  const NONE: Set<string> = new Set()
+  for (const [weekStart, weekCompletions] of byWeek) {
+    const byDay = groupDoneByDay(weekCompletions)
+    let dueDays = 0
+    let perfectDays = 0
+    for (let day = 0; day < 7; day++) {
+      const done = byDay.get(day) ?? NONE
+      const cents = childDayEarningsCents(chores, done, settings, day)
+      if (cents) out.push({ date: addDaysIso(weekStart, day), cents })
+      if (dueOn(chores, day).length > 0) dueDays++
+      if (isPerfectDay(chores, done, day)) perfectDays++
+    }
+    const bonus = weeklyBonusCents(settings)
+    if (bonus && dueDays > 0 && perfectDays === dueDays) {
+      out.push({ date: addDaysIso(weekStart, 6), cents: bonus })
+    }
+  }
+  return out
+}

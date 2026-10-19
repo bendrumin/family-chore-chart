@@ -25,6 +25,7 @@ Last updated 2026-10-19 (family challenges added).
 | Finish-by timer for a whole routine (new 2026-10-19, 032) | builder field + crown (`gate_routine_timer`); routine POST/PATCH only set it on Premium (anyone may clear it); the player shows the bar only when `family_premium` | not yet (ignored) | gated server-side and in the player |
 | Build routines with AI (new 2026-10-19) | builder "Build with AI" + crown (`gate_ai_routine`); `POST /api/ai/build-routine` 403 `premium_required`, 20/hour per user | not yet | gated server-side; template fallback when the AI is down |
 | Live routine view on the dashboard (new 2026-10-19, 032) | "Happening now" card; `GET /api/routines/live` returns step detail only for Premium families, `locked: true` otherwise, crown (`gate_routine_live`) | not yet | gated server-side; free families see that a routine is underway, not the step |
+| Kid money management (new 2026-10-19): Spend/Save/Give jars, automatic weekly allowance, interest on Save, fines and weekly paybacks, screen-time minutes | Settings > Rewards > Money: free families see a preview, each tool opens Billing with `gate_jars` / `gate_allowance` / `gate_interest` / `gate_fines` / `gate_minutes`. `POST /api/money` answers 403 `premium_required` for switching anything on; switching off is never gated. `/api/cron/allowance` skips non-Premium families. Kid wallet sends jars/minutes/news only to Premium. DB: 030 tables are server-write-only; `enforce_premium_reward_minutes` trigger | not yet (iOS reads `/api/kid/wallet` and `/api/allowance`, which stay compatible: `owedCents` is still the total) | gated server-side; not grandfathered (new). Needs migration 030 |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
 
@@ -207,6 +208,40 @@ Paywall sources: `gate_routine_photos`, `gate_routine_timer`,
 `gate_ai_routine`, `gate_routine_live` (PremiumGate `openPremiumBilling`).
 Migration 032 must run before these work; until then the web degrades to
 today's routines (pictures absent, live card hidden, saves unaffected).
+
+## Kid money management (2026-10-19)
+
+Premium, web first. Migration `database-migrations/030_money_jars_allowance.sql`
+(run it before deploying the web build that uses it; every read degrades to
+"no jars, no ledger" until it runs).
+
+- Balance stays derived (`lib/utils/wallet.ts`): chore earnings + ledger
+  credits (allowance, interest) - payouts - ledger debits (fines, repayments,
+  donations). `owedCents` is still that total clamped at 0, so iOS and Android
+  builds that read it keep working; `balanceCents` is signed.
+- Jars: `money_jar_splits` is a dated history per kid. Each day's income is
+  split by the version in force that day (`computeJars` in
+  `lib/utils/money.ts`), so turning jars on never moves money already earned:
+  it stays in Spend. Payouts without a jar (every one before 030, store
+  approvals) are Spend; goal payouts with jars on are tagged `save`. Turning
+  jars off sweeps Save and Give back into Spend with transfer rows.
+- Store and normal payouts use Spend (`spendableCents`); goals fill from Save
+  (`goalBaseCents`). With jars off both are the whole balance.
+- `/api/cron/allowance` (daily, `isCronAuthorized`): per kid, on payday in the
+  family timezone, interest on Save, then allowance (optionally only at a
+  chore threshold over the 7 days before payday; a vacation week counts as
+  met), then weekly repayments. One `money_ledger` row per kind per week
+  (unique index), catch-up up to 2 days late, never a payday from before the
+  feature was switched on.
+- Deductions never take Spend below zero unless the parent ticks "allow"; the
+  kid sees every one with its reason, and "You owe $X" when below zero.
+- Minutes: `chores.reward_minutes`, `routines.reward_minutes`,
+  `routine_completions.minutes_earned` (captured at completion),
+  `screen_minutes_ledger` for "used". No device enforcement.
+
+Not on iOS or native Android yet: the Money settings, the kid jars card and
+minutes. Their balances stay correct (server-derived); a store request from an
+older app is checked against Spend on the server.
 
 Native Android grandfathering, the Play listing and the no-plans link-out
 were fixed 2026-10-10 (ChoreStar-Android-Native 1d4bdb8).

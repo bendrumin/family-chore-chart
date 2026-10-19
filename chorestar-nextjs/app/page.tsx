@@ -86,7 +86,7 @@ const softwareApplicationLd = {
       price: '4.99',
       priceCurrency: 'USD',
       name: 'Premium',
-      description: 'Unlimited children and chores, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
+      description: 'Unlimited children and chores, Spend/Save/Give money jars, automatic weekly allowance with interest on savings, fines and paybacks, screen-time minutes as a reward, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '4.99',
@@ -526,6 +526,9 @@ export default async function HomePage() {
                 {[
                   '<strong>Everything in Free</strong>',
                   '<strong>Unlimited</strong> children & chores',
+                  '<strong>New:</strong> Spend, Save & Give money jars',
+                  '<strong>New:</strong> automatic weekly allowance, interest on savings',
+                  '<strong>New:</strong> fines, paybacks & screen-time minutes',
                   '<strong>New:</strong> chores that rotate between kids',
                   '<strong>New:</strong> bonus chores, first to finish earns it',
                   '<strong>New:</strong> family challenges, siblings team up for a shared reward',

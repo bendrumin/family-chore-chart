@@ -18,6 +18,9 @@ interface PricingCardProps {
 const PLAN_FEATURES = {
   monthly: [
     'Unlimited children & chores',
+    'Spend, Save & Give money jars',
+    'Automatic weekly allowance & interest on savings',
+    'Fines, paybacks & screen-time minutes',
     'Chores that rotate between kids',
     'Bonus chores: first to finish earns it',
     'Family challenges: siblings team up for a shared reward',
@@ -38,6 +41,7 @@ const PLAN_FEATURES = {
     'Everything in Monthly',
     'About 2 months free',
     'Unlimited children & chores',
+    'Money jars, weekly allowance & interest',
     'Rotating & bonus chores',
     'Family challenges: siblings team up for a shared reward',
     '10 more routine templates',

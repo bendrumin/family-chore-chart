@@ -11,9 +11,36 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.4'
+export const LATEST_CHANGELOG_VERSION = '2026.10.5'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.5': {
+    version: '2026.10.5',
+    date: 'October 2026',
+    title: 'Money Jars, Family Challenges, Smarter Routines',
+    features: [
+      {
+        icon: '🫙',
+        title: 'Spend, Save & Give Jars',
+        description: 'Premium: pick a split like 70/20/10 and everything your kid earns lands in three jars. The store spends from Spend, goals fill from Save. Add a weekly allowance that pays itself, interest on savings, fines or a weekly payback, and screen-time minutes as a reward. Settings > Rewards > Money.',
+      },
+      {
+        icon: '🍕',
+        title: 'Family Challenges',
+        description: 'Premium: siblings team up for a shared reward, like 50 chores this week for pizza night. One team bar, everyone\'s part shown kindly, confetti when they get there.',
+      },
+      {
+        icon: '🖼️',
+        title: 'Routines for Little Kids and Busy Brains',
+        description: 'Read-aloud steps for everyone (free). Premium adds picture steps for pre-readers, a gentle finish-by timer, Build with AI, and a live view of the step your kid is on.',
+      },
+      {
+        icon: '📅',
+        title: 'Family Calendar Feed',
+        description: 'Premium: see chores and routines in Apple Calendar, Google Calendar, Outlook or a wall calendar. Settings > Family.',
+      },
+    ],
+  },
   '2026.10.4': {
     version: '2026.10.4',
     date: 'October 2026',

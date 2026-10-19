@@ -31,12 +31,37 @@ export interface KidStoreItem {
   pendingRequestId: string | null
 }
 
+export interface KidMoneyNews {
+  id: string
+  kind: string
+  jar: string | null
+  amountCents: number
+  effectiveOn: string
+  note: string | null
+  createdAt: string
+}
+
 export interface KidWallet {
   childId: string
   actor: 'kid' | 'parent'
   owedCents: number
   earnedCents: number
   paidCents: number
+  /** Migration 030 servers. Signed: below zero means the kid owes a parent. */
+  balanceCents?: number
+  /** What the store can spend: the Spend jar with jars on, else the balance. */
+  spendableCents?: number
+  jars?: {
+    enabled: boolean
+    split: { spend: number; save: number; give: number }
+    spendCents: number
+    saveCents: number
+    giveCents: number
+  }
+  /** Screen-time minutes (Premium); null on the free plan. */
+  minutes?: { balance: number; earned: number; used: number } | null
+  /** Latest allowance, interest, fines, paybacks and donations, newest first. */
+  moneyNews?: KidMoneyNews[]
   currencyCode: string
   goal: KidGoal | null
   /** Every active goal, oldest first (Premium can hold several). */

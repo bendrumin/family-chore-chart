@@ -46,7 +46,14 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   // everything paid out. Separate from the weekly figures above because it
   // deliberately does NOT reset on Sunday — that reset is what used to make
   // unpaid allowance disappear.
-  const [balance, setBalance] = useState<{ owedCents: number; paidCents: number } | null>(null)
+  // payableCents: what a normal payout can take. The Spend jar when jars are
+  // on (Premium, migration 030), else everything owed.
+  const [balance, setBalance] = useState<{
+    owedCents: number
+    paidCents: number
+    payableCents: number
+    jars: { enabled: boolean; spendCents: number; saveCents: number; giveCents: number } | null
+  } | null>(null)
   // The child's active goal (2.0), from the same balance call.
   const [goal, setGoal] = useState<{ id: string; title: string; emoji: string | null; targetCents: number; progressCents: number; percent: number; reached: boolean } | null>(null)
   const [balanceUnavailable, setBalanceUnavailable] = useState(false)
@@ -62,7 +69,12 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
       const res = await fetch(`/api/allowance?childId=${child.id}`)
       if (!res.ok) throw new Error(String(res.status))
       const data = await res.json()
-      setBalance({ owedCents: data.owedCents ?? 0, paidCents: data.paidCents ?? 0 })
+      setBalance({
+        owedCents: data.owedCents ?? 0,
+        paidCents: data.paidCents ?? 0,
+        payableCents: data.spendableCents ?? data.owedCents ?? 0,
+        jars: data.jars?.enabled ? data.jars : null,
+      })
       setGoal(data.goal ?? null)
       setBalanceUnavailable(false)
     } catch {
@@ -115,16 +127,16 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
   }
 
   // ── Pay-out dialog derived state ───────────────────────────────────────────
-  const owedCents = balance?.owedCents ?? 0
+  const owedCents = balance?.payableCents ?? 0
   const payoutCents = amountToCents(sanitizeAmountInput(amountInput))
   const payoutValid = payoutCents !== null && payoutCents > 0 && payoutCents <= owedCents
   const remainderCents = payoutValid ? owedCents - payoutCents : 0
 
   const openPayoutDialog = () => {
-    if (!balance || balance.owedCents <= 0) return
-    // Default to the full owed amount; storage is always hundredths, so this
+    if (!balance || balance.payableCents <= 0) return
+    // Default to the full payable amount; storage is always hundredths, so this
     // round-trips exactly through amountToCents.
-    setAmountInput((balance.owedCents / 100).toFixed(2))
+    setAmountInput((balance.payableCents / 100).toFixed(2))
     setNoteInput('')
     setPayoutOpen(true)
   }
@@ -447,7 +459,9 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
                   ${(balance.owedCents / 100).toFixed(2)}
                 </div>
                 <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  {balance.owedCents > 0
+                  {balance.jars
+                    ? `Spend ${formatMoney(balance.jars.spendCents, currencyCode)} · Save ${formatMoney(balance.jars.saveCents, currencyCode)} · Give ${formatMoney(balance.jars.giveCents, currencyCode)}`
+                    : balance.owedCents > 0
                     ? `Owed to ${child.name} · keeps adding up until paid`
                     : 'All paid up'}
                 </div>
@@ -457,7 +471,7 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
               variant="outline"
               size="sm"
               onClick={openPayoutDialog}
-              disabled={payingOut || balance.owedCents <= 0}
+              disabled={payingOut || balance.payableCents <= 0}
               className="font-semibold"
             >
               {payingOut ? 'Recording…' : 'Paid Out'}
@@ -554,8 +568,9 @@ export function WeeklyStats({ child, weekStart }: WeeklyStatsProps) {
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {child.name} is owed {formatMoney(owedCents, currencyCode)}. Record the full amount,
-            or just what was spent.
+            {balance?.jars
+              ? `${child.name} has ${formatMoney(owedCents, currencyCode)} in the Spend jar. Record the full amount, or just what was spent.`
+              : `${child.name} is owed ${formatMoney(owedCents, currencyCode)}. Record the full amount, or just what was spent.`}
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="payout-amount" className="font-semibold" style={{ color: 'var(--text-primary)' }}>

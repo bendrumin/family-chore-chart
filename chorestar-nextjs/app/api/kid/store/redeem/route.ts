@@ -67,9 +67,9 @@ export async function POST(request: Request) {
     }
 
     const balance = await computeBalance(ctx.child)
-    if (balance.owedCents < item.price_cents) {
+    if (balance.spendableCents < item.price_cents) {
       return NextResponse.json(
-        { error: 'not_enough', shortByCents: item.price_cents - balance.owedCents },
+        { error: 'not_enough', shortByCents: item.price_cents - balance.spendableCents },
         { status: 409 }
       )
     }

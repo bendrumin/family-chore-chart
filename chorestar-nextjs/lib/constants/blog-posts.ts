@@ -12,6 +12,17 @@ export interface BlogPost {
 /** Newest first — also drives sitemap lastmod order */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'spend-save-give-jars-allowance-for-kids',
+    title: 'Spend, Save, Give: Teaching Kids Money with Jars and a Weekly Allowance',
+    description:
+      'Three jars, a fixed payday, a little interest on savings, and a fair way to handle fines. A short guide to teaching kids money with spend, save and give jars, and how ChoreStar now runs it for you.',
+    date: 'October 19, 2026',
+    isoDate: '2026-10-19',
+    readTime: '5 min read',
+    emoji: '🫙',
+    category: 'Parenting',
+  },
+  {
     slug: 'split-chores-fairly-between-siblings',
     title: 'How to Split Chores Fairly Between Siblings',
     description:

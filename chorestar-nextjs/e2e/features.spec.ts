@@ -91,6 +91,17 @@ test.describe('public pages', () => {
     expect(sitemap).toContain('/blog/split-chores-fairly-between-siblings')
   })
 
+  test('the money jars blog post is published and in the sitemap', async ({ page, request }) => {
+    await page.goto('/blog/spend-save-give-jars-allowance-for-kids')
+    await expect(page.getByRole('heading', { level: 1, name: /spend, save, give/i })).toBeVisible()
+    const sitemap = await (await request.get('/sitemap.xml')).text()
+    expect(sitemap).toContain('/blog/spend-save-give-jars-allowance-for-kids')
+  })
+
+  test('the allowance cron refuses calls without the cron secret', async ({ request }) => {
+    expect((await request.get('/api/cron/allowance')).status()).toBe(404)
+  })
+
   test('weekly report unsubscribe link answers without signing in', async ({ page }) => {
     await page.goto('/api/reports/weekly/unsubscribe?t=not-a-token')
     await expect(page.getByText(/that link did not work/i)).toBeVisible()
@@ -120,6 +131,20 @@ test.describe('free family', () => {
         return (data ?? []).map((e: { source: string }) => e.source)
       })
       .toContain('limit_store_items')
+  })
+
+  test('Money shows a locked preview; each tool opens Billing with its own source', async ({ page }) => {
+    await signIn(page)
+    await openSettings(page, 'rewards')
+    await expect(page.getByText(/example: maya/i)).toBeVisible({ timeout: 15_000 })
+    await page.getByRole('button', { name: /weekly allowance/i }).first().click()
+    await expect(page.getByText(/upgrade to premium/i).first()).toBeVisible({ timeout: 10_000 })
+    await expect
+      .poll(async () => {
+        const { data } = await (admin as any).from('paywall_events').select('source').eq('user_id', familyId)
+        return (data ?? []).map((e: { source: string }) => e.source)
+      })
+      .toContain('gate_allowance')
   })
 
   test('the weekly report is offered as Premium', async ({ page }) => {

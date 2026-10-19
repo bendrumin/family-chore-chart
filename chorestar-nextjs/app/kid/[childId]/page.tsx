@@ -12,6 +12,7 @@ import { KidStats } from '@/components/kid/kid-stats';
 import { KidVacationCard } from '@/components/kid/kid-vacation-card';
 import { KidGoalCard, KidStore } from '@/components/kid/kid-wallet';
 import { KidChallenges } from '@/components/kid/kid-challenges';
+import { KidMoney } from '@/components/kid/kid-money';
 import { useKidWallet } from '@/lib/hooks/use-kid-wallet';
 import { ROUTINE_ICONS, type RoutineIconKey } from '@/lib/constants/routine-icons';
 import { useKidT, useKidTemplateString } from '@/lib/i18n/kid';
@@ -205,6 +206,10 @@ export default function KidDashboardPage({ params }: { params: Promise<{ childId
       {kidToken && onVacationToday && vacation && (
         <KidVacationCard kidToken={kidToken} endsOn={vacation.ends_on} />
       )}
+
+      {/* Spend / Save / Give jars, screen-time minutes and money news
+          (Premium). Renders nothing for a free family. */}
+      {kidToken && wallet && <KidMoney wallet={wallet} />}
 
       {/* What the money is FOR: the goal the kid is saving toward. */}
       {kidToken && wallet && (

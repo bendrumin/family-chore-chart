@@ -164,6 +164,9 @@ export function BillingTab() {
               <div className="flex flex-wrap gap-2 mt-4">
                 {[
                   'Unlimited children & chores',
+                  'Money jars & weekly allowance',
+                  'Interest, fines & paybacks',
+                  'Screen-time minutes',
                   'Rotating & bonus chores',
                   'Routine template library',
                   'Picture steps & finish-by timer',
@@ -208,7 +211,7 @@ export function BillingTab() {
               Upgrade to Premium
             </h4>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Unlimited children and chores, chores that rotate between kids, bonus chores, more routine templates, picture routine steps, a finish-by timer, routines built with AI, a live routine view, a family calendar feed, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
+              Unlimited children and chores, Spend/Save/Give money jars with a weekly allowance, interest, fines and screen-time minutes, chores that rotate between kids, bonus chores, more routine templates, picture routine steps, a finish-by timer, routines built with AI, a live routine view, a family calendar feed, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
             </p>
           </div>
 

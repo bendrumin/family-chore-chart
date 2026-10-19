@@ -143,6 +143,22 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to record completion' }, { status: 500 });
     }
 
+    // Screen-time minutes (Premium, migration 030): captured on the completion
+    // so changing the routine's reward later doesn't rewrite history. A
+    // separate write so a database without the column still records the run.
+    const rewardMinutes = Number((routine as { reward_minutes?: number }).reward_minutes ?? 0)
+    let minutesEarned = 0
+    if (stepsCompleted === stepsTotal && rewardMinutes > 0 && completion) {
+      // Service role: the caller is already authorized above, and parents have
+      // no update policy on routine_completions. Column isn't in the generated types.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: minutesError } = await (createServiceRoleClient() as any)
+        .from('routine_completions')
+        .update({ minutes_earned: rewardMinutes })
+        .eq('id', (completion as { id: string }).id)
+      if (!minutesError) minutesEarned = rewardMinutes
+    }
+
     // after(), not a bare void promise: Vercel freezes the invocation once the
     // response goes out, killing an in-flight APNs send. A send failure still
     // can't fail the completion the kid just earned — this runs post-response.
@@ -152,6 +168,7 @@ export async function POST(
       success: true,
       completion,
       pointsEarned,
+      minutesEarned,
       message: pointsEarned > 0 ? `Great job! You earned ${pointsEarned}¢!` : 'Keep trying!',
     });
   } catch (error) {

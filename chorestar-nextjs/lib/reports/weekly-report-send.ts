@@ -79,7 +79,7 @@ export async function buildFamilyReport(admin: SupabaseClient, settings: ReportS
     const earnings = childWeekEarningsCents(chores ?? [], lastWeek, settings)
     const streaks = computeStreaks(chores ?? [], all, { weekStart: addDays(week, 7), dayOfWeek: 0 })
     const balance = await computeBalance(kid)
-    const goals = (await activeGoals(kid.id)).map((g) => goalView(g, balance.owedCents))
+    const goals = (await activeGoals(kid.id)).map((g) => goalView(g, balance.goalBaseCents))
     kidWeeks.push({
       name: kid.name,
       choresDone: lastWeek.filter((c: { status?: string | null }) => !c.status || c.status === 'approved').length,
