@@ -81,7 +81,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // .ics: calendar feed polls carry no session, so skip the auth refresh.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|ico|xml|txt)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|ico|xml|txt|ics)$).*)',
   ],
 }

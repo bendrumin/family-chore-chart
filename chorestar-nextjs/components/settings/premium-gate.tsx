@@ -6,7 +6,15 @@ import { useAndroidShell } from '@/lib/utils/platform'
 import { playBillingAvailable } from '@/lib/utils/play-billing-client'
 import type { GatedFeature } from '@/lib/utils/subscription'
 
-const COPY: Record<GatedFeature, { title: string; body: string }> = {
+/**
+ * Gated features plus Premium-only features added after the 2026-09-19
+ * cutoff, which are not grandfathered (so they are not GatedFeature, whose
+ * canUseFeature passes pre-cutoff accounts). The Billing source is
+ * `gate_<key>` either way.
+ */
+export type PremiumGateKey = GatedFeature | 'calendar'
+
+const COPY: Record<PremiumGateKey, { title: string; body: string }> = {
   themes: {
     title: 'Premium themes',
     body: 'Ocean, Sunset, Forest, Aurora, Coral, and Lavender come with Premium. The seasonal themes stay free.',
@@ -23,6 +31,10 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
     title: 'Advanced analytics come with Premium',
     body: 'Completion trends, per-child comparisons, and streak history. The weekly stats on your dashboard stay free.',
   },
+  calendar: {
+    title: 'The family calendar feed comes with Premium',
+    body: 'Kids\' chores and routines in Apple Calendar, Google Calendar, Outlook or a wall calendar, updated automatically.',
+  },
 }
 
 /**
@@ -30,7 +42,7 @@ const COPY: Record<GatedFeature, { title: string; body: string }> = {
  * shell it states the limit with no purchase CTA (Play policy), the same
  * split the child and chore caps use.
  */
-export function PremiumGate({ feature, compact = false }: { feature: GatedFeature; compact?: boolean }) {
+export function PremiumGate({ feature, compact = false }: { feature: PremiumGateKey; compact?: boolean }) {
   const androidShell = useAndroidShell()
   const copy = COPY[feature]
 

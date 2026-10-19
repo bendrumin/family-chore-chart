@@ -19,8 +19,34 @@ Last updated 2026-10-19.
 | Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock; edit, archive and delete act on the whole group through `/api/chores/shared/[groupId]` (not gated, so a lapsed family can stop one) | created from the add-chore form via `POST /api/chores/shared` | gated server-side on create; not grandfathered (new) |
 | Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | RoutineBuilderView: premium templates locked, open the paywall | gated both; the original 4 stay free |
 | Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | Settings toggle (same `weekly_report_email` column) | gated server-side, opt-in; a Resend error counts as a failed send, not sent |
+| Family calendar feed for Apple, Google and Outlook calendars (new 2026-10-19) | Settings > Family "Calendar feed" (`CalendarFeedSection`, `PremiumGate` source `gate_calendar`); `POST /api/calendar/feeds` 403 `premium_required`; `GET /api/calendar/<token>.ics` serves a lapsed family an empty calendar with one "needs Premium" note; migration 033 insert/update policies also require Premium | not yet | gated server-side; not grandfathered (new). Turning a feed off is never gated |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
+
+## Family calendar feed (2026-10-19)
+
+A secret iCalendar subscription URL per scope (whole family, or one kid),
+from Settings > Family. Owners and co-parents manage it through
+`/api/calendar/feeds` (GET list, POST turn on / regenerate, DELETE turn off);
+`GET /api/calendar/<token>.ics` serves it with no session.
+
+- Token: 32 random bytes as base64url (256 bits), in `calendar_feeds.token`
+  (migration 033; owner-only RLS, not in the generated types). Stored as-is
+  so the URL can be shown again; the feed route reads it with the service
+  role. Regenerating replaces the token, so the old URL 404s at once.
+- Content: `lib/calendar/ics.ts` (pure, tested in `ics.test.ts` with an RFC
+  5545 checker). Chores are all-day weekly events on their scheduled days;
+  rotating chores only for the current week; routines are daily timed events
+  (morning 7:00, after school 15:30, bedtime 19:30, custom 17:00) lasting as
+  long as their step timers. Vacation days are EXDATEs. Titles read
+  "🧹 Maya: Dishes ($0.50)", amounts only in per-chore reward mode.
+- Time zone: `family_settings.timezone` when it is a real zone, else the
+  browser zone saved with the feed, else floating local times (the column
+  defaults to UTC and has no editor, and 7:00 UTC would be 3am in New York).
+- Lapsed: an empty calendar with one "needs Premium" note today, so the
+  subscription explains itself and recovers on renewal.
+- Not on iOS or native Android yet; a feed made on the web works for
+  everyone in the family regardless of device.
 
 Native Android (ChoreStar-Android-Native, Google Play Billing): children,
 chores and store-item caps, every goal with the plan's limit, premium themes

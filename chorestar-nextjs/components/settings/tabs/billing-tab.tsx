@@ -167,6 +167,7 @@ export function BillingTab() {
                   'Rotating & bonus chores',
                   'Routine template library',
                   'Weekly report email',
+                  'Calendar feed',
                   'Unlimited rewards & goals',
                   'Family sharing',
                   'Premium themes',
@@ -204,7 +205,7 @@ export function BillingTab() {
               Upgrade to Premium
             </h4>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Unlimited children and chores, chores that rotate between kids, bonus chores, more routine templates, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
+              Unlimited children and chores, chores that rotate between kids, bonus chores, more routine templates, a family calendar feed, unlimited store rewards and goals, family sharing, premium themes, analytics and export reports
             </p>
           </div>
 
