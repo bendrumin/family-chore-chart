@@ -133,28 +133,21 @@ export function FamilySharingModal({ open, onOpenChange }: FamilySharingModalPro
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not signed in')
 
+      // The server checks the code, refuses your own family and families
+      // without Premium, and rate-limits wrong codes (migration 028). A code
+      // that doesn't exist comes back as null rather than an error.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: row, error: lookupError } = await (supabase as any)
-        .from('family_codes')
-        .select('user_id')
-        .eq('code', code)
-        .maybeSingle()
-      if (lookupError || !row?.user_id) {
-        toast.error('Code not found')
-        return
-      }
-      if (row.user_id === user.id) {
-        toast.error("That's your own family code")
-        return
-      }
-
-      const { error: joinError } = await supabase.from('family_members').insert({
-        user_id: user.id,
-        family_id: row.user_id,
-      })
+      const { data: ownerId, error: joinError } = await (supabase as any).rpc('join_family_with_code', { p_code: code })
       if (joinError) {
-        if (joinError.code === '23505') toast.error('You already joined a family')
-        else toast.error(joinError.message || 'Could not join')
+        const why = `${joinError.message ?? ''} ${joinError.hint ?? ''}`
+        if (why.includes('own_family')) toast.error("That's your own family code")
+        else if (why.includes('family_not_premium')) toast.error('That family needs Premium to share. Ask the owner to upgrade.')
+        else if (why.includes('too_many_attempts')) toast.error('Too many tries. Wait an hour and try again.')
+        else toast.error('Could not join family')
+        return
+      }
+      if (!ownerId) {
+        toast.error('Code not found')
         return
       }
       toast.success('Joined family!')

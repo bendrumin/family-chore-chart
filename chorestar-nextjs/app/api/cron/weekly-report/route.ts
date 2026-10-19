@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/utils/cron-auth'
 import { Resend } from 'resend'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { familyIsPremium } from '@/lib/utils/wallet'
@@ -15,7 +16,10 @@ export const maxDuration = 60
  * day is Sunday, once per week. Opt-in only (migration 026); a family that
  * isn't Premium anymore is skipped, not unsubscribed.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isCronAuthorized(request.headers.get('authorization'))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   const admin = createServiceRoleClient() as any
   const { data: families, error } = await admin
     .from('family_settings')

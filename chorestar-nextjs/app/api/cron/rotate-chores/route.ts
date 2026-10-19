@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isCronAuthorized } from '@/lib/utils/cron-auth'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { rotationChanges, sundayOf, type RotationMember } from '@/lib/utils/chore-rotation'
 
@@ -11,7 +12,10 @@ export const dynamic = 'force-dynamic'
  * family's timezone. Idempotent and deterministic (the week number and the
  * group's start week decide), so a repeat or stray call changes nothing.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isCronAuthorized(request.headers.get('authorization'))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   const admin = createServiceRoleClient() as any
   const { data: chores, error } = await admin
     .from('chores')

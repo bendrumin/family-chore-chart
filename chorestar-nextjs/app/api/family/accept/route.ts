@@ -60,6 +60,19 @@ export async function POST(request: Request) {
       )
     }
 
+    // Sharing is Premium. The invite was checked when it was sent; the owner
+    // may have lapsed since. Someone already in the family stays in.
+    const [{ data: owner }, { data: existing }] = await Promise.all([
+      (admin as any).from('profiles').select('subscription_type').eq('id', invite.family_id).maybeSingle(),
+      (admin as any).from('family_members').select('id').eq('user_id', userId).eq('family_id', invite.family_id).maybeSingle(),
+    ])
+    if (!existing && !['premium', 'lifetime'].includes(owner?.subscription_type)) {
+      return NextResponse.json(
+        { error: 'That family needs Premium to share. Ask the owner to upgrade.' },
+        { status: 403 }
+      )
+    }
+
     const { error: memberError } = await (admin as any)
       .from('family_members')
       .upsert(
