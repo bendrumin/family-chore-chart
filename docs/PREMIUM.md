@@ -4,7 +4,7 @@ Audited 2026-09-19, the week the second paying subscriber arrived. Every
 surface that describes Premium was compared against the code that enforces
 it, on both platforms. Keep this table true when either side changes.
 
-Last updated 2026-10-19 (family challenges added).
+Last updated 2026-10-19 (Star Pets added).
 
 | Promise | Web gate | iOS gate | Status |
 |---|---|---|---|
@@ -26,8 +26,40 @@ Last updated 2026-10-19 (family challenges added).
 | Build routines with AI (new 2026-10-19) | builder "Build with AI" + crown (`gate_ai_routine`); `POST /api/ai/build-routine` 403 `premium_required`, 20/hour per user | not yet | gated server-side; template fallback when the AI is down |
 | Live routine view on the dashboard (new 2026-10-19, 032) | "Happening now" card; `GET /api/routines/live` returns step detail only for Premium families, `locked: true` otherwise, crown (`gate_routine_live`) | not yet | gated server-side; free families see that a routine is underway, not the step |
 | Kid money management (new 2026-10-19): Spend/Save/Give jars, automatic weekly allowance, interest on Save, fines and weekly paybacks, screen-time minutes | Settings > Rewards > Money: free families see a preview, each tool opens Billing with `gate_jars` / `gate_allowance` / `gate_interest` / `gate_fines` / `gate_minutes`. `POST /api/money` answers 403 `premium_required` for switching anything on; switching off is never gated. `/api/cron/allowance` skips non-Premium families. Kid wallet sends jars/minutes/news only to Premium. DB: 030 tables are server-write-only; `enforce_premium_reward_minutes` trigger | not yet (iOS reads `/api/kid/wallet` and `/api/allowance`, which stay compatible: `owedCents` is still the total) | gated server-side; not grandfathered (new). Needs migration 030 |
+| Star Pets (new 2026-10-19, migration 034): all six species, the teen, grown-up and star stages, level cosmetics and a new item every month. Free: the pup, grows to the end of the "kid" stage (level 9), no cosmetics; XP keeps counting so upgrading grows it at once | Kid panel shows locks and "Ask a grown-up about Star Pets" (kids can't buy); parent dashboard Star Pets card + See Premium (`gate_pet`). `POST /api/kid/pet` answers 403 `premium_required` for a premium species, equipping a cosmetic or collecting a drop; the displayed level is capped server-side (`petGrowth`). DB: 034 tables are server-write-only. Per-kid on/off in Settings > Family (`POST /api/pets`, never gated) | not yet | gated server-side; not grandfathered (new). A lapsed family keeps its pet and species as adopted; cosmetics hide and the stage holds at kid until Premium returns, then everything collected comes back |
 | 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
+
+## Star Pets (2026-10-19)
+
+The yearly-plan feature: something that keeps a kid coming back past the
+4-8 week novelty drop. Each kid adopts a pet on their kid dashboard (six
+species), names it, and it grows from what they already do.
+
+- Stored (migration 034, server-write only): `child_pets` (species, name,
+  adoption day, equipped hat/accessory/habitat, the parent's per-kid on/off)
+  and `child_pet_cosmetics` (monthly drops collected). Nothing else.
+- Derived on every read by `lib/pets/` (pure, tested in `pets.test.ts`),
+  counting only from the adoption day: approved chore tick +10 (one per chore
+  per day), routine completion +15 (one per routine per family-local day),
+  perfect day +5 and every 7-day streak milestone +50 (the kid streak rule,
+  vacations and nothing-due days skip), delivered family challenge +100.
+  Level L needs 25 x L x (L - 1) XP. Stages: baby 1-4, kid 5-9, teen 10-17,
+  adult 18+; the star form is a Premium adult with a 30-day run since
+  adopting, and once earned it never goes away.
+- Mood: happy (today done), playful (some done), hungry (nothing yet, by
+  day), sleepy (nothing yet, 19:00-06:00), relaxed (nothing due). Never sad,
+  sick or lost: no guilt mechanics.
+- Cosmetics: 12 level items (hats, extras, habitats) and 12 monthly drops in
+  a static catalog (`lib/pets/catalog.ts`), each drop tied to the seasonal
+  theme of its month. A Premium kid collects the month's drop after 50 XP
+  that month (about five chores). Drops repeat each year, so a missed one
+  comes back; a future year's items are a catalog-only change.
+- Art: inline SVG (`components/pets/pet-art.tsx`), no image assets; CSS idle
+  animation that respects reduced motion.
+- APIs: `GET/POST /api/kid/pet` (kid token or a parent naming the child),
+  `GET/POST /api/pets` (owner or co-parent).
+- Not on iOS or native Android yet.
 
 ## Family calendar feed (2026-10-19)
 

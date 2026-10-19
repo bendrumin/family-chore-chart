@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.6'
+export const LATEST_CHANGELOG_VERSION = '2026.10.7'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.7': {
+    version: '2026.10.7',
+    date: 'October 2026',
+    title: 'Meet Star Pets',
+    features: [
+      {
+        icon: '🐾',
+        title: 'A Pet That Grows With Every Chore',
+        description: 'Every kid can adopt a Star Pet that grows from the chores, routines, streaks and team challenges they already do. It\'s never sad: just a little hungry or sleepy until today\'s done, then happy. Every family gets a starter pup for free.',
+      },
+      {
+        icon: '🎩',
+        title: 'Six Pets, Outfits and a Monthly Surprise',
+        description: 'Premium unlocks all six pets (pup, kitty, bunny, dino, panda, owl), every stage up to grown-up and a rare star form, hats, extras and places as it levels up, plus a new seasonal item to collect every month.',
+      },
+    ],
+  },
   '2026.10.6': {
     version: '2026.10.6',
     date: 'October 2026',

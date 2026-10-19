@@ -15,6 +15,7 @@ import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
 import { ExistingSharingList } from '@/components/settings/existing-sharing-list'
 import { CalendarFeedSection } from '@/components/settings/calendar-feed-section'
+import { PetsSection } from '@/components/settings/pets-section'
 import { toast } from 'sonner'
 import { CURRENCIES, currencySymbol } from '@/lib/constants/currencies'
 import { formatLocalDate, getWeekEnd, getWeekStart } from '@/lib/utils/date-helpers'
@@ -438,6 +439,9 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
 
         {/* Calendar feed (Premium, migration 033) — saves on its own */}
         <CalendarFeedSection />
+
+        {/* Star Pets on/off per kid (migration 034) — saves on its own */}
+        <PetsSection />
 
         {/* Family Sharing Section */}
         <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">

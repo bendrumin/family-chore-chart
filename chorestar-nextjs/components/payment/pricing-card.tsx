@@ -24,6 +24,7 @@ const PLAN_FEATURES = {
     'Chores that rotate between kids',
     'Bonus chores: first to finish earns it',
     'Family challenges: siblings team up for a shared reward',
+    'Star Pets: all 6 pets grow up, with outfits & a new item every month',
     '10 more routine templates',
     'Picture steps & a finish-by timer for routines',
     'Build routines with AI',
@@ -40,6 +41,7 @@ const PLAN_FEATURES = {
   annual: [
     'Everything in Monthly',
     'About 2 months free',
+    'Star Pets all year: collect all 12 monthly drops as your kid\'s pet grows up',
     'Unlimited children & chores',
     'Money jars, weekly allowance & interest',
     'Rotating & bonus chores',
