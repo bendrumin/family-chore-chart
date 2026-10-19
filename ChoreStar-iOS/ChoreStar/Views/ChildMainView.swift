@@ -326,6 +326,17 @@ struct ChildMainView: View {
             .padding(.top, 20)
     }
 
+    @ViewBuilder private func moneySection(_ child: Child) -> some View {
+        // Jars, "you owe", screen time and money news (Premium, 2.5.3).
+        // Renders nothing for a free family.
+        KidMoneyCard(child: child)
+    }
+
+    @ViewBuilder private func challengesSection(_ child: Child) -> some View {
+        // Team challenges with siblings (Premium, 2.5.3). Nothing when none.
+        KidChallengesCard(child: child)
+    }
+
     @ViewBuilder private func routinesSection() -> some View {
         // Routines section
         if !childRoutines.isEmpty {
@@ -429,6 +440,8 @@ struct ChildMainView: View {
             VStack(spacing: 24) {
                 vacationSection()
                 goalSection(child)
+                moneySection(child)
+                challengesSection(child)
                 routinesSection()
                 pendingSection(child)
                 completedSection(child)
@@ -459,6 +472,8 @@ struct ChildMainView: View {
         ScrollView {
             VStack(spacing: 24) {
                 goalSection(child)
+                moneySection(child)
+                challengesSection(child)
                 storeSection(child)
                 Spacer(minLength: 40)
             }
@@ -1165,7 +1180,8 @@ struct KidStoreSection: View {
                         .font(.title2.weight(.bold))
                         .foregroundColor(.choreStarTextPrimary)
                     Spacer()
-                    Text("\(money(wallet.owedCents)) to spend")
+                    // Spend when the jars are on: the server checks the store against it.
+                    Text("\(money(wallet.spendable)) to spend")
                         .font(.subheadline.weight(.bold))
                         .foregroundColor(.choreStarTextSecondary)
                 }
@@ -1244,7 +1260,7 @@ struct KidStoreSection: View {
             .alert(item: $confirming) { item in
                 Alert(
                     title: Text("\(item.emoji ?? "🎁") \(item.title)"),
-                    message: Text("Spend \(money(item.priceCents)) of your \(money(wallet.owedCents))? A grown-up will say yes or no."),
+                    message: Text("Spend \(money(item.priceCents)) of your \(money(wallet.spendable))? A grown-up will say yes or no."),
                     primaryButton: .default(Text("Yes, please!")) {
                         busyId = item.id
                         Task {

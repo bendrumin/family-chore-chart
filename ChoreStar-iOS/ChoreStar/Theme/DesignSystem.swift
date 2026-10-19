@@ -244,6 +244,10 @@ struct AdaptiveIcon: View {
         } else if let icon, !icon.isEmpty, UIImage(systemName: icon) != nil {
             Image(systemName: icon)
                 .foregroundColor(tint)
+        } else if let icon, let emoji = RoutineUpgrades.emoji(forWebIcon: icon) {
+            // A routine built on the web (or by Build with AI) stores the web
+            // builder's icon key, e.g. "lights-out".
+            Text(emoji)
         } else {
             Image(systemName: fallbackSymbol)
                 .foregroundColor(tint)

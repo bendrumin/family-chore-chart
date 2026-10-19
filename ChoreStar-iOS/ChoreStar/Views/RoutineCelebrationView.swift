@@ -10,6 +10,9 @@ struct RoutineCelebrationView: View {
     let childId: UUID
     let stepsCompleted: Int
     let durationSeconds: Int
+    /// The finish-by target when the family is Premium (032); finishing
+    /// early is celebrated, running over is never mentioned.
+    var targetSeconds: Int? = nil
     
     @State private var showContent = false
     @State private var showConfetti = false
@@ -89,6 +92,15 @@ struct RoutineCelebrationView: View {
                         .foregroundColor(.choreStarTextSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
+
+                    if let early = RoutineUpgrades.finishedEarlyBy(durationSeconds: durationSeconds, targetSeconds: targetSeconds) {
+                        Label("Finished \(RoutineUpgrades.formatEarly(early)) early!", systemImage: "bolt.fill")
+                            .font(.headline.weight(.heavy))
+                            .foregroundColor(.choreStarSuccess)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Capsule().fill(Color.choreStarSuccess.opacity(0.14)))
+                    }
                 }
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : 20)

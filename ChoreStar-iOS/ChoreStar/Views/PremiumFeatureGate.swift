@@ -65,3 +65,60 @@ struct PremiumFeatureGate: View {
         .sheet(isPresented: $showingPaywall) { PaywallView(source: "gate_\(feature)") }
     }
 }
+
+/// A Premium-only tool shown to a free family: names it, says what it does,
+/// and opens the paywall with the web's paywall source (e.g. "gate_jars").
+/// New features (2.5.3) are plain Premium, not grandfathered.
+struct PremiumUpsellCard: View {
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
+    let source: String
+    var icon: String = "crown.fill"
+    @State private var showingPaywall = false
+
+    var body: some View {
+        Button { showingPaywall = true } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(.choreStarPrimary)
+                    .frame(width: 28)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(.choreStarTextPrimary)
+                    Text(message)
+                        .font(.caption)
+                        .foregroundColor(.choreStarTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "crown.fill")
+                    .font(.caption)
+                    .foregroundColor(.choreStarAccent)
+                    .accessibilityLabel("Premium")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showingPaywall) { PaywallView(source: source) }
+    }
+}
+
+/// A small crown button that opens the paywall with a source.
+struct PremiumCrownButton: View {
+    let source: String
+    var label: LocalizedStringKey = "See Premium"
+    @State private var showingPaywall = false
+
+    var body: some View {
+        Button { showingPaywall = true } label: {
+            Label(label, systemImage: "crown.fill")
+                .font(.subheadline.weight(.bold))
+        }
+        .tint(.choreStarAccent)
+        .sheet(isPresented: $showingPaywall) { PaywallView(source: source) }
+    }
+}

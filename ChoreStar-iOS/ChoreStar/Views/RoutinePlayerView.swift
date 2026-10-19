@@ -14,15 +14,32 @@ struct RoutinePlayerView: View {
     @State private var timerRemaining: Int?
     @State private var timerActive = false
     @State private var stepTimer: Timer?
+    /// The routine as the player sees it: in a standalone kid session, fresh
+    /// from GET /api/routines/[id] (signed pictures, plan, language).
+    @State private var loaded: Routine?
+    @State private var familyPremium: Bool?
+    @State private var familyLanguage: String?
+    @State private var finished = false
+    @StateObject private var speaker = RoutineSpeaker()
+    @State private var reporter: ThrottledReporter<(index: Int, title: String)>?
+
+    private var current: Routine { loaded ?? routine }
+
+    /// The finish-by target, honoured only for Premium families (032).
+    private var targetSeconds: Int? {
+        guard let target = current.targetDurationSeconds, target > 0 else { return nil }
+        let premium = familyPremium ?? (manager.isStandaloneKidSession ? false : manager.isPremium)
+        return premium ? target : nil
+    }
     
     private var currentStep: RoutineStep? {
-        guard currentStepIndex < routine.steps.count else { return nil }
-        return routine.steps[currentStepIndex]
+        guard currentStepIndex < current.steps.count else { return nil }
+        return current.steps[currentStepIndex]
     }
     
     private var progress: Double {
-        guard !routine.steps.isEmpty else { return 0 }
-        return Double(currentStepIndex) / Double(routine.steps.count)
+        guard !current.steps.isEmpty else { return 0 }
+        return Double(currentStepIndex) / Double(current.steps.count)
     }
     
     private var routineColor: Color {
@@ -34,8 +51,9 @@ struct RoutinePlayerView: View {
             RoutineCelebrationView(
                 routine: routine,
                 childId: childId,
-                stepsCompleted: routine.steps.count,
-                durationSeconds: Int(Date().timeIntervalSince(startTime))
+                stepsCompleted: current.steps.count,
+                durationSeconds: Int(Date().timeIntervalSince(startTime)),
+                targetSeconds: targetSeconds
             )
         } else {
             ZStack {
@@ -70,9 +88,20 @@ struct RoutinePlayerView: View {
                     }
                 }
             }
+            .task { await loadDetail() }
+            .onChange(of: currentStepIndex) { _, _ in
+                reportProgress()
+                if current.autoReadAloud { readAloud() }
+            }
             .onAppear {
                 startTime = Date()
                 startTimerIfNeeded()
+                setUpReporter()
+                reportProgress()
+                if current.autoReadAloud {
+                    // A beat after the screen lands, so the first word isn't clipped.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { readAloud() }
+                }
 
                 let childName = manager.children.first(where: { $0.id == childId })?.name
                     ?? manager.currentChild?.name
@@ -81,7 +110,15 @@ struct RoutinePlayerView: View {
             }
             .onDisappear {
                 stepTimer?.invalidate()
+                speaker.stop()
                 RoutineActivityController.shared.end()
+                // Left mid-routine: drop the parent's live row. Finishing
+                // clears it through the completion instead.
+                if !finished {
+                    reporter?.cancel()
+                    let id = routine.id, child = childId
+                    Task { await manager.reportRoutineProgress(routineId: id, childId: child, clear: true) }
+                }
             }
         }
     }
@@ -141,7 +178,7 @@ struct RoutinePlayerView: View {
 
             ScrollView {
                 VStack(spacing: 8) {
-                    ForEach(Array(routine.steps.enumerated()), id: \.element.id) { index, step in
+                    ForEach(Array(current.steps.enumerated()), id: \.element.id) { index, step in
                         HStack(spacing: 12) {
                             AdaptiveIcon(icon: step.icon, fallbackSymbol: "circle", tint: routineColor, iconSize: 22)
                                 .frame(width: 32, height: 32)
@@ -200,7 +237,7 @@ struct RoutinePlayerView: View {
                 
                 Spacer()
                 
-                Text("Step \(currentStepIndex + 1)/\(routine.steps.count)")
+                Text("Step \(currentStepIndex + 1)/\(current.steps.count)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.choreStarTextSecondary)
@@ -210,7 +247,7 @@ struct RoutinePlayerView: View {
             
             // Progress dots
             HStack(spacing: 6) {
-                ForEach(0..<routine.steps.count, id: \.self) { index in
+                ForEach(0..<current.steps.count, id: \.self) { index in
                     Circle()
                         .fill(index < currentStepIndex ? routineColor :
                                 index == currentStepIndex ? routineColor : Color.choreStarTextSecondary.opacity(0.3))
@@ -236,6 +273,10 @@ struct RoutinePlayerView: View {
             }
             .frame(height: 6)
             .padding(.horizontal, 20)
+
+            if let targetSeconds {
+                FinishByBar(startTime: startTime, targetSeconds: targetSeconds, tint: routineColor)
+            }
         }
         .padding(.bottom, 20)
         .background(onCard ? Color.choreStarCardBackground : Color.clear)
@@ -246,24 +287,41 @@ struct RoutinePlayerView: View {
     
     private func stepContent(_ step: RoutineStep) -> some View {
         VStack(spacing: 24) {
-            // Step icon
-            ZStack {
-                Circle()
-                    .fill(routineColor.opacity(0.15))
-                    .frame(width: 120, height: 120)
-                
-                AdaptiveIcon(icon: step.icon, fallbackSymbol: "checkmark.circle.fill", tint: routineColor, iconSize: 56)
-                    .font(.system(size: 50))
+            // Step picture (Premium, 032), else the icon
+            if let url = step.imageURL {
+                StepPicture(url: url, size: horizontalSizeClass == .regular ? 260 : 200)
+                    .id(step.id)
+                    .transition(.scale.combined(with: .opacity))
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(routineColor.opacity(0.15))
+                        .frame(width: 120, height: 120)
+                    
+                    AdaptiveIcon(icon: step.icon, fallbackSymbol: "checkmark.circle.fill", tint: routineColor, iconSize: 56)
+                        .font(.system(size: 50))
+                }
+                .scaleEffect(1.0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: currentStepIndex)
             }
-            .scaleEffect(1.0)
-            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: currentStepIndex)
             
-            // Step title
+            // Step title, with a speaker to hear it (free)
             Text(RoutineTemplate.localizedStepTitle(step.title))
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.choreStarTextPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+
+            Button(action: readAloud) {
+                Label(speaker.isSpeaking ? "Reading…" : "Read it to me", systemImage: speaker.isSpeaking ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
+                    .font(.headline)
+                    .foregroundColor(routineColor)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 10)
+                    .background(Capsule().fill(routineColor.opacity(0.12)))
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Says this step out loud")
             
             if let description = step.description, !description.isEmpty {
                 Text(description)
@@ -318,10 +376,10 @@ struct RoutinePlayerView: View {
         VStack(spacing: 12) {
             Button(action: completeStep) {
                 HStack(spacing: 12) {
-                    Image(systemName: currentStepIndex == routine.steps.count - 1 ? "checkmark.circle.fill" : "arrow.right.circle.fill")
+                    Image(systemName: currentStepIndex == current.steps.count - 1 ? "checkmark.circle.fill" : "arrow.right.circle.fill")
                         .font(.title2)
                     
-                    Text(currentStepIndex == routine.steps.count - 1 ? "All Done!" : "Done!")
+                    Text(currentStepIndex == current.steps.count - 1 ? "All Done!" : "Done!")
                         .font(.title2)
                         .fontWeight(.bold)
                 }
@@ -347,7 +405,7 @@ struct RoutinePlayerView: View {
         stepTimer?.invalidate()
         timerRemaining = nil
         
-        if currentStepIndex < routine.steps.count - 1 {
+        if currentStepIndex < current.steps.count - 1 {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 currentStepIndex += 1
             }
@@ -355,10 +413,50 @@ struct RoutinePlayerView: View {
             RoutineActivityController.shared.update(stepIndex: currentStepIndex, step: currentStep)
         } else {
             RoutineActivityController.shared.end()
+            finished = true
+            reporter?.cancel()
+            speaker.stop()
             withAnimation {
                 showCelebration = true
             }
         }
+    }
+
+    // MARK: - Routine upgrades (032)
+
+    private func loadDetail() async {
+        if manager.isStandaloneKidSession {
+            if let row = await manager.loadKidRoutineDetail(routineId: routine.id) {
+                let fresh = row.toRoutine()
+                // Same steps in the same order, or keep what is on screen.
+                if fresh.steps.map(\.id) == routine.steps.map(\.id) { loaded = fresh }
+                familyPremium = row.family_premium ?? false
+                familyLanguage = row.family_language
+            }
+        } else {
+            familyPremium = manager.isPremium
+            familyLanguage = manager.familySettings?.language
+        }
+    }
+
+    private func readAloud() {
+        guard let step = currentStep else { return }
+        speaker.speak(stepTitle: step.title, familyLanguage: familyLanguage ?? manager.familySettings?.language)
+    }
+
+    /// Where the kid is, for the parent's live view (throttled to one write
+    /// every few seconds, latest wins).
+    private func setUpReporter() {
+        guard reporter == nil else { return }
+        let id = routine.id, child = childId, total = max(1, routine.steps.count)
+        reporter = ThrottledReporter { [manager] value in
+            Task { await manager.reportRoutineProgress(routineId: id, childId: child, stepIndex: value.index, stepsTotal: total, stepTitle: value.title) }
+        }
+    }
+
+    private func reportProgress() {
+        guard let step = currentStep, !finished else { return }
+        reporter?.report((index: currentStepIndex, title: step.title))
     }
     
     private func startTimerIfNeeded() {

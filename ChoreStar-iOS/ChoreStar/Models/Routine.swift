@@ -12,6 +12,13 @@ struct Routine: Codable, Identifiable {
     let createdAt: Date
     let updatedAt: Date
     var steps: [RoutineStep]
+    /// Migration 032: the player reads each step aloud as it appears (free).
+    var autoReadAloud: Bool = false
+    /// Migration 032: optional "finish by" for the whole routine (Premium to
+    /// set; the player honours it only for Premium families).
+    var targetDurationSeconds: Int? = nil
+    /// Migration 030: screen-time minutes earned on completion (Premium).
+    var rewardMinutes: Int = 0
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -25,6 +32,9 @@ struct Routine: Codable, Identifiable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case steps
+        case autoReadAloud = "auto_read_aloud"
+        case targetDurationSeconds = "target_duration_seconds"
+        case rewardMinutes = "reward_minutes"
     }
 
     init(from decoder: Decoder) throws {
@@ -40,10 +50,14 @@ struct Routine: Codable, Identifiable {
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
         steps = (try? container.decodeIfPresent([RoutineStep].self, forKey: .steps)) ?? []
+        autoReadAloud = (try? container.decodeIfPresent(Bool.self, forKey: .autoReadAloud)) ?? false
+        targetDurationSeconds = try? container.decodeIfPresent(Int.self, forKey: .targetDurationSeconds)
+        rewardMinutes = (try? container.decodeIfPresent(Int.self, forKey: .rewardMinutes)) ?? 0
     }
 
     init(id: UUID, childId: UUID, name: String, type: String, icon: String, color: String,
-         rewardCents: Int, isActive: Bool, createdAt: Date, updatedAt: Date, steps: [RoutineStep]) {
+         rewardCents: Int, isActive: Bool, createdAt: Date, updatedAt: Date, steps: [RoutineStep],
+         autoReadAloud: Bool = false, targetDurationSeconds: Int? = nil, rewardMinutes: Int = 0) {
         self.id = id
         self.childId = childId
         self.name = name
@@ -55,6 +69,9 @@ struct Routine: Codable, Identifiable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.steps = steps
+        self.autoReadAloud = autoReadAloud
+        self.targetDurationSeconds = targetDurationSeconds
+        self.rewardMinutes = rewardMinutes
     }
 
     var typeDisplayName: String {
@@ -91,6 +108,10 @@ struct RoutineStep: Codable, Identifiable {
     let orderIndex: Int
     let durationSeconds: Int?
     let createdAt: Date
+    /// Migration 032: the step's picture in the private routine-step-photos
+    /// bucket ({owner}/{child}/{uuid}.jpg), and a signed URL to show it.
+    var imagePath: String? = nil
+    var imageURL: URL? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -101,6 +122,8 @@ struct RoutineStep: Codable, Identifiable {
         case orderIndex = "order_index"
         case durationSeconds = "duration_seconds"
         case createdAt = "created_at"
+        case imagePath = "image_path"
+        case imageURL = "image_url"
     }
 
     init(from decoder: Decoder) throws {
@@ -113,10 +136,13 @@ struct RoutineStep: Codable, Identifiable {
         orderIndex = try container.decodeIfPresent(Int.self, forKey: .orderIndex) ?? 0
         durationSeconds = try container.decodeIfPresent(Int.self, forKey: .durationSeconds)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
+        imagePath = try? container.decodeIfPresent(String.self, forKey: .imagePath)
+        imageURL = try? container.decodeIfPresent(URL.self, forKey: .imageURL)
     }
 
     init(id: UUID, routineId: UUID, title: String, description: String?, icon: String,
-         orderIndex: Int, durationSeconds: Int?, createdAt: Date) {
+         orderIndex: Int, durationSeconds: Int?, createdAt: Date,
+         imagePath: String? = nil, imageURL: URL? = nil) {
         self.id = id
         self.routineId = routineId
         self.title = title
@@ -125,6 +151,8 @@ struct RoutineStep: Codable, Identifiable {
         self.orderIndex = orderIndex
         self.durationSeconds = durationSeconds
         self.createdAt = createdAt
+        self.imagePath = imagePath
+        self.imageURL = imageURL
     }
 }
 
@@ -164,6 +192,10 @@ struct RoutineRow: Codable {
     let is_active: Bool?
     let created_at: String
     let updated_at: String
+    // Newer columns; nil on a database without the migration.
+    let auto_read_aloud: Bool?
+    let target_duration_seconds: Int?
+    let reward_minutes: Int?
 }
 
 struct RoutineStepRow: Codable {
@@ -175,6 +207,7 @@ struct RoutineStepRow: Codable {
     let order_index: Int?
     let duration_seconds: Int?
     let created_at: String
+    let image_path: String?
 }
 
 struct RoutineCompletionRow: Codable {

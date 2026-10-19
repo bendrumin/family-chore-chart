@@ -602,6 +602,27 @@ struct ParentGoalSection: View {
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.choreStarTextSecondary)
                 }
+
+                // Jars, weekly allowance, fines and screen time (Premium, 2.5.3).
+                NavigationLink {
+                    MoneySettingsView(initialChildId: child.id)
+                } label: {
+                    HStack {
+                        Label("Jars, allowance and screen time", systemImage: "building.columns.fill")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        if !manager.isPremium {
+                            Image(systemName: "crown.fill")
+                                .foregroundColor(.choreStarAccent)
+                                .accessibilityLabel("Premium")
+                        }
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                    .foregroundColor(.choreStarLink)
+                }
+                .buttonStyle(.plain)
             }
             .appCard()
             .padding(.horizontal, 20)

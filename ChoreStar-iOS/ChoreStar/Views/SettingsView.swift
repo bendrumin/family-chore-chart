@@ -274,6 +274,38 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        MoneySettingsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "building.columns.fill")
+                                .foregroundColor(.choreStarSuccess)
+                            Text("Money: Jars, Allowance & Screen Time")
+                            if !manager.isPremium {
+                                Spacer()
+                                Image(systemName: "crown.fill")
+                                    .foregroundColor(.choreStarAccent)
+                                    .accessibilityLabel("Premium")
+                            }
+                        }
+                    }
+
+                    NavigationLink {
+                        CalendarFeedView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "calendar")
+                                .foregroundColor(.choreStarPrimary)
+                            Text("Calendar Feed")
+                            if !manager.isPremium {
+                                Spacer()
+                                Image(systemName: "crown.fill")
+                                    .foregroundColor(.choreStarAccent)
+                                    .accessibilityLabel("Premium")
+                            }
+                        }
+                    }
+
+                    NavigationLink {
                         ExportView()
                     } label: {
                         HStack {
