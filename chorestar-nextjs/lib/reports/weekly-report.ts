@@ -113,3 +113,27 @@ export function reportWeekDue(now: Date, settings: { timezone: string | null; we
   d.setUTCDate(d.getUTCDate() - 7)
   return d.toISOString().slice(0, 10)
 }
+
+/**
+ * Resend v6 doesn't throw on a failed send: it resolves `{ data: null, error }`.
+ * Turn that into a thrown error so callers can't mistake a bounce, a bad key or
+ * a rate limit for "sent". Returns the message id.
+ */
+export function resendIdOrThrow(
+  result:
+    | {
+        data?: { id?: string | null } | null
+        error?: { message?: string | null; name?: string | null } | null
+      }
+    | null
+    | undefined
+): string {
+  if (!result) throw new Error('Resend returned nothing')
+  if (result.error) {
+    const name = result.error.name ? `${result.error.name}: ` : ''
+    throw new Error(`Resend send failed: ${name}${result.error.message || 'unknown error'}`)
+  }
+  const id = result.data?.id
+  if (!id) throw new Error('Resend returned no message id')
+  return id
+}
