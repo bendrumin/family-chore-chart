@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.5'
+export const LATEST_CHANGELOG_VERSION = '2026.10.6'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.6': {
+    version: '2026.10.6',
+    date: 'October 2026',
+    title: 'Routine Rewards Now Count',
+    features: [
+      {
+        icon: '🌅',
+        title: 'Routines Pay What They Promise',
+        description: 'When a kid finishes every step of a routine with a reward, that money now goes into their balance, from today on, on every device. Earlier routines don\'t change anyone\'s balance.',
+      },
+    ],
+  },
   '2026.10.5': {
     version: '2026.10.5',
     date: 'October 2026',

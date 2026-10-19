@@ -4,6 +4,7 @@ import { childDatedEarnings, owedCents, type DatedCompletion } from '@/lib/utils
 import { isPremium } from '@/lib/utils/subscription'
 import { FREE_GOAL_LIMIT, FREE_STORE_ITEM_LIMIT } from '@/lib/constants/rewards'
 import { challengeRewardCents } from '@/lib/challenges/server'
+import { routineIncome, ROUTINE_MONEY_SINCE, type RoutineCompletionRow } from '@/lib/utils/routine-earnings'
 import {
   computeJars,
   currentVersion,
@@ -48,6 +49,8 @@ export interface Balance {
   earnedCents: number
   /** Chore earnings alone. */
   choreEarnedCents: number
+  /** Finished routines' rewards since ROUTINE_MONEY_SINCE. */
+  routineEarnedCents: number
   paidCents: number
   /** Fines, repayments and donations, as a positive number. */
   deductedCents: number
@@ -155,6 +158,17 @@ export async function computeBalance(child: WalletChild, opts: { premium?: boole
   }
   const choreEarned = income.reduce((sum, e) => sum + e.cents, 0)
 
+  // Finished routines pay their reward (points_earned) from ROUTINE_MONEY_SINCE.
+  const { data: routineRows } = await admin
+    .from('routine_completions')
+    .select('routine_id, date, completed_at, points_earned')
+    .eq('child_id', child.id)
+    .gte('completed_at', ROUTINE_MONEY_SINCE)
+    .gt('points_earned', 0)
+  const routineEvents = routineIncome((routineRows ?? []) as RoutineCompletionRow[])
+  income.push(...routineEvents)
+  const routineEarned = routineEvents.reduce((sum, e) => sum + e.cents, 0)
+
   // allowance_payouts.jar is migration 030; fall back to the bare amount.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const withJar = await (admin as any).from('allowance_payouts').select('amount_cents, jar').eq('child_id', child.id)
@@ -198,7 +212,7 @@ export async function computeBalance(child: WalletChild, opts: { premium?: boole
   const jars = computeJars(income, entries, splits)
   const current = currentVersion(splits)
   const jarsOn = premium && !!current?.enabled
-  const earned = choreEarned + credits
+  const earned = choreEarned + routineEarned + credits
   const balance = earned - paid - deducted
   const owed = owedCents(earned, paid + deducted)
 
@@ -206,6 +220,7 @@ export async function computeBalance(child: WalletChild, opts: { premium?: boole
     childId: child.id,
     earnedCents: earned,
     choreEarnedCents: choreEarned,
+    routineEarnedCents: routineEarned,
     paidCents: paid,
     deductedCents: deducted,
     balanceCents: balance,
