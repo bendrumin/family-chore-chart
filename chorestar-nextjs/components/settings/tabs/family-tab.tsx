@@ -13,6 +13,7 @@ import { useSettings } from '@/lib/contexts/settings-context'
 import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
 import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
+import { ExistingSharingList } from '@/components/settings/existing-sharing-list'
 import { toast } from 'sonner'
 import { CURRENCIES, currencySymbol } from '@/lib/constants/currencies'
 import { formatLocalDate, getWeekEnd, getWeekStart } from '@/lib/utils/date-helpers'
@@ -460,7 +461,12 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             )}
           </div>
           {!entitlements.loading && !sharingAllowed && (
-            <div className="mt-4"><PremiumGate feature="sharing" compact /></div>
+            <>
+              {/* A lapsed owner can still see and remove who's in, and turn
+                  off the join code; only adding people is Premium. */}
+              <ExistingSharingList />
+              <div className="mt-4"><PremiumGate feature="sharing" compact /></div>
+            </>
           )}
         </div>
 
