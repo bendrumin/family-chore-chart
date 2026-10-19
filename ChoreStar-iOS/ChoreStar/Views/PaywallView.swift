@@ -5,6 +5,9 @@ struct PaywallView: View {
     /// What opened the paywall (a limit, a gated feature, a button); recorded
     /// so the founder hub can show what actually sells Premium.
     var source: String = "unknown"
+    /// Why the paywall is up, shown above the hero (e.g. the free limit the
+    /// family just hit). Already localized by the caller.
+    var context: String? = nil
     @EnvironmentObject var manager: SupabaseManager
     @StateObject private var store = StoreKitManager.shared
     @Environment(\.dismiss) var dismiss
@@ -26,6 +29,19 @@ struct PaywallView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+                    if let context {
+                        Text(context)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.choreStarPrimary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.choreStarPrimary.opacity(0.12))
+                            .cornerRadius(12)
+                            .padding(.top, 8)
+                    }
+
                     // Hero
                     VStack(spacing: 12) {
                         Image(systemName: "crown.fill")
@@ -52,6 +68,7 @@ struct PaywallView: View {
                         premiumFeature(icon: "gift.fill", text: "Unlimited reward store items and goals")
                         premiumFeature(icon: "person.2.fill", text: "Family sharing with a co-parent")
                         premiumFeature(icon: "chart.bar.fill", text: "Full stats, plus PDF and CSV export")
+                        premiumFeature(icon: "envelope.fill", text: "Weekly family report email")
                         premiumFeature(icon: "paintbrush.fill", text: "Premium themes: Ocean, Sunset, Forest, and more")
                     }
                     .padding(20)
@@ -59,20 +76,26 @@ struct PaywallView: View {
                     .background(Color.choreStarCardBackground)
                     .cornerRadius(16)
 
-                    // Plans
-                    #if DEBUG
-                    if isScreenshotMode {
-                        demoPlansSection
+                    // Only the family owner buys: a co-parent's plan is the
+                    // owner's, so a co-parent sees who to ask instead of plans.
+                    if isCoParent {
+                        coParentCard
                     } else {
+                        // Plans
+                        #if DEBUG
+                        if isScreenshotMode {
+                            demoPlansSection
+                        } else {
+                            plansSection
+                        }
+                        #else
                         plansSection
+                        #endif
                     }
-                    #else
-                    plansSection
-                    #endif
 
                     // Purchase button (suppressed in screenshot mode — the demo
                     // plan section provides its own Continue for the review capture)
-                    if let product = selectedProduct, !isScreenshotMode {
+                    if let product = selectedProduct, !isScreenshotMode, !isCoParent {
                         Button {
                             Task {
                                 let success = await store.purchase(product)
@@ -171,6 +194,27 @@ struct PaywallView: View {
         } message: {
             Text(restoreResult.map(StoreKitManager.restoreMessage) ?? "")
         }
+    }
+
+    /// Signed in as a co-parent of someone else's family (not its owner).
+    private var isCoParent: Bool { manager.isSharedMember }
+
+    private var coParentCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "person.2.fill")
+                .font(.title3)
+                .foregroundColor(.choreStarPrimary)
+                .accessibilityHidden(true)
+            Text("Premium is bought by the family owner. Ask them to upgrade, and your iPhone gets it too.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.choreStarCardBackground)
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.choreStarPrimary.opacity(0.25), lineWidth: 1))
     }
 
     @ViewBuilder
@@ -402,6 +446,18 @@ struct PaywallView: View {
                 .fontWeight(.medium)
                 .foregroundColor(.choreStarTextPrimary)
         }
+    }
+}
+
+extension PaywallView {
+    /// The paywall a free family sees on tapping add at the chore cap.
+    static func choreLimit(_ limit: Int) -> PaywallView {
+        PaywallView(source: "limit_chores", context: String(localized: "You've used all \(limit) free chores"))
+    }
+
+    /// The paywall a free family sees on tapping add at the kid cap.
+    static func childLimit(_ limit: Int) -> PaywallView {
+        PaywallView(source: "limit_children", context: String(localized: "You've added \(limit) kids, the free limit"))
     }
 }
 

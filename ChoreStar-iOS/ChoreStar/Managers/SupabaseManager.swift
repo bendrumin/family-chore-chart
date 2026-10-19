@@ -48,6 +48,9 @@ class SupabaseManager: ObservableObject {
     var isPremium: Bool { subscriptionType == "premium" || subscriptionType == "lifetime" }
     var childLimit: Int { isPremium ? Int.max : 3 }
     var choreLimit: Int { isPremium ? Int.max : 20 }
+    /// A free family at the cap: tapping add opens the paywall, not the form.
+    var isAtChoreLimit: Bool { chores.count >= choreLimit }
+    var isAtChildLimit: Bool { children.count >= childLimit }
 
     /// When this account was created; drives the grandfathered feature gate.
     @Published var profileCreatedAt: Date?
@@ -4484,53 +4487,63 @@ class SupabaseManager: ObservableObject {
         #endif
     }
 
-    /// Joins another family by code. Returns nil on success, else an error message.
+    /// Turns off this family's join code (owner action). Allowed on the free
+    /// plan too, so a lapsed owner can stop anyone else joining.
+    func revokeFamilyJoinCode() async throws {
+        #if canImport(Supabase)
+        guard let client = client else { return }
+        let uid = await MainActor.run { debugUserId }
+        guard let uid = uid else { return }
+
+        try await client
+            .from("family_codes")
+            .delete()
+            .eq("user_id", value: uid)
+            .execute()
+
+        await MainActor.run {
+            familyJoinCode = nil
+        }
+        #endif
+    }
+
+    /// Replaces this family's join code with a fresh one (the old one stops working).
+    func regenerateFamilyJoinCode() async throws -> String {
+        try await revokeFamilyJoinCode()
+        return try await generateFamilyJoinCode()
+    }
+
+    /// Joins another family by code through the `join_family_with_code` RPC
+    /// (clients can't insert into family_members or read other families'
+    /// codes). Returns nil on success, else an error message.
     func joinFamily(code: String) async -> String? {
         #if canImport(Supabase)
-        guard let client = client else { return "Something went wrong." }
+        guard let client = client else { return String(localized: "Something went wrong.") }
         let uid = await MainActor.run { debugUserId }
-        guard let uid = uid else { return "Not signed in." }
-
-        struct CodeLookupRow: Codable {
-            let user_id: UUID
-        }
+        guard uid != nil else { return FamilyJoin.message(for: .notSignedIn) }
 
         do {
-            let rows: [CodeLookupRow] = try await client
-                .from("family_codes")
-                .select("user_id")
-                .eq("code", value: code.lowercased().trimmingCharacters(in: .whitespaces))
-                .limit(1)
+            let response = try await client
+                .rpc("join_family_with_code", params: ["p_code": FamilyJoin.normalize(code)])
                 .execute()
-                .value
 
-            guard let owner = rows.first?.user_id else {
-                return "That code doesn't match any family. Double-check it and try again."
+            // A code no family has comes back as null, not an error.
+            guard let owner = FamilyJoin.ownerId(fromResponse: response.data) else {
+                return FamilyJoin.message(for: .codeNotFound)
             }
-
-            if owner.uuidString.lowercased() == uid.lowercased() {
-                return "That's your own family code."
-            }
-
-            struct NewMemberRow: Encodable {
-                let user_id: String
-                let family_id: String
-            }
-
-            try await client
-                .from("family_members")
-                .insert(NewMemberRow(user_id: uid, family_id: owner.uuidString))
-                .execute()
 
             await MainActor.run {
                 memberOfFamilyId = owner
             }
             await loadRemoteData()
             return nil
-        } catch let error as PostgrestError where error.code == "23505" {
-            return "You've already joined this family."
+        } catch let error as PostgrestError {
+            let failure = FamilyJoin.failure(message: error.message, hint: error.hint, detail: error.detail)
+            if let message = FamilyJoin.message(for: failure) { return message }
+            if error.code == "23505" { return String(localized: "You've already joined this family.") }
+            return String(localized: "Couldn't join: \(error.localizedDescription)")
         } catch {
-            return "Couldn't join: \(error.localizedDescription)"
+            return String(localized: "Couldn't join: \(error.localizedDescription)")
         }
         #else
         return "Supabase not available"

@@ -11,6 +11,10 @@ struct FamilySharingView: View {
     @State private var errorMessage: String?
     @State private var memberPendingRemoval: FamilyMemberInfo?
     @State private var showingLeaveConfirm = false
+    @State private var showingRevokeConfirm = false
+
+    /// Inviting (creating or sharing a join code) is the Premium part.
+    private var canInvite: Bool { manager.canUse(.sharing) }
 
     var body: some View {
         Form {
@@ -19,13 +23,19 @@ struct FamilySharingView: View {
             if manager.isSharedMember {
                 memberSection
             } else {
-                if manager.canUse(.sharing) {
+                // Only inviting new co-parents is Premium. A family that
+                // lapsed to free still sees its code (to replace or turn it
+                // off) and its members (to remove one).
+                if canInvite {
                     shareSection
                 } else {
                     Section {
                         PremiumFeatureGate(feature: .sharing)
                             .listRowInsets(EdgeInsets())
                             .listRowBackground(Color.clear)
+                    }
+                    if manager.familyJoinCode != nil {
+                        shareSection
                     }
                 }
                 membersSection
@@ -94,14 +104,40 @@ struct FamilySharingView: View {
 
                     Spacer()
 
-                    CopyCodeButton(code: code)
+                    if canInvite {
+                        CopyCodeButton(code: code)
 
-                    ShareLink(
-                        item: "Join our family on ChoreStar! Open the app, tap Settings → Family Sharing → Join a Family, and enter code: \(code)"
-                    ) {
-                        Image(systemName: "square.and.arrow.up")
+                        ShareLink(
+                            item: "Join our family on ChoreStar! Open the app, tap Settings → Family Sharing → Join a Family, and enter code: \(code)"
+                        ) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
                     }
                 }
+
+                Button {
+                    regenerateCode()
+                } label: {
+                    HStack {
+                        if isGeneratingCode {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        Text("New Code")
+                    }
+                }
+                .disabled(isGeneratingCode)
+
+                Button(role: .destructive) {
+                    showingRevokeConfirm = true
+                } label: {
+                    HStack {
+                        Image(systemName: "xmark.circle")
+                        Text("Turn Off Code")
+                    }
+                }
+                .disabled(isGeneratingCode)
             } else {
                 Button {
                     generateCode()
@@ -118,9 +154,24 @@ struct FamilySharingView: View {
                 .disabled(isGeneratingCode)
             }
         } header: {
-            Text("Invite a Co-Parent")
+            if canInvite {
+                Text("Invite a Co-Parent")
+            } else {
+                Text("Your Invite Code")
+            }
         } footer: {
-            Text("Share this code with a partner or grandparent so they can see and manage your family's chores from their own account. The same code works in the iOS app and on chorestar.app.")
+            if canInvite {
+                Text("Share this code with a partner or grandparent so they can see and manage your family's chores from their own account. The same code works in the iOS app and on chorestar.app.")
+            } else {
+                Text("New co-parents can't join on the free plan. Get a new code or turn this one off so an old code can't be reused.")
+            }
+        }
+        .confirmationDialog("Turn off this invite code?", isPresented: $showingRevokeConfirm, titleVisibility: .visible) {
+            Button("Turn Off Code", role: .destructive) {
+                revokeCode()
+            }
+        } message: {
+            Text("No one can join with it. Co-parents who already joined keep access until you remove them.")
         }
     }
 
@@ -245,6 +296,40 @@ struct FamilySharingView: View {
             } catch {
                 await MainActor.run {
                     errorMessage = "Couldn't create a code: \(error.localizedDescription)"
+                }
+            }
+            await MainActor.run {
+                isGeneratingCode = false
+            }
+        }
+    }
+
+    private func regenerateCode() {
+        isGeneratingCode = true
+        errorMessage = nil
+        Task {
+            do {
+                _ = try await manager.regenerateFamilyJoinCode()
+            } catch {
+                await MainActor.run {
+                    errorMessage = String(localized: "Couldn't create a code: \(error.localizedDescription)")
+                }
+            }
+            await MainActor.run {
+                isGeneratingCode = false
+            }
+        }
+    }
+
+    private func revokeCode() {
+        isGeneratingCode = true
+        errorMessage = nil
+        Task {
+            do {
+                try await manager.revokeFamilyJoinCode()
+            } catch {
+                await MainActor.run {
+                    errorMessage = String(localized: "Couldn't turn off the code: \(error.localizedDescription)")
                 }
             }
             await MainActor.run {

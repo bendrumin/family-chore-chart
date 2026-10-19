@@ -3,6 +3,7 @@ import SwiftUI
 struct ChildrenView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var showingAddChild = false
+    @State private var showingChildLimitPaywall = false
     /// The grid's width, for picking a column count.
     @State private var gridWidth: CGFloat = 0
     /// The iPhone Duo's fold in the grid's coordinates while half-open.
@@ -82,7 +83,11 @@ struct ChildrenView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: {
                         SoundManager.shared.play(.pop)
-                        showingAddChild = true
+                        if manager.isAtChildLimit {
+                            showingChildLimitPaywall = true
+                        } else {
+                            showingAddChild = true
+                        }
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
@@ -93,6 +98,9 @@ struct ChildrenView: View {
             }
             .sheet(isPresented: $showingAddChild) {
                 AddEditChildView()
+            }
+            .sheet(isPresented: $showingChildLimitPaywall) {
+                PaywallView.childLimit(manager.childLimit)
             }
         }
     }

@@ -1,7 +1,9 @@
-Versión 2.5.1: prueba Premium gratis.
+Versión 2.5.2: mejoras más claras y acceso compartido más seguro.
 
-• El plan anual ahora empieza con 7 días gratis para nuevos suscriptores. Cancela al menos 24 horas antes de que termine la prueba y no se te cobrará
-• El plan anual aparece primero y muestra cuánto cuesta al mes: unos dos meses gratis frente al plan mensual
-• Pequeñas mejoras y correcciones
+• ¿Llegaste al límite gratis de 3 niños o 20 tareas? Al tocar agregar, ahora ves Premium de inmediato, antes de llenar el formulario
+• Quien comparte una familia ve que Premium lo compra el dueño de la familia, y su iPhone también lo recibe
+• El acceso compartido es más seguro: unirse con un código ahora se verifica en nuestro servidor
+• Con el plan gratis, el dueño de la familia aún puede quitar a otro adulto y cambiar o desactivar su código de invitación
+• La lista de Premium ahora incluye el correo semanal con el reporte de la familia
 
 Escríbenos a hi@chorestar.app

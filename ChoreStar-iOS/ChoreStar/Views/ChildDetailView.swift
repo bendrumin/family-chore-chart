@@ -6,6 +6,7 @@ struct ChildDetailView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.dismiss) var dismiss
     @State private var showingAddChore = false
+    @State private var showingChoreLimitPaywall = false
     // Presented at this level rather than inside ChildChoreCard — see
     // ChoresView.editingChore for why row-owned sheets crash on save.
     @State private var editingChore: Chore?
@@ -248,7 +249,11 @@ struct ChildDetailView: View {
                     
                     // Add Chore button
                     Button(action: {
-                        showingAddChore = true
+                        if manager.isAtChoreLimit {
+                            showingChoreLimitPaywall = true
+                        } else {
+                            showingAddChore = true
+                        }
                     }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
@@ -259,6 +264,9 @@ struct ChildDetailView: View {
         }
         .sheet(isPresented: $showingAddChore) {
             AddChoreWizardView(preselectedChildId: child.id)
+        }
+        .sheet(isPresented: $showingChoreLimitPaywall) {
+            PaywallView.choreLimit(manager.choreLimit)
         }
         .sheet(item: $editingChore) { chore in
             AddEditChoreView(chore: chore)
