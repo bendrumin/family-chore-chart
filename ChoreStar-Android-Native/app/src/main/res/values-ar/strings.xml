@@ -341,6 +341,9 @@
     <string name="join_not_found">هذا الرمز لا يطابق أي عائلة. تحقق منه وحاول مرة أخرى.</string>
     <string name="join_own_family">هذا رمز عائلتك أنت.</string>
     <string name="join_already">لقد انضممت إلى هذه العائلة بالفعل.</string>
+    <string name="join_not_premium">تحتاج هذه العائلة إلى Premium للمشاركة. اطلب من المالك الترقية.</string>
+    <string name="join_too_many_attempts">محاولات كثيرة جدًا. انتظر ساعة ثم حاول مرة أخرى.</string>
+    <string name="paywall_owner_buys">يشتري مالك العائلة اشتراك Premium. اطلب منه الترقية وسيحصل هاتفك عليه أيضًا.</string>
     <string name="family_membership">عضوية العائلة</string>
     <string name="sharing_another_family">أنت تشارك مهام عائلة أخرى.</string>
     <string name="leave_family">مغادرة العائلة</string>

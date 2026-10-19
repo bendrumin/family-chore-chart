@@ -33,7 +33,12 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.handleDeeplinks
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
@@ -478,17 +483,33 @@ class ChoreStarRepository(
         return code
     }
 
-    /** Returns the owner's user id, or a message when the code is wrong or already used. */
+    /**
+     * Joins through the join_family_with_code RPC: clients can no longer read
+     * other families' codes or insert into family_members. Returns the owner's
+     * user id. An unknown code comes back as null rather than an error, so the
+     * server can count the attempt toward its rate limit.
+     */
     suspend fun joinFamily(code: String): Result<String> {
-        val uid = currentUserId ?: return Result.failure(IllegalStateException("Not signed in"))
-        val normalized = code.trim().lowercase()
-        val owner = supabase.from("family_codes").select { filter { eq("code", normalized) }; limit(1) }.decodeList<FamilyCodeRow>().firstOrNull()?.userId
-            ?: return Result.failure(JoinError.NotFound)
-        if (owner == uid) return Result.failure(JoinError.OwnFamily)
+        currentUserId ?: return Result.failure(IllegalStateException("Not signed in"))
+        val normalized = normalizeJoinCode(code)
+        if (normalized.isEmpty()) return Result.failure(JoinError.NotFound)
         return runCatching {
-            supabase.from("family_members").insert(FamilyMembership(uid, owner))
-            owner
-        }.recoverCatching { e -> if (e.message?.contains("23505") == true || e.message?.contains("duplicate", true) == true) throw JoinError.Already else throw e }
+            val result = supabase.postgrest.rpc("join_family_with_code", buildJsonObject { put("p_code", normalized) })
+            parseOwnerId(result.data) ?: throw JoinError.NotFound
+        }.recoverCatching { e -> throw (e as? JoinError ?: joinErrorFor(e) ?: e) }
+    }
+
+    /**
+     * One paywall_events row (migration 027) each time the paywall opens, with
+     * what opened it. RLS lets a parent insert only rows for themselves, so the
+     * signed-in user's id goes in, not the family owner's. Analytics only:
+     * failures are swallowed.
+     */
+    suspend fun logPaywallOpen(source: String) {
+        val uid = currentUserId ?: return
+        runCatching {
+            supabase.from("paywall_events").insert(PaywallEventInsert(uid, paywallSource(source), "android"))
+        }
     }
 
     suspend fun familyMembers(ownerId: String): List<FamilyMemberRow> =
@@ -682,6 +703,47 @@ class ChoreStarRepository(
         data object NotFound : JoinError("not_found")
         data object OwnFamily : JoinError("own_family")
         data object Already : JoinError("already")
+        data object NotPremium : JoinError("family_not_premium")
+        data object TooManyAttempts : JoinError("too_many_attempts")
+    }
+
+    @Serializable
+    private data class PaywallEventInsert(
+        @SerialName("user_id") val userId: String,
+        val source: String,
+        val platform: String,
+    )
+
+    companion object {
+        /** paywall_events.source is 1-40 characters. */
+        fun paywallSource(source: String): String = source.trim().ifEmpty { "unknown" }.take(40)
+
+        fun normalizeJoinCode(code: String): String = code.trim().lowercase()
+
+        /** The RPC returns the owner's uuid as a JSON string, or null when the code matches no family. */
+        fun parseOwnerId(body: String?): String? {
+            val text = body?.trim().orEmpty()
+            if (text.isEmpty() || text == "null") return null
+            return text.removeSurrounding("\"").trim().takeIf { it.isNotEmpty() && it != "null" }
+        }
+
+        /** Maps the words join_family_with_code raises (in its message or hint) to what the UI shows. */
+        fun joinErrorFor(e: Throwable): JoinError? {
+            val text = buildString {
+                append(e.message.orEmpty())
+                (e as? PostgrestRestException)?.let { append(' ').append(it.hint.orEmpty()).append(' ').append(it.details?.toString().orEmpty()) }
+            }
+            return joinErrorForText(text)
+        }
+
+        fun joinErrorForText(text: String): JoinError? = when {
+            "code_not_found" in text -> JoinError.NotFound
+            "own_family" in text -> JoinError.OwnFamily
+            "family_not_premium" in text -> JoinError.NotPremium
+            "too_many_attempts" in text -> JoinError.TooManyAttempts
+            "23505" in text || text.contains("duplicate", ignoreCase = true) -> JoinError.Already
+            else -> null
+        }
     }
 
     @Serializable

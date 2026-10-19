@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chorestar.app.ChoreStarApp
@@ -46,7 +47,7 @@ import com.chorestar.app.ui.DashboardViewModel
 
 /** iOS PaywallView on Google Play: two plan cards, Continue, Restore, and the unavailable state until the products are live. */
 @Composable
-fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> Unit) {
+fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, source: String, onBack: () -> Unit) {
     val context = LocalContext.current
     val app = context.applicationContext as ChoreStarApp
     val billing = app.billing
@@ -55,7 +56,12 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
     var selected by remember { mutableStateOf(PlayBilling.YEARLY) }
     var welcome by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) { if (plans == null) billing.loadPlans() }
+    // Once per open (not on recomposition or rotation): what brought the parent here.
+    LaunchedEffect(Unit) { vm.logPaywallOpen(source) }
+    // A co-parent's purchase would carry the owner's id and be refunded by Google
+    // after /api/google/verify rejects it, so only the family owner gets plans.
+    val coParent = state.isSharedMember
+    LaunchedEffect(coParent) { if (!coParent && plans == null) billing.loadPlans() }
     LaunchedEffect(event) {
         when (val e = event) {
             is PlayBilling.Event.Purchased -> { welcome = true; vm.refresh(); billing.clearEvent() }
@@ -77,6 +83,7 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
             }
             when {
                 state.isPremium -> Text(stringResource(R.string.already_premium), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                coParent -> Text(stringResource(R.string.paywall_owner_buys), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                 plans == null -> CircularProgressIndicator()
                 plans!!.isEmpty() -> {
                     Text(stringResource(R.string.paywall_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -118,12 +125,12 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, onBack: () -> U
                     }
                     val chosen = plans!!.firstOrNull { it.productId == selected } ?: plans!!.first()
                     Button(
-                        onClick = { state.profile?.id?.let { pid -> (context as? Activity)?.let { billing.purchase(it, chosen, pid) } } },
+                        onClick = { if (!state.isSharedMember) state.profile?.id?.let { pid -> (context as? Activity)?.let { billing.purchase(it, chosen, pid) } } },
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                     ) { Text(stringResource(R.string.continue_label)) }
                 }
             }
-            if (!state.isPremium) TextButton(onClick = { billing.restore() }) { Text(stringResource(R.string.restore_purchases)) }
+            if (!state.isPremium && !coParent) TextButton(onClick = { billing.restore() }) { Text(stringResource(R.string.restore_purchases)) }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
             Text(stringResource(R.string.paywall_legal), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row {

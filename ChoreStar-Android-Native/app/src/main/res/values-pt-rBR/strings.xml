@@ -333,6 +333,9 @@
     <string name="join_not_found">Esse código não corresponde a nenhuma família. Confira e tente novamente.</string>
     <string name="join_own_family">Esse é o código da sua própria família.</string>
     <string name="join_already">Você já entrou nesta família.</string>
+    <string name="join_not_premium">Essa família precisa do Premium para compartilhar. Peça ao dono para assinar.</string>
+    <string name="join_too_many_attempts">Tentativas demais. Espere uma hora e tente de novo.</string>
+    <string name="paywall_owner_buys">O Premium é comprado pelo dono da família. Peça para ele assinar, e seu celular também recebe.</string>
     <string name="family_membership">Participação na família</string>
     <string name="sharing_another_family">Você está compartilhando as tarefas de outra família.</string>
     <string name="leave_family">Sair da família</string>
