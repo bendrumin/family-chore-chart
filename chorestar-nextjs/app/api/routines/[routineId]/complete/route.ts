@@ -85,6 +85,14 @@ export async function POST(
       );
     }
 
+    // The run is over either way: drop the live-view row (migration 032).
+    // Best-effort; a missing table or row changes nothing.
+    try {
+      await createServiceRoleClient().from('routine_progress').delete().eq('routine_id', routineId)
+    } catch {
+      // ignore
+    }
+
     // Check if routine was already completed today
     const today = new Date().toISOString().split('T')[0];
     const { data: existingCompletion } = await dbClient

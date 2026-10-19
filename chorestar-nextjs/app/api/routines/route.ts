@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateKidToken } from '@/lib/utils/kid-auth';
 import type { Database } from '@/lib/supabase/database.types';
+import { ownerOfChild, isFamilyPremium, withStepPhotoUrls } from '@/lib/routines/server';
+import { allowedStepImagePath } from '@/lib/routines/step-photos';
+import { MIN_TARGET_SECONDS, MAX_TARGET_SECONDS } from '@/lib/routines/routine-timer';
 
 type Routine = Database['public']['Tables']['routines']['Row'];
 type RoutineInsert = Database['public']['Tables']['routines']['Insert'];
@@ -15,6 +18,8 @@ const routineStepSchema = z.object({
   icon: z.string().max(50).optional(),
   order_index: z.number().int().min(0).optional(),
   duration_seconds: z.number().int().min(0).max(7200).nullable().optional(),
+  // Picture step (Premium, migration 032): a path returned by /api/routines/step-photo.
+  image_path: z.string().max(300).nullable().optional(),
 });
 
 const createRoutineSchema = z.object({
@@ -26,6 +31,9 @@ const createRoutineSchema = z.object({
     color: z.string().max(20).optional(),
     reward_cents: z.number().int().min(0).max(10000).optional(),
     is_active: z.boolean().optional(),
+    // Migration 032. Sent only when set, so an unmigrated database still saves.
+    auto_read_aloud: z.boolean().optional(),
+    target_duration_seconds: z.number().int().min(MIN_TARGET_SECONDS).max(MAX_TARGET_SECONDS).nullable().optional(),
   }),
   steps: z.array(routineStepSchema).max(50, 'Too many steps (max 50)').optional(),
 });
@@ -59,14 +67,7 @@ export async function GET(request: Request) {
         .from('routines')
         .select(`
           *,
-          routine_steps (
-            id,
-            title,
-            description,
-            icon,
-            order_index,
-            duration_seconds
-          )
+          routine_steps (*)
         `)
         .eq('child_id', childId)
         .eq('is_active', true)
@@ -89,9 +90,10 @@ export async function GET(request: Request) {
         (completions || []).map((c: any) => c.routine_id)
       );
 
-      const sorted = ((data || []) as any[]).map((routine: any) => ({
+      const ownerId = await ownerOfChild(childId, serviceClient);
+      const withPhotos = await withStepPhotoUrls((data || []) as any[], ownerId, serviceClient);
+      const sorted = withPhotos.map((routine: any) => ({
         ...routine,
-        routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || [],
         completedToday: completedRoutineIds.has(routine.id),
       }));
       return NextResponse.json(sorted);
@@ -102,14 +104,7 @@ export async function GET(request: Request) {
       .from('routines')
       .select(`
         *,
-        routine_steps (
-          id,
-          title,
-          description,
-          icon,
-          order_index,
-          duration_seconds
-        ),
+        routine_steps (*),
         children!inner (
           id,
           name,
@@ -131,10 +126,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to fetch routines' }, { status: 500 });
     }
 
-    const routinesWithSortedSteps = data.map(routine => ({
-      ...routine,
-      routine_steps: routine.routine_steps?.sort((a: any, b: any) => a.order_index - b.order_index) || []
-    }));
+    // Parent mode only lists the caller's own children, so the owner is the caller.
+    const routinesWithSortedSteps = await withStepPhotoUrls((data || []) as any[], user.id);
 
     return NextResponse.json(routinesWithSortedSteps);
   } catch (error) {
@@ -197,6 +190,14 @@ export async function POST(request: Request) {
       is_active: routine.is_active ?? true,
     };
 
+    // Premium extras (migration 032). Keys are only added when set, so a
+    // database without 032 keeps saving plain routines.
+    const premium = await isFamilyPremium(user.id);
+    if (routine.auto_read_aloud) routineInsert.auto_read_aloud = true;
+    if (premium && routine.target_duration_seconds) {
+      routineInsert.target_duration_seconds = routine.target_duration_seconds;
+    }
+
     const { data: newRoutine, error: routineError } = await supabase
       .from('routines')
       .insert(routineInsert)
@@ -210,14 +211,24 @@ export async function POST(request: Request) {
 
     // Create routine steps if provided
     if (steps && steps.length > 0) {
-      const stepsToInsert = steps.map((step: any, index: number) => ({
-        routine_id: newRoutine.id,
-        title: step.title,
-        description: step.description || null,
-        icon: step.icon || 'check',
-        order_index: step.order_index ?? index,
-        duration_seconds: step.duration_seconds || null,
-      }));
+      const noExisting = new Set<string>();
+      const stepsToInsert = steps.map((step, index) => {
+        const imagePath = allowedStepImagePath(step.image_path, {
+          ownerId: user.id,
+          childId: routine.child_id,
+          premium,
+          existing: noExisting,
+        });
+        return {
+          routine_id: newRoutine.id,
+          title: step.title,
+          description: step.description || null,
+          icon: step.icon || 'check',
+          order_index: step.order_index ?? index,
+          duration_seconds: step.duration_seconds || null,
+          ...(imagePath ? { image_path: imagePath } : {}),
+        };
+      });
 
       const { error: stepsError } = await supabase
         .from('routine_steps')
@@ -236,19 +247,13 @@ export async function POST(request: Request) {
       .from('routines')
       .select(`
         *,
-        routine_steps (
-          id,
-          title,
-          description,
-          icon,
-          order_index,
-          duration_seconds
-        )
+        routine_steps (*)
       `)
       .eq('id', newRoutine.id)
       .single();
 
-    return NextResponse.json(completeRoutine, { status: 201 });
+    const [decorated] = completeRoutine ? await withStepPhotoUrls([completeRoutine as any], user.id) : [completeRoutine];
+    return NextResponse.json(decorated, { status: 201 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
