@@ -4,20 +4,31 @@ Audited 2026-09-19, the week the second paying subscriber arrived. Every
 surface that describes Premium was compared against the code that enforces
 it, on both platforms. Keep this table true when either side changes.
 
+Last updated 2026-10-19.
+
 | Promise | Web gate | iOS gate | Status |
 |---|---|---|---|
-| Unlimited children (free: 3) | add-child-modal, `getChildLimit` | `childLimit` | gated both |
-| Unlimited chores (free: 20, family-wide) | add-chore-modal, `getChoreLimit` | `choreLimit` | gated both (web since 2026-09-16) |
+| Unlimited children (free: 3) | add-child-modal, `getChildLimit` | `childLimit` | gated both, enforced in the database (024) |
+| Unlimited chores (free: 20, family-wide) | add-chore-modal, `getChoreLimit` | `choreLimit` | gated both, enforced in the database (024) |
 | Unlimited reward store items (free: 3) | rewards tab + DB trigger (024) | `rewardItemLimit` + DB trigger (024) | gated both, enforced in the database |
-| Unlimited goals (free: 1 active per child) | `/api/kid/goals` + kid card lists every goal | server + KidGoalCardView lists every goal | gated both; works since 2026-10-09 (before, only the oldest goal ever showed) |
+| Unlimited goals (free: 1 active per child) | `/api/kid/goals`; rewards tab cap shows See Premium (`limit_goals`); DB trigger 029 | server + KidGoalCardView lists every goal | gated both; parent writes are held in the database once 029 is applied |
 | Premium themes (Ocean, Sunset, Forest, Aurora, Coral, Lavender) | appearance tab, `isPremiumTheme` + `canUseFeature` | `SeasonalTheme.isPremium` + `canUse(.themes)` | gated both, grandfathered |
-| Family sharing / co-parent | family tab + `POST /api/family/invite` 403 | FamilySharingView owner section | gated both, grandfathered |
+| Family sharing / co-parent | family tab + `POST /api/family/invite` 403 (adding only: a lapsed owner still sees and removes members and can turn off the join code) | FamilySharingView owner section | gated both, grandfathered |
 | Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |
-| Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock | shown to the right kid; created on the web only | gated server-side; not grandfathered (new) |
-| Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | not on iOS yet | gated web; the original 4 stay free |
-| Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | n/a (email) | gated server-side, opt-in |
+| Shared chores: weekly rotation and bonus chores (new 2026-10-10) | `POST /api/chores/shared` 403 + add-chore form lock; edit, archive and delete act on the whole group through `/api/chores/shared/[groupId]` (not gated, so a lapsed family can stop one) | created from the add-chore form via `POST /api/chores/shared` | gated server-side on create; not grandfathered (new) |
+| Routine template library, 10 extra (new 2026-10-10) | routine builder crown + Billing | RoutineBuilderView: premium templates locked, open the paywall | gated both; the original 4 stay free |
+| Weekly family report email (new 2026-10-10) | Settings toggle + cron skips non-Premium | Settings toggle (same `weekly_report_email` column) | gated server-side, opt-in; a Resend error counts as a failed send, not sent |
+| 7-day free trial on the yearly plan (new 2026-10) | Stripe `trial_period_days` via `trialDaysFor` (lib/billing/trial.ts): one trial per family across every store | Apple introductory offer on the yearly product: one per Apple ID, Apple's rule | web and iOS. A family that trialed on the web can still get Apple's trial on an Apple ID that hasn't used one; copy says so |
 | Priority email support | process, not code | | fine |
+
+Native Android (ChoreStar-Android-Native, Google Play Billing): children,
+chores and store-item caps, every goal with the plan's limit, premium themes
+and co-parent sharing with the same grandfathering rule, Play-only purchases
+(no link out to the web). Not on native Android yet: creating shared chores,
+the routine template library, the weekly report toggle, export and the
+insights gate. Premium bought elsewhere still unlocks there. The Android web
+shell logs paywall opens as `android`.
 
 Copy that was false and is now fixed (2026-09-19): the homepage FAQ promised
 a Premium trial (none exists: no Stripe `trial_period_days`, no Apple
@@ -53,8 +64,9 @@ premium themes on the free plan. Every account created after it sees
 Premium as advertised. Gates:
 
 - Web: appearance tab locks the six themes (lock badge, click opens
-  Billing); family tab hides Manage Sharing behind the gate and
-  `POST /api/family/invite` returns 403; downloads tab disables PDF/CSV
+  Billing); family tab hides Manage Sharing behind the gate (since
+  2026-10-19 a free owner still sees existing members with Remove and can
+  turn off the join code) and `POST /api/family/invite` returns 403; downloads tab disables PDF/CSV
   export (printable charts stay free); insights tab shows the gate instead
   of the dashboard. Android shell states the limit with no purchase CTA.
 - iOS (rides 2.2.3): theme picker uses the same rule (existing free iOS
@@ -106,10 +118,27 @@ shipped. Fixed:
   link opens Billing (`/dashboard?settings=billing`).
 - iOS Restore Purchases reports its result; What's New moves to 2.5.
 
+## Fixes (2026-10-19)
+
+- Shared chores could only be edited or deleted one copy at a time on the
+  web, and archiving this week's copy let the daily rotation revive the chore
+  on another kid. Now group-wide (badge, edit, Stop sharing) via
+  `/api/chores/shared/[groupId]`.
+- Weekly report: Resend v6 returns `{ data, error }` instead of throwing, so
+  failed sends were marked sent. `sendWeeklyReport` / `resendIdOrThrow`
+  (lib/reports) throw on an error result; the cron route has to call
+  `sendWeeklyReport` for the fix to take effect.
+- Lapsed owner can remove co-parents and revoke the join code (web).
+- Goals cap: See Premium button + migration 029 trigger.
+- Parent tick on a bonus chore a sibling already claimed says so.
+- Trial copy: one trial per family on the web; Apple's is per Apple ID.
+  The free-plan comparison page no longer claims weekly reports are free
+  (the in-app weekly stats are; the email is Premium).
+
+Native Android grandfathering, the Play listing and the no-plans link-out
+were fixed 2026-10-10 (ChoreStar-Android-Native 1d4bdb8).
+
 Still open:
-- Native Android: no grandfathering (pre-cutoff families lose themes and
-  sharing there); Play listing says Premium is managed at chorestar.app and
-  the paywall's no-plans state links out to the web (Play policy risk).
 - Cross-store downgrades: a cancellation on one rail (Stripe, Apple, Google)
   can drop a family still paying on another.
 - Stripe portal picks the first customer for an email; checkout makes a new

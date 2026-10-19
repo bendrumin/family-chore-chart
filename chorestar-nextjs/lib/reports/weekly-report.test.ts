@@ -3,7 +3,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { kidHeadline, renderWeeklyReport, weekLabel, reportWeekDue, type KidWeek } from './weekly-report'
+import { kidHeadline, renderWeeklyReport, weekLabel, reportWeekDue, resendIdOrThrow, type KidWeek } from './weekly-report'
 
 let passed = 0
 let failed = 0
@@ -41,6 +41,14 @@ t('due on Sunday: reports last week', () => assert.equal(reportWeekDue(new Date(
 t('not due on Saturday', () => assert.equal(reportWeekDue(new Date('2026-10-10T15:00:00Z'), { timezone: 'UTC', weekly_report_last_sent: null }), null))
 t('not twice in one week', () => assert.equal(reportWeekDue(new Date('2026-10-11T15:00:00Z'), { timezone: 'UTC', weekly_report_last_sent: '2026-10-11' }), null))
 t("family's own Sunday: Sydney is already Monday", () => assert.equal(reportWeekDue(new Date('2026-10-11T15:00:00Z'), { timezone: 'Australia/Sydney', weekly_report_last_sent: null }), null))
+
+t('resend: a returned error is a failure, not a send', () =>
+  assert.throws(() => resendIdOrThrow({ data: null, error: { name: 'validation_error', message: 'Invalid `to` field' } }), /validation_error: Invalid `to` field/))
+t('resend: a missing id is a failure', () => {
+  assert.throws(() => resendIdOrThrow({ data: null, error: null }), /no message id/)
+  assert.throws(() => resendIdOrThrow(undefined), /nothing/)
+})
+t('resend: a real send returns its id', () => assert.equal(resendIdOrThrow({ data: { id: 'abc' }, error: null }), 'abc'))
 
 console.log(`\n${passed} passed, ${failed} failed`)
 if (failed) process.exit(1)

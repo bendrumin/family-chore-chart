@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Check, Edit, CalendarDays, Clock, Camera, Circle, CheckCircle2 } from 'lucide-react'
 import { EditChoreModal } from './edit-chore-modal'
+import { SharedChoreBadge } from './shared-chore-badge'
+import { isBonusAlreadyClaimedError, type SharedChoreFields } from '@/lib/utils/shared-chores'
 import { reviewCompletion } from '@/components/dashboard/approval-tray'
 import { CategoryBadge } from '@/components/ui/category-badge'
 import { ChoreIcon } from '@/components/ui/chore-icon'
@@ -169,7 +171,11 @@ export const ChoreCard = memo(function ChoreCard({
       console.error('Error toggling completion:', error)
       // Revert the optimistic flip
       setOptimistic(prev => ({ ...prev, [dayOfWeek]: completed }))
-      toast.error('Failed to update completion')
+      toast.error(
+        isBonusAlreadyClaimedError(error)
+          ? 'Someone already did this bonus chore today'
+          : 'Failed to update completion'
+      )
       playSound('error')
     } finally {
       setPendingDays(prev => {
@@ -202,6 +208,7 @@ export const ChoreCard = memo(function ChoreCard({
             >
               {chore.name}
             </span>
+            <SharedChoreBadge chore={chore as Chore & SharedChoreFields} />
             {childName && (
               <span className="shrink-0 text-xs font-medium" style={{ color: iconTint || 'var(--text-secondary)' }}>
                 {childName}
@@ -323,6 +330,7 @@ export const ChoreCard = memo(function ChoreCard({
           >
             {chore.name}
           </span>
+          <SharedChoreBadge chore={chore as Chore & SharedChoreFields} />
 
           {rewardMode === 'per_chore' && (
             <span
@@ -397,6 +405,7 @@ export const ChoreCard = memo(function ChoreCard({
                     )}
                   </div>
                   <CategoryBadge category={chore.category || 'household_chores'} size="sm" />
+                  <SharedChoreBadge chore={chore as Chore & SharedChoreFields} />
                   {!isEveryDay(chore.days_of_week) && (
                     <span
                       className="inline-flex items-center gap-1 text-xs font-semibold"

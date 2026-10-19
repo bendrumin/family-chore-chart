@@ -190,6 +190,8 @@ async function sendOne(resend: Resend, user: PowerUserStat, campaignId: string) 
     subject: getRecipientSubject(campaignId, campaign, user),
     text: campaign.text(user),
   })
+  // Resend v6 resolves { data: null, error } on failure instead of throwing.
+  if (result.error) throw new Error(`Resend send failed: ${result.error.name}: ${result.error.message}`)
   return result.data?.id || 'ok'
 }
 

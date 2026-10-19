@@ -39,7 +39,7 @@ const FAQS = [
   },
   {
     q: 'Can I try Premium before paying?',
-    a: 'Yes. The yearly plan starts with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends (one trial per family). The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
+    a: 'Yes. The yearly plan starts with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends. One free trial per family on the web; on iPhone, Apple gives each Apple ID one trial. The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
   },
 ]
 

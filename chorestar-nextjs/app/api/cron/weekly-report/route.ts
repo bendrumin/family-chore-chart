@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { familyIsPremium } from '@/lib/utils/wallet'
 import { sundayOf } from '@/lib/utils/chore-rotation'
-import { buildFamilyReport, reportWeekDue, type ReportSettingsRow } from '@/lib/reports/weekly-report-send'
+import { buildFamilyReport, reportWeekDue, sendWeeklyReport, type ReportSettingsRow } from '@/lib/reports/weekly-report-send'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -40,16 +40,8 @@ export async function GET(request: Request) {
     }
     try {
       const report = await buildFamilyReport(admin, s, week)
-      if (!report.to) throw new Error('no email')
-      await resend.emails.send({
-        from: 'ChoreStar <hi@chorestar.app>',
-        to: report.to,
-        replyTo: 'hi@chorestar.app',
-        subject: report.subject,
-        text: report.text,
-        html: report.html,
-        headers: { 'List-Unsubscribe': `<https://chorestar.app/api/reports/weekly/unsubscribe?t=${s.weekly_report_token}>` },
-      })
+      // Throws when Resend refuses it, so a failed send isn't marked as sent.
+      await sendWeeklyReport(resend, report, s)
       await admin.from('family_settings').update({ weekly_report_last_sent: sundayOf(now, s.timezone || 'UTC') }).eq('user_id', s.user_id)
       results.push({ family: s.user_id, result: 'sent' })
     } catch (err) {

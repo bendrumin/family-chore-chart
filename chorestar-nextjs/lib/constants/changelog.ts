@@ -11,9 +11,31 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.3'
+export const LATEST_CHANGELOG_VERSION = '2026.10.4'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.10.4': {
+    version: '2026.10.4',
+    date: 'October 2026',
+    title: 'Easier Shared Chores, Safer Family Sharing',
+    features: [
+      {
+        icon: '🔄',
+        title: 'Manage Shared Chores in One Place',
+        description: 'Chores that take turns or are up for grabs now carry a "Takes turns" or "Bonus" badge. Edit one and every kid\'s copy updates; "Stop sharing" ends it for everyone, so it never pops back up on another kid.',
+      },
+      {
+        icon: '🔒',
+        title: 'Safer Family Sharing',
+        description: 'Joining a family with a code is now checked on our servers, with limits on wrong guesses. If Premium ends, you can still see and remove co-parents and turn off your code.',
+      },
+      {
+        icon: '🎯',
+        title: 'Clearer Limits',
+        description: 'When a kid reaches the free savings goal limit, a "See Premium" button shows how to add more. Ticking a bonus chore a sibling already did now tells you so.',
+      },
+    ],
+  },
   '2026.10.3': {
     version: '2026.10.3',
     date: 'October 2026',

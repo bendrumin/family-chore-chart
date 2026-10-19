@@ -22,7 +22,7 @@ import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { SettingsMenu, type SettingsTab } from '@/components/settings/settings-menu'
 import { WeeklyStats } from '@/components/dashboard/weekly-stats'
 import { ShellTabBar, type ShellTab } from '@/components/dashboard/shell-tab-bar'
-import { useAndroidShell } from '@/lib/utils/platform'
+import { isAndroidShell, useAndroidShell } from '@/lib/utils/platform'
 import dynamic from 'next/dynamic'
 
 const AddChildModal = dynamic(() => import('@/components/children/add-child-modal').then(m => ({ default: m.AddChildModal })), { ssr: false })
@@ -313,7 +313,9 @@ function DashboardContent({
       setIsSettingsOpen(true)
       // Every upgrade prompt opens Billing with its reason; remember which.
       if (detail?.tab === 'billing' && detail.source) {
-        void logPaywallOpen(detail.source, isShell ? 'android' : 'web')
+        // Read at event time: this effect runs once, so `isShell` here would
+        // be the first render's value (false before the shell is detected).
+        void logPaywallOpen(detail.source, isAndroidShell() ? 'android' : 'web')
       }
     }
     window.addEventListener('chorestar:open-settings', onOpenSettings)
@@ -330,7 +332,7 @@ function DashboardContent({
     if (!tab || !tabs.includes(tab)) return
     setSettingsTab(tab)
     setIsSettingsOpen(true)
-    if (tab === 'billing') void logPaywallOpen('home_upgrade', isShell ? 'android' : 'web')
+    if (tab === 'billing') void logPaywallOpen('home_upgrade', isAndroidShell() ? 'android' : 'web')
     url.searchParams.delete('settings')
     window.history.replaceState(null, '', url.pathname + url.search + url.hash)
   }, [])

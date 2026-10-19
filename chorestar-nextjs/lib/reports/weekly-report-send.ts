@@ -2,8 +2,46 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { childWeekEarningsCents, type EarningsSettings } from '@/lib/utils/earnings'
 import { computeStreaks } from '@/lib/utils/streak'
 import { activeGoals, computeBalance, goalView } from '@/lib/utils/wallet'
-import { renderWeeklyReport, weekLabel, type KidWeek } from './weekly-report'
-export { reportWeekDue } from './weekly-report'
+import { renderWeeklyReport, resendIdOrThrow, weekLabel, type KidWeek } from './weekly-report'
+export { reportWeekDue, resendIdOrThrow } from './weekly-report'
+
+/** The slice of the Resend client this needs (v6: resolves `{ data, error }`, never throws on a failed send). */
+export interface ReportMailer {
+  emails: {
+    send: (message: {
+      from: string
+      to: string
+      replyTo: string
+      subject: string
+      text: string
+      html: string
+      headers: Record<string, string>
+    }) => Promise<{ data: { id: string } | null; error: { message: string; name?: string } | null }>
+  }
+}
+
+/**
+ * Send one family's report. Throws when Resend reports an error (Resend v6
+ * returns it instead of throwing), so the caller only marks the week sent
+ * after a real send. Returns the Resend message id.
+ */
+export async function sendWeeklyReport(
+  resend: ReportMailer,
+  report: { to?: string; subject: string; text: string; html: string },
+  settings: Pick<ReportSettingsRow, 'weekly_report_token'>
+): Promise<string> {
+  if (!report.to) throw new Error('no email')
+  const result = await resend.emails.send({
+    from: 'ChoreStar <hi@chorestar.app>',
+    to: report.to,
+    replyTo: 'hi@chorestar.app',
+    subject: report.subject,
+    text: report.text,
+    html: report.html,
+    headers: { 'List-Unsubscribe': `<https://chorestar.app/api/reports/weekly/unsubscribe?t=${settings.weekly_report_token}>` },
+  })
+  return resendIdOrThrow(result)
+}
 
 export interface ReportSettingsRow extends EarningsSettings {
   user_id: string
