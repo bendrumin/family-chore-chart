@@ -119,7 +119,8 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
       {hasTrial && (
         <p className="text-xs text-center mt-3" style={{ color: 'var(--text-secondary)' }}>
           Then {price}. Cancel before the trial ends and you won&apos;t be charged. One trial per
-          family; if you&apos;ve subscribed before, your plan starts today.
+          family on the web (on iPhone, Apple gives each Apple ID one); if you&apos;ve subscribed
+          before, your plan starts today.
         </p>
       )}
     </div>

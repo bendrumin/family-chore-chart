@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const checklist = [
   {
     title: 'Free that stays useful',
-    desc: 'Some apps are “free” but lock the basics behind a trial or a paywall. Look for a free tier you can actually run a family on. ChoreStar’s free plan covers up to 3 children and 20 chores, kid PIN login, points and earnings, badges, and weekly reports, no trial clock.',
+    desc: 'Some apps are “free” but lock the basics behind a trial or a paywall. Look for a free tier you can actually run a family on. ChoreStar’s free plan covers up to 3 children and 20 chores, kid PIN login, points and earnings, badges, and in-app weekly stats, no trial clock.',
   },
   {
     title: 'Kids can use it independently',
