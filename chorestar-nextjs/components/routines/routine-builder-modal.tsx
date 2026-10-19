@@ -348,6 +348,7 @@ export function RoutineBuilderModal({
   };
 
   const buildWithAI = async () => {
+    if (planLoading) return;
     if (!familyIsPremium) {
       openPremiumBilling('ai_routine');
       return;
@@ -589,12 +590,15 @@ export function RoutineBuilderModal({
                   {ROUTINE_TEMPLATES.map((template, index) => {
                     // The Premium library shows to everyone; picking one on the
                     // free plan opens Billing.
-                    const locked = !!template.premium && !familyIsPremium
+                    // Not locked while the plan is still loading: a Premium
+                    // family tapping early must not land on Billing.
+                    const locked = !!template.premium && !planLoading && !familyIsPremium
                     return (
                       <button
                         key={template.name}
                         type="button"
                         onClick={() => {
+                          if (template.premium && planLoading) return
                           if (locked) {
                             window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'routine_templates' } }))
                             return
