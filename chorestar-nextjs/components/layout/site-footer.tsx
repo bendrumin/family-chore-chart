@@ -2,13 +2,23 @@ import Link from 'next/link'
 import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import { ChoreStarLogo } from '@/components/brand/logo'
 
+const FOOTER_GUIDES: [string, string][] = [
+  ['/compare/best-free-chore-app', 'Best Free Chore App'],
+  ['/blog/age-appropriate-chores-by-age', 'Chores by Age'],
+  ['/blog/split-chores-fairly-between-siblings', 'Fair Chores for Siblings'],
+  ['/blog/spend-save-give-jars-allowance-for-kids', 'Spend, Save, Give Jars'],
+  ['/blog/keep-kids-motivated-chores-after-novelty', 'Keeping Kids Motivated'],
+  ['/blog/why-gamifying-chores-works', 'Why Gamifying Chores Works'],
+  ['/blog/spring-cleaning-chores-for-kids', 'Spring Cleaning Chores'],
+]
+
 export function SiteFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-16">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="text-xl font-black text-white mb-3 flex items-center gap-1.5">
@@ -85,6 +95,22 @@ export function SiteFooter() {
                   Android Beta
                 </Link>
               </li>
+            </ul>
+          </div>
+
+          {/* Guides: sitewide links to the evergreen articles, so every
+              public page points at them (Google crawls barely-linked pages
+              last, and several sat "discovered, not indexed"). */}
+          <div>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Guides</h4>
+            <ul className="space-y-2.5">
+              {FOOTER_GUIDES.map(([href, label]) => (
+                <li key={href}>
+                  <Link href={href} className="text-sm hover:text-white transition-colors">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

@@ -37,7 +37,7 @@ export function getSitemapEntries(): SitemapEntry[] {
 
   const blogRoutes: SitemapEntry[] = BLOG_POSTS.map((post) => ({
     path: `/blog/${post.slug}`,
-    lastModified: post.isoDate,
+    lastModified: post.updatedIsoDate ?? post.isoDate,
     changeFrequency: 'monthly' as const,
     priority: '0.7',
   }))

@@ -7,6 +7,20 @@ import { LoggedInHome } from '@/components/home/logged-in-home'
 import { ChoreStarLogo } from '@/components/brand/logo'
 import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
+import { BLOG_POSTS } from '@/lib/constants/blog-posts'
+
+/** Homepage guides: the two newest posts plus evergreen ones still waiting on Google. */
+const HOME_GUIDE_SLUGS = [
+  'keep-kids-motivated-chores-after-novelty',
+  'spend-save-give-jars-allowance-for-kids',
+  'split-chores-fairly-between-siblings',
+  'age-appropriate-chores-by-age',
+  'why-gamifying-chores-works',
+  'spring-cleaning-chores-for-kids',
+]
+const HOME_GUIDES = HOME_GUIDE_SLUGS.map((slug) => BLOG_POSTS.find((p) => p.slug === slug)).filter(
+  (p): p is (typeof BLOG_POSTS)[number] => !!p
+)
 
 const SITE_URL = 'https://chorestar.app'
 
@@ -695,6 +709,41 @@ export default async function HomePage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Guides: links the evergreen articles from the homepage, the
+            page Google crawls most, so new and older posts get found. */}
+        <div id="guides" className="max-w-5xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
+            Guides for Parents
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Practical help for chores, routines and allowance, from a parent who builds ChoreStar.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {HOME_GUIDES.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group block rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 transition-colors hover:border-indigo-300 dark:hover:border-indigo-600"
+              >
+                <div className="text-2xl mb-2" aria-hidden="true">{post.emoji}</div>
+                <div className="font-semibold leading-snug text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                  {post.title}
+                </div>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{post.description}</p>
+              </Link>
+            ))}
+          </div>
+          <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
+            <Link href="/blog" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              All articles →
+            </Link>
+            <span className="mx-2" aria-hidden="true">·</span>
+            <Link href="/compare/best-free-chore-app" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              The best free chore app for kids →
+            </Link>
+          </p>
         </div>
 
         {/* Final CTA */}

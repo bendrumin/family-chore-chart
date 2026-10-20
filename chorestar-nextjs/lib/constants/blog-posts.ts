@@ -4,6 +4,8 @@ export interface BlogPost {
   description: string
   date: string
   isoDate: string
+  /** Set when a post is meaningfully revised; the sitemap's lastmod uses it. */
+  updatedIsoDate?: string
   readTime: string
   emoji: string
   category: string
@@ -139,7 +141,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "Achievements, streaks, confetti, and progress bars tap into the same psychology that makes kids want to level up.",
     date: 'March 28, 2026',
     isoDate: '2026-03-28',
-    readTime: '7 min read',
+    updatedIsoDate: '2026-10-20',
+    readTime: '9 min read',
     emoji: '🎮',
     category: 'Parenting',
   },

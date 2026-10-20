@@ -42,9 +42,30 @@ const articleJsonLd = {
   description: 'Achievements, streaks, confetti, and progress bars tap into psychology that makes kids want to level up.',
   url: 'https://chorestar.app/blog/why-gamifying-chores-works',
   datePublished: '2026-03-28',
-  dateModified: '2026-03-28',
+  dateModified: '2026-10-20',
   author: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
   publisher: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
+}
+
+const FAQS = [
+  {
+    q: 'Does rewarding kids for chores kill their motivation?',
+    a: 'It can for things kids already enjoy: in a classic 1973 study, preschoolers who were promised a reward for drawing later drew less on their own. Chores are different, since few kids find dishes fun to begin with. Keep the focus on progress and feedback, celebrate effort as well as results, and make some rewards a surprise rather than a deal.',
+  },
+  {
+    q: 'At what age does gamifying chores work best?',
+    a: 'Roughly 4 to 12. Younger kids love stickers, pictures and celebrations; school-age kids respond to streaks, levels and earning money; teens tend to prefer clear expectations, autonomy and real money over badges.',
+  },
+  {
+    q: 'How do I stop siblings fighting over a points system?',
+    a: 'Add something they win together. A shared goal, like 50 chores this week for pizza night, turns rivals into a team, and rotating the least popular jobs keeps it fair.',
+  },
+]
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
 }
 
 export default function WhyGamifyingChoresWorksPage() {
@@ -56,6 +77,10 @@ export default function WhyGamifyingChoresWorksPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
 
       <main id="main-content" className="container mx-auto px-4 py-12 max-w-3xl">
         <Link href="/blog" className="text-sm text-indigo-600 dark:text-indigo-400 themed-text hover:underline mb-6 inline-block">
@@ -66,8 +91,8 @@ export default function WhyGamifyingChoresWorksPage() {
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Parenting</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">March 28, 2026</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">7 min read</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Updated October 20, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">9 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
               Why Gamifying Chores Actually Works
@@ -93,6 +118,48 @@ export default function WhyGamifyingChoresWorksPage() {
               Gamification bridges this gap. It takes the motivational mechanics that make games compelling and applies
               them to real-world tasks. When done right, kids don&apos;t feel like they&apos;re &ldquo;doing chores.&rdquo; They feel
               like they&apos;re earning, progressing, and unlocking.
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">What the Research Says</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              Psychologists have studied this for decades, and the short version is that the kind of reward
+              matters more than whether there is one.
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 space-y-2">
+              <li>
+                <strong>Feeling capable keeps people going.</strong> Self-determination theory (Deci and Ryan)
+                finds that lasting motivation comes from autonomy, competence and connection. A visible
+                progress bar or a new level is a little dose of competence; letting kids choose the order they
+                do things in adds autonomy.
+              </li>
+              <li>
+                <strong>Rewards can backfire on things kids already love.</strong> In a well-known 1973 study,
+                preschoolers who were promised a prize for drawing later drew less in their free time than
+                kids who weren&apos;t. Chores are rarely fun to start with, so the risk is lower, but it&apos;s a good
+                reason to praise effort, not just pay for results.
+              </li>
+              <li>
+                <strong>Small wins add up.</strong> Research on everyday motivation keeps finding that seeing
+                progress, even a little, is one of the strongest motivators there is. That&apos;s why streaks and
+                checklists work so well for kids.
+              </li>
+            </ul>
+
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How to Gamify Chores at Home</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              You don&apos;t need an app to start. These work on a fridge chart too:
+            </p>
+            <ol className="list-decimal pl-6 text-gray-700 dark:text-gray-300 space-y-2">
+              <li><strong>Make progress visible.</strong> A chart, a jar of marbles, a bar that fills up. Kids should see how close they are.</li>
+              <li><strong>Keep the feedback instant.</strong> A sticker or a cheer right away beats a reward on Saturday.</li>
+              <li><strong>Use streaks, with a safety net.</strong> &ldquo;Don&apos;t break the chain&rdquo; works, but forgive sick days and vacations so one bad day doesn&apos;t end it.</li>
+              <li><strong>Let them choose.</strong> Offer two jobs and let them pick, or let them set the order. Choice beats orders.</li>
+              <li><strong>Add a team goal.</strong> Siblings working toward one shared reward compete less and help more.</li>
+              <li><strong>Surprise them sometimes.</strong> An unexpected celebration feels like a gift, not a deal, and keeps the reward from becoming the whole point.</li>
+            </ol>
+            <p className="text-gray-700 dark:text-gray-300">
+              For age-by-age ideas, see our list of 
+              <Link href="/blog/age-appropriate-chores-by-age" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">age-appropriate chores</Link>.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">How ChoreStar Gamifies Chores</h2>
@@ -151,6 +218,20 @@ export default function WhyGamifyingChoresWorksPage() {
               pops up as a celebration when kids complete every chore every day for a full week.
             </p>
 
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">6. Team Challenges and a Pet That Grows</h3>
+            <p className="text-gray-700 dark:text-gray-300">
+              Two newer layers target the problems every chore system runs into. <strong>Family
+              challenges</strong> give siblings one shared goal (&ldquo;50 chores this week for pizza night&rdquo;), so
+              they push each other instead of fighting; read more in 
+              <Link href="/blog/split-chores-fairly-between-siblings" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">how to split chores fairly between siblings</Link>.
+              And <strong>Star Pets</strong> grow from everything a kid already does, which tackles the
+              four-to-eight-week slump when the novelty wears off; see 
+              <Link href="/blog/keep-kids-motivated-chores-after-novelty" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">why kids quit their chore chart after a month</Link>.
+              If money is part of your system, our guide to 
+              <Link href="/blog/spend-save-give-jars-allowance-for-kids" className="text-indigo-600 dark:text-indigo-400 themed-text hover:underline">spend, save and give jars</Link> 
+              covers turning earnings into a lesson.
+            </p>
+
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Does It Actually Work?</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Here&apos;s what we hear from real families using ChoreStar:
@@ -184,6 +265,14 @@ export default function WhyGamifyingChoresWorksPage() {
               The goal isn&apos;t to make kids dependent on confetti forever. It&apos;s to get them started, build the habit, and
               let the intrinsic satisfaction of a clean room and earned allowance take over.
             </p>
+
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Answers</h2>
+            {FAQS.map(({ q, a }) => (
+              <div key={q}>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{q}</h3>
+                <p className="text-gray-700 dark:text-gray-300">{a}</p>
+              </div>
+            ))}
 
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-800 themed-surface my-8">
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 themed-text mb-2">See it in action</p>
