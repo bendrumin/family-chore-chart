@@ -1,0 +1,41 @@
+-- Wrap auth.uid() in a scalar subquery in every RLS policy that called it bare.
+--
+-- Applied to production 2026-10-19 via `supabase db query`, as 94 ALTER POLICY
+-- statements in one transaction. Recorded here so the change is reproducible
+-- and reviewable; there is nothing to re-run unless you are rebuilding the
+-- database from scratch.
+--
+-- WHY
+--
+-- `auth.uid()` written bare is re-evaluated for every row a policy examines.
+-- Wrapped as `( SELECT auth.uid() )` Postgres hoists it into an InitPlan and
+-- evaluates it once per query. The result is identical, which is why this was
+-- safe to apply mechanically: it is an optimiser hint, not a change in who can
+-- see what. Supabase's own linter flags the bare form as auth_rls_initplan,
+-- and it reported 94 of them.
+--
+-- HOW IT WAS DONE
+--
+--   1. dumped all 126 policies from pg_policies as JSON (kept as a rollback
+--      reference for the session)
+--   2. rewrote only bare calls, never one already inside a subquery, and
+--      checked the generated SQL for double wrapping
+--   3. ALTER POLICY rather than DROP + CREATE, so no policy ever stopped
+--      existing even momentarily
+--   4. applied inside begin/commit
+--
+-- AFTER
+--
+--   policies           126 intact, 125 wrapped, 0 bare
+--   advisor findings   309 -> 210, auth_rls_initplan 94 -> 0
+--   kid login          POST /api/child-pin/verify returned 200
+--   anon reads         still return nothing from every family table
+--
+-- NOT DONE, deliberately: the 204 multiple_permissive_policies warnings. Each
+-- table carries an owner policy and a family-member policy for the same
+-- command, and merging them into one OR'd policy would cut evaluation work.
+-- It also rewrites who can see what, and on a product holding children's data
+-- the cost of getting one wrong is far worse than the saving at 5,405 rows.
+-- Revisit when a table is large enough for the difference to be measurable.
+--
+-- Rollback: remove the subquery wrapper. Behaviour is unchanged either way.
