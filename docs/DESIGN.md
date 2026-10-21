@@ -60,13 +60,14 @@ never fill a white-text control with it.
 
 ## Typography
 
-- **Display face (headings, big numbers):** Bricolage Grotesque, weights
-  600 to 800. Web: `--font-display` in `globals.css`, applied to h1 to h3 and
+- **Display face (headings, big numbers):** Fraunces, weights 600 and 700
+  (was Bricolage Grotesque until 2026-10-21). Web: `--font-display` in `globals.css`, applied to h1 to h3 and
   the `.font-display` utility, kid mode excluded via `.kid-mode-bg` scoping.
   iOS: bundled OFL font, applied through a shared heading style.
-- **Body, labels, buttons:** the platform's reading face. Web: Nunito.
+- **Body, labels, buttons:** the platform's reading face. Web: Lexend, drawn
+  to improve reading proficiency and used in education (was Nunito).
   iOS: SF Pro (`.rounded` where it already is).
-- Bricolage has no 900 weight; `font-black`/`.black` resolves to 800 by
+- Fraunces tops out at 700 here; `font-black`/`.black` resolves to that by
   closest-match. That is expected, not a bug.
 - Swapping the display face is one change: the `--font-display` variable on
   web, the heading style on iOS.
