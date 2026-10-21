@@ -22,6 +22,12 @@
   ],
   "redirects": [
     {
+      "_comment": "Consolidated into the blog roundup: two pages answered the same query, Google crawled neither to index the compare one, and chose the roundup. See docs/SEO-CONSOLIDATION.md.",
+      "source": "/compare/best-free-chore-app",
+      "destination": "/blog/best-free-chore-apps-for-kids",
+      "statusCode": 301
+    },
+    {
       "source": "/app",
       "destination": "/dashboard",
       "statusCode": 301

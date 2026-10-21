@@ -740,8 +740,8 @@ export default async function HomePage() {
               All articles →
             </Link>
             <span className="mx-2" aria-hidden="true">·</span>
-            <Link href="/compare/best-free-chore-app" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
-              The best free chore app for kids →
+            <Link href="/blog/best-free-chore-apps-for-kids" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              The best free chore apps for kids →
             </Link>
           </p>
         </div>

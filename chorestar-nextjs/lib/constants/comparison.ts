@@ -52,14 +52,10 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       'Love the idea of Greenlight but not the debit card, bank link, and monthly fee? ChoreStar tracks chores and allowance with no card and no bank, free to start.',
     isoDate: '2026-07-02',
   },
-  {
-    slug: 'best-free-chore-app',
-    path: '/compare/best-free-chore-app',
-    title: 'The Best Free Chore App for Kids',
-    description:
-      'Looking for a genuinely free chore chart app for kids? Here is what to look for, and how ChoreStar’s free plan compares to paid apps and wall devices.',
-    isoDate: '2026-07-02',
-  },
+  // best-free-chore-app was removed on 2026-10-21 and 301s to
+  // /blog/best-free-chore-apps-for-kids. Two pages answered the same query;
+  // Google indexed the roundup and never once crawled this one. Dropping it
+  // here takes it out of the sitemap and the spoke cross-links too.
 ]
 
 export type ComparisonColumnKey = 'chorestar' | 'smartDisplay' | 'debitCard' | 'basicApp'
