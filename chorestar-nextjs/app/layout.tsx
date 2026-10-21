@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Nunito, Bricolage_Grotesque } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { QueryProvider } from '@/components/providers/query-provider'
@@ -13,7 +13,23 @@ import { ReducedMotionProvider } from '@/components/providers/reduced-motion-pro
 import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
 import { THEME_INIT_SCRIPT } from '@/lib/utils/theme-mode'
 
-const inter = Inter({ subsets: ['latin'] })
+// docs/DESIGN.md: Bricolage Grotesque for headings, Nunito for body, labels
+// and buttons. Both load through next/font rather than the @import that used
+// to sit at the top of globals.css, which blocked the first render. The site
+// shipped in Inter for months because `inter.className` on <body> is a class
+// selector and outranked the `body { font-family: Nunito }` element rule.
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-body',
+  display: 'swap',
+})
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-display-face',
+  display: 'swap',
+})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -116,7 +132,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${nunito.variable} ${bricolage.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -124,7 +140,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={nunito.className}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[var(--primary-fill)] focus:text-[color:var(--primary-foreground)] focus:rounded-lg focus:text-sm focus:font-semibold"
