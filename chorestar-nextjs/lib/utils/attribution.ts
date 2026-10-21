@@ -42,6 +42,9 @@ export function visitRecord(url: URL, referrer: string, now: Date): AttributionR
     const v = url.searchParams.get(k)
     if (v) rec[k] = clip(v)
   }
+  // Printed QR codes carry ?ref=<partner> (e.g. ?ref=swimschool) instead of UTMs.
+  const ref = url.searchParams.get('ref')
+  if (ref && !rec.utm_source) rec.utm_source = clip(ref)
   // Only an external referrer is attribution; same-origin is just navigation.
   if (referrer) {
     try {

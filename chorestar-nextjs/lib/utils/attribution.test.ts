@@ -39,6 +39,18 @@ t('captures utm parameters and the landing path', () => {
   assert.equal(rec?.captured_at, NOW.toISOString())
 })
 
+t('treats ?ref= as the source when there is no utm_source', () => {
+  const rec = visitRecord(new URL('https://chorestar.app/?ref=swimschool'), '', NOW)
+  assert.equal(rec?.utm_source, 'swimschool')
+  const earlier: AttributionRecord = { referrer: 'https://google.com/', landing: '/' }
+  assert.equal(firstTouch(earlier, rec), rec)
+})
+
+t('utm_source wins over ?ref=', () => {
+  const rec = visitRecord(new URL('https://chorestar.app/?ref=swimschool&utm_source=reddit'), '', NOW)
+  assert.equal(rec?.utm_source, 'reddit')
+})
+
 t('keeps an external referrer, origin and path only', () => {
   const rec = visitRecord(
     new URL('https://chorestar.app/'),
