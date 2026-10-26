@@ -54,6 +54,7 @@ const CHECKS = [
   ['033 calendar feed', 'calendar_feeds', []],
   ['034 pets', 'child_pets', []],
   ['034 pets', 'child_pet_cosmetics', []],
+  ['037 lapse nudge', 'family_settings', ['lapse_nudged_at']],
   // Core tables, included because an RLS regression on these is the worst case
   // this script could catch. child_pins holds PIN hashes, kid_sessions holds
   // live session tokens.

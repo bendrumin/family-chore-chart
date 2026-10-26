@@ -18,6 +18,10 @@
     {
       "path": "/api/cron/allowance",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/lapse-nudge",
+      "schedule": "0 16 * * *"
     }
   ],
   "redirects": [

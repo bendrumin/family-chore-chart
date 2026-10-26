@@ -18,6 +18,7 @@ import { badgeCountForToday, clearAppBadge } from '@/lib/utils/app-badge'
 import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
+import { DiscoverCard } from '@/components/dashboard/discover-card'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
 import { RoutineLiveCard } from '@/components/dashboard/routine-live-card'
@@ -686,6 +687,29 @@ function DashboardContent({
                   // first or the tab renders empty.
                   if (!selectedChildId && children.length > 0) setSelectedChildId(children[0].id)
                   handleAddRoutine()
+                }}
+              />
+            </div>
+
+            {/* One untried feature at a time, once setup is done. Renders
+                nothing until the getting-started card has retired. */}
+            <div className="order-2">
+              <DiscoverCard
+                isSharedMember={isSharedMember ?? false}
+                onAction={(id) => {
+                  const firstKid = children[0]
+                  if (id === 'kid_login') {
+                    if (firstKid) setEditingChild(firstKid)
+                  } else if (id === 'routines') {
+                    if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
+                    handleAddRoutine()
+                  } else if (id === 'challenges') {
+                    setSelectedChildId(null)
+                    setTimeout(() => document.getElementById('family-challenges-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+                  } else {
+                    setSettingsTab(id === 'money_jars' ? 'rewards' : 'family')
+                    setIsSettingsOpen(true)
+                  }
                 }}
               />
             </div>
