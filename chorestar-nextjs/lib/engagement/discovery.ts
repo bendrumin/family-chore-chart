@@ -31,6 +31,8 @@ export interface FamilyUsage {
   hasMoney: boolean
   hasChallenge: boolean
   hasCalendar: boolean
+  /** Challenges are siblings working together; one kid has no one to team up with. */
+  kidCount: number
 }
 
 export interface Feature {
@@ -38,6 +40,8 @@ export interface Feature {
   premiumOnly: boolean
   surfaces: Surface[]
   tried: (u: FamilyUsage) => boolean
+  /** False when the feature makes no sense for this family yet. */
+  applies?: (u: FamilyUsage) => boolean
   /** Push notification copy. `kid` is the family's first child's name. */
   push: (kid: string) => { title: string; body: string }
   /** In-app card copy and the button label. */
@@ -107,6 +111,7 @@ export const FEATURES: Feature[] = [
     premiumOnly: true,
     surfaces: ['push', 'web'],
     tried: (u) => u.hasChallenge,
+    applies: (u) => u.kidCount > 1,
     push: () => ({
       title: 'Team up the kids',
       body: 'Family challenges let siblings work toward one shared reward. It is part of your Premium.',
@@ -146,6 +151,7 @@ export function nextFeature(
     if (f.premiumOnly && !premium) continue
     if (skip.has(f.id)) continue
     if (f.tried(usage)) continue
+    if (f.applies && !f.applies(usage)) continue
     return f
   }
   return null
@@ -153,7 +159,7 @@ export function nextFeature(
 
 /** Every feature this family has not tried, on this surface, that their plan includes. */
 export function untriedFeatures(usage: FamilyUsage, premium: boolean, surface: Surface): Feature[] {
-  return FEATURES.filter((f) => f.surfaces.includes(surface) && (!f.premiumOnly || premium) && !f.tried(usage))
+  return FEATURES.filter((f) => f.surfaces.includes(surface) && (!f.premiumOnly || premium) && !f.tried(usage) && (!f.applies || f.applies(usage)))
 }
 
 /** Copy for a quiet family who has already tried everything worth pointing at. */

@@ -6,7 +6,7 @@ import { renewalOffEmail } from './renewal-off'
 import { FEATURES, untriedFeatures } from './discovery'
 
 const endsOn = new Date('2026-11-24T10:00:00Z')
-const none = { hasPin: true, hasRoutine: true, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false }
+const none = { hasPin: true, hasRoutine: true, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, kidCount: 2 }
 
 // Premium features only, never Star Pets (not on iOS), in discovery order.
 const untried = untriedFeatures(none, true, 'push').filter((f) => f.premiumOnly)

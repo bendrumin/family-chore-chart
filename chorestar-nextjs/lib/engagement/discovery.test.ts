@@ -2,10 +2,10 @@
  * Unit tests for feature discovery and lapse timing. Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { FEATURES, fallbackPush, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
+import { FEATURES, fallbackPush, untriedFeatures, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
 
-const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false }
-const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true }
+const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, kidCount: 2 }
+const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, kidCount: 2 }
 
 // Retention levers first, for everyone.
 assert.equal(nextFeature(none, false, 'push')?.id, 'kid_login')
@@ -27,6 +27,11 @@ for (const premium of [true, false]) {
   assert.notEqual(nextFeature(usage, premium, 'push')?.id, 'star_pets')
 }
 assert.ok(!FEATURES.find((f) => f.id === 'star_pets')!.surfaces.includes('push'))
+
+// One kid: no challenges, on any surface.
+const solo = { ...none, hasPin: true, hasRoutine: true, hasMoney: true, kidCount: 1 }
+assert.equal(nextFeature(solo, true, 'push')?.id, 'calendar_feed')
+assert.ok(!untriedFeatures(solo, true, 'web').some((f) => f.id === 'challenges'))
 
 // Dismissed features are skipped, the next one surfaces.
 assert.equal(nextFeature(none, true, 'web', new Set(['kid_login']))?.id, 'routines')

@@ -8,10 +8,12 @@ import { loadFamilies } from '@/lib/engagement/usage'
 export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/engagement/discover?skip=routines,star_pets
+ * GET /api/engagement/discover?skip=routines,star_pets[&surface=app]
  *
  * The one feature the dashboard's discover card should show this family, or
- * `{ feature: null }`. `skip` carries the ids this browser has dismissed.
+ * `{ feature: null }`. `skip` carries the ids this device has dismissed.
+ * `surface=app` is the iOS card: only features the native app has, the same
+ * set a push may point at.
  * Owner only: a co-parent has no children under their own id, so they get
  * null, the same as the getting-started card hiding for shared members.
  */
@@ -20,8 +22,10 @@ export async function GET(request: Request) {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const known = new Set<string>(FEATURES.map((f) => f.id))
+  const params = new URL(request.url).searchParams
+  const surface = params.get('surface') === 'app' ? 'push' : 'web'
   const skip = new Set(
-    (new URL(request.url).searchParams.get('skip') ?? '').split(',').filter((id) => known.has(id)) as FeatureId[]
+    (params.get('skip') ?? '').split(',').filter((id) => known.has(id)) as FeatureId[]
   )
 
   try {
@@ -31,7 +35,7 @@ export async function GET(request: Request) {
     if (!family) return NextResponse.json({ feature: null })
 
     const { data: profile } = await admin.from('profiles').select('subscription_type').eq('id', userId).maybeSingle()
-    const feature = nextFeature(family.usage, isPremium(profile?.subscription_type), 'web', skip)
+    const feature = nextFeature(family.usage, isPremium(profile?.subscription_type), surface, skip)
     if (!feature) return NextResponse.json({ feature: null })
     return NextResponse.json({ feature: { id: feature.id, ...feature.card(family.kidName ?? 'Your kids') } })
   } catch (err) {

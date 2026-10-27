@@ -50,10 +50,11 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
       ownerId: c.user_id,
       kidName: null,
       childIds: [],
-      usage: { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false },
+      usage: { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, kidCount: 0 },
     }
     if (!f.kidName && c.name) f.kidName = c.name.trim().split(/\s+/)[0]
     f.childIds.push(c.id)
+    f.usage.kidCount = f.childIds.length
     families.set(c.user_id, f)
   }
   if (!families.size) return families
@@ -82,7 +83,7 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
     byOwner('calendar_feeds', 'family_id'),
   ])
 
-  const mark = (rows: { child_id: string }[], key: keyof FamilyUsage) => {
+  const mark = (rows: { child_id: string }[], key: Exclude<keyof FamilyUsage, 'kidCount'>) => {
     for (const r of rows) {
       const owner = ownerOfChild.get(r.child_id)
       if (owner) families.get(owner)!.usage[key] = true
