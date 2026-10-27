@@ -652,14 +652,33 @@ test.describe('Premium: money', () => {
   const money = (request: APIRequestContext, data: Record<string, unknown>) =>
     request.post('/api/money', { headers: parentHeaders(), data: { childId: kids[0].id, ...data } })
 
+  // Money rows the screenshot seed left on these kids
+  // (scripts/seed-demo-family.mjs: Maya's 60/30/10 jars, interest and a
+  // donation). These tests start from jars off and a clean history, so the
+  // rows are parked for the run and put back unchanged after.
+  const PARKED_TABLES = ['money_jar_splits', 'money_ledger'] as const
+  const parked: Record<string, Record<string, unknown>[]> = {}
+
   test.beforeAll(async ({ request }) => {
     await setPlan('premium')
+    for (const table of PARKED_TABLES) {
+      const { data } = await (admin as any).from(table).select('*').in('child_id', kids.map((k) => k.id))
+      parked[table] = data ?? []
+      if (parked[table].length) await (admin as any).from(table).delete().in('id', parked[table].map((r) => r.id))
+    }
+    // No re-snapshot: the file-level baseline still lists the parked ids, so
+    // the final cleanup keeps them once they're back.
     tokens = [await kidSession(kids[0].id), await kidSession(kids[1].id)]
     for (const token of tokens) before.push(await wallet(request, token))
   })
   test.afterAll(async () => {
     await cleanupMoney()
     await cleanupChores()
+    for (const table of PARKED_TABLES) {
+      if (!parked[table]?.length) continue
+      const { error } = await (admin as any).from(table).insert(parked[table])
+      expect(error, `restoring parked ${table}`).toBeNull()
+    }
   })
 
   test('a 70/20/10 split from Settings, then a fine with a reason', async ({ page, request }) => {
