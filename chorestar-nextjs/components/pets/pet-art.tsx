@@ -1,5 +1,3 @@
-'use client'
-
 import { useId, type ReactNode } from 'react'
 import type { PetSpecies, PetStage } from '@/lib/pets/catalog'
 import type { PetMood } from '@/lib/pets/mood'
@@ -75,7 +73,18 @@ export interface PetArtProps {
   showHabitat?: boolean
 }
 
-export function PetArt({
+export function PetArt(props: PetArtProps) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
+  return <PetArtSvg {...props} uid={uid} />
+}
+
+/**
+ * PetArt without hooks, for renderers that call components as plain
+ * functions (next/og in app/api/pets/art, which draws the native apps' pets).
+ * `uid` keeps clip-path and gradient ids unique when several pets share a page.
+ */
+export function PetArtSvg({
+  uid,
   species,
   stage,
   mood = 'relaxed',
@@ -86,8 +95,7 @@ export function PetArt({
   title,
   className,
   showHabitat = true,
-}: PetArtProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
+}: PetArtProps & { uid: string }) {
   const p = PALETTES[species]
   const s = STAGES[stage]
   const bodyCy = GROUND - 6 - s.bodyRy
@@ -114,7 +122,7 @@ export function PetArt({
       aria-hidden={title ? undefined : true}
       focusable="false"
     >
-      <style>{PET_CSS}</style>
+      {animated && <style>{PET_CSS}</style>}
       <defs>
         <clipPath id={`clip${uid}`}>
           <circle cx="100" cy="100" r="98" />
