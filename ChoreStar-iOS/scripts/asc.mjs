@@ -309,6 +309,80 @@ switch (cmd) {
     out(`${toId}: ${made} offers created, ${have.size} already there, from ${source.length} on ${fromId}`);
     break;
   }
+  case 'shots': {
+    // shots <version> — every screenshot set on each localization of the
+    // version: display type, count, and file names in order. Read-only.
+    const v = await findVersion(args[0]);
+    if (!v) throw new Error(`no appStoreVersion ${args[0]}`);
+    const locs = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=20`);
+    for (const loc of locs.data) {
+      const sets = await api('GET', `/v1/appStoreVersionLocalizations/${loc.id}/appScreenshotSets?include=appScreenshots&limit=50`);
+      const shots = new Map((sets.included ?? []).map((x) => [x.id, x]));
+      if (!sets.data.length) { out(`${loc.attributes.locale}: no screenshot sets`); continue; }
+      for (const set of sets.data) {
+        const names = (set.relationships?.appScreenshots?.data ?? []).map((r) => shots.get(r.id)?.attributes?.fileName ?? r.id);
+        out(`${loc.attributes.locale} ${set.attributes.screenshotDisplayType} (${names.length}): ${names.join(', ')}`);
+      }
+    }
+    break;
+  }
+  case 'replace-shots': {
+    // replace-shots <version> <displayType> <file...> — replaces the en-US
+    // screenshots of ONE display type (APP_IPHONE_67, APP_IPAD_PRO_3GEN_129)
+    // with these files, in this order. Every other set, notably the iPhone
+    // Duo set deliver can't see, is untouched: deliver's overwrite mode would
+    // delete it. A set holds 10 at most, so the old ones go first; only run
+    // this on a version that isn't live yet.
+    const [vs, displayType, ...files] = args;
+    const v = await findVersion(vs);
+    if (!v) throw new Error(`no appStoreVersion ${vs}`);
+    const state = v.attributes.appVersionState ?? v.attributes.appStoreState;
+    if (['READY_FOR_SALE', 'READY_FOR_DISTRIBUTION'].includes(state)) throw new Error(`${vs} is live (${state}); refusing`);
+    if (files.length < 1 || files.length > 10) throw new Error('between 1 and 10 files');
+    const locs = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?filter[locale]=en-US`);
+    const locId = locs.data[0]?.id;
+    if (!locId) throw new Error('no en-US localization');
+    const sets = await api('GET', `/v1/appStoreVersionLocalizations/${locId}/appScreenshotSets?filter[screenshotDisplayType]=${displayType}&include=appScreenshots`);
+    let set = sets.data[0];
+    if (!set) {
+      set = (await api('POST', '/v1/appScreenshotSets', {
+        data: { type: 'appScreenshotSets', attributes: { screenshotDisplayType: displayType },
+          relationships: { appStoreVersionLocalization: { data: { type: 'appStoreVersionLocalizations', id: locId } } } },
+      })).data;
+    }
+    for (const old of set.relationships?.appScreenshots?.data ?? []) {
+      await api('DELETE', `/v1/appScreenshots/${old.id}`);
+    }
+    const { createHash } = await import('node:crypto');
+    const { basename } = await import('node:path');
+    const ids = [];
+    for (const file of files) {
+      const bytes = readFileSync(file);
+      const made = (await api('POST', '/v1/appScreenshots', {
+        data: { type: 'appScreenshots', attributes: { fileName: basename(file), fileSize: bytes.length },
+          relationships: { appScreenshotSet: { data: { type: 'appScreenshotSets', id: set.id } } } },
+      })).data;
+      for (const op of made.attributes.uploadOperations ?? []) {
+        const res = await fetch(op.url, {
+          method: op.method,
+          headers: Object.fromEntries((op.requestHeaders ?? []).map((h) => [h.name, h.value])),
+          body: bytes.subarray(op.offset, op.offset + op.length),
+        });
+        if (!res.ok) throw new Error(`upload ${basename(file)} -> ${res.status}`);
+      }
+      await api('PATCH', `/v1/appScreenshots/${made.id}`, {
+        data: { type: 'appScreenshots', id: made.id,
+          attributes: { uploaded: true, sourceFileChecksum: createHash('md5').update(bytes).digest('hex') } },
+      });
+      ids.push(made.id);
+      out(`uploaded ${basename(file)}`);
+    }
+    await api('PATCH', `/v1/appScreenshotSets/${set.id}/relationships/appScreenshots`, {
+      data: ids.map((id) => ({ type: 'appScreenshots', id })),
+    });
+    out(`${displayType}: ${ids.length} screenshots in order`);
+    break;
+  }
   case 'get-promo': {
     // get-promo <version> — prints each localization's live promotional text.
     const v = await findVersion(args[0]);
