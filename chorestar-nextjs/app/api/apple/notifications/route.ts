@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
-import { sendRenewalOffEmail } from '@/lib/engagement/renewal-off'
+import { renewalOffTiming, sendRenewalOffEmail } from '@/lib/engagement/renewal-off'
+import { onPlanChange } from '@/lib/billing/plan-limits'
 import {
   verifyNotification,
   APPLE_SUBSCRIPTION_PRODUCT_IDS,
@@ -64,6 +65,9 @@ export async function POST(request: Request) {
   const originalTransactionId =
     transaction?.originalTransactionId != null ? String(transaction.originalTransactionId) : null
   const appAccountToken = transaction?.appAccountToken ?? null
+  const expiresAt = transaction?.expiresDate ? new Date(transaction.expiresDate) : null
+  // The first purchase of this subscription: what "just bought" measures.
+  const purchasedAt = transaction?.originalPurchaseDate ? new Date(transaction.originalPurchaseDate) : null
 
   const supabase = createServiceRoleClient()
 
@@ -111,9 +115,14 @@ export async function POST(request: Request) {
       action = await downgradeIfSafe(supabase, userId)
     } else if (isOurSubscription && notificationType === 'DID_CHANGE_RENEWAL_STATUS' && subtype === 'AUTO_RENEW_DISABLED') {
       // Still entitled until expiry, so no tier change; a "before you go"
-      // note instead (lib/engagement/renewal-off.ts). Never throws.
-      const expires = transaction?.expiresDate ? new Date(transaction.expiresDate) : null
-      action = `renewal-off-email:${await sendRenewalOffEmail(supabase, userId, expires)}`
+      // note instead (lib/engagement/renewal-off.ts). Never throws. Someone
+      // who switches renewal off right after buying (or in a free trial) is
+      // avoiding a surprise charge, not leaving: their note waits for
+      // /api/cron/renewal-off, a few days before Premium ends.
+      const timing = renewalOffTiming({ purchasedAt, endsAt: expiresAt, now: new Date() })
+      action = timing === 'later'
+        ? 'renewal-off-email:deferred'
+        : `renewal-off-email:${await sendRenewalOffEmail(supabase, userId, expiresAt)}`
     }
 
     await logNotification(supabase, {
@@ -125,6 +134,8 @@ export async function POST(request: Request) {
       appAccountToken,
       userId,
       action,
+      expiresAt,
+      purchasedAt,
     })
 
     console.log(
@@ -145,6 +156,7 @@ async function setTier(supabase: unknown, userId: string, tier: 'free' | 'premiu
     .update({ subscription_type: tier })
     .eq('id', userId)
   if (error) throw error
+  await onPlanChange(supabase, userId, tier)
   return tier
 }
 
@@ -185,6 +197,8 @@ async function logNotification(
     appAccountToken: string | null
     userId: string | null
     action: string
+    expiresAt: Date | null
+    purchasedAt: Date | null
   }
 ) {
   const { error } = await (supabase as any).from('apple_notifications').insert({
@@ -196,6 +210,8 @@ async function logNotification(
     app_account_token: row.appAccountToken,
     user_id: row.userId,
     action: row.action,
+    expires_at: row.expiresAt?.toISOString() ?? null,
+    purchased_at: row.purchasedAt?.toISOString() ?? null,
   })
   if (error) {
     // The audit log must never block the state change itself.

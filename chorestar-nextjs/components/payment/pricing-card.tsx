@@ -69,8 +69,8 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
   )
   const title = PLAN_TITLES[planType]
   const price = planType === 'monthly' ? prices.monthly : prices.annual
-  // The yearly plan carries the free trial (lib/billing/trial.ts).
-  const hasTrial = planType === 'annual'
+  // Both subscriptions start with the free trial (lib/billing/trial.ts).
+  const hasTrial = planType === 'annual' || planType === 'monthly'
 
   return (
     <div
@@ -84,7 +84,7 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
       {isPopular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <span className="inline-block px-4 py-1 text-sm font-bold rounded-full accent-fill">
-            {hasTrial ? `Best Value · ${TRIAL_DAYS} Days Free` : 'Most Popular'}
+            {planType === 'annual' ? `Best Value · ${TRIAL_DAYS} Days Free` : 'Most Popular'}
           </span>
         </div>
       )}
@@ -98,7 +98,7 @@ export function PricingCard({ planType, isPopular = false, onUpgrade, isLoading 
             {price}
           </span>
         </div>
-        {hasTrial && (
+        {planType === 'annual' && (
           <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
             Just {prices.annualPerMonth}, billed yearly
           </p>

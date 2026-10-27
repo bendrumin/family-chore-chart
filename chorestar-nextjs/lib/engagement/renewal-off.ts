@@ -17,6 +17,35 @@ import { loadFamilies } from './usage'
 
 export const RENEWAL_OFF_CAMPAIGN = 'renewal-off'
 
+const DAY_MS = 86_400_000
+/** "Just bought it": turning renewal off this soon is avoiding a surprise
+ *  charge, not leaving. Two of the first six Apple monthly buyers did it
+ *  within minutes, and "before you go" read wrong 12 minutes after paying. */
+export const JUST_BOUGHT_DAYS = 3
+/** Deferred emails go out this close to the end of Premium. */
+export const SEND_BEFORE_END_DAYS = 3
+
+/**
+ * When renewal is turned off: send now, or wait until shortly before the
+ * end. Waits only when the family has just bought (or is in a free trial,
+ * which is also "just bought") and the end is still more than
+ * SEND_BEFORE_END_DAYS away.
+ */
+export function renewalOffTiming(args: { purchasedAt: Date | null; endsAt: Date | null; now: Date }): 'now' | 'later' {
+  const { purchasedAt, endsAt, now } = args
+  if (!purchasedAt || !endsAt) return 'now'
+  const justBought = now.getTime() - purchasedAt.getTime() < JUST_BOUGHT_DAYS * DAY_MS
+  const endIsNear = endsAt.getTime() - now.getTime() <= SEND_BEFORE_END_DAYS * DAY_MS
+  return justBought && !endIsNear ? 'later' : 'now'
+}
+
+/** A waiting email is due once the end is within SEND_BEFORE_END_DAYS, and
+ *  not after Premium has already ended (then it's too late to be useful). */
+export function deferredDue(endsAt: Date, now: Date): boolean {
+  const left = endsAt.getTime() - now.getTime()
+  return left > 0 && left <= SEND_BEFORE_END_DAYS * DAY_MS
+}
+
 export function renewalOffEmail(args: {
   untried: { title: string; body: string }[]
   endsOn: Date | null

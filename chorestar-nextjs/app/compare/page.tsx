@@ -54,7 +54,7 @@ const faqs = [
   },
   {
     q: 'How much does ChoreStar cost?',
-    a: 'ChoreStar is free for up to 3 children and 20 chores. Premium is $4.99/month or $49.99/year (yearly starts with a 7-day free trial) for unlimited children and chores, family sharing, and premium themes.',
+    a: 'ChoreStar is free for up to 3 children and 20 chores. Premium is $4.99/month or $49.99/year (both start with a 7-day free trial) for unlimited children and chores, family sharing, and premium themes.',
   },
 ]
 

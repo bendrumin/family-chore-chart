@@ -238,7 +238,9 @@ export function DashboardHero({
                       style={isSelected ? { background: 'color-mix(in srgb, currentColor 18%, transparent)' } : undefined}
                     >
                       {child.name}
-                      {!vacation && (
+                      {child.paused_by_plan ? (
+                        <span className="font-semibold opacity-75"> paused</span>
+                      ) : !vacation && (
                         <>
                           {' '}
                           <span className="font-semibold opacity-75 tabular-nums">
@@ -257,7 +259,7 @@ export function DashboardHero({
                       aria-pressed={isSelected}
                       aria-label={`Show ${child.name}'s chores`}
                       className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-current ${
-                        dimmed ? 'opacity-60' : ''
+                        child.paused_by_plan ? 'opacity-40' : dimmed ? 'opacity-60' : ''
                       }`}
                     >
                       {ring}

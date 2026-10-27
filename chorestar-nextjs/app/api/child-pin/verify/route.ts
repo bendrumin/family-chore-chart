@@ -135,6 +135,19 @@ export async function POST(request: Request) {
     // lock every sibling out. The primary barrier is the per-IP rate limit above
     // (getClientIp now uses Vercel's un-spoofable client IP).
 
+    // A kid paused when the family's Premium ended (migration 038,
+    // lib/billing/plan-limits.ts) can't sign in until it's back. Not an
+    // attempt: the PIN was right.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pausedRow } = await (supabase as any)
+      .from('children').select('name, paused_by_plan').eq('id', matchedPinRecord.child_id).maybeSingle();
+    if (pausedRow?.paused_by_plan) {
+      return NextResponse.json(
+        { error: 'paused', message: `${pausedRow.name}'s profile is paused. Ask a grown-up to turn Premium back on.` },
+        { status: 403 }
+      );
+    }
+
     // Check if this specific child's PIN is locked
     if (matchedPinRecord.locked_until) {
       const lockedUntil = new Date(matchedPinRecord.locked_until).getTime();

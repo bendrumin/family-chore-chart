@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const trialDays = planType === 'annual' ? trialDaysFor(planType, await trialHistory(user.email, profile)) : null
+    const trialDays = planType === 'annual' || planType === 'monthly' ? trialDaysFor(planType, await trialHistory(user.email, profile)) : null
 
     const origin = new URL(request.url).origin
     const isRecurring = planType === 'monthly' || planType === 'annual'

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { onPlanChange } from '@/lib/billing/plan-limits'
 import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { stripe } from '@/lib/stripe'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -72,6 +73,7 @@ async function updateSubscriptionTier(userId: string, tier: 'free' | 'premium' |
     console.error(`Failed to update subscription tier to ${tier}:`, error)
     throw error
   }
+  await onPlanChange(supabase, userId, tier)
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
@@ -132,7 +134,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return
   }
 
-  // A yearly free trial is Premium from day one; Stripe moves it to active
+  // A free trial is Premium from day one; Stripe moves it to active
   // when the first payment lands, or deletes it if the family cancels.
   if (subscription.status === 'active' || subscription.status === 'trialing') {
     await updateSubscriptionTier(userId, 'premium')

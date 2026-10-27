@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { onPlanChange } from '@/lib/billing/plan-limits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getParentUserId } from '@/lib/utils/parent-auth'
 import { getSubscriptionV2, acknowledgeSubscription } from '@/lib/google/play-api'
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
     if (tier === 'premium') update.subscription_type = 'premium'
     const { error } = await (admin as any).from('profiles').update(update).eq('id', userId)
     if (error) throw error
+    if (tier === 'premium') await onPlanChange(admin, userId, 'premium')
 
     if (purchase.acknowledgementState === 'ACKNOWLEDGEMENT_STATE_PENDING') {
       await acknowledgeSubscription(lineProduct, purchaseToken).catch((e) => console.error('acknowledge failed (client will retry):', e))

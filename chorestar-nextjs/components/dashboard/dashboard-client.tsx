@@ -19,6 +19,7 @@ import { ChoreList } from '@/components/chores/chore-list'
 import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { DiscoverCard } from '@/components/dashboard/discover-card'
+import { PlanLimitsBanner } from '@/components/dashboard/plan-limits-banner'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
 import { RoutineLiveCard } from '@/components/dashboard/routine-live-card'
@@ -663,6 +664,12 @@ function DashboardContent({
                 vacation={onVacationToday && vacationWindow ? { endsOn: vacationWindow.ends_on } : null}
                 onEndVacation={handleEndVacation}
               />
+            </div>
+
+            {/* Premium ending (renewal off) or ended with kids/chores paused
+                over the free limits. Renders nothing otherwise. */}
+            <div className="order-2">
+              <PlanLimitsBanner isSharedMember={isSharedMember ?? false} onKidsChanged={loadChildren} />
             </div>
 
             {/* Setup checklist — renders only while the funnel is incomplete */}

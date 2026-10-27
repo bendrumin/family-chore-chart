@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { onPlanChange } from '@/lib/billing/plan-limits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { getParentUserId } from '@/lib/utils/parent-auth'
 import { verifyTransaction } from '@/lib/apple/verifier'
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       console.error('Apple verify: profile update failed', error)
       return NextResponse.json({ error: 'Could not save the upgrade' }, { status: 500 })
     }
+    if (update.subscription_type) await onPlanChange(admin, userId, 'premium')
   }
   return NextResponse.json({ premium: true, saved: true })
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { onPlanChange } from '@/lib/billing/plan-limits'
 import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
@@ -109,6 +110,7 @@ export async function POST(request: Request) {
 async function setTier(supabase: unknown, userId: string, tier: 'free' | 'premium') {
   const { error } = await (supabase as any).from('profiles').update({ subscription_type: tier }).eq('id', userId)
   if (error) throw error
+  await onPlanChange(supabase, userId, tier)
   return tier
 }
 

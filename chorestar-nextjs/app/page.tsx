@@ -53,7 +53,7 @@ const FAQS = [
   },
   {
     q: 'Can I try Premium before paying?',
-    a: 'Yes. The yearly plan starts with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends. One free trial per family on the web; on iPhone, Apple gives each Apple ID one trial. The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
+    a: 'Yes. Both plans start with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends. One free trial per family on the web; on iPhone, Apple gives each Apple ID one trial. The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
   },
 ]
 
@@ -100,7 +100,7 @@ const softwareApplicationLd = {
       price: '4.99',
       priceCurrency: 'USD',
       name: 'Premium',
-      description: 'Unlimited children and chores, Spend/Save/Give money jars, automatic weekly allowance with interest on savings, fines and paybacks, screen-time minutes as a reward, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, Star Pets that grow from chores and routines with all six pets, every stage, outfits and a new item to collect every month, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports',
+      description: 'Unlimited children and chores, Spend/Save/Give money jars, automatic weekly allowance with interest on savings, fines and paybacks, screen-time minutes as a reward, chores that rotate between kids, bonus chores, family challenges where siblings team up for a shared reward, Star Pets that grow from chores and routines with all six pets, every stage, outfits and a new item to collect every month, a routine template library, picture routine steps for pre-readers, a gentle finish-by timer, routines built with AI, a live view of the step your kid is on, family calendar feed for Apple, Google and Outlook calendars, unlimited savings goals and store rewards, family sharing, premium themes, analytics and export reports. Starts with a 7-day free trial for new subscribers',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '4.99',

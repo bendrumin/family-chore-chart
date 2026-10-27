@@ -252,6 +252,21 @@ switch (cmd) {
     }
     break;
   }
+  case 'offers': {
+    // offers — every subscription in the app with its introductory offers
+    // (free trials, pay-as-you-go) per territory count. Read-only.
+    const groups = await api('GET', `/v1/apps/${APP_ID}/subscriptionGroups?include=subscriptions&limit=10`);
+    for (const sub of (groups.included ?? []).filter((x) => x.type === 'subscriptions')) {
+      const offers = await api('GET', `/v1/subscriptions/${sub.id}/introductoryOffers?limit=200&include=territory`);
+      const kinds = {};
+      for (const o of offers.data) {
+        const k = `${o.attributes.offerMode} ${o.attributes.numberOfPeriods}x${o.attributes.duration}`;
+        kinds[k] = (kinds[k] ?? 0) + 1;
+      }
+      out(`${sub.attributes.productId} (${sub.attributes.state}): ${Object.keys(kinds).length ? Object.entries(kinds).map(([k, n]) => `${k} in ${n} territories`).join('; ') : 'no introductory offer'}`);
+    }
+    break;
+  }
   case 'get-promo': {
     // get-promo <version> — prints each localization's live promotional text.
     const v = await findVersion(args[0]);

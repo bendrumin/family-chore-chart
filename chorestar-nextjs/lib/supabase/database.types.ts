@@ -69,6 +69,7 @@ export interface Database {
           child_access_enabled: boolean
           created_at: string
           updated_at: string
+          paused_by_plan: boolean
         }
         Insert: {
           id?: string
@@ -83,6 +84,7 @@ export interface Database {
           child_access_enabled?: boolean
           created_at?: string
           updated_at?: string
+          paused_by_plan?: boolean
         }
         Update: {
           id?: string
@@ -97,6 +99,7 @@ export interface Database {
           child_access_enabled?: boolean
           created_at?: string
           updated_at?: string
+          paused_by_plan?: boolean
         }
         Relationships: [
           {
@@ -126,6 +129,7 @@ export interface Database {
           requires_photo: boolean
           created_at: string
           updated_at: string
+          paused_by_plan: boolean
         }
         Insert: {
           id?: string
@@ -142,6 +146,7 @@ export interface Database {
           requires_photo?: boolean
           created_at?: string
           updated_at?: string
+          paused_by_plan?: boolean
         }
         Update: {
           id?: string
@@ -158,6 +163,7 @@ export interface Database {
           requires_photo?: boolean
           created_at?: string
           updated_at?: string
+          paused_by_plan?: boolean
         }
         Relationships: [
           {

@@ -22,7 +22,9 @@ function t(name: string, fn: () => void) {
 const fresh = { stripeSubscriptions: 0, appleOriginalTransactionId: null, googlePurchaseToken: null }
 
 t('a new family gets 7 days on yearly', () => assert.equal(trialDaysFor('annual', fresh), TRIAL_DAYS))
-t('monthly has no trial', () => assert.equal(trialDaysFor('monthly', fresh), null))
+t('a new family gets 7 days on monthly too', () => assert.equal(trialDaysFor('monthly', fresh), TRIAL_DAYS))
+t('lifetime has no trial', () => assert.equal(trialDaysFor('lifetime', fresh), null))
+t('a past subscriber gets no monthly trial either', () => assert.equal(trialDaysFor('monthly', { ...fresh, stripeSubscriptions: 1 }), null))
 t('a past Stripe subscriber buys straight away', () => assert.equal(trialDaysFor('annual', { ...fresh, stripeSubscriptions: 1 }), null))
 t('an Apple subscriber (even lapsed) gets no web trial', () => assert.equal(trialDaysFor('annual', { ...fresh, appleOriginalTransactionId: '2000001' }), null))
 t('a Google subscriber gets no web trial', () => assert.equal(trialDaysFor('annual', { ...fresh, googlePurchaseToken: 'tok' }), null))
