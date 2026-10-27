@@ -252,6 +252,41 @@ switch (cmd) {
     }
     break;
   }
+  case 'get-promo': {
+    // get-promo <version> — prints each localization's live promotional text.
+    const v = await findVersion(args[0]);
+    if (!v) throw new Error(`no appStoreVersion ${args[0]}`);
+    const locs = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=20`);
+    for (const loc of locs.data) out(`${loc.attributes.locale}: ${loc.attributes.promotionalText ?? '(none)'}`);
+    break;
+  }
+  case 'set-promo': {
+    // set-promo <version> — pushes fastlane/metadata/<locale>/promotional_text.txt
+    // to every localization the version has. Promotional text is one of the
+    // few fields Apple lets you change on a LIVE version, no build or review,
+    // which deliver's metadata lane cannot do (it only writes editable versions).
+    const [vs] = args;
+    const v = await findVersion(vs);
+    if (!v) throw new Error(`no appStoreVersion ${vs}`);
+    const locs = await api('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=20`);
+    for (const loc of locs.data) {
+      const locale = loc.attributes.locale;
+      const file = new URL(`../fastlane/metadata/${locale}/promotional_text.txt`, import.meta.url);
+      let text;
+      try {
+        text = readFileSync(file, 'utf8').trim();
+      } catch {
+        out(`${locale}: no promotional_text.txt, left as is`);
+        continue;
+      }
+      if (text.length > 170) throw new Error(`${locale}: ${text.length} chars, Apple's limit is 170`);
+      await api('PATCH', `/v1/appStoreVersionLocalizations/${loc.id}`, {
+        data: { type: 'appStoreVersionLocalizations', id: loc.id, attributes: { promotionalText: text } },
+      });
+      out(`${locale}: promotional text set (${text.length} chars)`);
+    }
+    break;
+  }
   case 'test-notification': {
     // Asks Apple to POST a TEST notification to the server URL configured in
     // ASC (App Information > App Store Server Notifications). Verify receipt
