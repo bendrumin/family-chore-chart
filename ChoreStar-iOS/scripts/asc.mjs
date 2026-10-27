@@ -267,6 +267,48 @@ switch (cmd) {
     }
     break;
   }
+  case 'copy-trial': {
+    // copy-trial <fromProductId> <toProductId> — gives the second subscription
+    // the same introductory offers (mode, duration, periods) in the same
+    // territories as the first. Apple stores one offer per territory, so this
+    // is one POST each; territories the target already has are skipped.
+    const [fromId, toId] = args;
+    const groups = await api('GET', `/v1/apps/${APP_ID}/subscriptionGroups?include=subscriptions&limit=10`);
+    const subs = (groups.included ?? []).filter((x) => x.type === 'subscriptions');
+    const from = subs.find((x) => x.attributes.productId === fromId);
+    const to = subs.find((x) => x.attributes.productId === toId);
+    if (!from || !to) throw new Error(`products not found: ${fromId} -> ${toId}`);
+    const list = async (id) => {
+      const all = [];
+      let next = `/v1/subscriptions/${id}/introductoryOffers?limit=200&include=territory`;
+      while (next) {
+        const j = await api('GET', next);
+        all.push(...j.data);
+        next = j.links?.next ? j.links.next.replace('https://api.appstoreconnect.apple.com', '') : null;
+      }
+      return all;
+    };
+    const source = await list(from.id);
+    const have = new Set((await list(to.id)).map((o) => o.relationships?.territory?.data?.id));
+    let made = 0;
+    for (const o of source) {
+      const territory = o.relationships?.territory?.data?.id;
+      if (!territory || have.has(territory)) continue;
+      await api('POST', '/v1/subscriptionIntroductoryOffers', {
+        data: {
+          type: 'subscriptionIntroductoryOffers',
+          attributes: { duration: o.attributes.duration, offerMode: o.attributes.offerMode, numberOfPeriods: o.attributes.numberOfPeriods },
+          relationships: {
+            subscription: { data: { type: 'subscriptions', id: to.id } },
+            territory: { data: { type: 'territories', id: territory } },
+          },
+        },
+      });
+      made++;
+    }
+    out(`${toId}: ${made} offers created, ${have.size} already there, from ${source.length} on ${fromId}`);
+    break;
+  }
   case 'get-promo': {
     // get-promo <version> — prints each localization's live promotional text.
     const v = await findVersion(args[0]);

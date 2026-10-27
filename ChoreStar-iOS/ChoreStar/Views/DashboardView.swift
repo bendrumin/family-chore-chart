@@ -75,7 +75,19 @@ struct DashboardView: View {
     private func heroChildRing(_ child: Child) -> some View {
         let firstName = child.name.split(separator: " ").first.map(String.init) ?? child.name
 
-        if manager.isOnVacationToday {
+        if child.pausedByPlan == true {
+            // Paused when Premium ended over the free limits: no progress to show.
+            VStack(spacing: 6) {
+                AvatarView(child: child, size: 50)
+                    .frame(width: 62, height: 62)
+
+                (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
+                    + Text("paused").fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
+                    .font(.caption)
+                    .lineLimit(1)
+            }
+            .opacity(0.5)
+        } else if manager.isOnVacationToday {
             VStack(spacing: 6) {
                 AvatarView(child: child, size: 50)
                     .frame(width: 62, height: 62)
@@ -300,6 +312,10 @@ struct DashboardView: View {
                     Group {
                         // Setup checklist for new families. Renders nothing once
                         // the funnel is complete or the parent hides it.
+                        // Premium ending (renewal off) or ended with kids or
+                        // chores paused over the free limits. Hidden otherwise.
+                        PlanLimitsCard()
+
                         GettingStartedCard()
 
                         // Once setup is done: one feature the family has not

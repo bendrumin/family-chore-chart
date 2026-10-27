@@ -21419,6 +21419,358 @@
           }
         }
       }
+    },
+    "Then %@ a month. Cancel at least 24 hours before the trial ends and you won't be charged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luego %@ al mes. Cancela al menos 24 horas antes de que termine la prueba y no se te cobrará."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois, %@ por mês. Cancele pelo menos 24 horas antes do fim do teste e você não será cobrado."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بعد ذلك %@ شهريًا. ألغِ الاشتراك قبل انتهاء التجربة بـ 24 ساعة على الأقل ولن يتم تحصيل أي رسوم."
+          }
+        }
+      }
+    },
+    "Premium ends %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium termina el %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium termina em %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ينتهي Premium في %@"
+          }
+        }
+      }
+    },
+    "Premium is set to end" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium está por terminar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium vai terminar"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سينتهي Premium قريبًا"
+          }
+        }
+      }
+    },
+    "After that, %@ pause, since the free plan has %lld kids and %lld chores. Turn renewal back on to keep them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después, %1$@ se pausan, porque el plan gratis tiene %2$lld niños y %3$lld tareas. Reactiva la renovación para conservarlos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois disso, %1$@ ficam pausados, porque o plano grátis tem %2$lld crianças e %3$lld tarefas. Reative a renovação para mantê-los."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بعد ذلك، يتوقف %1$@ مؤقتًا، لأن الخطة المجانية تتيح %2$lld أطفال و%3$lld مهمة. أعد تفعيل التجديد للاحتفاظ بها."
+          }
+        }
+      }
+    },
+    "%@ paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ en pausa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pausado"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ متوقف مؤقتًا"
+          }
+        }
+      }
+    },
+    "Premium ended, and the free plan has %lld kids and %lld chores. Nothing is deleted: resume Premium and everything comes back, or choose what stays on." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium terminó y el plan gratis tiene %1$lld niños y %2$lld tareas. No se borra nada: vuelve a Premium y todo regresa, o elige qué sigue activo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium terminou e o plano grátis tem %1$lld crianças e %2$lld tarefas. Nada é apagado: volte ao Premium e tudo volta, ou escolha o que fica ativo."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتهى Premium، والخطة المجانية تتيح %1$lld أطفال و%2$lld مهمة. لا يُحذف شيء: عد إلى Premium ويعود كل شيء، أو اختر ما يبقى مفعّلًا."
+          }
+        }
+      }
+    },
+    "Manage subscription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administrar suscripción"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerenciar assinatura"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إدارة الاشتراك"
+          }
+        }
+      }
+    },
+    "Resume Premium" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a Premium"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voltar ao Premium"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استئناف Premium"
+          }
+        }
+      }
+    },
+    "Choose what stays on" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué sigue activo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha o que fica ativo"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر ما يبقى مفعّلًا"
+          }
+        }
+      }
+    },
+    "%lld chores" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tareas"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tarefas"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld مهمة"
+          }
+        }
+      }
+    },
+    "paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en pausa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pausado"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متوقف"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausado"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متوقف مؤقتًا"
+          }
+        }
+      }
+    },
+    "Kids (%lld/%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niños (%1$lld/%2$lld)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crianças (%1$lld/%2$lld)"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الأطفال (%1$lld/%2$lld)"
+          }
+        }
+      }
+    },
+    "Chores on: %lld/%lld. Everything else is paused, not deleted, and comes back with Premium." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas activas: %1$lld/%2$lld. Lo demás queda en pausa, no se borra, y regresa con Premium."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas ativas: %1$lld/%2$lld. O resto fica pausado, não é apagado, e volta com o Premium."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المهام المفعّلة: %1$lld/%2$lld. الباقي متوقف مؤقتًا ولا يُحذف، ويعود مع Premium."
+          }
+        }
+      }
+    },
+    "Couldn't save. Check your connection." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar. Revisa tu conexión."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar. Verifique sua conexão."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر الحفظ. تحقق من اتصالك."
+          }
+        }
+      }
+    },
+    "Couldn't save. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar. Inténtalo de nuevo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar. Tente de novo."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر الحفظ. حاول مرة أخرى."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

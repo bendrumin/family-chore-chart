@@ -13,6 +13,10 @@ struct Child: Codable, Identifiable {
     let userId: UUID
     let createdAt: Date
     let updatedAt: Date
+    /// Paused because the family's Premium ended over the free limits
+    /// (web lib/billing/plan-limits.ts, migration 038). Paused kids can't
+    /// use kid mode until Premium is back or a parent picks them to stay on.
+    var pausedByPlan: Bool? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -25,6 +29,7 @@ struct Child: Codable, Identifiable {
         case userId = "user_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case pausedByPlan = "paused_by_plan"
     }
 
     var initials: String {

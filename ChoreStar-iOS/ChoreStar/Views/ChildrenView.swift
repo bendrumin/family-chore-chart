@@ -168,6 +168,13 @@ struct ChildDetailCard: View {
                 Text("Age \(child.age)")
                     .font(.subheadline)
                     .foregroundColor(.choreStarTextSecondary)
+
+                if child.pausedByPlan == true {
+                    Label("Paused", systemImage: "pause.circle.fill")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.orange)
+                }
                 
                 // Progress circle
                 ZStack {

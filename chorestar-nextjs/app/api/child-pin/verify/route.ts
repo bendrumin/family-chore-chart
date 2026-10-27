@@ -143,7 +143,8 @@ export async function POST(request: Request) {
       .from('children').select('name, paused_by_plan').eq('id', matchedPinRecord.child_id).maybeSingle();
     if (pausedRow?.paused_by_plan) {
       return NextResponse.json(
-        { error: 'paused', message: `${pausedRow.name}'s profile is paused. Ask a grown-up to turn Premium back on.` },
+        // `error` is what both kid-login screens show; `code` is for logic.
+        { error: `${pausedRow.name}'s profile is paused. Ask a grown-up to turn Premium back on.`, code: 'paused' },
         { status: 403 }
       );
     }

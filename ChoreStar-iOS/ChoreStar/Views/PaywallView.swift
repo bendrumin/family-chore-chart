@@ -15,9 +15,10 @@ struct PaywallView: View {
     @State private var selectedProductID: String?
     @State private var showingSuccess = false
     @State private var restoreResult: StoreKitManager.EntitlementSync?
-    /// Days of free trial the yearly plan offers this Apple ID, or nil when it
-    /// has none or the account already used its one introductory offer.
-    @State private var trialDays: Int?
+    /// Days of free trial each plan offers this Apple ID (both have a week
+    /// since October 2026); missing when the account already used its one
+    /// introductory offer.
+    @State private var trialDays: [String: Int] = [:]
 
     private var selectedProduct: Product? {
         store.products.first { $0.id == selectedProductID }
@@ -126,7 +127,15 @@ struct PaywallView: View {
                         .disabled(store.purchaseInProgress)
 
                         if trialDays(for: product) != nil {
-                            Text("Then \(product.displayPrice) a year. Cancel at least 24 hours before the trial ends and you won't be charged.")
+                            // if/else, not a ternary: a ternary of literals is a plain
+                            // String, which Text shows untranslated.
+                            Group {
+                                if product.id == StoreKitManager.ProductID.annual {
+                                    Text("Then \(product.displayPrice) a year. Cancel at least 24 hours before the trial ends and you won't be charged.")
+                                } else {
+                                    Text("Then \(product.displayPrice) a month. Cancel at least 24 hours before the trial ends and you won't be charged.")
+                                }
+                            }
                                 .font(.caption)
                                 .foregroundColor(.choreStarTextSecondary)
                                 .multilineTextAlignment(.center)
@@ -397,23 +406,25 @@ struct PaywallView: View {
     }
 
     private func trialDays(for product: Product) -> Int? {
-        product.id == StoreKitManager.ProductID.annual ? trialDays : nil
+        trialDays[product.id]
     }
 
     /// Apple allows one introductory offer per subscription group, so the
     /// trial only shows to an Apple ID that hasn't had one.
     private func loadTrialEligibility() async {
-        guard let annual = store.products.first(where: { $0.id == StoreKitManager.ProductID.annual }),
-              let subscription = annual.subscription,
-              let offer = subscription.introductoryOffer,
-              offer.paymentMode == .freeTrial,
-              await subscription.isEligibleForIntroOffer else { return }
-        let period = offer.period
-        switch period.unit {
-        case .day: trialDays = period.value
-        case .week: trialDays = period.value * 7
-        default: trialDays = nil
+        var found: [String: Int] = [:]
+        for product in store.products {
+            guard let subscription = product.subscription,
+                  let offer = subscription.introductoryOffer,
+                  offer.paymentMode == .freeTrial,
+                  await subscription.isEligibleForIntroOffer else { continue }
+            switch offer.period.unit {
+            case .day: found[product.id] = offer.period.value
+            case .week: found[product.id] = offer.period.value * 7
+            default: break
+            }
         }
+        trialDays = found
     }
 
     private func planFallbackName(_ productID: String) -> String {
