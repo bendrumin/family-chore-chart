@@ -11,7 +11,7 @@ Para os pais
 • Veja ganhos, sequências e histórico de relance
 • Gerencie várias crianças, cada uma com a própria agenda
 • Compartilhe o acesso com o outro responsável para ficarem sempre em sincronia
-• Vão viajar? O modo férias pausa as tarefas por um período: nada fica pendente, as sequências ficam seguras e ele termina sozinho
+• Vão viajar? O modo férias pausa as tarefas por um período: as sequências ficam seguras
 
 Um destino para o dinheiro
 • Metas: as crianças escolhem o que querem comprar e veem a barra encher conforme a mesada não gasta cresce. Quando enche, você paga direto da página delas
@@ -31,17 +31,20 @@ Rotinas que andam sozinhas
 Monte uma rotina com passos nomeados, ícones e timers opcionais, ordenados por arrastar e soltar. As crianças seguem sozinhas, e o timer do passo atual aparece na Tela Bloqueada e na Dynamic Island.
 
 Deixe com a sua cara
-Um widget mostra o progresso da família no dia. Temas sazonais e premium mudam o visual ao longo do ano, chegam até o modo criança, e sua cor de destaque acompanha você em todos os aparelhos. Tudo fica em Ajustes > Aparência.
+Um widget mostra o progresso da família no dia. Temas sazonais e premium mudam o visual ao longo do ano, chegam até o modo criança, e sua cor de destaque acompanha você em todos os aparelhos.
 
 Funciona com o chorestar.app
 Os dados da família sincronizam entre a web, o iPhone e o iPad, e todo mundo vê a mesma informação.
 
 Privacidade
-Os dados da sua família nunca são compartilhados nem vendidos. Como as crianças entram com PIN, nenhuma criança informa e-mail ou dados pessoais. Iniciar sessão com a Apple também pode manter seu próprio e-mail privado.
+Os dados da sua família nunca são compartilhados nem vendidos. Como as crianças entram com PIN, nenhuma criança informa e-mail ou dados pessoais.
+
+Pets Estrela
+Cada criança adota um pet que cresce a cada tarefa e rotina: cachorrinho, gatinho, coelhinho, dino, panda ou coruja, com roupinhas e um prêmio novo todo mês.
 
 Grátis e Premium
-• Grátis: até 3 crianças, 20 tarefas, medalhas, rotinas, uma meta por criança e uma lojinha inicial
-• Premium: crianças, tarefas, itens e metas de economia ilimitados; potes para Gastar, Poupar e Doar com mesada semanal, juros, multas e minutos de tela; desafios em família entre irmãos; passos com foto, cronômetro para terminar, Criar com IA e visão ao vivo das rotinas; um feed de calendário da família; tarefas em rodízio entre as crianças ou para quem terminar primeiro; mais modelos de rotina; estatísticas completas com exportação em PDF e CSV; um e-mail semanal com o relatório da família; temas premium e acesso para os dois responsáveis
+• Grátis: até 3 crianças, 20 tarefas, medalhas, rotinas, uma meta por criança, uma lojinha inicial e um Pet Estrela (um cachorrinho)
+• Premium: crianças, tarefas, itens e metas de economia ilimitados; os seis Pets Estrela; potes para Gastar, Poupar e Doar com mesada semanal, juros, multas e minutos de tela; desafios em família entre irmãos; passos com foto, cronômetro para terminar, Criar com IA e visão ao vivo das rotinas; um feed de calendário da família; tarefas em rodízio entre as crianças ou para quem terminar primeiro; mais modelos de rotina; estatísticas completas com exportação em PDF e CSV; um e-mail semanal com o relatório da família; temas premium e acesso para os dois responsáveis
 • Os planos mensal e anual começam com 7 dias grátis para novos assinantes
 
 Feito por um pai, para famílias que querem menos cobrança e mais cooperação.

@@ -1,6 +1,6 @@
 ChoreStar helps parents organize household chores, build daily routines, and keep track of allowance for the whole family. You set each child up once, and from then on they can check off their own tasks while you keep an overview of what has been done and what has been earned.
 
-Now native on iPhone, iPad and iPhone Duo, with a home screen widget and routine timers in the Dynamic Island. On iPhone Duo, ChoreStar uses the whole open screen and keeps everything off the fold when it's half-open.
+Native on iPhone, iPad and iPhone Duo, with a home screen widget and routine timers in the Dynamic Island.
 
 For parents
 • Sign up in one tap with Sign in with Apple, or with an email and password
@@ -24,6 +24,9 @@ A simple view for your children
 • Routines guide them through one step at a time, with optional countdown timers
 • Badges are awarded for streaks and for completing a full week
 
+Star Pets
+Each kid adopts a pet that grows with every chore and routine: a pup, kitty, bunny, dino, panda or owl. It levels up, grows up, and earns hats, glasses and new places, with a new prize every month.
+
 Allowance tracking
 Choose a reward per chore, or a flat rate for the day. ChoreStar totals earnings automatically as chores are completed, so there is no tally to keep by hand.
 
@@ -31,7 +34,7 @@ Routines that run themselves
 Build a routine from named steps with icons and optional timers, ordered by drag and drop. Children can then work through it independently, and the timer for the current step appears on the Lock Screen and in the Dynamic Island.
 
 Make it your own
-A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, carry into kid mode, and a custom accent color follows you across devices. Mode, themes and accent all live together in Settings > Appearance.
+A home screen widget shows the family's progress for the day. Seasonal and premium themes change the appearance through the year, carry into kid mode, and a custom accent color follows you across devices.
 
 Works with chorestar.app
 Family data syncs between the web app, iPhone, and iPad, so everyone sees the same information.
@@ -40,8 +43,8 @@ Privacy
 Family data is never shared or sold. Because children sign in with a PIN, no child provides an email address or any personal information. Sign in with Apple can keep your own email address private too.
 
 Free and Premium
-• Free: up to 3 children, 20 chores, badges, routines that can read their steps aloud, a goal for each child, and a starter reward store
-• Premium: unlimited children, chores, store items, and savings goals; Spend, Save and Give jars with a weekly allowance, interest, fines and screen-time minutes; family challenges for siblings; picture steps, a finish-by timer, Build with AI and a live view for routines; a family calendar feed; chores that rotate between kids or go to whoever finishes first; more routine templates; full stats with PDF and CSV export; a weekly family report email; premium themes; and co-parent sharing
+• Free: up to 3 children, 20 chores, badges, routines that can read their steps aloud, a goal for each child, a starter reward store, and a Star Pet pup
+• Premium: unlimited children, chores, store items, and savings goals; all six Star Pets, outfits and monthly prizes; Spend, Save and Give jars with a weekly allowance, interest, fines and screen-time minutes; family challenges for siblings; picture steps, a finish-by timer, Build with AI and a live view for routines; a family calendar feed; chores that rotate between kids or go to whoever finishes first; more routine templates; full stats with PDF and CSV export; a weekly family report email; premium themes; and co-parent sharing
 • Monthly and yearly both start with 7 days free for new subscribers
 
 Built by a parent, for families who would like less nagging and more cooperation.

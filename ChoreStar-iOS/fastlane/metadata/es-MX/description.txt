@@ -11,7 +11,7 @@ Para papás y mamás
 • Revisa ganancias, rachas e historial de un vistazo
 • Administra a varios niños, cada uno con su propio calendario
 • Comparte el acceso con el otro papá o mamá para estar siempre en sincronía
-• ¿Se van de viaje? El modo vacaciones pausa las tareas por un rango de fechas: no hay nada pendiente, las rachas quedan a salvo y termina solo
+• ¿Se van de viaje? El modo vacaciones pausa las tareas por un rango de fechas: las rachas quedan a salvo
 
 Un destino para el dinero
 • Metas: los niños eligen qué quieren comprar y ven cómo la barra se llena mientras crece su mesada sin gastar. Cuando se llena, se la pagas desde su página
@@ -31,17 +31,20 @@ Rutinas que se llevan solas
 Crea una rutina con pasos con nombre, íconos y temporizadores opcionales, ordenados arrastrando. Los niños la siguen de forma independiente, y el temporizador del paso actual aparece en la pantalla bloqueada y en la Dynamic Island.
 
 Hazla tuya
-Un widget muestra el avance de la familia en el día. Los temas de temporada y premium cambian la apariencia durante el año, llegan hasta el modo niños, y tu color de acento te sigue en todos tus dispositivos. Todo está en Ajustes > Apariencia.
+Un widget muestra el avance de la familia en el día. Los temas de temporada y premium cambian la apariencia durante el año, llegan hasta el modo niños, y tu color de acento te sigue en todos tus dispositivos.
 
 Funciona con chorestar.app
 Los datos de la familia se sincronizan entre la web, el iPhone y el iPad, así todos ven la misma información.
 
 Privacidad
-Los datos de tu familia nunca se comparten ni se venden. Como los niños entran con un PIN, ningún niño proporciona correo ni información personal. Iniciar sesión con Apple también puede mantener privado tu propio correo.
+Los datos de tu familia nunca se comparten ni se venden. Como los niños entran con un PIN, ningún niño proporciona correo ni información personal.
+
+Mascotas Estrella
+Cada niño adopta una mascota que crece con cada tarea y rutina: perrito, gatito, conejito, dino, panda o búho, con ropa nueva y un premio cada mes.
 
 Gratis y Premium
-• Gratis: hasta 3 niños, 20 tareas, insignias, rutinas, una meta por niño y una tienda de premios inicial
-• Premium: niños, tareas, artículos y metas de ahorro ilimitados; frascos para Gastar, Ahorrar y Dar con mesada semanal, interés, multas y minutos de pantalla; retos en familia entre hermanos; pasos con foto, temporizador para terminar, Crear con IA y vista en vivo de las rutinas; un calendario familiar; tareas que se turnan entre los niños o que gana quien termine primero; más plantillas de rutinas; estadísticas completas con exportación a PDF y CSV; un correo semanal con el reporte de la familia; temas premium y acceso compartido para papá y mamá
+• Gratis: hasta 3 niños, 20 tareas, insignias, rutinas, una meta por niño, una tienda de premios inicial y una Mascota Estrella (un perrito)
+• Premium: niños, tareas, artículos y metas de ahorro ilimitados; las seis Mascotas Estrella; frascos para Gastar, Ahorrar y Dar con mesada semanal, interés, multas y minutos de pantalla; retos en familia entre hermanos; pasos con foto, temporizador para terminar, Crear con IA y vista en vivo de las rutinas; un calendario familiar; tareas que se turnan entre los niños o que gana quien termine primero; más plantillas de rutinas; estadísticas completas con exportación a PDF y CSV; un correo semanal con el reporte de la familia; temas premium y acceso compartido para papá y mamá
 • Los planes mensual y anual empiezan con 7 días gratis para nuevos suscriptores
 
 Hecha por un papá, para familias que quieren menos regaños y más cooperación.
