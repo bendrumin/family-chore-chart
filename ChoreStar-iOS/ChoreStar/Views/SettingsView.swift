@@ -222,6 +222,16 @@ struct SettingsView: View {
                     }
 
                     NavigationLink {
+                        PetsSettingsView()
+                    } label: {
+                        HStack {
+                            Image(systemName: "pawprint.fill")
+                                .foregroundColor(.choreStarAccent)
+                            Text("Star Pets")
+                        }
+                    }
+
+                    NavigationLink {
                         CalendarFeedView()
                     } label: {
                         HStack {

@@ -316,6 +316,9 @@ struct DashboardView: View {
                         // Siblings working toward a shared reward (2.5.3).
                         // Hidden for one-kid families.
                         FamilyChallengesCard()
+
+                        // Each kid's Star Pet. Hidden until one is adopted.
+                        FamilyPetsCard()
                     }
                     .padding(.horizontal, 20)
 

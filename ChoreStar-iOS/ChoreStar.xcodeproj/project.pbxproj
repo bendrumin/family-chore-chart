@@ -11,10 +11,12 @@
 		C0FFEE253000000000000005 /* ChallengeProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000004 /* ChallengeProgress.swift */; };
 		C0FFEE253000000000000007 /* RoutineUpgrades.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000006 /* RoutineUpgrades.swift */; };
 		C0FFEE253000000000000009 /* CalendarFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000008 /* CalendarFeed.swift */; };
+		C0FFEE2600000000000000D5 /* StarPets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2600000000000000D6 /* StarPets.swift */; };
 		C0FFEE25300000000000000B /* PremiumAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000A /* PremiumAPI.swift */; };
 		C0FFEE25300000000000000D /* RoutineSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000C /* RoutineSpeaker.swift */; };
 		C0FFEE25300000000000000F /* MoneyViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE25300000000000000E /* MoneyViews.swift */; };
 		C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000010 /* ChallengeViews.swift */; };
+		C0FFEE2600000000000000D3 /* StarPetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2600000000000000D4 /* StarPetViews.swift */; };
 		C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */; };
 		C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE253000000000000014 /* CalendarFeedView.swift */; };
 		C0FFEE2550000000000000A2 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */; };
@@ -147,10 +149,12 @@
 		C0FFEE253000000000000004 /* ChallengeProgress.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeProgress.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000006 /* RoutineUpgrades.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgrades.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000008 /* CalendarFeed.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeed.swift; sourceTree = "<group>"; };
+		C0FFEE2600000000000000D6 /* StarPets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StarPets.swift; sourceTree = "<group>"; };
 		C0FFEE25300000000000000A /* PremiumAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PremiumAPI.swift; sourceTree = "<group>"; };
 		C0FFEE25300000000000000C /* RoutineSpeaker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineSpeaker.swift; sourceTree = "<group>"; };
 		C0FFEE25300000000000000E /* MoneyViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoneyViews.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000010 /* ChallengeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChallengeViews.swift; sourceTree = "<group>"; };
+		C0FFEE2600000000000000D4 /* StarPetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StarPetViews.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutineUpgradeViews.swift; sourceTree = "<group>"; };
 		C0FFEE253000000000000014 /* CalendarFeedView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarFeedView.swift; sourceTree = "<group>"; };
 		C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
@@ -476,6 +480,7 @@
 				C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */,
 				C0FFEE253000000000000012 /* RoutineUpgradeViews.swift */,
 				C0FFEE253000000000000010 /* ChallengeViews.swift */,
+				C0FFEE2600000000000000D4 /* StarPetViews.swift */,
 				C0FFEE25300000000000000E /* MoneyViews.swift */,
 			);
 			path = Views;
@@ -513,6 +518,7 @@
 				8969C68FE80311EA63473D4B /* Entitlements.swift */,
 				F00D2A5C0000000000000002 /* FamilyJoin.swift */,
 				C0FFEE253000000000000008 /* CalendarFeed.swift */,
+				C0FFEE2600000000000000D6 /* StarPets.swift */,
 				C0FFEE253000000000000006 /* RoutineUpgrades.swift */,
 				C0FFEE253000000000000004 /* ChallengeProgress.swift */,
 				C0FFEE253000000000000002 /* MoneyLogic.swift */,
@@ -794,10 +800,12 @@
 				C0FFEE2550000000000000A2 /* AppearanceSettingsView.swift in Sources */,
 				C0FFEE253000000000000013 /* RoutineUpgradeViews.swift in Sources */,
 				C0FFEE253000000000000011 /* ChallengeViews.swift in Sources */,
+				C0FFEE2600000000000000D3 /* StarPetViews.swift in Sources */,
 				C0FFEE25300000000000000F /* MoneyViews.swift in Sources */,
 				C0FFEE25300000000000000D /* RoutineSpeaker.swift in Sources */,
 				C0FFEE25300000000000000B /* PremiumAPI.swift in Sources */,
 				C0FFEE253000000000000009 /* CalendarFeed.swift in Sources */,
+				C0FFEE2600000000000000D5 /* StarPets.swift in Sources */,
 				C0FFEE253000000000000007 /* RoutineUpgrades.swift in Sources */,
 				C0FFEE253000000000000005 /* ChallengeProgress.swift in Sources */,
 				C0FFEE253000000000000003 /* MoneyLogic.swift in Sources */,

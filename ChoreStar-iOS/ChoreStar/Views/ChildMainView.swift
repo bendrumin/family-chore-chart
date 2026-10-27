@@ -337,6 +337,12 @@ struct ChildMainView: View {
         KidChallengesCard(child: child)
     }
 
+    @ViewBuilder private func petSection(_ child: Child) -> some View {
+        // Star Pets: adopt, grow, dress up. Nothing when a parent switched
+        // this kid's pet off.
+        KidPetCard(child: child)
+    }
+
     @ViewBuilder private func routinesSection() -> some View {
         // Routines section
         if !childRoutines.isEmpty {
@@ -442,6 +448,7 @@ struct ChildMainView: View {
                 goalSection(child)
                 moneySection(child)
                 challengesSection(child)
+                petSection(child)
                 routinesSection()
                 pendingSection(child)
                 completedSection(child)
@@ -474,6 +481,7 @@ struct ChildMainView: View {
                 goalSection(child)
                 moneySection(child)
                 challengesSection(child)
+                petSection(child)
                 storeSection(child)
                 Spacer(minLength: 40)
             }

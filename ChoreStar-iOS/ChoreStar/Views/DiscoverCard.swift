@@ -33,6 +33,8 @@ struct DiscoverCard: View {
                 closable { MoneySettingsView() }
             case .calendar:
                 closable { CalendarFeedView() }
+            case .pets:
+                closable { PetsSettingsView() }
             }
         }
     }
@@ -116,6 +118,7 @@ struct DiscoverCard: View {
         case "challenges": sheet = .challenge
         case "money_jars": sheet = .money
         case "calendar_feed": sheet = .calendar
+        case "star_pets": sheet = .pets
         default: break
         }
     }
@@ -132,7 +135,7 @@ struct DiscoverCard: View {
         }
     }
 
-    static let knownIds: Set<String> = ["kid_login", "routines", "challenges", "money_jars", "calendar_feed"]
+    static let knownIds: Set<String> = ["kid_login", "routines", "star_pets", "challenges", "money_jars", "calendar_feed"]
 }
 
 struct DiscoverFeature: Decodable, Equatable {
@@ -148,7 +151,7 @@ private struct DiscoverAnswer: Decodable {
 
 private enum DiscoverSheet: Identifiable {
     case editChild(Child)
-    case routine, challenge, money, calendar
+    case routine, challenge, money, calendar, pets
 
     var id: String {
         switch self {
@@ -157,6 +160,7 @@ private enum DiscoverSheet: Identifiable {
         case .challenge: return "challenge"
         case .money: return "money"
         case .calendar: return "calendar"
+        case .pets: return "pets"
         }
     }
 }
