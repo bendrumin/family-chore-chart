@@ -44,6 +44,14 @@ const FAQS = [
     a: 'Premium purchased in the iPhone app is managed in iOS Settings → your name → Subscriptions. Purchases made on chorestar.app are managed from the billing section of your account. Cancelling keeps Premium active until the end of the current period.',
   },
   {
+    q: 'Is there a free trial?',
+    a: 'Yes. The monthly and yearly plans both start with 7 days free for new subscribers. Cancel at least a day before the trial ends and you are not charged.',
+  },
+  {
+    q: 'What happens when Premium ends?',
+    a: 'If Premium or a free trial ends, your family goes back to the free plan: 3 kids and 20 chores stay on, anything beyond that is paused (never deleted), and it all comes back if you subscribe again. A parent can choose which kids and chores stay on from the banner on the dashboard. Paused kids cannot sign in to kid mode until Premium is back.',
+  },
+  {
     q: 'Is my family\'s data private?',
     a: 'Yes. We never sell or share your data, and children never provide an email or personal information. They sign in with a family code and PIN only. See our Privacy Policy for full details.',
   },

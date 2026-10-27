@@ -55,6 +55,10 @@ const FAQS = [
     q: 'Can I try Premium before paying?',
     a: 'Yes. Both plans start with 7 days free on the web and iPhone, and you are not charged if you cancel before it ends. One free trial per family on the web; on iPhone, Apple gives each Apple ID one trial. The free plan is also free forever, with 3 kids and 20 chores. Premium is $4.99 a month or $49.99 a year, starts from Settings > Billing, and cancels any time.',
   },
+  {
+    q: 'What happens if I stop paying for Premium?',
+    a: 'You keep Premium until the end of the period you paid for. If Premium or a free trial ends, your family goes back to the free plan: 3 kids and 20 chores stay on, anything beyond that is paused (never deleted), and it all comes back if you subscribe again. A parent can choose which kids and chores stay on.',
+  },
 ]
 
 const organizationLd = {
@@ -534,7 +538,7 @@ export default async function HomePage() {
                 <div className="text-4xl font-black mb-2" style={GRADIENT_TEXT}>$4.99</div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">per month</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">or $49.99/year (save 17%)</p>
-                <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-2">Yearly starts with 7 days free</p>
+                <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-2">Both plans start with 7 days free</p>
               </div>
 
               <ul className="space-y-3 mb-8">

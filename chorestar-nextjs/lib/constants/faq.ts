@@ -53,6 +53,16 @@ export const FAQ_DATA: FAQItem[] = [
     answer: 'Premium includes unlimited children and chores (the free plan has 3 kids and 20 chores), chores that rotate between your kids each week, bonus chores the first kid to finish earns, 10 extra routine templates, a weekly family report email, unlimited reward store items and savings goals, family sharing with a co-parent, PDF and CSV export reports, advanced analytics, and the premium themes. Printable chore charts stay free. Upgrade in Settings > Billing.'
   },
   {
+    category: 'Account',
+    question: 'Is there a free trial?',
+    answer: 'Yes. The monthly and yearly plans both start with 7 days free for new subscribers, on the web and in the iPhone app. Cancel at least a day before the trial ends and you are not charged.'
+  },
+  {
+    category: 'Account',
+    question: 'What happens when Premium ends?',
+    answer: 'You keep Premium until the end of the period you paid for (or the end of your free trial). After that your family goes back to the free plan: 3 kids and 20 chores stay on, and anything beyond that is paused, never deleted. A parent can choose which kids and chores stay on, and everything comes back if you subscribe again.'
+  },
+  {
     category: 'Settings',
     question: 'Can I change the currency?',
     answer: 'Yes. Go to Settings > Family and select your preferred currency from the dropdown. ChoreStar supports 12 major currencies worldwide.'

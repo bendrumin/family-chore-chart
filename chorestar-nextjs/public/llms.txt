@@ -10,8 +10,11 @@
 Key facts:
 - Free plan: up to 3 children and 20 chores, kid PIN login, routines,
   achievement badges. Free forever, no card required.
-- Premium: $4.99/month or $49.99/year. Unlimited children and chores, family
-  sharing with a co-parent, premium themes, export reports.
+- Premium: $4.99/month or $49.99/year, both with a 7-day free trial for new
+  subscribers. Unlimited children and chores, family sharing with a
+  co-parent, premium themes, export reports. When Premium ends, the family
+  returns to the free limits; extra kids and chores are paused, not deleted,
+  and come back on resubscribing.
 - Platforms: web app at https://chorestar.app, a native iOS app for iPhone and
   iPad (App Store: https://apps.apple.com/app/id6761279049), and a native
   Android app currently in beta testing (request a place at

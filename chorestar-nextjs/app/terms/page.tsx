@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
 }
 
-const LAST_UPDATED = 'July 31, 2026'
+const LAST_UPDATED = 'October 27, 2026'
 
 export default function TermsPage() {
   return (
@@ -106,6 +106,24 @@ export default function TermsPage() {
               Subscriptions purchased on chorestar.app are processed by Stripe. Web subscriptions renew automatically
               at the end of each billing period until canceled. You can manage or cancel your web subscription from your
               account&apos;s billing settings; cancellation takes effect at the end of the current billing period.
+            </p>
+
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Free trials</h3>
+            <p className="text-gray-700 dark:text-gray-300">
+              New subscribers to the monthly or yearly plan may start with a 7-day free trial. One trial per family on
+              the web; in the iOS app, Apple allows one introductory offer per Apple ID. Cancel at least 24 hours
+              before the trial ends and you will not be charged; otherwise the plan you chose begins and renews as
+              described above.
+            </p>
+
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">When a subscription or trial ends</h3>
+            <p className="text-gray-700 dark:text-gray-300">
+              Canceling or turning off renewal keeps Premium until the end of the period already paid for (or the end
+              of the free trial). After that, your account returns to the free plan and its limits apply again: up to
+              3 children and 20 active chores. Children and chores beyond those limits are paused, not deleted. They
+              stay visible to the parent, paused children cannot sign in to kid mode, and a parent can choose which
+              children and chores stay active. Premium-only features stop working. Everything paused is restored if
+              you subscribe again.
             </p>
 
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">Price changes</h3>
