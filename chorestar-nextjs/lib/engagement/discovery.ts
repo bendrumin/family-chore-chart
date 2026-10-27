@@ -151,6 +151,11 @@ export function nextFeature(
   return null
 }
 
+/** Every feature this family has not tried, on this surface, that their plan includes. */
+export function untriedFeatures(usage: FamilyUsage, premium: boolean, surface: Surface): Feature[] {
+  return FEATURES.filter((f) => f.surfaces.includes(surface) && (!f.premiumOnly || premium) && !f.tried(usage))
+}
+
 /** Copy for a quiet family who has already tried everything worth pointing at. */
 export function fallbackPush(kid: string): { title: string; body: string } {
   return { title: 'Ready for this week?', body: `${kid}'s chore chart is waiting. Pick up where you left off.` }

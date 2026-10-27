@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
+import { sendRenewalOffEmail } from '@/lib/engagement/renewal-off'
 import {
   verifyNotification,
   APPLE_SUBSCRIPTION_PRODUCT_IDS,
@@ -108,6 +109,11 @@ export async function POST(request: Request) {
       action = await setTier(supabase, userId, 'premium')
     } else if (isOurSubscription && DOWNGRADE_TYPES.has(notificationType)) {
       action = await downgradeIfSafe(supabase, userId)
+    } else if (isOurSubscription && notificationType === 'DID_CHANGE_RENEWAL_STATUS' && subtype === 'AUTO_RENEW_DISABLED') {
+      // Still entitled until expiry, so no tier change; a "before you go"
+      // note instead (lib/engagement/renewal-off.ts). Never throws.
+      const expires = transaction?.expiresDate ? new Date(transaction.expiresDate) : null
+      action = `renewal-off-email:${await sendRenewalOffEmail(supabase, userId, expires)}`
     }
 
     await logNotification(supabase, {
