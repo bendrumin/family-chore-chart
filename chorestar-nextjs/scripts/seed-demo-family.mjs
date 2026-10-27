@@ -38,9 +38,12 @@ const { data: kids } = await admin.from('children').select('id, name').eq('user_
 const maya = (kids ?? []).find((k) => k.name === 'Maya')
 if (!maya) { console.error('Maya not found; children:', kids?.map((k) => k.name)); process.exit(1) }
 
-// 4. Family settings: per-chore rewards, US locale.
+// 4. Family settings: per-chore rewards, US locale, and no seasonal theme
+//    (a store shot lives for months; October pumpkins in March look stale,
+//    and kid mode applies the family's synced theme over any launch flag).
 await admin.from('family_settings').upsert(
-  { user_id: uid, reward_mode: 'per_chore', currency_code: 'USD', timezone: 'America/Chicago' },
+  { user_id: uid, reward_mode: 'per_chore', currency_code: 'USD', timezone: 'America/Chicago',
+    custom_theme: { autoSeasonal: false, mode: 'auto', seasonalTheme: null } },
   { onConflict: 'user_id' }
 )
 

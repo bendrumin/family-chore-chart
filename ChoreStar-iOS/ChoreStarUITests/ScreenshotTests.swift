@@ -38,6 +38,10 @@ final class ScreenshotTests: XCTestCase {
         // The rate-us card would photobomb the dashboard shot on a sim with
         // old defaults; the argument domain pins its "done" flag for the run.
         app.launchArguments += ["-review.rateCardDone", "YES"]
+        // No seasonal decorations: a store shot lives for months, and October
+        // pumpkins in a March listing look stale. The argument domain beats
+        // the stored setting and the family's synced theme.
+        app.launchArguments += ["-seasonalTheme", "none"]
         app.launchArguments += ["-chorestar-signin", Self.email, Self.password] + extra
         app.launch()
         return app
@@ -142,6 +146,88 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(storeTitle.waitForExistence(timeout: 10), "Reward Store never scrolled into view")
         RunLoop.current.run(until: Date().addingTimeInterval(2))
         snapshot("03-kid-store")
+    }
+
+    /// Scroll kid mode until `title` is on screen, then drag it to just
+    /// below kid mode's pinned header (which covers the top ~41%) so the
+    /// card starts right under it. A press-then-drag has no fling, so the
+    /// framing is the same every run.
+    @MainActor
+    private func bringToTop(_ app: XCUIApplication, title: String, at y: CGFloat = 0.46, file: StaticString = #filePath, line: UInt = #line) {
+        let element = app.staticTexts[title].firstMatch
+        // Short drags with a pause, not swipeUp flings: the cards load
+        // asynchronously, and a fling can carry a late card past the screen.
+        // On iPad kid mode is two columns that scroll on their own; the
+        // cards live in the right one. Stay off the bottom edge: a drag that
+        // starts there is the go-home gesture.
+        let x: CGFloat = isWide(app) ? 0.82 : 0.5
+        let low = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: 0.75))
+        let high = app.coordinate(withNormalizedOffset: CGVector(dx: x, dy: 0.45))
+        for _ in 0..<20 where !(element.exists && element.isHittable) {
+            low.press(forDuration: 0.05, thenDragTo: high)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.8))
+        }
+        XCTAssertTrue(element.waitForExistence(timeout: 10), "'\(title)' never scrolled into view", file: file, line: line)
+        let from = element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y))
+        from.press(forDuration: 0.1, thenDragTo: to)
+        RunLoop.current.run(until: Date().addingTimeInterval(3))
+    }
+
+    /// iPad (and an open iPhone Duo): kid mode's two-column layout, with a
+    /// pinned header only ~21% tall.
+    @MainActor
+    private func isWide(_ app: XCUIApplication) -> Bool {
+        app.windows.firstMatch.frame.width > 900
+    }
+
+    /// 2.6: Maya's Star Pet (seeded: Mochi, a level 6 kitty in a cap and bow tie).
+    @MainActor
+    func test09KidPet() throws {
+        let app = launch(["-chorestar-kid", "Maya"])
+        waitFor(app, text: "Hi, Maya! 👋")
+        if isWide(app) {
+            // Two mid-screen hops: the pet card starts near the bottom of the
+            // iPad's right column, and a long drag from that low reads as the
+            // go-home gesture.
+            bringToTop(app, title: "Team challenge", at: 0.24)
+            bringToTop(app, title: "My Star Pet", at: 0.24)
+        } else {
+            bringToTop(app, title: "My Star Pet", at: 0.46)
+        }
+        // The art is fetched; give the picture time to land before the shot.
+        RunLoop.current.run(until: Date().addingTimeInterval(3))
+        snapshot("09-kid-pet")
+    }
+
+    /// 2.6: Spend, Save and Give jars with money news (seeded 60/30/10).
+    @MainActor
+    func test10KidJars() throws {
+        let app = launch(["-chorestar-kid", "Maya"])
+        waitFor(app, text: "Hi, Maya! 👋")
+        // Anchor on the news list: the jar row above it is what sells the
+        // shot, and "My money" alone landed the jars under the header.
+        if isWide(app) {
+            bringToTop(app, title: "My money", at: 0.23)
+        } else {
+            bringToTop(app, title: "Money news", at: 0.62)
+        }
+        snapshot("10-kid-jars")
+    }
+
+    /// 2.6: a sibling team challenge in progress (seeded: Pizza night, 67%).
+    @MainActor
+    func test11TeamChallenge() throws {
+        let app = launch(["-chorestar-kid", "Maya"])
+        waitFor(app, text: "Hi, Maya! 👋")
+        // Anchor inside the card (its target line) so the heading and title
+        // both clear kid mode's pinned header.
+        if isWide(app) {
+            bringToTop(app, title: "Team challenge", at: 0.24)
+        } else {
+            bringToTop(app, title: "30 chores together", at: 0.63)
+        }
+        snapshot("11-team-challenge")
     }
 
     @MainActor

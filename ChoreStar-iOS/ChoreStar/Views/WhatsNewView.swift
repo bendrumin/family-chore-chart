@@ -3,7 +3,7 @@ import SwiftUI
 /// iOS release notes. Bump `latestVersion` and prepend an entry when shipping
 /// user-facing features — the sheet auto-shows once per version on the dashboard.
 enum Changelog {
-    static let latestVersion = "2.5.3"
+    static let latestVersion = "2.6"
 
     struct Feature: Identifiable {
         let icon: String
@@ -21,6 +21,28 @@ enum Changelog {
     }
 
     static let entries: [Entry] = [
+        Entry(
+            version: "2.6",
+            date: "October 2026",
+            title: "Star Pets",
+            features: [
+                Feature(
+                    icon: "🐾",
+                    title: "Star Pets",
+                    description: "Each kid adopts a pet on their own screen and it grows with every chore and routine. Every family gets a pup. Premium adds five more pets, hats and extras to unlock, a new prize every month, and growing all the way up."
+                ),
+                Feature(
+                    icon: "🏠",
+                    title: "Every Pet at a Glance",
+                    description: "Your kids' pets show on Home once adopted. Turn pets on or off for each kid in Settings > Star Pets."
+                ),
+                Feature(
+                    icon: "✨",
+                    title: "Something New to Try",
+                    description: "Once you're set up, Home points out one feature your family hasn't tried yet. Not now moves on to the next."
+                ),
+            ]
+        ),
         Entry(
             version: "2.5.3",
             date: "October 2026",

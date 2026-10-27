@@ -125,7 +125,10 @@ struct DiscoverCard: View {
 
     private func load() async {
         guard setupDone, !manager.isChildSession, !manager.isSharedMember else { return }
-        let query = ["skip": dismissed.joined(separator: ","), "surface": "app"]
+        // The language the app is actually showing (not just the device's),
+        // so the card matches the screen around it.
+        let lang = Bundle.main.preferredLocalizations.first ?? "en"
+        let query = ["skip": dismissed.joined(separator: ","), "surface": "app", "lang": lang]
         guard let (data, status) = await manager.parentAPI("/api/engagement/discover", query: query),
               status == 200,
               let answer = try? JSONDecoder().decode(DiscoverAnswer.self, from: data) else { return }

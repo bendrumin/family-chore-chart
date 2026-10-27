@@ -21243,6 +21243,182 @@
           }
         }
       }
+    },
+    "Star Pets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mascotas Estrella"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pets Estrela"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحيوانات النجوم"
+          }
+        }
+      }
+    },
+    "%@ · Level %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · Nivel %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · Nível %2$lld"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · المستوى %2$lld"
+          }
+        }
+      }
+    },
+    "%@, level %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, nivel %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, nível %2$lld"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@، المستوى %2$lld"
+          }
+        }
+      }
+    },
+    "Not adopted yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no adoptada"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não adotado"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يُتبنَّ بعد"
+          }
+        }
+      }
+    },
+    "Pets on for" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mascotas activadas para"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pets ativados para"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحيوانات مفعّلة لـ"
+          }
+        }
+      }
+    },
+    "Each kid adopts a pet that grows every time they finish a chore or a routine. Kids pick and name theirs from their own screen in kid mode." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada niño adopta una mascota que crece cada vez que termina una tarea o una rutina. Los niños la eligen y le ponen nombre desde su propia pantalla en el modo niño."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada criança adota um pet que cresce sempre que termina uma tarefa ou rotina. As crianças escolhem e dão nome ao seu pet na própria tela, no modo criança."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتبنى كل طفل حيوانًا أليفًا يكبر كلما أنهى مهمة أو روتينًا. يختار الأطفال حيواناتهم ويسمّونها من شاشتهم الخاصة في وضع الطفل."
+          }
+        }
+      }
+    },
+    "Turning a pet off hides it. Nothing is deleted, so turning it back on brings the same pet back." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar una mascota la oculta. No se borra nada, así que al activarla vuelve la misma mascota."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativar um pet o esconde. Nada é apagado, então ao reativar o mesmo pet volta."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إيقاف الحيوان يخفيه فقط. لا يُحذف شيء، لذا يعود الحيوان نفسه عند تفعيله مجددًا."
+          }
+        }
+      }
+    },
+    "Every family gets a pup that grows to its kid stage. Premium adds five more pets, outfits, monthly prizes and growing all the way up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las familias reciben un perrito que crece hasta su etapa de niño. Premium agrega cinco mascotas más, ropa, premios cada mes y crecer hasta el final."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toda família ganha um cachorrinho que cresce até a fase criança. O Premium adiciona mais cinco pets, roupinhas, prêmios todo mês e crescer até o fim."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحصل كل عائلة على جرو يكبر حتى مرحلة الطفل. يضيف Premium خمسة حيوانات أخرى وملابس وجوائز شهرية والنمو حتى النهاية."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

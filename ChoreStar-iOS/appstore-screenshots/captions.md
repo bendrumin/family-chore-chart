@@ -19,6 +19,33 @@ are applied afterwards (AppScreens).
 | 7 | 07-stats.png | Watch Streaks Grow | Perfect days, badges & weekly stats |
 | 8 | 08-fair-shares.png | Fair Shares for Siblings | Chores take turns, or race for a bonus |
 
+### 2.6 set (current listing order)
+
+| # | File | Headline | Subtitle |
+|---|------|----------|----------|
+| 1 | 01-home.png | Make Chores Fun | Turn chores into a game kids love |
+| 2 | 02-kid-dashboard.png | Kids Save For Goals | Watch the bar fill toward the prize |
+| 3 | 03-kid-pet.png | A Pet That Grows | Every chore helps their pet level up |
+| 4 | 04-kid-jars.png | Spend, Save, Give | Money habits, one jar at a time |
+| 5 | 05-team-challenge.png | Siblings Team Up | Work together for pizza night |
+| 6 | 06-routines.png | Mornings Run Themselves | Step-by-step routines with timers |
+| 7 | 07-chores.png | Chores On Their Days | Trash on Tuesdays, piano Mon & Wed |
+| 8 | 08-fair-shares.png | Fair Shares for Siblings | Chores take turns, or race for a bonus |
+| 9 | 09-kid-store.png | Spend In Your Store | Screen time & movie night, you price it |
+| 10 | 10-family.png | One App, Whole Crew | Every kid gets an avatar and a PIN |
+
+Watch Streaks Grow (07-stats) left the listing for the three Premium shots;
+it is in git history. Pets, jars and challenge are Premium features shown on
+The Star Family, which the seed script now makes Premium with Mochi the
+kitty, 60/30/10 jars and a Pizza night challenge. Captures:
+ScreenshotTests test09-11 (`bringToTop` drags a card to just under kid
+mode's pinned header). The seed turns the family's seasonal theme off and
+the tests pass `-seasonalTheme none`, so no October pumpkins in a March
+listing. If the status bar override misses on a run (dotted signal, black
+battery), paste the top 170 px from a good capture of the same device.
+Framing: duplicate-free path is to swap images into the 2.2 AppScreens
+project (its per-shot settings ARE the recipe below) and export.
+
 2.5 swapped Kids Sign In Solo (08-kid-login) for Fair Shares: the kid-login
 shot repeated the kid-dashboard story. Capture with `-chorestar-sharechore`
 (DEBUG): it opens Add Chore scrolled to the sharing section; raw captures in

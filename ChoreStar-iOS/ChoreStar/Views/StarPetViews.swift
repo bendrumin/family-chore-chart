@@ -648,9 +648,13 @@ struct PetsSettingsView: View {
             } header: {
                 Text("Pets on for")
             } footer: {
-                Text(response?.premium == true
-                     ? "Turning a pet off hides it. Nothing is deleted, so turning it back on brings the same pet back."
-                     : "Every family gets a pup that grows to its kid stage. Premium adds five more pets, outfits, monthly prizes and growing all the way up.")
+                // Two literals, not a ternary: a ternary makes a plain String,
+                // which Text shows untranslated.
+                if response?.premium == true {
+                    Text("Turning a pet off hides it. Nothing is deleted, so turning it back on brings the same pet back.")
+                } else {
+                    Text("Every family gets a pup that grows to its kid stage. Premium adds five more pets, outfits, monthly prizes and growing all the way up.")
+                }
             }
         }
         .navigationTitle("Star Pets")

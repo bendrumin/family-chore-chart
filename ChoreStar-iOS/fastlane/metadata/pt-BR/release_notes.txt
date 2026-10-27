@@ -1,11 +1,7 @@
-Versão 2.5.3: potes de dinheiro, desafios em equipe e rotinas para os menores.
+Versão 2.6: Pets Estrela.
 
-• Gastar, Poupar, Doar (Premium): divida o que cada criança ganha em três potes, pague uma mesada semanal no dia que você escolher, adicione juros da poupança, desconte uma multa com o motivo, crie uma devolução semanal e recompense com minutos de tela. As crianças veem seus potes e as novidades do dinheiro na própria tela
-• Desafios em família (Premium): irmãos se juntam por um prêmio em comum, como 50 tarefas nesta semana para uma noite de pizza, com barra de progresso da equipe e confete quando conseguem
-• Rotinas lidas em voz alta, grátis para todos: um botão lê cada passo, e uma rotina pode ler todos os passos sozinha
-• Passos com foto, um cronômetro tranquilo para terminar, Criar com IA e a visão Acontecendo agora de quem está no meio de uma rotina (Premium)
-• Feed de calendário da família (Premium): adicione tarefas e rotinas ao Calendário da Apple, Google Agenda ou Outlook
-• A aparência ganhou uma tela própria: modo claro ou escuro, tema e cor de destaque, tudo em Ajustes > Aparência em vez de ocupar a tela inteira de Ajustes
-• Rotinas concluídas com recompensa agora somam esse dinheiro ao saldo da criança
+• Pets Estrela: cada criança adota um pet na própria tela, dá um nome e vê ele crescer a cada tarefa e rotina. Toda família ganha um cachorrinho. O Premium adiciona gatinho, coelhinho, dino, panda e coruja, chapéus e acessórios que desbloqueiam conforme sobem de nível, um prêmio novo todo mês e crescer até o fim
+• Veja o pet de cada criança no Início e ative ou desative por criança em Ajustes > Pets Estrela
+• Depois de tudo configurado, o Início mostra um recurso que sua família ainda não experimentou, um de cada vez
 
-Fale com a gente em hi@chorestar.app
+Escreva para hi@chorestar.app

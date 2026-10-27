@@ -104,6 +104,9 @@ platform :ios do
     root = File.expand_path("..", __dir__)
     dest = File.join(root, "fastlane", "screenshots", LOCALE)
     FileUtils.mkdir_p(dest)
+    # Start clean: a shot dropped from the set (07-stats in 2.6) must not
+    # linger here and get uploaded beside its replacement.
+    FileUtils.rm_f(Dir.glob(File.join(dest, "*.png")))
 
     staged = 0
     SCREENSHOT_SOURCES.each do |dir, label|

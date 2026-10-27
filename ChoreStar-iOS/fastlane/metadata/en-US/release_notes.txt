@@ -1,11 +1,7 @@
-Version 2.5.3: money jars, team challenges, and routines for younger kids.
+Version 2.6: Star Pets.
 
-• Spend, Save, Give (Premium): split what each kid earns into three jars, pay a weekly allowance on your day, add interest on Save, take off a fine with a reason, set up a weekly payback, and reward screen-time minutes. Kids see their jars and money news on their own screen
-• Family challenges (Premium): siblings team up for a shared reward, like 50 chores this week for pizza night, with a team progress bar and confetti when they get there
-• Read-aloud routines, free for everyone: a speaker button reads each step out loud, and a routine can read every step by itself
-• Picture steps, a calm finish-by timer, Build with AI, and a Happening now view of who is mid-routine (Premium)
-• Family calendar feed (Premium): add chores and routines to Apple Calendar, Google Calendar or Outlook
-• Appearance has its own screen: light or dark, your theme and accent colour, all in Settings > Appearance instead of filling the whole Settings page
-• Finished routines with a reward now add that money to your kid's balance
+• Star Pets: each kid adopts a pet on their own screen, names it, and watches it grow with every chore and routine. Every family gets a pup. Premium adds a kitty, bunny, dino, panda and owl, hats and extras to unlock as they level up, a new prize every month, and growing all the way up
+• See every kid's pet on Home, and turn pets on or off for each kid in Settings > Star Pets
+• Once you're set up, Home points out one feature your family hasn't tried yet, one at a time
 
 Questions or feedback are welcome at hi@chorestar.app

@@ -1,11 +1,7 @@
-Versión 2.5.3: frascos de dinero, retos en equipo y rutinas para los más pequeños.
+Versión 2.6: Mascotas Estrella.
 
-• Gastar, Ahorrar, Dar (Premium): reparte lo que gana cada niño en tres frascos, paga una mesada semanal el día que elijas, agrega interés por ahorrar, descuenta una multa con su motivo, programa un pago semanal y premia con minutos de pantalla. Los niños ven sus frascos y las noticias de su dinero en su propia pantalla
-• Retos en familia (Premium): los hermanos se unen por un premio compartido, como 50 tareas esta semana para una noche de pizza, con una barra de progreso del equipo y confeti al lograrlo
-• Rutinas leídas en voz alta, gratis para todos: un botón lee cada paso, y una rutina puede leer todos sus pasos sola
-• Pasos con foto, un temporizador tranquilo para terminar, Crear con IA y la vista Ahora mismo de quién está haciendo una rutina (Premium)
-• Calendario familiar (Premium): agrega tareas y rutinas a Calendario de Apple, Google Calendar u Outlook
-• La apariencia tiene su propia pantalla: modo claro u oscuro, tema y color de acento, todo en Ajustes > Apariencia en lugar de ocupar toda la pantalla de Ajustes
-• Las rutinas terminadas con recompensa ahora suman ese dinero al saldo de tu hijo
+• Mascotas Estrella: cada niño adopta una mascota en su propia pantalla, le pone nombre y la ve crecer con cada tarea y rutina. Todas las familias reciben un perrito. Premium agrega gatito, conejito, dino, panda y búho, gorros y accesorios que se desbloquean al subir de nivel, un premio nuevo cada mes y crecer hasta el final
+• Ve la mascota de cada niño en Inicio y actívalas o desactívalas por niño en Ajustes > Mascotas Estrella
+• Cuando ya estés listo, Inicio te muestra una función que tu familia aún no ha probado, una a la vez
 
 Escríbenos a hi@chorestar.app
