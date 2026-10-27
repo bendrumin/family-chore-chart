@@ -45,7 +45,7 @@ export default defineConfig({
       name: 'features',
       // Installed Google Chrome: no separate browser download to go stale.
       use: { ...devices['Desktop Chrome'], channel: 'chrome', video: 'off' },
-      testMatch: /(^|\/)(premium-|more-|engagement-)?features\.spec\.ts$/,
+      testMatch: /(^|\/)(premium-|more-|engagement-|plan-limits-)?features\.spec\.ts$/,
     },
     {
       name: 'create-routine',
