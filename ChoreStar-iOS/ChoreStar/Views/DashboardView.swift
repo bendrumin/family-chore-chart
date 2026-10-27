@@ -302,6 +302,10 @@ struct DashboardView: View {
                         // the funnel is complete or the parent hides it.
                         GettingStartedCard()
 
+                        // Once setup is done: one feature the family has not
+                        // tried yet. Renders nothing when there is none.
+                        DiscoverCard()
+
                         // Ticks waiting for the parent's OK (approval mode / photo
                         // chores). Renders nothing when there is nothing to review.
                         ApprovalTrayView()
