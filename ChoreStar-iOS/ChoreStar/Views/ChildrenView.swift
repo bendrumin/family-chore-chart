@@ -46,6 +46,10 @@ struct ChildrenView: View {
                         .padding(.top, 10)
                     }
 
+                    // Each kid's Star Pet, adoptable from here. Hidden with no kids.
+                    FamilyPetsCard()
+                        .padding(.horizontal, 20)
+
                     // Children Grid
                     if manager.children.isEmpty {
                         EmptyChildrenView()

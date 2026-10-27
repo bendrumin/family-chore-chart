@@ -555,36 +555,38 @@ private struct PetEditSheet: View {
 
 // MARK: - Parent side
 
-/// Dashboard preview: each kid's pet at a glance. Hidden until at least one
-/// kid has adopted, so it never nags a family that hasn't met pets yet (the
-/// discover card does that, once).
+/// Every kid's Star Pet on Home and the Family tab. Kids without one get a
+/// faded pup and "Adopt", so parents can find pets at all (adopting used to
+/// live only in kid mode, which hid the whole feature from them). A tile
+/// opens that kid's pet screen right here: a parent can adopt and name it
+/// with the kid, rename it, or browse the wardrobe, through the same kid API
+/// acting for the child. Kids whose pet a parent switched off are left out.
 struct FamilyPetsCard: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var kids: [StarPets.FamilyKid] = []
+    @State private var open: Child?
+
+    private var shown: [(StarPets.FamilyKid, Child)] {
+        kids.compactMap { kid in
+            guard kid.pet?.enabled != false,
+                  let child = manager.children.first(where: { $0.id.uuidString.lowercased() == kid.childId.lowercased() }),
+                  child.pausedByPlan != true else { return nil }
+            return (kid, child)
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            let shown = kids.filter { $0.pet?.enabled == true && $0.pet?.adopted == true }
-            if !shown.isEmpty {
+            if !shown.isEmpty, !manager.isChildSession {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Star Pets")
                         .font(.display(17, weight: .bold))
                         .foregroundColor(.choreStarTextPrimary)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(shown) { kid in
-                                if let pet = kid.pet, let species = pet.species {
-                                    VStack(spacing: 4) {
-                                        PetPicture(species: species, stage: pet.stage, mood: pet.mood, star: pet.star, equipped: pet.equipped, points: 76, animated: false)
-                                        Text(pet.name ?? kid.childName)
-                                            .font(.caption.weight(.bold))
-                                            .foregroundColor(.choreStarTextPrimary)
-                                        Text("\(kid.childName) · Level \(pet.level)")
-                                            .font(.caption2)
-                                            .foregroundColor(.choreStarTextSecondary)
-                                    }
-                                    .accessibilityElement(children: .combine)
-                                }
+                            ForEach(shown, id: \.0.childId) { kid, child in
+                                Button { open = child } label: { tile(kid, child: child) }
+                                    .buttonStyle(.plain)
                             }
                         }
                     }
@@ -597,10 +599,53 @@ struct FamilyPetsCard: View {
                 Color.clear.frame(width: 0, height: 0)
             }
         }
-        .task(id: manager.children.count) {
-            guard !manager.isChildSession else { return }
-            if let loaded = await manager.loadFamilyPets() { kids = loaded.kids }
+        .task(id: manager.children.count) { await load() }
+        .sheet(item: $open, onDismiss: { Task { await load() } }) { child in
+            NavigationStack {
+                ScrollView {
+                    KidPetCard(child: child)
+                        .padding(.vertical, 16)
+                }
+                .background(Color.choreStarBackground)
+                .navigationTitle(String(localized: "\(child.name)'s Star Pet"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) { Button("Done") { open = nil } }
+                }
+            }
         }
+    }
+
+    @ViewBuilder private func tile(_ kid: StarPets.FamilyKid, child: Child) -> some View {
+        let firstName = child.name.split(separator: " ").first.map(String.init) ?? child.name
+        VStack(spacing: 4) {
+            if let pet = kid.pet, pet.adopted, let species = pet.species {
+                PetPicture(species: species, stage: pet.stage, mood: pet.mood, star: pet.star, equipped: pet.equipped, points: 76, animated: false)
+                Text(pet.name ?? firstName)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.choreStarTextPrimary)
+                Text("\(firstName) · Level \(pet.level)")
+                    .font(.caption2)
+                    .foregroundColor(.choreStarTextSecondary)
+            } else {
+                PetPicture(species: "pup", stage: "baby", points: 76, habitat: false, animated: false)
+                    .opacity(0.35)
+                Text(firstName)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.choreStarTextPrimary)
+                Text("Adopt")
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.choreStarPrimary)
+            }
+        }
+        .frame(minWidth: 84)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text("Opens \(firstName)'s Star Pet"))
+    }
+
+    private func load() async {
+        guard !manager.isChildSession else { return }
+        if let loaded = await manager.loadFamilyPets() { kids = loaded.kids }
     }
 }
 
