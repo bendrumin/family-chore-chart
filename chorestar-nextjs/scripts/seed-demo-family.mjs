@@ -2,7 +2,9 @@
 // Seed the THROWAWAY Star Family (kid code b5aceec8, parent
 // bsiegel13+uitest-preview@gmail.com) with demo data for the r/iosapps
 // screenshots + video: chores, a month of completions, a goal mid-fill,
-// starter reward store, and a known parent password. Touches ONLY rows
+// starter reward store, and a known parent password; since 2.6 also Premium,
+// Maya's Star Pet, her Spend/Save/Give jars and a sibling challenge for the
+// store shots of those features. Touches ONLY rows
 // belonging to that family. Run: node --env-file=.env.local <this>.
 import { createClient } from '@supabase/supabase-js'
 
@@ -166,6 +168,50 @@ if (movieItem) {
   console.log('Maya store request:', redErr ? `FAILED ${redErr.message}` : 'ok')
 } else {
   console.log('movie reward item not found; skipping store request')
+}
+
+// 10. Premium, for the 2.6 store shots (pets, jars, challenges). The e2e
+//     suites flip this family's plan freely, so a capture always reseeds.
+await admin.from('profiles').update({ subscription_type: 'premium' }).eq('id', uid)
+console.log('plan: premium')
+
+// 11. Maya's Star Pet, adopted when the month of completions began so her
+//     XP (counted from adoption) makes Mochi level 6, a kid-stage kitty.
+//     Only items unlocked by then (cap 3, bow tie 2, meadow 4): the server
+//     hides anything above the pet's level.
+const { error: petErr } = await admin.from('child_pets').upsert({
+  child_id: maya.id, species: 'kitty', name: 'Mochi', adopted_on: weeks[0],
+  hat: 'cap', accessory: 'bowtie', habitat: 'meadow', enabled: true,
+}, { onConflict: 'child_id' })
+console.log('Maya pet:', petErr ? `FAILED ${petErr.message}` : 'Mochi the kitty')
+
+// 12. Jars: 60/30/10 from four weeks ago, a Saturday allowance, 5% weekly
+//     interest on Save, one donation and two interest credits.
+await admin.from('money_jar_splits').delete().eq('child_id', maya.id)
+await admin.from('money_ledger').delete().eq('child_id', maya.id)
+const { error: splitErr } = await admin.from('money_jar_splits').insert({
+  child_id: maya.id, enabled: true, spend_pct: 60, save_pct: 30, give_pct: 10, effective_on: weeks[0],
+})
+await admin.from('child_money_settings').upsert({
+  child_id: maya.id, payday_weekday: 6, allowance_cents: 300, allowance_threshold_pct: 80,
+  allowance_started_on: weeks[0], interest_bps: 500, interest_started_on: weeks[0],
+}, { onConflict: 'child_id' })
+const { error: ledgerErr } = await admin.from('money_ledger').insert([
+  { child_id: maya.id, kind: 'interest', jar: 'save', amount_cents: 12, effective_on: addDays(weeks[2], 6), note: 'Interest on Save' },
+  { child_id: maya.id, kind: 'interest', jar: 'save', amount_cents: 15, effective_on: addDays(weeks[3], 6), note: 'Interest on Save' },
+  { child_id: maya.id, kind: 'donation', jar: 'give', amount_cents: -100, effective_on: addDays(weeks[3], 2), note: 'Animal shelter' },
+])
+console.log('Maya jars:', splitErr || ledgerErr ? `FAILED ${(splitErr ?? ledgerErr).message}` : '60/30/10, allowance, interest')
+
+// 13. A sibling challenge in progress: pizza night after 30 chores together.
+if (leo) {
+  await admin.from('family_challenges').delete().eq('user_id', uid)
+  const { error: chErr } = await admin.from('family_challenges').insert({
+    user_id: uid, title: 'Pizza night', emoji: '🍕', reward_text: 'Pizza night on Friday', reward_cents: 0,
+    metric: 'chores', mode: 'team', target: 30, chore_filter: 'any', child_ids: [maya.id, leo.id],
+    starts_on: weeks[3], ends_on: addDays(THIS_WEEK, 6), status: 'active', created_by: uid,
+  })
+  console.log('challenge:', chErr ? `FAILED ${chErr.message}` : 'Pizza night, team of 2')
 }
 
 console.log('SEED COMPLETE')

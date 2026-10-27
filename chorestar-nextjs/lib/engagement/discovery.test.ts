@@ -2,7 +2,7 @@
  * Unit tests for feature discovery and lapse timing. Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { FEATURES, fallbackPush, untriedFeatures, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
+import { FEATURES, cardCopy, copyLang, fallbackPush, untriedFeatures, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
 
 const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, kidCount: 2 }
 const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, kidCount: 2 }
@@ -46,6 +46,27 @@ for (const f of FEATURES) {
   }
 }
 assert.match(fallbackPush('Leo').body, /Leo/)
+
+// Card translations: every feature, every language, the kid's name where the
+// English has it, and no em dashes.
+assert.equal(copyLang('pt-BR'), 'pt')
+assert.equal(copyLang('es_MX'), 'es')
+assert.equal(copyLang('ar'), 'ar')
+assert.equal(copyLang('fr'), 'en')
+assert.equal(copyLang(null), 'en')
+for (const f of FEATURES) {
+  const named = f.card('Emma').body.includes('Emma') || f.card('Emma').title.includes('Emma')
+  for (const lang of ['es', 'pt', 'ar'] as const) {
+    const c = cardCopy(f, 'Emma', lang)
+    for (const s of [c.title, c.body, c.cta]) {
+      assert.ok(s.length > 0)
+      assert.ok(!s.includes('—'), `em dash in ${lang} ${f.id}`)
+    }
+    assert.notDeepEqual(c, f.card('Emma'), `${lang} ${f.id} is untranslated`)
+    if (named) assert.ok((c.title + c.body).includes('Emma'), `${lang} ${f.id} drops the kid's name`)
+  }
+}
+assert.deepEqual(cardCopy(FEATURES[0], 'Emma'), FEATURES[0].card('Emma'))
 
 // Lapse timing.
 const now = new Date('2026-10-26T12:00:00Z')

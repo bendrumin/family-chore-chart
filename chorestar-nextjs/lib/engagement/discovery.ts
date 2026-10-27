@@ -139,6 +139,50 @@ export const FEATURES: Feature[] = [
   },
 ]
 
+/** Languages the native apps' parent UI ships in. Push copy stays English:
+ *  nothing records a family's language yet. */
+export type CopyLang = 'en' | 'es' | 'pt' | 'ar'
+
+type Card = ReturnType<Feature['card']>
+
+const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid: string) => Card>> = {
+  es: {
+    kid_login: (kid) => ({ title: `Dale a ${kid} su propio acceso`, body: `Con un PIN de 4 dígitos, ${kid} entra desde cualquier dispositivo y marca sus tareas sin ti.`, cta: 'Crear un PIN' }),
+    routines: (kid) => ({ title: 'Prueba una rutina de mañana', body: `Vestirse, lavarse los dientes, preparar la mochila: ${kid} lo hace paso a paso.`, cta: 'Crear una rutina' }),
+    star_pets: (kid) => ({ title: `${kid} puede adoptar una Mascota Estrella`, body: 'Una mascota que crece con cada tarea hecha. Todas las familias reciben un perrito.', cta: 'Ver Mascotas Estrella' }),
+    money_jars: (kid) => ({ title: 'Frascos para Gastar, Ahorrar y Dar', body: `Reparte lo que gana ${kid} en frascos, paga una mesada semanal automática y agrega interés al ahorro.`, cta: 'Configurar frascos' }),
+    challenges: () => ({ title: 'Empieza un reto en familia', body: 'Los hermanos trabajan juntos por un premio compartido, como una noche de pizza tras 30 tareas.', cta: 'Crear un reto' }),
+    calendar_feed: () => ({ title: 'Pon las tareas en tu calendario', body: 'Suscríbete una vez en el calendario de Apple, Google u Outlook y la semana se mantiene al día.', cta: 'Obtener el enlace' }),
+  },
+  pt: {
+    kid_login: (kid) => ({ title: `Dê a ${kid} um acesso próprio`, body: `Com um PIN de 4 dígitos, ${kid} entra em qualquer aparelho e marca as tarefas sem você.`, cta: 'Criar um PIN' }),
+    routines: (kid) => ({ title: 'Experimente uma rotina da manhã', body: `Vestir-se, escovar os dentes, arrumar a mochila: ${kid} faz tudo passo a passo.`, cta: 'Criar uma rotina' }),
+    star_pets: (kid) => ({ title: `${kid} pode adotar um Pet Estrela`, body: 'Um pet que cresce a cada tarefa feita. Toda família ganha um cachorrinho.', cta: 'Ver Pets Estrela' }),
+    money_jars: (kid) => ({ title: 'Potes para Gastar, Poupar e Doar', body: `Divida o que ${kid} ganha em potes, pague uma mesada semanal automática e adicione juros à poupança.`, cta: 'Configurar potes' }),
+    challenges: () => ({ title: 'Comece um desafio em família', body: 'Os irmãos trabalham juntos por um prêmio compartilhado, como uma noite de pizza depois de 30 tarefas.', cta: 'Criar um desafio' }),
+    calendar_feed: () => ({ title: 'Coloque as tarefas na sua agenda', body: 'Assine uma vez no calendário da Apple, Google ou Outlook e a semana fica sempre atualizada.', cta: 'Pegar o link' }),
+  },
+  ar: {
+    kid_login: (kid) => ({ title: `امنح ${kid} دخولًا خاصًا`, body: `برمز PIN من 4 أرقام، يدخل ${kid} من أي جهاز ويشطب مهامه بنفسه.`, cta: 'أنشئ رمز PIN' }),
+    routines: (kid) => ({ title: 'جرّب روتين الصباح', body: `ارتداء الملابس، تنظيف الأسنان، تجهيز الحقيبة: ينجزها ${kid} خطوة بخطوة.`, cta: 'أنشئ روتينًا' }),
+    star_pets: (kid) => ({ title: `يمكن لـ${kid} تبنّي حيوان نجم`, body: 'حيوان أليف يكبر مع كل مهمة تُنجز. تحصل كل عائلة على جرو.', cta: 'اعرض الحيوانات النجوم' }),
+    money_jars: (kid) => ({ title: 'حصالات الصرف والادخار والعطاء', body: `قسّم أرباح ${kid} على الحصالات، وادفع مصروفًا أسبوعيًا تلقائيًا، وأضف فائدة على الادخار.`, cta: 'إعداد الحصالات' }),
+    challenges: () => ({ title: 'ابدأ تحديًا عائليًا', body: 'يعمل الإخوة معًا لجائزة مشتركة، مثل ليلة بيتزا بعد 30 مهمة.', cta: 'أنشئ تحديًا' }),
+    calendar_feed: () => ({ title: 'ضع المهام في تقويمك', body: 'اشترك مرة واحدة في تقويم Apple أو Google أو Outlook ويبقى الأسبوع محدّثًا.', cta: 'احصل على الرابط' }),
+  },
+}
+
+/** `es`, `pt-BR`, `ar_SA`... to a CopyLang; anything else is English. */
+export function copyLang(raw: string | null | undefined): CopyLang {
+  const base = (raw ?? '').toLowerCase().slice(0, 2)
+  return base === 'es' || base === 'pt' || base === 'ar' ? base : 'en'
+}
+
+/** A feature's card copy in the app's language. */
+export function cardCopy(f: Feature, kid: string, lang: CopyLang = 'en'): Card {
+  return lang === 'en' ? f.card(kid) : CARD_TRANSLATIONS[lang][f.id](kid)
+}
+
 /** The next feature this family has not tried, on this surface, that their plan includes. */
 export function nextFeature(
   usage: FamilyUsage,

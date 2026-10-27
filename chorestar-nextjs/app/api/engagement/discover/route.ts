@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server'
 import { getParentUserId } from '@/lib/utils/parent-auth'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { isPremium } from '@/lib/utils/subscription'
-import { FEATURES, nextFeature, type FeatureId } from '@/lib/engagement/discovery'
+import { FEATURES, cardCopy, copyLang, nextFeature, type FeatureId } from '@/lib/engagement/discovery'
 import { loadFamilies } from '@/lib/engagement/usage'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/engagement/discover?skip=routines,star_pets[&surface=app]
+ * GET /api/engagement/discover?skip=routines,star_pets[&surface=app][&lang=es]
  *
  * The one feature the dashboard's discover card should show this family, or
  * `{ feature: null }`. `skip` carries the ids this device has dismissed.
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const { data: profile } = await admin.from('profiles').select('subscription_type').eq('id', userId).maybeSingle()
     const feature = nextFeature(family.usage, isPremium(profile?.subscription_type), surface, skip)
     if (!feature) return NextResponse.json({ feature: null })
-    return NextResponse.json({ feature: { id: feature.id, ...feature.card(family.kidName ?? 'Your kids') } })
+    return NextResponse.json({ feature: { id: feature.id, ...cardCopy(feature, family.kidName ?? 'Your kids', copyLang(params.get('lang'))) } })
   } catch (err) {
     console.error('[discover]', err)
     return NextResponse.json({ feature: null })
