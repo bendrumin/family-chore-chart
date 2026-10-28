@@ -247,3 +247,63 @@ test.describe('lapse-nudge cron', () => {
     }
   })
 })
+
+// ---------------------------------------------------------------------------
+// Free-trial card and check-ins (lib/engagement/trial.ts)
+// ---------------------------------------------------------------------------
+
+const TRIAL = {
+  rail: 'apple',
+  endsAt: '2026-11-04T01:40:57.000Z',
+  renewing: true,
+  day: 3,
+  choresDone: 12,
+  routinesDone: 2,
+  used: ['Spend, Save and Give jars'],
+  next: { id: 'calendar_feed', title: 'Put chores on your calendar', body: 'Subscribe once and the week stays in sync.', cta: 'Get the calendar link' },
+}
+
+test.describe('trial', () => {
+  test('API: needs a parent, and the demo family is not in a trial', async ({ request }) => {
+    expect((await request.get('/api/engagement/trial')).status()).toBe(401)
+    const res = await request.get('/api/engagement/trial', { headers: { Authorization: `Bearer ${parentToken}` } })
+    expect(res.status()).toBe(200)
+    expect(await res.json()).toEqual({ trial: null })
+  })
+
+  test('card: the day, what they did, and one thing to try, which opens where it lives', async ({ page }) => {
+    const skips: string[] = []
+    await stubDiscover(page, skips)
+    await page.route('**/api/engagement/trial**', (route) => route.fulfill({ json: { trial: TRIAL } }))
+    await page.addInitScript(() => {
+      localStorage.setItem('chorestar-getting-started-done', 'true')
+      localStorage.removeItem('chorestar-discover-dismissed')
+    })
+    await signIn(page)
+    await expect(page.getByRole('heading', { name: 'Day 3 of your free week' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText(/So far: 12 chores done, 2 routines finished\. Premium continues after/)).toBeVisible()
+    await expect(page.getByText('Premium you are using: Spend, Save and Give jars.')).toBeVisible()
+    await expect(page.getByRole('img', { name: 'Day 3 of 7' })).toBeVisible()
+    // The discover card steps aside so the family is not offered two things.
+    await expect(page.getByRole('heading', { name: STUB.title })).toBeHidden()
+    await page.getByRole('button', { name: TRIAL.next.cta }).click()
+    await expect(page.getByRole('heading', { name: /^settings$/i })).toBeVisible({ timeout: 15_000 })
+  })
+
+  test('card: renewal off says when Premium ends', async ({ page }) => {
+    await page.route('**/api/engagement/trial**', (route) =>
+      route.fulfill({ json: { trial: { ...TRIAL, renewing: false, choresDone: 0, routinesDone: 0, used: [], next: null } } }))
+    await signIn(page)
+    await expect(page.getByText(/Nothing checked off yet\..*Renewal is off, so Premium ends/)).toBeVisible({ timeout: 15_000 })
+  })
+
+  test('outside a trial there is no card', async ({ page }) => {
+    await signIn(page)
+    await page.waitForTimeout(2_000)
+    await expect(page.getByRole('heading', { name: /of your free week$/ })).toHaveCount(0)
+  })
+
+  test('check-in cron is invisible without the cron secret', async ({ request }) => {
+    expect((await request.get('/api/cron/trial-checkins?dry=1')).status()).toBe(404)
+  })
+})

@@ -20,6 +20,8 @@ import { FamilyTodayChores } from '@/components/dashboard/family-today-chores'
 import { GettingStartedCard } from '@/components/dashboard/getting-started-card'
 import { DiscoverCard } from '@/components/dashboard/discover-card'
 import { PlanLimitsBanner } from '@/components/dashboard/plan-limits-banner'
+import { TrialCard } from '@/components/dashboard/trial-card'
+import type { FeatureId } from '@/lib/engagement/discovery'
 import { ApprovalTray } from '@/components/dashboard/approval-tray'
 import { FamilyChallengesCard } from '@/components/challenges/family-challenges-card'
 import { RoutineLiveCard } from '@/components/dashboard/routine-live-card'
@@ -394,6 +396,24 @@ function DashboardContent({
     setOpenRoutineBuilderTrigger(true)
   }
 
+  // A feature suggested by the discover or trial card: open where it lives.
+  const [inTrial, setInTrial] = useState(false)
+  const openFeature = (id: FeatureId) => {
+    const firstKid = children[0]
+    if (id === 'kid_login') {
+      if (firstKid) setEditingChild(firstKid)
+    } else if (id === 'routines') {
+      if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
+      handleAddRoutine()
+    } else if (id === 'challenges') {
+      setSelectedChildId(null)
+      setTimeout(() => document.getElementById('family-challenges-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+    } else {
+      setSettingsTab(id === 'money_jars' ? 'rewards' : 'family')
+      setIsSettingsOpen(true)
+    }
+  }
+
   // App shortcut (manifest.json): /dashboard?action=new-chore lands on a
   // child's chores with Add Chore open. Waits for children so there is
   // someone to add it for; with none, the getting-started card takes over.
@@ -698,26 +718,19 @@ function DashboardContent({
               />
             </div>
 
-            {/* One untried feature at a time, once setup is done. Renders
-                nothing until the getting-started card has retired. */}
+            {/* The free week: day N of 7, what they've done, one Premium
+                feature to try. Renders nothing outside a trial. */}
             <div className="order-2">
+              <TrialCard onAction={openFeature} onTrial={setInTrial} />
+            </div>
+
+            {/* One untried feature at a time, once setup is done. Renders
+                nothing until the getting-started card has retired, or
+                during a trial, when the trial card offers the feature. */}
+            <div className={`order-2 ${inTrial ? 'hidden' : ''}`}>
               <DiscoverCard
                 isSharedMember={isSharedMember ?? false}
-                onAction={(id) => {
-                  const firstKid = children[0]
-                  if (id === 'kid_login') {
-                    if (firstKid) setEditingChild(firstKid)
-                  } else if (id === 'routines') {
-                    if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
-                    handleAddRoutine()
-                  } else if (id === 'challenges') {
-                    setSelectedChildId(null)
-                    setTimeout(() => document.getElementById('family-challenges-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
-                  } else {
-                    setSettingsTab(id === 'money_jars' ? 'rewards' : 'family')
-                    setIsSettingsOpen(true)
-                  }
-                }}
+                onAction={openFeature}
               />
             </div>
 

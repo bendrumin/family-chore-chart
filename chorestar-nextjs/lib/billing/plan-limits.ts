@@ -15,6 +15,7 @@
  * touched. Turning renewal off pauses nothing: that month is paid for.
  */
 import { getChildLimit, getChoreLimit } from '@/lib/utils/subscription'
+import { sendPremiumEndedEmail } from '@/lib/engagement/premium-ended'
 
 export const FREE_KID_LIMIT = getChildLimit('free')
 export const FREE_CHORE_LIMIT = getChoreLimit('free')
@@ -172,7 +173,12 @@ export async function onPlanChange(admin: Admin, ownerId: string, tier: string):
   try {
     if (tier === 'free') {
       const paused = await applyFreeLimits(admin, ownerId)
-      if (paused.kids || paused.chores) console.log(`[plan-limits] ${ownerId}: paused ${paused.kids} kid(s), ${paused.chores} chore(s)`)
+      if (paused.kids || paused.chores) {
+        console.log(`[plan-limits] ${ownerId}: paused ${paused.kids} kid(s), ${paused.chores} chore(s)`)
+        // Families who lapse are mostly ones who stopped opening the app, so
+        // the dashboard banner alone would go unseen.
+        await sendPremiumEndedEmail(admin, ownerId, { kids: FREE_KID_LIMIT, chores: FREE_CHORE_LIMIT })
+      }
     } else {
       await liftFreeLimits(admin, ownerId)
     }
