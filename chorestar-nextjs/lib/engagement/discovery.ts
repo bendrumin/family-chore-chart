@@ -20,8 +20,8 @@
 
 export type FeatureId = 'kid_login' | 'routines' | 'star_pets' | 'money_jars' | 'challenges' | 'calendar_feed'
 
-/** Where a feature can be pointed at. Star Pets are not in the iOS app yet, so
- *  a push about them would land most families on a screen without them. */
+/** Where a feature can be pointed at: a push (and the native apps' discover
+ *  card), or the web dashboard. */
 export type Surface = 'push' | 'web'
 
 export interface FamilyUsage {
@@ -82,7 +82,7 @@ export const FEATURES: Feature[] = [
   {
     id: 'star_pets',
     premiumOnly: false,
-    surfaces: ['web'],
+    surfaces: ['push', 'web'],
     tried: (u) => u.hasPet,
     push: (kid) => ({ title: `${kid} can adopt a Star Pet`, body: 'It grows as chores get done.' }),
     card: (kid) => ({

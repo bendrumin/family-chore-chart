@@ -12,24 +12,21 @@ assert.equal(nextFeature(none, false, 'push')?.id, 'kid_login')
 assert.equal(nextFeature({ ...none, hasPin: true }, false, 'push')?.id, 'routines')
 
 // A free family is never pointed at a Premium-only feature.
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true }, false, 'push'), null, 'free, push: nothing left')
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true }, false, 'web')?.id, 'star_pets', 'free gets the pup on web')
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, false, 'web'), null)
+for (const surface of ['push', 'web'] as const) {
+  assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true }, false, surface)?.id, 'star_pets', `free gets the pup (${surface})`)
+  assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, false, surface), null)
+}
 
 // Premium continues into what they are paying for.
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true }, true, 'push')?.id, 'money_jars')
+assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, true, 'push')?.id, 'money_jars')
 assert.equal(nextFeature({ ...all, hasCalendar: false }, true, 'push')?.id, 'calendar_feed')
 assert.equal(nextFeature(all, true, 'web'), null)
 
-// Star Pets never go out by push: the iOS app does not have them yet.
-for (const premium of [true, false]) {
-  const usage = { ...none, hasPin: true, hasRoutine: true }
-  assert.notEqual(nextFeature(usage, premium, 'push')?.id, 'star_pets')
-}
-assert.ok(!FEATURES.find((f) => f.id === 'star_pets')!.surfaces.includes('push'))
+// Star Pets go out by push too, since iOS 2.6 has them.
+assert.ok(FEATURES.find((f) => f.id === 'star_pets')!.surfaces.includes('push'))
 
 // One kid: no challenges, on any surface.
-const solo = { ...none, hasPin: true, hasRoutine: true, hasMoney: true, kidCount: 1 }
+const solo = { ...none, hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, kidCount: 1 }
 assert.equal(nextFeature(solo, true, 'push')?.id, 'calendar_feed')
 assert.ok(!untriedFeatures(solo, true, 'web').some((f) => f.id === 'challenges'))
 
