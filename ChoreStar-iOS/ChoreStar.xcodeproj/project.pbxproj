@@ -34,6 +34,7 @@
 		65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */; };
 		C0FFEE2600000000000000D1 /* DiscoverCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2600000000000000D2 /* DiscoverCard.swift */; };
 		C0FFEE2600000000000000D7 /* PlanLimitsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2600000000000000D8 /* PlanLimitsCard.swift */; };
+		C0FFEE2600000000000000D9 /* TrialCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE2600000000000000DA /* TrialCard.swift */; };
 		67AF48BABDEFFA9AA793BB73 /* PremiumFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */; };
 		6CAC4C97D8DBCFD9E9530759 /* BricolageGrotesque-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3E6A76FEFEAD3D2355F9030 /* BricolageGrotesque-Bold.ttf */; };
 		872128E9FDA90F7721851566 /* BricolageGrotesque-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 558F661F136D9C8803DC1F79 /* BricolageGrotesque-ExtraBold.ttf */; };
@@ -240,6 +241,7 @@
 		AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GettingStartedCard.swift; sourceTree = "<group>"; };
 		C0FFEE2600000000000000D2 /* DiscoverCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiscoverCard.swift; sourceTree = "<group>"; };
 		C0FFEE2600000000000000D8 /* PlanLimitsCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlanLimitsCard.swift; sourceTree = "<group>"; };
+		C0FFEE2600000000000000DA /* TrialCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrialCard.swift; sourceTree = "<group>"; };
 		B4F13A70D0572B415D9BA453 /* BricolageGrotesque-SemiBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "BricolageGrotesque-SemiBold.ttf"; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000001 /* ChoreCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreCategory.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000003 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -478,6 +480,7 @@
 				AF062E6C36EB859125D2F801 /* GettingStartedCard.swift */,
 				C0FFEE2600000000000000D2 /* DiscoverCard.swift */,
 				C0FFEE2600000000000000D8 /* PlanLimitsCard.swift */,
+				C0FFEE2600000000000000DA /* TrialCard.swift */,
 				98B6E447C8EF6D74FC2864E6 /* PremiumFeatureGate.swift */,
 				C0FFEE253000000000000014 /* CalendarFeedView.swift */,
 				C0FFEE2550000000000000A1 /* AppearanceSettingsView.swift */,
@@ -798,6 +801,7 @@
 				65B1C559ED958A291DB7ECB8 /* GettingStartedCard.swift in Sources */,
 				C0FFEE2600000000000000D1 /* DiscoverCard.swift in Sources */,
 				C0FFEE2600000000000000D7 /* PlanLimitsCard.swift in Sources */,
+				C0FFEE2600000000000000D9 /* TrialCard.swift in Sources */,
 				8D89B23C2B6AC8EB8C9B54BF /* Entitlements.swift in Sources */,
 				F00D2A5C0000000000000001 /* FamilyJoin.swift in Sources */,
 				C0FFEE253000000000000015 /* CalendarFeedView.swift in Sources */,

@@ -21,22 +21,7 @@ struct DiscoverCard: View {
             }
         }
         .task(id: setupDone) { await load() }
-        .sheet(item: $sheet) { sheet in
-            switch sheet {
-            case .editChild(let child):
-                AddEditChildView(child: child)
-            case .routine:
-                RoutineBuilderView()
-            case .challenge:
-                ChallengeBuilderSheet { }
-            case .money:
-                closable { MoneySettingsView() }
-            case .calendar:
-                closable { CalendarFeedView() }
-            case .pets:
-                closable { PetsSettingsView() }
-            }
-        }
+        .featureSheet($sheet)
     }
 
     private func card(_ feature: DiscoverFeature) -> some View {
@@ -88,17 +73,6 @@ struct DiscoverCard: View {
         )
     }
 
-    private func closable<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        NavigationStack {
-            content()
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { sheet = nil }
-                    }
-                }
-        }
-    }
-
     private var dismissed: [String] {
         dismissedRaw.split(separator: ",").map(String.init)
     }
@@ -111,16 +85,7 @@ struct DiscoverCard: View {
     private func open(_ feature: DiscoverFeature) {
         // Acting on it counts as seen; once used, the server stops offering it anyway.
         dismiss(feature)
-        switch feature.id {
-        case "kid_login":
-            if let child = manager.children.first { sheet = .editChild(child) }
-        case "routines": sheet = .routine
-        case "challenges": sheet = .challenge
-        case "money_jars": sheet = .money
-        case "calendar_feed": sheet = .calendar
-        case "star_pets": sheet = .pets
-        default: break
-        }
+        sheet = DiscoverSheet(featureId: feature.id, firstChild: manager.children.first)
     }
 
     private func load() async {
@@ -152,9 +117,24 @@ private struct DiscoverAnswer: Decodable {
     let feature: DiscoverFeature?
 }
 
-private enum DiscoverSheet: Identifiable {
+/// Where a suggested feature opens, shared by the discover and trial cards.
+enum DiscoverSheet: Identifiable {
     case editChild(Child)
     case routine, challenge, money, calendar, pets
+
+    init?(featureId: String, firstChild: Child?) {
+        switch featureId {
+        case "kid_login":
+            guard let firstChild else { return nil }
+            self = .editChild(firstChild)
+        case "routines": self = .routine
+        case "challenges": self = .challenge
+        case "money_jars": self = .money
+        case "calendar_feed": self = .calendar
+        case "star_pets": self = .pets
+        default: return nil
+        }
+    }
 
     var id: String {
         switch self {
@@ -164,6 +144,45 @@ private enum DiscoverSheet: Identifiable {
         case .money: return "money"
         case .calendar: return "calendar"
         case .pets: return "pets"
+        }
+    }
+}
+
+extension View {
+    /// Presents the screen a discover or trial card's button points at.
+    func featureSheet(_ sheet: Binding<DiscoverSheet?>) -> some View {
+        self.sheet(item: sheet) { item in
+            switch item {
+            case .editChild(let child):
+                AddEditChildView(child: child)
+            case .routine:
+                RoutineBuilderView()
+            case .challenge:
+                ChallengeBuilderSheet { }
+            case .money:
+                FeatureSheetFrame(sheet: sheet) { MoneySettingsView() }
+            case .calendar:
+                FeatureSheetFrame(sheet: sheet) { CalendarFeedView() }
+            case .pets:
+                FeatureSheetFrame(sheet: sheet) { PetsSettingsView() }
+            }
+        }
+    }
+}
+
+/// A settings screen shown as a sheet, with a Done button.
+private struct FeatureSheetFrame<Content: View>: View {
+    @Binding var sheet: DiscoverSheet?
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        NavigationStack {
+            content()
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { sheet = nil }
+                    }
+                }
         }
     }
 }

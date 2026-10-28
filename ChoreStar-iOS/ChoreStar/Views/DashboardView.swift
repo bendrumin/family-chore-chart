@@ -6,6 +6,8 @@ struct DashboardView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.requestReview) private var requestReview
     @State private var showConfetti = false
+    /// Set by TrialCard; the discover card waits while it shows.
+    @State private var inTrial = false
     /// The iPhone Duo's fold in the Today grid's coordinates while half-open.
     @State private var choresFold: CGRect?
     @State private var showAchievementAlert = false
@@ -318,9 +320,14 @@ struct DashboardView: View {
 
                         GettingStartedCard()
 
+                        // The free week: day N of 7 and one Premium feature to
+                        // try. Hidden outside a trial.
+                        TrialCard(inTrial: $inTrial)
+
                         // Once setup is done: one feature the family has not
-                        // tried yet. Renders nothing when there is none.
-                        DiscoverCard()
+                        // tried yet. Renders nothing when there is none, and
+                        // waits during a trial, whose card offers it instead.
+                        if !inTrial { DiscoverCard() }
 
                         // Ticks waiting for the parent's OK (approval mode / photo
                         // chores). Renders nothing when there is nothing to review.

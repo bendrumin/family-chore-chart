@@ -21837,6 +21837,182 @@
           }
         }
       }
+    },
+    "Day %lld of your free week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día %lld de tu semana gratis"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dia %lld da sua semana grátis"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اليوم %lld من أسبوعك المجاني"
+          }
+        }
+      }
+    },
+    "Day %lld of 7" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día %lld de 7"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dia %lld de 7"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اليوم %lld من 7"
+          }
+        }
+      }
+    },
+    "Premium you are using: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium que estás usando: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium que você está usando: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ميزات Premium التي تستخدمها: %@"
+          }
+        }
+      }
+    },
+    "Try next: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prueba ahora: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimente agora: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جرّب الآن: %@"
+          }
+        }
+      }
+    },
+    "Chores done: %lld. Routines finished: %lld." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas hechas: %1$lld. Rutinas terminadas: %2$lld."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas feitas: %1$lld. Rotinas concluídas: %2$lld."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المهام المنجزة: %1$lld. الروتينات المكتملة: %2$lld."
+          }
+        }
+      }
+    },
+    "Nothing checked off yet. Kids with their own PIN can start right away." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay nada marcado. Los niños con su propio PIN pueden empezar ya."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada marcado ainda. Crianças com o próprio PIN podem começar agora."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يتم إنجاز شيء بعد. يمكن للأطفال الذين لديهم رمز PIN خاص البدء فورًا."
+          }
+        }
+      }
+    },
+    "Premium continues after %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium continúa después del %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium continua depois de %@."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستمر Premium بعد %@."
+          }
+        }
+      }
+    },
+    "Renewal is off, so Premium ends %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La renovación está desactivada, así que Premium termina el %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A renovação está desativada, então o Premium termina em %@."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التجديد متوقف، لذا ينتهي Premium في %@."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
