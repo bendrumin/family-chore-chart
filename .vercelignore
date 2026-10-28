@@ -24,3 +24,12 @@ backend/
 
 # Ignore environment files
 .env* 
+# Only chorestar-nextjs/ builds (see the root vercel.json). Everything below
+# rode along on manual deploys: Playwright videos alone were 215MB.
+ChoreStar-Android/
+ChoreStar-Android-Native/
+frontend/
+docs/
+chorestar-nextjs/test-results/
+chorestar-nextjs/playwright-report/
+chorestar-nextjs/*.tsbuildinfo
