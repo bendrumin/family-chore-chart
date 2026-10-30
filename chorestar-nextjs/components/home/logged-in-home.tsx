@@ -109,7 +109,7 @@ export function LoggedInHome({ familyName, subscriptionTier, childCount }: Logge
                 everything you do here: set up chores on the web, kids check them off on the iPad.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <AppStoreBadge />
+                <AppStoreBadge campaign="dashboard" />
                 <AndroidBetaBadge />
                 <Link
                   href="/blog/chorestar-iphone-ipad-app"

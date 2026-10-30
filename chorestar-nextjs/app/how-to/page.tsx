@@ -13,6 +13,7 @@ import {
   Volume2, Timer, Wand2, Radio,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { FAMILIES_LABEL } from '@/lib/constants/stats'
 
 interface TutorialStep {
   text: string
@@ -325,7 +326,7 @@ export default function HowToPage() {
             </Link>
           </div>
           <p className="mt-4 text-xs">
-            ✓ Free plan available  •  ✓ No credit card to start  •  ✓ 600+ parents and kids
+            ✓ Free plan available  •  ✓ No credit card to start  •  ✓ {FAMILIES_LABEL}
           </p>
         </div>
 

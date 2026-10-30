@@ -3,7 +3,8 @@ import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
-import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL } from '@/components/home/app-store-badge'
+import { AppStoreBadge, AndroidBetaBadge } from '@/components/home/app-store-badge'
+import { appStoreLink } from '@/lib/utils/app-store-link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -88,7 +89,7 @@ export default function ChoreStarIosAppPage() {
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
             <div className="not-prose my-8 text-center">
-              <AppStoreBadge />
+              <AppStoreBadge campaign="blog" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                 Free to download. Works with your existing ChoreStar account, or start fresh.
               </p>
@@ -171,7 +172,7 @@ export default function ChoreStarIosAppPage() {
                 hand over the iPad tomorrow morning.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <AppStoreBadge />
+                <AppStoreBadge campaign="blog" />
                 <AndroidBetaBadge />
                 <Link
                   href="/signup"
@@ -184,7 +185,7 @@ export default function ChoreStarIosAppPage() {
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Already a ChoreStar family on the web?{' '}
-              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 themed-text underline">
+              <a href={appStoreLink('blog')} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 themed-text underline">
                 Download the app
               </a>{' '}
               and sign in with your existing account. Everything will be there.

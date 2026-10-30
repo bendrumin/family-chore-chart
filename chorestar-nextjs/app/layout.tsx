@@ -12,6 +12,7 @@ import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts/keybo
 import { ReducedMotionProvider } from '@/components/providers/reduced-motion-provider'
 import { DarkModeProvider } from '@/components/providers/dark-mode-provider'
 import { THEME_INIT_SCRIPT } from '@/lib/utils/theme-mode'
+import { FAMILIES_LABEL } from '@/lib/constants/stats'
 
 // docs/DESIGN.md: Fraunces for headings, Lexend for body, labels and buttons.
 //
@@ -98,7 +99,7 @@ export const metadata: Metadata = {
     url: 'https://chorestar.app/',
     siteName: 'ChoreStar',
     title: 'ChoreStar: Chore Chart App & Allowance Tracker',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device, no download needed. Join 600+ parents and kids.',
+    description: `Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Works on any device, no download needed. Join ${FAMILIES_LABEL}.`,
     images: [
       {
         url: '/og-image.png',
@@ -113,7 +114,7 @@ export const metadata: Metadata = {
     site: '@chorestar',
     creator: '@chorestar',
     title: 'ChoreStar: Chore Chart App & Allowance Tracker',
-    description: 'Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join 600+ parents and kids.',
+    description: `Free chore chart app that gamifies household tasks. Kids earn rewards, unlock achievements, and build responsibility. Join ${FAMILIES_LABEL}.`,
     images: ['/og-image.png'],
   },
   icons: {

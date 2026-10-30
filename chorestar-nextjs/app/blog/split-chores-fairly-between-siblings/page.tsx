@@ -190,7 +190,7 @@ export default function SplitChoresFairlyPage() {
                 Start free
               </Link>
               <div className="mt-6">
-                <AppStoreBadge />
+                <AppStoreBadge campaign="blog" />
               </div>
             </div>
 

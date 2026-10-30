@@ -143,7 +143,7 @@ export default function ChoreStarIos27Page() {
             </p>
 
             <div className="not-prose my-8 text-center">
-              <AppStoreBadge />
+              <AppStoreBadge campaign="blog" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                 Free to download. Works with your existing ChoreStar account, or start fresh.
               </p>

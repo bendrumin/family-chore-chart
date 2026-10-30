@@ -8,6 +8,9 @@ import { ChoreStarLogo } from '@/components/brand/logo'
 import { AppStoreBadge, AndroidBetaBadge, APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
 import { BLOG_POSTS } from '@/lib/constants/blog-posts'
+import { AppStoreReviews } from '@/components/home/app-store-reviews'
+import { appStoreLink } from '@/lib/utils/app-store-link'
+import { FAMILIES_LABEL } from '@/lib/constants/stats'
 
 /** Homepage guides: the two newest posts plus evergreen ones still waiting on Google. */
 const HOME_GUIDE_SLUGS = [
@@ -190,7 +193,7 @@ export default async function HomePage() {
             </span>
           </h1>
           <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-            ⭐ Join 600+ parents and kids already using ChoreStar
+            ⭐ Join {FAMILIES_LABEL} already using ChoreStar
           </p>
         </header>
 
@@ -206,7 +209,7 @@ export default async function HomePage() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             ✨ Kids check off chores, earn rewards, collect badges, and build responsibility<br/>
             🎯 Parents track progress, manage allowances, and finally get the help they need<br/>
-            📱 Works on any device. The native iPhone app is <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">on the App Store</a>, and the <Link href="/android-beta" className="font-semibold underline text-indigo-600 dark:text-indigo-400">Android beta</Link> is open.<br/>
+            📱 Works on any device. The native iPhone app is <a href={appStoreLink('home')} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-indigo-600 dark:text-indigo-400">on the App Store</a>, and the <Link href="/android-beta" className="font-semibold underline text-indigo-600 dark:text-indigo-400">Android beta</Link> is open.<br/>
             🆓 Start with our free plan - track up to 3 kids and 20 chores
           </p>
 
@@ -242,7 +245,7 @@ export default async function HomePage() {
               Want it on your phone?
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <AppStoreBadge label="Download the iOS app" />
+              <AppStoreBadge campaign="home" label="Download the iOS app" />
               <AndroidBetaBadge label="Sign up to test our Android app" />
             </div>
             <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-3">
@@ -441,42 +444,15 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Testimonials */}
+        {/* Reviews: real App Store reviews only (lib/constants/reviews.ts) */}
         <div className="max-w-6xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-4">
             What Parents Are Saying
           </h2>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
-            Real families, real results
+            From our App Store reviews
           </p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: '"Game changer! My kids actually check ChoreStar every morning to see what needs to be done. No more arguments at bedtime about whether they cleaned their room."',
-                name: 'Sarah M.',
-                role: 'Mom of 3',
-              },
-              {
-                quote: '"I was skeptical, but my 7-year-old asks ME if she can do more chores now. The earning tracker makes it feel real to her. Worth every penny."',
-                name: 'James T.',
-                role: 'Dad of 2',
-              },
-              {
-                quote: '"Finally something that works for our blended family. Everyone knows exactly what\'s expected and the kids actually compete to finish first. Love it!"',
-                name: 'Michelle R.',
-                role: 'Mom of 4',
-              },
-            ].map(({ quote, name, role }) => (
-              <div key={name} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-indigo-100 dark:border-indigo-900">
-                <div className="text-yellow-400 text-lg mb-3">⭐⭐⭐⭐⭐</div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4 italic text-sm leading-relaxed">{quote}</p>
-                <div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <AppStoreReviews />
         </div>
 
         {/* Pricing */}
@@ -634,7 +610,7 @@ export default async function HomePage() {
                 off on the iPad.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <AppStoreBadge />
+                <AppStoreBadge campaign="home" />
                 <AndroidBetaBadge />
               </div>
               <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
@@ -759,7 +735,7 @@ export default async function HomePage() {
             Start Your Family on ChoreStar
           </h2>
           <p className="text-xl mb-8">
-            Join 600+ parents and kids who ended their chore battles
+            Join {FAMILIES_LABEL} already using ChoreStar
           </p>
           <Link
             href="/signup"

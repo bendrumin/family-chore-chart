@@ -102,6 +102,15 @@ test.describe('public pages', () => {
     expect((await request.get('/api/cron/allowance')).status()).toBe(404)
   })
 
+  test('only real reviews are quoted: no invented testimonials', async ({ page }) => {
+    for (const path of ['/', '/partners', '/blog/why-gamifying-chores-works']) {
+      await page.goto(path)
+      await expect(page.getByText('App Store review, October 2026').first()).toBeVisible()
+      await expect(page.getByText(/Sarah M\.|James T\.|Michelle R\.|as one dad told us/i)).toHaveCount(0)
+      await expect(page.getByText(/600\+/)).toHaveCount(0)
+    }
+  })
+
   test('weekly report unsubscribe link answers without signing in', async ({ page }) => {
     await page.goto('/api/reports/weekly/unsubscribe?t=not-a-token')
     await expect(page.getByText(/that link did not work/i)).toBeVisible()

@@ -30,7 +30,7 @@ Key facts:
 
 ## Pages
 
-- [What ChoreStar is](https://chorestar.app/): overview, pricing, testimonials
+- [What ChoreStar is](https://chorestar.app/): overview, pricing, App Store reviews
 - [FAQ](https://chorestar.app/faq): plain answers about setup, rewards, kid
   login, family sharing, and billing
 - [How-to guides](https://chorestar.app/how-to): step-by-step setup tutorials

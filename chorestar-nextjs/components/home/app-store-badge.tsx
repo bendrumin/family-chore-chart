@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { ACCENT_SURFACE_STYLE } from '@/lib/constants/brand'
+import { APP_STORE_URL, appStoreLink, type AppStoreCampaign } from '@/lib/utils/app-store-link'
 
-export const APP_STORE_URL = 'https://apps.apple.com/app/id6761279049'
+export { APP_STORE_URL }
 /** Opens the App Store's "Write a Review" sheet directly (on Apple devices). */
 export const APP_STORE_REVIEW_URL = 'https://apps.apple.com/app/id6761279049?action=write-review'
 
@@ -26,10 +27,19 @@ const BASE =
  * black slab, which sat on our cards like a foreign object. ACCENT_SURFACE_STYLE
  * carries the ink that reads on whatever accent is active.
  */
-export function AppStoreBadge({ className = '', label = 'Download on the App Store' }: { className?: string; label?: string }) {
+export function AppStoreBadge({
+  className = '',
+  label = 'Download on the App Store',
+  campaign,
+}: {
+  className?: string
+  label?: string
+  /** Which part of the site this is, for App Analytics. */
+  campaign: AppStoreCampaign
+}) {
   return (
     <Link
-      href={APP_STORE_URL}
+      href={appStoreLink(campaign)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Download ChoreStar on the App Store"

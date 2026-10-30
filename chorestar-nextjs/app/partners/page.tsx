@@ -4,6 +4,8 @@ import { PartnerForm } from './partner-form'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { GRADIENT, GRADIENT_TEXT, ACCENT_SURFACE_STYLE, ACCENT_SURFACE } from '@/lib/constants/brand'
+import { AppStoreReviews } from '@/components/home/app-store-reviews'
+import { STATS, FAMILIES_LABEL } from '@/lib/constants/stats'
 
 export const metadata: Metadata = {
   title: 'Affiliate & Partner Program for Creators',
@@ -85,7 +87,7 @@ const TALKING_POINTS = [
   },
   {
     headline: 'Proven Traction',
-    detail: '600+ parents and kids across 249 families, with about 100 signing in each month. 5-star reviews from real parents. Steady organic growth from word-of-mouth.',
+    detail: `${STATS.families} families and ${STATS.kids} kids, with ${STATS.monthlyParents} parents signing in each month. Rated 5 stars on the App Store. Steady organic growth from word-of-mouth.`,
   },
   {
     headline: 'Premium Upsell Built In',
@@ -100,7 +102,7 @@ const SAMPLE_COPY = [
   },
   {
     label: 'Medium (email / blog)',
-    text: 'ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed, works on any device. Join 600+ parents and kids at chorestar.app',
+    text: `ChoreStar is a free family chore tracker that gamifies responsibilities for kids. Parents assign chores and set rewards. Kids log in with a PIN, check off tasks, and watch their earnings grow. No app download needed, works on any device. Join ${FAMILIES_LABEL} at chorestar.app`,
   },
   {
     label: 'Tagline options',
@@ -161,9 +163,9 @@ export default function PartnersPage() {
           {/* Quick Stats */}
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
             {[
-              { stat: '600+', label: 'Parents and kids' },
+              { stat: STATS.families, label: 'Families' },
               { stat: '$0', label: 'Free to start' },
-              { stat: '5★', label: 'Parent reviews' },
+              { stat: '5★', label: 'App Store rating' },
               { stat: 'Any device', label: 'No download needed' },
             ].map(({ stat, label }) => (
               <div key={label} className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-lg border border-indigo-100 dark:border-indigo-900">
@@ -348,42 +350,15 @@ export default function PartnersPage() {
             </div>
           </section>
 
-          {/* Testimonials */}
+          {/* Reviews: real App Store reviews only (lib/constants/reviews.ts) */}
           <section className="max-w-4xl mx-auto mb-16">
             <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-3">
               What Parents Say
             </h2>
             <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
-              You&apos;re welcome to quote these in your promotions
+              Real App Store reviews. Quote them word for word, credited to the App Store
             </p>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  quote: 'Game changer! My kids actually check ChoreStar every morning to see what needs to be done. No more arguments at bedtime about whether they cleaned their room.',
-                  name: 'Sarah M.',
-                  role: 'Mom of 3',
-                },
-                {
-                  quote: 'I was skeptical, but my 7-year-old asks ME if she can do more chores now. The earning tracker makes it feel real to her. Worth every penny.',
-                  name: 'James T.',
-                  role: 'Dad of 2',
-                },
-                {
-                  quote: 'Finally something that works for our blended family. Everyone knows exactly what\'s expected and the kids actually compete to finish first. Love it!',
-                  name: 'Michelle R.',
-                  role: 'Mom of 4',
-                },
-              ].map(({ quote, name, role }) => (
-                <div key={name} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-indigo-100 dark:border-indigo-900">
-                  <div className="text-yellow-400 text-lg mb-3">⭐⭐⭐⭐⭐</div>
-                  <p className="text-gray-700 dark:text-gray-300 mb-4 italic text-sm leading-relaxed">&ldquo;{quote}&rdquo;</p>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">{name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AppStoreReviews />
           </section>
 
           {/* Partner Inquiry Form */}

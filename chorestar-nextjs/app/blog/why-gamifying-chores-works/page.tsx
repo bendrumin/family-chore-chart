@@ -3,6 +3,7 @@ import { PublicPageShell } from '@/components/layout/public-page-shell'
 import { SiteNav } from '@/components/layout/site-nav'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { BlogPostExtras } from '@/components/blog/blog-post-extras'
+import { AppStoreReviews } from '@/components/home/app-store-reviews'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ const articleJsonLd = {
   description: 'Achievements, streaks, confetti, and progress bars tap into psychology that makes kids want to level up.',
   url: 'https://chorestar.app/blog/why-gamifying-chores-works',
   datePublished: '2026-03-28',
-  dateModified: '2026-10-20',
+  dateModified: '2026-10-30',
   author: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
   publisher: { '@type': 'Organization', name: 'ChoreStar', url: 'https://chorestar.app' },
 }
@@ -91,7 +92,7 @@ export default function WhyGamifyingChoresWorksPage() {
           <header className="mb-10">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 themed-text">Parenting</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Updated October 20, 2026</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Updated October 30, 2026</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">9 min read</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
@@ -197,11 +198,6 @@ export default function WhyGamifyingChoresWorksPage() {
               shows points earned and steps completed, and there are different confetti styles for different moments:
               gold particles for achievements, red-orange for streak milestones, and purple for perfect weeks.
             </p>
-            <p className="text-gray-700 dark:text-gray-300">
-              As one dad told us: &ldquo;I was skeptical, but my 7-year-old asks ME if she can do more chores now. The
-              earning tracker makes it feel real to her.&rdquo;
-            </p>
-
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">4. Visible Progress</h3>
             <p className="text-gray-700 dark:text-gray-300">
               The parent dashboard shows a 7-day completion grid for each child, a visual streak of what&apos;s been
@@ -234,19 +230,10 @@ export default function WhyGamifyingChoresWorksPage() {
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Does It Actually Work?</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Here&apos;s what we hear from real families using ChoreStar:
+              Here&apos;s what parents have said in their App Store reviews:
             </p>
-            <div className="space-y-4 my-6">
-              {[
-                { quote: 'Game changer! My kids actually check ChoreStar every morning to see what needs to be done. No more arguments at bedtime about whether they cleaned their room.', name: 'Sarah M.', role: 'Mom of 3' },
-                { quote: 'I was skeptical, but my 7-year-old asks ME if she can do more chores now. The earning tracker makes it feel real to her. Worth every penny.', name: 'James T.', role: 'Dad of 2' },
-                { quote: 'Finally something that works for our blended family. Everyone knows exactly what\'s expected and the kids actually compete to finish first. Love it!', name: 'Michelle R.', role: 'Mom of 4' },
-              ].map(({ quote, name, role }) => (
-                <div key={name} className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 italic mb-3">&ldquo;{quote}&rdquo;</p>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{name} <span className="font-normal text-gray-500 dark:text-gray-400">({role})</span></p>
-                </div>
-              ))}
+            <div className="not-prose my-6">
+              <AppStoreReviews />
             </div>
             <p className="text-gray-700 dark:text-gray-300">
               The competitive element is particularly powerful in multi-kid families. When siblings can see each

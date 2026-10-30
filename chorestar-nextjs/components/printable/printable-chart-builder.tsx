@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { exportWeeklyTemplate, type WeeklyTemplateStyle } from '@/lib/utils/export'
 import { generateSuggestions } from '@/lib/utils/chore-suggestions'
+import { appStoreLink } from '@/lib/utils/app-store-link'
 
 /**
  * The free chart on /printable-chore-chart: a name, an age that fills in
@@ -237,7 +238,7 @@ export function PrintableChartBuilder() {
               Start free
             </Link>
             <a
-              href="https://apps.apple.com/app/id6761279049"
+              href={appStoreLink('printable')}
               className="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-bold border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Get the iPhone app

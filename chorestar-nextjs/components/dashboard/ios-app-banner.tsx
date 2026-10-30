@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { X, Smartphone } from 'lucide-react'
-import { APP_STORE_URL, APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
+import { APP_STORE_REVIEW_URL } from '@/components/home/app-store-badge'
+import { appStoreLink } from '@/lib/utils/app-store-link'
 import { useAndroidShell, useDevicePlatform } from '@/lib/utils/platform'
 
 const DISMISS_KEY = 'chorestar-ios-banner-dismissed'
@@ -50,7 +51,7 @@ export function IosAppBanner() {
             Explore our iOS App for a better mobile experience
           </span>{' '}
           <a
-            href={APP_STORE_URL}
+            href={appStoreLink('dashboard')}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"
@@ -63,7 +64,7 @@ export function IosAppBanner() {
           <span className="font-semibold text-gray-900 dark:text-white">ChoreStar is on the App Store!</span>{' '}
           Widgets, kid mode, and routine timers, synced with everything here.{' '}
           <a
-            href={APP_STORE_URL}
+            href={appStoreLink('dashboard')}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-indigo-600 dark:text-indigo-400 underline whitespace-nowrap"

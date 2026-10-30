@@ -188,7 +188,7 @@ export default function SpendSaveGiveJarsPage() {
                 Start free
               </Link>
               <div className="mt-6">
-                <AppStoreBadge />
+                <AppStoreBadge campaign="blog" />
               </div>
             </div>
 

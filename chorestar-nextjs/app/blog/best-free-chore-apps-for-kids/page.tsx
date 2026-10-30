@@ -449,7 +449,7 @@ export default function BestFreeChoreAppsPage() {
             </p>
 
             <div className="not-prose my-8 text-center">
-              <AppStoreBadge />
+              <AppStoreBadge campaign="blog" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                 ChoreStar is free for 3 kids and 20 chores, on the web and the App Store.
               </p>

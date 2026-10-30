@@ -141,7 +141,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "Achievements, streaks, confetti, and progress bars tap into the same psychology that makes kids want to level up.",
     date: 'March 28, 2026',
     isoDate: '2026-03-28',
-    updatedIsoDate: '2026-10-20',
+    updatedIsoDate: '2026-10-30',
     readTime: '9 min read',
     emoji: '🎮',
     category: 'Parenting',

@@ -1,5 +1,6 @@
 import type { PowerUserReport, PowerUserStat } from '@/lib/admin/power-users'
 import { getAdminEmails } from '@/lib/admin/is-admin'
+import { appStoreLink } from '@/lib/utils/app-store-link'
 
 const FOUNDER_EXCLUDE = [...getAdminEmails(), 'bsiegel13+2@gmail.com', 'hi@chorestar.app']
 
@@ -514,7 +515,7 @@ chorestar.app`
 
 I'm Ben, the parent who builds ChoreStar. The ${user.familyName} has checked off ${done} chores and routines on the web, so I wanted to make sure you know there is now a ChoreStar app for iPhone and iPad:
 
-https://apps.apple.com/app/id6761279049
+${appStoreLink('email')}
 
 It is the same account, so sign in the way you do on the web and everything is already there. The app adds a home screen widget with the day's progress, routine timers on the Lock Screen, and a kid mode that works well on an iPad on the kitchen counter.
 
