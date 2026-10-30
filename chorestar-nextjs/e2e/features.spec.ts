@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { config as dotenvConfig } from 'dotenv'
+import { readFileSync } from 'node:fs'
 
 /**
  * Feature checks for the Premium work (October 2026): what free families see
@@ -160,6 +161,22 @@ test.describe('free family', () => {
         return (data ?? []).map((e: { source: string }) => e.source)
       })
       .toContain('gate_allowance')
+  })
+
+  test('dashboard charts print live chores only, never archived ones', async ({ page }) => {
+    const { data: live } = await admin.from('chores').select('name').eq('child_id', kids[0].id).eq('is_active', true).limit(1).single()
+    const archived = `${TAG} archived chore`
+    await admin.from('chores').insert({ child_id: kids[0].id, name: archived, reward_cents: 0, is_active: false } as any)
+
+    await signIn(page)
+    await openSettings(page, 'downloads')
+    const [file] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('dialog', { name: /^settings$/i }).getByRole('button', { name: /^stars$/i }).click(),
+    ])
+    const pdf = readFileSync((await file.path())!).toString('latin1')
+    expect(pdf).toContain(live!.name)
+    expect(pdf).not.toContain(archived)
   })
 
   test('the weekly report is offered as Premium', async ({ page }) => {

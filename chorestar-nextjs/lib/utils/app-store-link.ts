@@ -9,7 +9,7 @@ export const APP_STORE_URL = `https://apps.apple.com/app/id${APP_ID}`
  * Link, not the API. Until it's filled in, links stay plain and untracked:
  * ct= alone records nothing.
  */
-export const APP_STORE_PROVIDER_TOKEN = ''
+export const APP_STORE_PROVIDER_TOKEN = '277825'
 
 /** Where a link sits. Few on purpose: Apple hides a campaign under 5 downloads. */
 export type AppStoreCampaign = 'home' | 'blog' | 'dashboard' | 'printable' | 'email'

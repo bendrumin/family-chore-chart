@@ -42,6 +42,30 @@ test.describe('printable chore chart', () => {
     await expect(page.getByRole('link', { name: 'Start free' }).first()).toHaveAttribute('href', '/signup')
   })
 
+  test('Arabic and emoji print as real pictures of the text, and no name still reads right', async ({ page }) => {
+    await page.goto('/printable-chore-chart')
+    const chores = page.getByRole('textbox', { name: /^Chore \d+$/ })
+    await expect(chores.first()).not.toHaveValue('')
+    const download = async () => {
+      const [file] = await Promise.all([
+        page.waitForEvent('download'),
+        page.getByRole('button', { name: 'Download the PDF' }).click(),
+      ])
+      return readFileSync((await file.path())!).toString('latin1')
+    }
+
+    const plain = await download()
+    expect(plain).toContain('My Weekly Chore Chart')
+    expect(plain).not.toContain("My's")
+    expect(plain).not.toContain('/Subtype /Image')
+
+    await page.getByLabel("Kid's name").fill('ليان')
+    await chores.first().fill('🧹 ترتيب السرير')
+    const arabic = await download()
+    expect(arabic).toContain('/Subtype /Image')
+    expect(arabic).not.toContain('þ')
+  })
+
   test('will not make an empty chart', async ({ page }) => {
     await page.goto('/printable-chore-chart')
     const remove = page.getByRole('button', { name: /^Remove / })

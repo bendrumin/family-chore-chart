@@ -82,7 +82,7 @@ export function PrintableChartBuilder() {
     setBusy(true)
     try {
       await exportWeeklyTemplate({
-        children: [{ id: 'kid', name: name.trim() || 'My' }],
+        children: [{ id: 'kid', name: name.trim() }],
         chores,
         childId: 'kid',
         weekStart: null,

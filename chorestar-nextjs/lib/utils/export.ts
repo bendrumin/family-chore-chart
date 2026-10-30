@@ -8,6 +8,7 @@ import { childWeekEarningsCents } from '@/lib/utils/earnings'
 import { isDueOn, isEveryDay, scheduleDays, weekDisplayOrder } from '@/lib/utils/schedule'
 import { parseLocalDate } from '@/lib/utils/date-helpers'
 import { formatMoney, formatMoneyForPdf } from '@/lib/constants/currencies'
+import { chartTitle, pdfText, pdfTextWidth } from '@/lib/utils/pdf-text'
 
 type Child = Database['public']['Tables']['children']['Row']
 type Chore = Database['public']['Tables']['chores']['Row']
@@ -251,7 +252,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
 
     // Child header
     doc.setFontSize(14)
-    doc.text(`${child.name}${child.age ? ` (Age ${child.age})` : ''}`, 20, yPosition)
+    pdfText(doc, `${child.name}${child.age ? ` (Age ${child.age})` : ''}`, 20, yPosition)
     yPosition += 15
 
     // Child stats
@@ -270,7 +271,7 @@ export async function exportFamilyReportPDF(options: ExportOptions) {
 
       for (const chore of childChores) {
         const choreCompletions = childCompletions.filter(c => c.chore_id === chore.id)
-        doc.text(`• ${chore.name}: ${choreCompletions.length} completions (${money(chore.reward_cents)} each)`, 30, yPosition)
+        pdfText(doc, `• ${chore.name}: ${choreCompletions.length} completions (${money(chore.reward_cents)} each)`, 30, yPosition)
         yPosition += 6
       }
     }
@@ -333,16 +334,16 @@ export async function exportPrintableChoreChart(options: ExportOptions) {
   for (const child of filteredChildren) {
     const childChores = chores.filter((c) => c.child_id === child.id);
     if (childChores.length === 0) {
-      doc.text(`${child.name} (no chores)`, margin, y);
+      pdfText(doc, `${child.name} (no chores)`, margin, y);
       y += rowH;
       continue;
     }
     doc.setFont(undefined, 'bold');
-    doc.text(child.name, margin, y);
+    pdfText(doc, child.name, margin, y);
     y += rowH;
     doc.setFont(undefined, 'normal');
     for (const chore of childChores) {
-      doc.text(chore.name, margin + 5, y);
+      pdfText(doc, chore.name, margin + 5, y, { maxWidth: colW - 6 });
       for (let col = 0; col < 7; col++) {
         const x = margin + colW * (col + 1) + 2;
         if (isDueOn(chore, dayOrder[col])) {
@@ -429,12 +430,13 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
     doc.rect(0, 0, pageW, 40, 'F');
 
     doc.setTextColor(colors.headerText[0], colors.headerText[1], colors.headerText[2]);
-    doc.setFontSize(22);
     doc.setFont(undefined, 'bold');
-    const title = style === 'stars' ? `${child.name}'s Weekly Chore Chart` :
-                  style === 'rainbow' ? `${child.name}'s Week` :
-                  `${child.name}: Weekly Chores`;
-    doc.text(title, margin, 26);
+    const title = chartTitle(child.name, style);
+    // Long names shrink to stay on the page.
+    let titleSize = 22;
+    doc.setFontSize(titleSize);
+    while (titleSize > 12 && pdfTextWidth(doc, title) > contentW) doc.setFontSize(--titleSize);
+    pdfText(doc, title, margin, 26, { maxWidth: contentW });
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
@@ -492,9 +494,7 @@ export async function exportWeeklyTemplate(options: WeeklyTemplateOptions) {
 
       // Chore name
       doc.setFontSize(9);
-      const [firstLine, ...rest] = doc.splitTextToSize(chore.name, nameW - 4) as string[];
-      const displayName = rest.length ? firstLine.replace(/\s*\S{0,3}$/, '') + '...' : firstLine;
-      doc.text(displayName, margin + 2, y + 4);
+      pdfText(doc, chore.name, margin + 2, y + 4, { maxWidth: nameW - 4 });
 
       // Reward hint
       if (chore.reward_cents > 0) {

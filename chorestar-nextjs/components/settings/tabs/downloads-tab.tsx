@@ -14,18 +14,23 @@ import { useSettings } from '@/lib/contexts/settings-context'
 import { getWeekStart } from '@/lib/utils/date-helpers'
 import type { Child, Chore, ChoreCompletion } from '@/lib/types'
 
+/** A chart for the fridge: no archived chores, no off-turn copies of a rotating one. */
+const activeChores = (chores: Chore[] | null) => (chores ?? []).filter((c) => c.is_active !== false)
+
 export function DownloadsTab() {
   const [isNewFeaturesOpen, setIsNewFeaturesOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const { user } = useAuth()
   const { settings } = useSettings()
   const currencyCode = settings?.currency_code ?? null
+  // The family owner's id, so a co-parent exports the family too.
+  const familyId = settings?.user_id ?? user?.id ?? null
 
   const entitlements = useEntitlements()
   const exportAllowed = entitlements.loading || entitlements.can('export')
 
   const handleExportPDF = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       toast.error('Please log in to export')
       return
     }
@@ -36,10 +41,10 @@ export function DownloadsTab() {
 
       // Load all data; chores/chore_completions use RLS (no user_id column)
       const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
-        supabase.from('children').select('*').eq('user_id', user.id),
+        supabase.from('children').select('*').eq('user_id', familyId),
         supabase.from('chores').select('*'),
         supabase.from('chore_completions').select('*'),
-        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
+        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', familyId).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -67,7 +72,7 @@ export function DownloadsTab() {
   }
 
   const handleExportCSV = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       toast.error('Please log in to export')
       return
     }
@@ -78,10 +83,10 @@ export function DownloadsTab() {
 
       // Load all data; chores/chore_completions use RLS (no user_id column)
       const [childrenRes, choresRes, completionsRes, familySettingsRes] = await Promise.all([
-        supabase.from('children').select('*').eq('user_id', user.id),
+        supabase.from('children').select('*').eq('user_id', familyId),
         supabase.from('chores').select('*'),
         supabase.from('chore_completions').select('*'),
-        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', user.id).single()
+        supabase.from('family_settings').select('reward_mode, daily_reward_cents, weekly_bonus_cents').eq('user_id', familyId).single()
       ])
 
       if (childrenRes.error || choresRes.error || completionsRes.error) {
@@ -132,7 +137,7 @@ export function DownloadsTab() {
               variant="gradient"
               size="sm"
               onClick={handleExportPDF}
-              disabled={isExporting || !exportAllowed}
+              disabled={isExporting || !exportAllowed || !user}
               className="w-full font-bold"
             >
               {isExporting ? 'Exporting...' : 'Export PDF'}
@@ -147,7 +152,7 @@ export function DownloadsTab() {
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={isExporting || !exportAllowed}
+              disabled={isExporting || !exportAllowed || !user}
               className="w-full font-bold"
             >
               {isExporting ? 'Exporting...' : 'Export CSV'}
@@ -162,18 +167,18 @@ export function DownloadsTab() {
               variant="gradient"
               size="sm"
               onClick={async () => {
-                if (!user) { toast.error('Please log in to export'); return }
+                if (!user || !familyId) { toast.error('Please log in to export'); return }
                 setIsExporting(true)
                 try {
                   const supabase = createClient()
                   const [childrenRes, choresRes] = await Promise.all([
-                    supabase.from('children').select('*').eq('user_id', user.id),
+                    supabase.from('children').select('*').eq('user_id', familyId),
                     supabase.from('chores').select('*'),
                   ])
                   if (childrenRes.error || choresRes.error) throw new Error('Failed to load data')
                   await exportPrintableChoreChart({
                     children: childrenRes.data || [],
-                    chores: choresRes.data || [],
+                    chores: activeChores(choresRes.data),
                     completions: [],
                     weekStart: getWeekStart(),
                     currencyCode,
@@ -185,7 +190,7 @@ export function DownloadsTab() {
                   setIsExporting(false)
                 }
               }}
-              disabled={isExporting}
+              disabled={isExporting || !user}
               className="w-full font-bold"
             >
               {isExporting ? 'Exporting...' : 'Print Chart'}
@@ -206,21 +211,21 @@ export function DownloadsTab() {
                   key={tmpl.style}
                   variant="outline"
                   size="sm"
-                  disabled={isExporting}
+                  disabled={isExporting || !user}
                   className="w-full font-bold text-xs"
                   onClick={async () => {
-                    if (!user) { toast.error('Please log in to export'); return }
+                    if (!user || !familyId) { toast.error('Please log in to export'); return }
                     setIsExporting(true)
                     try {
                       const supabase = createClient()
                       const [childrenRes, choresRes] = await Promise.all([
-                        supabase.from('children').select('*').eq('user_id', user.id),
+                        supabase.from('children').select('*').eq('user_id', familyId),
                         supabase.from('chores').select('*'),
                       ])
                       if (childrenRes.error || choresRes.error) throw new Error('Failed to load data')
                       await exportWeeklyTemplate({
                         children: childrenRes.data || [],
-                        chores: choresRes.data || [],
+                        chores: activeChores(choresRes.data),
                         completions: [],
                         weekStart: getWeekStart(),
                         currencyCode,
