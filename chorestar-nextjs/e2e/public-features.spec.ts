@@ -62,8 +62,10 @@ test.describe('printable chore chart', () => {
     await page.getByLabel("Kid's name").fill('ليان')
     await chores.first().fill('🧹 ترتيب السرير')
     const arabic = await download()
+    // The name and chore go in as pictures, so they can't reach the font as
+    // "'s Weekly Chore Chart" text with garbled letters in front of it.
     expect(arabic).toContain('/Subtype /Image')
-    expect(arabic).not.toContain('þ')
+    expect(arabic).not.toContain("'s Weekly Chore Chart")
   })
 
   test('will not make an empty chart', async ({ page }) => {
