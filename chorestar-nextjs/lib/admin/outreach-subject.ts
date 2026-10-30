@@ -15,6 +15,7 @@ const INTERNAL_SLUGS = [
   'faded',
   'paid-never-started',
   'app-review',
+  'app-invite',
 ]
 
 /** Strip accidental internal prefixes/tags from a subject before send. */

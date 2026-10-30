@@ -40,7 +40,7 @@ async function fetchAuthUsers(admin: SupabaseClient<Database>) {
 }
 
 export async function analyzePowerUsers(admin: SupabaseClient<Database>): Promise<PowerUserReport> {
-  const [profiles, children, chores, choreCompletions, routines, routineCompletions, badges, childPins, kidSessions, authUsers] =
+  const [profiles, children, chores, choreCompletions, routines, routineCompletions, badges, childPins, kidSessions, authUsers, pushTokens] =
     await Promise.all([
       // signup_source (021) and apple_original_transaction_id (018) are not in the generated types.
       fetchAll<{ id: string; email: string; family_name: string; subscription_type: string; created_at: string; updated_at: string; signup_source: { platform?: string } | null; apple_original_transaction_id: string | null }>(admin, 'profiles', 'id, email, family_name, subscription_type, created_at, updated_at, signup_source, apple_original_transaction_id'),
@@ -53,7 +53,11 @@ export async function analyzePowerUsers(admin: SupabaseClient<Database>): Promis
       fetchAll<{ child_id: string; created_at: string }>(admin, 'child_pins', 'child_id, created_at'),
       fetchAll<{ child_id: string; created_at: string }>(admin, 'kid_sessions', 'child_id, created_at'),
       fetchAuthUsers(admin),
+      // device_push_tokens is not in the generated types either.
+      fetchAll<{ user_id: string; platform: string }>(admin, 'device_push_tokens' as TableName, 'user_id, platform'),
     ])
+  // A web signup who later installed the iPhone app shows up here.
+  const iosDevices = new Set(pushTokens.filter((t) => t.platform === 'ios').map((t) => t.user_id))
 
   const authById = new Map(authUsers.map((u) => [u.id, u]))
   const childrenByUser = new Map<string, typeof children>()
@@ -97,7 +101,7 @@ export async function analyzePowerUsers(admin: SupabaseClient<Database>): Promis
         engagementTier: 'dormant',
         usesKidLogin: false,
         usesRoutines: false,
-        onIOS: profile?.signup_source?.platform === 'ios_app' || !!profile?.apple_original_transaction_id,
+        onIOS: profile?.signup_source?.platform === 'ios_app' || !!profile?.apple_original_transaction_id || iosDevices.has(userId),
       })
     }
     return statsByUser.get(userId)!

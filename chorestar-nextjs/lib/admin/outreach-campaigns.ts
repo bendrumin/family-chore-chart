@@ -486,6 +486,46 @@ Ben
 chorestar.app`
     },
   },
+
+  'app-invite': {
+    id: 'app-invite',
+    label: 'iPhone app invite',
+    description:
+      'Engaged families who only use the web: 10+ check-offs, active in the last 30 days, 14+ days in. Points them at the iPhone and iPad app, which only people who downloaded it can review.',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          if (u.onIOS) return false
+          if ((u.tenureDays ?? 0) < 14) return false
+          if ((u.daysSinceLastActivity ?? 999) > 30) return false
+          return (u.choreCompletions || 0) + (u.routineCompletions || 0) >= 10
+        })
+      )
+        .sort((a, b) => b.activityScore - a.activityScore)
+        .slice(0, 25)
+    },
+    subject() {
+      return 'ChoreStar is on the iPhone now'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const done = (user.choreCompletions || 0) + (user.routineCompletions || 0)
+      return `${hi}
+
+I'm Ben, the parent who builds ChoreStar. The ${user.familyName} has checked off ${done} chores and routines on the web, so I wanted to make sure you know there is now a ChoreStar app for iPhone and iPad:
+
+https://apps.apple.com/app/id6761279049
+
+It is the same account, so sign in the way you do on the web and everything is already there. The app adds a home screen widget with the day's progress, routine timers on the Lock Screen, and a kid mode that works well on an iPad on the kitchen counter.
+
+If your family is on Android, a native app is on the way. Reply and I'll let you know when it's ready.
+
+And if anything about ChoreStar could work better for you, just reply. I read every email myself.
+
+Ben
+chorestar.app`
+    },
+  },
 }
 
 export function resolveCampaignRecipients(

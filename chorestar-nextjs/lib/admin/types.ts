@@ -24,7 +24,7 @@ export interface PowerUserStat {
   engagementTier: 'power' | 'active' | 'light' | 'dormant'
   usesKidLogin: boolean
   usesRoutines: boolean
-  /** Signed up in the iOS app or pays through Apple, so has the App Store app. */
+  /** Signed up in the iOS app, pays through Apple, or registered an iPhone for push, so has the App Store app. */
   onIOS: boolean
 }
 
