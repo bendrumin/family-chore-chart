@@ -3,6 +3,7 @@ import { GRADIENT_TEXT } from '@/lib/constants/brand'
 import { ChoreStarLogo } from '@/components/brand/logo'
 
 const FOOTER_GUIDES: [string, string][] = [
+  ['/printable-chore-chart', 'Free Printable Chore Chart'],
   ['/blog/best-free-chore-apps-for-kids', 'Best Free Chore Apps'],
   ['/blog/age-appropriate-chores-by-age', 'Chores by Age'],
   ['/blog/split-chores-fairly-between-siblings', 'Fair Chores for Siblings'],

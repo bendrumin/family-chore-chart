@@ -29,6 +29,7 @@ export function getSitemapEntries(): SitemapEntry[] {
     // Its own date, not `fresh`: that tracks the newest blog post, which would
     // have dated this page a week before it existed and told crawlers there was
     // nothing new to fetch.
+    { path: '/printable-chore-chart', lastModified: '2026-10-29', changeFrequency: 'monthly', priority: '0.8' },
     { path: '/android-beta', lastModified: '2026-09-22', changeFrequency: 'weekly', priority: '0.7' },
     { path: '/partners', lastModified: '2026-05-16', changeFrequency: 'monthly', priority: '0.6' },
     { path: '/privacy', lastModified: '2026-03-28', changeFrequency: 'yearly', priority: '0.3' },

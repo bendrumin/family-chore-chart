@@ -7,7 +7,7 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const AXE = require.resolve('axe-core/axe.min.js')
 const base = process.argv[2] || 'http://localhost:3005'
-const routes = ['/', '/login', '/signup', '/forgot-password', '/kid-login', '/how-to', '/blog', '/blog/morning-routine-for-kids', '/compare', '/compare/skylight-alternative', '/support', '/partners', '/privacy', '/terms']
+const routes = ['/', '/login', '/signup', '/forgot-password', '/kid-login', '/how-to', '/blog', '/blog/morning-routine-for-kids', '/compare', '/compare/skylight-alternative', '/printable-chore-chart', '/support', '/partners', '/privacy', '/terms']
 const browser = await chromium.launch()
 let groups = 0
 for (const route of routes) for (const mode of ['light', 'dark']) {

@@ -41,11 +41,11 @@ export default defineConfig({
     {
       // Premium feature checks (e2e/features.spec.ts, e2e/more-features.spec.ts and
       // e2e/premium-features.spec.ts): sign in as the demo family itself, so
-      // no setup dependency.
+      // no setup dependency. e2e/public-features.spec.ts covers signed-out pages.
       name: 'features',
       // Installed Google Chrome: no separate browser download to go stale.
       use: { ...devices['Desktop Chrome'], channel: 'chrome', video: 'off' },
-      testMatch: /(^|\/)(premium-|more-|engagement-|plan-limits-)?features\.spec\.ts$/,
+      testMatch: /(^|\/)(premium-|more-|engagement-|plan-limits-|public-)?features\.spec\.ts$/,
     },
     {
       name: 'create-routine',
