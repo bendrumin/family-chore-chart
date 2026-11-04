@@ -3766,6 +3766,19 @@ class SupabaseManager: ObservableObject {
             await loadRemoteData()
         }
     }
+
+    private var lastForegroundRefresh: Date?
+
+    /// Reloads the family when the app comes back to the foreground, at most
+    /// once a minute (Entitlements.shouldRefreshOnForeground). Skipped until
+    /// the first load has finished, which covers launch.
+    @MainActor
+    func refreshOnForeground(now: Date = Date()) {
+        guard isAuthenticated, initialDataLoaded,
+              Entitlements.shouldRefreshOnForeground(lastRefresh: lastForegroundRefresh, now: now) else { return }
+        lastForegroundRefresh = now
+        refreshData()
+    }
     
     func checkAuthStatusSync() {
         Task {

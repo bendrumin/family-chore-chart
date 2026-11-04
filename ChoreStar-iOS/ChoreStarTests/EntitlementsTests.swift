@@ -19,6 +19,14 @@ final class EntitlementsTests: XCTestCase {
         XCTAssertFalse(Entitlements.canUse(.analytics, isPremium: false, createdAt: after))
     }
 
+    func testForegroundRefreshIsThrottledToOncePerMinute() {
+        let t = after
+        XCTAssertTrue(Entitlements.shouldRefreshOnForeground(lastRefresh: nil, now: t), "first return to the app reloads")
+        XCTAssertFalse(Entitlements.shouldRefreshOnForeground(lastRefresh: t, now: t.addingTimeInterval(59)))
+        XCTAssertTrue(Entitlements.shouldRefreshOnForeground(lastRefresh: t, now: t.addingTimeInterval(60)))
+        XCTAssertTrue(Entitlements.shouldRefreshOnForeground(lastRefresh: t, now: t.addingTimeInterval(3 * 86_400)), "a trial that lapsed while the app sat in memory")
+    }
+
     func testPremiumAlwaysPasses() {
         XCTAssertTrue(Entitlements.canUse(.sharing, isPremium: true, createdAt: after))
         XCTAssertTrue(Entitlements.canUse(.themes, isPremium: true, createdAt: nil))

@@ -10,6 +10,7 @@ struct ChoreStarApp: App {
     // SwiftUI apps have no AppDelegate by default, but APNs delivers the device
     // token only through UIApplicationDelegate callbacks.
     @UIApplicationDelegateAdaptor(PushDelegate.self) private var pushDelegate
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         // Screenshot runs (fastlane snapshot injects "-FASTLANE_SNAPSHOT YES",
@@ -37,6 +38,11 @@ struct ChoreStarApp: App {
                 .onOpenURL { url in
                     deepLinks.handle(url)
                 }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Picks up Premium ending (and anything a co-parent or kid
+            // changed) without a force-quit.
+            if phase == .active { supabaseManager.refreshOnForeground() }
         }
     }
 }
