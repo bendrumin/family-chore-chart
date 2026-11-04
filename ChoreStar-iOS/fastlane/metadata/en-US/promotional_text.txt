@@ -1,1 +1,1 @@
-New: Star Pets! Each kid adopts a pet that grows with every chore. Plus money jars and sibling challenges. Monthly and yearly both start with 7 days free.
+New in 2.6.1: easier to read on every theme, clearer VoiceOver labels, bigger tap targets for checking off chores, and a sign-out fix.
