@@ -370,7 +370,11 @@ struct ChoresView: View {
                         }
                     }
                 } header: {
+                    // Primary ink: the default grey header failed contrast on the tinted background.
                     Text(childName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.choreStarTextPrimary)
+                        .textCase(nil)
                 }
             }
         }
@@ -431,18 +435,32 @@ struct ChoreListRow: View {
         Color.fromString(manager.children.first(where: { $0.id == chore.childId })?.avatarColor ?? "")
     }
 
+    private var rowAccessibilityLabel: String {
+        let state = isCompleted ? String(localized: "done") : String(localized: "not done")
+        if manager.isPerChoreRewardMode {
+            return "\(chore.name), \(manager.formatMoney(chore.reward)), \(state)"
+        }
+        return "\(chore.name), \(state)"
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
+        // 8, not 12: the 44pt checkbox and edit targets took width the name needs.
+        HStack(spacing: 8) {
             Button(action: toggle) {
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
                     .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+                    // The 24pt glyph inside Apple's 44pt minimum tap area.
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(PlainButtonStyle())
 
             AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 24)
+                // Decorative: the name follows. VoiceOver read the asset name ("ChoreIcons/1F9F8").
+                .accessibilityHidden(true)
                 .font(.title3)
                 .frame(width: 28, height: 28)
                 .saturation(isCompleted ? 0.3 : 1)
@@ -452,14 +470,17 @@ struct ChoreListRow: View {
                 .font(.body)
                 .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
                 .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                .lineLimit(1)
+                .lineLimit(2)
+                .layoutPriority(1)
 
             Spacer()
 
             if manager.isPerChoreRewardMode {
                 Text(manager.formatMoney(chore.reward))
                     .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+                    .foregroundColor(isCompleted ? .choreStarSuccessInk : .choreStarTextSecondary)
+                    // Never wrap an amount ("$0.2 / 5"); the name wraps instead.
+                    .fixedSize()
             }
 
             Button {
@@ -471,12 +492,22 @@ struct ChoreListRow: View {
                     .frame(width: 32, height: 32)
                     .background(Color.choreStarPrimary.opacity(0.12))
                     .clipShape(Circle())
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
             .accessibilityLabel("Edit \(chore.name)")
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: toggle)
+        // One VoiceOver element per chore. The whole row is the tap target,
+        // so its icon and amount counted as targets of their own, each under
+        // 44pt (the audit's hit-area failures). Swipe actions stay available.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(rowAccessibilityLabel)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { toggle() }
+        .accessibilityAction(named: Text("Edit")) { onEdit() }
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button(action: toggle) {
                 Label(isCompleted ? "Undo" : "Done",
@@ -561,6 +592,8 @@ struct ChoreGroupCard: View {
                             )
                     }
                     .frame(width: 44, height: 44)
+                    // Decorative: the name sits right beside it.
+                    .accessibilityHidden(true)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -612,6 +645,14 @@ struct EnhancedChoreRow: View {
         Color.fromString(manager.children.first(where: { $0.id == chore.childId })?.avatarColor ?? "")
     }
     
+    private var rowAccessibilityLabel: String {
+        let state = isCompleted ? String(localized: "done") : String(localized: "not done")
+        if manager.isPerChoreRewardMode {
+            return "\(chore.name), \(manager.formatMoney(chore.reward)), \(state)"
+        }
+        return "\(chore.name), \(state)"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Button(action: toggle) {
@@ -620,10 +661,15 @@ struct EnhancedChoreRow: View {
                     .foregroundColor(isCompleted ? .choreStarSuccess : Color.choreStarTextSecondary.opacity(0.45))
                     .symbolEffect(.bounce, value: isCompleted)
                     .animation(.spring(response: 0.35, dampingFraction: 0.65), value: isCompleted)
+                    // The 24pt glyph inside Apple's 44pt minimum tap area.
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
 
             AdaptiveIcon(icon: chore.icon, fallbackSymbol: "checklist", tint: childColor, iconSize: 22)
+                // Decorative: the name follows. VoiceOver read the asset name ("ChoreIcons/1F9F8").
+                .accessibilityHidden(true)
                 .font(.subheadline)
                 .frame(width: 26, height: 26)
                 .saturation(isCompleted ? 0.3 : 1)
@@ -636,7 +682,8 @@ struct EnhancedChoreRow: View {
                     .fontWeight(.medium)
                     .foregroundColor(isCompleted ? .choreStarTextSecondary : .choreStarTextPrimary)
                     .strikethrough(isCompleted, color: .choreStarTextSecondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .layoutPriority(1)
 
                 if let description = chore.description, !description.isEmpty {
                     Text(description)
@@ -655,6 +702,8 @@ struct EnhancedChoreRow: View {
                     .foregroundColor(chore.isDueToday ? .choreStarTextSecondary : .choreStarTextSecondary.opacity(0.7))
                 }
             }
+            // Wrap only when the row is actually out of room ("Make / your bed" otherwise).
+            .layoutPriority(1)
 
             Spacer()
 
@@ -662,7 +711,9 @@ struct EnhancedChoreRow: View {
             if manager.isPerChoreRewardMode {
                 Text(manager.formatMoney(chore.reward))
                     .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundColor(isCompleted ? .choreStarSuccess : .choreStarTextSecondary)
+                    .foregroundColor(isCompleted ? .choreStarSuccessInk : .choreStarTextSecondary)
+                    // Never wrap an amount ("$0.2 / 5"); the name wraps instead.
+                    .fixedSize()
             }
 
             Button {
@@ -674,13 +725,24 @@ struct EnhancedChoreRow: View {
                     .frame(width: 32, height: 32)
                     .background(Color.choreStarPrimary.opacity(0.12))
                     .clipShape(Circle())
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
             .accessibilityLabel("Edit \(chore.name)")
         }
         .padding(.vertical, 10)
         .contentShape(Rectangle())
-        .opacity(isCompleted ? 0.75 : 1.0)
+        // One VoiceOver element per chore. The whole row is the tap target,
+        // so its icon and amount counted as targets of their own, each under
+        // 44pt (the audit's hit-area failures). Swipe actions stay available.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(rowAccessibilityLabel)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { toggle() }
+        .accessibilityAction(named: Text("Edit")) { onEdit() }
+        // No whole-row fade when done: on top of the grey, struck-through
+        // name it took the text below AA contrast.
         .onTapGesture(perform: toggle)
         .contextMenu {
             Button(action: { onEdit() }) {
@@ -785,12 +847,13 @@ struct ThemeChip: View {
             HStack(spacing: 6) {
                 if let leadingColor {
                     ZStack {
+                        // A colour dot: the kid's name is right beside it. An initial
+                        // in white on light avatar colours failed contrast, and the
+                        // fixed 18pt circle couldn't grow with Dynamic Type.
                         Circle().fill(leadingColor)
-                        Text(leadingInitial ?? "")
-                            .font(.caption2.weight(.bold))
-                            .foregroundColor(.white)
                     }
-                    .frame(width: 18, height: 18)
+                    .frame(width: 12, height: 12)
+                    .accessibilityHidden(true)
                 }
                 Text(LocalizedStringKey(title))
                     .font(.subheadline.weight(selected ? .semibold : .medium))

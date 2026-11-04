@@ -138,6 +138,18 @@ class ThemeManager: ObservableObject {
         customAccent ?? activeTheme?.primaryColor ?? .choreStarPrimary
     }
 
+    /// The accent as text and control tint: deepened in light mode until it
+    /// reads on white cards, lifted in dark mode until it reads on dark ones.
+    /// Thanksgiving's orange as a white-card button label was 2.6:1.
+    var accentInk: Color {
+        let accent = accentColor
+        return Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(accent.ensuringReadable(on: Color(UIColor.secondarySystemGroupedBackground.resolvedColor(with: traits))))
+                : UIColor(accent.ensuringReadable(on: .white))
+        })
+    }
+
     var primaryColor: Color {
         customAccent ?? activeTheme?.primaryColor ?? .choreStarPrimary
     }
@@ -151,9 +163,32 @@ class ThemeManager: ObservableObject {
         // web landed on — via a single-color "gradient" so every consumer of
         // this property keeps working unchanged.
         if let c = customAccent {
-            return LinearGradient(colors: [c, c], startPoint: .topLeading, endPoint: .bottomTrailing)
+            let ink = Self.whiteInkSafe(c)
+            return LinearGradient(colors: [ink, ink], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
-        return activeTheme?.gradient ?? Color.choreStarGradient
+        // Classic (indigo -> purple) is 4.46:1 and 4.2:1 under white, just
+        // short of AA, so it gets the same treatment as the seasonal themes.
+        guard let theme = activeTheme else {
+            return LinearGradient(
+                colors: [Self.whiteInkSafe(.choreStarPrimary), Self.whiteInkSafe(.choreStarPurple)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+        return LinearGradient(
+            colors: [Self.whiteInkSafe(theme.primaryColor), Self.whiteInkSafe(theme.secondaryColor)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    /// This gradient carries white text everywhere it's used (the Home hero,
+    /// sign-in, onboarding, kid mode, celebration buttons), so each stop is
+    /// darkened until white reads at WCAG AA on it, like the web's hero fill
+    /// (accessiblePairPreferWhite). Thanksgiving's #ea8811 under white was
+    /// 2.6:1 and failed the accessibility audit; Classic already passes.
+    static func whiteInkSafe(_ color: Color) -> Color {
+        color.ensuringReadable(on: .white)
     }
     
     var themeEmoji: String? {

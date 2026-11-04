@@ -84,7 +84,7 @@ struct DashboardView: View {
                     .frame(width: 62, height: 62)
 
                 (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
-                    + Text("paused").fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
+                    + Text("paused").fontWeight(.semibold).foregroundColor(.white))
                     .font(.caption)
                     .lineLimit(1)
             }
@@ -117,7 +117,7 @@ struct DashboardView: View {
                 .frame(width: 62, height: 62)
 
                 (Text("\(firstName) ").fontWeight(.bold).foregroundColor(.white)
-                    + Text(countText).fontWeight(.semibold).foregroundColor(.white.opacity(0.75)))
+                    + Text(countText).fontWeight(.semibold).foregroundColor(.white))
                     .font(.caption)
                     .lineLimit(1)
             }
@@ -160,10 +160,16 @@ struct DashboardView: View {
                         // Greeting left, date right. On vacation the row says
                         // so, with the through-date where the date usually sits.
                         HStack(alignment: .firstTextBaseline) {
-                            Text(vacationThroughText != nil ? "🏖️ On vacation" : "\(greeting.emoji) \(greeting.text)")
+                            // The emoji is its own (decorative) Text: its glyph is taller
+                            // than the line, which the audit read as clipped text.
+                            HStack(spacing: 4) {
+                                Text(vacationThroughText != nil ? "🏖️" : greeting.emoji)
+                                    .accessibilityHidden(true)
+                                Text(vacationThroughText != nil ? "On vacation" : greeting.text)
+                            }
                                 .font(.subheadline)
                                 .fontWeight(.medium)
-                                .foregroundColor(.white.opacity(0.92))
+                                .foregroundColor(.white)
 
                             Spacer()
 
@@ -171,12 +177,12 @@ struct DashboardView: View {
                                 Text("through \(vacationThroughText)")
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(.white.opacity(0.75))
+                                    .foregroundColor(.white)
                             } else {
                                 Text(Date.now, format: .dateTime.weekday(.wide).month(.wide).day())
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(.white.opacity(0.75))
+                                    .foregroundColor(.white)
                             }
                         }
 
@@ -205,7 +211,7 @@ struct DashboardView: View {
                             Text("Add a child to start tracking chores.")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.white.opacity(0.85))
+                                .foregroundColor(.white)
                                 .padding(.top, 8)
                         } else {
                             HStack(alignment: .center, spacing: 16) {
@@ -230,7 +236,7 @@ struct DashboardView: View {
                                         Text("Nothing due. Streaks are safe.")
                                             .font(.caption)
                                             .fontWeight(.semibold)
-                                            .foregroundColor(.white.opacity(0.85))
+                                            .foregroundColor(.white)
 
                                         Button {
                                             Task { _ = await manager.clearVacation() }
@@ -257,7 +263,7 @@ struct DashboardView: View {
                                              : "No chores due today")
                                             .font(.caption)
                                             .fontWeight(.semibold)
-                                            .foregroundColor(.white.opacity(0.85))
+                                            .foregroundColor(.white)
                                             .contentTransition(.numericText())
                                             .animation(.snappy, value: earnedTodayText)
                                     }
@@ -636,13 +642,19 @@ private struct TrayRow<Info: View, Actions: View>: View {
         self.actions = actions()
     }
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    // Chosen by size class, not ViewThatFits: ViewThatFits kept a squeezed,
+    // unused side-by-side copy whose title the accessibility audit read as
+    // clipped text. iPad (regular) has the room; iPhone stacks.
     var body: some View {
-        ViewThatFits(in: .horizontal) {
+        if horizontalSizeClass == .regular {
             HStack(spacing: 12) {
                 info
                 Spacer(minLength: 4)
                 actions
             }
+        } else {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     info
@@ -697,15 +709,15 @@ struct ApprovalTrayView: View {
                                 Text(r.itemTitle)
                                     .font(.body.weight(.semibold))
                                     .foregroundColor(.choreStarTextPrimary)
-                                    .lineLimit(1)
                                 HStack(spacing: 4) {
                                     Text("\(r.childName) wants this")
-                                        .foregroundColor(Color.fromString(r.childColor ?? ""))
+                                        .foregroundColor(Color.fromString(r.childColor ?? "").inkOnCard)
                                     Text("· \(manager.formatMoney(Double(r.priceCents) / 100.0))")
                                         .foregroundColor(.choreStarTextSecondary)
                                 }
                                 .font(.caption.weight(.medium))
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         } actions: {
                             Button {
                                 Haptics.light()
@@ -713,6 +725,8 @@ struct ApprovalTrayView: View {
                             } label: {
                                 Text("Not now")
                                     .font(.subheadline.weight(.semibold))
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
                                     .padding(.horizontal, 10)
                                     .frame(height: 40)
                                     .background(Color.choreStarTextSecondary.opacity(0.12))
@@ -737,7 +751,7 @@ struct ApprovalTrayView: View {
                                     .font(.subheadline.weight(.bold))
                                     .padding(.horizontal, 14)
                                     .frame(height: 40)
-                                    .background(Color.choreStarSuccess)
+                                    .background(Color.choreStarSuccessFill)
                                     .foregroundColor(.white)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
@@ -767,6 +781,7 @@ struct ApprovalTrayView: View {
                                 .accessibilityLabel("See \(item.childName)'s photo for \(item.choreName)")
                             } else {
                                 AdaptiveIcon(icon: item.choreIcon, fallbackSymbol: "checklist", tint: Color.fromString(item.childColor ?? ""), iconSize: 26)
+                                    .accessibilityHidden(true)
                                     .frame(width: 52, height: 52)
                                     .background(Color.choreStarBackground)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -776,10 +791,11 @@ struct ApprovalTrayView: View {
                                 Text(item.choreName)
                                     .font(.body.weight(.semibold))
                                     .foregroundColor(.choreStarTextPrimary)
-                                    .lineLimit(1)
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 HStack(spacing: 4) {
                                     Text(item.childName)
-                                        .foregroundColor(Color.fromString(item.childColor ?? ""))
+                                        .foregroundColor(Color.fromString(item.childColor ?? "").inkOnCard)
                                     Text("· \(item.dayName)")
                                         .foregroundColor(.choreStarTextSecondary)
                                     if item.hasPhoto {
@@ -817,7 +833,7 @@ struct ApprovalTrayView: View {
                                 .fixedSize(horizontal: true, vertical: false)
                                 .padding(.horizontal, 12)
                                 .frame(height: 40)
-                                .background(Color.choreStarSuccess)
+                                .background(Color.choreStarSuccessFill)
                                 .foregroundColor(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
@@ -875,7 +891,7 @@ struct ApprovalTrayView: View {
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.choreStarSuccess)
+                                .background(Color.choreStarSuccessFill)
                                 .foregroundColor(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                         }

@@ -47,7 +47,9 @@ final class ChoreStarUITests: XCTestCase {
     /// auth screen and these tests only ever skipped.
     private func relaunchSignedOut() {
         app.terminate()
-        app.launchArguments = ["-chorestar-fresh"]
+        // `-saved_email ""` overrides the remembered email for this launch, so
+        // a test that types one starts from an empty field.
+        app.launchArguments = ["-chorestar-fresh", "-saved_email", ""]
         app.launch()
     }
 
@@ -181,7 +183,17 @@ final class ChoreStarUITests: XCTestCase {
 
         let passwordField = app.secureTextFields["auth.passwordField"].firstMatch
         passwordField.tap()
-        passwordField.typeText(password)
+        // Pasted, not typed: typeText mistypes symbols ("!") on the simulator
+        // keyboard, so a password with one never signed in.
+        UIPasteboard.general.string = password
+        passwordField.press(forDuration: 1.2)
+        let paste = app.menuItems["Paste"].firstMatch
+        if paste.waitForExistence(timeout: 3) {
+            paste.tap()
+        } else {
+            passwordField.typeText(password)
+        }
+        UIPasteboard.general.string = ""
 
         app.buttons["auth.submitButton"].firstMatch.tap()
 

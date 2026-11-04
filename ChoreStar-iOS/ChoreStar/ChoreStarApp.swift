@@ -16,7 +16,9 @@ struct ChoreStarApp: App {
         // Screenshot runs (fastlane snapshot injects "-FASTLANE_SNAPSHOT YES",
         // dash included) must not have tip cards photobombing the captures.
         let snapshotArgs = ProcessInfo.processInfo.arguments
-        if snapshotArgs.contains("-FASTLANE_SNAPSHOT") || snapshotArgs.contains("FASTLANE_SNAPSHOT") {
+        // `-chorestar-hidetips`: the accessibility audit, which would otherwise
+        // flag Apple's own TipKit popover.
+        if snapshotArgs.contains("-FASTLANE_SNAPSHOT") || snapshotArgs.contains("FASTLANE_SNAPSHOT") || snapshotArgs.contains("-chorestar-hidetips") {
             Tips.hideAllTipsForTesting()
         }
         try? Tips.configure([

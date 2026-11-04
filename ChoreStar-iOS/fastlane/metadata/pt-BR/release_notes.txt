@@ -1,7 +1,8 @@
-Versão 2.6: Pets Estrela.
+Versão 2.6.1: correções e leitura mais fácil.
 
-• Pets Estrela: cada criança adota um pet na própria tela, dá um nome e vê ele crescer a cada tarefa e rotina. Toda família ganha um cachorrinho. O Premium adiciona gatinho, coelhinho, dino, panda e coruja, chapéus e acessórios que desbloqueiam conforme sobem de nível, um prêmio novo todo mês e crescer até o fim
-• Veja o pet de cada criança no Início e ative ou desative por criança em Ajustes > Pets Estrela
-• Depois de tudo configurado, o Início mostra um recurso que sua família ainda não experimentou, um de cada vez
+• Corrigimos um fechamento inesperado que algumas famílias tinham ao sair da conta
+• Se o Premium terminar, o app agora mostra o que o plano grátis pausou assim que você volta a ele, e as crianças pausadas aparecem como Pausado. Tudo volta assim que você renova, inclusive os temas Premium
+• Mais fácil de ler e usar: mais contraste nas cores sazonais, botões e textos, áreas maiores para marcar tarefas e rótulos do VoiceOver mais claros em tarefas, gráficos e Pets Estrela
+• "I'm a Kid!" volta a caber na tela nos iPhones mais novos
 
-Escreva para hi@chorestar.app
+Dúvidas ou sugestões: hi@chorestar.app

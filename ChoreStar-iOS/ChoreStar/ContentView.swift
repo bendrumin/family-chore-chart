@@ -408,7 +408,7 @@ struct MainTabs: View {
                 }
                 .tag(4)
         }
-        .tint(themeManager.accentColor)
+        .tint(themeManager.accentInk)
         .onAppear {
             evaluateOnboarding()
             applyDeepLinks()

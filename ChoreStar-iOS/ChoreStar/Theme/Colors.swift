@@ -16,6 +16,28 @@ extension Color {
     static let choreStarSecondary = Color(red: 0.063, green: 0.725, blue: 0.506)    // #10b981 (Emerald)
     static let choreStarAccent = Color(red: 0.961, green: 0.620, blue: 0.043)       // #f59e0b (Amber)
     static let choreStarSuccess = Color(red: 0.063, green: 0.725, blue: 0.506)      // #10b981 (Emerald)
+    /// Success green deep enough for white text on it (Approve, Yes, BEST VALUE); #10b981 under white is 2.5:1.
+    static let choreStarSuccessFill = Color.choreStarSuccess.ensuringReadable(on: .white)
+    /// Destructive red as text on a card: systemRed on white is 3.6:1, below AA.
+    static let choreStarDestructiveInk = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor.systemRed
+            : UIColor(Color(UIColor.systemRed.resolvedColor(with: traits)).ensuringReadable(on: .white))
+    })
+    /// A kid's avatar colour used as text on a card ("Maya wants this"),
+    /// deepened or lifted until it reads there; orange on white was 2.9:1.
+    var inkOnCard: Color {
+        let base = self
+        return Color(UIColor { traits in
+            let card = Color(UIColor.secondarySystemGroupedBackground.resolvedColor(with: traits))
+            return UIColor(base.ensuringReadable(on: card))
+        })
+    }
+
+    /// Success green as TEXT: deepened in light mode to read on white cards, as-is in dark.
+    static let choreStarSuccessInk = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(Color.choreStarSuccess) : UIColor(Color.choreStarSuccessFill)
+    })
     static let choreStarWarning = Color(red: 0.961, green: 0.620, blue: 0.043)      // #f59e0b (Amber)
     static let choreStarDanger = Color(red: 0.937, green: 0.267, blue: 0.267)       // #ef4444 (Red)
     /// Darker red for destructive buttons that carry white text. #ef4444 is only

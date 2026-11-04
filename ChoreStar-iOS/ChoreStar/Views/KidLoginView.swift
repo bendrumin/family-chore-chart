@@ -106,7 +106,7 @@ struct KidLoginView: View {
     private var familyCodeCard: some View {
         VStack(spacing: 20) {
             TextField("Family code", text: $familyCode)
-                .font(.system(size: 28, weight: .bold, design: .monospaced))
+                .font(.system(.title, design: .monospaced).weight(.bold)) // title is 28pt and scales with Dynamic Type
                 .multilineTextAlignment(.center)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()

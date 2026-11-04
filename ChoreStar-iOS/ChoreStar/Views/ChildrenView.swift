@@ -38,7 +38,8 @@ struct ChildrenView: View {
 
                                 Text("Manage your family and track their progress")
                                     .font(.subheadline)
-                                    .foregroundColor(.choreStarTextSecondary)
+                                    // Not secondaryLabel: on the tinted page background it fell below AA.
+                                    .foregroundColor(.choreStarTextPrimary.opacity(0.72))
                             }
                             Spacer()
                         }
@@ -112,6 +113,8 @@ struct ChildrenView: View {
 
 struct ChildDetailCard: View {
     let child: Child
+    /// The ring grows with Dynamic Type so the "3/5" inside it can too.
+    @ScaledMetric(relativeTo: .headline) private var ringSize: CGFloat = 60
     let index: Int
     @ObservedObject var manager: SupabaseManager
     @State private var showingEditSheet = false
@@ -184,12 +187,12 @@ struct ChildDetailCard: View {
                 ZStack {
                     Circle()
                         .stroke(Color.choreStarSecondary.opacity(0.3), lineWidth: 8)
-                        .frame(width: 60, height: 60)
+                        .frame(width: ringSize, height: ringSize)
                     
                     Circle()
                         .trim(from: 0, to: completionPercentage)
                         .stroke(Color.fromString(child.avatarColor), lineWidth: 8)
-                        .frame(width: 60, height: 60)
+                        .frame(width: ringSize, height: ringSize)
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.5), value: completionPercentage)
                     
@@ -198,11 +201,16 @@ struct ChildDetailCard: View {
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.choreStarTextPrimary)
+                        // .caption, not .caption2: caption2 stays 11pt at the smaller
+                        // text sizes, which the audit flags as partial Dynamic Type.
                         Text("/\(totalChores)")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundColor(.choreStarTextSecondary)
                     }
                 }
+                // One spoken value instead of a "3" and a "/5" drawn inside the ring.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("\(completedChores) of \(totalChores) chores done"))
                 
                 // Earnings
                 HStack(spacing: 4) {

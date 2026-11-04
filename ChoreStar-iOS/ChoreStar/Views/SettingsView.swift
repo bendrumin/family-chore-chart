@@ -107,8 +107,10 @@ struct SettingsView: View {
                                 restoreMessage = StoreKitManager.restoreMessage(result)
                             }
                         }) {
+                            // Body size like the other rows (it was .subheadline).
+                            // AccessibilityAuditTests still lists this row as a known
+                            // "partially unsupported" Dynamic Type finding.
                             Text("Restore Purchases")
-                                .font(.subheadline)
                                 .foregroundColor(.choreStarLink)
                         }
                     }
@@ -171,6 +173,7 @@ struct SettingsView: View {
                             Spacer()
                             Image(systemName: "trash")
                         }
+                        .foregroundColor(.choreStarDestructiveInk)
                     }
                 }
 

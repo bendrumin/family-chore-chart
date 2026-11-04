@@ -31,6 +31,8 @@ struct AuthView: View {
     /// Fixed-size fonts don't respond to Dynamic Type; scaling the hero title
     /// relative to .largeTitle keeps the lockup while honoring the user's size.
     @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 34
+    /// The short-screen header's title, scaling with Dynamic Type like titleSize.
+    @ScaledMetric(relativeTo: .title) private var compactTitleSize: CGFloat = 28
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     var body: some View {
@@ -44,7 +46,9 @@ struct AuthView: View {
             // as the old fixed VStack did.
             GeometryReader { geo in
                 ScrollView(showsIndicators: false) {
-                    authContent(compact: geo.size.height < 720 || verticalSizeClass == .compact)
+                    // 900, not 720: since Sign in with Apple joined the card, "I'm a Kid!"
+                    // sat half under the home indicator on an iPhone 18 Pro (874pt).
+                    authContent(compact: geo.size.height < 900 || verticalSizeClass == .compact)
                         .frame(maxWidth: .infinity, minHeight: geo.size.height)
                 }
                 .scrollDismissesKeyboard(.immediately)
@@ -118,7 +122,7 @@ struct AuthView: View {
                             )
                             .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
                         Text("ChoreStar")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .font(.system(size: compactTitleSize, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                     }
@@ -469,7 +473,7 @@ struct AuthView: View {
                     Text("Back to Sign In")
                 }
                 .font(.subheadline)
-                .foregroundColor(themeManager.accentColor)
+                .foregroundColor(themeManager.accentInk)
             }
         }
     }

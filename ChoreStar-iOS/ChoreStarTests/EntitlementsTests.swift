@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import ChoreStar
 
 /// The grandfathered feature gate must match the web (lib/utils/subscription.ts).
@@ -58,6 +59,29 @@ final class EntitlementsTests: XCTestCase {
         XCTAssertNil(rows[1].paused_by_plan, "a row from before migration 038 still decodes")
         XCTAssertEqual(Child(row: rows[0]).pausedByPlan, true, "the flag must survive into Child")
         XCTAssertNotEqual(Child(row: rows[1]).pausedByPlan, true)
+    }
+
+    /// White text sits on the theme gradient (Home hero, sign-in, kid mode):
+    /// every stop of every theme must clear WCAG AA under it.
+    func testEveryThemeGradientCarriesWhiteTextAtAA() {
+        for theme in SeasonalTheme.allCases {
+            for stop in [theme.primaryColor, theme.secondaryColor] {
+                let ratio = ThemeManager.whiteInkSafe(stop).contrastRatio(with: .white)
+                XCTAssertGreaterThanOrEqual(ratio, 4.5, "\(theme.rawValue) stop at \(ratio)")
+            }
+        }
+        XCTAssertGreaterThanOrEqual(Color.choreStarSuccessFill.contrastRatio(with: .white), 4.5, "Approve / Yes buttons")
+        for stop in [Color.choreStarPrimary, Color.choreStarPurple] {
+            XCTAssertGreaterThanOrEqual(ThemeManager.whiteInkSafe(stop).contrastRatio(with: .white), 4.5, "Classic gradient")
+        }
+    }
+
+    func testThanksgivingWasTheFailingCaseAndIsDarkenedNotReplaced() {
+        let orange = SeasonalTheme.thanksgiving.primaryColor
+        XCTAssertLessThan(orange.contrastRatio(with: .white), 4.5, "the audit failure this guards")
+        let safe = ThemeManager.whiteInkSafe(orange)
+        XCTAssertGreaterThanOrEqual(safe.contrastRatio(with: .white), 4.5)
+        XCTAssertLessThan(safe.relativeLuminance, orange.relativeLuminance, "deeper orange, same hue family")
     }
 
     func testPremiumAlwaysPasses() {

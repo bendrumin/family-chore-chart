@@ -1,7 +1,8 @@
-Version 2.6: Star Pets.
+Version 2.6.1: fixes and easier reading.
 
-• Star Pets: each kid adopts a pet on their own screen, names it, and watches it grow with every chore and routine. Every family gets a pup. Premium adds a kitty, bunny, dino, panda and owl, hats and extras to unlock as they level up, a new prize every month, and growing all the way up
-• See every kid's pet on Home, and turn pets on or off for each kid in Settings > Star Pets
-• Once you're set up, Home points out one feature your family hasn't tried yet, one at a time
+• Fixed a crash some families hit when signing out
+• If Premium ends, the app now shows what the free plan paused as soon as you come back to it, and paused kids are marked Paused. Everything returns the moment you resubscribe, Premium themes included
+• Easier to read and use: stronger contrast on seasonal colors, buttons and labels, bigger tap targets for checking off chores, and clearer VoiceOver labels on chores, charts and Star Pets
+• "I'm a Kid!" fits on screen again on the newest iPhones
 
 Questions or feedback are welcome at hi@chorestar.app

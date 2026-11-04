@@ -616,6 +616,13 @@ struct FamilyPetsCard: View {
         }
     }
 
+    private func tileLabel(_ kid: StarPets.FamilyKid, firstName: String) -> Text {
+        if let pet = kid.pet, pet.adopted {
+            return Text("\(pet.name ?? firstName), \(firstName)'s pet, level \(pet.level)")
+        }
+        return Text("\(firstName), adopt a Star Pet")
+    }
+
     @ViewBuilder private func tile(_ kid: StarPets.FamilyKid, child: Child) -> some View {
         let firstName = child.name.split(separator: " ").first.map(String.init) ?? child.name
         VStack(spacing: 4) {
@@ -624,8 +631,9 @@ struct FamilyPetsCard: View {
                 Text(pet.name ?? firstName)
                     .font(.caption.weight(.bold))
                     .foregroundColor(.choreStarTextPrimary)
+                // .caption: caption2 doesn't shrink below 11pt (partial Dynamic Type).
                 Text("\(firstName) · Level \(pet.level)")
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundColor(.choreStarTextSecondary)
             } else {
                 PetPicture(species: "pup", stage: "baby", points: 76, habitat: false, animated: false)
@@ -634,12 +642,15 @@ struct FamilyPetsCard: View {
                     .font(.caption.weight(.bold))
                     .foregroundColor(.choreStarTextPrimary)
                 Text("Adopt")
-                    .font(.caption2.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundColor(.choreStarPrimary)
             }
         }
         .frame(minWidth: 84)
-        .accessibilityElement(children: .combine)
+        // One spoken label rather than the tile's small caption fragments.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(tileLabel(kid, firstName: firstName))
+        .accessibilityAddTraits(.isButton)
         .accessibilityHint(Text("Opens \(firstName)'s Star Pet"))
     }
 

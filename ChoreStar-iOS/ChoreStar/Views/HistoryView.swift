@@ -192,6 +192,10 @@ struct HistoryView: View {
                             }
                         }
                         .frame(height: 190)
+                        // One spoken summary: Charts draws its axis labels as text VoiceOver can't reach.
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text("Completions this week"))
+                        .accessibilityValue(Text(weeklyTrend.map { "\($0.label) \($0.count)" }.joined(separator: ", ")))
                     }
                     .padding(16)
                     .background(Color.choreStarCardBackground)
@@ -235,6 +239,9 @@ struct HistoryView: View {
                                 }
                             }
                             .frame(height: 190)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(Text("Completions by child"))
+                            .accessibilityValue(Text(completionsByChild.map { "\($0.name) \($0.count)" }.joined(separator: ", ")))
                         }
                         .padding(16)
                         .background(Color.choreStarCardBackground)
@@ -352,23 +359,12 @@ struct HistoryView: View {
     }
     
     private func childFilterButton(name: String, id: UUID?) -> some View {
-        Button(action: {
+        // The Chores tab's chip: its unselected grey-on-teal failed contrast here.
+        ThemeChip(title: name, selected: selectedChild == id) {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 selectedChild = id
             }
-        }) {
-            Text(name)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(selectedChild == id ? .white : .choreStarTextSecondary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(selectedChild == id ? Color.choreStarFill : Color.choreStarSecondary.opacity(0.2))
-                )
         }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 

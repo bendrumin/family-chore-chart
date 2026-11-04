@@ -1,7 +1,8 @@
-Versión 2.6: Mascotas Estrella.
+Versión 2.6.1: correcciones y lectura más fácil.
 
-• Mascotas Estrella: cada niño adopta una mascota en su propia pantalla, le pone nombre y la ve crecer con cada tarea y rutina. Todas las familias reciben un perrito. Premium agrega gatito, conejito, dino, panda y búho, gorros y accesorios que se desbloquean al subir de nivel, un premio nuevo cada mes y crecer hasta el final
-• Ve la mascota de cada niño en Inicio y actívalas o desactívalas por niño en Ajustes > Mascotas Estrella
-• Cuando ya estés listo, Inicio te muestra una función que tu familia aún no ha probado, una a la vez
+• Corregimos un cierre inesperado que algunas familias tenían al cerrar sesión
+• Si Premium termina, la app ahora muestra lo que el plan gratis pausó en cuanto vuelves a abrirla, y los niños pausados se marcan como En pausa. Todo vuelve en cuanto renuevas, incluidos los temas Premium
+• Más fácil de leer y usar: más contraste en los colores de temporada, botones y etiquetas, áreas más grandes para marcar tareas y etiquetas de VoiceOver más claras en tareas, gráficas y Mascotas Estrella
+• "I'm a Kid!" vuelve a caber en la pantalla en los iPhone más nuevos
 
-Escríbenos a hi@chorestar.app
+Preguntas o comentarios: hi@chorestar.app

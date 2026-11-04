@@ -307,7 +307,7 @@ struct PaywallView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(Color.choreStarSuccess)
+                            .background(Color.choreStarSuccessFill)
                             .cornerRadius(8)
                     }
                 }
@@ -355,7 +355,7 @@ struct PaywallView: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(Color.choreStarSuccess)
+                                .background(Color.choreStarSuccessFill)
                                 .cornerRadius(8)
                         }
                     }
