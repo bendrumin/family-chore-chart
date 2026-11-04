@@ -42,6 +42,32 @@ final class ChoreStarUITests: XCTestCase {
 
     /// Tab bar buttons: bottom bar on iPhone, floating top bar on iPad —
     /// both expose the tab as a plain button with the tab's title.
+    /// Signed-out tests drop any saved session first: the simulator keychain
+    /// survives reinstalls, so a used simulator otherwise never shows the
+    /// auth screen and these tests only ever skipped.
+    private func relaunchSignedOut() {
+        app.terminate()
+        app.launchArguments = ["-chorestar-fresh"]
+        app.launch()
+    }
+
+    /// Signed-in tests sign in with TEST_USER_EMAIL / TEST_USER_PASSWORD when
+    /// given (pass via TEST_RUNNER_*), else use whatever session is saved.
+    private func relaunchSignedInIfPossible() {
+        let env = ProcessInfo.processInfo.environment
+        guard let email = env["TEST_USER_EMAIL"], let password = env["TEST_USER_PASSWORD"],
+              !email.isEmpty, !password.isEmpty else { return }
+        app.terminate()
+        app.launchArguments = ["-chorestar-fresh", "-chorestar-signin", email, password]
+        app.launch()
+        // The launch-arg login signs out, pauses, then signs in, so the auth
+        // screen shows for a moment; wait for the tabs, not the first screen.
+        let deadline = Date().addingTimeInterval(45)
+        while Date() < deadline, !(tabButton("Home").exists && tabButton("Settings").exists) {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        }
+    }
+
     private func tabButton(_ name: String) -> XCUIElement {
         let inTabBar = app.tabBars.buttons[name].firstMatch
         return inTabBar.exists ? inTabBar : app.buttons[name].firstMatch
@@ -57,6 +83,7 @@ final class ChoreStarUITests: XCTestCase {
     // MARK: - Signed-out flows
 
     func testKidLoginOpensFromAuthScreen() throws {
+        relaunchSignedOut()
         guard !waitForLaunch() else {
             throw XCTSkip("Device is signed in; this test needs the auth screen")
         }
@@ -72,6 +99,7 @@ final class ChoreStarUITests: XCTestCase {
     }
 
     func testSignUpToggleShowsConfirmField() throws {
+        relaunchSignedOut()
         guard !waitForLaunch() else {
             throw XCTSkip("Device is signed in; this test needs the auth screen")
         }
@@ -89,6 +117,7 @@ final class ChoreStarUITests: XCTestCase {
     // MARK: - Signed-in flows
 
     func testTabNavigation() throws {
+        relaunchSignedInIfPossible()
         guard waitForLaunch() else {
             throw XCTSkip("Device is signed out; this test needs an authenticated session")
         }
@@ -111,14 +140,20 @@ final class ChoreStarUITests: XCTestCase {
     }
 
     func testSettingsShowsFamilySharing() throws {
+        relaunchSignedInIfPossible()
         guard waitForLaunch() else {
             throw XCTSkip("Device is signed out; this test needs an authenticated session")
         }
 
         tabButton("Settings").tap()
 
+        // Further down Settings since Appearance moved to its own screen; the
+        // list builds rows lazily, so scroll until it exists.
         let familyRow = app.staticTexts["Family Sharing & Kid Login"].firstMatch
-        XCTAssertTrue(familyRow.waitForExistence(timeout: 5), "Settings should link to Family Sharing")
+        for _ in 0..<6 where !familyRow.waitForExistence(timeout: 1) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(familyRow.exists, "Settings should link to Family Sharing")
         familyRow.tap()
 
         XCTAssertTrue(
@@ -128,6 +163,7 @@ final class ChoreStarUITests: XCTestCase {
     }
 
     func testParentSignIn() throws {
+        relaunchSignedOut()
         guard !waitForLaunch() else {
             throw XCTSkip("Device is signed in; this test needs the auth screen")
         }

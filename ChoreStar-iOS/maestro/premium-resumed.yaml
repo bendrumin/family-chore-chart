@@ -1,0 +1,14 @@
+# After scripts/premium-lapse-sim.sh resubscribes the demo family while the app
+# is in the background: everything paused comes back without a relaunch.
+appId: com.chorestar.ChoreStar
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    notVisible: ".*chores paused.*"
+    timeout: 30000
+- tapOn: "Family"
+- scrollUntilVisible:
+    element: "e2e-sim Kid 3"
+- assertNotVisible: "Paused"
+- tapOn: "Home"

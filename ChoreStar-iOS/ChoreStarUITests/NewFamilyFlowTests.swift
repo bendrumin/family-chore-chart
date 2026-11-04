@@ -44,6 +44,9 @@ final class NewFamilyFlowTests: XCTestCase {
     }
 
     func testNewFamilyOnboardingChoreWizardAndDeletion() throws {
+        guard !email.isEmpty, !password.isEmpty else {
+            throw XCTSkip("Set CHORESTAR_UITEST_EMAIL / CHORESTAR_UITEST_PASSWORD to a throwaway account to run this")
+        }
         let app = XCUIApplication()
         // DEBUG-only deterministic login (see ContentView launch overrides);
         // typing into the auth form is flaky: remembered emails, layouts.

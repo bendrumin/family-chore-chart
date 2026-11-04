@@ -41,6 +41,32 @@ final class AccessibilityAuditTests: XCTestCase {
         return false
     }
 
+    /// Signed-out tests drop any saved session first: the simulator keychain
+    /// survives reinstalls, so a used simulator otherwise never shows the
+    /// auth screen and these tests only ever skipped.
+    private func relaunchSignedOut() {
+        app.terminate()
+        app.launchArguments = ["-chorestar-fresh"]
+        app.launch()
+    }
+
+    /// Signed-in tests sign in with TEST_USER_EMAIL / TEST_USER_PASSWORD when
+    /// given (pass via TEST_RUNNER_*), else use whatever session is saved.
+    private func relaunchSignedInIfPossible() {
+        let env = ProcessInfo.processInfo.environment
+        guard let email = env["TEST_USER_EMAIL"], let password = env["TEST_USER_PASSWORD"],
+              !email.isEmpty, !password.isEmpty else { return }
+        app.terminate()
+        app.launchArguments = ["-chorestar-fresh", "-chorestar-signin", email, password]
+        app.launch()
+        // The launch-arg login signs out, pauses, then signs in, so the auth
+        // screen shows for a moment; wait for the tabs, not the first screen.
+        let deadline = Date().addingTimeInterval(45)
+        while Date() < deadline, !(tabButton("Home").exists && tabButton("Settings").exists) {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        }
+    }
+
     private func tabButton(_ name: String) -> XCUIElement {
         let inTabBar = app.tabBars.buttons[name].firstMatch
         return inTabBar.exists ? inTabBar : app.buttons[name].firstMatch
@@ -98,6 +124,7 @@ final class AccessibilityAuditTests: XCTestCase {
     // MARK: - Signed-out screens
 
     func testAuthScreenAudit() throws {
+        relaunchSignedOut()
         guard !waitForLaunch() else {
             throw XCTSkip("Device is signed in; this audit needs the auth screen")
         }
@@ -105,6 +132,7 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     func testKidLoginSheetAudit() throws {
+        relaunchSignedOut()
         guard !waitForLaunch() else {
             throw XCTSkip("Device is signed in; this audit needs the auth screen")
         }
@@ -123,6 +151,7 @@ final class AccessibilityAuditTests: XCTestCase {
     // MARK: - Signed-in screens
 
     func testSignedInTabsAudit() throws {
+        relaunchSignedInIfPossible()
         if !waitForLaunch() {
             guard let email = ProcessInfo.processInfo.environment["TEST_USER_EMAIL"],
                   let password = ProcessInfo.processInfo.environment["TEST_USER_PASSWORD"],

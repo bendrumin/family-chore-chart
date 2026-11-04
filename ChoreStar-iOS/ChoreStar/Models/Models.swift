@@ -236,6 +236,26 @@ struct ChildRow: Codable {
     var paused_by_plan: Bool? = nil
 }
 
+extension Child {
+    /// A `children` row as the parent dashboard loads it.
+    init(row: ChildRow) {
+        self.init(
+            id: row.id,
+            name: row.name,
+            age: row.age ?? 0,
+            avatarColor: row.avatar_color ?? "blue",
+            avatarUrl: row.avatar_url,
+            avatarFile: row.avatar_file,
+            avatarPhotoPath: row.avatar_photo_path,
+            userId: row.user_id,
+            createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
+            updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date(),
+            // Without this the Paused labels on Home and Family never showed.
+            pausedByPlan: row.paused_by_plan
+        )
+    }
+}
+
 struct ChoreRow: Codable {
     let id: UUID
     let name: String

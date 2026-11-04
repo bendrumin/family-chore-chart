@@ -1461,8 +1461,11 @@ class SupabaseManager: ObservableObject {
                 kidLoginCode = nil
                 familyName = nil
                 debugLastError = "Signed out successfully"
+                // On the main actor with the rest: it sets @Published state, and
+                // from this background task that rebuilt SwiftUI off the main
+                // thread, which crashes on iOS 27 (UIKit asserts the queue).
+                signOutChild()
             }
-            signOutChild()
         }
         #else
         debugLastError = "Supabase not available for sign out"
@@ -2496,22 +2499,7 @@ class SupabaseManager: ObservableObject {
                 debugLastError = "Querying children for user_id: \(uid)"
             }
             
-            let mappedChildren = remoteChildren.map { row in
-                Child(
-                    id: row.id,
-                    name: row.name,
-                    age: row.age ?? 0,
-                    avatarColor: row.avatar_color ?? "blue",
-                    avatarUrl: row.avatar_url,
-                    avatarFile: row.avatar_file,
-                    avatarPhotoPath: row.avatar_photo_path,
-                    userId: row.user_id,
-                    createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
-                    updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date(),
-                    // Without this the Paused labels on Home and Family never showed.
-                    pausedByPlan: row.paused_by_plan
-                )
-            }
+            let mappedChildren = remoteChildren.map(Child.init(row:))
             
             await MainActor.run {
                 self.children = mappedChildren

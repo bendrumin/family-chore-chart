@@ -40,6 +40,26 @@ final class EntitlementsTests: XCTestCase {
         XCTAssertNil(ThemeManager.effectiveTheme(setting: "none", premiumAllowed: false, now: nov))
     }
 
+    /// The children query decodes ChildRow; paused_by_plan was missing from
+    /// it, so no kid ever showed as paused on iOS.
+    func testChildRowDecodesPausedByPlan() throws {
+        let json = """
+        [{"id":"4f1c2a3b-0000-4000-8000-000000000001","name":"Kid 4","age":7,"avatar_color":"blue",
+          "avatar_url":null,"avatar_file":null,"avatar_photo_path":null,
+          "user_id":"4f1c2a3b-0000-4000-8000-0000000000aa","created_at":"2026-11-04T18:00:00+00:00",
+          "updated_at":"2026-11-04T18:00:00+00:00","paused_by_plan":true},
+         {"id":"4f1c2a3b-0000-4000-8000-000000000002","name":"Old row","age":5,"avatar_color":null,
+          "avatar_url":null,"avatar_file":null,"avatar_photo_path":null,
+          "user_id":"4f1c2a3b-0000-4000-8000-0000000000aa","created_at":"2026-08-01T00:00:00+00:00",
+          "updated_at":"2026-08-01T00:00:00+00:00"}]
+        """
+        let rows = try JSONDecoder().decode([ChildRow].self, from: Data(json.utf8))
+        XCTAssertEqual(rows[0].paused_by_plan, true)
+        XCTAssertNil(rows[1].paused_by_plan, "a row from before migration 038 still decodes")
+        XCTAssertEqual(Child(row: rows[0]).pausedByPlan, true, "the flag must survive into Child")
+        XCTAssertNotEqual(Child(row: rows[1]).pausedByPlan, true)
+    }
+
     func testPremiumAlwaysPasses() {
         XCTAssertTrue(Entitlements.canUse(.sharing, isPremium: true, createdAt: after))
         XCTAssertTrue(Entitlements.canUse(.themes, isPremium: true, createdAt: nil))

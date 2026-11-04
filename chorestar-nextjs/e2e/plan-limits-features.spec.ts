@@ -196,7 +196,23 @@ test('a Premium theme drops to the free look after a lapse, and comes back with 
     const { data: stored } = await (admin as any).from('family_settings').select('custom_theme').eq('user_id', familyId).single()
     expect(stored.custom_theme.seasonalTheme).toBe('ocean')
 
-    await setPlan('premium')
+    // Kid mode on the kid's own device gets the theme from /api/kid/child.
+    const { data: session } = await (admin as any).from('kid_sessions')
+      .insert({ child_id: realKids[0].id, expires_at: new Date(Date.now() + 3600_000).toISOString() }).select('token').single()
+    const kidTheme = async () => {
+      const res = await page.request.get('/api/kid/child', { headers: { Authorization: `Bearer ${session.token}` } })
+      expect(res.status()).toBe(200)
+      return (await res.json()).theme?.seasonalTheme ?? null
+    }
+    try {
+      expect(await kidTheme()).toBeNull()
+
+      await setPlan('premium')
+      expect(await kidTheme()).toBe('ocean')
+    } finally {
+      await (admin as any).from('kid_sessions').delete().eq('token', session.token)
+    }
+
     await page.reload()
     await expect(page.locator('html')).toHaveAttribute('data-seasonal-theme', 'ocean', { timeout: 20_000 })
   } finally {

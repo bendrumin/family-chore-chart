@@ -13,7 +13,7 @@ setup('authenticate as parent', async ({ page }) => {
   await page.goto('/login');
   await page.getByLabel(/email/i).fill(email);
   await page.getByLabel(/password/i).fill(password);
-  await page.getByRole('button', { name: /sign in|log in/i }).click();
+  await page.getByRole('button', { name: /^(sign in|log in)$/i }).click();
 
   await page.waitForURL('/dashboard', { timeout: 15_000 });
 

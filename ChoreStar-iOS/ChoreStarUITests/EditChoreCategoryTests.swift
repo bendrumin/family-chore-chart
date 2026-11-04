@@ -19,6 +19,9 @@ final class EditChoreCategoryTests: XCTestCase {
     private let choreName = "Water the plants"
 
     func testEditChoreCategoryAndSave() throws {
+        guard !email.isEmpty, !password.isEmpty else {
+            throw XCTSkip("Set CHORESTAR_UITEST_EMAIL / CHORESTAR_UITEST_PASSWORD to a throwaway account to run this")
+        }
         let app = XCUIApplication()
         app.launchArguments = ["-chorestar-fresh", "-chorestar-signin", email, password]
         app.launch()
@@ -170,6 +173,9 @@ final class EditChoreCategoryTests: XCTestCase {
     /// account — so this test creates nothing and tolerates an empty family;
     /// it only matters when run standalone against an account with chores.
     func testProgrammaticCategoryChange() throws {
+        guard !email.isEmpty, !password.isEmpty else {
+            throw XCTSkip("Set CHORESTAR_UITEST_EMAIL / CHORESTAR_UITEST_PASSWORD to a throwaway account to run this")
+        }
         let app = XCUIApplication()
         app.launchArguments = ["-chorestar-fresh", "-chorestar-signin", email, password, "-chorestar-editsmoke"]
         app.launch()

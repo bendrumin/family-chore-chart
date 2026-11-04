@@ -1,0 +1,25 @@
+# After scripts/premium-lapse-sim.sh lapses the demo family while the app is in
+# the background: returning to the app (no relaunch) must show what the free
+# plan paused, the Paused label, and the Premium-only screens locked.
+appId: com.chorestar.ChoreStar
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible: ".*chores paused.*"
+    timeout: 30000
+- assertVisible: "Choose what stays on"
+- tapOn: "Choose what stays on"
+- extendedWaitUntil:
+    visible: "Kids \\(3/3\\)"
+    timeout: 10000
+- tapOn: "Cancel"
+- tapOn: "Family"
+- scrollUntilVisible:
+    element: "e2e-sim Kid 3"
+- assertVisible: "Paused"
+- tapOn: "Stats"
+- extendedWaitUntil:
+    visible: ".*Advanced stats come with Premium.*"
+    timeout: 10000
+- tapOn: "Home"
