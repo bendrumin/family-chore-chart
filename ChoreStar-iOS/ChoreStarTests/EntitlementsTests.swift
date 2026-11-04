@@ -27,6 +27,19 @@ final class EntitlementsTests: XCTestCase {
         XCTAssertTrue(Entitlements.shouldRefreshOnForeground(lastRefresh: t, now: t.addingTimeInterval(3 * 86_400)), "a trial that lapsed while the app sat in memory")
     }
 
+    func testLapsedFamilyKeepsPremiumThemeStoredButSeesTheFreeLook() {
+        let nov = ISO8601DateFormatter().date(from: "2026-11-04T18:00:00Z")!
+        XCTAssertEqual(ThemeManager.effectiveTheme(setting: "ocean", premiumAllowed: true, now: nov), .ocean)
+        XCTAssertEqual(ThemeManager.effectiveTheme(setting: "ocean", premiumAllowed: false, now: nov), SeasonalTheme.current(date: nov), "falls back to auto")
+        XCTAssertNotEqual(ThemeManager.effectiveTheme(setting: "lavender", premiumAllowed: false, now: nov), .lavender)
+    }
+
+    func testFreeThemesSurviveALapse() {
+        let nov = ISO8601DateFormatter().date(from: "2026-11-04T18:00:00Z")!
+        XCTAssertEqual(ThemeManager.effectiveTheme(setting: "christmas", premiumAllowed: false, now: nov), .christmas)
+        XCTAssertNil(ThemeManager.effectiveTheme(setting: "none", premiumAllowed: false, now: nov))
+    }
+
     func testPremiumAlwaysPasses() {
         XCTAssertTrue(Entitlements.canUse(.sharing, isPremium: true, createdAt: after))
         XCTAssertTrue(Entitlements.canUse(.themes, isPremium: true, createdAt: nil))

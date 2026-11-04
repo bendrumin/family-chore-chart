@@ -37,7 +37,9 @@ class SupabaseManager: ObservableObject {
     @Published var isChildSession = false
     @Published var currentChild: Child?
     @Published var routines: [Routine] = []
-    @Published var subscriptionType: String = "free"
+    @Published var subscriptionType: String = "free" {
+        didSet { syncThemeEntitlement() }
+    }
     /// The bonus chore a sibling just beat this kid to (migration 025 refused the tick).
     @Published var bonusTakenChoreId: UUID?
     /// Flips true when loadRemoteData finishes a full pass — gates decisions
@@ -53,7 +55,19 @@ class SupabaseManager: ObservableObject {
     var isAtChildLimit: Bool { children.count >= childLimit }
 
     /// When this account was created; drives the grandfathered feature gate.
-    @Published var profileCreatedAt: Date?
+    @Published var profileCreatedAt: Date? {
+        didSet { syncThemeEntitlement() }
+    }
+
+    /// Premium themes show only while the family can use them (ThemeManager).
+    private func syncThemeEntitlement() {
+        let allowed = canUse(.themes)
+        if Thread.isMainThread {
+            ThemeManager.shared.premiumThemesAllowed = allowed
+        } else {
+            DispatchQueue.main.async { ThemeManager.shared.premiumThemesAllowed = allowed }
+        }
+    }
 
     /// Premium-advertised features: premium, or an account older than the
     /// 2026-09-19 cutoff (Logic/Entitlements.swift, docs/PREMIUM.md).
@@ -1441,6 +1455,9 @@ class SupabaseManager: ObservableObject {
                 choreCompletions = [:]
                 routines = []
                 subscriptionType = "free"
+                // Signed out is not lapsed: kid mode on this device gets the
+                // family theme from the server, already plan-checked.
+                ThemeManager.shared.premiumThemesAllowed = true
                 kidLoginCode = nil
                 familyName = nil
                 debugLastError = "Signed out successfully"
@@ -2490,7 +2507,9 @@ class SupabaseManager: ObservableObject {
                     avatarPhotoPath: row.avatar_photo_path,
                     userId: row.user_id,
                     createdAt: ISO8601DateFormatter().date(from: row.created_at) ?? Date(),
-                    updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date()
+                    updatedAt: ISO8601DateFormatter().date(from: row.updated_at) ?? Date(),
+                    // Without this the Paused labels on Home and Family never showed.
+                    pausedByPlan: row.paused_by_plan
                 )
             }
             

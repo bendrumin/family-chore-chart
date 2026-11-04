@@ -6,7 +6,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { isPremium, getChildLimit, getChoreLimit, tierForCheckout, isGrandfathered, canUseFeature, isPremiumTheme, PREMIUM_GATE_CUTOFF } from './subscription'
+import { isPremium, getChildLimit, getChoreLimit, tierForCheckout, isGrandfathered, canUseFeature, isPremiumTheme, themeForPlan, PREMIUM_GATE_CUTOFF } from './subscription'
 
 let passed = 0
 let failed = 0
@@ -102,6 +102,19 @@ t('the six premium themes are the ones iOS locks', () => {
   for (const id of ['ocean', 'sunset', 'forest', 'aurora', 'coral', 'lavender']) assert.equal(isPremiumTheme(id), true)
   assert.equal(isPremiumTheme('christmas'), false)
   assert.equal(isPremiumTheme(null), false)
+})
+
+t('a lapsed family keeps its Premium theme stored but sees the free look', () => {
+  const ocean = { mode: 'light', seasonalTheme: 'ocean', autoSeasonal: true }
+  assert.deepEqual(themeForPlan(ocean, true), ocean)
+  assert.deepEqual(themeForPlan(ocean, false), { mode: 'light', seasonalTheme: null, autoSeasonal: true })
+  assert.equal(ocean.seasonalTheme, 'ocean', 'the stored choice is not touched')
+})
+
+t('free themes and a custom accent survive a lapse', () => {
+  const xmas = { seasonalTheme: 'christmas', accentColor: '#ef4444' }
+  assert.deepEqual(themeForPlan(xmas, false), xmas)
+  assert.equal(themeForPlan(null, false), null)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

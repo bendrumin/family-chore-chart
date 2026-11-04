@@ -180,6 +180,32 @@ test('dashboard: the paused banner and the chooser', async ({ page }) => {
   await dialog.getByRole('button', { name: /^cancel$/i }).click()
 })
 
+test('a Premium theme drops to the free look after a lapse, and comes back with Premium', async ({ page }) => {
+  const { data: p } = await admin.from('profiles').select('created_at').eq('id', familyId).single()
+  const { data: fs } = await (admin as any).from('family_settings').select('custom_theme').eq('user_id', familyId).single()
+  // Past the 2026-09-19 cutoff, or the demo (made in August) is grandfathered into themes.
+  await admin.from('profiles').update({ created_at: '2026-10-01T00:00:00Z' }).eq('id', familyId)
+  await (admin as any).from('family_settings')
+    .update({ custom_theme: { ...(fs?.custom_theme ?? {}), seasonalTheme: 'ocean', autoSeasonal: false } }).eq('user_id', familyId)
+  try {
+    await signIn(page)
+    await expect(page.getByRole('heading', { name: /paused$/i })).toBeVisible({ timeout: 20_000 })
+    // Settings and the plan have both answered by now; give the repaint a beat.
+    await page.waitForTimeout(2_000)
+    await expect(page.locator('html')).not.toHaveAttribute('data-seasonal-theme', 'ocean')
+    const { data: stored } = await (admin as any).from('family_settings').select('custom_theme').eq('user_id', familyId).single()
+    expect(stored.custom_theme.seasonalTheme).toBe('ocean')
+
+    await setPlan('premium')
+    await page.reload()
+    await expect(page.locator('html')).toHaveAttribute('data-seasonal-theme', 'ocean', { timeout: 20_000 })
+  } finally {
+    await setPlan('free')
+    await admin.from('profiles').update({ created_at: p!.created_at }).eq('id', familyId)
+    await (admin as any).from('family_settings').update({ custom_theme: fs?.custom_theme ?? null }).eq('user_id', familyId)
+  }
+})
+
 test('billing: monthly and yearly both offer the free week', async ({ page }) => {
   await signIn(page)
   await page.goto('/dashboard?settings=billing')

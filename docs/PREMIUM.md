@@ -4,7 +4,7 @@ Audited 2026-09-19, the week the second paying subscriber arrived. Every
 surface that describes Premium was compared against the code that enforces
 it, on both platforms. Keep this table true when either side changes.
 
-Last updated 2026-10-19 (Star Pets added; iOS 2.5.3 and Android 1.0.2 port money, challenges, routine upgrades and the calendar feed).
+Last updated 2026-11-04 (a lapsed family's Premium theme shows the free look on web and iOS; iOS reloads on returning to the foreground and shows paused kids). Previously 2026-10-19 (Star Pets added; iOS 2.5.3 and Android 1.0.2 port money, challenges, routine upgrades and the calendar feed).
 
 | Promise | Web gate | iOS gate | Status |
 |---|---|---|---|
@@ -12,7 +12,7 @@ Last updated 2026-10-19 (Star Pets added; iOS 2.5.3 and Android 1.0.2 port money
 | Unlimited chores (free: 20, family-wide) | add-chore-modal, `getChoreLimit` | `choreLimit` | gated both, enforced in the database (024) |
 | Unlimited reward store items (free: 3) | rewards tab + DB trigger (024) | `rewardItemLimit` + DB trigger (024) | gated both, enforced in the database |
 | Unlimited goals (free: 1 active per child) | `/api/kid/goals`; rewards tab cap shows See Premium (`limit_goals`); DB trigger 029 | server + KidGoalCardView lists every goal | gated both; parent writes are held in the database once 029 is applied |
-| Premium themes (Ocean, Sunset, Forest, Aurora, Coral, Lavender) | appearance tab, `isPremiumTheme` + `canUseFeature` | `SeasonalTheme.isPremium` + `canUse(.themes)` | gated both, grandfathered |
+| Premium themes (Ocean, Sunset, Forest, Aurora, Coral, Lavender) | appearance tab, `isPremiumTheme` + `canUseFeature`; after a lapse `themeForPlan` shows the free look (dashboard and `/api/kid/child`) while keeping the stored choice for resubscribe | `SeasonalTheme.isPremium` + `canUse(.themes)`; after a lapse `ThemeManager.effectiveTheme` falls back to auto-seasonal | gated both, grandfathered |
 | Family sharing / co-parent | family tab + `POST /api/family/invite` 403 (adding only: a lapsed owner still sees and removes members and can turn off the join code) | FamilySharingView owner section | gated both, grandfathered |
 | Export reports (PDF, CSV) | downloads tab | ExportView (2.3) | gated both, grandfathered |
 | Advanced analytics / full insights | insights tab | Stats tab (HistoryView) | gated both, grandfathered |

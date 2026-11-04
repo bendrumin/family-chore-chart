@@ -25,15 +25,27 @@ class ThemeManager: ObservableObject {
             }
     }
     
+    /// False once the family's Premium has ended (SupabaseManager sets it from
+    /// `canUse(.themes)`). A Premium theme they picked stays stored, so it comes
+    /// back on resubscribe, but shows only while this is true; same rule as the
+    /// web's themeForPlan. True until the profile answers, so subscribers never
+    /// see their theme flicker off.
+    @Published var premiumThemesAllowed = true {
+        didSet { if premiumThemesAllowed != oldValue { resolveTheme() } }
+    }
+
     private func resolveTheme() {
-        if seasonalThemeSetting == "auto" {
-            activeTheme = SeasonalTheme.current()
-        } else if seasonalThemeSetting == "none" {
-            activeTheme = nil
-        } else {
-            activeTheme = SeasonalTheme(rawValue: seasonalThemeSetting)
-                ?? SeasonalTheme(rawValue: Self.iosSeasonalId(fromWeb: seasonalThemeSetting))
-        }
+        activeTheme = Self.effectiveTheme(setting: seasonalThemeSetting, premiumAllowed: premiumThemesAllowed)
+    }
+
+    /// The theme a family sees for its stored setting. A Premium theme without
+    /// Premium falls back to "auto", the default every new family starts on.
+    static func effectiveTheme(setting: String, premiumAllowed: Bool, now: Date = Date()) -> SeasonalTheme? {
+        if setting == "auto" { return SeasonalTheme.current(date: now) }
+        if setting == "none" { return nil }
+        guard let picked = SeasonalTheme(rawValue: setting) ?? SeasonalTheme(rawValue: iosSeasonalId(fromWeb: setting)) else { return nil }
+        if picked.isPremium && !premiumAllowed { return SeasonalTheme.current(date: now) }
+        return picked
     }
     
     /**

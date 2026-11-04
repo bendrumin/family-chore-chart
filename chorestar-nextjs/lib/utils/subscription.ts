@@ -62,3 +62,17 @@ export function canUseFeature(
 export function isPremiumTheme(themeId: string | null | undefined): boolean {
   return !!themeId && (PREMIUM_THEME_IDS as readonly string[]).includes(themeId)
 }
+
+/**
+ * The theme a family actually sees. A Premium theme picked while subscribed
+ * stays stored, so it comes straight back on resubscribe, but once Premium
+ * ends the chart wears the free look (the theme drops out, so auto-seasonal
+ * or the brand palette shows instead). Same rule on iOS
+ * (ThemeManager.effectiveThemeId). Seasonal themes and a custom accent are
+ * free and pass through.
+ */
+export function themeForPlan<T extends { seasonalTheme?: string | null }>(customTheme: T | null | undefined, canUseThemes: boolean): T | null {
+  if (!customTheme) return null
+  if (canUseThemes || !isPremiumTheme(customTheme.seasonalTheme)) return customTheme
+  return { ...customTheme, seasonalTheme: null }
+}

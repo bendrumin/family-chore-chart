@@ -161,9 +161,8 @@ enum SeasonalTheme: String, CaseIterable, Identifiable {
         }
     }
     
-    static func current() -> SeasonalTheme? {
+    static func current(date now: Date = Date()) -> SeasonalTheme? {
         let calendar = Calendar.current
-        let now = Date()
         let month = calendar.component(.month, from: now)
         let day = calendar.component(.day, from: now)
         

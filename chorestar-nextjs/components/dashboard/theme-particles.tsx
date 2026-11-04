@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { resolveActiveTheme } from '@/lib/utils/resolve-theme'
 import { SEASONAL_THEMES_DATA } from '@/lib/constants/seasonal-themes'
-import type { CustomTheme } from '@/lib/supabase/database.types'
 
 /**
  * Soft drifting glyphs inside the hero — iOS ThemeParticleOverlay energy,
@@ -39,8 +38,8 @@ export function particleGlyph(themeId: string | null | undefined): string | null
 }
 
 export function ThemeParticles({ count = 18 }: { count?: number }) {
-  const { settings } = useSettings()
-  const active = resolveActiveTheme((settings?.custom_theme ?? null) as CustomTheme | null)
+  const { themeSettings } = useSettings()
+  const active = resolveActiveTheme(themeSettings)
   const glyph = particleGlyph(active?.id)
 
   const particles = useMemo(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { DEFAULT_DAILY_REWARD_CENTS } from '@/lib/utils/earnings'
 import { createClient } from '@/lib/supabase/client'
 import type { Database, CustomTheme } from '@/lib/supabase/database.types'
@@ -13,6 +13,7 @@ import {
   THEME_VARS_VERSION,
   type ThemeMode,
 } from '@/lib/utils/theme-mode'
+import { canUseFeature, themeForPlan } from '@/lib/utils/subscription'
 import {
   resolveActiveTheme,
   themeVarsFor,
@@ -24,6 +25,8 @@ type FamilySettings = Database['public']['Tables']['family_settings']['Row']
 
 interface SettingsContextType {
   settings: FamilySettings | null
+  /** custom_theme as the family sees it: a Premium theme drops out once Premium ends (themeForPlan). */
+  themeSettings: CustomTheme | null
   isLoading: boolean
   updateSettings: (updates: Partial<FamilySettings>) => Promise<void>
   refreshSettings: () => Promise<void>
@@ -34,6 +37,28 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children, userId }: { children: ReactNode; userId: string }) {
   const [settings, setSettings] = useState<FamilySettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  // Until the profile answers, assume allowed: a lapsed family sees its old
+  // theme for a moment rather than every subscriber's theme flickering off.
+  const [themesAllowed, setThemesAllowed] = useState(true)
+  const themesAllowedRef = useRef(true)
+
+  // The family's plan decides whether a Premium theme still shows. Same
+  // lookup as useEntitlements, which can't be used inside this provider.
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    createClient()
+      .from('profiles')
+      .select('subscription_type, created_at')
+      .eq('id', userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setThemesAllowed(canUseFeature('themes', data.subscription_type, data.created_at))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
 
   const loadSettings = async () => {
     try {
@@ -103,7 +128,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
     applyThemeClasses(isDark)
 
     const root = document.documentElement
-    const active = resolveActiveTheme(customTheme)
+    const active = resolveActiveTheme(themeForPlan(customTheme, themesAllowedRef.current))
 
     // The `seasonal-<id>` class is deliberately NOT applied.
     //
@@ -196,6 +221,14 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
   }, [userId])
 
   const customTheme = (settings?.custom_theme ?? null) as CustomTheme | null
+  const themeSettings = themeForPlan(customTheme, themesAllowed)
+
+  // Repaint once the plan is known (and if it changes).
+  useEffect(() => {
+    themesAllowedRef.current = themesAllowed
+    if (settings) applyTheme(customTheme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themesAllowed])
 
   // Auto-seasonal is a function of today's date, so a tab left open across
   // midnight would otherwise keep yesterday's accent. Re-check hourly.
@@ -207,7 +240,7 @@ export function SettingsProvider({ children, userId }: { children: ReactNode; us
   }, [customTheme?.autoSeasonal, customTheme?.seasonalTheme])
 
   return (
-    <SettingsContext.Provider value={{ settings, isLoading, updateSettings, refreshSettings }}>
+    <SettingsContext.Provider value={{ settings, themeSettings, isLoading, updateSettings, refreshSettings }}>
       {children}
     </SettingsContext.Provider>
   )

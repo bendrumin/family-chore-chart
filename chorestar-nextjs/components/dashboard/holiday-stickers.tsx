@@ -5,7 +5,6 @@ import { ChoreIcon } from '@/components/ui/chore-icon'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { resolveActiveTheme } from '@/lib/utils/resolve-theme'
 import { getHolidayDecoration, type HolidayDecoration } from '@/lib/utils/holiday-stickers'
-import type { CustomTheme } from '@/lib/supabase/database.types'
 
 /**
  * Decorative holiday art for the dashboard hero — a small cluster of the active
@@ -20,10 +19,8 @@ import type { CustomTheme } from '@/lib/supabase/database.types'
  * request and the browser straddle midnight or sit in different timezones.
  */
 export function HolidayStickers() {
-  const { settings } = useSettings()
+  const { themeSettings: customTheme } = useSettings()
   const [decoration, setDecoration] = useState<HolidayDecoration | null>(null)
-
-  const customTheme = (settings?.custom_theme ?? null) as CustomTheme | null
 
   useEffect(() => {
     const active = resolveActiveTheme(customTheme)

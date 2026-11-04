@@ -242,7 +242,7 @@ function DashboardContent({
   handleOnboardingComplete,
   isAdmin,
 }: any) {
-  const { settings, updateSettings } = useSettings()
+  const { settings, themeSettings, updateSettings } = useSettings()
   const todaySnapshot = useTodaySnapshot(children, settings)
   useAppBadge(badgeCountForToday(todaySnapshot))
   const [editingChild, setEditingChild] = useState<Child | null>(null)
@@ -286,7 +286,7 @@ function DashboardContent({
     ocean: '🌊', sunset: '🌅',
   }
 
-  const customTheme = settings?.custom_theme as CustomTheme | null
+  const customTheme = themeSettings
 
   // Accent sticky header in light mode (iOS-like white type on themed fill).
   // Dark mode stays neutral — white-on-accent fights the dark chrome.

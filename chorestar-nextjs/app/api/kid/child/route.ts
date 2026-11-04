@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { validateKidToken } from '@/lib/utils/kid-auth'
 import { signChildAvatarForChild } from '@/lib/utils/child-avatar'
 import { vacationWindowFromSettings, type VacationWindow } from '@/lib/utils/schedule'
+import { canUseFeature, themeForPlan } from '@/lib/utils/subscription'
 
 /**
  * GET /api/kid/child — the signed-in kid's own profile, with a fresh avatar URL.
@@ -60,7 +61,12 @@ export async function GET(request: Request) {
         .select('*')
         .eq('user_id', child.user_id)
         .maybeSingle()
-      theme = settings?.custom_theme ?? null
+      // A Premium theme shows only while the family can use themes.
+      const { data: owner } = await admin.from('profiles').select('subscription_type, created_at').eq('id', child.user_id).maybeSingle()
+      theme = themeForPlan(
+        (settings?.custom_theme ?? null) as { seasonalTheme?: string | null } | null,
+        canUseFeature('themes', owner?.subscription_type, owner?.created_at)
+      )
       vacation = vacationWindowFromSettings(settings)
     } catch {
       theme = null

@@ -232,6 +232,8 @@ struct ChildRow: Codable {
     let user_id: UUID
     let created_at: String
     let updated_at: String
+    /// Migration 038. Optional so a row from before it still decodes.
+    var paused_by_plan: Bool? = nil
 }
 
 struct ChoreRow: Codable {
