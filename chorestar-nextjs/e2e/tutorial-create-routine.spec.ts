@@ -4,16 +4,29 @@
  * Features shown: Routines tab, Add Routine button, Morning Routine template, creation.
  */
 import { test, expect } from '@playwright/test';
+import { removeRoutinesAddedSince } from './test-family';
 
 test.use({ storageState: 'e2e/.auth/parent.json' });
 
 test.describe('Tutorial — Create a Morning Routine', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // The template routine this makes on the real test family; only this run's.
+  test.afterEach(async () => { await removeRoutinesAddedSince('morning routine%', startedAt) })
+
   test('create a morning routine using the template', async ({ page }) => {
     test.setTimeout(90_000);
 
     await page.goto('/dashboard');
     await page.waitForSelector('button', { timeout: 10_000 });
     await page.waitForTimeout(1500);
+
+    // ── PICK A KID (routines live under a kid) ────────────────────────────────
+    const firstKid = page.getByRole('button', { name: /^show .*'s chores$/i }).first();
+    await firstKid.hover();
+    await page.waitForTimeout(600);
+    await firstKid.click();
+    await page.waitForTimeout(1000);
 
     // ── CLICK ROUTINES TAB ────────────────────────────────────────────────────
     const routinesTab = page.getByRole('tab', { name: /^routines$/i });

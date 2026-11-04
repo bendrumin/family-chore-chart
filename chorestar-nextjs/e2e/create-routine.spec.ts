@@ -1,8 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { removeRoutinesAddedSince } from './test-family';
 
 test.use({ storageState: 'e2e/.auth/parent.json' });
 
 test.describe('Create Routine (recording flow)', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // The template routine this makes on the real test family; only this run's.
+  test.afterEach(async () => { await removeRoutinesAddedSince('morning routine%', startedAt) })
+
   test('create a routine using template', async ({ page }) => {
     test.setTimeout(60_000);
 
@@ -11,6 +17,10 @@ test.describe('Create Routine (recording flow)', () => {
     // Wait for dashboard to load
     await page.waitForSelector('button', { timeout: 10_000 });
     await page.waitForTimeout(800);
+
+    // Routines live under a kid: pick the first (the dashboard opens on everyone)
+    await page.getByRole('button', { name: /^show .*'s chores$/i }).first().click();
+    await page.waitForTimeout(600);
 
     // Click Routines tab and wait for it to render
     await page.getByRole('tab', { name: /^routines$/i }).click();

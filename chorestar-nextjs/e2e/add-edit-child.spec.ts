@@ -1,10 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { removeKidsAddedSince } from './test-family';
 
 test.use({ storageState: 'e2e/.auth/parent.json' });
 
 const CHILD_NAME = 'Demo Child';
 
 test.describe('Add & Edit Child (recording flow)', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // The flow adds a kid to the real test family; take it back out, pass or fail.
+  test.afterEach(async () => { await removeKidsAddedSince([CHILD_NAME], startedAt) })
+
   test('parent adds a child with avatar, then edits avatar and saves', async ({ page }) => {
     await page.goto('/dashboard');
 
@@ -43,8 +49,7 @@ test.describe('Add & Edit Child (recording flow)', () => {
     await page.waitForTimeout(1200);
 
     // === EDIT THE NEW CHILD — show full avatar picker ===
-    // Use .first() in case previous test runs left duplicate Demo Child entries
-    await page.getByRole('button', { name: `Select ${CHILD_NAME}` }).first().click();
+    await page.getByRole('button', { name: `Show ${CHILD_NAME}'s chores` }).first().click();
     await page.waitForTimeout(500);
 
     await page.getByRole('button', { name: `Edit ${CHILD_NAME}` }).first().click();

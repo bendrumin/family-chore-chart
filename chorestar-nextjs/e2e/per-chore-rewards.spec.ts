@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { removeChoresAddedSince, restoreChoreRewards, restoreSettings, snapshotChoreRewards, snapshotSettings } from './test-family';
 
 /**
  * Per-Chore Rewards recording flow
@@ -22,6 +23,22 @@ const CHORE_REWARD = '0.50';
 const BONUS_LABEL = 'pizza night';
 
 test.describe('Per-Chore Rewards (recording flow)', () => {
+  // This flow changes the real test family's reward mode, bonus label and a
+  // chore's amount; all of it goes back afterwards, pass or fail.
+  let startedAt = ''
+  let settings: Record<string, unknown> | null = null
+  let rewards: { id: string; reward_cents: number }[] = []
+  test.beforeEach(async () => {
+    startedAt = new Date().toISOString()
+    settings = await snapshotSettings()
+    rewards = await snapshotChoreRewards(CHORE_NAME)
+  })
+  test.afterEach(async () => {
+    await restoreSettings(settings)
+    await restoreChoreRewards(rewards)
+    await removeChoresAddedSince(CHORE_NAME, startedAt)
+  })
+
   test('toggle per-chore mode on, set chore reward, toggle back off', async ({ page }) => {
     test.setTimeout(60_000);
 
@@ -78,11 +95,8 @@ test.describe('Per-Chore Rewards (recording flow)', () => {
     await page.waitForSelector('button', { timeout: 10_000 });
     await page.waitForTimeout(500);
 
-    const firstChildBtn = page.getByRole('button', { name: /^select /i }).first();
-    if (await firstChildBtn.isVisible()) {
-      await firstChildBtn.click();
-      await page.waitForTimeout(400);
-    }
+    await page.getByRole('button', { name: /^show .*'s chores$/i }).first().click();
+    await page.waitForTimeout(400);
 
     // Make sure we're on the Chores tab (tab may have an emoji prefix on some builds)
     await page.getByRole('tab', { name: /^chores$/i }).click();
@@ -106,7 +120,7 @@ test.describe('Per-Chore Rewards (recording flow)', () => {
       await page.getByLabel(/chore name/i).fill(CHORE_NAME);
       await page.waitForTimeout(300);
 
-      const rewardInput = page.getByLabel(/reward/i);
+      const rewardInput = page.getByRole('textbox', { name: /reward/i });
       if (await rewardInput.isVisible()) {
         await rewardInput.clear();
         await rewardInput.fill('1.00');
@@ -125,16 +139,16 @@ test.describe('Per-Chore Rewards (recording flow)', () => {
     await choreCard.hover();
     await page.waitForTimeout(500);
 
-    // Confirm the reward amount is visible on the card
-    await expect(page.getByText(/each$/i).first()).toBeVisible({ timeout: 3000 });
+    // Confirm the reward amount is visible ("$X.XX" on the week board, "$X.XX each" on Today)
+    await expect(page.getByText(/^\$\d+\.\d{2}( each)?$/).first()).toBeVisible({ timeout: 3000 });
     await page.waitForTimeout(400);
 
     // ── STEP 9: Edit the chore — change the reward amount ────────────────────
-    await page.locator('[title="Edit chore"]').last().click();
+    await page.getByRole('button', { name: `Edit ${CHORE_NAME}`, exact: true }).first().click();
     await expect(page.getByRole('heading', { name: /edit chore/i })).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(400);
 
-    const rewardInput = page.getByLabel(/reward/i);
+    const rewardInput = page.getByRole('textbox', { name: /reward/i });
     await rewardInput.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
     await rewardInput.clear();
@@ -148,7 +162,7 @@ test.describe('Per-Chore Rewards (recording flow)', () => {
     // Card now shows updated reward
     await choreCard.hover();
     await page.waitForTimeout(500);
-    await expect(page.getByText('$0.50 each')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText(/^\$0\.50( each)?$/).first()).toBeVisible({ timeout: 3000 });
     await page.waitForTimeout(500);
 
     // ── STEP 10: Return to Settings — toggle back to Flat Daily Rate ──────────

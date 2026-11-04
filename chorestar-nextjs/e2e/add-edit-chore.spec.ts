@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { removeChoresAddedSince } from './test-family';
 
 test.use({ storageState: 'e2e/.auth/parent.json' });
 
@@ -6,6 +7,11 @@ const CHORE_NAME = 'Demo Chore';
 const CHORE_NAME_EDITED = 'Demo Chore (edited)';
 
 test.describe('Add & Edit Chore (recording flow)', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // "Demo Chore" and its edited name, added to the real test family.
+  test.afterEach(async () => { await removeChoresAddedSince(CHORE_NAME, startedAt) })
+
   test('parent adds a chore then edits it', async ({ page }) => {
     await page.goto('/dashboard');
 
@@ -13,12 +19,9 @@ test.describe('Add & Edit Chore (recording flow)', () => {
     await page.waitForSelector('button', { timeout: 10_000 });
     await page.waitForTimeout(800);
 
-    // Select the first child so the chore list is visible
-    const firstChildBtn = page.getByRole('button', { name: /^select /i }).first();
-    if (await firstChildBtn.isVisible()) {
-      await firstChildBtn.click();
-      await page.waitForTimeout(600);
-    }
+    // Chores live under a kid: pick the first (the dashboard opens on everyone)
+    await page.getByRole('button', { name: /^show .*'s chores$/i }).first().click();
+    await page.waitForTimeout(600);
 
     // Make sure we're on the Chores tab
     await page.getByRole('tab', { name: /^chores$/i }).click();
@@ -56,11 +59,10 @@ test.describe('Add & Edit Chore (recording flow)', () => {
     await page.waitForTimeout(1200); // Let success toast + list refresh
 
     // === EDIT THE NEW CHORE ===
-    const choreCard = page.getByText(CHORE_NAME).first();
-    await choreCard.hover();
+    const editBtn = page.getByRole('button', { name: `Edit ${CHORE_NAME}`, exact: true }).first();
+    await editBtn.hover();
     await page.waitForTimeout(400);
-
-    await page.locator('[title="Edit chore"]').last().click();
+    await editBtn.click();
     await expect(page.getByRole('heading', { name: /edit chore/i })).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(500);
 

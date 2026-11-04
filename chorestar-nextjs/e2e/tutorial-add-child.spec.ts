@@ -4,12 +4,18 @@
  * Features shown: Add Child form, avatar Randomize, edit modal, color picker, robot avatar grid.
  */
 import { test, expect } from '@playwright/test';
+import { removeKidsAddedSince } from './test-family';
 
 test.use({ storageState: 'e2e/.auth/parent.json' });
 
 const CHILD_NAME = 'Demo Child';
 
 test.describe('Tutorial — Add & Customize a Child', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // The kid this adds to the real test family comes back out, pass or fail.
+  test.afterEach(async () => { await removeKidsAddedSince([CHILD_NAME], startedAt) })
+
   test('add a child, randomize avatar, then pick color and robot style', async ({ page }) => {
     test.setTimeout(120_000);
 
@@ -68,7 +74,7 @@ test.describe('Tutorial — Add & Customize a Child', () => {
     await page.waitForTimeout(2000); // Watch success toast + list refresh
 
     // ── SELECT THE NEW CHILD ──────────────────────────────────────────────────
-    const selectBtn = page.getByRole('button', { name: `Select ${CHILD_NAME}` }).first();
+    const selectBtn = page.getByRole('button', { name: `Show ${CHILD_NAME}'s chores` }).first();
     await selectBtn.hover();
     await page.waitForTimeout(600);
     await selectBtn.click();

@@ -4,8 +4,14 @@
  * Features shown: kid dashboard → routine card → step-by-step completion → celebration.
  */
 import { test, expect } from '@playwright/test';
+import { removeRoutineCompletionsSince } from './test-family';
 
 test.describe('Tutorial — Run a Routine (Kid)', () => {
+  let startedAt = ''
+  test.beforeEach(() => { startedAt = new Date().toISOString() })
+  // Finishing the routine credits a real kid; take this run's completion back.
+  test.afterEach(async () => { await removeRoutineCompletionsSince(startedAt) })
+
   test('kid logs in, starts routine, completes each step, sees celebration', async ({ page }) => {
     test.setTimeout(180_000);
 
