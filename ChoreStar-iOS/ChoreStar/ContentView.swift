@@ -319,6 +319,13 @@ struct MainTabs: View {
     }
 
     private func evaluateOnboarding() {
+        #if DEBUG
+        // Screenshot tooling: show the wizard on a family that has kids.
+        if manager.initialDataLoaded, ProcessInfo.processInfo.arguments.contains("-chorestar-onboarding") {
+            showOnboarding = true
+            return
+        }
+        #endif
         guard manager.initialDataLoaded,
               let key = onboardingSeenKey,
               !UserDefaults.standard.bool(forKey: key),
@@ -455,6 +462,7 @@ struct MainTabs: View {
                     selectedTab = 1
                 }
             }
+            .environmentObject(deepLinks)
         }
     }
 }

@@ -1,9 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ChevronRight, ChevronLeft, CheckCircle, Users, ListChecks, Star, Trophy, Coins, BarChart3, Flame } from 'lucide-react'
+import { ChevronRight, ChevronLeft, CheckCircle, Users, ListChecks, Star, Trophy, Coins, BarChart3, Flame, Home, Baby } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { joinFamilyWithCode } from '@/lib/family/join-with-code'
 import { RewardsSetupStep } from '@/components/onboarding/rewards-setup-step'
 
 interface OnboardingWizardProps {
@@ -15,7 +19,7 @@ interface OnboardingWizardProps {
 const STEPS = [
   {
     icon: Star,
-    title: 'Welcome to ChoreStar!',
+    title: "Let's Set Up Your Family",
     description: 'Turn chores into a game with rewards, tracking, and achievements.',
     content: (
       <div className="space-y-4 text-center">
@@ -148,8 +152,106 @@ const STEPS = [
   }
 ]
 
+/**
+ * Who is setting up? Signing in is also how a co-parent and a kid's tablet
+ * reach a brand-new dashboard, and for them a new empty family is the wrong
+ * outcome (November 2026: one household made five families in 45 minutes,
+ * deleting three of them). A co-parent enters their partner's invite code; a
+ * kid's device signs out into kid login. Matches the iOS OnboardingView.
+ */
+function StartChoice({ onFamily, onJoined }: { onFamily: () => void; onJoined: () => void }) {
+  const router = useRouter()
+  const [joining, setJoining] = useState(false)
+  const [code, setCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const join = async () => {
+    if (!code.trim() || busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await joinFamilyWithCode(code)
+      if ('error' in result) {
+        setError(result.error)
+        return
+      }
+      toast.success('Joined family!')
+      onJoined()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const kidDevice = async () => {
+    await createClient().auth.signOut()
+    router.push('/kid-login')
+  }
+
+  if (joining) {
+    return (
+      <div className="max-w-md mx-auto space-y-4">
+        <p className="text-center text-gray-600 dark:text-gray-400">
+          In their ChoreStar app: Settings, then Family Sharing, then Invite a Co-Parent.
+        </p>
+        <label htmlFor="join-code" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+          Invite code
+        </label>
+        <input
+          id="join-code"
+          value={code}
+          autoComplete="off"
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && join()}
+          className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-3 font-mono text-lg uppercase text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        {error && (
+          <p role="alert" className="text-sm font-semibold text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        )}
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" size="lg" onClick={() => { setJoining(false); setError(null) }}>
+            <ChevronLeft className="w-5 h-5 mr-1" />
+            Back
+          </Button>
+          <Button type="button" size="lg" className="flex-1 font-bold" disabled={!code.trim() || busy} onClick={join}>
+            {busy ? 'Joining...' : 'Join Family'}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const options = [
+    { icon: Home, title: "I'm setting up our family", detail: 'Add your kids, chores and routines.', onClick: onFamily },
+    { icon: Users, title: "I'm joining my partner's family", detail: 'Use the invite code from their app.', onClick: () => setJoining(true) },
+    { icon: Baby, title: "This is my kid's device", detail: 'Kids sign in with the family code and their PIN, no account needed.', onClick: kidDevice },
+  ]
+  return (
+    <div className="max-w-md mx-auto space-y-3">
+      {options.map((o) => (
+        <button
+          key={o.title}
+          type="button"
+          onClick={o.onClick}
+          className="w-full flex items-center gap-4 text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
+        >
+          <o.icon className="w-6 h-6 shrink-0 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+          <span className="flex-1">
+            <span className="block font-bold text-gray-900 dark:text-gray-100">{o.title}</span>
+            <span className="block text-sm text-gray-600 dark:text-gray-400">{o.detail}</span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
+  const [choosing, setChoosing] = useState(true)
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -173,6 +275,33 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
 
   const step = STEPS[currentStep]
   const StepIcon = step.icon
+
+  if (choosing) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="overflow-hidden max-w-3xl max-h-[90vh] flex flex-col dialog-content-bg">
+          <DialogTitle className="sr-only">Who is setting up ChoreStar?</DialogTitle>
+          <div className="flex-1 overflow-y-auto py-8 px-6">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-black mb-2 flex items-center justify-center gap-3" style={{ color: 'var(--text-primary)' }}>
+                <Star className="w-8 h-8" style={{ color: 'var(--primary)' }} />
+                Welcome to ChoreStar!
+              </h2>
+              <p className="text-base text-gray-600 dark:text-gray-400">Who is setting up this device?</p>
+            </div>
+            <StartChoice
+              onFamily={() => setChoosing(false)}
+              onJoined={() => {
+                onComplete()
+                onOpenChange(false)
+                window.location.reload()
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

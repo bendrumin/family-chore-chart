@@ -22013,6 +22013,226 @@
           }
         }
       }
+    },
+    "Who is setting up this device?" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "من يُعِدّ هذا الجهاز؟"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Quién está configurando este dispositivo?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quem está configurando este dispositivo?"
+          }
+        }
+      }
+    },
+    "I'm setting up our family" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أنا أُعِدّ عائلتنا"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estoy configurando nuestra familia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estou configurando nossa família"
+          }
+        }
+      }
+    },
+    "Add your kids, chores and routines." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أضف أطفالك ومهامهم وروتيناتهم."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega a tus hijos, tareas y rutinas."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione seus filhos, tarefas e rotinas."
+          }
+        }
+      }
+    },
+    "I'm joining my partner's family" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أنضم إلى عائلة شريكي"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Me uno a la familia de mi pareja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vou entrar na família do meu parceiro"
+          }
+        }
+      }
+    },
+    "Use the invite code from their app." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم رمز الدعوة من تطبيقه."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el código de invitación de su app."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use o código de convite do app dele."
+          }
+        }
+      }
+    },
+    "This is my kid's device" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا جهاز طفلي"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este es el dispositivo de mi hijo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este é o dispositivo do meu filho"
+          }
+        }
+      }
+    },
+    "Kids sign in with the family code and their PIN, no account needed." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يسجّل الأطفال الدخول برمز العائلة ورقمهم السري، دون حساب."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los niños entran con el código familiar y su PIN, sin cuenta."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As crianças entram com o código da família e o PIN, sem conta."
+          }
+        }
+      }
+    },
+    "In their ChoreStar app: Settings, then Family Sharing, then Invite a Co-Parent." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في تطبيق ChoreStar لديه: الإعدادات، ثم المشاركة العائلية، ثم دعوة ولي أمر مشارك."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En su app de ChoreStar: Ajustes, luego Compartir en familia, luego Invitar a un copadre."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No app ChoreStar dele: Ajustes, depois Compartilhamento familiar, depois Convidar um corresponsável."
+          }
+        }
+      }
+    },
+    "Invite code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز الدعوة"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de invitación"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de convite"
+          }
+        }
+      }
+    },
+    "Welcome to ChoreStar!" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مرحبًا بك في ChoreStar!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Bienvenido a ChoreStar!"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boas-vindas ao ChoreStar!"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

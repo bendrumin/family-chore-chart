@@ -4,9 +4,23 @@ import SwiftUI
 /// parent signs in with no children yet. Walks through the three things a new
 /// family needs to know — add kids, create chores/routines, hand the phone to
 /// the kid — and lands on the Family tab to add the first child.
+///
+/// It opens by asking who is setting up this device, because signing in is
+/// also how a co-parent and a kid's iPad reach this screen, and for them a new
+/// empty family is the wrong outcome. On November 1, 2026 one household made
+/// five families in 45 minutes from different Apple IDs, deleting three of
+/// them along with a free trial. A co-parent enters their partner's invite
+/// code here; a kid's device signs out into kid login.
 struct OnboardingView: View {
     @EnvironmentObject var manager: SupabaseManager
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var deepLinks: DeepLinkRouter
+
+    private enum Start { case choose, join, family }
+    @State private var start: Start = .choose
+    @State private var joinCode = ""
+    @State private var joinError: String?
+    @State private var isJoining = false
 
     /// Called exactly once when the wizard closes. `true` means the user
     /// tapped the final call-to-action and wants to add their first child.
@@ -26,6 +40,198 @@ struct OnboardingView: View {
             themeManager.gradient
                 .ignoresSafeArea()
 
+            switch start {
+            case .choose: chooseStart
+            case .join: joinFamily
+            case .family: wizard
+            }
+        }
+        .interactiveDismissDisabled()
+    }
+
+    // MARK: - Who is setting up this device
+
+    private var chooseStart: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text("⭐️")
+                .font(.system(size: 72))
+                .accessibilityHidden(true)
+            VStack(spacing: 8) {
+                Text("Welcome to ChoreStar!")
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                Text("Who is setting up this device?")
+                    .font(.title3)
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 24)
+
+            VStack(spacing: 12) {
+                startOption(
+                    icon: "house.fill",
+                    title: "I'm setting up our family",
+                    detail: "Add your kids, chores and routines.",
+                    id: "onboarding.start.family"
+                ) { withAnimation { start = .family } }
+                startOption(
+                    icon: "person.2.fill",
+                    title: "I'm joining my partner's family",
+                    detail: "Use the invite code from their app.",
+                    id: "onboarding.start.join"
+                ) { withAnimation { start = .join } }
+                startOption(
+                    icon: "figure.and.child.holdinghands",
+                    title: "This is my kid's device",
+                    detail: "Kids sign in with the family code and their PIN, no account needed.",
+                    id: "onboarding.start.kid"
+                ) { useKidLogin() }
+            }
+            .padding(.horizontal, 24)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    private func startOption(icon: String, title: LocalizedStringKey, detail: LocalizedStringKey, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(themeManager.accentColor)
+                    .frame(width: 32)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.choreStarTextPrimary)
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundColor(.choreStarTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundColor(.choreStarTextSecondary)
+                    .accessibilityHidden(true)
+            }
+            .multilineTextAlignment(.leading)
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+    }
+
+    /// Kids never need an account of their own: sign this one out and open
+    /// kid login (AuthView picks up wantKidMode once signed out).
+    private func useKidLogin() {
+        if let key = manager.debugUserId.map({ "hasSeenParentOnboarding.\($0)" }) {
+            UserDefaults.standard.set(true, forKey: key)
+        }
+        // Signed out first: while signed in, MainTabs answers wantKidMode
+        // itself (on-device kid mode) and clears it.
+        manager.signOut()
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            deepLinks.wantKidMode = true
+        }
+    }
+
+    // MARK: - Join a partner's family
+
+    private var joinFamily: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text("👨‍👩‍👧‍👦")
+                .font(.system(size: 72))
+                .accessibilityHidden(true)
+            VStack(spacing: 8) {
+                Text("Join a Family")
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                Text("In their ChoreStar app: Settings, then Family Sharing, then Invite a Co-Parent.")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 24)
+
+            VStack(alignment: .leading, spacing: 10) {
+                TextField("Invite code", text: $joinCode)
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled()
+                    .font(.system(.title3, design: .monospaced))
+                    .foregroundColor(.choreStarTextPrimary)
+                    .padding(14)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .submitLabel(.join)
+                    .onSubmit(join)
+                    .accessibilityIdentifier("onboarding.join.code")
+                if let joinError {
+                    Text(joinError)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, 24)
+
+            Button(action: join) {
+                HStack {
+                    if isJoining { ProgressView().tint(themeManager.accentColor) }
+                    Text("Join Family")
+                }
+                .font(.headline)
+                .foregroundColor(themeManager.accentColor)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            .disabled(joinCode.trimmingCharacters(in: .whitespaces).isEmpty || isJoining)
+            .padding(.horizontal, 24)
+            .accessibilityIdentifier("onboarding.join.submit")
+
+            Button("Back") { withAnimation { start = .choose; joinError = nil } }
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    private func join() {
+        guard !isJoining, !joinCode.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        isJoining = true
+        joinError = nil
+        Task {
+            let error = await manager.joinFamily(code: joinCode)
+            await MainActor.run {
+                isJoining = false
+                if let error {
+                    joinError = error
+                    Haptics.error()
+                } else {
+                    Haptics.success()
+                    onFinish(false)
+                }
+            }
+        }
+    }
+
+    // MARK: - New family wizard
+
+    private var wizard: some View {
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
@@ -68,8 +274,6 @@ struct OnboardingView: View {
                 .opacity(page == pageCount - 1 ? 1 : 0)
                 .animation(.easeInOut(duration: 0.2), value: page)
             }
-        }
-        .interactiveDismissDisabled()
     }
 
     private func advance() {
@@ -116,7 +320,7 @@ struct OnboardingView: View {
     private var welcomePage: some View {
         OnboardingPage(
             emoji: "⭐️",
-            title: "Welcome to ChoreStar!",
+            title: "Let's Set Up Your Family",
             subtitle: "Make chores fun for the whole family",
             rows: [
                 ("checkmark.circle.fill", "Kids check off chores and earn rewards"),
@@ -313,4 +517,5 @@ private struct OnboardingPage: View {
     OnboardingView { _ in }
         .environmentObject(SupabaseManager.shared)
         .environmentObject(ThemeManager.shared)
+        .environmentObject(DeepLinkRouter.shared)
 }
