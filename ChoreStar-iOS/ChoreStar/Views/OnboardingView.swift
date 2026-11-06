@@ -108,6 +108,7 @@ struct OnboardingView: View {
                     Text(title)
                         .font(.headline)
                         .foregroundColor(.choreStarTextPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(detail)
                         .font(.subheadline)
                         .foregroundColor(.choreStarTextSecondary)

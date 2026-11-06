@@ -1,8 +1,5 @@
-Version 2.6.1: fixes and easier reading.
+Version 2.6.2: easier to get the whole family on board.
 
-• Fixed a crash some families hit when signing out
-• If Premium ends, the app now shows what the free plan paused as soon as you come back to it, and paused kids are marked Paused. Everything returns the moment you resubscribe, Premium themes included
-• Easier to read and use: stronger contrast on seasonal colors, buttons and labels, bigger tap targets for checking off chores, and clearer VoiceOver labels on chores, charts and Star Pets
-• "I'm a Kid!" fits on screen again on the newest iPhones
+• Setting up ChoreStar on another phone or iPad? The first screen now asks who is setting it up. A co-parent can enter their partner's invite code to join the same family, and a kid's device goes straight to kid login with the family code and PIN, so no extra family gets created by mistake
 
 Questions or feedback are welcome at hi@chorestar.app

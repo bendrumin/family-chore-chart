@@ -1,8 +1,5 @@
-Versión 2.6.1: correcciones y lectura más fácil.
+Versión 2.6.2: más fácil sumar a toda la familia.
 
-• Corregimos un cierre inesperado que algunas familias tenían al cerrar sesión
-• Si Premium termina, la app ahora muestra lo que el plan gratis pausó en cuanto vuelves a abrirla, y los niños pausados se marcan como En pausa. Todo vuelve en cuanto renuevas, incluidos los temas Premium
-• Más fácil de leer y usar: más contraste en los colores de temporada, botones y etiquetas, áreas más grandes para marcar tareas y etiquetas de VoiceOver más claras en tareas, gráficas y Mascotas Estrella
-• "I'm a Kid!" vuelve a caber en la pantalla en los iPhone más nuevos
+• ¿Configuras ChoreStar en otro teléfono o iPad? La primera pantalla ahora pregunta quién lo está configurando. Tu pareja puede ingresar tu código de invitación para unirse a la misma familia, y el dispositivo de un niño va directo al inicio de sesión infantil con el código familiar y su PIN, así no se crea otra familia por error
 
 Preguntas o comentarios: hi@chorestar.app

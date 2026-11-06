@@ -1,1 +1,1 @@
-Novo na 2.6.1: mais fácil de ler em todos os temas, rótulos do VoiceOver mais claros, áreas maiores para marcar tarefas e uma correção ao sair da conta.
+Novo na 2.6.2: configurar outro aparelho ficou mais fácil. O outro responsável entra com um código de convite, e o aparelho da criança vai direto ao login infantil.
