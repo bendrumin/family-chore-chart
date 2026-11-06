@@ -5,7 +5,7 @@ export const metadata: Metadata = {
     template: '%s | ChoreStar Blog',
     // The root layout's '%s | ChoreStar' template wraps this — a full
     // 'Blog | ChoreStar' here would render 'Blog | ChoreStar | ChoreStar'.
-    default: 'Blog',
+    default: 'Chore Chart Tips for Parents',
   },
   description: 'Practical tips for parents on chore charts, morning routines, allowance systems, and raising responsible kids.',
   keywords: [

@@ -9,7 +9,7 @@ const URL = 'https://chorestar.app/printable-chore-chart'
 export const metadata: Metadata = {
   title: 'Free Printable Chore Chart for Kids (PDF, No Signup)',
   description:
-    'Make a free printable weekly chore chart for your kids in a minute. Pick their age for starter chores, add allowance amounts if you like, and download a PDF. No account needed.',
+    'Make a free printable weekly chore chart in a minute. Pick their age for starter chores, add allowance amounts if you like, and download a PDF. No account needed.',
   keywords: [
     'free printable chore chart',
     'printable chore chart for kids',

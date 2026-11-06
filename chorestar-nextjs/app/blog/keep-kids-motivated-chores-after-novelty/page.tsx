@@ -7,12 +7,15 @@ import { AppStoreBadge } from '@/components/home/app-store-badge'
 import type { Metadata } from 'next'
 
 const TITLE = 'Why Kids Quit Their Chore Chart After a Month, and How to Keep Them Going'
+// Search-result title and description: short enough not to be cut off. TITLE
+// stays the on-page headline and the schema headline.
+const SEO_TITLE = 'Why Kids Quit Chore Charts (and What Works)'
 const DESCRIPTION =
-  'Most chore charts work for four to eight weeks, then quietly die. Here is why the novelty wears off, five things that keep kids going past it, and the growing pet ChoreStar added for exactly that.'
+  'Most chore charts last four to eight weeks. Why the novelty wears off, five things that keep kids going, and the growing pet ChoreStar added for it.'
 const URL = 'https://chorestar.app/blog/keep-kids-motivated-chores-after-novelty'
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: SEO_TITLE,
   description: DESCRIPTION,
   keywords: [
     'kids lose interest in chore chart',

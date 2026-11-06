@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 
 const TITLE = 'How to Split Chores Fairly Between Siblings'
 const DESCRIPTION =
-  'Rotate the jobs nobody wants, post bonus jobs for whoever is fastest, and let each kid save for their own thing. A practical guide to sibling chore fairness, and how ChoreStar now does it for you.'
+  'Rotate the jobs nobody wants, post bonus jobs for whoever is fastest, and let each kid save for their own thing. A practical guide to sibling chore fairness.'
 const URL = 'https://chorestar.app/blog/split-chores-fairly-between-siblings'
 
 export const metadata: Metadata = {

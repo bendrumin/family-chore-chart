@@ -7,12 +7,15 @@ import { AppStoreBadge } from '@/components/home/app-store-badge'
 import type { Metadata } from 'next'
 
 const TITLE = 'Spend, Save, Give: Teaching Kids Money with Jars and a Weekly Allowance'
+// Search-result title and description: short enough not to be cut off. TITLE
+// stays the on-page headline and the schema headline.
+const SEO_TITLE = 'Spend, Save, Give: Teaching Kids Money'
 const DESCRIPTION =
-  'Three jars, a fixed payday, a little interest on savings, and a fair way to handle fines. A short guide to teaching kids money with spend, save and give jars, and how ChoreStar now runs it for you.'
+  'Three jars, a fixed payday, a little interest on savings, and a fair way to handle fines. How to teach kids money with spend, save and give jars.'
 const URL = 'https://chorestar.app/blog/spend-save-give-jars-allowance-for-kids'
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: SEO_TITLE,
   description: DESCRIPTION,
   keywords: [
     'spend save give jars',
