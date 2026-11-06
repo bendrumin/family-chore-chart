@@ -55,7 +55,15 @@ export async function POST(request: Request) {
     claimedByUserId = data?.id ?? null
   }
 
-  const decision = decideEntitlement({ userId, ...verified, claimedByUserId })
+  // A token naming a deleted account frees the subscription to move here.
+  const token = verified.transaction.appAccountToken?.toLowerCase() ?? null
+  let tokenAccountExists = true
+  if (token && token !== userId.toLowerCase()) {
+    const { data } = await admin.from('profiles').select('id').eq('id', token).maybeSingle()
+    tokenAccountExists = !!data
+  }
+
+  const decision = decideEntitlement({ userId, ...verified, claimedByUserId, tokenAccountExists })
   if (!decision.grant) {
     return NextResponse.json({ premium: false, saved: false, reason: decision.reason })
   }
@@ -71,7 +79,9 @@ export async function POST(request: Request) {
   const update: Record<string, string> = {}
   // Upgrade only: lifetime stays lifetime, and downgrades come from Apple's notifications.
   if (profile?.subscription_type === 'free') update.subscription_type = 'premium'
-  if (!profile?.apple_original_transaction_id) update.apple_original_transaction_id = decision.originalTransactionId
+  // Overwritten, not just filled in, when the subscription moved here from a
+  // deleted account: the notifications map by this id from now on.
+  if (!profile?.apple_original_transaction_id || !tokenAccountExists) update.apple_original_transaction_id = decision.originalTransactionId
   if (Object.keys(update).length) {
     const { error } = await admin.from('profiles').update(update).eq('id', userId)
     if (error) {

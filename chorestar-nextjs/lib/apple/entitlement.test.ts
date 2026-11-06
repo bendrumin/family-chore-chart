@@ -41,6 +41,10 @@ t('refunded is refused', () => assert.equal(decide({ revocationDate: NOW - 5 }).
 t('other products are refused', () => assert.equal(decide({ productId: 'com.example.thing' }).grant, false))
 t('no token, unclaimed: grants (offer codes, old purchases)', () => assert.equal(decide({ appAccountToken: undefined }).grant, true))
 t('no token, claimed by another family: refused', () => assert.equal(decide({ appAccountToken: undefined }, { claimedByUserId: OTHER }).grant, false))
+t("deleted buyer's purchase moves to the account restoring it", () => assert.equal(decide({ appAccountToken: OTHER }, { tokenAccountExists: false }).grant, true))
+t("deleted buyer's purchase already moved to a third account: refused", () =>
+  assert.equal(decide({ appAccountToken: OTHER }, { tokenAccountExists: false, claimedByUserId: '0b3c1a52-1111-4a4a-9c9c-000000000003' }).grant, false))
+t('a live buyer still blocks, whatever tokenAccountExists says is missing', () => assert.equal(decide({ appAccountToken: OTHER }, { tokenAccountExists: true }).grant, false))
 t('sandbox grants for the session, never saved', () => assert.deepEqual(decide({}, { environment: 'Sandbox' }), { grant: true, persist: false, originalTransactionId: '2000001234' }))
 
 console.log(`\n${passed} passed, ${failed} failed`)
