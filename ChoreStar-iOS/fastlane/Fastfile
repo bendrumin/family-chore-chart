@@ -80,6 +80,26 @@ def with_temp_api_key_file
   end
 end
 
+# Refuse to build or submit from a checkout that is behind origin/main. Work
+# lands on main from more than one session, and `ship` derives the next build
+# number from the LOCAL project file, so a stale checkout would reuse a build
+# number that already exists (or leave a release commit out of the archive).
+# Fast-forward with: git pull --rebase --autostash origin main
+# Rule: .cursor/rules/sync-before-build.mdc. dry_run only warns.
+def require_synced!(root, dry_run: false)
+  require "shellwords"
+  r = root.shellescape
+  fetched = system("git", "-C", root, "fetch", "-q", "origin", "main")
+  UI.user_error!("git fetch origin failed; cannot tell whether this checkout is current. Check your network.") unless fetched
+  behind = `git -C #{r} rev-list --count HEAD..origin/main`.strip.to_i
+  return if behind.zero?
+
+  incoming = `git -C #{r} log --format='  %h %s' HEAD..origin/main`.strip
+  message = "This checkout is #{behind} commit(s) behind origin/main. Pull first:\n" \
+            "  git pull --rebase --autostash origin main\nIncoming:\n#{incoming}"
+  dry_run ? UI.important(message) : UI.user_error!(message)
+end
+
 platform :ios do
   desc "Download the CURRENTLY LIVE metadata and screenshots from App Store Connect."
   desc "Run this before your first upload, then `git diff` to see where local text has drifted."
@@ -451,6 +471,7 @@ platform :ios do
   lane :ship do |options|
     require "shellwords"
     root = File.expand_path("..", __dir__)
+    require_synced!(root, dry_run: options[:dry_run])
     pbxproj = File.join(root, "ChoreStar.xcodeproj", "project.pbxproj")
     project = File.read(pbxproj)
 
@@ -527,6 +548,7 @@ platform :ios do
   desc "with any custom product page still being prepared. Dry run unless confirm:true."
   lane :submit do |options|
     root = File.expand_path("..", __dir__)
+    require_synced!(root, dry_run: !options[:confirm])
     version = File.read(File.join(root, "ChoreStar.xcodeproj", "project.pbxproj"))[/APP_VERSION = ([\d.]+);/, 1]
     unless options[:confirm]
       UI.important("Dry run. This WOULD turn on phased release for #{version} and submit it,")

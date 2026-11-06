@@ -61,6 +61,10 @@ cd chorestar-nextjs && npm install && npm run dev
 open ChoreStar-iOS/ChoreStar.xcodeproj
 ```
 
+## Sync Before You Build
+
+Before any build, deploy, iOS archive/ship script, build-number bump, or push: `git fetch origin`; if behind, `git pull --rebase --autostash origin main`, then `npx tsc --noEmit` in `chorestar-nextjs/`. Never force-push `main`. Stop and ask on rebase conflicts in `ChoreStar-iOS/` or billing code. `fastlane ios ship`/`submit` refuse to run when behind `origin/main`. See `CLAUDE.md` and `.cursor/rules/sync-before-build.mdc`.
+
 ## Known Issues
 
 - `testflight_waitlist` table is not in auto-generated Supabase types — API route uses `as any`

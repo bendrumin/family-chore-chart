@@ -1,0 +1,45 @@
+---
+description: Fetch and fast-forward from origin before any build, archive, deploy, or push
+alwaysApply: true
+---
+
+# Sync with origin before you build
+
+Work on this repo happens from more than one session and machine. On
+2026-11-05 a push was rejected because the iOS 2.6.1 release commits (build 49)
+had landed on `origin/main` from another session. Building or shipping from a
+stale checkout would have left them out.
+
+## Do this first, every time
+
+Before any of these: `npm run build`, `vercel`/a production deploy, an iOS
+archive or `scripts/ship-b*.sh` or `fastlane ios ship`, a version or build-number
+bump, or `git push`:
+
+```sh
+git fetch origin
+git status -sb          # look for "behind"
+```
+
+If the branch is behind:
+
+```sh
+git pull --rebase --autostash origin main
+```
+
+Then re-run the typecheck (`npx tsc --noEmit` in `chorestar-nextjs/`) on the
+merged tree before building. A clean rebase does not mean the merge compiles.
+
+## Rules
+
+- Never `git push --force` or `--force-with-lease` to `main` to get past a
+  rejected push. Fetch, rebase, push.
+- Check overlap first: `git diff --name-only HEAD...origin/main`. If the
+  incoming commits touch files you also changed, read them before rebasing.
+- If the rebase conflicts, stop and show the conflicting files. Do not resolve
+  conflicts in release or billing code (`ChoreStar-iOS/`, `app/api/stripe`,
+  `app/api/apple`, `app/api/google`, `lib/billing`) without asking.
+- Bumping `APP_BUILD` or the version: do it only after the pull, so build
+  numbers cannot collide with one already on `origin/main` or in App Store
+  Connect (`node ChoreStar-iOS/scripts/asc.mjs builds`).
+- Tell the user what came in (commit subjects) whenever the pull was not empty.

@@ -253,6 +253,10 @@ Both apps share the same Supabase PostgreSQL database with Row-Level Security on
 - **Printable weekly templates** (jsPDF) — themed PDFs (Stars/Rainbow/Minimal) on the Downloads tab
 - **How-to guides** — timeline-style tutorials on `/how-to`
 
+## Git — Sync Before You Build
+
+Work lands on `main` from more than one session and machine. Before any build, deploy, iOS archive or ship script, build-number bump, or `git push`: run `git fetch origin`, and if the branch is behind, `git pull --rebase --autostash origin main`, then re-run `npx tsc --noEmit` in `chorestar-nextjs/` on the merged tree. Never force-push `main` to get past a rejected push. If a rebase conflicts in `ChoreStar-iOS/` or billing code (`app/api/stripe|apple|google`, `lib/billing`), stop and ask. `fastlane ios ship` and `ios submit` (and `scripts/ship-b39.sh`) refuse to run on a checkout that is behind `origin/main`; `ship` derives the next build number from the local project file, so a stale checkout would reuse an existing one. Cursor rule: `.cursor/rules/sync-before-build.mdc`.
+
 ## Known Gotchas
 
 - Google Play-billed subscriptions (Android shell) are reconciled by `app/api/google/notifications/route.ts` (Pub/Sub push, verified against `purchases.subscriptionsv2`) and linked at purchase time by `app/api/google/verify/route.ts`; the `google_notifications` table and `profiles.google_purchase_token` (migration 022) are not in the generated types, so the routes use `as any` like the Apple and Stripe handlers. The shell's plugin is `cordova-plugin-purchase`, bridged by `lib/utils/play-billing-client.ts`; in a normal browser every call there is a no-op.

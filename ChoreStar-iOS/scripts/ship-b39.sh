@@ -14,6 +14,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Rule: .cursor/rules/sync-before-build.mdc. Never archive a stale checkout.
+git fetch -q origin main
+behind=$(git rev-list --count HEAD..origin/main)
+if [ "$behind" -ne 0 ]; then
+  echo "This checkout is $behind commit(s) behind origin/main. Pull first:"
+  echo "  git pull --rebase --autostash origin main"
+  git log --format='  %h %s' HEAD..origin/main
+  exit 1
+fi
+
 SHIP_XCODE="${SHIP_XCODE:-/Applications/Xcode.app}"
 export DEVELOPER_DIR="$SHIP_XCODE/Contents/Developer"
 xcodebuild -showsdks 2>/dev/null | grep -q "iphoneos27.1" || {
