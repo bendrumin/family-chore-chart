@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+/* Search-result visual, 3:2 at 3840x2560. */
+html,body{margin:0;width:3840px;height:2560px;overflow:hidden}
+body{background:linear-gradient(165deg,#eef6f6 0%,#f6f2f6 50%,#fdf0ec 100%);font-family:-apple-system,"SF Pro Display",system-ui,sans-serif;position:relative}
+.glow{position:absolute;border-radius:50%;filter:blur(200px);opacity:.55}
+.g1{width:1800px;height:1800px;left:2000px;top:-500px;background:#c9b8f5}
+.g2{width:1500px;height:1500px;left:-300px;top:1400px;background:#ffd7b8}
+.copy{position:absolute;left:250px;top:0;bottom:0;width:1900px;display:flex;flex-direction:column;justify-content:center}
+.icon{width:340px;height:340px;border-radius:76px;box-shadow:0 36px 80px rgba(14,58,64,.22);margin-bottom:90px}
+h1{margin:0;font-size:220px;line-height:1.03;font-weight:800;color:#143c40;letter-spacing:-5px}
+h1 span{background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;color:transparent}
+.dev{position:absolute;overflow:hidden;border-radius:130px;box-shadow:0 60px 160px rgba(14,58,64,.32),0 0 0 20px #1b1b1f,0 0 0 24px #3a3a40}
+.dev img{display:block;width:100%}
+.phone{width:1060px;left:2450px;top:300px}
+.phone2{width:1060px;left:1700px;top:620px;box-shadow:0 70px 180px rgba(14,58,64,.36),0 0 0 20px #1b1b1f,0 0 0 24px #3a3a40}
+</style></head><body>
+<div class="glow g1"></div><div class="glow g2"></div>
+<div class="copy">
+  <img class="icon" src="src-general/icon.png">
+  <h1>A pet that<br><span>grows with<br>every chore.</span></h1>
+</div>
+<div class="dev phone"><img src="src-general/phone-home.png"></div>
+<div class="dev phone2"><img src="src-general/phone-pet.png"></div>
+</body></html>
