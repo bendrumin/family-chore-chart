@@ -70,7 +70,7 @@ export function ComposePanel({ initialUserId }: { initialUserId?: string | null 
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
-  const [recentWarning, setRecentWarning] = useState<string | null>(null)
+  const [recentWarning, setRecentWarning] = useState<{ at: string; label: string | null } | null>(null)
 
   // Opened from a family's Email button: load that family.
   useEffect(() => {
@@ -120,13 +120,13 @@ export function ComposePanel({ initialUserId }: { initialUserId?: string | null 
       })
       const d = await res.json()
       if (res.status === 409 && d.recent) {
-        setRecentWarning(d.lastDirectSentAt)
+        setRecentWarning({ at: d.lastSentAt, label: d.lastSentLabel })
         return
       }
       if (!res.ok) throw new Error(d.error || 'Send failed')
       toast.success(`Sent to ${d.to}`)
       setRecentWarning(null)
-      setFamily({ ...family, lastDirectSentAt: new Date().toISOString() })
+      setFamily({ ...family, lastSentAt: new Date().toISOString(), lastSentLabel: 'a note' })
       setSubject('')
       setBody('')
     } catch (err) {
@@ -154,7 +154,7 @@ export function ComposePanel({ initialUserId }: { initialUserId?: string | null 
                 <p className="text-sm text-gray-600 dark:text-gray-300 truncate">{family.email}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {family.subscription} · {family.kidNames.length ? family.kidNames.join(', ') : 'no kids yet'}
-                  {family.lastDirectSentAt && ` · last note ${day(family.lastDirectSentAt)}`}
+                  {family.lastSentAt && ` · last emailed ${day(family.lastSentAt)}${family.lastSentLabel ? ` (${family.lastSentLabel})` : ''}`}
                 </p>
                 {family.email.endsWith('privaterelay.appleid.com') && (
                   <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
@@ -265,7 +265,7 @@ export function ComposePanel({ initialUserId }: { initialUserId?: string | null 
 
           {recentWarning && (
             <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm text-amber-800 dark:text-amber-200">
-              You sent this family a note on {day(recentWarning)}. Send another anyway?
+              This family got {recentWarning.label ?? 'an email'} from us on {day(recentWarning.at)}. Send another anyway?
               <div className="mt-2 flex gap-2">
                 <Button size="sm" variant="gradient" onClick={() => send(true)} disabled={sending}>
                   Send anyway

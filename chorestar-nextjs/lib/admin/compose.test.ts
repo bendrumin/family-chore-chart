@@ -3,7 +3,7 @@
  * Run with `npm run test:unit`.
  */
 import assert from 'node:assert/strict'
-import { directCampaign, fillTemplate, joinNames, sentRecently, validateCompose, varsFor, DIRECT_PREFIX } from './compose'
+import { directCampaign, fillTemplate, joinNames, sendLabel, sentRecently, validateCompose, varsFor, DIRECT_PREFIX } from './compose'
 
 let passed = 0
 let failed = 0
@@ -40,10 +40,14 @@ t('empty subject or body is refused', () => {
 })
 t('a multi-line subject is refused (no header injection)', () => assert.match(validateCompose({ subject: 'a\nBcc: x@y.z', body: 'x' })!, /one line/))
 t('a mistyped placeholder is caught', () => assert.match(validateCompose({ subject: 'Hi', body: 'Hi {famly}' })!, /\{famly\}/))
-t('sent within 3 days counts as recent', () => {
+t('sent within 7 days counts as recent', () => {
   assert.equal(sentRecently(null, NOW), false)
-  assert.equal(sentRecently('2026-10-12T13:00:00Z', NOW), true)
-  assert.equal(sentRecently('2026-10-10T12:00:00Z', NOW), false)
+  assert.equal(sentRecently('2026-10-08T13:00:00Z', NOW), true)
+  assert.equal(sentRecently('2026-10-06T12:00:00Z', NOW), false)
+})
+t('a logged send is named for the warning', () => {
+  assert.equal(sendLabel('trial-day3'), 'trial-day3')
+  assert.equal(sendLabel(directCampaign('A quick question', NOW)), 'a note ("A quick question")')
 })
 t('direct campaign is labelled, timed and trimmed', () => {
   const c = directCampaign('  A quick question  ', NOW)

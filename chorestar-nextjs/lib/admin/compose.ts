@@ -13,8 +13,10 @@ export interface ComposeFamily {
   familyName: string
   subscription: string
   kidNames: string[]
-  /** The last direct note to this family, if any. */
-  lastDirectSentAt: string | null
+  /** The last email of any kind to this family (direct note, campaign or cron), if any. */
+  lastSentAt: string | null
+  /** What that email was, in words, e.g. "a direct note" or "trial-day3". */
+  lastSentLabel: string | null
 }
 
 export interface ComposeVars {
@@ -31,7 +33,7 @@ export const COMPOSE_PLACEHOLDERS: { token: string; meaning: string }[] = [
 export const SUBJECT_MAX = 150
 export const BODY_MAX = 10_000
 /** Sending again within this many days asks for a second click. */
-export const RECENT_DAYS = 3
+export const RECENT_DAYS = 7
 
 export function joinNames(names: string[]): string {
   const n = names.map((s) => s.trim()).filter(Boolean)
@@ -60,13 +62,20 @@ export function validateCompose(input: { subject: string; body: string }): strin
   return null
 }
 
-/** Whether the family heard from us directly within RECENT_DAYS. */
+/** Whether the family heard from us, by any email, within RECENT_DAYS. */
 export function sentRecently(lastSentAt: string | null, now = new Date()): boolean {
   if (!lastSentAt) return false
   return now.getTime() - new Date(lastSentAt).getTime() < RECENT_DAYS * 86_400_000
 }
 
 export const DIRECT_PREFIX = 'direct · '
+
+/** How the composer names a logged send: direct notes by subject, the rest by campaign. */
+export function sendLabel(campaign: string): string {
+  if (!campaign.startsWith(DIRECT_PREFIX)) return campaign
+  const subject = campaign.split(' · ').slice(2).join(' · ')
+  return subject ? `a note ("${subject}")` : 'a note'
+}
 
 /**
  * The outreach_sent_log campaign for a direct note. The table is unique on

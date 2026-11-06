@@ -5,9 +5,9 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { requireAdminApi } from '@/lib/admin/require-admin'
 import { FROM, REPLY_TO, logOutreachSend } from '@/lib/admin/outreach-send'
 import {
-  DIRECT_PREFIX,
   directCampaign,
   fillTemplate,
+  sendLabel,
   sentRecently,
   validateCompose,
   varsFor,
@@ -16,7 +16,7 @@ import {
 
 type Row = { id: string; email: string | null; family_name: string | null; subscription_type: string | null }
 
-/** Families with their kids' names and when they last got a direct note. */
+/** Families with their kids' names and the last email they got from us, of any kind. */
 async function withDetails(admin: SupabaseClient, rows: Row[]): Promise<ComposeFamily[]> {
   const families = rows.filter((r) => r.email)
   if (!families.length) return []
@@ -24,20 +24,24 @@ async function withDetails(admin: SupabaseClient, rows: Row[]): Promise<ComposeF
     admin.from('children').select('user_id, name, created_at').in('user_id', families.map((f) => f.id)).order('created_at'),
     admin
       .from('outreach_sent_log')
-      .select('email, sent_at')
+      .select('email, campaign, sent_at')
       .in('email', families.map((f) => f.email!))
-      .like('campaign', `${DIRECT_PREFIX}%`)
       .order('sent_at', { ascending: false }),
   ])
-  return families.map((f) => ({
+  return families.map((f) => {
+    const last = (sent ?? []).find((s: { email: string }) => s.email.toLowerCase() === f.email!.toLowerCase()) as
+      | { campaign: string; sent_at: string }
+      | undefined
+    return {
     userId: f.id,
     email: f.email!,
     familyName: f.family_name ?? '',
     subscription: f.subscription_type ?? 'free',
     kidNames: (kids ?? []).filter((k: { user_id: string }) => k.user_id === f.id).map((k: { name: string }) => k.name),
-    lastDirectSentAt:
-      (sent ?? []).find((s: { email: string }) => s.email.toLowerCase() === f.email!.toLowerCase())?.sent_at ?? null,
-  }))
+    lastSentAt: last?.sent_at ?? null,
+    lastSentLabel: last ? sendLabel(last.campaign) : null,
+    }
+  })
 }
 
 /** GET ?q=<email or family name> searches; ?userId= loads one family. */
@@ -87,8 +91,8 @@ export async function POST(request: Request) {
   const [family] = row ? await withDetails(admin, [row as Row]) : []
   if (!family) return NextResponse.json({ error: 'That family has no email address.' }, { status: 404 })
 
-  if (!confirmRecent && sentRecently(family.lastDirectSentAt)) {
-    return NextResponse.json({ recent: true, lastDirectSentAt: family.lastDirectSentAt }, { status: 409 })
+  if (!confirmRecent && sentRecently(family.lastSentAt)) {
+    return NextResponse.json({ recent: true, lastSentAt: family.lastSentAt, lastSentLabel: family.lastSentLabel }, { status: 409 })
   }
 
   const vars = varsFor(family)

@@ -402,6 +402,41 @@ chorestar.app`
     },
   },
 
+  'tried-it': {
+    id: 'tried-it',
+    label: 'Tried it, then stopped',
+    description: '1–9 check-offs, quiet for 30+ days. Sits between never-started (0) and faded (10+).',
+    selectRecipients(report) {
+      return excludeFounder(
+        (report.allUsers || []).filter((u) => {
+          const n = u.choreCompletions || 0
+          if (n < 1 || n >= 10) return false
+          return (u.daysSinceLastActivity ?? 0) > 30
+        })
+      )
+        .sort((a, b) => b.choreCompletions - a.choreCompletions)
+        .slice(0, 20)
+    },
+    subject() {
+      return 'What got in the way?'
+    },
+    text(user) {
+      const hi = greeting(user)
+      const n = user.choreCompletions
+      return `${hi}
+
+I'm Ben, I make ChoreStar. The ${user.familyName} checked off ${n} chore${n === 1 ? '' : 's'} and then stopped, which usually means something in the first week didn't click.
+
+Could you tell me what it was? One line is plenty. Was it setup taking too long, the kids not using it, or something else?
+
+If you'd like another go, two things tend to help: give each kid a 4-digit PIN so they check things off themselves (it's on each kid's edit screen), and start with just three chores.
+
+Thanks,
+Ben
+chorestar.app`
+    },
+  },
+
   'paid-never-started': {
     id: 'paid-never-started',
     label: 'Paid, never started',
@@ -533,7 +568,7 @@ export function resolveCampaignRecipients(
   report: PowerUserReport,
   campaignId: string,
   sentEmails: Set<string>,
-  options?: { stepEmails?: string[]; force?: boolean }
+  options?: { stepEmails?: string[]; force?: boolean; recentlyEmailed?: Set<string> }
 ): PowerUserStat[] {
   const campaign = OUTREACH_CAMPAIGNS[campaignId]
   if (!campaign) return []
@@ -553,6 +588,9 @@ export function resolveCampaignRecipients(
 
   if (!options?.force) {
     recipients = recipients.filter((u) => !sentEmails.has(`${campaignId}:${u.email.toLowerCase()}`))
+    // Any email from us lately, a campaign or an automated one, holds this one back.
+    const recent = options?.recentlyEmailed
+    if (recent) recipients = recipients.filter((u) => !recent.has(u.email.toLowerCase()))
   }
 
   return recipients

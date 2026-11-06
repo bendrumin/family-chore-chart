@@ -30,10 +30,18 @@ export interface OutreachSendResult {
   error?: string
 }
 
+/** Campaign sends skip anyone we emailed, by any campaign or cron, within this many days. */
+export const CAMPAIGN_COOLDOWN_DAYS = 14
+
 export async function loadSentEmailKeys(admin: SupabaseClient<Database>): Promise<Set<string>> {
+  return (await loadSendLog(admin)).keys
+}
+
+/** `campaign:email` keys for every send, plus the addresses emailed within the cooldown. */
+async function loadSendLog(admin: SupabaseClient<Database>): Promise<{ keys: Set<string>; recent: Set<string> }> {
   const { data, error } = await (admin as SupabaseClient)
     .from('outreach_sent_log' as 'profiles')
-    .select('campaign, email')
+    .select('campaign, email, sent_at')
 
   if (error) {
     if (error.message.includes('does not exist') || error.code === '42P01') {
@@ -43,11 +51,14 @@ export async function loadSentEmailKeys(admin: SupabaseClient<Database>): Promis
   }
 
   const keys = new Set<string>()
+  const recent = new Set<string>()
+  const cutoff = Date.now() - CAMPAIGN_COOLDOWN_DAYS * 86_400_000
   for (const row of data || []) {
-    const r = row as { campaign: string; email: string }
+    const r = row as { campaign: string; email: string; sent_at: string | null }
     keys.add(`${r.campaign}:${r.email.toLowerCase()}`)
+    if (r.sent_at && new Date(r.sent_at).getTime() > cutoff) recent.add(r.email.toLowerCase())
   }
-  return keys
+  return { keys, recent }
 }
 
 export async function logOutreachSend(
@@ -135,12 +146,13 @@ function buildPreviews(
   campaignId: string,
   sentKeys: Set<string>,
   stepEmails?: string[],
-  force?: boolean
+  force?: boolean,
+  recentlyEmailed?: Set<string>
 ): OutreachPreviewItem[] {
   const campaign = OUTREACH_CAMPAIGNS[campaignId]
   if (!campaign) return []
 
-  return resolveCampaignRecipients(report, campaignId, sentKeys, { stepEmails, force }).map((user) => ({
+  return resolveCampaignRecipients(report, campaignId, sentKeys, { stepEmails, force, recentlyEmailed }).map((user) => ({
     campaign: campaignId,
     email: user.email,
     familyName: user.familyName,
@@ -155,9 +167,10 @@ export async function previewOutreach(
 ): Promise<{ report: PowerUserReport; previews: OutreachPreviewItem[]; tableMissing?: boolean }> {
   const report = await analyzePowerUsers(admin)
   let sentKeys = new Set<string>()
+  let recent = new Set<string>()
   let tableMissing = false
   try {
-    sentKeys = await loadSentEmailKeys(admin)
+    ;({ keys: sentKeys, recent } = await loadSendLog(admin))
   } catch (e) {
     if (e instanceof Error && e.message === 'OUTREACH_TABLE_MISSING') {
       tableMissing = true
@@ -172,10 +185,13 @@ export async function previewOutreach(
     const preset = OUTREACH_PRESETS[options.preset]
     if (!preset) throw new Error(`Unknown preset: ${options.preset}`)
     for (const step of preset.steps) {
-      previews.push(...buildPreviews(report, step.campaign, sentKeys, step.emails, options.force))
+      const stepPreviews = buildPreviews(report, step.campaign, sentKeys, step.emails, options.force, recent)
+      // One email per family per run: a family two steps both match gets only the first.
+      const taken = new Set(previews.map((p) => p.email.toLowerCase()))
+      previews.push(...stepPreviews.filter((p) => !taken.has(p.email.toLowerCase())))
     }
   } else if (options.campaign) {
-    previews.push(...buildPreviews(report, options.campaign, sentKeys, undefined, options.force))
+    previews.push(...buildPreviews(report, options.campaign, sentKeys, undefined, options.force, recent))
   }
 
   return { report, previews, tableMissing }

@@ -13,6 +13,7 @@ const INTERNAL_SLUGS = [
   'no-child',
   'kid-login',
   'faded',
+  'tried-it',
   'paid-never-started',
   'app-review',
   'app-invite',
