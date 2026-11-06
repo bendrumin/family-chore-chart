@@ -617,6 +617,50 @@ switch (cmd) {
     }
     break;
   }
+  case 'asset-upload': {
+    // Upload creative-asset images to the Asset Library WITHOUT placing them,
+    // so they can be picked in App Store Connect (Asset Library) when a version,
+    // custom product page or optimization test is open. asset-place needs a
+    // target; this does not, and has no public effect until something uses it.
+    //   asset-upload "<reference name>" header.png [search.png ...]
+    // Reference names are unique across the library: the file name is appended.
+    const [refName, ...files] = args;
+    if (!refName || files.length === 0) throw new Error('usage: asset-upload "<reference name>" <file...>');
+    const { statSync } = await import('node:fs');
+    const { basename } = await import('node:path');
+    for (const file of files) {
+      const bytes = readFileSync(file);
+      const created = await api('POST', '/v1/appAssetLibraryImages', {
+        data: {
+          type: 'appAssetLibraryImages',
+          attributes: { fileName: basename(file), fileSize: statSync(file).size, category: 'CREATIVE_ASSETS', referenceName: `${refName} ${basename(file)}` },
+          relationships: { assetLibrary: { data: { type: 'appAssetLibraries', id: APP_ID } } },
+        },
+      });
+      const img = created.data;
+      for (const op of img.attributes.uploadOperations ?? []) {
+        const res = await fetch(op.url, {
+          method: op.method,
+          headers: Object.fromEntries((op.requestHeaders ?? []).map((h) => [h.name, h.value])),
+          body: bytes.subarray(op.offset, op.offset + op.length),
+        });
+        if (!res.ok) throw new Error(`upload chunk ${op.offset} -> ${res.status}`);
+      }
+      await api('PATCH', `/v1/appAssetLibraryImages/${img.id}`, {
+        data: { type: 'appAssetLibraryImages', id: img.id, attributes: { uploaded: true } },
+      });
+      let state = '';
+      for (let i = 0; i < 60; i++) {
+        const cur = await api('GET', `/v1/appAssetLibraryImages/${img.id}`);
+        state = cur.data.attributes.state;
+        if (!['AWAITING_UPLOAD', 'UPLOAD_COMPLETE'].includes(state)) break;
+        await sleep(3000);
+      }
+      if (state === 'FAILED') throw new Error(`${file}: processing failed`);
+      out(`${basename(file)}: image ${img.id} (${state}) uploaded, not placed`);
+    }
+    break;
+  }
   case 'raw': {
     out(await api('GET', args[0]));
     break;
@@ -627,5 +671,5 @@ switch (cmd) {
     break;
   }
   default:
-    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | set-whatsnew <v> <file> | push-locales <v> <locale...> | test-notification | test-notification-status <token> | raw <path> | rawx <method> <path> [json]`);
+    out(`usage: asc.mjs builds | status <v> | ensure-version <v> | wait-build <v> <b> | attach-build <v> <b> | phased <v> | submit-version <v> | set-whatsnew <v> <file> | push-locales <v> <locale...> | test-notification | test-notification-status <token> | asset-upload <ref> <file...> | raw <path> | rawx <method> <path> [json]`);
 }
