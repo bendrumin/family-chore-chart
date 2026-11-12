@@ -43,6 +43,18 @@ final class EntitlementsTests: XCTestCase {
 
     /// The children query decodes ChildRow; paused_by_plan was missing from
     /// it, so no kid ever showed as paused on iOS.
+    /// The paywall leads with what brought the parent there.
+    func testPaywallSpotlightForTheTopReasons() {
+        let shared = PaywallSpotlight.for(source: "shared_chores", kidNames: ["Maya Siegel", "Leo"])
+        XCTAssertEqual(shared?.title, "Chores that take turns")
+        XCTAssertTrue(shared?.rows.first?.text.contains("Maya's this week and Leo's next week") == true, "uses the family's own kids, first names")
+        XCTAssertEqual(PaywallSpotlight.for(source: "shared_chores", kidNames: ["Maya"])?.rows.first?.text,
+                       "Rotating: a chore moves to the next kid every week, all on its own.")
+        XCTAssertEqual(PaywallSpotlight.for(source: "gate_sharing", kidNames: [])?.title, "Run chores together")
+        XCTAssertEqual(PaywallSpotlight.for(source: "pet_request", kidNames: [])?.rows.count, 4)
+        XCTAssertNil(PaywallSpotlight.for(source: "limit_chores", kidNames: ["Maya", "Leo"]), "everything else keeps the plain paywall")
+    }
+
     func testChildRowDecodesPausedByPlan() throws {
         let json = """
         [{"id":"4f1c2a3b-0000-4000-8000-000000000001","name":"Kid 4","age":7,"avatar_color":"blue",

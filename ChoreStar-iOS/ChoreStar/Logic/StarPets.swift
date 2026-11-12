@@ -80,6 +80,9 @@ enum StarPets {
     struct KidResponse: Decodable {
         let childId: String?
         let pet: State?
+        /// The Premium species this kid has asked a grown-up for (039), or nil.
+        let request: Request?
+        struct Request: Decodable { let species: String }
     }
 
     struct FamilyKid: Decodable, Identifiable {
@@ -134,24 +137,30 @@ enum PetText {
 extension SupabaseManager {
     /// Kid side: this kid's pet with everything derived (GET /api/kid/pet).
     /// Kid token, or a parent's session naming the child.
-    func loadKidPet(childId: UUID) async -> StarPets.State? {
+    func loadKidPet(childId: UUID) async -> (pet: StarPets.State, asked: String?)? {
         guard let (data, status) = await kidAPI(path: "/api/kid/pet", method: "GET", childId: childId),
-              status == 200 else { return nil }
-        return (try? JSONDecoder().decode(StarPets.KidResponse.self, from: data))?.pet
+              status == 200,
+              let decoded = try? JSONDecoder().decode(StarPets.KidResponse.self, from: data),
+              let pet = decoded.pet else { return nil }
+        return (pet, decoded.request?.species)
     }
 
     enum PetActionResult {
-        case updated(StarPets.State)
+        /// The pet now, and the species asked for (if any).
+        case updated(StarPets.State, asked: String?)
         case askGrownUp
         case failed
     }
 
-    /// Kid side: adopt, rename, equip or collect_drop (POST /api/kid/pet).
+    /// Kid side: adopt, rename, equip, collect_drop or ask (POST /api/kid/pet).
+    /// "ask" sends the parent a push and a Needs Your OK row (migration 039).
     func petAction(childId: UUID, _ body: [String: Any]) async -> PetActionResult {
         guard let (data, status) = await kidAPI(path: "/api/kid/pet", method: "POST", childId: childId, body: body) else { return .failed }
         if status == 403, apiMessage(data, fallback: "") == "premium_required" { return .askGrownUp }
-        guard status == 200, let pet = (try? JSONDecoder().decode(StarPets.KidResponse.self, from: data))?.pet else { return .failed }
-        return .updated(pet)
+        guard status == 200,
+              let decoded = try? JSONDecoder().decode(StarPets.KidResponse.self, from: data),
+              let pet = decoded.pet else { return .failed }
+        return .updated(pet, asked: decoded.request?.species)
     }
 
     /// Parent side: every kid's pet, in family order (GET /api/pets).

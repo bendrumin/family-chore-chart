@@ -24,6 +24,8 @@ class SupabaseManager: ObservableObject {
     @Published var pendingApprovals: [PendingApproval] = []
     /// Store requests waiting for a parent, from the same endpoint (2.0).
     @Published var pendingRedemptions: [PendingRedemption] = []
+    /// Kids asking for a Premium Star Pet (migration 039), from the same list.
+    @Published var pendingPetRequests: [PendingPetRequest] = []
     /// Each child's wallet (balance, goal, store), from /api/kid/wallet (2.0).
     @Published var wallets: [UUID: KidWallet] = [:]
     /// The family's reward store items, for the parent's Settings screen (2.0).
@@ -713,6 +715,18 @@ class SupabaseManager: ObservableObject {
         let itemEmoji: String?
         let priceCents: Int
         let requestedAt: String?
+    }
+
+    /// A free-plan kid asking for a Premium Star Pet (GET /api/chores/pending,
+    /// `petRequests`). Yes is Premium itself; the list closes the ask after.
+    struct PendingPetRequest: Decodable, Identifiable {
+        let id: UUID
+        let childId: UUID
+        let childName: String
+        let species: String
+        let emoji: String
+        /// "Maya wants the kitty 🐱"
+        let title: String
     }
 
     /// The kid's wallet (GET /api/kid/wallet): balance, goal, store, limits.
@@ -1631,6 +1645,7 @@ class SupabaseManager: ObservableObject {
         struct Response: Decodable {
             let items: [PendingApproval]
             let redemptions: [PendingRedemption]?
+            let petRequests: [PendingPetRequest]?
         }
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -1639,6 +1654,7 @@ class SupabaseManager: ObservableObject {
             await MainActor.run {
                 self.pendingApprovals = decoded.items
                 self.pendingRedemptions = decoded.redemptions ?? []
+                self.pendingPetRequests = decoded.petRequests ?? []
             }
         } catch {
             await MainActor.run { debugLastError = "Pending approvals error: \(error.localizedDescription)" }
@@ -1862,6 +1878,23 @@ class SupabaseManager: ObservableObject {
 
     /// Parent reviews a store request. Approve spends the money server-side.
     @discardableResult
+    /// "Not now" on a kid's Star Pet ask (POST /api/pets/requests).
+    func dismissPetRequest(id: UUID) async {
+        await MainActor.run {
+            objectWillChange.send()
+            pendingPetRequests.removeAll { $0.id == id }
+        }
+        guard let token = await parentBearerToken(),
+              let url = URL(string: "\(SupabaseManager.appBaseURL)/api/pets/requests") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["requestId": id.uuidString.lowercased(), "action": "dismiss"])
+        _ = try? await URLSession.shared.data(for: request)
+        await loadPendingApprovals()
+    }
+
     func reviewRedemption(id: UUID, action: String) async -> String? {
         await MainActor.run {
             objectWillChange.send()

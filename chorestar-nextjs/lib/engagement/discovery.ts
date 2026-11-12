@@ -15,10 +15,12 @@
  * month later (about 3.6x and 2.6x). Premium features follow, only for
  * families who have them: the newer ones are Premium-only and not
  * grandfathered (docs/PREMIUM.md), so pointing a free family at money jars
- * would send them to a paywall.
+ * would send them to a paywall. Shared chores lead the Premium ones: in
+ * November 2026 they were the top reason families opened the paywall (7
+ * families), yet only 1 of 14 paying families had made one.
  */
 
-export type FeatureId = 'kid_login' | 'routines' | 'star_pets' | 'money_jars' | 'challenges' | 'calendar_feed'
+export type FeatureId = 'kid_login' | 'routines' | 'star_pets' | 'shared_chores' | 'money_jars' | 'challenges' | 'calendar_feed'
 
 /** Where a feature can be pointed at: a push (and the native apps' discover
  *  card), or the web dashboard. */
@@ -31,6 +33,8 @@ export interface FamilyUsage {
   hasMoney: boolean
   hasChallenge: boolean
   hasCalendar: boolean
+  /** A chore that rotates between kids or goes to whoever finishes first (025). */
+  hasSharedChore: boolean
   /** Challenges are siblings working together; one kid has no one to team up with. */
   kidCount: number
 }
@@ -92,6 +96,22 @@ export const FEATURES: Feature[] = [
     }),
   },
   {
+    id: 'shared_chores',
+    premiumOnly: true,
+    surfaces: ['push', 'web'],
+    tried: (u) => u.hasSharedChore,
+    applies: (u) => u.kidCount > 1,
+    push: () => ({
+      title: 'Chores that take turns',
+      body: 'A rotating chore moves to the next kid every week, so nobody argues whose turn it is. It is part of your Premium.',
+    }),
+    card: () => ({
+      title: 'Chores that take turns',
+      body: 'A rotating chore moves to the next kid every week, and a bonus chore goes to whoever finishes it first.',
+      cta: 'Add a shared chore',
+    }),
+  },
+  {
     id: 'money_jars',
     premiumOnly: true,
     surfaces: ['push', 'web'],
@@ -150,6 +170,7 @@ const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid:
     kid_login: (kid) => ({ title: `Dale a ${kid} su propio acceso`, body: `Con un PIN de 4 dígitos, ${kid} entra desde cualquier dispositivo y marca sus tareas sin ti.`, cta: 'Crear un PIN' }),
     routines: (kid) => ({ title: 'Prueba una rutina de mañana', body: `Vestirse, lavarse los dientes, preparar la mochila: ${kid} lo hace paso a paso.`, cta: 'Crear una rutina' }),
     star_pets: (kid) => ({ title: `${kid} puede adoptar una Mascota Estrella`, body: 'Una mascota que crece con cada tarea hecha. Todas las familias reciben un perrito.', cta: 'Ver Mascotas Estrella' }),
+    shared_chores: () => ({ title: 'Tareas que se turnan', body: 'Una tarea rotativa pasa al siguiente niño cada semana, y una tarea extra es para quien la termine primero.', cta: 'Agregar una tarea compartida' }),
     money_jars: (kid) => ({ title: 'Frascos para Gastar, Ahorrar y Dar', body: `Reparte lo que gana ${kid} en frascos, paga una mesada semanal automática y agrega interés al ahorro.`, cta: 'Configurar frascos' }),
     challenges: () => ({ title: 'Empieza un reto en familia', body: 'Los hermanos trabajan juntos por un premio compartido, como una noche de pizza tras 30 tareas.', cta: 'Crear un reto' }),
     calendar_feed: () => ({ title: 'Pon las tareas en tu calendario', body: 'Suscríbete una vez en el calendario de Apple, Google u Outlook y la semana se mantiene al día.', cta: 'Obtener el enlace' }),
@@ -158,6 +179,7 @@ const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid:
     kid_login: (kid) => ({ title: `Dê a ${kid} um acesso próprio`, body: `Com um PIN de 4 dígitos, ${kid} entra em qualquer aparelho e marca as tarefas sem você.`, cta: 'Criar um PIN' }),
     routines: (kid) => ({ title: 'Experimente uma rotina da manhã', body: `Vestir-se, escovar os dentes, arrumar a mochila: ${kid} faz tudo passo a passo.`, cta: 'Criar uma rotina' }),
     star_pets: (kid) => ({ title: `${kid} pode adotar um Pet Estrela`, body: 'Um pet que cresce a cada tarefa feita. Toda família ganha um cachorrinho.', cta: 'Ver Pets Estrela' }),
+    shared_chores: () => ({ title: 'Tarefas que se revezam', body: 'Uma tarefa em rodízio passa para a próxima criança toda semana, e uma tarefa bônus fica com quem terminar primeiro.', cta: 'Adicionar tarefa compartilhada' }),
     money_jars: (kid) => ({ title: 'Potes para Gastar, Poupar e Doar', body: `Divida o que ${kid} ganha em potes, pague uma mesada semanal automática e adicione juros à poupança.`, cta: 'Configurar potes' }),
     challenges: () => ({ title: 'Comece um desafio em família', body: 'Os irmãos trabalham juntos por um prêmio compartilhado, como uma noite de pizza depois de 30 tarefas.', cta: 'Criar um desafio' }),
     calendar_feed: () => ({ title: 'Coloque as tarefas na sua agenda', body: 'Assine uma vez no calendário da Apple, Google ou Outlook e a semana fica sempre atualizada.', cta: 'Pegar o link' }),
@@ -166,6 +188,7 @@ const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid:
     kid_login: (kid) => ({ title: `امنح ${kid} دخولًا خاصًا`, body: `برمز PIN من 4 أرقام، يدخل ${kid} من أي جهاز ويشطب مهامه بنفسه.`, cta: 'أنشئ رمز PIN' }),
     routines: (kid) => ({ title: 'جرّب روتين الصباح', body: `ارتداء الملابس، تنظيف الأسنان، تجهيز الحقيبة: ينجزها ${kid} خطوة بخطوة.`, cta: 'أنشئ روتينًا' }),
     star_pets: (kid) => ({ title: `يمكن لـ${kid} تبنّي حيوان نجم`, body: 'حيوان أليف يكبر مع كل مهمة تُنجز. تحصل كل عائلة على جرو.', cta: 'اعرض الحيوانات النجوم' }),
+    shared_chores: () => ({ title: 'مهام بالتناوب', body: 'تنتقل المهمة الدوّارة إلى الطفل التالي كل أسبوع، والمهمة الإضافية لمن ينهيها أولًا.', cta: 'أضف مهمة مشتركة' }),
     money_jars: (kid) => ({ title: 'حصالات الصرف والادخار والعطاء', body: `قسّم أرباح ${kid} على الحصالات، وادفع مصروفًا أسبوعيًا تلقائيًا، وأضف فائدة على الادخار.`, cta: 'إعداد الحصالات' }),
     challenges: () => ({ title: 'ابدأ تحديًا عائليًا', body: 'يعمل الإخوة معًا لجائزة مشتركة، مثل ليلة بيتزا بعد 30 مهمة.', cta: 'أنشئ تحديًا' }),
     calendar_feed: () => ({ title: 'ضع المهام في تقويمك', body: 'اشترك مرة واحدة في تقويم Apple أو Google أو Outlook ويبقى الأسبوع محدّثًا.', cta: 'احصل على الرابط' }),

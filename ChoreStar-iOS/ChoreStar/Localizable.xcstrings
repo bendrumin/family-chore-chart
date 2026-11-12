@@ -22233,6 +22233,455 @@
           }
         }
       }
+    },
+    "pet.askFor" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask a grown-up for the %1$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pídele a un adulto: %1$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pedir a um adulto: %1$@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اطلب من شخص كبير: %1$@"
+          }
+        }
+      }
+    },
+    "pet.asked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asked! A grown-up will see that you want the %1$@. 🐾"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Listo! Un adulto verá que quieres: %1$@. 🐾"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronto! Um adulto vai ver que você quer: %1$@. 🐾"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم! سيرى شخص كبير أنك تريد: %1$@. 🐾"
+          }
+        }
+      }
+    },
+    "Chores that take turns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas que se turnan"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas que se revezam"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مهام بالتناوب"
+          }
+        }
+      }
+    },
+    "Rotating: Dishes is %@'s this week and %@'s next week, all on its own." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotativa: los platos le tocan a %1$@ esta semana y a %2$@ la próxima, solito."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rodízio: a louça é de %1$@ nesta semana e de %2$@ na próxima, sozinha."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بالتناوب: الأطباق على %1$@ هذا الأسبوع وعلى %2$@ الأسبوع القادم، تلقائيًا."
+          }
+        }
+      }
+    },
+    "Rotating: a chore moves to the next kid every week, all on its own." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rotativa: una tarea pasa al siguiente niño cada semana, solita."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rodízio: uma tarefa passa para a próxima criança toda semana, sozinha."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بالتناوب: تنتقل المهمة إلى الطفل التالي كل أسبوع، تلقائيًا."
+          }
+        }
+      }
+    },
+    "Bonus: the first kid to finish a bonus chore earns it." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extra: el primer niño que termine una tarea extra se la gana."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bônus: a primeira criança a terminar uma tarefa bônus ganha."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافية: أول طفل ينهي المهمة الإضافية يكسبها."
+          }
+        }
+      }
+    },
+    "No more arguing about whose turn it is." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se acabaron las discusiones sobre a quién le toca."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chega de briga sobre de quem é a vez."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا مزيد من الجدال حول دور من."
+          }
+        }
+      }
+    },
+    "Run chores together" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organicen las tareas juntos"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizem as tarefas juntos"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدِيروا المهام معًا"
+          }
+        }
+      }
+    },
+    "Invite a co-parent with a link or code." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invita a otro padre o madre con un enlace o código."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convide outro responsável com um link ou código."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ادعُ الوالد الآخر برابط أو رمز."
+          }
+        }
+      }
+    },
+    "You both see every chore and can approve from your own phone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los dos ven cada tarea y pueden aprobar desde su propio teléfono."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vocês dois veem cada tarefa e podem aprovar do próprio celular."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يرى كلاكما كل مهمة ويمكنكما الموافقة من هاتفكما."
+          }
+        }
+      }
+    },
+    "Allowance, goals and the reward store stay the same on both phones." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mesada, las metas y la tienda de premios son las mismas en ambos teléfonos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesada, metas e lojinha de prêmios ficam iguais nos dois celulares."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يبقى المصروف والأهداف ومتجر المكافآت كما هي على الهاتفين."
+          }
+        }
+      }
+    },
+    "All six Star Pets" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las seis Mascotas Estrella"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os seis Pets Estrela"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحيوانات النجوم الستة"
+          }
+        }
+      }
+    },
+    "Kitty, bunny, dino, panda and owl, as well as the pup." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gatito, conejito, dino, panda y búho, además del perrito."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gatinho, coelhinho, dino, panda e coruja, além do cachorrinho."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قطة وأرنب وديناصور وباندا وبومة، إلى جانب الجرو."
+          }
+        }
+      }
+    },
+    "Hats, extras and new places to unlock as they level up." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gorros, accesorios y lugares nuevos que se desbloquean al subir de nivel."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chapéus, acessórios e lugares novos para desbloquear ao subir de nível."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قبعات وإضافات وأماكن جديدة تُفتح مع كل مستوى."
+          }
+        }
+      }
+    },
+    "A new prize to collect every month." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un premio nuevo para coleccionar cada mes."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um prêmio novo para colecionar todo mês."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جائزة جديدة لجمعها كل شهر."
+          }
+        }
+      }
+    },
+    "Pets grow all the way up, with a rare star form." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las mascotas crecen hasta grandes, con una rara forma de estrella."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os pets crescem até ficar grandes, com uma rara forma estrela."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تكبر الحيوانات حتى النهاية، مع شكل نجمي نادر."
+          }
+        }
+      }
+    },
+    "Premium unlocks all six Star Pets" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium desbloquea las seis Mascotas Estrella"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Premium desbloqueia os seis Pets Estrela"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يفتح Premium الحيوانات النجوم الستة"
+          }
+        }
+      }
+    },
+    "Not now: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora não: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ليس الآن: %@"
+          }
+        }
+      }
+    },
+    "See Premium for %@'s Star Pet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver Premium para la Mascota Estrella de %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver Premium para o Pet Estrela de %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اعرض Premium لحيوان %@ النجم"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

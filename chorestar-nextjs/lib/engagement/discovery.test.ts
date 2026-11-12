@@ -4,8 +4,8 @@
 import assert from 'node:assert/strict'
 import { FEATURES, cardCopy, copyLang, fallbackPush, untriedFeatures, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
 
-const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, kidCount: 2 }
-const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, kidCount: 2 }
+const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, hasSharedChore: false, kidCount: 2 }
+const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, hasSharedChore: true, kidCount: 2 }
 
 // Retention levers first, for everyone.
 assert.equal(nextFeature(none, false, 'push')?.id, 'kid_login')
@@ -18,7 +18,13 @@ for (const surface of ['push', 'web'] as const) {
 }
 
 // Premium continues into what they are paying for.
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, true, 'push')?.id, 'money_jars')
+// Shared chores lead the Premium features: the top paywall reason, rarely used once paid.
+assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, true, 'push')?.id, 'shared_chores')
+assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true, hasSharedChore: true }, true, 'push')?.id, 'money_jars')
+// Never for a free family (it is a paywall for them), never with one kid.
+assert.notEqual(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, false, 'push')?.id, 'shared_chores')
+assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true, kidCount: 1 }, true, 'push')?.id, 'money_jars')
+assert.equal(cardCopy(FEATURES.find((f) => f.id === 'shared_chores')!, 'Maya', 'es').cta, 'Agregar una tarea compartida')
 assert.equal(nextFeature({ ...all, hasCalendar: false }, true, 'push')?.id, 'calendar_feed')
 assert.equal(nextFeature(all, true, 'web'), null)
 

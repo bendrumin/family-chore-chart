@@ -64,6 +64,8 @@ struct KidPetCard: View {
     @State private var busy = false
     @State private var oops = false
     @State private var askGrownUp = false
+    /// The Premium species this kid has asked for (039): the picker says "Asked!".
+    @State private var asked: String?
     @State private var editing = false
     @State private var celebration: String?
 
@@ -76,7 +78,7 @@ struct KidPetCard: View {
                     if pet.adopted, let species = pet.species, let name = pet.name {
                         grown(pet, species: species, name: name)
                     } else {
-                        PetAdoptForm(pet: pet, busy: busy, oops: oops) { species, name in
+                        PetAdoptForm(pet: pet, busy: busy, oops: oops, asked: asked, onAsk: ask) { species, name in
                             Task { await act(["action": "adopt", "species": species, "name": name]) }
                         }
                     }
@@ -102,7 +104,7 @@ struct KidPetCard: View {
         .task(id: manager.weekCompletions.count &+ manager.completedRoutineIds.count) { await load() }
         .sheet(isPresented: $editing) {
             if let pet {
-                PetEditSheet(pet: pet, busy: busy) { species, name in
+                PetEditSheet(pet: pet, busy: busy, asked: asked, onAsk: ask) { species, name in
                     let body: [String: Any] = species == pet.species
                         ? ["action": "rename", "name": name]
                         : ["action": "adopt", "species": species, "name": name]
@@ -197,7 +199,12 @@ struct KidPetCard: View {
 
     private func load() async {
         guard let loaded = await manager.loadKidPet(childId: child.id) else { return }
-        apply(loaded)
+        asked = loaded.asked
+        apply(loaded.pet)
+    }
+
+    private func ask(_ species: String) {
+        Task { await act(["action": "ask", "species": species]) }
     }
 
     private func act(_ body: [String: Any]) async {
@@ -205,8 +212,9 @@ struct KidPetCard: View {
         oops = false
         defer { busy = false }
         switch await manager.petAction(childId: child.id, body) {
-        case .updated(let next):
+        case .updated(let next, let nextAsked):
             Haptics.light()
+            asked = nextAsked
             apply(next)
         case .askGrownUp:
             askGrownUp = true
@@ -409,19 +417,22 @@ private struct PetWardrobe: View {
     }
 }
 
-/// The species grid, shared by adopting and changing pets. Locked species
-/// (free plan) say "ask a grown-up" instead of being picked.
+/// The species grid, shared by adopting and changing pets. Tapping a locked
+/// species (free plan) offers "Ask a grown-up for the Kitty", which reaches
+/// the parent as a push and a Needs Your OK row (migration 039).
 private struct PetSpeciesPicker: View {
     let options: [StarPets.SpeciesOption]
     @Binding var selected: String
-    @State private var askedLocked = false
+    let asked: String?
+    let onAsk: (String) -> Void
+    @State private var lockedTap: String?
 
     var body: some View {
         VStack(spacing: 8) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(options) { option in
                     Button {
-                        if option.locked { askedLocked = true } else { selected = option.id; Haptics.light() }
+                        if option.locked { lockedTap = option.id } else { selected = option.id; Haptics.light() }
                     } label: {
                         VStack(spacing: 2) {
                             // The art leaves room for a habitat; without one, zoom in.
@@ -452,11 +463,27 @@ private struct PetSpeciesPicker: View {
                     .accessibilityAddTraits(selected == option.id ? .isSelected : [])
                 }
             }
-            if askedLocked {
-                Text(PetText.t("pet.askGrownUp"))
-                    .font(.caption.weight(.bold))
-                    .foregroundColor(.choreStarPrimary)
-                    .multilineTextAlignment(.center)
+            if let lockedTap {
+                if asked == lockedTap {
+                    Text(PetText.t("pet.asked", StarPets.speciesName(lockedTap)))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundColor(.choreStarSuccessInk)
+                        .multilineTextAlignment(.center)
+                } else {
+                    Button {
+                        Haptics.light()
+                        onAsk(lockedTap)
+                    } label: {
+                        Text(PetText.t("pet.askFor", StarPets.speciesName(lockedTap)) + " 🙋")
+                            .font(.subheadline.weight(.black))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.choreStarSuccessFill)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
@@ -466,6 +493,8 @@ private struct PetAdoptForm: View {
     let pet: StarPets.State
     let busy: Bool
     let oops: Bool
+    let asked: String?
+    let onAsk: (String) -> Void
     let onAdopt: (_ species: String, _ name: String) -> Void
     @State private var species = "pup"
     @State private var name = ""
@@ -479,7 +508,7 @@ private struct PetAdoptForm: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.choreStarTextSecondary)
 
-            PetSpeciesPicker(options: pet.speciesOptions, selected: $species)
+            PetSpeciesPicker(options: pet.speciesOptions, selected: $species, asked: asked, onAsk: onAsk)
 
             TextField("\(PetText.t("pet.nameLabel")): \(PetText.t("pet.namePlaceholder"))", text: $name)
                 .font(.title3.weight(.bold))
@@ -514,6 +543,8 @@ private struct PetAdoptForm: View {
 private struct PetEditSheet: View {
     let pet: StarPets.State
     let busy: Bool
+    let asked: String?
+    let onAsk: (String) -> Void
     let onSave: (_ species: String, _ name: String) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var species = ""
@@ -528,7 +559,7 @@ private struct PetEditSheet: View {
                         .padding(12)
                         .background(Color.choreStarBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    PetSpeciesPicker(options: pet.speciesOptions, selected: $species)
+                    PetSpeciesPicker(options: pet.speciesOptions, selected: $species, asked: asked, onAsk: onAsk)
                 }
                 .padding(20)
             }

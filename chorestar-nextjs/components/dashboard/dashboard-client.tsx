@@ -405,6 +405,11 @@ function DashboardContent({
     } else if (id === 'routines') {
       if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
       handleAddRoutine()
+    } else if (id === 'shared_chores') {
+      // Add Chore under a kid, where the rotating / bonus options live.
+      if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
+      setActiveTab('chores')
+      setAddChoreRequest(n => n + 1)
     } else if (id === 'challenges') {
       setSelectedChildId(null)
       setTimeout(() => document.getElementById('family-challenges-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)

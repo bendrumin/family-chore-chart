@@ -61,10 +61,13 @@ export function KidPet({ kidToken, refreshKey = 0 }: { kidToken: string; refresh
   const [error, setError] = useState(false)
   const [editing, setEditing] = useState(false)
   const [celebration, setCelebration] = useState<Celebration | null>(null)
+  /** The Premium species this kid has asked a grown-up for (migration 039). */
+  const [asked, setAsked] = useState<PetSpecies | null>(null)
 
-  const apply = useCallback((json: { childId?: string; pet?: PetState | null }) => {
+  const apply = useCallback((json: { childId?: string; pet?: PetState | null; request?: { species: PetSpecies } | null }) => {
     if (json.childId) setChildId(json.childId)
     setPet(json.pet ?? null)
+    setAsked(json.request?.species ?? null)
   }, [])
 
   useEffect(() => {
@@ -139,6 +142,7 @@ export function KidPet({ kidToken, refreshKey = 0 }: { kidToken: string; refresh
     },
     [kidToken, apply]
   )
+  const ask = useCallback((species: PetSpecies) => void post({ action: 'ask', species }), [post])
 
   if (!pet || !pet.enabled) return null
 
@@ -149,6 +153,8 @@ export function KidPet({ kidToken, refreshKey = 0 }: { kidToken: string; refresh
         busy={busy}
         error={error}
         onAdopt={(species, name) => void post({ action: 'adopt', species, name })}
+        asked={asked}
+        onAsk={ask}
       />
     )
   }
@@ -271,6 +277,8 @@ export function KidPet({ kidToken, refreshKey = 0 }: { kidToken: string; refresh
         <EditPet
           pet={pet}
           busy={busy}
+          asked={asked}
+          onAsk={ask}
           onCancel={() => setEditing(false)}
           onSave={async (sp, nm) => {
             if (await post({ action: 'adopt', species: sp, name: nm })) setEditing(false)
@@ -296,14 +304,21 @@ function SpeciesPicker({
   value,
   onChange,
   stage,
+  asked,
+  onAsk,
 }: {
   pet: PetState
   value: PetSpecies
   onChange: (s: PetSpecies) => void
   stage: PetStage
+  /** The species already asked for (migration 039), to show "Asked!". */
+  asked: PetSpecies | null
+  onAsk: (s: PetSpecies) => void
 }) {
   const t = useKidT()
-  const [askedLocked, setAskedLocked] = useState(false)
+  // The locked pet the kid tapped: offers "Ask a grown-up for the Kitty",
+  // which reaches the parent as a push and a Needs Your OK row.
+  const [lockedTap, setLockedTap] = useState<PetSpecies | null>(null)
   return (
     <>
       <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('pet.adoptTitle')}>
@@ -316,7 +331,7 @@ function SpeciesPicker({
               role="radio"
               aria-checked={selected}
               aria-disabled={opt.locked}
-              onClick={() => (opt.locked ? setAskedLocked(true) : onChange(opt.id))}
+              onClick={() => (opt.locked ? setLockedTap(opt.id) : onChange(opt.id))}
               className={`relative flex flex-col items-center rounded-2xl border-2 p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
                 selected ? 'border-indigo-500 bg-indigo-50' : 'border-gray-100 bg-gray-50 hover:border-indigo-200'
               } ${opt.locked ? 'opacity-60' : ''}`}
@@ -332,7 +347,20 @@ function SpeciesPicker({
           )
         })}
       </div>
-      {askedLocked && <p className="mt-2 rounded-2xl bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-800 text-center">{t('pet.askGrownUp')}</p>}
+      {lockedTap &&
+        (asked === lockedTap ? (
+          <p role="status" className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 text-center">
+            {t('pet.asked', { pet: speciesName(t, lockedTap) })}
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onAsk(lockedTap)}
+            className="mt-2 w-full rounded-2xl accent-fill px-3 py-2.5 text-sm font-black shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
+            {t('pet.askFor', { pet: speciesName(t, lockedTap) })} 🙋
+          </button>
+        ))}
     </>
   )
 }
@@ -342,11 +370,15 @@ function AdoptCard({
   busy,
   error,
   onAdopt,
+  asked,
+  onAsk,
 }: {
   pet: PetState
   busy: boolean
   error: boolean
   onAdopt: (species: PetSpecies, name: string) => void
+  asked: PetSpecies | null
+  onAsk: (species: PetSpecies) => void
 }) {
   const t = useKidT()
   const first = pet.speciesOptions.find(o => !o.locked)?.id ?? 'pup'
@@ -366,7 +398,7 @@ function AdoptCard({
       </h2>
       <p className="mt-1 text-base font-bold text-gray-600">{t('pet.adoptBody')}</p>
       <div className="mt-4">
-        <SpeciesPicker pet={pet} value={species} onChange={setSpecies} stage="baby" />
+        <SpeciesPicker pet={pet} value={species} onChange={setSpecies} stage="baby" asked={asked} onAsk={onAsk} />
       </div>
       <form
         className="mt-4 flex flex-col sm:flex-row gap-2"
@@ -408,11 +440,15 @@ function EditPet({
   busy,
   onCancel,
   onSave,
+  asked,
+  onAsk,
 }: {
   pet: PetState
   busy: boolean
   onCancel: () => void
   onSave: (species: PetSpecies, name: string) => void
+  asked: PetSpecies | null
+  onAsk: (species: PetSpecies) => void
 }) {
   const t = useKidT()
   const [species, setSpecies] = useState<PetSpecies>(pet.species ?? 'pup')
@@ -420,7 +456,7 @@ function EditPet({
   const trimmed = name.trim()
   return (
     <div className="mt-4 rounded-2xl border-2 border-indigo-100 p-3">
-      <SpeciesPicker pet={pet} value={species} onChange={setSpecies} stage={pet.stage} />
+      <SpeciesPicker pet={pet} value={species} onChange={setSpecies} stage={pet.stage} asked={asked} onAsk={onAsk} />
       <form
         className="mt-3 flex flex-col sm:flex-row gap-2"
         onSubmit={e => {

@@ -51,7 +51,7 @@ assert.equal(trialDay(start, at(3.5)), 4)
 assert.equal(trialDay(start, at(9)), 7)
 
 // Copy.
-const usage: FamilyUsage = { hasPin: false, hasRoutine: true, hasPet: false, hasMoney: true, hasChallenge: false, hasCalendar: false, kidCount: 1 }
+const usage: FamilyUsage = { hasPin: false, hasRoutine: true, hasPet: false, hasMoney: true, hasChallenge: false, hasCalendar: false, hasSharedChore: false, kidCount: 1 }
 assert.match(dayOneTrialPush('Maya', usage).title, /Maya/)
 assert.match(dayOneTrialPush('Maya', usage).body, /PIN/)
 assert.notEqual(dayOneTrialPush('Maya', { ...usage, hasPin: true }).body.includes('PIN'), true)

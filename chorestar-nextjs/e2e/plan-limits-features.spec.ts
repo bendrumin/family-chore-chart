@@ -222,6 +222,56 @@ test('a Premium theme drops to the free look after a lapse, and comes back with 
   }
 })
 
+test('a kid asks for a Premium Star Pet; the parent sees it, says Not now, and Premium closes it', async () => {
+  const kid = realKids[0]
+  const kidApi = (body: unknown) =>
+    fetch(`${process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'}/api/kid/pet`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${kidToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  const { data: session } = await (admin as any).from('kid_sessions')
+    .insert({ child_id: kid.id, expires_at: new Date(Date.now() + 3600_000).toISOString() }).select('token').single()
+  const kidToken = session.token
+  const pending = async () => ((await (await api('/api/chores/pending')).json()).petRequests ?? []) as Array<{ id: string; species: string; title: string }>
+  try {
+    await setPlan('free')
+    // The pup is free: nothing to ask for.
+    expect((await kidApi({ action: 'ask', species: 'pup' })).status).toBe(409)
+
+    const ask = await kidApi({ action: 'ask', species: 'kitty' })
+    expect(ask.status).toBe(200)
+    expect((await ask.json()).request).toEqual({ species: 'kitty' })
+    let rows = await pending()
+    expect(rows).toHaveLength(1)
+    expect(rows[0].title).toBe(`${kid.name} wants the kitty 🐱`)
+
+    // Changing their mind updates the one ask instead of stacking a second.
+    await kidApi({ action: 'ask', species: 'owl' })
+    rows = await pending()
+    expect(rows).toHaveLength(1)
+    expect(rows[0].species).toBe('owl')
+
+    const dismiss = await api('/api/pets/requests', { method: 'POST', body: JSON.stringify({ requestId: rows[0].id, action: 'dismiss' }) })
+    expect(dismiss.status).toBe(200)
+    expect(await pending()).toHaveLength(0)
+
+    // Asking again after Not now, then the family gets Premium: the ask closes.
+    await kidApi({ action: 'ask', species: 'dino' })
+    expect(await pending()).toHaveLength(1)
+    await setPlan('premium')
+    expect(await pending()).toHaveLength(0)
+    const { data: closed } = await (admin as any).from('pet_requests').select('status').eq('child_id', kid.id).eq('species', 'dino').single()
+    expect(closed.status).toBe('granted')
+    // And a Premium kid has nothing left to ask for.
+    expect((await kidApi({ action: 'ask', species: 'panda' })).status).toBe(409)
+  } finally {
+    await setPlan('free')
+    await (admin as any).from('pet_requests').delete().eq('child_id', kid.id)
+    await (admin as any).from('kid_sessions').delete().eq('token', kidToken)
+  }
+})
+
 test('billing: monthly and yearly both offer the free week', async ({ page }) => {
   await signIn(page)
   await page.goto('/dashboard?settings=billing')

@@ -11,9 +11,26 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.10.7'
+export const LATEST_CHANGELOG_VERSION = '2026.11.1'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.11.1': {
+    version: '2026.11.1',
+    date: 'November 2026',
+    title: 'Kids Can Ask for a Star Pet',
+    features: [
+      {
+        icon: '🙋',
+        title: 'Asks Land in Needs Your OK',
+        description: 'When a kid taps a pet they don\'t have yet, they can ask you for it. You get a notification and see "Maya wants the owl" in Needs Your OK, with Not now if it isn\'t the right time.',
+      },
+      {
+        icon: '🔁',
+        title: 'Chores That Take Turns',
+        description: 'Premium families with more than one kid now get a tip about rotating chores, which move to the next kid every week, and bonus chores, which go to whoever finishes first.',
+      },
+    ],
+  },
   '2026.10.7': {
     version: '2026.10.7',
     date: 'October 2026',

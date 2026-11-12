@@ -7,6 +7,8 @@ struct ContentView: View {
     @State private var isLoading = true
     @State private var debugShowKidLogin = false
     @State private var debugShowPaywall = false
+    /// `-chorestar-paywall shared_chores` opens it as that source (screenshots of the spotlight).
+    @State private var debugPaywallSource = "debug"
     @State private var debugShowShareChore = false
     
     private var preferredColorScheme: ColorScheme? {
@@ -48,7 +50,7 @@ struct ContentView: View {
             KidLoginView()
         }
         .sheet(isPresented: $debugShowPaywall) {
-            PaywallView(source: "debug")
+            PaywallView(source: debugPaywallSource)
         }
         #if DEBUG
         .sheet(isPresented: $debugShowShareChore) {
@@ -141,7 +143,8 @@ struct ContentView: View {
                 )
             }
         }
-        if args.contains("-chorestar-paywall") {
+        if let i = args.firstIndex(of: "-chorestar-paywall") {
+            if i + 1 < args.count, !args[i + 1].hasPrefix("-") { debugPaywallSource = args[i + 1] }
             debugShowPaywall = true
         } else if args.contains("-chorestar-sharechore") {
             // Wait for the family's kids (they load after sign-in).

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- child_pets / child_pet_cosmetics (034) are newer than the generated types */
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { resolveKidRequest } from '@/lib/utils/kid-or-parent-auth'
 import { loadPetState } from '@/lib/pets/server'
 import { PET_SLOTS, PET_SPECIES_IDS, getPetItem } from '@/lib/pets/catalog'
 import { canEquip, cleanPetName, speciesAllowed } from '@/lib/pets/unlocks'
+import { canAskFor, shouldPushAsk } from '@/lib/pets/requests'
+import { notifyPetRequested } from '@/lib/push/notify'
 
 /**
  * Star Pets, from the kid's side (migration 034). Kid token, or a parent's
@@ -25,6 +27,13 @@ import { canEquip, cleanPetName, speciesAllowed } from '@/lib/pets/unlocks'
  *                                      Taking something off is always allowed.
  *   collect_drop  {}                   Premium; this month's drop once this
  *                                      month's XP reaches the goal. Wears it too.
+ *   ask           { species }          Free plan: ask a grown-up for a Premium
+ *                                      species (migration 039). One pending ask
+ *                                      per kid; the parent gets a push and a
+ *                                      Needs Your OK row.
+ *
+ * Both answers carry `request`: the species this kid has asked for and is
+ * still waiting on, or null.
  *
  * Every Premium rule is checked here, so it holds for any client; the table
  * itself is server-write only. Answers 403 `premium_required` with no
@@ -41,7 +50,19 @@ const bodySchema = z.discriminatedUnion('action', [
     itemId: z.string().max(40).nullable(),
   }),
   z.object({ action: z.literal('collect_drop'), childId: z.string().uuid().optional() }),
+  z.object({ action: z.literal('ask'), childId: z.string().uuid().optional(), species: z.enum(PET_SPECIES_IDS) }),
 ])
+
+/** The kid's pending ask, or null (and null if 039 isn't applied yet). */
+async function pendingRequest(admin: any, childId: string): Promise<{ id: string; species: string; requested_at: string } | null> {
+  const { data, error } = await admin
+    .from('pet_requests')
+    .select('id, species, requested_at')
+    .eq('child_id', childId)
+    .eq('status', 'pending')
+    .maybeSingle()
+  return error ? null : data
+}
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 
@@ -50,8 +71,12 @@ export async function GET(request: Request) {
   const ctx = await resolveKidRequest(request, url.searchParams.get('childId'))
   if (!ctx) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
   try {
-    const { state } = await loadPetState(ctx.child.user_id, ctx.child.id)
-    return NextResponse.json({ childId: ctx.child.id, pet: state }, { headers: NO_STORE })
+    const { ctx: family, state } = await loadPetState(ctx.child.user_id, ctx.child.id)
+    const pending = family.premium ? null : await pendingRequest(createServiceRoleClient() as any, ctx.child.id)
+    return NextResponse.json(
+      { childId: ctx.child.id, pet: state, request: pending ? { species: pending.species } : null },
+      { headers: NO_STORE }
+    )
   } catch (error) {
     console.error('[kid/pet] GET failed:', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
@@ -72,6 +97,36 @@ export async function POST(request: Request) {
     if (!state) return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
     if (!state.enabled) return NextResponse.json({ error: 'pets_off' }, { status: 403 })
     const premium = family.premium
+
+    if (body.action === 'ask') {
+      if (!canAskFor(body.species, premium)) {
+        return NextResponse.json({ error: premium ? 'already_premium' : 'free_species' }, { status: 409 })
+      }
+      const species = body.species
+      const pending = await pendingRequest(admin, childId)
+      const push = shouldPushAsk(pending?.requested_at ?? null, new Date())
+      let requestId = pending?.id ?? null
+      if (pending) {
+        // Changing their mind updates the ask; only a fresh one is re-stamped.
+        const patch: Record<string, unknown> = { species }
+        if (push) patch.requested_at = new Date().toISOString()
+        const { error } = await admin.from('pet_requests').update(patch).eq('id', pending.id)
+        if (error) throw new Error(error.message)
+      } else {
+        const { data, error } = await admin
+          .from('pet_requests')
+          .insert({ child_id: childId, species })
+          .select('id')
+          .single()
+        if (error) throw new Error(error.message)
+        requestId = data.id
+      }
+      if (push && requestId) {
+        const id = requestId
+        after(() => notifyPetRequested(childId, species, id))
+      }
+      return NextResponse.json({ childId, pet: state, request: { species } }, { headers: NO_STORE })
+    }
 
     if (body.action === 'adopt') {
       const name = cleanPetName(body.name)
@@ -134,7 +189,8 @@ export async function POST(request: Request) {
     }
 
     const { state: next } = await loadPetState(ctx.child.user_id, childId)
-    return NextResponse.json({ childId, pet: next }, { headers: NO_STORE })
+    const pending = premium ? null : await pendingRequest(admin, childId)
+    return NextResponse.json({ childId, pet: next, request: pending ? { species: pending.species } : null }, { headers: NO_STORE })
   } catch (error) {
     console.error('[kid/pet] POST failed:', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })

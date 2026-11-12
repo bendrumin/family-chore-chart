@@ -43,6 +43,14 @@ struct PaywallView: View {
                             .padding(.top, 8)
                     }
 
+                    // What brought them here, shown first: the features that
+                    // open this paywall most (shared chores, co-parent
+                    // sharing, a kid's Star Pet ask) get a picture of what
+                    // they do instead of a line in the list below.
+                    if let spotlight = PaywallSpotlight.for(source: source, kidNames: manager.children.map(\.name)) {
+                        spotlightCard(spotlight)
+                    }
+
                     // Hero
                     VStack(spacing: 12) {
                         Image(systemName: "crown.fill")
@@ -448,6 +456,33 @@ struct PaywallView: View {
         }
     }
 
+    private func spotlightCard(_ spotlight: PaywallSpotlight) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(spotlight.title)
+                .font(.display(22, weight: .bold))
+                .foregroundColor(.choreStarTextPrimary)
+            ForEach(spotlight.rows, id: \.text) { row in
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: row.icon)
+                        .font(.headline)
+                        .foregroundColor(.choreStarLink)
+                        .frame(width: 28)
+                        .accessibilityHidden(true)
+                    Text(row.text)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(.choreStarTextPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.choreStarCardBackground)
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.choreStarLink.opacity(0.35), lineWidth: 1.5))
+        .padding(.top, context == nil ? 8 : 0)
+    }
+
     private func premiumFeature(icon: String, text: LocalizedStringKey) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -478,4 +513,52 @@ extension PaywallView {
 #Preview {
     PaywallView()
         .environmentObject(SupabaseManager.shared)
+}
+
+
+/// The top of the paywall for the reasons families open it most (paywall
+/// events, November 2026: shared chores 7 families, co-parent sharing 6),
+/// plus a kid's Star Pet ask. Shows what the feature does, with the family's
+/// own kids where it helps. Every line is something Premium really does
+/// (docs/PREMIUM.md). Tested in EntitlementsTests.
+struct PaywallSpotlight: Equatable {
+    struct Row: Equatable {
+        let icon: String
+        let text: String
+    }
+    let title: String
+    let rows: [Row]
+
+    static func `for`(source: String, kidNames: [String]) -> PaywallSpotlight? {
+        let firsts = kidNames.map { $0.split(separator: " ").first.map(String.init) ?? $0 }
+        switch source {
+        case "shared_chores":
+            let rotate: String
+            if firsts.count >= 2 {
+                rotate = String(localized: "Rotating: Dishes is \(firsts[0])'s this week and \(firsts[1])'s next week, all on its own.")
+            } else {
+                rotate = String(localized: "Rotating: a chore moves to the next kid every week, all on its own.")
+            }
+            return PaywallSpotlight(title: String(localized: "Chores that take turns"), rows: [
+                Row(icon: "arrow.triangle.2.circlepath", text: rotate),
+                Row(icon: "bolt.fill", text: String(localized: "Bonus: the first kid to finish a bonus chore earns it.")),
+                Row(icon: "hand.thumbsup.fill", text: String(localized: "No more arguing about whose turn it is.")),
+            ])
+        case "gate_sharing":
+            return PaywallSpotlight(title: String(localized: "Run chores together"), rows: [
+                Row(icon: "person.2.fill", text: String(localized: "Invite a co-parent with a link or code.")),
+                Row(icon: "checkmark.circle.fill", text: String(localized: "You both see every chore and can approve from your own phone.")),
+                Row(icon: "dollarsign.circle.fill", text: String(localized: "Allowance, goals and the reward store stay the same on both phones.")),
+            ])
+        case "pet_request":
+            return PaywallSpotlight(title: String(localized: "All six Star Pets"), rows: [
+                Row(icon: "pawprint.fill", text: String(localized: "Kitty, bunny, dino, panda and owl, as well as the pup.")),
+                Row(icon: "tshirt.fill", text: String(localized: "Hats, extras and new places to unlock as they level up.")),
+                Row(icon: "gift.fill", text: String(localized: "A new prize to collect every month.")),
+                Row(icon: "star.fill", text: String(localized: "Pets grow all the way up, with a rare star form.")),
+            ])
+        default:
+            return nil
+        }
+    }
 }

@@ -46,6 +46,18 @@ export interface PendingRedemption {
   requestedAt: string
 }
 
+/** A kid asking for a Premium Star Pet (migration 039). */
+export interface PendingPetRequest {
+  id: string
+  childId: string
+  childName: string
+  species: string
+  emoji: string
+  /** "Maya wants the kitty 🐱" */
+  title: string
+  requestedAt: string
+}
+
 export async function reviewRedemption(
   redemptionId: string,
   action: 'approve' | 'reject'
@@ -79,6 +91,7 @@ export async function reviewCompletion(completionId: string, action: 'approve' |
 export function ApprovalTray({ onChanged, currencyCode, className }: { onChanged?: () => void; currencyCode?: string | null; className?: string }) {
   const [items, setItems] = useState<PendingItem[] | null>(null)
   const [redemptions, setRedemptions] = useState<PendingRedemption[]>([])
+  const [petRequests, setPetRequests] = useState<PendingPetRequest[]>([])
   const [busy, setBusy] = useState<Set<string>>(new Set())
   const [lightbox, setLightbox] = useState<PendingItem | null>(null)
   const loadRef = useRef<() => Promise<void>>(async () => {})
@@ -90,10 +103,12 @@ export function ApprovalTray({ onChanged, currencyCode, className }: { onChanged
       const data = await res.json()
       setItems(data.items ?? [])
       setRedemptions(data.redemptions ?? [])
+      setPetRequests(data.petRequests ?? [])
     } catch {
       // Migration 016 not applied yet, or a transient failure: stay hidden.
       setItems([])
       setRedemptions([])
+      setPetRequests([])
     }
   }, [])
   loadRef.current = load
@@ -166,7 +181,32 @@ export function ApprovalTray({ onChanged, currencyCode, className }: { onChanged
     onChanged?.()
   }
 
-  const total = (items?.length ?? 0) + redemptions.length
+  // Star Pet asks: yes means Premium (Billing, source pet_request); the list
+  // closes the ask once the family has it. Not now dismisses.
+  const seePremium = () => {
+    window.dispatchEvent(new CustomEvent('chorestar:open-settings', { detail: { tab: 'billing', source: 'pet_request' } }))
+  }
+  const dismissPet = async (r: PendingPetRequest) => {
+    if (busy.has(r.id)) return
+    setBusy(prev => new Set(prev).add(r.id))
+    setPetRequests(prev => prev.filter(x => x.id !== r.id))
+    const res = await fetch('/api/pets/requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId: r.id, action: 'dismiss' }),
+    }).catch(() => null)
+    setBusy(prev => {
+      const next = new Set(prev)
+      next.delete(r.id)
+      return next
+    })
+    if (!res?.ok) {
+      toast.error('Could not update that request')
+      void load()
+    }
+  }
+
+  const total = (items?.length ?? 0) + redemptions.length + petRequests.length
   if (!items || total === 0) return null
 
   return (
@@ -189,6 +229,50 @@ export function ApprovalTray({ onChanged, currencyCode, className }: { onChanged
             {total}
           </span>
         </div>
+
+        {petRequests.length > 0 && (
+          <ul className="space-y-2" aria-label="Star Pet requests">
+            {petRequests.map(r => (
+              <li
+                key={r.id}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 border border-black/[0.06] dark:border-white/[0.08]"
+                style={{ background: 'var(--bg-secondary)' }}
+              >
+                <span className="shrink-0 w-14 h-14 rounded-lg grid place-items-center text-3xl" style={{ background: 'var(--card-bg)' }} aria-hidden>
+                  {r.emoji}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
+                    {r.title}
+                  </div>
+                  <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    Premium unlocks all six Star Pets
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => void dismissPet(r)}
+                    disabled={busy.has(r.id)}
+                    className="min-h-[40px] px-3 rounded-lg text-sm font-semibold border border-black/[0.08] dark:border-white/[0.12] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] disabled:opacity-50"
+                    style={{ color: 'var(--text-secondary)' }}
+                    aria-label={`Not now: ${r.title}`}
+                  >
+                    Not now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={seePremium}
+                    className="min-h-[40px] px-3 rounded-lg text-sm font-bold accent-fill"
+                    aria-label={`See Premium for ${r.childName}'s Star Pet`}
+                  >
+                    See Premium
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {redemptions.length > 0 && (
           <ul className="space-y-2" aria-label="Reward requests">

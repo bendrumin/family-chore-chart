@@ -103,7 +103,7 @@ struct DiscoverCard: View {
         }
     }
 
-    static let knownIds: Set<String> = ["kid_login", "routines", "star_pets", "challenges", "money_jars", "calendar_feed"]
+    static let knownIds: Set<String> = ["kid_login", "routines", "star_pets", "shared_chores", "challenges", "money_jars", "calendar_feed"]
 }
 
 struct DiscoverFeature: Decodable, Equatable {
@@ -120,7 +120,7 @@ private struct DiscoverAnswer: Decodable {
 /// Where a suggested feature opens, shared by the discover and trial cards.
 enum DiscoverSheet: Identifiable {
     case editChild(Child)
-    case routine, challenge, money, calendar, pets
+    case routine, challenge, money, calendar, pets, sharedChore
 
     init?(featureId: String, firstChild: Child?) {
         switch featureId {
@@ -132,6 +132,7 @@ enum DiscoverSheet: Identifiable {
         case "money_jars": self = .money
         case "calendar_feed": self = .calendar
         case "star_pets": self = .pets
+        case "shared_chores": self = .sharedChore
         default: return nil
         }
     }
@@ -144,6 +145,7 @@ enum DiscoverSheet: Identifiable {
         case .money: return "money"
         case .calendar: return "calendar"
         case .pets: return "pets"
+        case .sharedChore: return "shared-chore"
         }
     }
 }
@@ -165,6 +167,9 @@ extension View {
                 FeatureSheetFrame(sheet: sheet) { CalendarFeedView() }
             case .pets:
                 FeatureSheetFrame(sheet: sheet) { PetsSettingsView() }
+            case .sharedChore:
+                // Add Chore, where "Rotate between kids" and "Bonus" live.
+                AddChoreWizardView()
             }
         }
     }

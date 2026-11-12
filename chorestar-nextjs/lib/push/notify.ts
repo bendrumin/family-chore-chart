@@ -4,6 +4,7 @@ import { apnsConfigured, sendApnsAlert, type ApnsCustomData } from '@/lib/push/a
 import { fcmConfigured, sendFcmMessage } from '@/lib/push/fcm'
 import { dueOn } from '@/lib/utils/schedule'
 import { formatMoney } from '@/lib/constants/currencies'
+import { petRequestPush, type RequestableSpecies } from '@/lib/pets/requests'
 
 /**
  * Domain-level push notifications.
@@ -136,6 +137,20 @@ export async function notifyRedemptionRequested(
     )
   } catch (error) {
     console.error('[push] notifyRedemptionRequested failed:', error)
+  }
+}
+
+/** "Maya wants the kitty 🐱": a free-plan kid asked for a Premium Star Pet (039). */
+export async function notifyPetRequested(childId: string, species: RequestableSpecies, requestId: string): Promise<void> {
+  if (!pushConfigured()) return
+  try {
+    const admin = createServiceRoleClient()
+    const { data: child } = await admin.from('children').select('name, user_id').eq('id', childId).maybeSingle()
+    if (!child) return
+    const { title, body } = petRequestPush(child.name, species)
+    await sendPushToUser(child.user_id, title, body, { type: 'pet_request', childId, completionId: requestId })
+  } catch (error) {
+    console.error('[push] notifyPetRequested failed:', error)
   }
 }
 

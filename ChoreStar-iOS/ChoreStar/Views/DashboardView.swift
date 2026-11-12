@@ -672,7 +672,12 @@ private struct TrayRow<Info: View, Actions: View>: View {
 struct ApprovalTrayView: View {
     @EnvironmentObject var manager: SupabaseManager
     @State private var lightbox: SupabaseManager.PendingApproval?
+    @State private var showingPetPaywall = false
     @Environment(\.requestReview) private var requestReview
+
+    private var trayCount: Int {
+        manager.pendingApprovals.count + manager.pendingRedemptions.count + manager.pendingPetRequests.count
+    }
 
     var body: some View {
         Group {
@@ -680,9 +685,9 @@ struct ApprovalTrayView: View {
             // whose content is nothing never install, so the .task below never
             // fired when the tray mounted empty — which is every launch where
             // completions load fast. The tray then never fetched at all.
-            if manager.pendingApprovals.isEmpty && manager.pendingRedemptions.isEmpty {
+            if trayCount == 0 {
                 Color.clear.frame(width: 0, height: 0)
-            } else if !manager.pendingApprovals.isEmpty || !manager.pendingRedemptions.isEmpty {
+            } else {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "clock.badge.checkmark.fill")
@@ -691,9 +696,68 @@ struct ApprovalTrayView: View {
                             .font(.headline)
                             .foregroundColor(.choreStarTextPrimary)
                         Spacer()
-                        Text("\(manager.pendingApprovals.count + manager.pendingRedemptions.count)")
+                        Text("\(trayCount)")
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.choreStarTextSecondary)
+                    }
+
+                    // Star Pet asks (039): yes is Premium (paywall, source
+                    // pet_request), which closes the ask; Not now dismisses it.
+                    ForEach(manager.pendingPetRequests) { r in
+                        TrayRow {
+                            Text(r.emoji)
+                                .font(.system(size: 28))
+                                .frame(width: 52, height: 52)
+                                .background(Color.choreStarBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .accessibilityHidden(true)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(r.title)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundColor(.choreStarTextPrimary)
+                                Text("Premium unlocks all six Star Pets")
+                                    .font(.caption.weight(.medium))
+                                    .foregroundColor(.choreStarTextSecondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        } actions: {
+                            Button {
+                                Haptics.light()
+                                Task { await manager.dismissPetRequest(id: r.id) }
+                            } label: {
+                                Text("Not now")
+                                    .font(.subheadline.weight(.semibold))
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    .padding(.horizontal, 10)
+                                    .frame(height: 40)
+                                    .background(Color.choreStarTextSecondary.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Not now: \(r.title)")
+
+                            Button {
+                                Haptics.light()
+                                showingPetPaywall = true
+                            } label: {
+                                Text("See Premium")
+                                    .font(.subheadline.weight(.bold))
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    .padding(.horizontal, 14)
+                                    .frame(height: 40)
+                                    .background(Color.choreStarSuccessFill)
+                                    .foregroundColor(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("See Premium for \(r.childName)'s Star Pet")
+                        }
+                        .padding(10)
+                        .background(Color.choreStarBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
 
                     // Store requests (2.0): Yes spends the money, Not now declines.
@@ -849,6 +913,9 @@ struct ApprovalTrayView: View {
             }
         }
         .task { await manager.loadPendingApprovals() }
+        .sheet(isPresented: $showingPetPaywall) {
+            PaywallView(source: "pet_request")
+        }
         // A kid's tick on this device lands in pendingCompletions first; refresh
         // the tray so the parent sees it without pulling.
         .onChange(of: manager.pendingCompletions.count) { _, _ in
