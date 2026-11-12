@@ -299,7 +299,8 @@ test.describe('Star Pets', () => {
     await expect(kitty).toHaveAttribute('aria-disabled', 'true')
     // aria-disabled, so Playwright won't click it the usual way; a kid's tap still lands.
     await kitty.dispatchEvent('click')
-    await expect(adopt.getByText(/ask a grown-up about star pets/i)).toBeVisible()
+    // Tapping a locked pet offers the ask (migration 039), not just a note.
+    await expect(adopt.getByRole('button', { name: /ask a grown-up for the kitty/i })).toBeVisible()
     await expect(adopt.getByRole('radio', { name: /^pup$/i })).toHaveAttribute('aria-checked', 'true')
 
     await adopt.getByLabel('Name your pet').fill(FREE_NAME)
