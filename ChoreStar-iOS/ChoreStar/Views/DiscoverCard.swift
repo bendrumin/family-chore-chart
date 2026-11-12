@@ -57,10 +57,16 @@ struct DiscoverCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
 
-                Button("Not now") { dismiss(feature) }
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.choreStarTextSecondary)
+                // A 44pt target: as bare caption text it was about 16pt tall.
+                Button { dismiss(feature) } label: {
+                    Text("Not now")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.choreStarTextSecondary)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

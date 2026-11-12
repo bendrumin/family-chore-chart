@@ -1,5 +1,7 @@
-Version 2.6.2: easier to get the whole family on board.
+Version 2.6.3: kids can ask for a Star Pet.
 
-• Setting up ChoreStar on another phone or iPad? The first screen now asks who is setting it up. A co-parent can enter their partner's invite code to join the same family, and a kid's device goes straight to kid login with the family code and PIN, so no extra family gets created by mistake
+• When a kid taps a Star Pet they don't have yet, they can ask you for it. You get a notification and see "Maya wants the owl" in Needs Your OK, with Not now if it isn't the right time
+• Premium families with more than one kid get a tip about chores that take turns: a rotating chore moves to the next kid every week, and a bonus chore goes to whoever finishes first
+• Bigger tap targets on Not now buttons
 
 Questions or feedback are welcome at hi@chorestar.app

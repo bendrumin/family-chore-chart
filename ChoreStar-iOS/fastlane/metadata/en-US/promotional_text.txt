@@ -1,1 +1,1 @@
-New in 2.6.2: setting up another device is simpler. Co-parents join with an invite code, and kids' devices go straight to kid login.
+New in 2.6.3: kids can ask you for a Star Pet, right from their screen, and you'll see it in Needs Your OK.

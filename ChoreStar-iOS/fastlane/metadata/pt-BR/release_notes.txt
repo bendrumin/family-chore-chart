@@ -1,5 +1,7 @@
-Versão 2.6.2: mais fácil trazer a família toda.
+Versão 2.6.3: as crianças podem pedir um Pet Estrela.
 
-• Configurando o ChoreStar em outro celular ou iPad? A primeira tela agora pergunta quem está configurando. Quem divide a criação com você pode usar o código de convite para entrar na mesma família, e o aparelho de uma criança vai direto para o login infantil com o código da família e o PIN, sem criar outra família por engano
+• Quando uma criança toca em um Pet Estrela que ainda não tem, ela pode pedir a você. Você recebe uma notificação e vê "Maya quer a coruja" em Precisa do seu OK, com Agora não se não for a hora
+• Famílias Premium com mais de uma criança recebem uma dica sobre tarefas que se revezam: uma tarefa em rodízio passa para a próxima criança toda semana, e uma tarefa bônus fica com quem terminar primeiro
+• Botões de Agora não mais fáceis de tocar
 
 Dúvidas ou sugestões: hi@chorestar.app

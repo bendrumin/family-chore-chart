@@ -1,5 +1,7 @@
-Versión 2.6.2: más fácil sumar a toda la familia.
+Versión 2.6.3: los niños pueden pedir una Mascota Estrella.
 
-• ¿Configuras ChoreStar en otro teléfono o iPad? La primera pantalla ahora pregunta quién lo está configurando. Tu pareja puede ingresar tu código de invitación para unirse a la misma familia, y el dispositivo de un niño va directo al inicio de sesión infantil con el código familiar y su PIN, así no se crea otra familia por error
+• Cuando un niño toca una Mascota Estrella que aún no tiene, puede pedírtela. Recibes una notificación y ves "Maya quiere el búho" en Necesita tu visto bueno, con Ahora no si no es el momento
+• Las familias Premium con más de un niño reciben una sugerencia sobre tareas que se turnan: una tarea rotativa pasa al siguiente niño cada semana, y una tarea extra es para quien la termine primero
+• Botones de Ahora no más fáciles de tocar
 
 Preguntas o comentarios: hi@chorestar.app

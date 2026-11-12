@@ -1,1 +1,1 @@
-Nuevo en 2.6.2: configurar otro dispositivo es más fácil. Tu pareja se une con un código de invitación y los dispositivos de los niños van directo a su inicio de sesión.
+Nuevo en 2.6.3: los niños pueden pedirte una Mascota Estrella desde su pantalla, y lo verás en Necesita tu visto bueno.

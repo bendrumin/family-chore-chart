@@ -393,9 +393,15 @@ struct RateChoreStarCard: View {
                 }
                 .simultaneousGesture(TapGesture().onEnded { onRate() })
 
-                Button("Not now", action: onNotNow)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.choreStarTextSecondary)
+                // A 44pt target: as bare text the button was 18pt tall.
+                Button(action: onNotNow) {
+                    Text("Not now")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.choreStarTextSecondary)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(20)

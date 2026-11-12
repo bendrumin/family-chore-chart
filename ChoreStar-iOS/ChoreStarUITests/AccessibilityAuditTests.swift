@@ -18,7 +18,10 @@ final class AccessibilityAuditTests: XCTestCase {
         // Collect every audit issue in a run instead of stopping at the first.
         continueAfterFailure = true
         app = XCUIApplication()
-        app.launchArguments = ["-chorestar-hidetips"]
+        // Tips and the rate card are hidden: they're promo cards whose
+        // timing varies by account, and they push the screens around (the
+        // rate card moved Needs Your OK under the tab bar).
+        app.launchArguments = ["-chorestar-hidetips", "-review.rateCardDone", "YES"]
         app.launch()
     }
 
@@ -47,7 +50,7 @@ final class AccessibilityAuditTests: XCTestCase {
     /// auth screen and these tests only ever skipped.
     private func relaunchSignedOut() {
         app.terminate()
-        app.launchArguments = ["-chorestar-hidetips", "-chorestar-fresh", "-saved_email", ""]
+        app.launchArguments = ["-chorestar-hidetips", "-review.rateCardDone", "YES", "-chorestar-fresh", "-saved_email", ""]
         app.launch()
     }
 
@@ -58,7 +61,7 @@ final class AccessibilityAuditTests: XCTestCase {
         guard let email = env["TEST_USER_EMAIL"], let password = env["TEST_USER_PASSWORD"],
               !email.isEmpty, !password.isEmpty else { return }
         app.terminate()
-        app.launchArguments = ["-chorestar-hidetips", "-chorestar-fresh", "-chorestar-signin", email, password]
+        app.launchArguments = ["-chorestar-hidetips", "-review.rateCardDone", "YES", "-chorestar-fresh", "-chorestar-signin", email, password]
         app.launch()
         // The launch-arg login signs out, pauses, then signs in, so the auth
         // screen shows for a moment; wait for the tabs, not the first screen.

@@ -675,6 +675,11 @@ struct ApprovalTrayView: View {
     @State private var showingPetPaywall = false
     @Environment(\.requestReview) private var requestReview
 
+    /// "Maya wants the Owl 🦉", in the app's language (StarPets.speciesName).
+    private func petAskTitle(_ r: SupabaseManager.PendingPetRequest) -> String {
+        String(localized: "\(r.childName) wants the \(StarPets.speciesName(r.species))") + " " + r.emoji
+    }
+
     private var trayCount: Int {
         manager.pendingApprovals.count + manager.pendingRedemptions.count + manager.pendingPetRequests.count
     }
@@ -713,7 +718,8 @@ struct ApprovalTrayView: View {
                                 .accessibilityHidden(true)
 
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(r.title)
+                                // Built here, not the server's English title, so it's translated.
+                                Text(petAskTitle(r))
                                     .font(.body.weight(.semibold))
                                     .foregroundColor(.choreStarTextPrimary)
                                 Text("Premium unlocks all six Star Pets")
@@ -736,7 +742,7 @@ struct ApprovalTrayView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Not now: \(r.title)")
+                            .accessibilityLabel("Not now: \(petAskTitle(r))")
 
                             Button {
                                 Haptics.light()

@@ -1,1 +1,1 @@
-Novo na 2.6.2: configurar outro aparelho ficou mais fácil. O outro responsável entra com um código de convite, e o aparelho da criança vai direto ao login infantil.
+Novo na 2.6.3: as crianças podem pedir um Pet Estrela direto da tela delas, e você vê em Precisa do seu OK.
