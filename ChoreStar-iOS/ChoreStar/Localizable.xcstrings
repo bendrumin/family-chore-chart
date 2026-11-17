@@ -22705,6 +22705,351 @@
           }
         }
       }
+    },
+    "Switch to yearly and save %lld%%" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cámbiate al plan anual y ahorra %lld%%"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mude para o anual e economize %lld%%"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتقل إلى الخطة السنوية ووفّر %lld%%"
+          }
+        }
+      }
+    },
+    "%@ a year instead of %@ a month. Same Premium, billed once a year by Apple." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ al año en lugar de %2$@ al mes. El mismo Premium, cobrado una vez al año por Apple."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ por ano em vez de %2$@ por mês. O mesmo Premium, cobrado uma vez por ano pela Apple."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ في السنة بدلًا من %2$@ في الشهر. نفس Premium، تحصّله Apple مرة واحدة في السنة."
+          }
+        }
+      }
+    },
+    "Switch to yearly" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar a anual"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudar para anual"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتقل إلى السنوي"
+          }
+        }
+      }
+    },
+    "1. On %@'s tablet or an old phone, scan this code or open the link." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. En la tableta de %@ o un teléfono viejo, escanea este código o abre el enlace."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. No tablet de %@ ou num celular antigo, escaneie este código ou abra o link."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. على جهاز %@ اللوحي أو هاتف قديم، امسح هذا الرمز أو افتح الرابط."
+          }
+        }
+      }
+    },
+    "2. %@ taps their name and enters their PIN." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. %@ toca su nombre e ingresa su PIN."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. %@ toca no próprio nome e digita o PIN."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. يلمس %@ اسمه ويدخل رمز PIN."
+          }
+        }
+      }
+    },
+    "3. That's it. Checked-off chores show up for you right away." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Listo. Las tareas marcadas te aparecen al instante."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Pronto. As tarefas marcadas aparecem para você na hora."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. هذا كل شيء. تظهر لك المهام المنجزة فورًا."
+          }
+        }
+      }
+    },
+    "QR code for %@'s kid login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código QR para el acceso de niños de %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código QR para o acesso de criança de %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز QR لدخول %@"
+          }
+        }
+      }
+    },
+    "Send the link" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar el enlace"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar o link"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أرسل الرابط"
+          }
+        }
+      }
+    },
+    "Your family code isn't ready yet. You'll find it in Settings > Family Sharing & Kid Login." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu código familiar aún no está listo. Lo encontrarás en Ajustes > Compartir en familia y acceso de niños."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu código da família ainda não está pronto. Ele fica em Ajustes > Compartilhar com a família e acesso das crianças."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز عائلتك غير جاهز بعد. ستجده في الإعدادات > المشاركة العائلية ودخول الأطفال."
+          }
+        }
+      }
+    },
+    "%@'s own login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso de %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O acesso de %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "دخول %@"
+          }
+        }
+      }
+    },
+    "Your kid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu hijo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu filho"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "طفلك"
+          }
+        }
+      }
+    },
+    "%lld more routines, ready to go" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld rutinas más, listas para usar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais %lld rotinas, prontas para usar"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld روتينًا إضافيًا جاهزًا"
+          }
+        }
+      }
+    },
+    "%@ and %lld more." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ y %2$lld más."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ e mais %2$lld."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ و%2$lld أخرى."
+          }
+        }
+      }
+    },
+    "Each one fills the builder, so you can change any step, icon or timer." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada una llena el editor, así que puedes cambiar cualquier paso, ícono o temporizador."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada uma preenche o editor, então você pode mudar qualquer passo, ícone ou timer."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كل واحد يملأ المُنشئ، فتستطيع تغيير أي خطوة أو أيقونة أو مؤقت."
+          }
+        }
+      }
+    },
+    "Plus Build with AI: describe a routine and get the steps." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Además, Crear con IA: describe una rutina y obtén los pasos."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E mais Criar com IA: descreva uma rotina e receba os passos."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وأيضًا الإنشاء بالذكاء الاصطناعي: صِف روتينًا واحصل على الخطوات."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

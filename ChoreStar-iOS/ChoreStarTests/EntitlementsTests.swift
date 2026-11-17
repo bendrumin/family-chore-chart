@@ -55,6 +55,33 @@ final class EntitlementsTests: XCTestCase {
         XCTAssertNil(PaywallSpotlight.for(source: "limit_chores", kidNames: ["Maya", "Leo"]), "everything else keeps the plain paywall")
     }
 
+    func testYearlyUpsellOnlyAfterAMonthlyRenewal() {
+        let start = ISO8601DateFormatter().date(from: "2026-10-01T00:00:00Z")!
+        let renewed = ISO8601DateFormatter().date(from: "2026-11-01T00:00:00Z")!
+        let monthly = StoreKitManager.ProductID.monthly
+        XCTAssertFalse(YearlyUpsell.eligible(productID: monthly, originalPurchase: start, latestPurchase: start, revoked: false), "first month: not yet")
+        XCTAssertTrue(YearlyUpsell.eligible(productID: monthly, originalPurchase: start, latestPurchase: renewed, revoked: false))
+        XCTAssertFalse(YearlyUpsell.eligible(productID: StoreKitManager.ProductID.annual, originalPurchase: start, latestPurchase: renewed, revoked: false), "already yearly")
+        XCTAssertFalse(YearlyUpsell.eligible(productID: monthly, originalPurchase: start, latestPurchase: renewed, revoked: true), "refunded")
+    }
+
+    func testYearlySavingsRoundDownAndNeverGoNegative() {
+        XCTAssertEqual(YearlyUpsell.savingsPercent(monthly: Decimal(string: "4.99")!, yearly: Decimal(string: "39.99")!), 33)
+        XCTAssertEqual(YearlyUpsell.savingsPercent(monthly: 5, yearly: 60), 0)
+        XCTAssertEqual(YearlyUpsell.savingsPercent(monthly: 5, yearly: 70), 0)
+        XCTAssertEqual(YearlyUpsell.savingsPercent(monthly: 0, yearly: 10), 0)
+    }
+
+    func testRoutineTemplatesSpotlightNamesTheRealTemplates() {
+        let spot = PaywallSpotlight.for(source: "routine_templates", kidNames: [])
+        XCTAssertEqual(spot?.title, "\(RoutineTemplate.premiumLibrary.count) more routines, ready to go")
+        XCTAssertTrue(spot?.rows.first?.text.hasPrefix(RoutineTemplate.premiumLibrary[0].name) == true)
+    }
+
+    func testKidDeviceQRCodeRenders() {
+        XCTAssertNotNil(KidDeviceView.qrImage(for: "https://chorestar.app/kid-login/abc123"))
+    }
+
     func testChildRowDecodesPausedByPlan() throws {
         let json = """
         [{"id":"4f1c2a3b-0000-4000-8000-000000000001","name":"Kid 4","age":7,"avatar_color":"blue",

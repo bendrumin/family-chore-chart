@@ -51,10 +51,13 @@ assert.equal(trialDay(start, at(3.5)), 4)
 assert.equal(trialDay(start, at(9)), 7)
 
 // Copy.
-const usage: FamilyUsage = { hasPin: false, hasRoutine: true, hasPet: false, hasMoney: true, hasChallenge: false, hasCalendar: false, hasSharedChore: false, kidCount: 1 }
+const usage: FamilyUsage = { hasPin: false, hasRoutine: true, hasPet: false, hasMoney: true, hasChallenge: false, hasCalendar: false, hasSharedChore: false, hasKidSignIn: false, kidCount: 1 }
 assert.match(dayOneTrialPush('Maya', usage).title, /Maya/)
 assert.match(dayOneTrialPush('Maya', usage).body, /PIN/)
-assert.notEqual(dayOneTrialPush('Maya', { ...usage, hasPin: true }).body.includes('PIN'), true)
+// PIN set but Maya hasn't signed in on her own device: get her on it.
+assert.equal(dayOneTrialPush('Maya', { ...usage, hasPin: true }).title, "Put Maya's chores on their own tablet")
+// Signing in already: no more PIN talk.
+assert.notEqual(dayOneTrialPush('Maya', { ...usage, hasPin: true, hasKidSignIn: true }).body.includes('PIN'), true)
 assert.deepEqual(premiumUsed(usage), ['Spend, Save and Give jars'])
 
 const d3 = dayThreeTrialEmail({ kid: 'Maya', stats: { choresDone: 12, routinesDone: 1 }, untried: [{ title: 'A', body: 'a.' }, { title: 'B', body: 'b.' }, { title: 'C', body: 'c.' }], endsAt: end })

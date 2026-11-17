@@ -699,7 +699,9 @@ struct EnhancedChoreRow: View {
                         Text(chore.scheduleLabel)
                             .font(.caption)
                     }
-                    .foregroundColor(chore.isDueToday ? .choreStarTextSecondary : .choreStarTextSecondary.opacity(0.7))
+                    // Not dimmed further on days it isn't due: the days already say so,
+                    // and 70% grey failed contrast (the audit caught it on a Tuesday).
+                    .foregroundColor(.choreStarTextSecondary)
                 }
             }
             // Wrap only when the row is actually out of room ("Make / your bed" otherwise).

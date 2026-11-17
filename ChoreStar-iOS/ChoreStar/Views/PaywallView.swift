@@ -544,6 +544,14 @@ struct PaywallSpotlight: Equatable {
                 Row(icon: "bolt.fill", text: String(localized: "Bonus: the first kid to finish a bonus chore earns it.")),
                 Row(icon: "hand.thumbsup.fill", text: String(localized: "No more arguing about whose turn it is.")),
             ])
+        case "routine_templates":
+            let names = RoutineTemplate.premiumLibrary.map(\.name)
+            let shown = names.prefix(5).joined(separator: ", ")
+            return PaywallSpotlight(title: String(localized: "\(names.count) more routines, ready to go"), rows: [
+                Row(icon: "list.bullet.rectangle.portrait.fill", text: String(localized: "\(shown) and \(names.count - 5) more.")),
+                Row(icon: "slider.horizontal.3", text: String(localized: "Each one fills the builder, so you can change any step, icon or timer.")),
+                Row(icon: "sparkles", text: String(localized: "Plus Build with AI: describe a routine and get the steps.")),
+            ])
         case "gate_sharing":
             return PaywallSpotlight(title: String(localized: "Run chores together"), rows: [
                 Row(icon: "person.2.fill", text: String(localized: "Invite a co-parent with a link or code.")),

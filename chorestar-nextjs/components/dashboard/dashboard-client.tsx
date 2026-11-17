@@ -51,6 +51,7 @@ import type { Profile, Child } from '@/lib/types'
 import { isOnVacation, vacationWindowFromSettings } from '@/lib/utils/schedule'
 import { trimVacationHistory } from '@/lib/utils/vacation'
 import { RoutineList } from '@/components/routines/routine-list'
+import { KidDeviceModal } from '@/components/dashboard/kid-device-modal'
 import { applyThemeMode, clearStoredThemeMode, clearStoredThemeVars } from '@/lib/utils/theme-mode'
 
 export function DashboardClient({ initialUser, initialProfile, effectiveUserId, isSharedMember, isAdmin }: {
@@ -398,10 +399,13 @@ function DashboardContent({
 
   // A feature suggested by the discover or trial card: open where it lives.
   const [inTrial, setInTrial] = useState(false)
+  const [kidDeviceOpen, setKidDeviceOpen] = useState(false)
   const openFeature = (id: FeatureId) => {
     const firstKid = children[0]
     if (id === 'kid_login') {
       if (firstKid) setEditingChild(firstKid)
+    } else if (id === 'kid_device') {
+      setKidDeviceOpen(true)
     } else if (id === 'routines') {
       if (!selectedChildId && firstKid) setSelectedChildId(firstKid.id)
       handleAddRoutine()
@@ -697,6 +701,12 @@ function DashboardContent({
               <PlanLimitsBanner isSharedMember={isSharedMember ?? false} onKidsChanged={loadChildren} />
             </div>
 
+            <KidDeviceModal
+              open={kidDeviceOpen}
+              onOpenChange={setKidDeviceOpen}
+              familyCode={initialProfile?.kid_login_code ?? null}
+              kidName={children[0]?.name.trim().split(/\s+/)[0] ?? 'Your kid'}
+            />
             {/* Setup checklist — renders only while the funnel is incomplete */}
             <div className="order-2">
               <GettingStartedCard

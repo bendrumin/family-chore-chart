@@ -59,7 +59,7 @@ struct SettingsView: View {
                     Toggle(isOn: $soundManager.isSoundEnabled) {
                         HStack {
                             Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.3.fill" : "speaker.slash.fill")
-                                .foregroundColor(soundManager.isSoundEnabled ? .choreStarSuccess : .choreStarTextSecondary)
+                                .foregroundColor(soundManager.isSoundEnabled ? .choreStarSuccessInk : .choreStarTextSecondary)
                             Text("Sound Effects")
                         }
                     }

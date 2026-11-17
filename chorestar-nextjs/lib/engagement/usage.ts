@@ -50,7 +50,7 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
       ownerId: c.user_id,
       kidName: null,
       childIds: [],
-      usage: { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, hasSharedChore: false, kidCount: 0 },
+      usage: { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, hasSharedChore: false, hasKidSignIn: false, kidCount: 0 },
     }
     if (!f.kidName && c.name) f.kidName = c.name.trim().split(/\s+/)[0]
     f.childIds.push(c.id)
@@ -74,7 +74,8 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
       return q
     })
 
-  const [pins, routines, pets, money, challenges, feeds, shared] = await Promise.all([
+  const signInSince = new Date(Date.now() - 30 * 86_400_000).toISOString()
+  const [pins, routines, pets, money, challenges, feeds, shared, kidSignIns] = await Promise.all([
     byChild('child_pins'),
     byChild('routines', (q) => q.eq('is_active', true)),
     byChild('child_pets'),
@@ -82,6 +83,7 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
     byOwner('family_challenges', 'user_id'),
     byOwner('calendar_feeds', 'family_id'),
     byChild('chores', (q) => q.not('rotation_mode', 'is', null)),
+    byChild('kid_sessions', (q) => q.gte('created_at', signInSince)),
   ])
 
   const mark = (rows: { child_id: string }[], key: Exclude<keyof FamilyUsage, 'kidCount'>) => {
@@ -95,6 +97,7 @@ export async function loadFamilies(admin: Admin, onlyOwner?: string): Promise<Ma
   mark(pets, 'hasPet')
   mark(money, 'hasMoney')
   mark(shared, 'hasSharedChore')
+  mark(kidSignIns, 'hasKidSignIn')
   for (const r of challenges) {
     const f = families.get(r.user_id)
     if (f) f.usage.hasChallenge = true

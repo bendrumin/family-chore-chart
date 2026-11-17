@@ -4,26 +4,33 @@
 import assert from 'node:assert/strict'
 import { FEATURES, cardCopy, copyLang, fallbackPush, untriedFeatures, lapseDue, nextFeature, withinRange, type FamilyUsage } from './discovery'
 
-const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, hasSharedChore: false, kidCount: 2 }
-const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, hasSharedChore: true, kidCount: 2 }
+const none: FamilyUsage = { hasPin: false, hasRoutine: false, hasPet: false, hasMoney: false, hasChallenge: false, hasCalendar: false, hasSharedChore: false, hasKidSignIn: false, kidCount: 2 }
+const all: FamilyUsage = { hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, hasChallenge: true, hasCalendar: true, hasSharedChore: true, hasKidSignIn: true, kidCount: 2 }
 
 // Retention levers first, for everyone.
 assert.equal(nextFeature(none, false, 'push')?.id, 'kid_login')
-assert.equal(nextFeature({ ...none, hasPin: true }, false, 'push')?.id, 'routines')
+assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true }, false, 'push')?.id, 'routines')
+
+// A PIN set but no kid signing in on their own device: point at the kid login.
+assert.equal(nextFeature({ ...none, hasPin: true }, false, 'push')?.id, 'kid_device')
+assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true }, false, 'push')?.id, 'routines')
+// No PIN yet: the PIN comes first, the device tip waits for it.
+assert.equal(nextFeature(none, false, 'web')?.id, 'kid_login')
+assert.equal(cardCopy(FEATURES.find((f) => f.id === 'kid_device')!, 'Maya', 'en').cta, 'Show the kid login')
 
 // A free family is never pointed at a Premium-only feature.
 for (const surface of ['push', 'web'] as const) {
-  assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true }, false, surface)?.id, 'star_pets', `free gets the pup (${surface})`)
-  assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, false, surface), null)
+  assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true }, false, surface)?.id, 'star_pets', `free gets the pup (${surface})`)
+  assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true }, false, surface), null)
 }
 
 // Premium continues into what they are paying for.
 // Shared chores lead the Premium features: the top paywall reason, rarely used once paid.
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, true, 'push')?.id, 'shared_chores')
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true, hasSharedChore: true }, true, 'push')?.id, 'money_jars')
+assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true }, true, 'push')?.id, 'shared_chores')
+assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true, hasSharedChore: true }, true, 'push')?.id, 'money_jars')
 // Never for a free family (it is a paywall for them), never with one kid.
-assert.notEqual(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true }, false, 'push')?.id, 'shared_chores')
-assert.equal(nextFeature({ ...none, hasPin: true, hasRoutine: true, hasPet: true, kidCount: 1 }, true, 'push')?.id, 'money_jars')
+assert.notEqual(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true }, false, 'push')?.id, 'shared_chores')
+assert.equal(nextFeature({ ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true, kidCount: 1 }, true, 'push')?.id, 'money_jars')
 assert.equal(cardCopy(FEATURES.find((f) => f.id === 'shared_chores')!, 'Maya', 'es').cta, 'Agregar una tarea compartida')
 assert.equal(nextFeature({ ...all, hasCalendar: false }, true, 'push')?.id, 'calendar_feed')
 assert.equal(nextFeature(all, true, 'web'), null)
@@ -32,7 +39,7 @@ assert.equal(nextFeature(all, true, 'web'), null)
 assert.ok(FEATURES.find((f) => f.id === 'star_pets')!.surfaces.includes('push'))
 
 // One kid: no challenges, on any surface.
-const solo = { ...none, hasPin: true, hasRoutine: true, hasPet: true, hasMoney: true, kidCount: 1 }
+const solo = { ...none, hasPin: true, hasKidSignIn: true, hasRoutine: true, hasPet: true, hasMoney: true, kidCount: 1 }
 assert.equal(nextFeature(solo, true, 'push')?.id, 'calendar_feed')
 assert.ok(!untriedFeatures(solo, true, 'web').some((f) => f.id === 'challenges'))
 

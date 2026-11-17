@@ -11,9 +11,21 @@ export interface ChangelogEntry {
   features: ChangelogFeature[]
 }
 
-export const LATEST_CHANGELOG_VERSION = '2026.11.1'
+export const LATEST_CHANGELOG_VERSION = '2026.11.2'
 
 export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
+  '2026.11.2': {
+    version: '2026.11.2',
+    date: 'November 2026',
+    title: 'Kids on Their Own Devices',
+    features: [
+      {
+        icon: '📱',
+        title: 'Scan to Sign In',
+        description: 'Kids who have a PIN can sign in on their own tablet or an old phone: scan the code on your dashboard and their login opens with your family code filled in.',
+      },
+    ],
+  },
   '2026.11.1': {
     version: '2026.11.1',
     date: 'November 2026',

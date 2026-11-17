@@ -324,6 +324,9 @@ struct DashboardView: View {
                         // chores paused over the free limits. Hidden otherwise.
                         PlanLimitsCard()
 
+                        // Monthly subscribers who've renewed: yearly at App Store prices.
+                        YearlyUpsellCard()
+
                         GettingStartedCard()
 
                         // The free week: day N of 7 and one Premium feature to

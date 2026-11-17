@@ -1,4 +1,6 @@
 import SwiftUI
+import CoreImage.CIFilterBuiltins
+import StoreKit
 
 /// One feature this family has not tried yet, once the getting-started card
 /// has retired. Families were paying for Premium features they never found
@@ -109,7 +111,7 @@ struct DiscoverCard: View {
         }
     }
 
-    static let knownIds: Set<String> = ["kid_login", "routines", "star_pets", "shared_chores", "challenges", "money_jars", "calendar_feed"]
+    static let knownIds: Set<String> = ["kid_login", "kid_device", "routines", "star_pets", "shared_chores", "challenges", "money_jars", "calendar_feed"]
 }
 
 struct DiscoverFeature: Decodable, Equatable {
@@ -126,7 +128,7 @@ private struct DiscoverAnswer: Decodable {
 /// Where a suggested feature opens, shared by the discover and trial cards.
 enum DiscoverSheet: Identifiable {
     case editChild(Child)
-    case routine, challenge, money, calendar, pets, sharedChore
+    case routine, challenge, money, calendar, pets, sharedChore, kidDevice
 
     init?(featureId: String, firstChild: Child?) {
         switch featureId {
@@ -139,6 +141,7 @@ enum DiscoverSheet: Identifiable {
         case "calendar_feed": self = .calendar
         case "star_pets": self = .pets
         case "shared_chores": self = .sharedChore
+        case "kid_device": self = .kidDevice
         default: return nil
         }
     }
@@ -152,6 +155,7 @@ enum DiscoverSheet: Identifiable {
         case .calendar: return "calendar"
         case .pets: return "pets"
         case .sharedChore: return "shared-chore"
+        case .kidDevice: return "kid-device"
         }
     }
 }
@@ -176,6 +180,8 @@ extension View {
             case .sharedChore:
                 // Add Chore, where "Rotate between kids" and "Bonus" live.
                 AddChoreWizardView()
+            case .kidDevice:
+                KidDeviceView()
             }
         }
     }
@@ -195,5 +201,183 @@ private struct FeatureSheetFrame<Content: View>: View {
                     }
                 }
         }
+    }
+}
+
+
+/// Home card for monthly subscribers who've renewed: switch to yearly at the
+/// App Store's own prices. Hidden for everyone else, and for 30 days after Not now.
+struct YearlyUpsellCard: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @StateObject private var store = StoreKitManager.shared
+    @State private var offer: YearlyUpsell.Offer?
+
+    var body: some View {
+        content
+            .task(id: manager.isPremium) { await load() }
+    }
+
+    @ViewBuilder private var content: some View {
+        if let current = offer {
+            card(current)
+        } else {
+            Color.clear.frame(width: 0, height: 0)
+        }
+    }
+
+    private func load() async {
+        guard manager.isPremium, !manager.isSharedMember, !YearlyUpsell.isSnoozed() else {
+            offer = nil
+            return
+        }
+        offer = await store.yearlyUpgradeOffer()
+    }
+
+    private func switchToYearly(_ product: Product) {
+        Task {
+            if await store.purchase(product) {
+                withAnimation { offer = nil }
+            }
+        }
+    }
+
+    private func notNow() {
+        YearlyUpsell.snooze()
+        withAnimation { offer = nil }
+    }
+
+    private func card(_ current: YearlyUpsell.Offer) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "calendar.badge.checkmark")
+                    .font(.title3)
+                    .foregroundColor(.choreStarLink)
+                    .accessibilityHidden(true)
+                Text("Switch to yearly and save \(current.savingsPercent)%")
+                    .font(.headline)
+                    .foregroundColor(.choreStarTextPrimary)
+            }
+            Text("\(current.yearly.displayPrice) a year instead of \(current.monthly.displayPrice) a month. Same Premium, billed once a year by Apple.")
+                .font(.subheadline)
+                .foregroundColor(.choreStarTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            buttons(current)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.choreStarCardBackground)
+        .cornerRadius(16)
+        .padding(.horizontal, 20)
+    }
+
+    private func buttons(_ current: YearlyUpsell.Offer) -> some View {
+        HStack(spacing: 12) {
+            Button { switchToYearly(current.yearly) } label: {
+                Text("Switch to yearly")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.choreStarFill)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .disabled(store.purchaseInProgress)
+            Button(action: notNow) {
+                Text("Not now")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.choreStarTextSecondary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+/// A kid's own device: the family code, a QR code that opens kid login with
+/// it filled in (/kid-login/<code>), and the link to share. Opened by the
+/// discovery tip `kid_device` (web lib/engagement/discovery.ts).
+struct KidDeviceView: View {
+    @EnvironmentObject var manager: SupabaseManager
+    @Environment(\.dismiss) private var dismiss
+
+    private var kidName: String {
+        manager.children.first.map { $0.name.split(separator: " ").first.map(String.init) ?? $0.name } ?? String(localized: "Your kid")
+    }
+
+    private var url: URL? {
+        guard let code = manager.kidLoginCode, !code.isEmpty else { return nil }
+        return URL(string: "https://chorestar.app/kid-login/\(code.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? code)")
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    if let url, let code = manager.kidLoginCode {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("1. On \(kidName)'s tablet or an old phone, scan this code or open the link.")
+                            Text("2. \(kidName) taps their name and enters their PIN.")
+                            Text("3. That's it. Checked-off chores show up for you right away.")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.choreStarTextPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        if let qr = KidDeviceView.qrImage(for: url.absoluteString) {
+                            Image(uiImage: qr)
+                                .interpolation(.none)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 220, height: 220)
+                                .padding(12)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .accessibilityLabel("QR code for \(kidName)'s kid login")
+                        }
+
+                        VStack(spacing: 4) {
+                            Text("Family code")
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.choreStarTextSecondary)
+                            Text(code.uppercased())
+                                .font(.system(.largeTitle, design: .monospaced).weight(.black))
+                                .foregroundColor(.choreStarTextPrimary)
+                        }
+
+                        ShareLink(item: url) {
+                            Label("Send the link", systemImage: "square.and.arrow.up")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.choreStarFill)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                        }
+                    } else {
+                        Text("Your family code isn't ready yet. You'll find it in Settings > Family Sharing & Kid Login.")
+                            .font(.subheadline)
+                            .foregroundColor(.choreStarTextSecondary)
+                    }
+                }
+                .padding(20)
+            }
+            .background(Color.choreStarBackground)
+            .navigationTitle("\(kidName)'s own login")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+    }
+
+    /// A crisp QR code: CoreImage's generator, scaled up without smoothing.
+    static func qrImage(for string: String) -> UIImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 10, y: 10)),
+              let cg = CIContext().createCGImage(output, from: output.extent) else { return nil }
+        return UIImage(cgImage: cg)
     }
 }

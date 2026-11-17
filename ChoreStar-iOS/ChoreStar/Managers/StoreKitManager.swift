@@ -164,6 +164,26 @@ final class StoreKitManager: ObservableObject {
         return false
     }
 
+    /// Monthly Apple subscribers who've renewed at least once, offered the
+    /// yearly plan at App Store prices (YearlyUpsell). Nil for everyone else.
+    func yearlyUpgradeOffer() async -> YearlyUpsell.Offer? {
+        var monthlyTransaction: Transaction?
+        for await entitlement in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = entitlement,
+                  ProductID.all.contains(transaction.productID) else { continue }
+            if transaction.productID == ProductID.monthly { monthlyTransaction = transaction }
+        }
+        guard let t = monthlyTransaction,
+              YearlyUpsell.eligible(productID: t.productID, originalPurchase: t.originalPurchaseDate, latestPurchase: t.purchaseDate, revoked: t.revocationDate != nil)
+        else { return nil }
+        await loadProducts()
+        guard let monthly = products.first(where: { $0.id == ProductID.monthly }),
+              let yearly = products.first(where: { $0.id == ProductID.annual }) else { return nil }
+        let percent = YearlyUpsell.savingsPercent(monthly: monthly.price, yearly: yearly.price)
+        guard percent >= YearlyUpsell.minimumSavingsPercent else { return nil }
+        return YearlyUpsell.Offer(monthly: monthly, yearly: yearly, savingsPercent: percent)
+    }
+
     /// Checks current entitlements and has the server confirm an upgrade.
     @discardableResult
     func syncEntitlement() async -> EntitlementSync {
@@ -203,5 +223,48 @@ final class StoreKitManager: ObservableObject {
                 await syncEntitlement()
             }
         }
+    }
+}
+
+
+/// Monthly to yearly, offered once a monthly subscriber has renewed at least
+/// once (November 2026: 3 of the first 5 trial conversions chose monthly).
+/// Prices come from the App Store, so the savings are always this
+/// storefront's real numbers. Tested in EntitlementsTests.
+enum YearlyUpsell {
+    struct Offer {
+        let monthly: Product
+        let yearly: Product
+        let savingsPercent: Int
+    }
+
+    /// Below this the switch isn't worth a card.
+    static let minimumSavingsPercent = 10
+    /// "Not now" hides the card this long.
+    static let snoozeDays = 30
+    static let snoozeKey = "yearlyUpsell.snoozedUntil"
+
+    /// Monthly, renewed at least once (a later purchase than the original),
+    /// and not refunded.
+    static func eligible(productID: String, originalPurchase: Date, latestPurchase: Date, revoked: Bool) -> Bool {
+        productID == StoreKitManager.ProductID.monthly && !revoked && latestPurchase.timeIntervalSince(originalPurchase) > 86_400
+    }
+
+    /// Whole percent saved over a year of monthly, rounded down so the card
+    /// never overstates it.
+    static func savingsPercent(monthly: Decimal, yearly: Decimal) -> Int {
+        let yearOfMonthly = monthly * 12
+        guard yearOfMonthly > 0, yearly < yearOfMonthly else { return 0 }
+        let fraction = NSDecimalNumber(decimal: (yearOfMonthly - yearly) / yearOfMonthly).doubleValue
+        return Int((fraction * 100).rounded(.down))
+    }
+
+    static func isSnoozed(now: Date = Date(), defaults: UserDefaults = .standard) -> Bool {
+        guard let until = defaults.object(forKey: snoozeKey) as? Date else { return false }
+        return now < until
+    }
+
+    static func snooze(now: Date = Date(), defaults: UserDefaults = .standard) {
+        defaults.set(now.addingTimeInterval(TimeInterval(snoozeDays) * 86_400), forKey: snoozeKey)
     }
 }

@@ -20,7 +20,7 @@
  * families), yet only 1 of 14 paying families had made one.
  */
 
-export type FeatureId = 'kid_login' | 'routines' | 'star_pets' | 'shared_chores' | 'money_jars' | 'challenges' | 'calendar_feed'
+export type FeatureId = 'kid_login' | 'kid_device' | 'routines' | 'star_pets' | 'shared_chores' | 'money_jars' | 'challenges' | 'calendar_feed'
 
 /** Where a feature can be pointed at: a push (and the native apps' discover
  *  card), or the web dashboard. */
@@ -35,6 +35,8 @@ export interface FamilyUsage {
   hasCalendar: boolean
   /** A chore that rotates between kids or goes to whoever finishes first (025). */
   hasSharedChore: boolean
+  /** A kid signed in with their own PIN in the last 30 days (a kid_sessions row). */
+  hasKidSignIn: boolean
   /** Challenges are siblings working together; one kid has no one to team up with. */
   kidCount: number
 }
@@ -66,6 +68,24 @@ export const FEATURES: Feature[] = [
       title: `Give ${kid} their own login`,
       body: `With a 4-digit PIN, ${kid} signs in on any device and checks off chores without you.`,
       cta: 'Set a PIN',
+    }),
+  },
+  {
+    // A PIN alone isn't the habit: in November 2026 only 1 of 12 paying
+    // families had a kid sign in that week, though most had set PINs.
+    id: 'kid_device',
+    premiumOnly: false,
+    surfaces: ['push', 'web'],
+    tried: (u) => u.hasKidSignIn,
+    applies: (u) => u.hasPin,
+    push: (kid) => ({
+      title: `Put ${kid}'s chores on their own tablet`,
+      body: `Open chorestar.app/kid-login on any device and enter your family code and ${kid}'s PIN. No email needed.`,
+    }),
+    card: (kid) => ({
+      title: `Get ${kid} signing in on their own`,
+      body: `Scan the code on a tablet or old phone, and ${kid} checks off chores with their PIN while you see them land.`,
+      cta: 'Show the kid login',
     }),
   },
   {
@@ -168,6 +188,7 @@ type Card = ReturnType<Feature['card']>
 const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid: string) => Card>> = {
   es: {
     kid_login: (kid) => ({ title: `Dale a ${kid} su propio acceso`, body: `Con un PIN de 4 dígitos, ${kid} entra desde cualquier dispositivo y marca sus tareas sin ti.`, cta: 'Crear un PIN' }),
+    kid_device: (kid) => ({ title: `Que ${kid} entre por su cuenta`, body: `Escanea el código en una tableta o un teléfono viejo, y ${kid} marca sus tareas con su PIN mientras tú las ves llegar.`, cta: 'Ver el acceso de niños' }),
     routines: (kid) => ({ title: 'Prueba una rutina de mañana', body: `Vestirse, lavarse los dientes, preparar la mochila: ${kid} lo hace paso a paso.`, cta: 'Crear una rutina' }),
     star_pets: (kid) => ({ title: `${kid} puede adoptar una Mascota Estrella`, body: 'Una mascota que crece con cada tarea hecha. Todas las familias reciben un perrito.', cta: 'Ver Mascotas Estrella' }),
     shared_chores: () => ({ title: 'Tareas que se turnan', body: 'Una tarea rotativa pasa al siguiente niño cada semana, y una tarea extra es para quien la termine primero.', cta: 'Agregar una tarea compartida' }),
@@ -177,6 +198,7 @@ const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid:
   },
   pt: {
     kid_login: (kid) => ({ title: `Dê a ${kid} um acesso próprio`, body: `Com um PIN de 4 dígitos, ${kid} entra em qualquer aparelho e marca as tarefas sem você.`, cta: 'Criar um PIN' }),
+    kid_device: (kid) => ({ title: `Deixe ${kid} entrar sozinho`, body: `Escaneie o código num tablet ou celular antigo, e ${kid} marca as tarefas com o PIN enquanto você acompanha.`, cta: 'Mostrar o acesso das crianças' }),
     routines: (kid) => ({ title: 'Experimente uma rotina da manhã', body: `Vestir-se, escovar os dentes, arrumar a mochila: ${kid} faz tudo passo a passo.`, cta: 'Criar uma rotina' }),
     star_pets: (kid) => ({ title: `${kid} pode adotar um Pet Estrela`, body: 'Um pet que cresce a cada tarefa feita. Toda família ganha um cachorrinho.', cta: 'Ver Pets Estrela' }),
     shared_chores: () => ({ title: 'Tarefas que se revezam', body: 'Uma tarefa em rodízio passa para a próxima criança toda semana, e uma tarefa bônus fica com quem terminar primeiro.', cta: 'Adicionar tarefa compartilhada' }),
@@ -186,6 +208,7 @@ const CARD_TRANSLATIONS: Record<Exclude<CopyLang, 'en'>, Record<FeatureId, (kid:
   },
   ar: {
     kid_login: (kid) => ({ title: `امنح ${kid} دخولًا خاصًا`, body: `برمز PIN من 4 أرقام، يدخل ${kid} من أي جهاز ويشطب مهامه بنفسه.`, cta: 'أنشئ رمز PIN' }),
+    kid_device: (kid) => ({ title: `دع ${kid} يدخل بنفسه`, body: `امسح الرمز على جهاز لوحي أو هاتف قديم، ويشطب ${kid} مهامه برمز PIN بينما تراها تصل.`, cta: 'اعرض دخول الأطفال' }),
     routines: (kid) => ({ title: 'جرّب روتين الصباح', body: `ارتداء الملابس، تنظيف الأسنان، تجهيز الحقيبة: ينجزها ${kid} خطوة بخطوة.`, cta: 'أنشئ روتينًا' }),
     star_pets: (kid) => ({ title: `يمكن لـ${kid} تبنّي حيوان نجم`, body: 'حيوان أليف يكبر مع كل مهمة تُنجز. تحصل كل عائلة على جرو.', cta: 'اعرض الحيوانات النجوم' }),
     shared_chores: () => ({ title: 'مهام بالتناوب', body: 'تنتقل المهمة الدوّارة إلى الطفل التالي كل أسبوع، والمهمة الإضافية لمن ينهيها أولًا.', cta: 'أضف مهمة مشتركة' }),
