@@ -22,7 +22,7 @@ export const CHANGELOG_DATA: Record<string, ChangelogEntry> = {
       {
         icon: '📱',
         title: 'Scan to Sign In',
-        description: 'Kids who have a PIN can sign in on their own tablet or an old phone: scan the code on your dashboard and their login opens with your family code filled in.',
+        description: 'Kids who have a PIN can sign in on their own tablet or an old phone: scan the code (on your dashboard, or any time in Settings, Family, next to the Kid Login Link) and their login opens with your family code filled in.',
       },
     ],
   },

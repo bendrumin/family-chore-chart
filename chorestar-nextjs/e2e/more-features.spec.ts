@@ -787,3 +787,23 @@ test('cleanup leaves the family on free with the same pets and wallets', async (
     }
   }
 })
+
+test.describe('Kids on their own device', () => {
+  test('Settings > Family shows the family code and a QR code for kid login', async ({ page }) => {
+    const { data: profile } = await admin.from('profiles').select('kid_login_code').eq('id', familyId).single()
+    const code = (profile as { kid_login_code: string | null } | null)?.kid_login_code
+    expect(code, 'the demo family has a kid login code').toBeTruthy()
+
+    await signIn(page)
+    const settings = await openSettings(page, 'family')
+    await settings.getByRole('button', { name: /^qr code$/i }).click()
+
+    const modal = page.getByTestId('kid-device-modal')
+    await expect(modal).toBeVisible({ timeout: 10_000 })
+    await expect(modal.getByText(code!.toUpperCase(), { exact: true })).toBeVisible()
+    await expect(modal.getByText(new RegExp(`/kid-login/${code}$`))).toBeVisible()
+    const qr = modal.getByRole('img', { name: /qr code for your kid.s kid login/i })
+    await expect(qr).toBeVisible({ timeout: 10_000 })
+    expect(await qr.getAttribute('src')).toMatch(/^data:image\/png;base64,/)
+  })
+})

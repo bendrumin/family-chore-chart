@@ -8,7 +8,7 @@ import { useEntitlements } from '@/lib/hooks/use-entitlements'
 import { PremiumGate } from '@/components/settings/premium-gate'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck, Palmtree } from 'lucide-react'
+import { DollarSign, Globe, Users, Share2, Volume2, VolumeX, Link2, Copy, Home, ShieldCheck, Palmtree, QrCode } from 'lucide-react'
 import { useSettings } from '@/lib/contexts/settings-context'
 import { createClient } from '@/lib/supabase/client'
 import { EditChildrenPage } from '@/components/children/edit-children-page'
@@ -16,6 +16,7 @@ import { FamilySharingModal } from '@/components/settings/family-sharing-modal'
 import { ExistingSharingList } from '@/components/settings/existing-sharing-list'
 import { CalendarFeedSection } from '@/components/settings/calendar-feed-section'
 import { PetsSection } from '@/components/settings/pets-section'
+import { KidDeviceModal } from '@/components/dashboard/kid-device-modal'
 import { toast } from 'sonner'
 import { CURRENCIES, currencySymbol } from '@/lib/constants/currencies'
 import { formatLocalDate, getWeekEnd, getWeekStart } from '@/lib/utils/date-helpers'
@@ -69,6 +70,8 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
   const [isFamilySharingOpen, setIsFamilySharingOpen] = useState(false)
   const [kidLoginUrl, setKidLoginUrl] = useState<string | null>(null)
   const [kidLoginError, setKidLoginError] = useState(false)
+  const [kidLoginCode, setKidLoginCode] = useState<string | null>(null)
+  const [showKidQr, setShowKidQr] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -97,6 +100,7 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
       .then((data) => {
         if (data?.kidLoginUrl) {
           setKidLoginUrl(data.kidLoginUrl)
+          if (typeof data.code === 'string') setKidLoginCode(data.code)
         } else {
           setKidLoginError(true)
         }
@@ -407,11 +411,11 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
             Share this link with your kids. They&apos;ll enter their PIN (set in Edit Children). Each family has a unique link. Kids only see your family&apos;s routines.
           </p>
           {kidLoginUrl ? (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Input
                 readOnly
                 value={kidLoginUrl}
-                className="flex-1 font-mono text-sm bg-white dark:bg-gray-800"
+                className="flex-1 min-w-[12rem] font-mono text-sm bg-white dark:bg-gray-800"
               />
               <Button
                 variant="outline"
@@ -425,6 +429,16 @@ export function FamilyTab({ onClose }: FamilyTabProps) {
                 <Copy className="w-4 h-4 mr-2" />
                 Copy
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowKidQr(true)}
+                className="shrink-0"
+              >
+                <QrCode className="w-4 h-4 mr-2" aria-hidden />
+                QR code
+              </Button>
+              <KidDeviceModal open={showKidQr} onOpenChange={setShowKidQr} familyCode={kidLoginCode} />
             </div>
           ) : kidLoginError ? (
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>

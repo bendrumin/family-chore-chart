@@ -25,10 +25,32 @@ export function KidDeviceModal({
   open: boolean
   onOpenChange: (open: boolean) => void
   familyCode: string | null
-  kidName: string
+  /** The kid the tip is about; without one (Settings) it speaks to all the kids. */
+  kidName?: string
 }) {
   const [qr, setQr] = useState<string | null>(null)
-  const url = familyCode ? kidLoginUrl(familyCode, typeof window === 'undefined' ? undefined : window.location.origin) : null
+  // The profile may predate the code: /api/kid-login-code creates it on first ask.
+  const [fetchedCode, setFetchedCode] = useState<string | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const code = familyCode ?? fetchedCode
+  const url = code ? kidLoginUrl(code, typeof window === 'undefined' ? undefined : window.location.origin) : null
+  const whose = kidName ? `${kidName}\u2019s` : 'your kid\u2019s'
+
+  useEffect(() => {
+    if (!open || code) return
+    let active = true
+    fetch('/api/kid-login-code')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((data: { code?: string }) => {
+        if (!active) return
+        if (data.code) setFetchedCode(data.code)
+        else setLoadFailed(true)
+      })
+      .catch(() => active && setLoadFailed(true))
+    return () => {
+      active = false
+    }
+  }, [open, code])
 
   useEffect(() => {
     if (!open || !url) return
@@ -54,38 +76,38 @@ export function KidDeviceModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onClose={() => onOpenChange(false)} className="max-w-md dialog-content-bg">
+      <DialogContent onClose={() => onOpenChange(false)} className="max-w-md max-h-[90vh] overflow-y-auto dialog-content-bg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
             <Tablet className="w-7 h-7" style={{ color: 'var(--primary)' }} aria-hidden />
-            {kidName}&apos;s own login
+            {kidName ? `${kidName}\u2019s own login` : 'Kids\u2019 own login'}
           </DialogTitle>
         </DialogHeader>
 
-        {!familyCode ? (
+        {!code ? (
           <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Your family code isn&apos;t ready yet. Open Settings, then Family, to see it.
+            {loadFailed ? 'Your family code couldn\u2019t load. Try again in a moment.' : 'Loading your family code\u2026'}
           </p>
         ) : (
-          <div className="mt-4 space-y-5">
+          <div className="mt-4 space-y-4" data-testid="kid-device-modal">
             <ol className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
-              <li>1. On {kidName}&apos;s tablet or an old phone, scan this code or open the link.</li>
-              <li>2. {kidName} taps their name and enters their PIN.</li>
+              <li>1. On {whose} tablet or an old phone, scan this code or open the link.</li>
+              <li>2. {kidName ?? 'Your kid'} taps their name and enters their PIN.</li>
               <li>3. That&apos;s it. Checked-off chores show up for you right away.</li>
             </ol>
 
             <div className="flex justify-center">
               {qr ? (
                 // eslint-disable-next-line @next/next/no-img-element -- generated data URL
-                <img src={qr} alt={`QR code for ${kidName}'s kid login`} width={240} height={240} className="rounded-xl border border-gray-200 dark:border-gray-700" />
+                <img src={qr} alt={`QR code for ${whose} kid login`} width={200} height={200} className="rounded-xl border border-gray-200 dark:border-gray-700" />
               ) : (
-                <div className="w-[240px] h-[240px] rounded-xl bg-gray-100 dark:bg-gray-800" aria-hidden />
+                <div className="w-[200px] h-[200px] rounded-xl bg-gray-100 dark:bg-gray-800" aria-hidden />
               )}
             </div>
 
             <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Family code</p>
-              <p className="mt-1 text-3xl font-black tracking-[0.2em] text-gray-900 dark:text-white">{familyCode.toUpperCase()}</p>
+              <p className="mt-1 text-3xl font-black tracking-[0.2em] text-gray-900 dark:text-white">{code.toUpperCase()}</p>
               <p className="mt-2 text-xs break-all text-gray-600 dark:text-gray-300">{url}</p>
             </div>
 
