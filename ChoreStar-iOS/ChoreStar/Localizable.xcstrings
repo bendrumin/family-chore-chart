@@ -22890,6 +22890,75 @@
         }
       }
     },
+    "1. On your kid's tablet or an old phone, scan this code or open the link." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. En la tableta de tu hijo o un teléfono viejo, escanea este código o abre el enlace."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. No tablet do seu filho ou num celular antigo, escaneie este código ou abra o link."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. على الجهاز اللوحي لطفلك أو هاتف قديم، امسح هذا الرمز أو افتح الرابط."
+          }
+        }
+      }
+    },
+    "QR code for kid login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código QR para el acceso de niños"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR code para o acesso das crianças"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز QR لدخول الأطفال"
+          }
+        }
+      }
+    },
+    "Show QR code for a kid's device" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar código QR para el dispositivo de un niño"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar QR code para o aparelho de uma criança"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض رمز QR لجهاز الطفل"
+          }
+        }
+      }
+    },
     "Your family code isn't ready yet. You'll find it in Settings > Family Sharing & Kid Login." : {
       "extractionState" : "manual",
       "localizations" : {

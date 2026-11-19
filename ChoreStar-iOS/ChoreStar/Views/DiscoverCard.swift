@@ -301,8 +301,12 @@ struct KidDeviceView: View {
     @EnvironmentObject var manager: SupabaseManager
     @Environment(\.dismiss) private var dismiss
 
+    /// Settings opens this for every kid, so it says "your kid", not the first one's name.
+    var namesFirstKid = true
+
     private var kidName: String {
-        manager.children.first.map { $0.name.split(separator: " ").first.map(String.init) ?? $0.name } ?? String(localized: "Your kid")
+        guard namesFirstKid else { return String(localized: "Your kid") }
+        return manager.children.first.map { $0.name.split(separator: " ").first.map(String.init) ?? $0.name } ?? String(localized: "Your kid")
     }
 
     private var url: URL? {
@@ -316,7 +320,9 @@ struct KidDeviceView: View {
                 VStack(spacing: 20) {
                     if let url, let code = manager.kidLoginCode {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("1. On \(kidName)'s tablet or an old phone, scan this code or open the link.")
+                            Text(namesFirstKid
+                                 ? "1. On \(kidName)'s tablet or an old phone, scan this code or open the link."
+                                 : "1. On your kid's tablet or an old phone, scan this code or open the link.")
                             Text("2. \(kidName) taps their name and enters their PIN.")
                             Text("3. That's it. Checked-off chores show up for you right away.")
                         }
@@ -333,7 +339,7 @@ struct KidDeviceView: View {
                                 .padding(12)
                                 .background(Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .accessibilityLabel("QR code for \(kidName)'s kid login")
+                                .accessibilityLabel(namesFirstKid ? "QR code for \(kidName)'s kid login" : "QR code for kid login")
                         }
 
                         VStack(spacing: 4) {

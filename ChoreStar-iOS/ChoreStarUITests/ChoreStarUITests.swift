@@ -162,6 +162,17 @@ final class ChoreStarUITests: XCTestCase {
             app.navigationBars["Family Sharing"].waitForExistence(timeout: 5),
             "Family Sharing screen should open"
         )
+
+        // The kid login QR, for getting a kid onto their own device.
+        let qrButton = app.buttons["familySharing.kidQRButton"].firstMatch
+        if qrButton.waitForExistence(timeout: 5) {
+            qrButton.tap()
+            XCTAssertTrue(
+                app.images["QR code for kid login"].waitForExistence(timeout: 5),
+                "The QR sheet should show a code for the family's kid login"
+            )
+            app.buttons["Done"].firstMatch.tap()
+        }
     }
 
     func testParentSignIn() throws {

@@ -1,1 +1,1 @@
-Nuevo en 2.6.3: los niños pueden pedirte una Mascota Estrella desde su pantalla, y lo verás en Necesita tu visto bueno.
+Nuevo en 2.6.4: escanea un código QR para que tus hijos entren desde su propia tableta o teléfono.

@@ -1,1 +1,1 @@
-New in 2.6.3: kids can ask you for a Star Pet, right from their screen, and you'll see it in Needs Your OK.
+New in 2.6.4: scan a QR code to get your kids signing in on their own tablet or phone.

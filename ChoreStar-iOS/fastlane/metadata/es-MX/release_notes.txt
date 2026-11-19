@@ -1,7 +1,8 @@
-Versión 2.6.3: los niños pueden pedir una Mascota Estrella.
+Versión 2.6.4: los niños pueden iniciar sesión en su propia tableta o teléfono.
 
-• Cuando un niño toca una Mascota Estrella que aún no tiene, puede pedírtela. Recibes una notificación y ves "Maya quiere el búho" en Necesita tu visto bueno, con Ahora no si no es el momento
-• Las familias Premium con más de un niño reciben una sugerencia sobre tareas que se turnan: una tarea rotativa pasa al siguiente niño cada semana, y una tarea extra es para quien la termine primero
-• Botones de Ahora no más fáciles de tocar
+• Escanea para entrar: un código QR abre el acceso de tu hijo con el código de familia ya escrito. Está en Ajustes > Familia compartida y acceso para niños, y en una sugerencia en tu panel si tus hijos tienen PIN pero aún no han entrado
+• Si pagas mensual, puedes cambiar a anual desde el panel y ver cuánto ahorrarías con tu precio de App Store
+• Al tocar una plantilla de rutina Premium ahora ves todas las rutinas listas que incluye Premium
+• Los horarios de las tareas y el ícono de Efectos de sonido se leen mejor
 
 Preguntas o comentarios: hi@chorestar.app

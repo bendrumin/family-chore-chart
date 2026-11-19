@@ -1,1 +1,1 @@
-Novo na 2.6.3: as crianças podem pedir um Pet Estrela direto da tela delas, e você vê em Precisa do seu OK.
+Novo na 2.6.4: escaneie um QR code para seus filhos entrarem no próprio tablet ou celular.

@@ -12,6 +12,7 @@ struct FamilySharingView: View {
     @State private var memberPendingRemoval: FamilyMemberInfo?
     @State private var showingLeaveConfirm = false
     @State private var showingRevokeConfirm = false
+    @State private var showingKidQR = false
 
     /// Inviting (creating or sharing a join code) is the Premium part.
     private var canInvite: Bool { manager.canUse(.sharing) }
@@ -79,6 +80,17 @@ struct FamilySharingView: View {
                     ) {
                         Image(systemName: "square.and.arrow.up")
                     }
+                }
+
+                Button {
+                    showingKidQR = true
+                } label: {
+                    Label("Show QR code for a kid's device", systemImage: "qrcode")
+                }
+                .accessibilityIdentifier("familySharing.kidQRButton")
+                .sheet(isPresented: $showingKidQR) {
+                    KidDeviceView(namesFirstKid: false)
+                        .environmentObject(manager)
                 }
             } else {
                 Text("Your kid login code appears here once it's generated on chorestar.app.")

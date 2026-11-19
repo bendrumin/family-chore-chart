@@ -1,7 +1,8 @@
-Versão 2.6.3: as crianças podem pedir um Pet Estrela.
+Versão 2.6.4: as crianças podem entrar no próprio tablet ou celular.
 
-• Quando uma criança toca em um Pet Estrela que ainda não tem, ela pode pedir a você. Você recebe uma notificação e vê "Maya quer a coruja" em Precisa do seu OK, com Agora não se não for a hora
-• Famílias Premium com mais de uma criança recebem uma dica sobre tarefas que se revezam: uma tarefa em rodízio passa para a próxima criança toda semana, e uma tarefa bônus fica com quem terminar primeiro
-• Botões de Agora não mais fáceis de tocar
+• Escaneie para entrar: um QR code abre o acesso do seu filho com o código da família já preenchido. Fica em Ajustes > Família compartilhada e acesso das crianças, e numa dica no seu painel se seus filhos têm PIN mas ainda não entraram
+• Se você paga mensal, pode mudar para anual direto do painel e ver quanto economizaria pelo seu preço da App Store
+• Ao tocar num modelo de rotina Premium, agora você vê todas as rotinas prontas que o Premium inclui
+• Os horários das tarefas e o ícone de Efeitos sonoros ficaram mais fáceis de ler
 
 Dúvidas ou sugestões: hi@chorestar.app

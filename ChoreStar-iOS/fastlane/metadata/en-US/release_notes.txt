@@ -1,7 +1,8 @@
-Version 2.6.3: kids can ask for a Star Pet.
+Version 2.6.4: kids can sign in on their own tablet or phone.
 
-• When a kid taps a Star Pet they don't have yet, they can ask you for it. You get a notification and see "Maya wants the owl" in Needs Your OK, with Not now if it isn't the right time
-• Premium families with more than one kid get a tip about chores that take turns: a rotating chore moves to the next kid every week, and a bonus chore goes to whoever finishes first
-• Bigger tap targets on Not now buttons
+• Scan to sign in: a QR code opens your kid's login with your family code already filled in. It's in Settings > Family Sharing & Kid Login, and in a tip on your dashboard if your kids have a PIN but haven't signed in yet
+• If you pay monthly, you can switch to yearly right from the dashboard and see what you'd save at your App Store price
+• Tapping a Premium routine template now lists every ready-made routine Premium includes
+• Chore schedules and the Sound Effects icon are easier to read
 
 Questions or feedback are welcome at hi@chorestar.app
