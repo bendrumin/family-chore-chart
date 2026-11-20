@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 1.1.0 phrases iOS does not have, in all four languages. -->
+<resources>
+    <string name="kidqr_title_any">Acesso próprio das crianças</string>
+    <string name="yearly_body_play">%1$s por ano em vez de %2$s por mês. O mesmo Premium, cobrado uma vez por ano pelo Google Play.</string>
+</resources>

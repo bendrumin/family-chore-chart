@@ -52,6 +52,8 @@ data class Child(
     /** Object path in the private child-avatars bucket; shown through a signed URL. */
     @SerialName("avatar_photo_path") val avatarPhotoPath: String? = null,
     @SerialName("child_access_enabled") val childAccessEnabled: Boolean = false,
+    /** Over the free limits after Premium ended (migration 038): paused, never deleted. */
+    @SerialName("paused_by_plan") val pausedByPlan: Boolean? = null,
 ) {
     /** First letter of each word, at most two, uppercased. "Levi Siegel" → "LS". */
     val initials: String
@@ -207,8 +209,24 @@ data class PendingRedemption(
     val priceCents: Int = 0,
 )
 
+/** A kid asked for a Premium Star Pet (migration 039); "Maya wants the owl" in Needs Your OK. */
 @Serializable
-data class PendingResponse(val items: List<PendingApproval> = emptyList(), val redemptions: List<PendingRedemption> = emptyList())
+data class PendingPetRequest(
+    val id: String,
+    val childId: String,
+    val childName: String = "",
+    val childColor: String? = null,
+    val species: String = "",
+    val emoji: String = "",
+    val requestedAt: String? = null,
+)
+
+@Serializable
+data class PendingResponse(
+    val items: List<PendingApproval> = emptyList(),
+    val redemptions: List<PendingRedemption> = emptyList(),
+    val petRequests: List<PendingPetRequest> = emptyList(),
+)
 
 @Serializable
 data class FamilyMemberRow(

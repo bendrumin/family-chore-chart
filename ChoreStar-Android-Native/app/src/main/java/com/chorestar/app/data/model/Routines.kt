@@ -98,8 +98,8 @@ data class NewRoutineCompletion(
 /** A step as the builder edits it. */
 data class EditableStep(val title: String, val icon: String, val durationMinutes: Int?, val imagePath: String? = null, val previewUrl: String? = null)
 
-/** The four starter routines (Models/Routine.swift RoutineTemplate.all). Titles are stored in English, localised at display. */
-data class RoutineTemplate(val name: String, val type: RoutineType, val icon: String, val steps: List<Triple<String, String, Int?>>)
+/** A starter routine (Models/Routine.swift RoutineTemplate). Titles are stored in English, localised at display. */
+data class RoutineTemplate(val name: String, val type: RoutineType, val icon: String, val steps: List<Triple<String, String, Int?>>, val premium: Boolean = false)
 
 object RoutineTemplates {
     val all = listOf(
@@ -119,6 +119,23 @@ object RoutineTemplates {
         )),
     )
 
+    /** The Premium library (iOS RoutineTemplate.premiumLibrary, the web's routine-icons.ts): the same ten, in order. */
+    val premiumLibrary = listOf(
+        RoutineTemplate("School Morning Express", RoutineType.Morning, "🚀", listOf(Triple("Wake Up", "⏰", 60), Triple("Use the Bathroom", "🚽", 120), Triple("Get Dressed", "👕", 180), Triple("Eat Breakfast", "🥣", 600), Triple("Brush Teeth", "🪥", 120), Triple("Check Backpack", "🎒", 60), Triple("Shoes On", "👟", 60)), premium = true),
+        RoutineTemplate("Homework Hour", RoutineType.AfterSchool, "📚", listOf(Triple("Have a Snack", "🍎", 300), Triple("Drink Water", "💧", 60), Triple("Clear the Desk", "🗂️", 120), Triple("Do Homework", "✏️", 1500), Triple("Read for 15 Minutes", "📖", 900), Triple("Pack Tomorrow's Bag", "🎒", 120)), premium = true),
+        RoutineTemplate("Weekend Room Reset", RoutineType.Custom, "🧹", listOf(Triple("Make Bed", "🛏️", 120), Triple("Put Away Toys", "🧸", 600), Triple("Fold Laundry", "👚", 600), Triple("Dust", "🪶", 300), Triple("Vacuum", "🧹", 600), Triple("Take Out Trash", "🗑️", 120)), premium = true),
+        RoutineTemplate("Pet Care", RoutineType.Custom, "🐶", listOf(Triple("Feed the Pet", "🦴", 120), Triple("Fresh Water Bowl", "💧", 60), Triple("Walk the Dog", "🐕", 900), Triple("Wash Hands", "🧼", 60)), premium = true),
+        RoutineTemplate("Teen Morning", RoutineType.Morning, "🚿", listOf(Triple("Wake Up", "⏰", 60), Triple("Shower", "🚿", 600), Triple("Deodorant", "🧴", 60), Triple("Get Dressed", "👕", 300), Triple("Eat Breakfast", "🥣", 600), Triple("Check Backpack", "🎒", 120)), premium = true),
+        RoutineTemplate("Calm-Down Bedtime", RoutineType.Bedtime, "🎶", listOf(Triple("Put On Pajamas", "🩳", 120), Triple("Brush Teeth", "🪥", 120), Triple("Floss", "🦷", 60), Triple("Read a Book", "📖", 900), Triple("Calm Music", "🎶", 300), Triple("Lights Out", "🌙", 60)), premium = true),
+        RoutineTemplate("Sports Practice Prep", RoutineType.Custom, "⚽", listOf(Triple("Eat Some Fruit", "🍌", 300), Triple("Fill Water Bottle", "💧", 60), Triple("Practice Clothes On", "👕", 300), Triple("Pack the Gear Bag", "🎒", 300), Triple("Shoes On", "👟", 120)), premium = true),
+        RoutineTemplate("Kitchen Helper", RoutineType.Custom, "🍳", listOf(Triple("Wash Hands", "🧼", 60), Triple("Set the Table", "🍽️", 300), Triple("Help Cook", "🍳", 900), Triple("Eat Dinner", "🍝", 1200), Triple("Clear the Dishes", "🧽", 300)), premium = true),
+        RoutineTemplate("Music Practice", RoutineType.Custom, "🎹", listOf(Triple("Warm Up", "🎹", 300), Triple("Practice Your Piece", "🎼", 1200), Triple("Listen to Something New", "🎧", 300)), premium = true),
+        RoutineTemplate("Get Moving", RoutineType.Custom, "🏃", listOf(Triple("Stretch", "🧘", 120), Triple("Exercise", "🏃", 600), Triple("Play Outside", "🌳", 1200), Triple("Drink Water", "💧", 60)), premium = true),
+    )
+
+    /** Everything the builder offers: the free four, then the Premium library. */
+    val library = all + premiumLibrary
+
     /** Template names and step titles that iOS localises at display time; anything a parent typed shows verbatim. */
     val localized: Map<String, Int> = mapOf(
         "Morning Routine" to R.string.morning_routine_7f6ff, "Bedtime Routine" to R.string.bedtime_routine_01584,
@@ -128,6 +145,23 @@ object RoutineTemplates {
         "Put on Pajamas" to R.string.put_on_pajamas_61904, "Read a Book" to R.string.read_a_book_ecd69, "Lights Out" to R.string.lights_out_7bbd0,
         "Unpack Backpack" to R.string.unpack_backpack_2875f, "Have a Snack" to R.string.have_a_snack_17c71, "Do Homework" to R.string.do_homework_7f3a2,
         "Free Time" to R.string.free_time_7d24d, "Wash Hands" to R.string.wash_hands_f5c88, "Comb Hair" to R.string.comb_hair_80e1c,
+        // The Premium library (strings_ios.xml, from the iOS catalog).
+        "School Morning Express" to R.string.tpl_school_morning_express, "Wake Up" to R.string.tpl_wake_up, "Use the Bathroom" to R.string.tpl_use_the_bathroom,
+        "Check Backpack" to R.string.tpl_check_backpack, "Shoes On" to R.string.tpl_shoes_on, "Homework Hour" to R.string.tpl_homework_hour,
+        "Drink Water" to R.string.tpl_drink_water, "Clear the Desk" to R.string.tpl_clear_the_desk, "Read for 15 Minutes" to R.string.tpl_read_for_15_minutes,
+        "Pack Tomorrow's Bag" to R.string.tpl_pack_tomorrow_s_bag, "Weekend Room Reset" to R.string.tpl_weekend_room_reset, "Make Bed" to R.string.tpl_make_bed,
+        "Put Away Toys" to R.string.tpl_put_away_toys, "Fold Laundry" to R.string.tpl_fold_laundry, "Dust" to R.string.tpl_dust,
+        "Vacuum" to R.string.tpl_vacuum, "Take Out Trash" to R.string.tpl_take_out_trash, "Pet Care" to R.string.tpl_pet_care,
+        "Feed the Pet" to R.string.tpl_feed_the_pet, "Fresh Water Bowl" to R.string.tpl_fresh_water_bowl, "Walk the Dog" to R.string.tpl_walk_the_dog,
+        "Teen Morning" to R.string.tpl_teen_morning, "Shower" to R.string.tpl_shower, "Deodorant" to R.string.tpl_deodorant,
+        "Calm-Down Bedtime" to R.string.tpl_calm_down_bedtime, "Put On Pajamas" to R.string.tpl_put_on_pajamas, "Floss" to R.string.tpl_floss,
+        "Calm Music" to R.string.tpl_calm_music, "Sports Practice Prep" to R.string.tpl_sports_practice_prep, "Eat Some Fruit" to R.string.tpl_eat_some_fruit,
+        "Fill Water Bottle" to R.string.tpl_fill_water_bottle, "Practice Clothes On" to R.string.tpl_practice_clothes_on, "Pack the Gear Bag" to R.string.tpl_pack_the_gear_bag,
+        "Kitchen Helper" to R.string.tpl_kitchen_helper, "Set the Table" to R.string.tpl_set_the_table, "Help Cook" to R.string.tpl_help_cook,
+        "Eat Dinner" to R.string.tpl_eat_dinner, "Clear the Dishes" to R.string.tpl_clear_the_dishes, "Music Practice" to R.string.tpl_music_practice,
+        "Warm Up" to R.string.tpl_warm_up, "Practice Your Piece" to R.string.tpl_practice_your_piece, "Listen to Something New" to R.string.tpl_listen_to_something_new,
+        "Get Moving" to R.string.tpl_get_moving, "Stretch" to R.string.tpl_stretch, "Exercise" to R.string.tpl_exercise,
+        "Play Outside" to R.string.tpl_play_outside,
     )
 }
 

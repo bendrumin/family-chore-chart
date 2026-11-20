@@ -37,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -182,6 +183,7 @@ fun FamilySharingScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
     var confirmRemove by remember { mutableStateOf<String?>(null) }
     var confirmLeave by remember { mutableStateOf(false) }
     var copied by remember { mutableStateOf(false) }
+    var showKidQr by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { vm.loadSharing() }
 
     SubScreen(stringResource(R.string.family_sharing), onBack) { padding ->
@@ -196,6 +198,9 @@ fun FamilySharingScreen(vm: DashboardViewModel, state: DashboardState, onBack: (
                             TextButton(onClick = { copy(context, code); copied = true }) { Text(stringResource(if (copied) R.string.copied else R.string.copy)) }
                             TextButton(onClick = { share(context, context.getString(R.string.share_kid_code, code) + " https://chorestar.app/kid-login/$code") }) { Text(stringResource(R.string.share)) }
                         }
+                        // The QR a kid's tablet scans to open kid login with this code filled in.
+                        OutlinedButton(onClick = { showKidQr = true }, modifier = Modifier.fillMaxWidth().testTag("familySharing.kidQRButton")) { Text("🔳 " + stringResource(R.string.kidqr_show)) }
+                        if (showKidQr) KidDeviceSheet(code, onDismiss = { showKidQr = false })
                     }
                     Text(stringResource(R.string.kid_code_footer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -292,7 +297,7 @@ private fun copy(context: Context, text: String) {
     context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("ChoreStar", text))
 }
 
-private fun share(context: Context, text: String) {
+internal fun share(context: Context, text: String) {
     context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, text) }, null))
 }
 

@@ -218,6 +218,7 @@ fun SettingsScreen(vm: DashboardViewModel, state: DashboardState, email: String?
                 NavRow(stringResource(R.string.reward_store), null) { onNavigate(Routes.SETTINGS_STORE) }
                 NavRow("💰 " + stringResource(R.string.money_title), stringResource(R.string.money_nav_subtitle) + if (!state.hasNewPremium) " 👑" else "") { onNavigate(Routes.money(null)) }
                 NavRow("📅 " + stringResource(R.string.calendar_title), stringResource(R.string.calendar_nav_subtitle) + if (!state.hasNewPremium) " 👑" else "") { onNavigate(Routes.SETTINGS_CALENDAR) }
+                NavRow("🐾 " + stringResource(R.string.pets_title), null) { onNavigate(Routes.SETTINGS_PETS) }
             }
         }
 

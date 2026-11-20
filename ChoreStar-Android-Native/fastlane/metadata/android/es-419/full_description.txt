@@ -22,6 +22,7 @@ Una vista simple para tus hijos
 • Su tablero muestra su racha, lo ganado en la semana, sus insignias y su meta
 • Las rutinas los guían paso a paso, con temporizadores opcionales
 • Ganan insignias por rachas y por completar la semana entera
+• Adoptan una Mascota Estrella que crece con cada tarea y cada rutina
 
 Control de mesada
 Elige una recompensa por tarea o una tarifa fija por día. ChoreStar suma las ganancias automáticamente conforme se completan las tareas, sin cuentas a mano.
@@ -39,9 +40,9 @@ Privacidad
 Los datos de tu familia nunca se comparten ni se venden. Como los niños entran con un PIN, ningún niño proporciona correo ni información personal.
 
 Gratis y Premium
-• Gratis: hasta 3 niños, 20 tareas, insignias, rutinas, una meta por niño y una tienda de premios inicial
+• Gratis: hasta 3 niños, 20 tareas, insignias, rutinas, una meta por niño, una tienda de premios inicial y un perrito Mascota Estrella
 • Premium: niños, tareas, premios y metas ilimitados, temas premium y acceso compartido para papá y mamá
-• También en Premium: frascos Gastar, Ahorrar y Dar con mesada automática, interés y minutos de pantalla; retos en familia; fotos en los pasos, temporizador suave, Crear con IA y vista en vivo de las rutinas; y un calendario para Google, Apple u Outlook
+• También en Premium: las seis Mascotas Estrella con ropa y un premio nuevo cada mes; diez plantillas de rutinas más; frascos Gastar, Ahorrar y Dar con mesada automática, interés y minutos de pantalla; retos en familia; fotos en los pasos, temporizador suave, Crear con IA y vista en vivo de las rutinas; y un calendario para Google, Apple u Outlook
 • En todos los planes: los pasos de las rutinas se pueden leer en voz alta
 
 Hecha por un papá, para familias que quieren menos regaños y más cooperación.

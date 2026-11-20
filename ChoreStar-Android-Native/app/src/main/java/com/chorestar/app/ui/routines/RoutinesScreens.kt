@@ -304,13 +304,18 @@ fun RoutineBuilderScreen(vm: DashboardViewModel, state: DashboardState, routine:
                 aiTip?.let { Text("💡 $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 SectionTitle(stringResource(R.string.quick_start_templates))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(RoutineTemplates.all) { t ->
+                    items(RoutineTemplates.library) { t ->
                         Card(Modifier.width(160.dp).clickable {
+                            // A Premium template on the free plan shows what Premium's library holds instead.
+                            if (t.premium && !premium) { onPaywall("routine_templates"); return@clickable }
                             name = t.name; type = t.type; icon = t.icon; color = t.type.defaultColor
                             steps = t.steps.map { (title, ic, sec) -> EditableStep(title, ic, sec?.let { if (it >= 60) it / 60 else null }) }
                         }) {
                             Column(Modifier.padding(12.dp)) {
-                                Text(t.icon, style = MaterialTheme.typography.headlineSmall)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(t.icon, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                                    if (t.premium && !premium) com.chorestar.app.ui.components.PremiumTag()
+                                }
                                 Text(localizedRoutineText(t.name), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(stringResource(R.string.n_steps, t.steps.size), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }

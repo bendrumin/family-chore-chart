@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 1.1.0 phrases iOS does not have, in all four languages. -->
+<resources>
+    <string name="kidqr_title_any">Kids\' own login</string>
+    <string name="yearly_body_play">%1$s a year instead of %2$s a month. Same Premium, billed once a year by Google Play.</string>
+</resources>

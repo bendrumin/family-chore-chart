@@ -74,6 +74,7 @@ class ChoreStarRepository(
     val kid: KidApi by lazy { KidApi(web) }
     /** The web routes behind the 1.0.2 Premium features (money, challenges, routines, calendar). */
     val premium: PremiumApi by lazy { PremiumApi(web) { accessToken } }
+    val pets: PetApi by lazy { PetApi(web) { accessToken } }
 
     // ── Auth ────────────────────────────────────────────────────────────────
 

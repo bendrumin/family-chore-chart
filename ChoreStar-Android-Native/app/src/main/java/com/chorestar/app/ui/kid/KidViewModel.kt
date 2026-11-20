@@ -89,6 +89,10 @@ class KidViewModel(
             is KidBackend.OnParentDevice -> repository.accessTokenOrNull()?.let { KidApi.Auth(it, backend.childId) }
         }
 
+    /** For the Star Pet card: the kid's token, or the parent's acting for this child. */
+    fun petAuth(): KidApi.Auth? = auth
+    val petApi: com.chorestar.app.data.PetApi get() = repository.pets
+
     init { refresh() }
 
     fun refresh() {

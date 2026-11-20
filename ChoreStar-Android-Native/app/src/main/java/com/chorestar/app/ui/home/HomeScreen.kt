@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -100,12 +101,20 @@ fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -
 
             if (state.children.isEmpty() || state.chores.isEmpty()) item { GettingStartedCard(state, onOpenFamily, onOpenChores) }
 
-            if (state.pendingApprovals.isNotEmpty() || state.pendingRedemptions.isNotEmpty()) item { ApprovalTray(vm, state) }
+            if (state.pendingApprovals.isNotEmpty() || state.pendingRedemptions.isNotEmpty() || state.pendingPetRequests.isNotEmpty()) item {
+                ApprovalTray(vm, state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) })
+            }
+
+            item(key = "yearly") { com.chorestar.app.ui.settings.YearlyUpsellCard(state) }
 
             if (state.live.isNotEmpty()) item { com.chorestar.app.ui.routines.HappeningNowCard(state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) }) }
 
             if (state.children.size >= 2) item {
                 com.chorestar.app.ui.challenges.FamilyChallengesCard(vm, state, onNew = { onNavigate(com.chorestar.app.ui.main.Routes.CHALLENGE_NEW) }, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) })
+            }
+
+            if (state.children.isNotEmpty()) item(key = "pets") {
+                com.chorestar.app.ui.pets.FamilyPetsCard(state.children, vm.petApi, parentAuth = vm::parentKidAuth)
             }
 
             if (state.chores.isNotEmpty()) {
@@ -267,7 +276,7 @@ private fun Step(title: String, hint: String, done: Boolean, onTap: () -> Unit) 
 
 /** iOS ApprovalTrayView: every kid tick waiting for a parent, with the proof photo when there is one. */
 @Composable
-fun ApprovalTray(vm: DashboardViewModel, state: DashboardState) {
+fun ApprovalTray(vm: DashboardViewModel, state: DashboardState, onPaywall: (String) -> Unit = {}) {
     var lightbox by remember { mutableStateOf<PendingApproval?>(null) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
@@ -275,7 +284,26 @@ fun ApprovalTray(vm: DashboardViewModel, state: DashboardState) {
                 Icon(Icons.Filled.Schedule, contentDescription = null, tint = Warning)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.home_needs_your_ok), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text("${state.pendingApprovals.size + state.pendingRedemptions.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${state.pendingApprovals.size + state.pendingRedemptions.size + state.pendingPetRequests.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            state.pendingPetRequests.forEach { r ->
+                val context = androidx.compose.ui.platform.LocalContext.current
+                HorizontalDivider(Modifier.padding(vertical = 10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
+                        com.chorestar.app.ui.pets.PetPicture(r.species, "baby", 48.dp, habitat = false, animated = false)
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        // Built here so it's translated (the server's title is English).
+                        Text(stringResource(R.string.pets_wants, r.childName, com.chorestar.app.data.PetText.species(context, r.species)) + " " + r.emoji,
+                            style = MaterialTheme.typography.bodyLarge)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                            TextButton(onClick = { vm.dismissPetRequest(r.id) }, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.not_now)) }
+                            if (!state.isSharedMember && !state.isPremium) Button(onClick = { onPaywall("pet_request") }, contentPadding = PaddingValues(horizontal = 14.dp)) { Text(stringResource(R.string.see_premium)) }
+                        }
+                    }
+                }
             }
             state.pendingRedemptions.forEach { r ->
                 HorizontalDivider(Modifier.padding(vertical = 10.dp))

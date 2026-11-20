@@ -76,6 +76,15 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, source: String,
             Text("👑", style = MaterialTheme.typography.displayMedium)
             Text(stringResource(R.string.paywall_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold)
             Text(stringResource(R.string.paywall_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // What brought the parent here, first (iOS PaywallSpotlight).
+            PaywallSpotlight.forSource(source)?.let { spot ->
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(spot.title(context), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        spot.rows.forEach { (icon, text) -> Row { Text(icon); Spacer(Modifier.width(10.dp)); Text(text(context), style = MaterialTheme.typography.bodyMedium) } }
+                    }
+                }
+            }
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(R.string.paywall_feat_unlimited, R.string.paywall_feat_store, R.string.paywall_feat_sharing, R.string.premium_bullet_themes, R.string.paywall_feat_money, R.string.paywall_feat_routines, R.string.paywall_feat_indie).forEach { Text("✅ " + stringResource(it)) }
@@ -146,5 +155,45 @@ fun PaywallScreen(vm: DashboardViewModel, state: DashboardState, source: String,
             text = { Text(stringResource(R.string.welcome_premium_body)) },
             confirmButton = { TextButton(onClick = { welcome = false; onBack() }) { Text(stringResource(R.string.done_label)) } },
         )
+    }
+}
+
+/** The paywall's opening card for the feature a parent just tapped; null shows the general pitch only. */
+data class PaywallSpotlight(val title: (android.content.Context) -> String, val rows: List<Pair<String, (android.content.Context) -> String>>) {
+    companion object {
+        fun forSource(source: String): PaywallSpotlight? = when (source) {
+            "routine_templates" -> {
+                val names = com.chorestar.app.data.model.RoutineTemplates.premiumLibrary.map { it.name }
+                PaywallSpotlight(
+                    { it.getString(R.string.spot_templates_title, names.size) },
+                    listOf(
+                        "📋" to { c -> c.getString(R.string.spot_templates_list, names.take(5).joinToString(", ") { n -> localizedTemplateName(c, n) }, names.size - 5) },
+                        "🎛️" to { c -> c.getString(R.string.spot_templates_fill) },
+                        "✨" to { c -> c.getString(R.string.spot_templates_ai) },
+                    ),
+                )
+            }
+            "pet_request", "gate_pet" -> PaywallSpotlight(
+                { it.getString(R.string.spot_pets_title) },
+                listOf(
+                    "🐾" to { c -> c.getString(R.string.spot_pets_species) },
+                    "👕" to { c -> c.getString(R.string.spot_pets_outfits) },
+                    "🎁" to { c -> c.getString(R.string.spot_pets_prize) },
+                    "⭐" to { c -> c.getString(R.string.spot_pets_grow) },
+                ),
+            )
+            "gate_sharing" -> PaywallSpotlight(
+                { it.getString(R.string.spot_sharing_title) },
+                listOf(
+                    "👥" to { c -> c.getString(R.string.spot_sharing_invite) },
+                    "✅" to { c -> c.getString(R.string.spot_sharing_approve) },
+                    "💵" to { c -> c.getString(R.string.spot_sharing_same) },
+                ),
+            )
+            else -> null
+        }
+
+        private fun localizedTemplateName(c: android.content.Context, name: String): String =
+            com.chorestar.app.data.model.RoutineTemplates.localized[name]?.let(c::getString) ?: name
     }
 }

@@ -66,6 +66,8 @@ data class DashboardState(
     val vacationPeriods: List<VacationPeriod> = emptyList(),
     val pendingApprovals: List<PendingApproval> = emptyList(),
     val pendingRedemptions: List<PendingRedemption> = emptyList(),
+    /** Kids asking for a Premium Star Pet (migration 039). */
+    val pendingPetRequests: List<com.chorestar.app.data.model.PendingPetRequest> = emptyList(),
     /** Parent-side wallet views, by child id, for the child detail Allowance section. */
     val wallets: Map<String, KidApi.WalletView> = emptyMap(),
     /** Cells a write is in flight for, so a double tap does not double-write. */
@@ -230,6 +232,9 @@ class DashboardViewModel(
 
     /** The web routes behind money, challenges, live routines, AI drafts and the calendar feed. */
     val premiumApi: com.chorestar.app.data.PremiumApi get() = repository.premium
+    val petApi: com.chorestar.app.data.PetApi get() = repository.pets
+    /** The parent acting for one kid on the kid routes (the Star Pet sheet on Home). */
+    fun parentKidAuth(childId: String): com.chorestar.app.data.KidApi.Auth? = repository.accessTokenOrNull()?.let { com.chorestar.app.data.KidApi.Auth(it, childId) }
 
     private suspend fun loadStepPhotos(routines: List<Routine>) {
         val paths = routines.flatMap { r -> r.steps.mapNotNull { it.imagePath } }.distinct()
@@ -403,7 +408,7 @@ class DashboardViewModel(
 
     fun refreshApprovals() {
         viewModelScope.launch {
-            runCatching { repository.pendingApprovals() }.onSuccess { r -> _state.update { it.copy(pendingApprovals = r.items, pendingRedemptions = r.redemptions) } }
+            runCatching { repository.pendingApprovals() }.onSuccess { r -> _state.update { it.copy(pendingApprovals = r.items, pendingRedemptions = r.redemptions, pendingPetRequests = r.petRequests) } }
         }
     }
 
@@ -572,6 +577,15 @@ class DashboardViewModel(
         viewModelScope.launch {
             runCatching { repository.reviewCompletionOrRedemption(id, approve) }
                 .onFailure { e -> _state.update { it.copy(error = uiText(R.string.error_could_not_save, e.message ?: "")) } }
+            refreshApprovals()
+        }
+    }
+
+    /** Not now on a kid's Star Pet ask. Yes is buying Premium; the server then closes the ask as granted. */
+    fun dismissPetRequest(id: String) {
+        _state.update { s -> s.copy(pendingPetRequests = s.pendingPetRequests.filterNot { it.id == id }) }
+        viewModelScope.launch {
+            if (!repository.pets.dismissRequest(id)) _state.update { it.copy(error = uiText(R.string.error_could_not_save, "")) }
             refreshApprovals()
         }
     }

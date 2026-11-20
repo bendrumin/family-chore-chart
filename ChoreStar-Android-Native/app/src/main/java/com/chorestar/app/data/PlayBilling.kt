@@ -36,7 +36,10 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
         const val YEARLY = "chorestar_premium_yearly"
     }
 
-    data class Plan(val productId: String, val details: ProductDetails, val offerToken: String, val price: String, val period: String)
+    data class Plan(val productId: String, val details: ProductDetails, val offerToken: String, val price: String, val period: String, val priceMicros: Long = 0)
+
+    /** The family's live Play subscription on this Google account, if any. */
+    data class Current(val productId: String, val purchaseToken: String, val purchaseTimeMillis: Long)
 
     sealed interface Event {
         data class Purchased(val tier: String) : Event
@@ -89,7 +92,10 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
             _plans.value = details.mapNotNull { d ->
                 val offer = d.subscriptionOfferDetails?.firstOrNull() ?: return@mapNotNull null
                 val phase = offer.pricingPhases.pricingPhaseList.lastOrNull() ?: return@mapNotNull null
-                Plan(d.productId, d, offer.offerToken, phase.formattedPrice, phase.billingPeriod)
+                // The base plan, not a free-trial offer: the trial's phase is free and would hide the real price.
+                val base = d.subscriptionOfferDetails?.firstOrNull { it.offerId == null } ?: offer
+                val price = base.pricingPhases.pricingPhaseList.lastOrNull() ?: phase
+                Plan(d.productId, d, offer.offerToken, price.formattedPrice, price.billingPeriod, price.priceAmountMicros)
             }.sortedBy { if (it.productId == YEARLY) 0 else 1 }
         }
     }
@@ -98,6 +104,37 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
     fun purchase(activity: Activity, plan: Plan, profileId: String) {
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(plan.details).setOfferToken(plan.offerToken).build()))
+            .setObfuscatedAccountId(profileId)
+            .build()
+        val result = client.launchBillingFlow(activity, params)
+        if (result.responseCode != BillingClient.BillingResponseCode.OK) _events.value = Event.Failed(result.debugMessage.ifBlank { "Could not open Google Play" })
+    }
+
+    /** The active subscription Play has for this Google account, or null. */
+    suspend fun current(): Current? {
+        if (!connect()) return null
+        val result = runCatching { client.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()) }.getOrNull()
+        val p = result?.purchasesList.orEmpty().firstOrNull { it.purchaseState == Purchase.PurchaseState.PURCHASED } ?: return null
+        return Current(p.products.firstOrNull() ?: return null, p.purchaseToken, p.purchaseTime)
+    }
+
+    /**
+     * Monthly to yearly in place: Play replaces the subscription and credits the
+     * unused month (WITH_TIME_PRORATION), so nobody pays twice. The new purchase
+     * goes through /api/google/verify like any other; the server ignores the old
+     * one's ending (isSupersededEnding).
+     */
+    fun switchPlan(activity: Activity, to: Plan, from: Current, profileId: String) {
+        val params = BillingFlowParams.newBuilder()
+            // The base plan: a free-trial offer isn't for someone already paying.
+            .setProductDetailsParamsList(listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(to.details)
+                .setOfferToken(to.details.subscriptionOfferDetails?.firstOrNull { it.offerId == null }?.offerToken ?: to.offerToken).build()))
+            .setSubscriptionUpdateParams(
+                BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                    .setOldPurchaseToken(from.purchaseToken)
+                    .setSubscriptionReplacementMode(BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITH_TIME_PRORATION)
+                    .build(),
+            )
             .setObfuscatedAccountId(profileId)
             .build()
         val result = client.launchBillingFlow(activity, params)
@@ -147,4 +184,28 @@ class PlayBilling(context: Context, private val verify: suspend (purchaseToken: 
                 .onFailure { e -> if (!silent) _events.value = Event.Failed(e.message ?: "Verification failed") }
         }
     }
+}
+
+/**
+ * The switch-to-yearly card's rules (iOS YearlyUpsell): a monthly Play
+ * subscriber who has renewed at least once, with a real saving to show.
+ */
+object YearlyUpsell {
+    const val MINIMUM_SAVINGS_PERCENT = 10
+    const val SNOOZE_DAYS = 30L
+    /** A month and a couple of days: past the first renewal, never the first week of a trial. */
+    private const val RENEWED_AFTER_MILLIS = 32L * 24 * 60 * 60 * 1000
+
+    fun eligible(productId: String?, purchaseTimeMillis: Long, nowMillis: Long): Boolean =
+        productId == PlayBilling.MONTHLY && nowMillis - purchaseTimeMillis >= RENEWED_AFTER_MILLIS
+
+    /** Whole percent saved by paying yearly instead of twelve months, rounded down; 0 when it saves nothing. */
+    fun savingsPercent(monthlyMicros: Long, yearlyMicros: Long): Int {
+        if (monthlyMicros <= 0 || yearlyMicros <= 0) return 0
+        val twelve = monthlyMicros * 12
+        if (yearlyMicros >= twelve) return 0
+        return ((twelve - yearlyMicros) * 100 / twelve).toInt()
+    }
+
+    fun snoozed(snoozedUntilMillis: Long, nowMillis: Long): Boolean = nowMillis < snoozedUntilMillis
 }

@@ -106,6 +106,7 @@ object Routes {
     const val SETTINGS_MONEY = "settings/money?childId={childId}"
     fun money(childId: String?) = "settings/money" + (childId?.let { "?childId=$it" } ?: "")
     const val SETTINGS_CALENDAR = "settings/calendar"
+    const val SETTINGS_PETS = "settings/pets"
     const val CHALLENGE_NEW = "challenge/new"
     const val PAYWALL = "paywall?source={source}"
     /** source says what opened it, for paywall_events: limit_*, gate_*, settings_upgrade, link. */
@@ -269,6 +270,11 @@ fun MainTabs(repository: ChoreStarRepository) {
                 composable(Routes.SETTINGS_DELETE) { DeleteAccountScreen(vm, state, onBack = { nav.popBackStack() }) }
                 composable(Routes.SETTINGS_MONEY, arguments = listOf(navArgument("childId") { type = NavType.StringType; nullable = true; defaultValue = null })) { entry ->
                     com.chorestar.app.ui.money.MoneyScreen(vm, state, initialChildId = entry.arguments?.getString("childId"), onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) })
+                }
+                composable(Routes.SETTINGS_PETS) {
+                    com.chorestar.app.ui.settings.SubScreen(androidx.compose.ui.res.stringResource(R.string.pets_title), onBack = { nav.popBackStack() }) { padding ->
+                        com.chorestar.app.ui.pets.PetsSettingsContent(vm.petApi, androidx.compose.ui.Modifier.padding(padding))
+                    }
                 }
                 composable(Routes.SETTINGS_CALENDAR) { com.chorestar.app.ui.settings.CalendarFeedScreen(vm, onBack = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) }) }
                 composable(Routes.CHALLENGE_NEW) { com.chorestar.app.ui.challenges.ChallengeBuilderScreen(vm, state, onDone = { nav.popBackStack() }, onPaywall = { nav.navigate(Routes.paywall(it)) }) }

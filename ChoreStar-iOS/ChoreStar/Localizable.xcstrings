@@ -22913,6 +22913,29 @@
         }
       }
     },
+    "Kids' own login" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso propio para niños"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acesso próprio das crianças"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "دخول الأطفال الخاص بهم"
+          }
+        }
+      }
+    },
     "QR code for kid login" : {
       "extractionState" : "manual",
       "localizations" : {

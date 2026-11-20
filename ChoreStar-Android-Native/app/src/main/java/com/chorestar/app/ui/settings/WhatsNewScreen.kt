@@ -25,8 +25,15 @@ data class ChangelogFeature(val icon: String, val title: String, val description
 data class ChangelogEntry(val version: String, val date: String, val title: String, val features: List<ChangelogFeature>)
 
 object Changelog {
-    const val LATEST = "2026.10.5"
+    const val LATEST = "2026.11.2"
     val entries = listOf(
+        ChangelogEntry("2026.11.2", "November 2026", "Star Pets, and Kids on Their Own Devices", listOf(
+            ChangelogFeature("🐶", "Meet Star Pets", "Each kid adopts a pet that grows every time they finish a chore or a routine. Every family gets a pup that grows to its kid stage; Premium adds the kitty, bunny, dino, panda and owl, outfits, a new prize every month, and growing all the way up. Kids adopt theirs in kid mode, and you'll find everyone's pet on Home. Settings > Star Pets turns a pet off for any kid."),
+            ChangelogFeature("🙋", "Kids Can Ask for a Star Pet", "When a kid taps a pet they don't have yet, they can ask you for it. You get a notification and see \"Maya wants the owl\" in Needs Your OK, with Not now if it isn't the right time."),
+            ChangelogFeature("📱", "Scan to Sign In", "Settings > Family Sharing & Kid Login has a QR code: scan it on your kid's tablet or an old phone and their login opens with your family code filled in."),
+            ChangelogFeature("📋", "10 More Routine Templates", "Premium: School Morning Express, Homework Hour, Weekend Room Reset, Pet Care and six more, each one ready to change in the builder."),
+            ChangelogFeature("📅", "Switch to Yearly", "Paying monthly? Home shows what you'd save on the yearly plan at your Google Play price, and switches you over with the unused month credited."),
+        )),
         ChangelogEntry("2026.10.5", "October 2026", "Money Jars, Family Challenges, Smarter Routines", listOf(
             ChangelogFeature("🫙", "Spend, Save & Give Jars", "Premium: pick a split like 70/20/10 and everything your kid earns lands in three jars. The store spends from Spend, goals fill from Save. Add a weekly allowance that pays itself, interest on savings, fines or a weekly payback, and screen-time minutes as a reward. Settings > Family > Money."),
             ChangelogFeature("🍕", "Family Challenges", "Premium: siblings team up for a shared reward, like 50 chores this week for pizza night. One team bar on Home, everyone's part shown kindly, confetti in kid mode when they get there."),

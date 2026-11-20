@@ -71,10 +71,10 @@ android {
         minSdk = 26
         targetSdk = 36
         // versionCode must keep rising across every upload to Play (the shell used 1).
-        versionCode = 10
+        versionCode = 11
         // ChoreStar's FIRST Android release. 2.x is the iOS train's numbering and
         // does not belong on Play; versionCode keeps rising independently.
-        versionName = "1.0.2"
+        versionName = "1.1.0"
 
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseValue("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseValue("SUPABASE_ANON_KEY")}\"")
@@ -137,6 +137,8 @@ dependencies {
 
     implementation("com.android.billingclient:billing-ktx:9.1.0")
     implementation("androidx.glance:glance-appwidget:1.1.1")
+    // The kid login QR code (Settings > Family Sharing), drawn on the device.
+    implementation("com.google.zxing:core:3.5.3")
 
     // Push (FCM). The BOM pins firebase-messaging; the app only touches
     // FirebaseApp / FirebaseMessaging, so nothing else from Firebase is linked.

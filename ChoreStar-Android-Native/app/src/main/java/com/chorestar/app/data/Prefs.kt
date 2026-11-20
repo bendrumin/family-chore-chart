@@ -60,4 +60,13 @@ class Prefs(context: Context) {
     var kidSessionJson: String?
         get() = sp.getString("kidSession", null)
         set(v) = sp.edit().putString("kidSession", v).apply()
+
+    /** What this device last saw of a kid's Star Pet ("level|stage|star"), so growth is celebrated once (iOS petSeen:<id>). */
+    fun petSeen(childId: String): String? = sp.getString("petSeen:${childId.lowercase()}", null)
+    fun setPetSeen(childId: String, value: String) = sp.edit().putString("petSeen:${childId.lowercase()}", value).apply()
+
+    /** Not now on the switch-to-yearly card hides it until then (epoch millis). */
+    var yearlyUpsellSnoozedUntil: Long
+        get() = sp.getLong("yearlyUpsell.snoozedUntil", 0L)
+        set(v) = sp.edit().putLong("yearlyUpsell.snoozedUntil", v).apply()
 }

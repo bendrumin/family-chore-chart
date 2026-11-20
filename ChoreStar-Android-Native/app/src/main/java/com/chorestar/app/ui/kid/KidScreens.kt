@@ -374,6 +374,7 @@ fun ChildMainScreen(vm: KidViewModel) {
             }
             item { GoalCard(wallet, currency, onEdit = { goalEditor = it }, onAdd = { addingGoal = true }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             if (wallet != null && wallet.hasMoneyNews) item { KidMoneyCard(wallet, currency, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+            item(key = "pet") { com.chorestar.app.ui.pets.KidPetCard(child.id, vm::petAuth, vm.petApi, refreshKey = s.done.size + s.completedRoutineIds.size, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             if (s.challenges.isNotEmpty()) item { com.chorestar.app.ui.challenges.KidChallengesSection(s.challenges, currency, Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             if (s.routines.isNotEmpty()) {
                 item { Text(stringResource(R.string.my_routines), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }

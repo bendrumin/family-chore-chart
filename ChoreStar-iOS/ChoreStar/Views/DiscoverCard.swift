@@ -369,7 +369,7 @@ struct KidDeviceView: View {
                 .padding(20)
             }
             .background(Color.choreStarBackground)
-            .navigationTitle("\(kidName)'s own login")
+            .navigationTitle(namesFirstKid ? String(localized: "\(kidName)'s own login") : String(localized: "Kids' own login"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
