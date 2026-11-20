@@ -3,4 +3,5 @@
 <resources>
     <string name="kidqr_title_any">دخول الأطفال الخاص بهم</string>
     <string name="yearly_body_play">%1$s سنويًا بدلًا من %2$s شهريًا. نفس Premium، يُدفع مرة واحدة في السنة عبر Google Play.</string>
+    <string name="kid_profile_paused">هذا الملف الشخصي متوقف مؤقتًا. اطلب من أحد الكبار إعادة تفعيل Premium.</string>
 </resources>

@@ -133,6 +133,7 @@ fun KidLoginScreen(kidApi: KidApi, initialCode: String?, onBack: () -> Unit, onS
                 when (e) {
                     KidApi.KidLoginError.Unreachable -> error = R.string.kid_unreachable
                     KidApi.KidLoginError.TooMany -> error = R.string.kid_too_many
+                    KidApi.KidLoginError.Paused -> error = R.string.kid_profile_paused
                     else -> { error = R.string.kid_wrong_pin }
                 }
             }
@@ -219,7 +220,7 @@ fun ChildAuthScreen(state: DashboardState, kidApi: KidApi, onBack: () -> Unit, o
         verifying = true; error = null
         scope.launch {
             kidApi.verifyPin(code, pin).onSuccess { r -> if (r.child?.id == child.id) onAuthenticated(child) else { error = R.string.kid_wrong_pin; pin = "" } }
-                .onFailure { e -> pin = ""; error = when (e) { KidApi.KidLoginError.Unreachable -> R.string.kid_unreachable; KidApi.KidLoginError.TooMany -> R.string.kid_too_many; else -> R.string.kid_wrong_pin } }
+                .onFailure { e -> pin = ""; error = when (e) { KidApi.KidLoginError.Unreachable -> R.string.kid_unreachable; KidApi.KidLoginError.TooMany -> R.string.kid_too_many; KidApi.KidLoginError.Paused -> R.string.kid_profile_paused; else -> R.string.kid_wrong_pin } }
             verifying = false
         }
     }

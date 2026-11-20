@@ -3,4 +3,5 @@
 <resources>
     <string name="kidqr_title_any">Kids\' own login</string>
     <string name="yearly_body_play">%1$s a year instead of %2$s a month. Same Premium, billed once a year by Google Play.</string>
+    <string name="kid_profile_paused">This profile is paused. Ask a grown-up to turn Premium back on.</string>
 </resources>

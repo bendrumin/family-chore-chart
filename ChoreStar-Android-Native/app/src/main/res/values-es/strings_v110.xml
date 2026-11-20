@@ -3,4 +3,5 @@
 <resources>
     <string name="kidqr_title_any">Acceso propio para niños</string>
     <string name="yearly_body_play">%1$s al año en lugar de %2$s al mes. El mismo Premium, cobrado una vez al año por Google Play.</string>
+    <string name="kid_profile_paused">Este perfil está en pausa. Pídele a un adulto que vuelva a activar Premium.</string>
 </resources>

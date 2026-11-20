@@ -59,6 +59,21 @@ KEYS = {
     # Yearly upsell
     'yearly_title': 'Switch to yearly and save %lld%%',
     'yearly_switch': 'Switch to yearly',
+    # Premium ended over the free limits (iOS PlanLimitsCard)
+    'plan_ends_on': 'Premium ends %@',
+    'plan_set_to_end': 'Premium is set to end',
+    'plan_ending_body': 'After that, %@ pause, since the free plan has %lld kids and %lld chores. Turn renewal back on to keep them.',
+    'plan_paused_title': '%@ paused',
+    'plan_paused_body': 'Premium ended, and the free plan has %lld kids and %lld chores. Nothing is deleted: resume Premium and everything comes back, or choose what stays on.',
+    'plan_resume': 'Resume Premium',
+    'plan_choose': 'Choose what stays on',
+    'plan_kids_count': 'Kids (%lld/%lld)',
+    'plan_chores_footer': 'Chores on: %lld/%lld. Everything else is paused, not deleted, and comes back with Premium.',
+    'plan_save_offline': "Couldn't save. Check your connection.",
+    'plan_save_failed': "Couldn't save. Try again.",
+    'plan_n_chores': '%lld chores',
+    'plan_paused_badge': 'Paused',
+    'plan_paused_word': 'paused',
 }
 
 # The Premium routine library (iOS RoutineTemplate.premiumLibrary): names and step titles.

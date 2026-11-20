@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -57,7 +58,15 @@ fun FamilyScreen(state: DashboardState, onAddChild: () -> Unit, onOpenChild: (Ch
                         ChildAvatar(child, 64.dp)
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(child.name, style = MaterialTheme.typography.titleMedium)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(child.name, style = MaterialTheme.typography.titleMedium)
+                                // Paused when Premium ended over the free limits (iOS ChildrenView).
+                                if (child.pausedByPlan == true) Text(
+                                    "⏸ " + stringResource(R.string.plan_paused_badge),
+                                    style = MaterialTheme.typography.labelMedium, color = com.chorestar.app.ui.theme.Warning,
+                                    modifier = Modifier.testTag("paused-badge"),
+                                )
+                            }
                             val choreCount = state.choresFor(child.id).size
                             val bits = listOfNotNull(
                                 child.age?.let { stringResource(R.string.family_age, it) },

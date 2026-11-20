@@ -50,11 +50,13 @@ class KidApi(private val web: HttpClient) {
     )
 
     @Serializable
-    data class VerifyResponse(val success: Boolean? = null, val child: KidChild? = null, val kidToken: String? = null, val error: String? = null)
+    data class VerifyResponse(val success: Boolean? = null, val child: KidChild? = null, val kidToken: String? = null, val error: String? = null, val code: String? = null)
 
     sealed class KidLoginError(message: String) : Exception(message) {
         data object Unreachable : KidLoginError("unreachable")
         data object TooMany : KidLoginError("too_many")
+        /** The kid was paused when the family's Premium ended over the free limits (migration 038). */
+        data object Paused : KidLoginError("paused")
         class Wrong(message: String?) : KidLoginError(message ?: "wrong")
     }
 
@@ -67,6 +69,7 @@ class KidApi(private val web: HttpClient) {
         val text = response.bodyAsText()
         if (response.status.value == 429) throw KidLoginError.TooMany
         val decoded = runCatching { SupabaseModule.json.decodeFromString(VerifyResponse.serializer(), text) }.getOrNull()
+        if (decoded?.code == "paused") throw KidLoginError.Paused
         if (response.status.value != 200 || decoded?.success != true || decoded.child == null) throw KidLoginError.Wrong(decoded?.error)
         decoded
     }.recoverCatching { e -> if (e is KidLoginError) throw e else throw KidLoginError.Unreachable }

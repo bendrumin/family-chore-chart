@@ -232,6 +232,7 @@ class DashboardViewModel(
 
     /** The web routes behind money, challenges, live routines, AI drafts and the calendar feed. */
     val premiumApi: com.chorestar.app.data.PremiumApi get() = repository.premium
+    val planLimitsApi: com.chorestar.app.data.PlanLimitsApi get() = repository.planLimits
     val petApi: com.chorestar.app.data.PetApi get() = repository.pets
     /** The parent acting for one kid on the kid routes (the Star Pet sheet on Home). */
     fun parentKidAuth(childId: String): com.chorestar.app.data.KidApi.Auth? = repository.accessTokenOrNull()?.let { com.chorestar.app.data.KidApi.Auth(it, childId) }

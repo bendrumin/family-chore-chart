@@ -105,7 +105,13 @@ fun HomeScreen(vm: DashboardViewModel, state: DashboardState, onOpenChores: () -
                 ApprovalTray(vm, state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) })
             }
 
-            item(key = "yearly") { com.chorestar.app.ui.settings.YearlyUpsellCard(state) }
+            // Both usually draw nothing; one slot keeps Home's spacing even then.
+            item(key = "plan") {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    com.chorestar.app.ui.settings.PlanLimitsCard(vm, state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) })
+                    com.chorestar.app.ui.settings.YearlyUpsellCard(state)
+                }
+            }
 
             if (state.live.isNotEmpty()) item { com.chorestar.app.ui.routines.HappeningNowCard(state, onPaywall = { onNavigate(com.chorestar.app.ui.main.Routes.paywall(it)) }) }
 
@@ -230,9 +236,11 @@ private fun HeroCard(vm: DashboardViewModel, state: DashboardState, done: Int, d
                     items(state.children, key = { it.id }) { child ->
                         val d = state.dueOn(child.id, state.today).size
                         val n = state.doneOn(child.id, state.today)
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onOpenChild(child) }.alpha(if (onVacation) 0.85f else 1f)) {
+                        // Paused when Premium ended over the free limits: no progress to show, slightly dimmed (iOS heroChildRing).
+                        val paused = child.pausedByPlan == true
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onOpenChild(child) }.alpha(if (paused) 0.5f else if (onVacation) 0.85f else 1f)) {
                             Box(contentAlignment = Alignment.Center) {
-                                if (!onVacation) androidx.compose.material3.CircularProgressIndicator(
+                                if (!onVacation && !paused) androidx.compose.material3.CircularProgressIndicator(
                                     progress = { if (d == 0) 0f else n.toFloat() / d }, modifier = Modifier.size(62.dp), color = Color.White,
                                     trackColor = Color.White.copy(alpha = 0.28f), strokeWidth = 4.dp,
                                 )
@@ -240,7 +248,7 @@ private fun HeroCard(vm: DashboardViewModel, state: DashboardState, done: Int, d
                             }
                             Spacer(Modifier.height(4.dp))
                             val first = child.name.trim().split(" ").first()
-                            Text(if (onVacation) first else if (d == 0) stringResource(R.string.child_none_today, first) else "$first $n/$d", color = Color.White, style = MaterialTheme.typography.labelMedium)
+                            Text(if (paused) "$first " + stringResource(R.string.plan_paused_word) else if (onVacation) first else if (d == 0) stringResource(R.string.child_none_today, first) else "$first $n/$d", color = Color.White, style = MaterialTheme.typography.labelMedium)
                         }
                     }
                 }

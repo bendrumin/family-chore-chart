@@ -106,3 +106,43 @@ class RoutineLibraryTest {
         assertEquals("https://chorestar.app/kid-login/a%20b", kidLoginUrl("a b"))
     }
 }
+
+/** Premium ended over the free limits (GET/POST /api/plan-limits, iOS PlanLimitsCard). */
+class PlanLimitsTest {
+    private val json = Json { ignoreUnknownKeys = true; explicitNulls = false }
+
+    /** Shaped like a real GET /api/plan-limits answer (lib/billing/plan-limits.ts familyLimits). */
+    private val ended = """
+        {"premium":false,"ending":null,"limits":{"kids":3,"chores":20},"pausedKids":[{"id":"k4","name":"Leo"}],"pausedChores":2,
+        "kids":[{"id":"k1","name":"Maya","paused":false,"chores":[{"id":"c1","name":"Bed","on":true},{"id":"c2","name":"Dishes","on":false}]},
+                {"id":"k4","name":"Leo","paused":true,"chores":[{"id":"c3","name":"Trash","on":false}]}],
+        "wouldPause":{"kids":[],"chores":0}}
+    """.trimIndent()
+
+    @Test fun endedFamilySeesWhatIsPaused() {
+        val s = json.decodeFromString(PlanLimits.State.serializer(), ended)
+        assertEquals(PlanLimits.Card.Paused(listOf("Leo"), 2), PlanLimits.card(s))
+    }
+
+    @Test fun endingWarnsOnlyWhenSomethingWouldPause() {
+        val paying = PlanLimits.State(premium = true, ending = PlanLimits.Ending("2026-12-01T00:00:00Z"), wouldPause = PlanLimits.WouldPause(listOf("Leo"), 5))
+        assertEquals(PlanLimits.Card.Ending("2026-12-01T00:00:00Z", listOf("Leo"), 5), PlanLimits.card(paying))
+        assertNull("within the limits", PlanLimits.card(paying.copy(wouldPause = PlanLimits.WouldPause())))
+        assertNull("renewing", PlanLimits.card(paying.copy(ending = null)))
+        assertNull("never subscribed", PlanLimits.card(PlanLimits.State()))
+    }
+
+    @Test fun thePostAnswerHasNoPlanFieldsAndIsFree() {
+        val s = json.decodeFromString(PlanLimits.State.serializer(), """{"limits":{"kids":3,"chores":20},"pausedKids":[],"pausedChores":0,"kids":[],"wouldPause":{"kids":[],"chores":0}}""")
+        assertFalse(s.premium)
+        assertNull(PlanLimits.card(s))
+    }
+
+    @Test fun chooserStartsFromWhatIsOnAndDropsChoresOfPausedKids() {
+        val s = json.decodeFromString(PlanLimits.State.serializer(), ended)
+        val (kids, chores) = PlanLimits.initialPick(s)
+        assertEquals(setOf("k1"), kids)
+        assertEquals(setOf("c1"), chores)
+        assertEquals(listOf("c1"), PlanLimits.keptChores(s, kids, chores + "c3"))
+    }
+}

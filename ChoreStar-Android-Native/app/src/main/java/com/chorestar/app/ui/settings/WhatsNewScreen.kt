@@ -33,6 +33,7 @@ object Changelog {
             ChangelogFeature("📱", "Scan to Sign In", "Settings > Family Sharing & Kid Login has a QR code: scan it on your kid's tablet or an old phone and their login opens with your family code filled in."),
             ChangelogFeature("📋", "10 More Routine Templates", "Premium: School Morning Express, Homework Hour, Weekend Room Reset, Pet Care and six more, each one ready to change in the builder."),
             ChangelogFeature("📅", "Switch to Yearly", "Paying monthly? Home shows what you'd save on the yearly plan at your Google Play price, and switches you over with the unused month credited."),
+            ChangelogFeature("⏸️", "If Premium Ends, You Choose", "Over the free plan's 3 kids and 20 chores when Premium ends? Home shows who and what is paused (nothing is deleted) and lets you pick which kids and chores stay on."),
         )),
         ChangelogEntry("2026.10.5", "October 2026", "Money Jars, Family Challenges, Smarter Routines", listOf(
             ChangelogFeature("🫙", "Spend, Save & Give Jars", "Premium: pick a split like 70/20/10 and everything your kid earns lands in three jars. The store spends from Spend, goals fill from Save. Add a weekly allowance that pays itself, interest on savings, fines or a weekly payback, and screen-time minutes as a reward. Settings > Family > Money."),
