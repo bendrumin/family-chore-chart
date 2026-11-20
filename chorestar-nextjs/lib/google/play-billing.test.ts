@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict'
 import {
-  tierForPlaySubscriptionState, decodePubSubPush, playNotificationName, pushTokenMatches,
+  tierForPlaySubscriptionState, decodePubSubPush, playNotificationName, pushTokenMatches, isSupersededEnding,
   PLAY_PRODUCT_IDS, PLAY_SUBSCRIPTION_PRODUCT_IDS,
 } from './play-billing'
 
@@ -82,6 +82,27 @@ t('push token compare: exact match only, never on missing config', () => {
   assert.equal(pushTokenMatches('abd', 'abc'), false)
   assert.equal(pushTokenMatches('abc', undefined), false)
   assert.equal(pushTokenMatches(null, 'abc'), false)
+})
+
+group('plan switches (monthly to yearly)')
+
+t('the old monthly expiring after a switch to yearly does not end Premium', () => {
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'old-monthly', currentToken: 'new-yearly', currentTier: 'premium' }), true)
+})
+
+t('the current subscription ending still ends Premium', () => {
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'new-yearly', currentToken: 'new-yearly', currentTier: 'premium' }), false)
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'old', currentToken: 'other', currentTier: 'free' }), false)
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'old', currentToken: null }), false)
+})
+
+t('a new purchase linked from the current token is never ignored', () => {
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'new', linkedToken: 'current', currentToken: 'current', currentTier: 'premium' }), false)
+  assert.equal(isSupersededEnding({ tier: 'premium', token: 'new', currentToken: 'current', currentTier: 'premium' }), false)
+})
+
+t('an unknown state for the current token is not a reason to ignore', () => {
+  assert.equal(isSupersededEnding({ tier: 'free', token: 'old', currentToken: 'current', currentTier: null }), false)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

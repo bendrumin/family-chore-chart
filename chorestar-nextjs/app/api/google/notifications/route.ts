@@ -4,7 +4,7 @@ import { keepPremiumReason, otherRailsActive } from '@/lib/billing/keep-premium'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import {
-  decodePubSubPush, playNotificationName, pushTokenMatches, tierForPlaySubscriptionState,
+  decodePubSubPush, playNotificationName, pushTokenMatches, tierForPlaySubscriptionState, isSupersededEnding,
   PLAY_SUBSCRIPTION_PRODUCT_IDS,
 } from '@/lib/google/play-billing'
 import { getSubscriptionV2, packageName } from '@/lib/google/play-api'
@@ -79,16 +79,33 @@ export async function POST(request: Request) {
       const { data } = await (supabase as any).from('profiles').select('id').eq('id', externalId).maybeSingle()
       userId = data?.id ?? null
     }
+    const tier = tierForPlaySubscriptionState(state)
+
+    // A plan switch (monthly to yearly) ends the old purchase; that ending must
+    // not downgrade a family whose current subscription is active.
+    let superseded = false
+    if (userId && tier === 'free') {
+      const { data: current } = await (supabase as any).from('profiles').select('google_purchase_token').eq('id', userId).maybeSingle()
+      const currentToken: string | null = current?.google_purchase_token ?? null
+      if (currentToken && currentToken !== sub.purchaseToken && currentToken !== purchase.linkedPurchaseToken) {
+        const currentTier = await getSubscriptionV2(currentToken)
+          .then((p) => tierForPlaySubscriptionState(p.subscriptionState ?? null))
+          .catch(() => null)
+        superseded = isSupersededEnding({ tier, token: sub.purchaseToken, linkedToken: purchase.linkedPurchaseToken, currentToken, currentTier })
+      }
+    }
+
     // Keep the mapping on the newest token so renewals after an upgrade still match.
-    if (userId) {
+    if (userId && !superseded) {
       await (supabase as any).from('profiles').update({ google_purchase_token: sub.purchaseToken }).eq('id', userId)
     }
 
     let action = 'logged'
     const isOurs = !!lineProduct && PLAY_SUBSCRIPTION_PRODUCT_IDS.includes(lineProduct)
-    const tier = tierForPlaySubscriptionState(state)
     if (purchase.testPurchase && process.env.NODE_ENV === 'production' && process.env.GOOGLE_PLAY_HONOR_TEST_PURCHASES !== '1') {
       action = 'test-purchase-logged'
+    } else if (superseded) {
+      action = 'superseded-logged'
     } else if (!userId) {
       action = 'unmatched'
     } else if (isOurs && tier === 'premium') {

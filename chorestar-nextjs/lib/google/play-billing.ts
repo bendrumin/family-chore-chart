@@ -62,6 +62,28 @@ export function tierForPlaySubscriptionState(state: string | undefined | null): 
   }
 }
 
+/**
+ * True when a notification ends a purchase the family has already moved on
+ * from: a monthly plan replaced by yearly, say. Play links the new purchase to
+ * the old one (linkedPurchaseToken) and the old token then reports EXPIRED;
+ * matched to the family by account id, that would downgrade a family whose
+ * current subscription is active. Only an ending of a token that is neither
+ * the profile's current one nor linked from it, while the current one is
+ * still entitled, counts.
+ */
+export function isSupersededEnding(input: {
+  tier: 'premium' | 'free' | null
+  token: string
+  linkedToken?: string | null
+  currentToken?: string | null
+  currentTier?: 'premium' | 'free' | null
+}): boolean {
+  const { tier, token, linkedToken, currentToken, currentTier } = input
+  if (tier !== 'free' || !currentToken) return false
+  if (currentToken === token || currentToken === linkedToken) return false
+  return currentTier === 'premium'
+}
+
 export interface DeveloperNotification {
   version?: string
   packageName?: string
