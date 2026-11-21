@@ -85,6 +85,17 @@ export async function POST(request: Request) {
 
     const userId = (profile as { id: string }).id;
 
+    // Per family as well as per IP: someone with the family code can't spread
+    // guesses over many IPs. Only wrong PINs count toward it (below).
+    const familyKey = `pin-family:${userId}`;
+    const familyCheck = await checkRateLimit(familyKey, RATE_LIMITS.PIN_VERIFY_FAMILY);
+    if (!familyCheck.allowed) {
+      return createRateLimitResponse(
+        familyCheck.retryAfter || 60,
+        'Too many wrong PINs for this family. Try again in a little while.'
+      );
+    }
+
     // Find child PINs ONLY for this family's children (scoped by family code)
     const { data: allPins, error: fetchError } = await supabase
       .from('child_pins')
@@ -125,6 +136,7 @@ export async function POST(request: Request) {
 
     if (!matchedChild || !matchedPinRecord) {
       await recordAttempt(clientIp, RATE_LIMITS.PIN_VERIFY);
+      await recordAttempt(familyKey, RATE_LIMITS.PIN_VERIFY_FAMILY);
       return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 });
     }
 
@@ -132,8 +144,9 @@ export async function POST(request: Request) {
     // so a failed attempt can't be attributed to a specific child. Per-child
     // failed_attempts/locked_until are therefore honored when present (below) but
     // not incremented here — a family-wide lockout would let one mistyped PIN
-    // lock every sibling out. The primary barrier is the per-IP rate limit above
-    // (getClientIp now uses Vercel's un-spoofable client IP).
+    // lock every sibling out. The barriers are the per-IP limit and the
+    // per-family limit on wrong PINs above, both shared across instances
+    // (rate_limits, migration 040).
 
     // A kid paused when the family's Premium ended (migration 038,
     // lib/billing/plan-limits.ts) can't sign in until it's back. Not an

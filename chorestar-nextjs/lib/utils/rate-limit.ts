@@ -2,9 +2,10 @@
  * Rate Limiting Utility
  *
  * Uses Upstash Redis (via its REST API, plain fetch — no SDK dependency) when
- * configured, so limits are shared across all serverless/edge instances and
- * survive deploys. Falls back to per-instance in-memory storage when Redis is
- * not configured (fine for local dev; logs a warning in production).
+ * configured. Otherwise counts in Postgres (rate_limits, migration 040) through
+ * the service role, so limits are still shared across every serverless
+ * instance and survive deploys. Per-instance memory is the last resort: local
+ * dev without a service key, or a database error.
  *
  * Configure via env (either naming convention works):
  *   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
@@ -13,6 +14,8 @@
  * On Redis errors, falls back to in-memory for that request (fail-open on
  * infra issues rather than blocking real users).
  */
+
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 
 interface RateLimitConfig {
   interval: number; // Time window in milliseconds
@@ -45,15 +48,62 @@ const REDIS_TOKEN = (
 
 const redisEnabled = Boolean(REDIS_URL && REDIS_TOKEN);
 
-let warnedNoRedis = false;
+// ---------------------------------------------------------------------------
+// Postgres backend (rate_limits table, migration 040)
+// ---------------------------------------------------------------------------
+
+const PG_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+const PG_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '').trim();
+const pgEnabled = Boolean(PG_URL && PG_KEY);
+
+let pgClient: SupabaseClient | null = null;
+function pg(): SupabaseClient {
+  // Built here rather than via lib/supabase/server, which pulls in next/headers.
+  if (!pgClient) pgClient = createSupabaseClient(PG_URL, PG_KEY, { auth: { persistSession: false } });
+  return pgClient;
+}
+
+async function pgCheck(identifier: string, config: RateLimitConfig): Promise<RateLimitResult> {
+  const { data, error } = await pg()
+    .from('rate_limits')
+    .select('count, reset_at')
+    .eq('key', identifier)
+    .maybeSingle();
+  if (error) throw error;
+
+  const now = Date.now();
+  const resetAt = data ? new Date(data.reset_at as string).getTime() : 0;
+  const count = data && resetAt > now ? Number(data.count) : 0;
+  const resetTime = count ? resetAt : now + config.interval;
+
+  if (count >= config.maxAttempts) {
+    return { allowed: false, remaining: 0, resetTime, retryAfter: Math.ceil((resetAt - now) / 1000) };
+  }
+  return { allowed: true, remaining: config.maxAttempts - count - 1, resetTime };
+}
+
+async function pgRecord(identifier: string, config: RateLimitConfig): Promise<void> {
+  const { error } = await pg().rpc('rate_limit_hit', { p_key: identifier, p_window_ms: config.interval });
+  if (error) throw error;
+  // Now and then, clear windows that ended over a day ago so the table stays small.
+  if (Math.random() < 0.02) {
+    await pg().from('rate_limits').delete().lt('reset_at', new Date(Date.now() - 86_400_000).toISOString());
+  }
+}
+
+async function pgReset(identifier: string): Promise<void> {
+  const { error } = await pg().from('rate_limits').delete().eq('key', identifier);
+  if (error) throw error;
+}
+
+let warnedNoShared = false;
 function warnIfNoRedis(): void {
-  if (!redisEnabled && !warnedNoRedis && process.env.NODE_ENV === 'production') {
+  if (!redisEnabled && !pgEnabled && !warnedNoShared && process.env.NODE_ENV === 'production') {
     console.warn(
-      '[rate-limit] No Redis configured — using per-instance in-memory rate limiting. ' +
-        'Limits reset on deploy and are not shared across instances. ' +
-        'Set UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL/KV_REST_API_TOKEN).'
+      '[rate-limit] Neither Redis nor a Supabase service key is configured — using per-instance in-memory rate limiting. ' +
+        'Limits reset on deploy and are not shared across instances.'
     );
-    warnedNoRedis = true;
+    warnedNoShared = true;
   }
 }
 
@@ -220,6 +270,9 @@ function memoryReset(identifier: string): void {
  */
 export const RATE_LIMITS = {
   PIN_VERIFY: { interval: 15 * 60 * 1000, maxAttempts: 5 }, // 5 attempts per 15 minutes
+  // Wrong PINs for one family code from any IP. 10,000 possible PINs at 20 an
+  // hour is 500 hours, so rotating IPs no longer gets around the per-IP limit.
+  PIN_VERIFY_FAMILY: { interval: 60 * 60 * 1000, maxAttempts: 20 },
   AUTH_LOGIN: { interval: 15 * 60 * 1000, maxAttempts: 5 }, // 5 attempts per 15 minutes
   AUTH_SIGNUP: { interval: 60 * 60 * 1000, maxAttempts: 3 }, // 3 signups per hour
   PASSWORD_RESET: { interval: 60 * 60 * 1000, maxAttempts: 3 }, // 3 attempts per hour
@@ -246,7 +299,14 @@ export async function checkRateLimit(
     try {
       return await redisCheck(identifier, config);
     } catch (error) {
-      console.error('[rate-limit] Redis check failed, using in-memory fallback:', error);
+      console.error('[rate-limit] Redis check failed, falling back:', error);
+    }
+  }
+  if (pgEnabled) {
+    try {
+      return await pgCheck(identifier, config);
+    } catch (error) {
+      console.error('[rate-limit] Postgres check failed, using in-memory fallback:', error);
     }
   }
   return memoryCheck(identifier, config);
@@ -267,7 +327,15 @@ export async function recordAttempt(
       await redisRecord(identifier, config);
       return;
     } catch (error) {
-      console.error('[rate-limit] Redis record failed, using in-memory fallback:', error);
+      console.error('[rate-limit] Redis record failed, falling back:', error);
+    }
+  }
+  if (pgEnabled) {
+    try {
+      await pgRecord(identifier, config);
+      return;
+    } catch (error) {
+      console.error('[rate-limit] Postgres record failed, using in-memory fallback:', error);
     }
   }
   memoryRecord(identifier, config);
@@ -284,7 +352,15 @@ export async function resetAttempts(identifier: string): Promise<void> {
       await redisReset(identifier);
       return;
     } catch (error) {
-      console.error('[rate-limit] Redis reset failed, using in-memory fallback:', error);
+      console.error('[rate-limit] Redis reset failed, falling back:', error);
+    }
+  }
+  if (pgEnabled) {
+    try {
+      await pgReset(identifier);
+      return;
+    } catch (error) {
+      console.error('[rate-limit] Postgres reset failed, using in-memory fallback:', error);
     }
   }
   memoryReset(identifier);
